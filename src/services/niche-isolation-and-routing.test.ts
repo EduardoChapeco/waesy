@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getNicheTranslation } from "@/lib/niche-dictionary";
-import { getSidebarConfig } from "@/lib/workspace-navigation";
+import { getSidebarConfig, getMasterSidebarPillars } from "@/lib/workspace-navigation";
 
 describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => {
   describe("1. Dicionário Universal de Nichos (I18n Niche Translation)", () => {
@@ -151,6 +151,41 @@ describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => 
       expect(allPaths).toContain("/workspace/relatorios/gastronomia");
       expect(allPaths).toContain("/workspace/simulacao");
       expect(allPaths).toContain("/workspace/licitacoes");
+    });
+
+    it("isola os 11 Pilares Mestre (getMasterSidebarPillars) contra vazamento gastronômico em Turismo, Varejo, Serviços e Locação", () => {
+      const gastroExclusivePaths = [
+        "/workspace/pedidos/gestor",
+        "/workspace/pdv/comandas",
+        "/workspace/pdv/cozinha",
+        "/workspace/pedidos/tempo-preparo",
+        "/workspace/reservas",
+        "/workspace/relatorios/gastronomia",
+        "/workspace/conteudo/receitas",
+      ];
+
+      for (const nonFoodNiche of ["tourism", "retail", "services", "rental", "real_estate", "legal"]) {
+        const groups = getSidebarConfig(nonFoodNiche);
+        const pillars = getMasterSidebarPillars(groups, nonFoodNiche);
+        const allPillarPaths = pillars.flatMap((p) => p.items.map((i) => i.path));
+
+        for (const gastroPath of gastroExclusivePaths) {
+          expect(allPillarPaths).not.toContain(gastroPath);
+        }
+      }
+
+      const tourismPillars = getMasterSidebarPillars(getSidebarConfig("tourism"), "tourism");
+      const tourismPaths = tourismPillars.flatMap((p) => p.items.map((i) => i.path));
+      expect(tourismPaths).not.toContain("/workspace/pedidos/frota");
+      expect(tourismPaths).not.toContain("/workspace/pedidos/entregadores");
+      expect(tourismPaths).toContain("/workspace/turismo/vouchers");
+      expect(tourismPaths).toContain("/workspace/turismo/embarques");
+
+      const gastroPillars = getMasterSidebarPillars(getSidebarConfig("gastronomy"), "gastronomy");
+      const gastroPaths = gastroPillars.flatMap((p) => p.items.map((i) => i.path));
+      expect(gastroPaths).toContain("/workspace/pedidos");
+      expect(gastroPaths).toContain("/workspace/pdv/cozinha");
+      expect(gastroPaths).toContain("/workspace/pdv/comandas");
     });
   });
 });

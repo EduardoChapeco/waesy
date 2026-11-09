@@ -119,20 +119,19 @@ const GROUP_GASTRO_CATALOG: NavGroup = {
 
 const GROUP_GASTRO_ORDERS: NavGroup = {
   id: "gastro-orders",
-  label: "Pedidos & Cozinha",
+  label: "Salão & Delivery",
   icon: ClipboardList,
   section: "niche",
   items: [
     { path: "/workspace/pedidos/gestor", label: "Gestor de Pedidos", icon: ClipboardList },
+    { path: "/workspace/pedidos", label: "Histórico de Vendas", icon: ShoppingBag },
     { path: "/workspace/pdv/comandas", label: "Mesas", icon: UtensilsCrossed },
     { path: "/workspace/pdv/cozinha", label: "KDS da Cozinha", icon: ChefHat },
     { path: "/workspace/pedidos/tempo-preparo", label: "Tempo de Preparo", icon: Clock },
     { path: "/workspace/reservas", label: "Reservas", icon: Calendar },
-    { path: "/workspace/pedidos", label: "Histórico de Pedidos", icon: ShoppingBag },
     { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/pedidos/frota", label: "Despacho & Motoboys", icon: Truck },
     { path: "/workspace/relatorios/gastronomia", label: "Relatórios de Vendas", icon: FileSpreadsheet },
-    { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
 
@@ -162,7 +161,7 @@ const GROUP_RETAIL_SALES: NavGroup = {
   items: [
     { path: "/workspace/pedidos", label: "Lista de Vendas", icon: ShoppingBag },
     { path: "/workspace/pedidos/expedicao", label: "Separação & WMS", icon: PackageCheck },
-    { path: "/workspace/pedidos/gestor", label: "Gestor", icon: ClipboardList },
+
     { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/pedidos/trocas", label: "Devoluções", icon: ArrowRightLeft },
     { path: "/workspace/logistica/tabelas", label: "Fretes", icon: Truck },
@@ -208,7 +207,8 @@ const GROUP_RENTAL_EVENTS: NavGroup = {
     { path: "/workspace/catalogo/produtos", label: "Equipamentos", icon: Package },
     { path: "/workspace/agenda", label: "Disponibilidade", icon: Calendar },
     { path: "/workspace/orcamentos", label: "Contratos", icon: FileText },
-    { path: "/workspace/pedidos/gestor", label: "Montagens", icon: ClipboardList },
+    { path: "/workspace/imoveis/manutencoes", label: "Vistorias", icon: Wrench },
+    { path: "/workspace/pedidos/expedicao", label: "Retirada & Devolução", icon: PackageCheck },
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
@@ -220,7 +220,7 @@ const GROUP_TECH_REPAIR: NavGroup = {
   icon: Wrench,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos/gestor", label: "Ordens de Serviço", icon: ClipboardList },
+    { path: "/workspace/pedidos", label: "Ordens de Serviço", icon: ClipboardList },
     { path: "/workspace/agenda/servicos", label: "Mão de Obra", icon: Wrench },
     { path: "/workspace/catalogo/produtos", label: "Peças", icon: Package },
     { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
@@ -408,7 +408,7 @@ const GROUP_SUPERMARKET: NavGroup = {
     { path: "/workspace/catalogo/produtos", label: "Gôndolas", icon: Package },
     { path: "/workspace/catalogo/categorias", label: "Sessões", icon: Tags },
     { path: "/workspace/estoque/alertas", label: "Validades", icon: AlertTriangle },
-    { path: "/workspace/pedidos/gestor", label: "Separação", icon: ClipboardList },
+    { path: "/workspace/pedidos/expedicao", label: "Separação", icon: PackageCheck },
     { path: "/workspace/pedidos/frota", label: "Entregas", icon: Truck },
     { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
   ],
@@ -422,7 +422,7 @@ const GROUP_PHARMACY: NavGroup = {
   section: "niche",
   items: [
     { path: "/workspace/catalogo/produtos", label: "Medicamentos", icon: Package },
-    { path: "/workspace/pedidos/gestor", label: "Receituários", icon: ClipboardList },
+    { path: "/workspace/pedidos", label: "Receituários", icon: ClipboardList },
     { path: "/workspace/pedidos/frota", label: "Tele-Entrega", icon: Truck },
     { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
     { path: "/workspace/clientes", label: "Pacientes", icon: Users },
@@ -499,8 +499,6 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
     { path: "/workspace/marketing/vitrine", label: "Vitrine", icon: LayoutGrid },
     { path: "/workspace/estudio", label: "Estúdio Criativo", icon: Palette },
     { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
-    { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: LayoutDashboard },
-    { path: "/workspace/marketing/swot", label: "Matriz SWOT", icon: Compass },
     { path: "/workspace/cms/paginas", label: "Páginas", icon: FileText },
     { path: "/workspace/cms/stories", label: "Stories", icon: Flame },
     { path: "/workspace/marketing/stories", label: "Stories de Marketing", icon: Flame },
@@ -599,6 +597,7 @@ const GROUP_TEAM_RH: NavGroup = {
     { path: "/workspace/rh/folha", label: "Folha de Pagamento", icon: Wallet },
     { path: "/workspace/rh/ponto", label: "Ponto & Banco de Horas", icon: Clock },
     { path: "/workspace/financeiro/comissoes", label: "Comissões", icon: Target },
+    { path: "/workspace/rh/compliance", label: "Compliance & Termos", icon: ShieldCheck },
     { path: "/workspace/configuracoes/sessoes", label: "Sessões", icon: ShieldCheck },
   ],
 };
@@ -753,7 +752,6 @@ export function resolveWorkspaceNavigation(
         GROUP_MASTER_INBOX,
         GROUP_GASTRO_CATALOG,
         GROUP_GASTRO_ORDERS,
-        GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_LOGISTICS_EXPEDITION,
         GROUP_SUPPORT_DESK,
@@ -1372,19 +1370,30 @@ import { getNicheManifest, type NicheModuleKey } from "./niche-manifest";
 const PATH_TO_NICHE_MODULE: Record<string, NicheModuleKey> = {
   "/workspace/pedidos/gestor": "kds",
   "/workspace/pdv/cozinha": "kds",
+  "/workspace/pedidos/kds": "kds",
   "/workspace/pedidos/tempo-preparo": "kds",
   "/workspace/pedidos/mesas": "tables",
+  "/workspace/pdv/comandas": "tables",
+  "/workspace/reservas": "tables",
+  "/workspace/pedidos/frota": "couriers",
+  "/workspace/pedidos/entregadores": "couriers",
+  "/workspace/entregadores": "couriers",
+  "/workspace/relatorios/gastronomia": "kds",
+  "/workspace/conteudo/receitas": "kds",
   "/workspace/turismo/embarque": "boarding",
   "/workspace/turismo/embarques": "boarding",
   "/workspace/turismo/frota": "fleet",
   "/workspace/turismo/propostas": "proposals",
   "/workspace/turismo/cotacoes": "quotes",
   "/workspace/turismo/contratos": "contracts",
+  "/workspace/turismo/aereos": "proposals",
+  "/workspace/turismo/hoteis": "proposals",
+  "/workspace/turismo/roteiros": "proposals",
+  "/workspace/turismo/passageiros": "proposals",
+  "/workspace/turismo": "proposals",
   "/workspace/simlab": "simlab",
   "/workspace/estoque": "inventory",
   "/workspace/tarefas": "tasks",
-  "/workspace/entregadores": "couriers",
-  "/workspace/pedidos/entregadores": "couriers",
 };
 
 /**
@@ -1890,6 +1899,33 @@ export function getMasterSidebarPillars(
 
   const nicheId = inferNicheForPillars(groups, storeDataOrNiche);
   const nicheConfig = NICHE_MASTER_PILLAR_CONFIG[nicheId];
+  const manifest = getNicheManifest(nicheId);
+  const isMasterMode =
+    storeDataOrNiche?.isMasterMode === true ||
+    (groups.some((g) => g.id.startsWith("tourism-")) &&
+      groups.some((g) => g.id === "gastro-orders" || g.id === "gastro-catalog"));
+
+  const filteredInputGroups = isMasterMode
+    ? groups
+    : groups
+        .filter((g) => {
+          if ((g.id === "gastro-orders" || g.id === "gastro-catalog") && nicheId !== "gastronomy") return false;
+          if (g.id.startsWith("tourism-") && nicheId !== "tourism") return false;
+          return true;
+        })
+        .map((g) => ({
+          ...g,
+          items: g.items.filter((item) => {
+            const matchedModule = Object.entries(PATH_TO_NICHE_MODULE).find(([prefix]) =>
+              item.path.startsWith(prefix)
+            )?.[1];
+            if (matchedModule && manifest.activeModules && !manifest.activeModules.includes(matchedModule)) {
+              return false;
+            }
+            return true;
+          }),
+        }))
+        .filter((g) => g.items.length > 0);
 
   const orderedDefinitions: MasterPillarDefinition[] = (() => {
     const baseWithOverrides = MASTER_PILLAR_DEFINITIONS.map((def) => {
@@ -1913,7 +1949,7 @@ export function getMasterSidebarPillars(
   const pillars: MasterPillar[] = [];
 
   for (const def of orderedDefinitions) {
-    const matchedGroups = groups.filter((g) => def.groupIds.includes(g.id));
+    const matchedGroups = filteredInputGroups.filter((g) => def.groupIds.includes(g.id));
     for (const mg of matchedGroups) {
       assignedGroupIds.add(mg.id);
     }
@@ -1944,7 +1980,7 @@ export function getMasterSidebarPillars(
   }
 
   // Caso algum grupo dinâmico não esteja mapeado, anexa no pilar Comercial/Operações para nunca ocultar submódulos
-  const leftoverGroups = groups.filter((g) => !assignedGroupIds.has(g.id) && g.items.length > 0);
+  const leftoverGroups = filteredInputGroups.filter((g) => !assignedGroupIds.has(g.id) && g.items.length > 0);
   if (leftoverGroups.length > 0) {
     const targetPillar = pillars.find((p) => p.id === "comercial") || pillars[0];
     if (targetPillar) {

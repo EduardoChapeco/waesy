@@ -1041,57 +1041,60 @@ export const closePdvComanda = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (activeRegister) {
-        await db
-          .from("cash_register_entries")
-          .insert({
-            cash_register_id: activeRegister.id,
-            order_id: orderId,
-            amount_cents: order.total_cents || 0,
-            entry_type: "sale",
-            payment_method: paymentMethod,
-            notes: `Comanda ${order.table_identifier || orderId.slice(0, 8)} (${paymentMethod.toUpperCase()})`,
-            created_by: identity.id,
-          })
-          .catch((regErr: any) => {
-            console.warn("[closePdvComanda] Erro ao registrar no caixa:", regErr.message);
-          });
+        try {
+          await db
+            .from("cash_register_entries")
+            .insert({
+              cash_register_id: activeRegister.id,
+              order_id: orderId,
+              amount_cents: order.total_cents || 0,
+              entry_type: "sale",
+              payment_method: paymentMethod,
+              notes: `Comanda ${order.table_identifier || orderId.slice(0, 8)} (${paymentMethod.toUpperCase()})`,
+              created_by: identity.id,
+            });
+        } catch (regErr: any) {
+          console.warn("[closePdvComanda] Erro ao registrar no caixa:", regErr.message);
+        }
       }
 
       // 5. Inserir em financial_transactions (DRE da Loja)
-      await db
-        .from("financial_transactions")
-        .insert({
-          store_id: identity.store_id,
-          type: "revenue_pos_sale",
-          amount_cents: order.total_cents || 0,
-          order_id: orderId,
-          description: `Comanda ${order.table_identifier || orderId.slice(0, 8)} - Salão`,
-          category: "Vendas de Salão (Comandas)",
-          reference_date: new Date().toISOString().split("T")[0],
-          created_by: identity.id,
-        })
-        .catch((finErr: any) => {
-          console.warn("[closePdvComanda] Erro ao registrar transação financeira:", finErr.message);
-        });
+      try {
+        await db
+          .from("financial_transactions")
+          .insert({
+            store_id: identity.store_id,
+            type: "revenue_pos_sale",
+            amount_cents: order.total_cents || 0,
+            order_id: orderId,
+            description: `Comanda ${order.table_identifier || orderId.slice(0, 8)} - Salão`,
+            category: "Vendas de Salão (Comandas)",
+            reference_date: new Date().toISOString().split("T")[0],
+            created_by: identity.id,
+          });
+      } catch (finErr: any) {
+        console.warn("[closePdvComanda] Erro ao registrar transação financeira:", finErr.message);
+      }
 
       // 6. Baixa física de estoque e movimentações
       const orderItems = (order.order_items as any[]) || [];
       for (const item of orderItems) {
         if (item.variant_id && item.qty) {
-          await db
-            .from("stock_movements")
-            .insert({
-              variant_id: item.variant_id,
-              store_id: identity.store_id,
-              movement_type: "sale",
-              qty: -1 * Math.abs(item.qty),
-              reference_type: "order",
-              reference_id: orderId,
-              channel_source: "pdv",
-              note: `Venda Comanda ${order.table_identifier || orderId.slice(0, 8)}: ${item.product_title}`,
-              actor_id: identity.id,
-            })
-            .catch(() => null);
+          try {
+            await db
+              .from("stock_movements")
+              .insert({
+                variant_id: item.variant_id,
+                store_id: identity.store_id,
+                movement_type: "sale",
+                qty: -1 * Math.abs(item.qty),
+                reference_type: "order",
+                reference_id: orderId,
+                channel_source: "pdv",
+                note: `Venda Comanda ${order.table_identifier || orderId.slice(0, 8)}: ${item.product_title}`,
+                actor_id: identity.id,
+              });
+          } catch {}
 
           // Abater saldo em product_variants
           const { data: currentVar } = await db
@@ -1101,14 +1104,15 @@ export const closePdvComanda = createServerFn({ method: "POST" })
             .maybeSingle();
 
           if (currentVar && currentVar.stock_on_hand != null) {
-            await db
-              .from("product_variants")
-              .update({
-                stock_on_hand: Number(currentVar.stock_on_hand) - Math.abs(item.qty),
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", item.variant_id)
-              .catch(() => null);
+            try {
+              await db
+                .from("product_variants")
+                .update({
+                  stock_on_hand: Number(currentVar.stock_on_hand) - Math.abs(item.qty),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", item.variant_id);
+            } catch {}
           }
         }
       }

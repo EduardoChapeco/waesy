@@ -49,11 +49,13 @@ import { ThermalExpirationTicketModal } from "@/components/kitchen/thermal-expir
 interface GastronomyPantryHubProps {
   storeId?: string;
   storeName?: string;
+  nicheId?: string;
 }
 
 export function GastronomyPantryHub({
   storeId,
   storeName = "Waesy Gastronomia",
+  nicheId = "gastronomy",
 }: GastronomyPantryHubProps) {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"supplies" | "recipes" | "production" | "waste" | "labels">("supplies");
@@ -155,6 +157,59 @@ export function GastronomyPantryHub({
   const [recipeShelfLifeHours, setRecipeShelfLifeHours] = useState("72");
   const [recipeStorageInstructions, setRecipeStorageInstructions] = useState("Etiquetar e refrigerar entre 0°C e 4°C");
   const [recipeItems, setRecipeItems] = useState<{ supplyId: string; quantity: number; unit: any; notes?: string }[]>([]);
+  const [editingRecipeId, setEditingRecipeId] = useState<string | null>(null);
+  const [newIngredientSupplyId, setNewIngredientSupplyId] = useState<string>("");
+  const [newIngredientQty, setNewIngredientQty] = useState<string>("1");
+  const [purchaseConversionFactor, setPurchaseConversionFactor] = useState<string>("1");
+
+  const hubTerms = useMemo(() => {
+    if (nicheId === "services" || nicheId === "health_beauty") {
+      return {
+        suppliesTab: "Almoxarifado & Químicos",
+        recipesTab: "Protocolos, Kits & POP",
+        subRecipeBadge: "Mistura / Kit Técnico",
+        dishBadge: "Protocolo de Serviço",
+        produceAction: "Preparar Kit / Mistura",
+        popLabel: "POP (Protocolo de Aplicação Passo a Passo)",
+        guideTitle: "Arquitetura Recursiva: Insumos → Misturas/Kits → Procedimentos & Agenda",
+        guideDesc: "Cadastre frascos/químicos no almoxarifado, monte misturas ou kits esterilizados e vincule aos serviços para baixa automática e cálculo de margem real.",
+      };
+    }
+    if (nicheId === "automotive") {
+      return {
+        suppliesTab: "Fluidos, Peças & Insumos",
+        recipesTab: "Kits de Revisão & POP",
+        subRecipeBadge: "Kit de Bancada",
+        dishBadge: "Ordem de Serviço",
+        produceAction: "Montar Kit na Bancada",
+        popLabel: "POP (Checklist Técnico de Bancada)",
+        guideTitle: "Arquitetura Recursiva: Fluidos/Peças → Kits de Revisão → Serviços/OS",
+        guideDesc: "Controle tambores por litro/ml com fator de conversão na compra, monte kits de revisão e vincule às Ordens de Serviço.",
+      };
+    }
+    if (nicheId === "retail") {
+      return {
+        suppliesTab: "Insumos & Embalagens",
+        recipesTab: "Cestas, Kits & Montagem",
+        subRecipeBadge: "Sub-Kit / Base",
+        dishBadge: "Kit / Cesta Final",
+        produceAction: "Montar Lote de Kits",
+        popLabel: "POP (Padrão de Montagem e Embalagem)",
+        guideTitle: "Arquitetura Recursiva: Itens Base → Sub-Kits → Cestas & Variações",
+        guideDesc: "Vincule itens e embalagens a kits compostos ou variações de produtos. Ao esgotar um item gargalo, o kit é pausado automaticamente.",
+      };
+    }
+    return {
+      suppliesTab: "Insumos & Despensa",
+      recipesTab: "Fichas Técnicas & POP",
+      subRecipeBadge: "Sub-Receita (Base/Molho/Massa)",
+      dishBadge: "Prato Final do Cardápio",
+      produceAction: "Produzir Lote na Cozinha",
+      popLabel: "POP (Modo de Preparo Passo a Passo)",
+      guideTitle: "Arquitetura Recursiva: Insumos → Sub-Receitas (Chilli/Massas) → Pratos & Sabores",
+      guideDesc: "Produza lotes de sub-receitas (que entram automaticamente no estoque como insumos compostos) e vincule-os ao produto principal ou a sabores/adicionais específicos.",
+    };
+  }, [nicheId]);
 
   // Form State: Ordem de Produção
   const [productionBatches, setProductionBatches] = useState("1");
@@ -185,6 +240,18 @@ export function GastronomyPantryHub({
       resetSupplyForm();
     },
     onError: (err: any) => toast.error(err.message || "Erro ao salvar insumo."),
+  });
+
+  const updateRecipeMutation = useMutation({
+    mutationFn: updateRecipe,
+    onSuccess: () => {
+      toast.success("Ficha técnica atualizada com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["gastronomy-recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["store-recipes-sub"] });
+      setIsRecipeModalOpen(false);
+      resetRecipeForm();
+    },
+    onError: (err: any) => toast.error(err.message || "Erro ao atualizar ficha técnica."),
   });
 
   const createRecipeMutation = useMutation({
@@ -269,6 +336,9 @@ export function GastronomyPantryHub({
     setRecipeShelfLifeHours("72");
     setRecipeStorageInstructions("Etiquetar e refrigerar entre 0°C e 4°C");
     setRecipeItems([]);
+    setEditingRecipeId(null);
+    setNewIngredientSupplyId("");
+    setNewIngredientQty("1");
   };
 
   const handleOpenTicketForSupply = (supply: any) => {

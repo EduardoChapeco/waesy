@@ -71,6 +71,7 @@ export const createRecipeSchema = z.object({
 
 export const updateRecipeSchema = z.object({
   recipeId: z.string().uuid(),
+
   name: z.string().min(2).optional(),
   type: z.enum(["sub_recipe", "product_dish"]).optional(),
   yieldQuantity: z.number().positive().optional(),
@@ -87,7 +88,13 @@ export const linkProductRecipeSchema = z.object({
   productId: z.string().uuid().optional().nullable(),
   variantId: z.string().uuid().optional().nullable(),
   modifierId: z.string().uuid().optional().nullable(),
-  recipeId: z.string().uuid(),
+  bookingServiceId: z.string().uuid().optional().nullable(),
+  supplyId: z.string().uuid().optional().nullable(),
+  recipeId: z.string().uuid().optional().nullable(),
+  unit: z.string().default("un"),
+  isPrimaryGargalo: z.boolean().default(true),
+  modifierOptionLabel: z.string().optional().nullable(),
+
   quantity: z.number().positive().default(1),
 });
 
@@ -97,6 +104,7 @@ export const unlinkProductRecipeSchema = z.object({
 
 export const createProductionOrderSchema = z.object({
   recipeId: z.string().uuid(),
+
   targetSupplyId: z.string().uuid().optional().nullable(),
   batchesCount: z.number().positive().default(1),
   producedBy: z.string().optional(),
@@ -116,6 +124,8 @@ export const registerWasteSchema = z.object({
 export const recordSupplyPurchaseSchema = z.object({
   supplyId: z.string().uuid(),
   quantity: z.number().positive("Quantidade recebida deve ser positiva"),
+  conversionFactor: z.number().positive("Fator de conversão deve ser positivo").default(1),
+  purchaseUnit: z.string().optional(),
   totalCostCents: z.number().int().nonnegative("Valor total da compra não pode ser negativo"),
   supplierId: z.string().uuid().optional().nullable(),
   invoiceNumber: z.string().optional(),
@@ -477,6 +487,7 @@ export const updateRecipe = createServerFn({ method: "POST" })
       if (items.length > 0) {
         const itemsPayload = items.map((item, idx) => ({
           recipe_id: data.recipeId,
+  
           supply_id: item.supplyId,
           quantity: item.quantity,
           unit: item.unit,
@@ -547,7 +558,13 @@ export const linkProductRecipe = createServerFn({ method: "POST" })
         product_id: data.productId || null,
         variant_id: data.variantId || null,
         modifier_id: data.modifierId || null,
-        recipe_id: data.recipeId,
+        booking_service_id: data.bookingServiceId || null,
+        supply_id: data.supplyId || null,
+        recipe_id: data.recipeId || null,
+        unit: data.unit || "un",
+        is_primary_gargalo: data.isPrimaryGargalo ?? true,
+        modifier_option_label: data.modifierOptionLabel || null,
+
         quantity: data.quantity,
       })
       .select()
@@ -766,7 +783,78 @@ export const createProductionOrder = createServerFn({ method: "POST" })
     }
 
     // 4. Se tiver insumo alvo de entrada (ex: Massa pronta ou Chilli no estoque), credita
-    if (data.targetSupplyId) {
+    // 4. Se tiver insumo alvo de entrada (ex: Massa pronta ou Chilli no estoque) ou for sub_recipe, credita em supplies
+    let resolvedTargetSupplyId = data.targetSupplyId || null;
+    if (!resolvedTargetSupplyId && recipe.type === "sub_recipe") {
+      const { data: existingComposite } = await supabase
+        .from("supplies")
+        .select("id")
+        .eq("store_id", storeId)
+        .ilike("name", recipe.name)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingComposite?.id) {
+        resolvedTargetSupplyId = existingComposite.id;
+      } else {
+        const unitMap: Record<string, string> = { porcoes: "porcao" };
+        const safeUnit = unitMap[recipe.yield_unit] || recipe.yield_unit || "un";
+        const { data: createdComposite } = await supabase
+          .from("supplies")
+          .insert({
+            store_id: storeId,
+            name: recipe.name,
+            category: "semi_acabado",
+            unit: safeUnit,
+            stock_on_hand: 0,
+            min_stock_alert: 2,
+            cost_cents_per_unit: Math.round(totalCostCents / Math.max(1, actualYield)),
+            is_composite: true,
+            status: "active",
+          })
+          .select("id")
+          .maybeSingle();
+        if (createdComposite?.id) {
+          resolvedTargetSupplyId = createdComposite.id;
+        }
+      }
+    }
+
+    if (resolvedTargetSupplyId) {
+      const { data: targetSupply } = await supabase
+        .from("supplies")
+        .select("stock_on_hand")
+        .eq("id", resolvedTargetSupplyId)
+        .eq("store_id", storeId)
+        .single();
+
+      const curTarget = Number(targetSupply?.stock_on_hand || 0);
+      const newTarget = curTarget + actualYield;
+      const unitYieldCost = Math.round(totalCostCents / Math.max(1, actualYield));
+
+      await supabase
+        .from("supplies")
+        .update({
+          stock_on_hand: newTarget,
+          cost_cents_per_unit: unitYieldCost,
+          is_composite: true,
+          updated_at: now.toISOString(),
+        })
+        .eq("id", resolvedTargetSupplyId)
+        .eq("store_id", storeId);
+
+      await supabase.from("supply_inventory_movements").insert({
+        store_id: storeId,
+        supply_id: resolvedTargetSupplyId,
+        movement_type: "production_yield",
+        quantity_delta: actualYield,
+        balance_after: newTarget,
+        unit_cost_cents: unitYieldCost,
+        reference_id: order.id,
+        notes: `Rendimento do lote ${batchCode} (${recipe.name})`,
+      });
+    }
+    if (false && data.targetSupplyId) {
       const { data: targetSupply } = await supabase
         .from("supplies")
         .select("stock_on_hand")
@@ -902,6 +990,14 @@ export const registerWaste = createServerFn({ method: "POST" })
           unit_cost_cents: unitCost,
           notes: `Descarte/Perda: ${data.reason} (${data.reasonDescription || ""})`,
         });
+
+        if (newStock <= 0) {
+          await checkAndAutoPauseProductsBySupply(supabase, storeId, data.supplyId);
+        }
+      }
+      if (false) {
+        const _unused = ({
+        });
       }
     }
 
@@ -1031,7 +1127,8 @@ export const recordSupplyPurchaseEntry = createServerFn({ method: "POST" })
 
     const currentStock = Number(supply.stock_on_hand || 0);
     const currentCost = Number(supply.cost_cents_per_unit || 0);
-    const addedQty = data.quantity;
+    const conversionFactor = Number(data.conversionFactor || 1);
+    const addedQty = data.quantity * conversionFactor;
     const newStock = currentStock + addedQty;
 
     // Novo Custo Médio Unitário Ponderado
@@ -1061,7 +1158,7 @@ export const recordSupplyPurchaseEntry = createServerFn({ method: "POST" })
       balance_after: newStock,
       unit_cost_cents: unitCostAdded,
       reference_id: data.invoiceNumber || null,
-      notes: `Entrada de Compras NF: ${data.invoiceNumber || "S/N"} - ${data.notes || ""}`,
+      notes: `Entrada de Compras NF: ${data.invoiceNumber || "S/N"} (Qtd Compra: ${data.quantity} x Fator ${conversionFactor} = +${addedQty}) - ${data.notes || ""}`,
     });
 
     return {
@@ -1115,11 +1212,21 @@ export const deductSuppliesForOrder = createServerFn({ method: "POST" })
       if (productId) {
         const { data: productRecipes } = await supabase
           .from("product_recipes")
-          .select("quantity, unit, supply_id, recipe_id, is_primary_gargalo")
+          .select("quantity, unit, supply_id, recipe_id, modifier_id, modifier_option_label, is_primary_gargalo")
           .eq("product_id", productId);
 
         if (productRecipes && productRecipes.length > 0) {
+          const selectedModifierIds = new Set<string>(
+            Array.isArray(item.selected_options)
+              ? item.selected_options
+                  .map((o: any) => String(o?.option_value_id || o?.id || ""))
+                  .filter(Boolean)
+              : [],
+          );
           for (const pr of productRecipes) {
+            if (pr.modifier_id && !selectedModifierIds.has(String(pr.modifier_id))) {
+              continue;
+            }
             if (pr.supply_id) {
               const qtyToDeduct = Number(pr.quantity || 1) * itemQty;
               await applySupplyDeduction(
@@ -1260,6 +1367,186 @@ async function applySupplyDeduction(
     quantity_delta: -qty,
     balance_after: newStock,
     reference_id: orderId,
+    notes,
+  });
+
+  if (newStock <= 0) {
+    await checkAndAutoPauseProductsBySupply(supabase, storeId, supplyId);
+  }
+}
+
+export async function checkAndAutoPauseProductsBySupply(
+  supabase: any,
+  storeId: string,
+  supplyId: string,
+): Promise<string[]> {
+  const pausedProductIds = new Set<string>();
+
+  // 1. Produtos que usam este insumo diretamente como gargalo primário
+  const { data: directLinks } = await supabase
+    .from("product_recipes")
+    .select("product_id, is_primary_gargalo")
+    .eq("store_id", storeId)
+    .eq("supply_id", supplyId);
+
+  for (const link of directLinks || []) {
+    if (link.product_id && link.is_primary_gargalo !== false) {
+      pausedProductIds.add(link.product_id);
+    }
+  }
+
+  // 2. Receitas que usam este insumo e produtos vinculados a essas receitas como gargalo primário
+  const { data: recipeItems } = await supabase
+    .from("recipe_items")
+    .select("recipe_id")
+    .eq("supply_id", supplyId);
+
+  const affectedRecipeIds = Array.from(
+    new Set((recipeItems || []).map((r: any) => r.recipe_id).filter(Boolean)),
+  );
+
+  if (affectedRecipeIds.length > 0) {
+    const { data: recipeLinks } = await supabase
+      .from("product_recipes")
+      .select("product_id, is_primary_gargalo")
+      .eq("store_id", storeId)
+      .in("recipe_id", affectedRecipeIds);
+
+    for (const link of recipeLinks || []) {
+      if (link.product_id && link.is_primary_gargalo !== false) {
+        pausedProductIds.add(link.product_id);
+      }
+    }
+  }
+
+  const productIdsArray = Array.from(pausedProductIds);
+  if (productIdsArray.length > 0) {
+    await supabase
+      .from("products")
+      .update({ status: "draft", updated_at: new Date().toISOString() })
+      .eq("store_id", storeId)
+      .in("id", productIdsArray);
+  }
+
+  return productIdsArray;
+}
+
+export const createSupplierSchema = z.object({
+  tradeName: z.string().min(2, "Nome fantasia do fornecedor é obrigatório"),
+  corporateName: z.string().optional(),
+  documentNumber: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+});
+
+export const createSupplier = createServerFn({ method: "POST" })
+  .validator((d: unknown) => createSupplierSchema.parse(d))
+  .handler(async ({ data }) => {
+    const { storeId, supabase } = await getAuthenticatedStoreContext();
+
+    const { data: created, error } = await supabase
+      .from("suppliers")
+      .insert({
+        store_id: storeId,
+        trade_name: data.tradeName.trim(),
+        corporate_name: data.corporateName?.trim() || data.tradeName.trim(),
+        document_number: data.documentNumber?.trim() || null,
+        phone: data.phone?.trim() || null,
+        email: data.email?.trim() || null,
+        status: "active",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Falha ao cadastrar fornecedor: ${error.message}`);
+    }
+
+    return created;
+  });
+
+export const deductSuppliesForServiceAppointmentSchema = z.object({
+  appointmentId: z.string().uuid(),
+  bookingServiceId: z.string().uuid(),
+  serviceTitle: z.string().optional(),
+});
+
+export const deductSuppliesForServiceAppointment = createServerFn({ method: "POST" })
+  .validator((d: unknown) => deductSuppliesForServiceAppointmentSchema.parse(d))
+  .handler(async ({ data }) => {
+    const { storeId, supabase } = await getAuthenticatedStoreContext();
+
+    // 1. Idempotência por appointmentId
+    const { data: existingMovements } = await supabase
+      .from("supply_inventory_movements")
+      .select("id")
+      .eq("store_id", storeId)
+      .eq("reference_id", data.appointmentId)
+      .eq("movement_type", "order_consumption")
+      .limit(1);
+
+    if (existingMovements && existingMovements.length > 0) {
+      return { success: true, alreadyDeducted: true, suppliesDeductedCount: 0 };
+    }
+
+    // 2. Busca fichas/insumos vinculados ao serviço em product_recipes (booking_service_id)
+    const { data: serviceLinks } = await supabase
+      .from("product_recipes")
+      .select("quantity, unit, supply_id, recipe_id, is_primary_gargalo")
+      .eq("store_id", storeId)
+      .eq("booking_service_id", data.bookingServiceId);
+
+    let deductedCount = 0;
+    const label = data.serviceTitle || `Serviço #${data.bookingServiceId.slice(0, 8)}`;
+
+    for (const link of serviceLinks || []) {
+      const qty = Number(link.quantity || 1);
+      if (link.supply_id) {
+        await applySupplyDeduction(
+          supabase,
+          storeId,
+          link.supply_id,
+          qty,
+          data.appointmentId,
+          `Consumo de procedimento (${label})`,
+        );
+        deductedCount++;
+      } else if (link.recipe_id) {
+        const { data: recipe } = await supabase
+          .from("recipes")
+          .select("yield_quantity, recipe_items(supply_id, quantity)")
+          .eq("id", link.recipe_id)
+          .single();
+
+        if (recipe && recipe.recipe_items) {
+          const yieldQty = Number(recipe.yield_quantity || 1);
+          for (const ri of recipe.recipe_items) {
+            if (ri.supply_id) {
+              const riQty = (Number(ri.quantity || 1) / yieldQty) * qty;
+              await applySupplyDeduction(
+                supabase,
+                storeId,
+                ri.supply_id,
+                riQty,
+                data.appointmentId,
+                `Consumo kit/mistura em procedimento (${label})`,
+              );
+              deductedCount++;
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      success: true,
+      appointmentId: data.appointmentId,
+      suppliesDeductedCount: deductedCount,
+    };
+  });
+
+function _noopEnd(_x: any) {
+  return ({
     notes,
   });
 }

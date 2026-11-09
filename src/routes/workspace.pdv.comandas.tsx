@@ -2,11 +2,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Receipt, Check, CreditCard, Banknote, QrCode, Printer, Download, UtensilsCrossed, Clock, Plus, ShoppingBag, AlertTriangle, Users, LayoutGrid, ListFilter, ExternalLink, Columns, UserPlus, Search } from "lucide-react";
+import { ArrowLeft, Receipt, Check, CreditCard, Banknote, QrCode, Printer, Download, UtensilsCrossed, Clock, Plus, ShoppingBag, AlertTriangle, Users, LayoutGrid, ListFilter, ExternalLink, Columns, UserPlus, Search, Calendar, CalendarDays } from "lucide-react";
 import { getSalonTablesOverview, closePdvComanda, openTableComanda, requestTableBill } from "@/services/order.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listCustomers } from "@/services/crm.functions";
-import { getStoreFloorPlan } from "@/services/reservations.functions";
+import { getStoreFloorPlan, listStoreReservations, createStoreReservation, updateReservationStatus } from "@/services/reservations.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { QuickWaiterOrderModal } from "@/components/pos/quick-waiter-order-modal";
 import { FloorPlanEditorSheet } from "@/components/reservations/floor-plan-editor-sheet";
@@ -86,7 +86,13 @@ function PdvComandasPage() {
  const queryClient = useQueryClient();
  const navigate = useNavigate();
 
- const [activeView, setActiveView] = useState<"grid" | "list">("grid");
+ const [activeView, setActiveView] = useState<"grid" | "list" | "reservations">("grid");
+
+  const { data: reservations = [] } = useQuery({
+    queryKey: ["salon-reservations-comandas"],
+    queryFn: () => listStoreReservations({ data: { filter: "upcoming" } }),
+    refetchInterval: 15000,
+  });
  const [selectedTable, setSelectedTable] = useState<any | null>(null);
  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
  const [comandaToCheckout, setComandaToCheckout] = useState<any | null>(null);
@@ -268,6 +274,15 @@ function PdvComandasPage() {
  <ListFilter className="size-3.5" />
  Comandas ({activeComandas.length})
  </Button>
+ <Button
+ size="sm"
+ variant={activeView === "reservations" ? "default" : "ghost"}
+ className="h-7 px-3 text-xs font-semibold rounded-lg gap-2 min-h-11 sm:min-h-0"
+ onClick={() => setActiveView("reservations")}
+ >
+ <CalendarDays className="size-3.5" />
+ Reservas ({reservations.length})
+ </Button>
  </div>
 
  <Button
@@ -352,6 +367,9 @@ function PdvComandasPage() {
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
  {tables.map((table: any) => {
  const config = STATUS_CONFIG[table.status as TableStatus] || STATUS_CONFIG.free;
+ const tableRes = reservations.find(
+   (r: any) => String(r.assigned_table || r.table_number || r.table_id) === String(table.table_number)
+ );
 
  return (
  <button
@@ -377,6 +395,11 @@ function PdvComandasPage() {
  </div>
 
  <div className="flex items-center gap-2">
+ {tableRes && (
+   <span className="text-3xs font-mono font-bold text-primary bg-primary/10 px-1 py-1 rounded border border-primary/20" title={`Reservada para ${tableRes.customer_name}`}>
+     {tableRes.reservation_time?.slice(0, 5)}
+   </span>
+ )}
  <span className={cn("size-2 rounded-full", config.dotClass)} />
  <span className={cn("text-xs font-bold uppercase", config.textClass)}>
  {config.label}
@@ -500,6 +523,54 @@ function PdvComandasPage() {
                     </div>
  </div>
  ))}
+ </div>
+ ) : (
+ /* ── ABA 3: RESERVAS DO DIA INTEGRADAS AO SALAO ── */
+ <div className="space-y-4">
+ <div className="flex items-center justify-between p-4 rounded-xl border border-border/80 bg-card">
+ <div>
+ <h3 className="text-sm font-bold text-foreground">Reservas Ativas do Salão</h3>
+ <p className="text-xs text-muted-foreground">Clientes agendados com alocação automática nas mesas</p>
+ </div>
+ <Button
+ asChild
+ size="sm"
+ className="h-11 min-h-11 sm:h-9 sm:min-h-0 gap-2 font-bold text-xs"
+ >
+ <Link to="/workspace/reservas">
+ <Plus className="size-3.5" />
+ <span>Gerenciar / Nova Reserva</span>
+ </Link>
+ </Button>
+ </div>
+
+ {reservations.length === 0 ? (
+ <div className="p-12 text-center rounded-xl border border-dashed border-border bg-card/50 text-muted-foreground text-xs space-y-2">
+ <CalendarDays className="size-8 mx-auto text-muted-foreground/60" />
+ <p className="font-semibold text-foreground">Nenhuma reserva agendada para hoje.</p>
+ <p className="text-muted-foreground">Novas reservas realizadas pelo delivery ou WhatsApp aparecerão aqui.</p>
+ </div>
+ ) : (
+ <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+ {reservations.map((res: any) => (
+ <div key={res.id} className="p-4 rounded-xl border border-border/80 bg-card space-y-3">
+ <div className="flex items-start justify-between gap-2">
+ <div>
+ <span className="font-bold text-sm text-foreground block">{res.customer_name || "Cliente"}</span>
+ <span className="text-xs text-muted-foreground font-mono">{res.customer_phone || "Sem telefone"}</span>
+ </div>
+ <Badge variant="outline" className="border-primary/40 text-primary font-mono text-xs">
+ Mesa {res.table_number || res.assigned_table || "A Definir"}
+ </Badge>
+ </div>
+ <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-2 font-mono">
+ <span>{res.party_size || 2} pessoas</span>
+ <span className="font-bold text-foreground">{res.reservation_time?.slice(0, 5) || "Horário flexível"}</span>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
  </div>
  )
  )}

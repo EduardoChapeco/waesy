@@ -50,7 +50,7 @@ function playOrderChime() {
   playNewOrderAlert();
 }
 
-function KDSPage() {
+export function KDSPage({ initialOrdersProp, storeProp }: { initialOrdersProp?: any[]; storeProp?: any } = {}) {
   const { isCompact: isMobile } = useWindowSizeClass();
   const router = useRouter();
   const loaderData = (Route.useLoaderData() as any) || {};

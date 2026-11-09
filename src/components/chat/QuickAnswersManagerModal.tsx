@@ -6,41 +6,106 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listStoreQuickAnswers, createStoreQuickAnswer, deleteStoreQuickAnswer } from "@/services/chat-operations.functions";
+import {
+  listStoreQuickAnswers,
+  createStoreQuickAnswer,
+  deleteStoreQuickAnswer,
+  interpolateTemplateVariables,
+} from "@/services/chat-operations.functions";
 import { toast } from "sonner";
-import { Zap, Plus, Trash2, Search, Loader2 } from "lucide-react";
+import { Zap, Plus, Trash2, Search, Loader2, Pencil } from "lucide-react";
+
+const TEMPLATE_CATEGORIES = [
+  { value: "boas_vindas", label: "Boas-vindas" },
+  { value: "cobranca", label: "Cobrança" },
+  { value: "confirmacao", label: "Confirmação" },
+  { value: "pos_venda", label: "Pós-venda" },
+  { value: "orcamento", label: "Orçamento" },
+  { value: "geral", label: "Geral / Saudação" },
+  { value: "financeiro", label: "Financeiro / PIX" },
+  { value: "vendas", label: "Vendas / Catálogo" },
+  { value: "suporte", label: "Suporte / Dúvidas" },
+  { value: "logistica", label: "Logística / Rastreio" },
+];
+
+const DYNAMIC_VARIABLES = [
+  { token: "{{nome_cliente}}", label: "Nome do Cliente" },
+  { token: "{{numero_pedido}}", label: "Nº Pedido" },
+  { token: "{{link_pagamento}}", label: "Link Pagamento" },
+  { token: "{{loja}}", label: "Nome da Loja" },
+  { token: "{{telefone}}", label: "Telefone" },
+];
 
 interface QuickAnswersManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectAnswer?: (text: string) => void;
+  onUpdated?: () => void;
+  customerName?: string;
+  customerPhone?: string;
+  storeName?: string;
+  orderNumber?: string;
+  paymentLink?: string;
 }
 
 export function QuickAnswersManagerModal({
   isOpen,
   onClose,
   onSelectAnswer,
+  onUpdated,
+  customerName,
+  customerPhone,
+  storeName,
+  orderNumber,
+  paymentLink,
 }: QuickAnswersManagerModalProps) {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [isCreating, setIsCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
   const [shortcut, setShortcut] = useState("");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
-  const [category, setCategory] = useState("geral");
+  const [category, setCategory] = useState("boas_vindas");
 
   const { data: quickAnswers = [], isLoading } = useQuery({
-    queryKey: ["workspace-quick-answers", searchTerm],
-    queryFn: () => listStoreQuickAnswers({ data: { search: searchTerm || undefined } }),
+    queryKey: ["workspace-quick-answers", searchTerm, categoryFilter],
+    queryFn: () =>
+      listStoreQuickAnswers({
+        data: {
+          search: searchTerm || undefined,
+          category: categoryFilter !== "all" ? categoryFilter : undefined,
+        },
+      }),
     enabled: isOpen,
   });
+
+  const resetForm = () => {
+    setEditingId(null);
+    setShortcut("");
+    setTitle("");
+    setMessage("");
+    setCategory("boas_vindas");
+    setIsCreating(false);
+  };
+
+  const handleEditItem = (item: any) => {
+    setEditingId(item.id);
+    setShortcut(item.shortcut || "");
+    setTitle(item.title || "");
+    setMessage(item.message || "");
+    setCategory(item.category || "geral");
+    setIsCreating(true);
+  };
 
   const createMutation = useMutation({
     mutationFn: () =>
       createStoreQuickAnswer({
         data: {
+          id: editingId || undefined,
           shortcut,
           title,
           message,
@@ -48,13 +113,10 @@ export function QuickAnswersManagerModal({
         },
       }),
     onSuccess: () => {
-      toast.success("Resposta rápida salva!");
-      setShortcut("");
-      setTitle("");
-      setMessage("");
-      setCategory("geral");
-      setIsCreating(false);
+      toast.success(editingId ? "Template atualizado!" : "Resposta rápida salva!");
+      resetForm();
       queryClient.invalidateQueries({ queryKey: ["workspace-quick-answers"] });
+      onUpdated?.();
     },
     onError: (err: any) => {
       toast.error(err?.message || "Erro ao salvar resposta rápida.");
@@ -66,6 +128,7 @@ export function QuickAnswersManagerModal({
     onSuccess: () => {
       toast.success("Resposta rápida excluída.");
       queryClient.invalidateQueries({ queryKey: ["workspace-quick-answers"] });
+      onUpdated?.();
     },
     onError: (err: any) => {
       toast.error(err?.message || "Erro ao excluir resposta rápida.");
@@ -159,23 +222,40 @@ export function QuickAnswersManagerModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="geral" className="text-xs">Geral / Saudação</SelectItem>
-                  <SelectItem value="financeiro" className="text-xs">Financeiro / Pagamentos</SelectItem>
-                  <SelectItem value="vendas" className="text-xs">Vendas / Produtos</SelectItem>
-                  <SelectItem value="suporte" className="text-xs">Suporte / Dúvidas</SelectItem>
-                  <SelectItem value="logistica" className="text-xs">Logística / Rastreio</SelectItem>
+                  {TEMPLATE_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value} className="text-xs">
+                      {cat.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold text-foreground">
-                Conteúdo da Mensagem
-              </Label>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Label className="text-xs font-semibold text-foreground">
+                  Conteúdo da Mensagem
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  Inserir variável dinâmica:
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {DYNAMIC_VARIABLES.map((variable) => (
+                  <button
+                    key={variable.token}
+                    type="button"
+                    onClick={() => setMessage((prev) => `${prev}${prev.endsWith(" ") || !prev ? "" : " "}${variable.token}`)}
+                    className="h-11 min-h-11 px-3 rounded-lg border border-border bg-muted/40 hover:bg-muted text-xs font-mono text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {variable.token}
+                  </button>
+                ))}
+              </div>
               <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Digite a resposta padrão que será enviada ao cliente..."
+                placeholder="Ex.: Olá {{nome_cliente}}! Seu pedido {{numero_pedido}} está confirmado. Finalize em {{link_pagamento}}"
                 rows={4}
                 className="rounded-xl text-xs focus-visible:ring-2 focus-visible:ring-primary resize-none"
                 required
@@ -186,7 +266,7 @@ export function QuickAnswersManagerModal({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsCreating(false)}
+                onClick={resetForm}
                 disabled={createMutation.isPending}
                 className="h-11 rounded-xl text-xs font-semibold px-4 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               >
@@ -199,12 +279,36 @@ export function QuickAnswersManagerModal({
                 className="h-11 rounded-xl text-xs font-semibold px-5 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {createMutation.isPending && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />}
-                <span>Salvar Macro</span>
+                <span>{editingId ? "Salvar Alterações" : "Salvar Macro"}</span>
               </Button>
             </DialogFooter>
           </form>
         ) : (
           <div className="space-y-4 py-2">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "all", label: "Todas" },
+                { value: "boas_vindas", label: "Boas-vindas" },
+                { value: "cobranca", label: "Cobrança" },
+                { value: "confirmacao", label: "Confirmação" },
+                { value: "pos_venda", label: "Pós-venda" },
+                { value: "orcamento", label: "Orçamento" },
+              ].map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setCategoryFilter(cat.value)}
+                  className={`h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    categoryFilter === cat.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted/30 text-muted-foreground border-border hover:text-foreground"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
             {/* Campo de Busca */}
             <div className="relative">
               <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -245,7 +349,7 @@ export function QuickAnswersManagerModal({
                           {item.title}
                         </span>
                         <span className="text-xs text-muted-foreground font-mono">
-                          ({item.category})
+                          ({TEMPLATE_CATEGORIES.find((c) => c.value === item.category)?.label || item.category})
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2">
@@ -260,7 +364,14 @@ export function QuickAnswersManagerModal({
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            onSelectAnswer(item.message);
+                            const interpolated = interpolateTemplateVariables(item.message, {
+                              customerName,
+                              customerPhone,
+                              storeName,
+                              orderNumber,
+                              paymentLink,
+                            });
+                            onSelectAnswer(interpolated);
                             onClose();
                           }}
                           className="h-11 rounded-lg text-xs font-semibold px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
@@ -268,6 +379,17 @@ export function QuickAnswersManagerModal({
                           Usar
                         </Button>
                       )}
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditItem(item)}
+                        className="size-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        title="Editar macro"
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
 
                       <Button
                         type="button"

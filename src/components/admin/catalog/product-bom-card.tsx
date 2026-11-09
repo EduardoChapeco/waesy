@@ -47,7 +47,7 @@ export function ProductBomCard({
 
  const { data: storeRecipes = [], isLoading: isLoadingRecipes } = useQuery({
    queryKey: ["store-recipes-sub"],
-   queryFn: () => listRecipes({ type: "sub_recipe" }),
+   queryFn: () => listRecipes({ data: { type: "sub_recipe" } } as any),
  });
 
  // Form State para adicionar item rápido

@@ -1,5 +1,19 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-460: Auditoria Forense e Remediação End-to-End do Módulo de Chat, Conexão WhatsApp QR Code, Templates, Automações e Painel Rápido 360º do Cliente
+- **Data:** 2026-11-08
+- **Contexto:** Falha P0 na geração/sincronização do QR Code WhatsApp (violação de CHECK constraint `qr_pending`, typo `last_healthcheck_at` no webhook, ausência de restart/connect assíncrono para Evolution v1/v2 e falta de normalização `data:image/png;base64,`), além de lacunas no CRUD de templates com variáveis dinâmicas, nas automações de atendimento por loja e no Painel Rápido 360º para contatos e visitantes WhatsApp.
+- **Decisão:** (1) Saneado `whatsapp-provider-webhook.server.ts`, `whatsapp-channel-instances.functions.ts` e `whatsapp-qr-connect-modal.tsx` com suporte a Evolution v1/v2, normalização de Data URI/SVG, persistência de QR Code no `public_config` e estados `loading`/`expired`/`connected`/`error`; (2) Completado CRUD de templates (`store_quick_answers` + `chat_quick_replies`) com interpolação de `{{nome_cliente}}`, `{{numero_pedido}}`, `{{link_pagamento}}`, `{{loja}}` e `{{telefone}}` em `QuickAnswersManagerModal.tsx`, `QuickRepliesMenu.tsx` e `workspace.whatsapp.automacoes.tsx`; (3) Conectadas automações reais (`support_schedules`, `greeting_message`, `away_hours`, `keyword_auto_reply`, `funnel_stage_changed`) com upsert válido em `whatsapp_outbox`; (4) Expandido `Customer360Sidebar` + `getCustomer360Context` + `updateCustomerFunnelStage` com suporte a visitantes WhatsApp, LTV/inadimplência (`customer_debt_ledger`), notas internas em tempo real, tags, reenvio de link de pedido/orçamento e ações rápidas em 1 clique.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.24, B.25, B.26, B.31.
+- **Consequências:** Fluxo omnichannel de Chat e WhatsApp 100% operacional de ponta a ponta sem mocks, validado por 18 testes automatizados, `tsc --noEmit` (Exit Code 0) e catraca do Design Lint aprovada (0 P0, 0 regressões).
+
+## DEC-459: Auditoria Forense e Remediação End-to-End de Isolamento e Semântica Multi-Nicho no Workspace
+- **Data:** 2026-11-08
+- **Contexto:** Operadores de nichos não alimentícios (`tourism`, `services`, `retail`, `rental`, `real_estate`, `legal`, `healthcare`, `events`, `creator`) podiam visualizar rotas, atalhos ou seções de catálogo exclusivas de Gastronomia/Delivery (como KDS Cozinha, Mesas & Comandas, Tempo de Preparo, Despacho de Motoboys, Receitas Culinárias e Ficha Técnica de Insumos/BOM).
+- **Decisão:** (1) Saneado `NICHE_MANIFEST_REGISTRY` em `src/lib/niches/niche-manifest.ts` restringindo `"kds"` exclusivamente a `gastronomy` e `"couriers"` apenas a verticais com frota de entrega urbana (`gastronomy`, `retail`, `automotive`); (2) Endurecido `getMasterSidebarPillars`, `PATH_TO_NICHE_MODULE` e grupos verticais em `src/lib/workspace-navigation.ts`, renomeando `GROUP_GASTRO_ORDERS` para `"Salão & Delivery"`, removendo `/workspace/pedidos/gestor` de grupos não gastronômicos e filtrando itens incompatíveis nos 11 Pilares Mestre; (3) Aplicado `NicheOperationalGuard` nas rotas `/workspace/pedidos/frota`, `/workspace/conteudo/receitas` e `/workspace/pedidos/entregadores`, além de atualizar sugestões por nicho (`tourism`, `services`, `retail`, `rental`, `gastronomy`) em `niche-operational-guard.tsx` e filtrar o catálogo de ferramentas em `workspace-all-tools-dialog.tsx`; (4) Isolada a aba e card de `Insumos` (`ProductBomCard`) e especificações de prato/bebida em `workspace.catalogo.produtos.novo.tsx`, `workspace.catalogo.produtos.$id.tsx`, `product-basic-tab.tsx` e `product-pricing-tab.tsx` exclusivamente para negócios alimentícios.
+- **Fundamentação:** AGENTS.md B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11; Invariante de Isolamento Multi-Nicho.
+- **Consequências:** Isolamento 100% determinístico entre os nichos verticais no Workspace, validado por 30/30 testes automatizados de pureza semântica e isolamento de rotas, `tsc --noEmit` limpo e catraca do Design Lint aprovada.
+
 ## DEC-458: Motor de Insumos, Fichas Técnicas, Sub-Receitas (BOM), Estoque Teórico com Gargalo de Produção (Auto-Pause) e Etiquetas Térmicas de Validade
 - **Data:** 2026-11-08
 - **Contexto:**
@@ -173,6 +187,16 @@
 - **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.22, B.26; skills `supabase`, `web-performance`, `accessibility-floor`.
 - **Consequências:** Persistência total das alterações de funis em tempo real no Supabase, adaptação transparente para todos os 17 nichos, e erradicação de inconsistências visuais no CRM de atendimento.
 
+
+## DEC-450: Desambiguacao End-to-End de Pedidos/KDS, Despoluicao de Menus e Refinamento Visual do Brand Kit
+- **Data:** 2026-11-08
+- **Contexto:** Auditoria forense e remediacao end-to-end de interfaces quebradas exibidas em capturas reais do Workspace: truncamento de cor no Brand Kit ("Nao infor"), card de cores rotulado como "Tipografia", poluicao de ferramentas de consultoria (BMC/SWOT) no menu de restaurantes, e duplicacao entre a tela legada de pedidos e o Gestor de Pedidos Multicanal/KDS da Cozinha.
+- **Decisao:**
+  1. **Brand Kit Refinado (`src/routes/workspace.marketing.brand-kit.tsx`):** Substituicao do placeholder prolixo "Nao informado" por "#HEX" centralizado em caixa mono com largura adequada. Amostras de cores agora contam com anel de contraste interno (`ring-1 ring-inset ring-white/10 dark:ring-white/10`) evitando fusao com fundos escuros. Card de superficies renomeado de "Tipografia" para "Superficies & Contraste". Removida a badge de ruido "Design System" do cabecalho.
+  2. **Desambiguacao Pedidos & KDS (`src/routes/workspace.pedidos.index.tsx`, `src/lib/workspace-navigation.ts`):** Erradicado o bloco legado de mini-cozinha de 3 colunas de `workspace.pedidos.index.tsx`. O menu de Gastronomia agora possui rotas unificadas e limpas: Gestor de Pedidos (Multicanal iFood/WhatsApp/Delivery), KDS da Cozinha (monitor operacional), Mesas & Reservas, Tempo de Preparo (SLA inpage) e Frente de Caixa.
+  3. **Despoluicao de Menus de Marketing:** Ferramentas academicas ("Modelo BMC" e "Matriz SWOT") foram desvinculadas do submenu cotidiano de marketing, permanecendo catalogadas na busca global "Todas as Ferramentas" (Cmd+K).
+  4. **Piso de Qualidade e CI:** Zero violacoes P0, aprovacao plena na catraca mecanica de CI (`node scripts/design-lint.mjs --ratchet`) e 100% de sucesso nos testes automatizados de isolamento de rotas e tempos de preparo (19/19 testes).
+- **Fundamentacao:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.26.
 
 ## DEC-449: Arquitetura Two-Tier de Sidebar Master Nativa, Sincronização de Foto de Perfil, Padronização Global de Squircles Sólidos Sem Borda, Grade Anti-Sanfona e Kanbans de Colunas Altas
 - **Data:** 2026-11-06

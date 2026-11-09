@@ -157,9 +157,10 @@ function EditProductPage() {
                 brand: edit.liveBrand,
                 selling_unit: product?.selling_unit || "un",
               }}
-              variants={edit.variants}
+
               images={edit.mediaUrls}
               variants={edit.variants}
+
               activePreviewImage={edit.activePreviewImage}
               setActivePreviewImage={edit.setActivePreviewImage}
               store={store}
@@ -178,7 +179,7 @@ function EditProductPage() {
             { id: "variantes", label: nicheCtx.variationsSectionTitle, icon: <LayoutList className="size-4" /> },
             { id: "opcoes", label: "Adicionais", icon: <SlidersHorizontal className="size-4" /> },
             { id: "ofertas", label: "Ofertas", icon: <Zap className="size-4" /> },
-            { id: "ficha-tecnica", label: "Insumos", icon: <Boxes className="size-4" /> },
+            ...(nicheCtx.isFoodBusiness ? [{ id: "ficha-tecnica", label: "Insumos", icon: <Boxes className="size-4" /> }] : []),
             { id: "fiscal", label: "Fiscal", icon: <ShieldCheck className="size-4" /> },
           ]}
         >
@@ -238,8 +239,9 @@ function EditProductPage() {
               productTypes={productTypes}
               brands={brands}
               nicheCtx={nicheCtx}
-              variants={edit.variants}
+
               onSavingChange={edit.setIsSavingGeneral}
+              variants={edit.variants}
               onTitleChange={edit.setLiveTitle}
               onDescriptionChange={edit.setLiveDescription}
               onBrandChange={edit.setLiveBrand}
@@ -311,8 +313,9 @@ function EditProductPage() {
             </div>
             <ProductEditVariantsManager
               product={product}
-              variants={edit.variants}
+
               onVariantsChange={edit.setVariants}
+              variants={edit.variants}
               onSave={edit.saveVariants}
               isSaving={edit.isSavingVariants}
               wholesaleEnabled={edit.isWholesaleEnabled}
@@ -344,7 +347,7 @@ function EditProductPage() {
             />
           </div>
 
-          <div id="ficha-tecnica" className="scroll-mt-32 pt-12 border-t">
+          {nicheCtx.isFoodBusiness && (<div id="ficha-tecnica" className="scroll-mt-32 pt-12 border-t">
             <ProductBomCard
               initialItems={edit.bomItems}
               productPriceCents={edit.livePriceCents}
@@ -353,7 +356,7 @@ function EditProductPage() {
             />
           </div>
 
-          <div id="fiscal" className="scroll-mt-32 pt-12 border-t">
+          )}<div id="fiscal" className="scroll-mt-32 pt-12 border-t">
             <ProductFiscalTab
               fiscalData={edit.fiscalData}
               onFiscalDataChange={edit.handleFiscalDataChange}

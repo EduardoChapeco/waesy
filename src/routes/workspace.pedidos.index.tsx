@@ -25,6 +25,8 @@ import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 import { generateContractFromOrder } from "@/services/contracts.functions";
+import { KDSPage } from "@/routes/workspace.pedidos.gestor";
+import { Kanban } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/pedidos/")({
  head: () => ({ meta: [{ title: "Pedidos | Workspace Waesy" }] }),
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/workspace/pedidos/")({
  component: AdminOrdersPage,
 });
 
-type ViewMode = "emissions" | "kitchen" | "picking" | "service_flow" | "table";
+type ViewMode = "emissions" | "kitchen" | "picking" | "service_flow" | "table" | "kanban";
 
 function getStatusLabel(status: string, semantics?: any) {
  const isGastro = semantics?.nicheId === "gastronomy";
@@ -110,8 +112,7 @@ function AdminOrdersPage() {
     }
     if (isGastro) {
       return [
-        { id: "table" as ViewMode, label: "Tabela de Pedidos", icon: List },
-        { id: "kitchen" as ViewMode, label: "Cozinha (KDS)", icon: ChefHat },
+        { id: "table" as ViewMode, label: "Histórico de Vendas", icon: List },
       ];
     }
     if (isRetail) {
@@ -132,7 +133,7 @@ function AdminOrdersPage() {
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (isTourism) return "emissions";
-    if (isGastro) return "table";
+    if (isGastro) return "kanban";
     if (isRetail) return "picking";
     if (isServices) return "service_flow";
     return "table";
@@ -307,7 +308,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/turismo/grupos">
-       <Users className="size-3.5 text-primary" />
+       <Users className="size-4 text-primary" />
        <span>Grupos e Excursões</span>
       </Link>
      </Button>
@@ -317,7 +318,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
      >
       <Link to="/workspace/turismo/propostas" search={{ new: true }}>
-       <Layers className="size-3.5" />
+       <Layers className="size-4" />
        <span>+ Nova Proposta</span>
       </Link>
      </Button>
@@ -329,7 +330,7 @@ function AdminOrdersPage() {
      className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground"
     >
      <Link to="/workspace/agenda">
-      <Calendar className="size-3.5" />
+      <Calendar className="size-4" />
       <span>Grade de Agendamentos</span>
      </Link>
     </Button>
@@ -342,7 +343,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/pedidos/gestor">
-       <ChefHat className="size-3.5 text-primary" />
+       <ChefHat className="size-4 text-primary" />
        <span>Gestor em Tempo Real</span>
       </Link>
      </Button>
@@ -353,7 +354,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/pdv">
-       <Store className="size-3.5 text-primary" />
+       <Store className="size-4 text-primary" />
        <span>Frente de Caixa (PDV)</span>
       </Link>
      </Button>
@@ -367,7 +368,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/pedidos/expedicao">
-       <PackageCheck className="size-3.5 text-primary" />
+       <PackageCheck className="size-4 text-primary" />
        <span>Central WMS</span>
       </Link>
      </Button>
@@ -378,7 +379,7 @@ function AdminOrdersPage() {
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
       <Link to="/workspace/pdv">
-       <Store className="size-3.5 text-primary" />
+       <Store className="size-4 text-primary" />
        <span>Frente de Caixa (PDV)</span>
       </Link>
      </Button>
@@ -594,7 +595,7 @@ function AdminOrdersPage() {
  className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 min-h-11 gap-1"
  >
  <span>Liberar Voucher</span>
- <ArrowRight className="size-3.5" />
+ <ArrowRight className="size-4" />
  </Button>
  <Button
  asChild
@@ -668,7 +669,7 @@ function AdminOrdersPage() {
  disabled={isProcessing}
  className="flex-1 rounded-lg font-bold text-xs h-11 min-h-11 border-success/40 text-success hover:bg-success/10"
  >
- <CheckCircle2 className="size-3.5 mr-1" />
+ <CheckCircle2 className="size-4 mr-1" />
  Concluir Viagem
  </Button>
  <Button
@@ -929,7 +930,7 @@ function AdminOrdersPage() {
  className="flex-1 rounded-lg font-bold bg-primary text-primary-foreground text-xs h-11 min-h-11 gap-1"
  >
  <span>Pronto p/ Despacho</span>
- <ArrowRight className="size-3.5" />
+ <ArrowRight className="size-4" />
  </Button>
  <Button
  asChild
@@ -1084,7 +1085,7 @@ function AdminOrdersPage() {
    >
     <Link to="/workspace/pedidos/expedicao">
      <span>Abrir Módulo WMS Completo</span>
-     <ArrowRight className="size-3.5" />
+     <ArrowRight className="size-4" />
     </Link>
    </Button>
   </div>
@@ -1198,7 +1199,7 @@ function AdminOrdersPage() {
  : "border-border bg-card"
  }`}
  >
- {isChecked && <CheckCircle2 className="size-3.5" />}
+ {isChecked && <CheckCircle2 className="size-4" />}
  </div>
  <div className="min-w-0">
  <p
@@ -1333,7 +1334,7 @@ function AdminOrdersPage() {
 
               {/* Input de busca flexível */}
               <div className="relative flex-1 min-w-0 sm:w-64 sm:flex-initial">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
                   placeholder={isTourism ? "Buscar passageiro ou token..." : "Buscar por código ou cliente..."}
                   value={searchQuery}
@@ -1436,7 +1437,7 @@ function AdminOrdersPage() {
                         </DropdownMenuLabel>
                         <DropdownMenuItem asChild>
                           <Link to={`/workspace/pedidos/${order.id}` as never}>
-                            <Eye className="size-3.5 mr-2" />
+                            <Eye className="size-4 mr-2" />
                             {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
                           </Link>
                         </DropdownMenuItem>
@@ -1445,23 +1446,23 @@ function AdminOrdersPage() {
                             to={`/workspace/pedidos/${order.id}/recibo` as never}
                             target="_blank"
                           >
-                            <ReceiptText className="size-3.5 mr-2" />
+                            <ReceiptText className="size-4 mr-2" />
                             {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => setSelectedShippingLabelOrderId(order.id)}>
-                          <Printer className="size-3.5 mr-2 text-primary" />
+                          <Printer className="size-4 mr-2 text-primary" />
                           {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                         </DropdownMenuItem>
                         <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
-                          <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                          <FileText className="size-4 mr-2 text-indigo-600 dark:text-indigo-400" />
                           Gerar Contrato e Assinatura Digital
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
 
                         {order.status === "awaiting_payment" && (
                           <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleQuickApprove(order.id)}>
-                            <CheckCircle2 className="size-3.5 mr-2 text-success" />
+                            <CheckCircle2 className="size-4 mr-2 text-success" />
                             {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
                           </DropdownMenuItem>
                         )}
@@ -1470,7 +1471,7 @@ function AdminOrdersPage() {
                           <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
                           >
-                            <CheckCircle2 className="size-3.5 mr-2 text-primary" />
+                            <CheckCircle2 className="size-4 mr-2 text-primary" />
                             {isTourism ? "Liberar Voucher p/ Embarque" : "Pronto p/ Retirada"}
                           </DropdownMenuItem>
                         )}
@@ -1479,7 +1480,7 @@ function AdminOrdersPage() {
                           <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                             onClick={() => handleStatusChange(order.id, "delivered")}
                           >
-                            <PackageCheck className="size-3.5 mr-2 text-success" />
+                            <PackageCheck className="size-4 mr-2 text-success" />
                             {isTourism ? "Confirmar Viagem Concluída" : "Confirmar Entrega"}
                           </DropdownMenuItem>
                         )}
@@ -1489,7 +1490,7 @@ function AdminOrdersPage() {
                             onClick={() => handleStatusChange(order.id, "cancelled")}
                             className="text-destructive focus:text-destructive"
                           >
-                            <XCircle className="size-3.5 mr-2" />
+                            <XCircle className="size-4 mr-2" />
                             Cancelar
                           </DropdownMenuItem>
                         )}
@@ -1597,7 +1598,7 @@ function AdminOrdersPage() {
                               </DropdownMenuLabel>
                               <DropdownMenuItem asChild>
                                 <Link to={`/workspace/pedidos/${order.id}` as never}>
-                                  <Eye className="size-3.5 mr-2" />
+                                  <Eye className="size-4 mr-2" />
                                   {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
                                 </Link>
                               </DropdownMenuItem>
@@ -1606,23 +1607,23 @@ function AdminOrdersPage() {
                                   to={`/workspace/pedidos/${order.id}/recibo` as never}
                                   target="_blank"
                                 >
-                                  <ReceiptText className="size-3.5 mr-2" />
+                                  <ReceiptText className="size-4 mr-2" />
                                   {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => setSelectedShippingLabelOrderId(order.id)}>
-                                <Printer className="size-3.5 mr-2 text-primary" />
+                                <Printer className="size-4 mr-2 text-primary" />
                                 {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
                               </DropdownMenuItem>
                               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleGenerateContract(order.id)}>
-                                <FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                                <FileText className="size-4 mr-2 text-indigo-600 dark:text-indigo-400" />
                                 Gerar Contrato e Assinatura Digital
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
 
                               {order.status === "awaiting_payment" && (
                                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => handleQuickApprove(order.id)}>
-                                  <CheckCircle2 className="size-3.5 mr-2 text-success" />
+                                  <CheckCircle2 className="size-4 mr-2 text-success" />
                                   {isTourism ? "Aprovar Pagamento da Reserva" : "Aprovar Pagamento"}
                                 </DropdownMenuItem>
                               )}
@@ -1631,7 +1632,7 @@ function AdminOrdersPage() {
                                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                   onClick={() => handleStatusChange(order.id, "ready_for_pickup")}
                                 >
-                                  <CheckCircle2 className="size-3.5 mr-2 text-primary" />
+                                  <CheckCircle2 className="size-4 mr-2 text-primary" />
                                   {isTourism ? "Liberar Voucher p/ Embarque" : "Pronto p/ Retirada"}
                                 </DropdownMenuItem>
                               )}
@@ -1640,7 +1641,7 @@ function AdminOrdersPage() {
                                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
                                   onClick={() => handleStatusChange(order.id, "delivered")}
                                 >
-                                  <PackageCheck className="size-3.5 mr-2 text-success" />
+                                  <PackageCheck className="size-4 mr-2 text-success" />
                                   {isTourism ? "Confirmar Viagem Concluída" : "Confirmar Entrega"}
                                 </DropdownMenuItem>
                               )}
@@ -1650,7 +1651,7 @@ function AdminOrdersPage() {
                                   onClick={() => handleStatusChange(order.id, "cancelled")}
                                   className="text-destructive focus:text-destructive"
                                 >
-                                  <XCircle className="size-3.5 mr-2" />
+                                  <XCircle className="size-4 mr-2" />
                                   Cancelar
                                 </DropdownMenuItem>
                               )}

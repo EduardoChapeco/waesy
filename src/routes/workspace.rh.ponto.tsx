@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, MapPin, ShieldCheck, UserCheck, AlertCircle, CheckCircle2, Edit3, Search, Users, TrendingUp, SlidersHorizontal, FileText, Printer, Calendar, Wallet, Stethoscope } from "lucide-react";

@@ -18,12 +18,40 @@ export const listQuickAnswersSchema = z.object({
 });
 
 export const createQuickAnswerSchema = z.object({
+  id: z.string().uuid().optional(),
   shortcut: z.string().min(1).max(50),
   title: z.string().min(1).max(100),
   message: z.string().min(1).max(2000),
   category: z.string().default("geral"),
   media_url: z.string().url().optional().nullable(),
 });
+
+export interface TemplateVariableContext {
+  customerName?: string | null;
+  customerPhone?: string | null;
+  storeName?: string | null;
+  orderNumber?: string | null;
+  paymentLink?: string | null;
+}
+
+export function interpolateTemplateVariables(
+  rawText: string,
+  ctx: TemplateVariableContext = {},
+): string {
+  const customerName = ctx.customerName?.trim() || "Cliente";
+  const customerPhone = ctx.customerPhone?.trim() || "";
+  const storeName = ctx.storeName?.trim() || "Nossa Loja";
+  const orderNumber = ctx.orderNumber?.trim() || "#PEDIDO";
+  const paymentLink = ctx.paymentLink?.trim() || "https://waesy.app/checkout";
+
+  return rawText
+    .replace(/\{\{\s*nome_cliente\s*\}\}/gi, customerName)
+    .replace(/\{\{\s*nome\s*\}\}/gi, customerName)
+    .replace(/\{\{\s*telefone\s*\}\}/gi, customerPhone)
+    .replace(/\{\{\s*loja\s*\}\}/gi, storeName)
+    .replace(/\{\{\s*numero_pedido\s*\}\}/gi, orderNumber)
+    .replace(/\{\{\s*link_pagamento\s*\}\}/gi, paymentLink);
+}
 
 export const deleteQuickAnswerSchema = z.object({
   id: z.string().uuid(),
@@ -69,6 +97,8 @@ export const listStoreQuickAnswers = createServerFn({ method: "GET" })
   .validator(listQuickAnswersSchema.optional())
   .handler(async ({ data }) => {
     try {
+      const category = data?.category;
+      const search = data?.search;
       const identity = await getServerIdentity();
       assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
       const db = getServerClient();
@@ -79,12 +109,12 @@ export const listStoreQuickAnswers = createServerFn({ method: "GET" })
         .eq("store_id", identity.store_id)
         .order("shortcut", { ascending: true });
 
-      if (data?.category && data.category !== "all") {
-        query = query.eq("category", data.category);
+      if (category && category !== "all") {
+        query = query.eq("category", category);
       }
 
-      if (data?.search && data.search.trim()) {
-        const term = `%${data.search.trim().toLowerCase()}%`;
+      if (search && search.trim()) {
+        const term = `%${search.trim().toLowerCase()}%`;
         query = query.or(`shortcut.ilike.${term},title.ilike.${term},message.ilike.${term}`);
       }
 
@@ -102,31 +132,72 @@ export const createStoreQuickAnswer = createServerFn({ method: "POST" })
   .validator(createQuickAnswerSchema)
   .handler(async ({ data: input }) => {
     try {
+      const { id, shortcut, title, message, category, media_url } = input;
       const identity = await getServerIdentity();
       assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
       const db = getServerClient();
 
-      const cleanShortcut = input.shortcut.replace(/^\//, "").toLowerCase().trim();
+      const cleanShortcut = shortcut.replace(/^\//, "").toLowerCase().trim();
+      const nowIso = new Date().toISOString();
 
-      const { data: item, error } = await db
-        .from("store_quick_answers")
+      let item: any = null;
+      if (id) {
+        const { data: updated, error: updateErr } = await db
+          .from("store_quick_answers")
+          .update({
+            shortcut: cleanShortcut,
+            title: title.trim(),
+            message: message.trim(),
+            category: category || "geral",
+            media_url: media_url || null,
+            updated_at: nowIso,
+          })
+          .eq("id", id)
+          .eq("store_id", identity.store_id)
+          .select()
+          .single();
+        if (updateErr) throw updateErr;
+        item = updated;
+      } else {
+        const { data: upserted, error: upsertErr } = await db
+          .from("store_quick_answers")
+          .upsert(
+            {
+              store_id: identity.store_id,
+              shortcut: cleanShortcut,
+              title: title.trim(),
+              message: message.trim(),
+              category: category || "geral",
+              media_url: media_url || null,
+              created_by: identity.id,
+              updated_at: nowIso,
+            },
+            { onConflict: "store_id,shortcut" }
+          )
+          .select()
+          .single();
+        if (upsertErr) throw upsertErr;
+        item = upserted;
+      }
+
+      // Espelha em chat_quick_replies para paridade com autocomplete /atalho
+      await db
+        .from("chat_quick_replies")
         .upsert(
           {
             store_id: identity.store_id,
-            shortcut: cleanShortcut,
-            title: input.title.trim(),
-            message: input.message.trim(),
-            category: input.category || "geral",
-            media_url: input.media_url || null,
+            shortcut: cleanShortcut.slice(0, 30),
+            title: title.trim().slice(0, 60),
+            content: message.trim().slice(0, 1000),
+            category: category || "geral",
+            media_url: media_url || null,
             created_by: identity.id,
-            updated_at: new Date().toISOString(),
+            updated_at: nowIso,
           },
           { onConflict: "store_id,shortcut" }
         )
-        .select()
-        .single();
+        .then(() => null, () => null);
 
-      if (error) throw error;
       return item;
     } catch (e: any) {
       if (e instanceof SupabaseUnconfiguredError) throw e;
@@ -143,6 +214,13 @@ export const deleteStoreQuickAnswer = createServerFn({ method: "POST" })
       assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
       const db = getServerClient();
 
+      const { data: existing } = await db
+        .from("store_quick_answers")
+        .select("shortcut")
+        .eq("id", id)
+        .eq("store_id", identity.store_id)
+        .maybeSingle();
+
       const { error } = await db
         .from("store_quick_answers")
         .delete()
@@ -150,6 +228,16 @@ export const deleteStoreQuickAnswer = createServerFn({ method: "POST" })
         .eq("store_id", identity.store_id);
 
       if (error) throw error;
+
+      if (existing?.shortcut) {
+        await db
+          .from("chat_quick_replies")
+          .delete()
+          .eq("store_id", identity.store_id)
+          .eq("shortcut", existing.shortcut)
+          .then(() => null, () => null);
+      }
+
       return { success: true };
     } catch (e: any) {
       if (e instanceof SupabaseUnconfiguredError) throw e;

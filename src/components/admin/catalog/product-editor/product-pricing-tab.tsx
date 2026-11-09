@@ -69,6 +69,13 @@ export function ProductPricingTab({
   store,
 }: ProductPricingTabProps) {
   // Cálculo reativo dos limites da matriz 2D para governança estrita de preço e estoque (DEC-433)
+  const [isLabelModalOpen, setIsLabelModalOpen] = React.useState(false);
+  const { data: channelStatus, isLoading: isChannelsLoading, isError: isChannelsError } = useQuery({
+    queryKey: ["store-channel-integrations-status"],
+    queryFn: () => getStoreChannelIntegrationsStatus(),
+    staleTime: 60_000,
+  });
+  const isFoodOrMarket = Boolean(nicheCtx?.isFoodBusiness || nicheCtx?.isSupermarketBusiness);
   const matrixStats = React.useMemo(() => {
     if (!variantsMatrix || variantsMatrix.length === 0) return null;
     const basePrice = Number(formValues.price_cents || 0);
@@ -365,7 +372,7 @@ export function ProductPricingTab({
           </div>
         )}
 
-        {/* Modalidades de Atendimento & Entrega */}
+        {!isTravelPackageMode && (
         <div className="space-y-2 pt-2 border-t border-border/40">
           <Label className="text-xs font-bold text-foreground">Modalidades de Atendimento & Entrega</Label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -375,7 +382,7 @@ export function ProductPricingTab({
                   <Truck className="size-4 text-primary" />
                   <span className="text-xs font-bold text-foreground">Entrega / Delivery</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Envio via motoboy ou frete</p>
+                <p className="text-xs text-muted-foreground">{nicheCtx?.isFoodBusiness ? "Envio via motoboy ou tele-entrega" : "Envio por transportadora ou entrega local"}</p>
               </div>
               <Controller
                 control={control}
@@ -407,9 +414,9 @@ export function ProductPricingTab({
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <Utensils className="size-4 text-primary" />
-                  <span className="text-xs font-bold text-foreground">Consumo no Local</span>
+                  <span className="text-xs font-bold text-foreground">{nicheCtx?.isFoodBusiness ? "Consumo no Local" : "Atendimento Presencial"}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Venda presencial em mesa</p>
+                <p className="text-xs text-muted-foreground">{nicheCtx?.isFoodBusiness ? "Venda presencial em mesa" : "Atendimento no estabelecimento"}</p>
               </div>
               <Controller
                 control={control}
@@ -422,6 +429,7 @@ export function ProductPricingTab({
           </div>
         </div>
 
+        )}
         {/* Promoções, Cupons e Validade */}
         <div className="space-y-3 pt-2 border-t border-border/40">
           <div className="flex items-center justify-between gap-4 p-3 rounded-lg bg-muted/20 border border-border/50">
@@ -619,8 +627,8 @@ export function ProductPricingTab({
             <div className="flex flex-col justify-between p-3 rounded-lg border border-border/60 bg-muted/10 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-foreground">Aplicativos de Entrega</span>
-                  <p className="text-xs text-muted-foreground">Integrar cardápio com plataformas de entrega parceiras.</p>
+                  <span className="text-xs font-bold text-foreground">{isFoodOrMarket ? "Aplicativos de Entrega" : "Canais & Portais Parceiros"}</span>
+                  <p className="text-xs text-muted-foreground">{isFoodOrMarket ? "Integrar cardápio com plataformas de entrega parceiras." : "Sincronizar catálogo com portais e marketplaces parceiros."}</p>
                 </div>
                 <Controller
                   control={control}

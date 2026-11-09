@@ -197,32 +197,43 @@ function ColorSwatch({
   onChange: (v: string) => void;
   description?: string;
 }) {
+  const isFilled = Boolean(value && /^#[0-9a-fA-F]{3,8}$/.test(value));
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border border-border/40 bg-card hover:bg-card/60 transition-colors">
+    <div className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-card/80 transition-colors">
       <div className="relative flex-shrink-0">
         <div
-          className="w-10 h-10 rounded-lg border border-border/40 cursor-pointer"
+          className={cn(
+            "w-10 h-10 rounded-lg border border-border/60 ring-1 ring-inset ring-white/10 dark:ring-white/10 cursor-pointer flex items-center justify-center transition-transform hover:scale-105",
+            !isFilled && "bg-muted/30"
+          )}
           // design-lint-ignore DL-05 reason:"Preview dinâmico de amostras de cores do Brand Kit" expiry:"2027-12-31"
-          style={{ backgroundColor: value }}
-        />
+          style={{ backgroundColor: isFilled ? value : undefined }}
+        >
+          {!isFilled && (
+            <span className="text-3xs font-mono text-muted-foreground/60 select-none">--</span>
+          )}
+        </div>
         <input
           type="color"
           // design-lint-ignore DL-01 reason:"Cor preta fallback para seletor nativo de cor" expiry:"2027-12-31"
-          value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : "#000000"}
+          value={isFilled ? value : "#000000"}
           onChange={(e) => onChange(e.target.value)}
           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-lg"
+          title={`Escolher ${label}`}
         />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-foreground leading-none">{label}</p>
-        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
-        <p className="text-xs font-mono text-muted-foreground mt-1 uppercase">{value}</p>
+        {description && <p className="text-xs text-muted-foreground mt-1 truncate">{description}</p>}
+        <p className="text-xs font-mono text-muted-foreground mt-1 uppercase">
+          {isFilled ? value : "Não definido"}
+        </p>
       </div>
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-8 w-28 text-xs font-mono text-right border-border/40 bg-transparent"
-        placeholder="Não informado"
+        className="h-8 w-24 text-xs font-mono text-center uppercase border-border/60 bg-background/50 focus-visible:ring-1 focus-visible:ring-ring"
+        placeholder="#HEX"
         maxLength={7}
       />
     </div>
@@ -456,9 +467,6 @@ export function BrandKitPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                  Design System
-                </span>
                 {lastSaved && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
@@ -616,7 +624,7 @@ export function BrandKitPage() {
               </div>
             </SectionCard>
 
-            <SectionCard title="Tipografia" icon={Layers}>
+            <SectionCard title="Superfícies & Contraste" icon={Layers}>
               <div className="space-y-3">
                 <ColorSwatch
                   label="Background Dark"

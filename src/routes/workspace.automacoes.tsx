@@ -29,6 +29,30 @@ export const Route = createFileRoute("/workspace/automacoes")({
 });
 
 const TRIGGER_META: Record<string, { label: string; icon: any; color: string; defaultTemplate?: string }> = {
+  greeting_message: {
+    label: "Mensagem de Saudação (1º Contato)",
+    icon: MessageSquare,
+    color: "text-success bg-success/10 border-success/30",
+    defaultTemplate: "Olá {nome}! Seja bem-vindo ao nosso atendimento oficial. Como podemos ajudar hoje?",
+  },
+  away_hours: {
+    label: "Ausência / Fora de Horário Comercial",
+    icon: Clock,
+    color: "text-warning-strong bg-warning/10 border-warning/30",
+    defaultTemplate: "Olá {nome}, recebemos sua mensagem! Nosso expediente encerrou, mas retornaremos no próximo horário útil.",
+  },
+  keyword_auto_reply: {
+    label: "Resposta Rápida por Palavra-Chave",
+    icon: Zap,
+    color: "text-primary bg-primary/10 border-primary/30",
+    defaultTemplate: "Olá {nome}! Seguem as informações solicitadas e o link oficial: {link_dossie}",
+  },
+  funnel_stage_changed: {
+    label: "Mudança de Etapa do Funil CRM",
+    icon: GitBranch,
+    color: "text-primary bg-primary/10 border-primary/30",
+    defaultTemplate: "Olá {nome}, seu atendimento avançou para a etapa de proposta! Confira os detalhes em: {link_dossie}",
+  },
   customer_birthday: {
     label: "Aniversário do Cliente",
     icon: Calendar,

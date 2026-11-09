@@ -7,7 +7,7 @@ import { QuickAnswersManagerModal } from "@/components/chat/QuickAnswersManagerM
 import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
 import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
 import { WhatsAppTeamSectorsDrawer } from "@/components/chat/whatsapp-team-sectors-drawer";
-import { listStoreQuickAnswers } from "@/services/chat-operations.functions";
+import { listStoreQuickAnswers, interpolateTemplateVariables } from "@/services/chat-operations.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import {
   listChatThreads,
@@ -88,7 +88,7 @@ import { StructuredMessageView } from "@/components/chat/structured-message-view
 import { playMessageChime } from "@/lib/audio-chimes";
 import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.functions";
 import {
-  listWorkspaceWhatsAppInstances,
+  listWorkspaceWhatsAppInstances, normalizeWhatsAppQrDataUri,
   type WhatsAppChannelInstanceDTO,
 } from "@/services/whatsapp-channel-instances.functions";
 import { Link } from "@tanstack/react-router";
@@ -491,10 +491,11 @@ function WorkspaceAtendimentoPage() {
   const [isSending, setIsSending] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [showCustomer360, setShowCustomer360] = useState(true);
+  const [mobileCustomer360Open, setMobileCustomer360Open] = useState(false);
   const [isWhisperMode, setIsWhisperMode] = useState(false);
   const [aiAutoReplyPerThread, setAiAutoReplyPerThread] = useState<Record<string, boolean>>({});
   const [assignedAgentPerThread, setAssignedAgentPerThread] = useState<Record<string, string>>({});
-  const [quickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || [
+  const [baseQuickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || [
     { id: "qr_ola", shortcut: "ola", title: "Saudação de Boas-Vindas", content: "Olá {{nome}}! Seja bem-vindo ao atendimento oficial da {{loja}}. Como podemos ajudar?", category: "geral" },
     { id: "qr_pix", shortcut: "pix", title: "Chave PIX", content: "Nossa chave PIX oficial é gerada diretamente no seu pedido com confirmação automática em segundos!", category: "financeiro" },
     { id: "qr_horarios", shortcut: "horarios", title: "Horários de Expediente", content: "Atendemos de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", category: "suporte" },
@@ -502,6 +503,7 @@ function WorkspaceAtendimentoPage() {
     { id: "qr_cardapio", shortcut: "cardapio", title: "Cardápio e Catálogo", content: "Confira todos os itens do nosso cardápio atualizado no link da vitrine!", category: "vendas" }
   ]);
 
+  const quickReplies = useMemo<QuickReplyItem[]>(() => { const byShortcut = new Map<string, QuickReplyItem>(); for (const item of baseQuickReplies) byShortcut.set(String(item.shortcut || "").toLowerCase(), item); for (const m of storeMacros as any[]) { const sc = String(m.shortcut || "").toLowerCase(); if (sc) byShortcut.set(sc, { id: m.id, shortcut: sc, title: m.title || sc, content: m.message || m.content || "", category: m.category || "geral" }); } return Array.from(byShortcut.values()); }, [baseQuickReplies, storeMacros]);
   // Ticket Resolver Modal state
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
@@ -1382,7 +1384,7 @@ function WorkspaceAtendimentoPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowCustomer360(!showCustomer360)}
+                    onClick={() => { if (typeof window !== "undefined" && window.innerWidth < 1024) setMobileCustomer360Open((prev) => !prev); else setShowCustomer360((prev) => !prev); }}
                     className={cn(
                       "h-11 text-xs font-bold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
                       showCustomer360 ? "bg-muted" : "",
@@ -1619,6 +1621,7 @@ function WorkspaceAtendimentoPage() {
                     searchTerm={text}
                     quickReplies={quickReplies}
                     customerName={activeThread.customer?.full_name}
+                    customerPhone={activeThread.customer?.phone}
                     storeName={store?.name}
                     onSelectReply={(expanded) => {
                       setText(expanded);
@@ -1636,7 +1639,7 @@ function WorkspaceAtendimentoPage() {
                       className={cn(
                         "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                         !isWhisperMode
-                          ? "bg-background text-foreground shadow-2xs font-bold"
+                          ? "bg-background text-foreground font-bold"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -1649,7 +1652,7 @@ function WorkspaceAtendimentoPage() {
                       className={cn(
                         "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                         isWhisperMode
-                          ? "bg-warning/20 text-warning-strong  shadow-2xs font-bold"
+                          ? "bg-warning/20 text-warning-strong font-bold"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -1718,7 +1721,7 @@ function WorkspaceAtendimentoPage() {
                     <button
                       key={macro.cmd}
                       type="button"
-                      onClick={() => setText(macro.text)}
+                      onClick={() => setText(interpolateTemplateVariables(macro.text, { customerName: activeThread.customer?.full_name, customerPhone: activeThread.customer?.phone, storeName: store?.name }))}
                       className="h-11 min-h-11 px-3 py-2 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     >
                       /{macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
@@ -1892,6 +1895,7 @@ function WorkspaceAtendimentoPage() {
                         ...prev,
                         ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
+                      if (activeThread?.id) assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
                       toast.success("Atendente atribuído à conversa!");
                     }}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
@@ -1911,12 +1915,15 @@ function WorkspaceAtendimentoPage() {
                 threadId={activeThread?.id}
                 guestName={activeThread?.customer?.full_name}
                 guestPhone={activeThread?.customer?.phone}
+                onQuickSendMessage={(msgText) => setText(msgText)}
+                onOpenTransfer={() => setTransferModalOpen(true)}
+                onOpenSchedule={() => setScheduleModalOpen(true)}
               />
             </div>
           )}
 
           {/* Drawer Sheet Mobile/Tablet do Perfil 360 */}
-          <Sheet open={Boolean(activeThread && showCustomer360)} onOpenChange={setShowCustomer360}>
+          <Sheet open={Boolean(activeThread && mobileCustomer360Open)} onOpenChange={setMobileCustomer360Open}>
             <SheetContent side="right" className="lg:hidden w-full sm:max-w-md p-0 overflow-y-auto">
               <SheetHeader className="p-4 border-b border-border/60">
                 <SheetTitle className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
@@ -1984,6 +1991,7 @@ function WorkspaceAtendimentoPage() {
                         ...prev,
                         ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
+                      if (activeThread?.id) assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
                       toast.success("Atendente atribuído à conversa!");
                     }}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
@@ -2003,6 +2011,9 @@ function WorkspaceAtendimentoPage() {
                   threadId={activeThread?.id}
                   guestName={activeThread?.customer?.full_name}
                   guestPhone={activeThread?.customer?.phone}
+                  onQuickSendMessage={(msgText) => { setText(msgText); setMobileCustomer360Open(false); }}
+                  onOpenTransfer={() => { setMobileCustomer360Open(false); setTransferModalOpen(true); }}
+                  onOpenSchedule={() => { setMobileCustomer360Open(false); setScheduleModalOpen(true); }}
                 />
               </div>
               )}
@@ -2725,10 +2736,10 @@ function WorkspaceAtendimentoPage() {
 
               {/* Área do QR Code */}
               <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 rounded-lg bg-muted/10 space-y-3">
-                <div className="size-48 bg-card p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
+                <div className="size-48 bg-card p-3 rounded-lg border border-border flex items-center justify-center">
                   {whatsappInstances[0]?.public_config?.qr_code_url ? (
                     <img
-                      src={String(whatsappInstances[0].public_config.qr_code_url)}
+                      src={normalizeWhatsAppQrDataUri(whatsappInstances[0].public_config.qr_code_url) || String(whatsappInstances[0].public_config.qr_code_url)}
                       alt="QR Code de conexão do WhatsApp"
                       className="size-full object-contain"
                     />
@@ -3152,6 +3163,10 @@ function WorkspaceAtendimentoPage() {
       <QuickAnswersManagerModal
         isOpen={quickAnswersModalOpen}
         onClose={() => setQuickAnswersModalOpen(false)}
+        customerName={activeThread?.customer?.full_name}
+        customerPhone={activeThread?.customer?.phone}
+        storeName={store?.name}
+        onSelectAnswer={(msg) => setText(msg)}
       />
       {activeThread?.id && (
         <ScheduleWhatsAppMessageModal

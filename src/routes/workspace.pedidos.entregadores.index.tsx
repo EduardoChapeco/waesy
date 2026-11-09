@@ -272,7 +272,7 @@ function CouriersListPage() {
   ];
 
   return (
-    <NicheOperationalGuard requiredNiches={[]}>
+    <NicheOperationalGuard requiredNiches={["gastronomy", "retail", "supermarket", "pharmacy"]} toolTitle="Gestão de Entregadores & Motoboys" toolDescription="O módulo de entregadores e motoboys é voltado para operações de gastronomia, delivery e varejo com entregas urbanas.">
       <div className="flex flex-col h-full space-y-6 w-full px-0 sm:px-4 md:px-0">
         {/* ── TOOLBAR CANÔNICA SOBERANA Waesy ── */}
         <WorkspaceCanonicalToolbar

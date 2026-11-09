@@ -107,7 +107,51 @@ export function NicheOperationalGuard({
  ];
  }
 
- // Default: Varejo / Comércio Geral
+ // Default: Varejo / Comércio Geral / Locação
+ if (semantics.nicheId === "rental" || semantics.nicheId === "real_estate") {
+ return [
+ {
+ title: "Acervo & Disponibilidade",
+ desc: "Itens para locação, espaços, calendário e tabelas de diária",
+ path: "/workspace/catalogo/produtos",
+ icon: Layers,
+ },
+ {
+ title: "Agenda de Reservas & Retiradas",
+ desc: "Controle de retiradas, devoluções e disponibilidade por período",
+ path: "/workspace/agenda",
+ icon: Calendar,
+ },
+ {
+ title: "Contratos & Cauções",
+ desc: "Emissão de contratos de locação, termos de vistoria e garantias",
+ path: "/workspace/orcamentos",
+ icon: ClipboardList,
+ },
+ ];
+ }
+ if (semantics.nicheId === "gastronomy") {
+ return [
+ {
+ title: "Gestor de Pedidos & Cozinha",
+ desc: "Acompanhamento de pedidos em preparo, KDS e despacho",
+ path: "/workspace/pedidos/gestor",
+ icon: ClipboardList,
+ },
+ {
+ title: "Mesas & Comandas",
+ desc: "Atendimento presencial de salão, comandas e fechamento de conta",
+ path: "/workspace/pdv/comandas",
+ icon: Store,
+ },
+ {
+ title: "Cardápio Digital",
+ desc: "Pratos, bebidas, complementos e ficha técnica de insumos",
+ path: "/workspace/catalogo/produtos",
+ icon: ShoppingBag,
+ },
+ ];
+ }
  return [
  {
  title: "Frente de Caixa (PDV Direto)",
@@ -116,9 +160,9 @@ export function NicheOperationalGuard({
  icon: Store,
  },
  {
- title: "Gestor de Pedidos (Kanban)",
+ title: "Separação & Expedição (WMS)",
  desc: "Separação, conferência de produtos e expedição de compras",
- path: "/workspace/pedidos/gestor",
+ path: "/workspace/pedidos/expedicao",
  icon: ClipboardList,
  },
  {

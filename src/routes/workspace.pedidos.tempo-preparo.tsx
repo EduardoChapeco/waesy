@@ -171,9 +171,9 @@ function KitchenPrepTimePage() {
 
   return (
     <NicheOperationalGuard
-      currentNiche={store?.segment || "gastronomy"}
-      allowedNiches={["gastronomy"]}
-      featureName="Tempo de Preparo & Praças da Cozinha"
+      targetNiche="gastronomy"
+      toolTitle="Tempo de Preparo & Praças da Cozinha"
+      store={store}
     >
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-24">
         {/* ── Top Header Canônico ── */}

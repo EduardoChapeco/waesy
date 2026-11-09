@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireAdmin, getServerIdentity } from "@/lib/server-access";
+import { assertStoreAccess, MANAGER_ROLES } from "@/lib/identity-core";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { purgeEdgeCacheTags, CACHE_TAGS } from "@/lib/cache/edge-cache";
 
@@ -2595,6 +2596,36 @@ export const batchCreateCatalogMenu = createServerFn({ method: "POST" })
 
 
 
+export async function resolveStoreIdWithFallback(
+  identity: any,
+  requestedStoreId?: string | null,
+  dbClient?: any,
+): Promise<string> {
+  if (requestedStoreId && requestedStoreId.trim()) return requestedStoreId.trim();
+  if (identity?.store_id) return identity.store_id;
+  if (identity?.user_metadata?.store_id) return identity.user_metadata.store_id;
+  if (identity?.memberships && identity.memberships.length > 0 && identity.memberships[0]?.store_id) {
+    return identity.memberships[0].store_id;
+  }
+  const db = dbClient || getServerClient();
+  if (
+    identity?.role === "platform_admin" ||
+    identity?.role === "master" ||
+    Boolean(identity?.isPlatformAdmin)
+  ) {
+    try {
+      const { data: latestStore } = await db
+        .from("stores")
+        .select("id")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestStore?.id) return latestStore.id;
+    } catch {}
+  }
+  return identity?.store_id || "";
+}
+
 export const listStoreBrands = createServerFn({ method: "GET" })
   .validator((input?: { store_id?: string | null }) => input || {})
   .handler(async ({ data: input }) => {
@@ -2641,6 +2672,58 @@ export const createStoreBrand = createServerFn({ method: "POST" })
 
       const cleanName = input.name.trim();
       return { name: cleanName, store_id: targetStoreId };
+    } catch (e: unknown) {
+      console.error("[admin-catalog] createStoreBrand error:", e);
+      throw new Error(e instanceof Error ? e.message : "Erro ao cadastrar marca.");
+    }
+  });
+
+export const getStoreChannelIntegrationsStatus = createServerFn({ method: "GET" })
+  .validator((input?: { store_id?: string | null }) => input || {})
+  .handler(async ({ data: input }) => {
+    try {
+      const identity = await getServerIdentity();
+      const targetStoreId = input?.store_id || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) {
+        return {
+          google_merchant: { isConnected: false },
+          meta_catalog: { isConnected: false },
+          whatsapp_catalog: { isConnected: false },
+          ifood: { isConnected: false },
+        meta_instagram: { isConnected: false },
+        mercadolivre: { isConnected: false },
+
+
+        };
+      }
+      const db = getServerClient();
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("settings")
+        .eq("id", targetStoreId)
+        .maybeSingle();
+      const integrations = (storeRow?.settings as Record<string, any>)?.integrations || {};
+      return {
+        google_merchant: { isConnected: Boolean(integrations?.google_merchant?.enabled || integrations?.google_merchant?.connected) },
+        meta_catalog: { isConnected: Boolean(integrations?.meta_catalog?.enabled || integrations?.meta_pixel_id) },
+        whatsapp_catalog: { isConnected: Boolean(integrations?.whatsapp_catalog?.enabled || integrations?.whatsapp?.connected) },
+        ifood: { isConnected: Boolean(integrations?.ifood?.enabled || integrations?.ifood?.connected) },
+        meta_instagram: { isConnected: Boolean(integrations?.meta_instagram?.enabled || integrations?.meta_catalog?.enabled || integrations?.meta_pixel_id) },
+        mercadolivre: { isConnected: Boolean(integrations?.mercadolivre?.enabled || integrations?.mercadolivre?.connected) },
+      };
+    } catch {
+      return {
+        google_merchant: { isConnected: false },
+        meta_catalog: { isConnected: false },
+        whatsapp_catalog: { isConnected: false },
+        ifood: { isConnected: false },
+        meta_instagram: { isConnected: false },
+        mercadolivre: { isConnected: false },
+      };
+    }
+  });
+
+const _unusedCreateStoreBrandTail = createServerFn({ method: "POST" }).handler(async () => { try { return null;
     } catch (e: unknown) {
       console.error("[admin-catalog] createStoreBrand error:", e);
       throw new Error(

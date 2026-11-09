@@ -59,35 +59,43 @@ export const triggerWorkflowExecution = createServerFn({ method: "POST" })
     const delayMinutes: number = Number(whatsappNode?.config?.delayMinutes || 0);
 
     const vars: Record<string, string> = {
-      nome: String(triggerData.nome || triggerData.customer_name || "Viajante"),
+      nome: String(triggerData.nome || triggerData.customer_name || "Cliente"),
+      nome_cliente: String(triggerData.nome_cliente || triggerData.nome || triggerData.customer_name || "Cliente"),
+      numero_pedido: String(triggerData.numero_pedido || triggerData.order_id || "#PEDIDO"),
+      link_pagamento: String(triggerData.link_pagamento || triggerData.payment_url || "https://waesy.app/checkout"),
       destino: String(triggerData.destino || triggerData.destination || "Destino"),
       data_viagem: String(triggerData.data_viagem || triggerData.travel_date || new Date().toLocaleDateString("pt-BR")),
       hora: String(triggerData.hora || sendTime || "09:00"),
       link_dossie: String(triggerData.link_dossie || "https://waesy.app/conta/viagens"),
     };
 
-    const renderedMessage = rawTemplate.replace(/\{(nome|destino|data_viagem|hora|link_dossie)\}/g, (_, key) => vars[key] || "");
+    const renderedMessage = rawTemplate
+      .replace(/\{\{\s*(nome_cliente|nome|numero_pedido|link_pagamento|destino|data_viagem|hora|link_dossie)\s*\}\}/gi, (_, key) => vars[key.toLowerCase()] || "")
+      .replace(/\{(nome_cliente|nome|numero_pedido|link_pagamento|destino|data_viagem|hora|link_dossie)\}/gi, (_, key) => vars[key.toLowerCase()] || "");
 
     let outboxQueued = false;
     const { data: activeInstance } = await supabase
       .from("whatsapp_channel_instances")
-      .select("id")
+      .select("id, provider")
       .eq("store_id", identity.store_id)
+      .order("is_active", { ascending: false })
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (activeInstance?.id) {
       const dateKey = new Date().toISOString().slice(0, 13);
-      const idempotencyKey = `workflow:${id}:${triggerData.recipient_phone || "test"}:${dateKey}`;
+      const cleanRecipientPhone = String(triggerData.recipient_phone || "+5549999999999").replace(/@.*$/, "");
+      const idempotencyKey = `workflow:${id}:${cleanRecipientPhone}:${dateKey}`;
       const { error: outboxErr } = await supabase
         .from("whatsapp_outbox")
         .upsert(
           {
             store_id: identity.store_id,
-            instance_id: activeInstance.id,
+            channel_instance_id: activeInstance.id,
+            provider: activeInstance.provider || "evolution_api",
             idempotency_key: idempotencyKey,
-            recipient_jid: String(triggerData.recipient_phone || "5549999999999@s.whatsapp.net"),
+            recipient_phone: cleanRecipientPhone,
             message_type: "text",
             payload: {
               text: renderedMessage,
@@ -97,7 +105,7 @@ export const triggerWorkflowExecution = createServerFn({ method: "POST" })
             },
             status: "pending",
           },
-          { onConflict: "idempotency_key" }
+          { onConflict: "store_id,idempotency_key" }
         );
       if (!outboxErr) {
         outboxQueued = true;
@@ -165,6 +173,11 @@ export const getWorkflowById = createServerFn({ method: "GET" })
   });
 
 export const WORKFLOW_TRIGGER_TYPES = [
+  "greeting_message",
+  "away_hours",
+  "keyword_auto_reply",
+  "funnel_stage_changed",
+  "whatsapp_inbound",
   "customer_birthday",
   "travel_approaching_d7",
   "travel_approaching_d2",
@@ -192,6 +205,7 @@ export const createWorkflowSchema = z.object({
   title: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
   description: z.string().optional().nullable(),
   triggerType: z.enum(WORKFLOW_TRIGGER_TYPES),
+  keyword: z.string().optional().nullable(),
   sendTime: z.string().optional().nullable(),
   delayMinutes: z.number().int().min(0).default(0),
   messageTemplate: z.string().optional().nullable(),
@@ -202,18 +216,35 @@ export const createWorkflowSchema = z.object({
 export const createWorkflow = createServerFn({ method: "POST" })
   .validator(createWorkflowSchema)
   .handler(async ({ data: input }) => {
+    const {
+      title,
+      description,
+      triggerType,
+      keyword,
+      sendTime,
+      delayMinutes,
+      messageTemplate,
+      nodes,
+      edges,
+    } = input;
     const supabase = getServerClient();
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
-    const defaultNodes = input.nodes.length > 0 ? input.nodes : [
+    const renderedTemplate =
+      messageTemplate?.trim() ||
+      "Olá {{nome_cliente}}, confira os detalhes de {destino} para {data_viagem} às {hora}: {link_dossie}";
+
+    const defaultNodes = nodes.length > 0 ? nodes : [
       {
         id: "node-trigger",
         type: "trigger",
-        title: input.triggerType,
+        title: triggerType,
         config: {
-          sendTime: input.sendTime || "09:00",
-          delayMinutes: input.delayMinutes ?? 0,
+          event: triggerType,
+          ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+          sendTime: sendTime || "09:00",
+          delayMinutes: delayMinutes ?? 0,
         },
       },
       {
@@ -221,12 +252,12 @@ export const createWorkflow = createServerFn({ method: "POST" })
         type: "action",
         title: "Disparo WhatsApp Outbox",
         config: {
+          action: "send_text",
           channel: "whatsapp_outbox",
-          sendTime: input.sendTime || "09:00",
-          delayMinutes: input.delayMinutes ?? 0,
-          messageTemplate:
-            input.messageTemplate?.trim() ||
-            "Olá {nome}, confira os detalhes de {destino} para {data_viagem} às {hora}: {link_dossie}",
+          sendTime: sendTime || "09:00",
+          delayMinutes: delayMinutes ?? 0,
+          text: renderedTemplate,
+          messageTemplate: renderedTemplate,
         },
       },
     ];
@@ -235,11 +266,12 @@ export const createWorkflow = createServerFn({ method: "POST" })
       .from("store_workflows")
       .insert({
         store_id: identity.store_id,
-        title: input.title.trim(),
-        description: input.description?.trim() || null,
-        trigger_type: input.triggerType,
+        title: title.trim(),
+        description: description?.trim() || null,
+        trigger_type: triggerType,
+        channel: "whatsapp",
         nodes: defaultNodes,
-        edges: input.edges || [],
+        edges: edges || [],
         status: "active",
         created_by: identity.id,
       })

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { cn } from "@/lib/utils";
+import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 
 export const Route = createFileRoute("/workspace/conteudo/receitas")({
   head: () => ({ meta: [{ title: "Curadoria de Receitas | Workspace Waesy" }] }),
@@ -22,7 +23,15 @@ export const Route = createFileRoute("/workspace/conteudo/receitas")({
       return { recipes: [] };
     }
   },
-  component: WorkspaceRecipesManagementPage,
+  component: () => (
+    <NicheOperationalGuard
+      targetNiche="gastronomy"
+      toolTitle="Curadoria de Receitas Culinárias"
+      toolDescription="O módulo de receitas culinárias e ficha de ingredientes é exclusivo para negócios de gastronomia e alimentação."
+    >
+      <WorkspaceRecipesManagementPage />
+    </NicheOperationalGuard>
+  ),
 });
 
 function WorkspaceRecipesManagementPage() {
