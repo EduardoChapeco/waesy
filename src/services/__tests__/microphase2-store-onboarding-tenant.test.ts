@@ -17,6 +17,7 @@ vi.mock("@tanstack/react-start", () => ({
 const mockSetCookie = vi.fn();
 vi.mock("@tanstack/start-server-core", () => ({
   setCookie: (...args: any[]) => mockSetCookie(...args),
+  getResponseHeaders: vi.fn(() => undefined),
 }));
 
 // Mock server-access

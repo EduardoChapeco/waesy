@@ -11,10 +11,14 @@ export const getIdentity = createServerFn({ method: "GET" }).handler(async () =>
 export const setTenantContext = createServerFn({ method: "POST" })
   .validator(z.object({ store_id: z.string().uuid().nullable() }))
   .handler(async ({ data: { store_id } }) => {
-    const { setCookie, getResponseHeaders } = await import("@tanstack/start-server-core");
+    let setCookie: any;
     let resHeaders: Headers | undefined;
     try {
-      resHeaders = getResponseHeaders() as unknown as Headers;
+      const core: any = await import("@tanstack/start-server-core");
+      setCookie = core?.setCookie;
+      if (typeof core?.getResponseHeaders === "function") {
+        resHeaders = core.getResponseHeaders() as unknown as Headers;
+      }
     } catch {
       resHeaders = undefined;
     }
@@ -126,10 +130,14 @@ export type CreateStoreInput = z.infer<typeof createStoreSchema>;
 export const createStore = createServerFn({ method: "POST" })
   .validator(createStoreSchema)
   .handler(async ({ data }) => {
-    const { setCookie, getResponseHeaders } = await import("@tanstack/start-server-core");
+    let setCookie: any;
     let resHeaders: Headers | undefined;
     try {
-      resHeaders = getResponseHeaders() as unknown as Headers;
+      const core: any = await import("@tanstack/start-server-core");
+      setCookie = core?.setCookie;
+      if (typeof core?.getResponseHeaders === "function") {
+        resHeaders = core.getResponseHeaders() as unknown as Headers;
+      }
     } catch {
       resHeaders = undefined;
     }
