@@ -526,6 +526,8 @@ export function UnifiedNewProductPage() {
                           toast.success(`Custo calculado aplicado!`);
                         }}
                         onItemsChange={editor.setBomItems}
+                        optionGroups={storeOptionGroups}
+                        selectedOptionGroupIds={editor.selectedOptionGroups}
                       />
                     </TabsContent>
                   )}

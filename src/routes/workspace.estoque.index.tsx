@@ -121,7 +121,7 @@ function StockMobileView({ filteredStock, onOpenMovementModal }: StockViewProps)
                 type="button"
                 variant="outline"
                 onClick={() => onOpenMovementModal(variant, "purchase")}
-                className="h-11 min-h-11 flex-1 rounded-lg text-xs font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                className="h-11 min-h-11 flex-1 rounded-lg text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
               >
                 <Plus className="size-4 mr-1" /> Entrada
               </Button>
@@ -205,7 +205,7 @@ function StockDesktopView({ filteredStock, onOpenMovementModal }: StockViewProps
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs h-9 px-3 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer min-h-11 sm:min-h-0"
+                      className="text-xs h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
                       onClick={() => onOpenMovementModal(variant, "purchase")}
                     >
                       <Plus className="size-3.5 mr-1" /> Entrada
@@ -445,13 +445,13 @@ function AdminStockPage() {
             className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <ChefHat className="size-4" />
-            <span>Despensa & Insumos</span>
+            <span>{nicheCtx.isFoodBusiness ? "Despensa & Insumos" : "Almoxarifado & Insumos"}</span>
           </Button>
         </div>
       </div>
 
       {stockSection === "kitchen_supplies" ? (
-        <GastronomyPantryHub />
+        <GastronomyPantryHub nicheId={nicheCtx.isFoodBusiness ? "gastronomy" : "retail"} />
       ) : (
         <>
 

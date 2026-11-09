@@ -53,18 +53,10 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
     { path: "/workspace/copilot", label: "Assessor IA", icon: Bot },
     { path: "/workspace/squads", label: "Squads", icon: Bot },
     { path: "/workspace/skills", label: "Skills", icon: Zap },
-    { path: "/workspace/viabilidade", label: "Viabilidade", icon: Compass },
     { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
-    { path: "/workspace/marketing/canvas-bmc", label: "Modelo BMC", icon: LayoutGrid },
-    { path: "/workspace/marketing/swot", label: "Matriz SWOT", icon: Compass },
-    { path: "/workspace/marketing/canvas-pecados", label: "7 Pecados", icon: Flame },
-    { path: "/workspace/simlab/focus-group", label: "SimLab", icon: Users },
     { path: "/workspace/inteligencia/radar", label: "Radar", icon: Target },
-    { path: "/workspace/mining", label: "Importações", icon: Database },
     { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
     { path: "/workspace/simulacao", label: "Simulações", icon: Sliders },
-    { path: "/workspace/onboarding/revisao", label: "Catálogo Mestre", icon: Layers },
-    { path: "/workspace/design-system", label: "Design System", icon: Palette },
   ],
 };
 

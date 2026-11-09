@@ -20,6 +20,9 @@ export interface BomItem {
  unitCostCents: number;
  supplyId?: string;
  recipeId?: string;
+ modifierOptionId?: string;
+ modifierOptionLabel?: string;
+ isPrimaryGargalo?: boolean;
 }
 
 interface ProductBomCardProps {
@@ -28,6 +31,8 @@ interface ProductBomCardProps {
  onApplyCostToProduct: (calculatedCostCents: number) => void;
  onItemsChange: (items: BomItem[]) => void;
  productId?: string;
+ optionGroups?: any[];
+ selectedOptionGroupIds?: string[];
 }
 
 export function ProductBomCard({
@@ -36,6 +41,8 @@ export function ProductBomCard({
  onApplyCostToProduct,
  onItemsChange,
  productId,
+ optionGroups = [],
+ selectedOptionGroupIds = [],
 }: ProductBomCardProps) {
  const [items, setItems] = useState<BomItem[]>(initialItems);
 
@@ -60,6 +67,26 @@ export function ProductBomCard({
  const [newItemCost, setNewItemCost] = useState<string>("");
  const [selectedSupplyId, setSelectedSupplyId] = useState<string | null>(null);
  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
+ const [selectedModifierKey, setSelectedModifierKey] = useState<string>("base");
+ const [isPrimaryGargalo, setIsPrimaryGargalo] = useState<boolean>(true);
+
+ const availableModifierOptions = useMemo(() => {
+   const groups = Array.isArray(optionGroups) ? optionGroups : [];
+   const activeGroups =
+     selectedOptionGroupIds.length > 0
+       ? groups.filter((g: any) => selectedOptionGroupIds.includes(g.id))
+       : groups;
+   const flat: { id: string; label: string }[] = [];
+   for (const g of activeGroups) {
+     const vals = g.option_values || g.values || [];
+     for (const v of vals) {
+       if (v?.id && v?.label) {
+         flat.push({ id: String(v.id), label: `${g.name}: ${v.label}` });
+       }
+     }
+   }
+   return flat;
+ }, [optionGroups, selectedOptionGroupIds]);
 
  // Cálculo de gargalo de produção (Estoque Máximo Produzível deste produto)
  const bottleneckAnalysis = useMemo(() => {
@@ -111,6 +138,10 @@ export function ProductBomCard({
        setNewItemCost((Number(s.cost_cents_per_unit || 0) / 100).toFixed(2));
        setSelectedSupplyId(s.id);
        setSelectedRecipeId(null);
+ setSelectedModifierKey("base");
+ setIsPrimaryGargalo(true);
+  setSelectedModifierKey("base");
+  setIsPrimaryGargalo(true);
      }
    } else if (val.startsWith("recipe:")) {
      const id = val.replace("recipe:", "");
@@ -185,6 +216,11 @@ export function ProductBomCard({
  unitCostCents: costCents,
  supplyId: selectedSupplyId || undefined,
  recipeId: selectedRecipeId || undefined,
+ modifierOptionId:
+   selectedModifierKey !== "base" ? selectedModifierKey.split("::")[0] : undefined,
+ modifierOptionLabel:
+   selectedModifierKey !== "base" ? selectedModifierKey.split("::")[1] : undefined,
+ isPrimaryGargalo,
  };
 
  const updated = [...items, newItem];
@@ -197,6 +233,8 @@ export function ProductBomCard({
  setNewItemCost("");
  setSelectedSupplyId(null);
  setSelectedRecipeId(null);
+ setSelectedModifierKey("base");
+ setIsPrimaryGargalo(true);
  toast.success("Insumo adicionado à ficha técnica!");
  };
 
@@ -343,7 +381,7 @@ export function ProductBomCard({
  {(storeSupplies.length > 0 || storeRecipes.length > 0) && (
  <div className="w-full sm:w-72">
  <Select onValueChange={handleSelectCatalogItem}>
- <SelectTrigger className="h-9 text-xs rounded-lg border-border/80">
+ <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg border-border/80">
  <SelectValue placeholder="Importar da Despensa ou Receita..." />
  </SelectTrigger>
  <SelectContent className="rounded-lg max-h-60">
@@ -435,6 +473,47 @@ export function ProductBomCard({
  </Button>
  </div>
  </div>
+ <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-border/50 items-center">
+   <div className="sm:col-span-7 space-y-1">
+     <Label className="text-2xs font-bold">
+       Escopo do Consumo (Base do Produto vs Sabor / Adicional Específico)
+     </Label>
+     <Select value={selectedModifierKey} onValueChange={setSelectedModifierKey}>
+       <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
+         <SelectValue />
+       </SelectTrigger>
+       <SelectContent className="rounded-lg max-h-60">
+         <SelectItem value="base" className="text-xs font-semibold">
+           Produto Base (Abate em toda venda deste item)
+         </SelectItem>
+         {availableModifierOptions.map((opt) => (
+           <SelectItem
+             key={`mod-opt-${opt.id}`}
+             value={`${opt.id}::${opt.label}`}
+             className="text-xs"
+           >
+             Sabor / Opção: {opt.label}
+           </SelectItem>
+         ))}
+       </SelectContent>
+     </Select>
+   </div>
+   <div className="sm:col-span-5 flex items-center gap-2 pt-4">
+     <button
+       type="button"
+       onClick={() => setIsPrimaryGargalo((prev) => !prev)}
+       className={`h-11 min-h-11 px-3 rounded-lg border text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+         isPrimaryGargalo
+           ? "bg-primary/10 text-primary border-primary/40"
+           : "bg-muted/30 text-muted-foreground border-border"
+       }`}
+     >
+       {isPrimaryGargalo
+         ? "Gargalo Ativo: Pausa produto se zerar"
+         : "Opcional Secundário: Não pausa produto"}
+     </button>
+   </div>
+ </div>
  </form>
 
  {/* ── Tabela de Componentes Cadastrados ── */}
@@ -465,7 +544,19 @@ export function ProductBomCard({
  )}
  </div>
  <div className="min-w-0">
- <p className="font-bold text-foreground truncate">{item.name}</p>
+ <div className="flex flex-wrap items-center gap-2">
+   <p className="font-bold text-foreground truncate">{item.name}</p>
+   {item.modifierOptionLabel && (
+     <Badge variant="secondary" className="text-3xs font-mono">
+       Sabor/Opção: {item.modifierOptionLabel}
+     </Badge>
+   )}
+   {item.isPrimaryGargalo !== false && (
+     <Badge variant="outline" className="text-3xs font-mono">
+       Gargalo Auto-Pause
+     </Badge>
+   )}
+ </div>
  <span className="text-2xs text-muted-foreground capitalize">
  {item.type === "packaging" ? "Embalagem" : "Ingrediente"} • {item.quantity}{" "}
  {item.unit} x {formatMoney(item.unitCostCents)}

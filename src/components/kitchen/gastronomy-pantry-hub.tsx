@@ -358,6 +358,20 @@ export function GastronomyPantryHub({
 
   return (
     <div className="space-y-6 w-full animate-in fade-in duration-200">
+      {/* ── Guia Arquitetural de Composição Recursiva ── */}
+      <div className="p-4 rounded-lg bg-muted/30 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-xs font-bold text-foreground flex items-center gap-2">
+            <ChefHat className="size-4 text-primary shrink-0" />
+            <span>{hubTerms.guideTitle}</span>
+          </p>
+          <p className="text-2xs text-muted-foreground">{hubTerms.guideDesc}</p>
+        </div>
+        <Badge variant="outline" className="text-2xs font-mono shrink-0 self-start sm:self-center">
+          Kardex + Auto-Pause Ativo
+        </Badge>
+      </div>
+
       {/* ── KPI Strip Superior ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-lg bg-card border border-border/80 shadow-2xs space-y-1">
@@ -407,11 +421,11 @@ export function GastronomyPantryHub({
           <TabsList className="bg-muted/50 p-1 rounded-lg">
             <TabsTrigger value="supplies" className="gap-2 text-xs font-bold rounded-lg cursor-pointer">
               <Boxes className="size-3.5" />
-              <span>Insumos & Despensa</span>
+              <span>{hubTerms.suppliesTab}</span>
             </TabsTrigger>
             <TabsTrigger value="recipes" className="gap-2 text-xs font-bold rounded-lg cursor-pointer">
               <ChefHat className="size-3.5" />
-              <span>Fichas Técnicas & POP</span>
+              <span>{hubTerms.recipesTab}</span>
             </TabsTrigger>
             <TabsTrigger value="waste" className="gap-2 text-xs font-bold rounded-lg cursor-pointer">
               <TrendingDown className="size-3.5" />
@@ -655,7 +669,7 @@ export function GastronomyPantryHub({
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-sm text-foreground">{r.name}</h4>
                         <Badge variant="outline" className="text-3xs font-mono uppercase">
-                          {r.type === "sub_recipe" ? "Sub-Receita" : "Prato do Cardápio"}
+                          {r.type === "sub_recipe" ? hubTerms.subRecipeBadge : hubTerms.dishBadge}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3 text-2xs text-muted-foreground mt-1">
@@ -704,7 +718,39 @@ export function GastronomyPantryHub({
                   )}
 
                   {/* Ações */}
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+                  {/* Ações */}
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/60">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-11 min-h-11 sm:h-9 sm:min-h-0 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => {
+                        setEditingRecipeId(r.id);
+                        setRecipeName(r.name || "");
+                        setRecipeType(r.type || "sub_recipe");
+                        setRecipeYieldQty(String(r.yield_quantity || 1));
+                        setRecipeYieldUnit(r.yield_unit || "un");
+                        setRecipeTimeMinutes(String(r.preparation_time_minutes || 20));
+                        setRecipeInstructions(r.prep_instructions || "");
+                        setRecipeChefNotes(r.chef_notes || "");
+                        setRecipeShelfLifeHours(String(r.standard_shelf_life_hours || 72));
+                        setRecipeStorageInstructions(r.storage_instructions || "Etiquetar e refrigerar entre 0°C e 4°C");
+                        setRecipeItems(
+                          Array.isArray(r.recipe_items)
+                            ? r.recipe_items.map((ri: any) => ({
+                                supplyId: ri.supply_id || ri.supplies?.id,
+                                quantity: Number(ri.quantity || 1),
+                                unit: ri.unit || ri.supplies?.unit || "un",
+                                notes: ri.notes || undefined,
+                              }))
+                            : [],
+                        );
+                        setIsRecipeModalOpen(true);
+                      }}
+                    >
+                      <span>Editar Composição</span>
+                    </Button>
+
                     <Button
                       size="sm"
                       variant="outline"
@@ -716,7 +762,7 @@ export function GastronomyPantryHub({
                       }}
                     >
                       <ChefHat className="size-3.5" />
-                      <span>Produzir Lote na Cozinha</span>
+                      <span>{hubTerms.produceAction}</span>
                     </Button>
                   </div>
                 </div>
@@ -1041,7 +1087,7 @@ export function GastronomyPantryHub({
           <DialogHeader className="pb-3 border-b border-border/70">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <ChefHat className="size-4 text-primary" />
-              <span>Cadastrar Ficha Técnica / Receita</span>
+              <span>{editingRecipeId ? "Editar Ficha Técnica / Receita" : "Cadastrar Ficha Técnica / Receita"}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Define a composição, rendimento e procedimento operacional padrão (POP).
@@ -1115,7 +1161,113 @@ export function GastronomyPantryHub({
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-foreground">POP (Modo de Preparo Passo a Passo)</Label>
+              {/* ── Construtor de Ingredientes / Insumos da Ficha Técnica ── */}
+              <div className="p-3 rounded-lg bg-muted/20 border border-border/80 space-y-3 mb-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-foreground">
+                    Ingredientes / Insumos da Receita ({recipeItems.length})
+                  </Label>
+                  <span className="text-2xs font-mono text-muted-foreground">
+                    Custo Lote:{" "}
+                    <strong className="text-foreground">
+                      {formatMoney(
+                        recipeItems.reduce((acc, item) => {
+                          const sup = (supplies as any[]).find((s: any) => s.id === item.supplyId);
+                          return acc + Math.round(Number(item.quantity || 0) * Number(sup?.cost_cents_per_unit || 0));
+                        }, 0),
+                      )}
+                    </strong>
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+                  <div className="sm:col-span-7 space-y-1">
+                    <span className="text-2xs text-muted-foreground block">Selecionar Insumo da Despensa</span>
+                    <Select value={newIngredientSupplyId} onValueChange={setNewIngredientSupplyId}>
+                      <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
+                        <SelectValue placeholder="Escolha um insumo..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg max-h-56">
+                        {(supplies as any[]).map((s: any) => (
+                          <SelectItem key={`rec-sup-${s.id}`} value={s.id} className="text-xs">
+                            {s.name} ({formatMoney(s.cost_cents_per_unit)}/{s.unit})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="sm:col-span-3 space-y-1">
+                    <span className="text-2xs text-muted-foreground block">Qtd Usada</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={newIngredientQty}
+                      onChange={(e) => setNewIngredientQty(e.target.value)}
+                      className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full h-11 min-h-11 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      disabled={!newIngredientSupplyId}
+                      onClick={() => {
+                        const sup = (supplies as any[]).find((s: any) => s.id === newIngredientSupplyId);
+                        if (!sup) return;
+                        const qty = parseFloat(newIngredientQty) || 1;
+                        setRecipeItems((prev) => [
+                          ...prev.filter((i) => i.supplyId !== sup.id),
+                          {
+                            supplyId: sup.id,
+                            quantity: qty,
+                            unit: sup.unit || "un",
+                          },
+                        ]);
+                        setNewIngredientSupplyId("");
+                        setNewIngredientQty("1");
+                      }}
+                    >
+                      <Plus className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {recipeItems.length > 0 ? (
+                  <div className="divide-y divide-border/50 rounded-md border border-border/60 bg-card px-3 py-1">
+                    {recipeItems.map((item) => {
+                      const sup = (supplies as any[]).find((s: any) => s.id === item.supplyId);
+                      const lineCost = Math.round(Number(item.quantity || 0) * Number(sup?.cost_cents_per_unit || 0));
+                      return (
+                        <div key={item.supplyId} className="py-2 flex items-center justify-between gap-2 text-xs">
+                          <div>
+                            <span className="font-semibold text-foreground">{sup?.name || "Insumo"}</span>
+                            <span className="text-2xs font-mono text-muted-foreground ml-2">
+                              {item.quantity} {item.unit} ({formatMoney(lineCost)})
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setRecipeItems((prev) => prev.filter((i) => i.supplyId !== item.supplyId))}
+                            className="h-11 min-h-11 sm:h-8 sm:min-h-0 px-3 rounded text-2xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-2xs text-muted-foreground">
+                    Adicione os insumos consumidos por lote (ex: Carne Moída, Feijão, Tempero para Chilli).
+                  </p>
+                )}
+              </div>
+
+              <Label className="text-xs font-semibold text-foreground">{hubTerms.popLabel}</Label>
               <textarea
                 rows={3}
                 value={recipeInstructions}
@@ -1140,6 +1292,22 @@ export function GastronomyPantryHub({
               className="h-11 min-h-11 sm:h-9 sm:min-h-0 text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               disabled={createRecipeMutation.isPending}
               onClick={() => {
+                if (editingRecipeId) {
+                  updateRecipeMutation.mutate({
+                    recipeId: editingRecipeId,
+                    name: recipeName,
+                    type: recipeType,
+                    yieldQuantity: parseFloat(recipeYieldQty) || 1,
+                    yieldUnit: recipeYieldUnit,
+                    preparationTimeMinutes: parseInt(recipeTimeMinutes) || 20,
+                    prepInstructions: recipeInstructions,
+                    chefNotes: recipeChefNotes,
+                    standardShelfLifeHours: parseInt(recipeShelfLifeHours) || 72,
+                    storageInstructions: recipeStorageInstructions,
+                    items: recipeItems,
+                  });
+                  return;
+                }
                 createRecipeMutation.mutate({
                   name: recipeName,
                   type: recipeType,
@@ -1386,6 +1554,28 @@ export function GastronomyPantryHub({
             </div>
 
             <div className="space-y-1">
+              <div className="p-3 rounded-lg bg-muted/20 border border-border/70 space-y-2 mb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="text-xs font-semibold text-foreground">
+                    Fator de Conversão da Embalagem (ex: Caixa c/ 12 = 12, Saco 25kg = 25000g)
+                  </Label>
+                </div>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={purchaseConversionFactor}
+                  onChange={(e) => setPurchaseConversionFactor(e.target.value)}
+                  className="h-11 min-h-11 text-xs rounded-lg font-mono"
+                />
+                <p className="text-2xs text-muted-foreground font-mono">
+                  Entrada líquida no Kardex:{" "}
+                  <strong className="text-foreground">
+                    +{((parseFloat(purchaseQty) || 0) * (parseFloat(purchaseConversionFactor) || 1)).toFixed(2)}{" "}
+                    {selectedSupplyForPurchase?.unit}
+                  </strong>
+                </p>
+              </div>
               <Label className="text-xs font-semibold text-foreground">Número da Nota Fiscal (NF)</Label>
               <Input
                 placeholder="Ex: NF-10492"
@@ -1417,6 +1607,7 @@ export function GastronomyPantryHub({
                 purchaseEntryMutation.mutate({
                   supplyId: selectedSupplyForPurchase.id,
                   quantity: parseFloat(purchaseQty) || 1,
+                  conversionFactor: parseFloat(purchaseConversionFactor) || 1,
                   totalCostCents: totalCents,
                   invoiceNumber: purchaseInvoice,
                 });
@@ -1439,6 +1630,7 @@ export function GastronomyPantryHub({
           storageTemperature={ticketData.storageTemperature}
           responsibleName={ticketData.responsibleName}
           storeName={storeName}
+          nicheId={nicheId}
         />
       )}
     </div>

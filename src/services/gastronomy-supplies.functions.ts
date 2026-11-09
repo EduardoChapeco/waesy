@@ -1545,7 +1545,7 @@ export const deductSuppliesForServiceAppointment = createServerFn({ method: "POS
     };
   });
 
-function _noopEnd(_x: any) {
+function _noopEnd(notes: any) {
   return ({
     notes,
   });

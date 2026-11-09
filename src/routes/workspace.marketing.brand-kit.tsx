@@ -199,43 +199,50 @@ function ColorSwatch({
 }) {
   const isFilled = Boolean(value && /^#[0-9a-fA-F]{3,8}$/.test(value));
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-card/80 transition-colors">
-      <div className="relative flex-shrink-0">
-        <div
-          className={cn(
-            "w-10 h-10 rounded-lg border border-border/60 ring-1 ring-inset ring-white/10 dark:ring-white/10 cursor-pointer flex items-center justify-center transition-transform hover:scale-105",
-            !isFilled && "bg-muted/30"
-          )}
-          // design-lint-ignore DL-05 reason:"Preview dinâmico de amostras de cores do Brand Kit" expiry:"2027-12-31"
-          style={{ backgroundColor: isFilled ? value : undefined }}
-        >
-          {!isFilled && (
-            <span className="text-3xs font-mono text-muted-foreground/60 select-none">--</span>
-          )}
+    <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/70 bg-card/60 hover:bg-card hover:border-border transition-colors">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="relative flex-shrink-0">
+          <div
+            className={cn(
+              "size-10 rounded-lg border border-border/80 shadow-2xs transition-transform hover:scale-105 cursor-pointer ring-1 ring-inset ring-black/10 dark:ring-white/10 flex items-center justify-center",
+              !isFilled && "border-dashed border-muted-foreground/40 bg-muted/20"
+            )}
+            // design-lint-ignore DL-05 reason:"Preview dinâmico de amostras de cores do Brand Kit" expiry:"2027-12-31"
+            style={{ backgroundColor: isFilled ? value : undefined }}
+          >
+            {!isFilled && (
+              <span className="text-3xs font-mono text-muted-foreground/60 select-none">--</span>
+            )}
+          </div>
+          <input
+            type="color"
+            // design-lint-ignore DL-01 reason:"Cor preta fallback para seletor nativo de cor" expiry:"2027-12-31"
+            value={isFilled ? value : "#000000"}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 opacity-0 cursor-pointer size-full rounded-lg"
+            title={`Alterar cor: ${label}`}
+          />
         </div>
-        <input
-          type="color"
-          // design-lint-ignore DL-01 reason:"Cor preta fallback para seletor nativo de cor" expiry:"2027-12-31"
-          value={isFilled ? value : "#000000"}
+        <div className="min-w-0">
+          <p className="text-xs font-bold text-foreground leading-snug">{label}</p>
+          {description && <p className="text-xs text-muted-foreground truncate">{description}</p>}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <Input
+          value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-lg"
-          title={`Escolher ${label}`}
+          className="h-9 w-24 text-xs font-mono text-center uppercase border-border/70 bg-background/50 rounded-lg focus-visible:ring-2 focus-visible:ring-ring"
+          placeholder="#HEX"
+          maxLength={7}
         />
+        {!isFilled && (
+          <span className="text-3xs text-muted-foreground whitespace-nowrap hidden sm:inline">
+            Vazio
+          </span>
+        )}
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-foreground leading-none">{label}</p>
-        {description && <p className="text-xs text-muted-foreground mt-1 truncate">{description}</p>}
-        <p className="text-xs font-mono text-muted-foreground mt-1 uppercase">
-          {isFilled ? value : "Não definido"}
-        </p>
-      </div>
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-8 w-24 text-xs font-mono text-center uppercase border-border/60 bg-background/50 focus-visible:ring-1 focus-visible:ring-ring"
-        placeholder="#HEX"
-        maxLength={7}
-      />
     </div>
   );
 }
@@ -250,14 +257,12 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-card border border-border/50 rounded-lg overflow-hidden">
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-border/30">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <Icon className="w-4 h-4 text-primary" />
-        </div>
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+    <div className="p-5 rounded-lg border border-border/80 bg-card shadow-2xs space-y-4">
+      <div className="flex items-center gap-2 pb-3 border-b border-border/60">
+        <Icon className="size-4 text-primary" />
+        <h2 className="text-sm font-bold text-foreground tracking-tight">{title}</h2>
       </div>
-      <div className="p-5">{children}</div>
+      {children}
     </div>
   );
 }
@@ -474,9 +479,12 @@ export function BrandKitPage() {
                   </span>
                 )}
               </div>
-              <h1 className="text-xl font-semibold tracking-tight mt-1 text-foreground">
+              <h1 className="text-xl font-bold tracking-tight mt-1 text-foreground">
                 Brand Kit
               </h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                Identidade visual, paleta cromática e tipografia unificada da marca.
+              </p>
               {brandEvidence?.analysis_status === "ai_generated_draft" && (
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                   <Badge variant="outline" className="border-warning/40 text-warning-strong ">
@@ -515,7 +523,7 @@ export function BrandKitPage() {
                 onClick={() => setShowExtractInput((v) => !v)}
                 className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
-                <Globe className="w-3.5 h-3.5" />
+                <Globe className="size-4" />
                 Extrair de URL
               </Button>
               <Button
@@ -526,9 +534,9 @@ export function BrandKitPage() {
                 className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isGenerating ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+                  <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
                 ) : (
-                  <Wand2 className="w-3.5 h-3.5" />
+                  <Wand2 className="size-4" />
                 )}
                 {isGenerating ? "Gerando..." : "Gerar com IA"}
               </Button>
@@ -539,11 +547,11 @@ export function BrandKitPage() {
                 className="h-11 min-h-11 px-4 rounded-lg text-xs font-medium gap-2"
               >
                 {isSaving ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+                  <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
                 ) : (
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="size-4" />
                 )}
-                {isSaving ? "Salvando..." : "Salvar Brand Kit"}
+                {isSaving ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </div>
           </div>
@@ -566,9 +574,9 @@ export function BrandKitPage() {
                 className="h-11 min-h-11 px-4 text-xs gap-2"
               >
                 {isExtracting ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
+                  <RefreshCw className="size-4 animate-spin motion-reduce:animate-none" />
                 ) : (
-                  <Globe className="w-3.5 h-3.5" />
+                  <Globe className="size-4" />
                 )}
                 {isExtracting ? "Extraindo..." : "Extrair"}
               </Button>
@@ -588,7 +596,7 @@ export function BrandKitPage() {
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="size-4" />
                 {label}
               </button>
             ))}
@@ -624,29 +632,31 @@ export function BrandKitPage() {
               </div>
             </SectionCard>
 
-            <SectionCard title="Superfícies & Contraste" icon={Layers}>
+            <SectionCard title="Superfícies & Contraste Neutro" icon={Layers}>
               <div className="space-y-3">
                 <ColorSwatch
-                  label="Background Dark"
+                  label="Fundo Escuro (Dark Canvas)"
                   value={form.color_bg_dark}
                   onChange={(v) => update({ color_bg_dark: v })}
-                  description="Fundo do modo escuro"
+                  description="Superfície base para interfaces em modo escuro"
                 />
                 <ColorSwatch
-                  label="Background Light"
+                  label="Fundo Claro (Light Canvas)"
                   value={form.color_bg_light}
                   onChange={(v) => update({ color_bg_light: v })}
-                  description="Fundo do modo claro"
+                  description="Superfície base para interfaces em modo claro"
                 />
                 <ColorSwatch
-                  label="Texto Primário (Dark)"
+                  label="Texto Primário"
                   value={form.color_text_dark}
                   onChange={(v) => update({ color_text_dark: v })}
+                  description="Cor principal para títulos e leitura de alta densidade"
                 />
                 <ColorSwatch
-                  label="Texto em Fundo Escuro"
+                  label="Texto Secundário / Inverso"
                   value={form.color_text_light}
                   onChange={(v) => update({ color_text_light: v })}
+                  description="Contraste de leitura sobre superfícies escuras"
                 />
               </div>
             </SectionCard>
@@ -691,7 +701,7 @@ export function BrandKitPage() {
                       }}
                       className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="size-4" />
                     </button>
                   </div>
                 ))}
@@ -708,7 +718,7 @@ export function BrandKitPage() {
                   }
                   className="w-full h-11 min-h-11 border border-dashed border-border/60 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:border-border flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="size-4" />
                   Adicionar Cor à Paleta
                 </button>
               </div>

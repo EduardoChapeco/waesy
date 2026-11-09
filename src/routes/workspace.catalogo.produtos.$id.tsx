@@ -353,6 +353,9 @@ function EditProductPage() {
               productPriceCents={edit.livePriceCents}
               onApplyCostToProduct={edit.handleApplyCostToProduct}
               onItemsChange={edit.handleBomItemsChange}
+              productId={product.id}
+              optionGroups={edit.optionGroups}
+              selectedOptionGroupIds={edit.selectedOptionGroupIds}
             />
           </div>
 

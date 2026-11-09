@@ -452,7 +452,7 @@ function ServicesIndexPage() {
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
- <SelectItem value="active" className="text-xs font-semibold text-emerald-600">● Ativo na Agenda</SelectItem>
+ <SelectItem value="active" className="text-xs font-semibold text-foreground">● Ativo na Agenda</SelectItem>
  <SelectItem value="archived" className="text-xs text-muted-foreground">● Arquivado / Oculto</SelectItem>
  </SelectContent>
  </Select>

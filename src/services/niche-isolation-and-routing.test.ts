@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { getNicheTranslation } from "@/lib/niche-dictionary";
 import { getSidebarConfig, getMasterSidebarPillars } from "@/lib/workspace-navigation";
+import {
+  linkProductRecipeSchema,
+  recordSupplyPurchaseSchema,
+  deductSuppliesForServiceAppointmentSchema,
+} from "@/services/gastronomy-supplies.functions";
 
 describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => {
   describe("1. Dicionário Universal de Nichos (I18n Niche Translation)", () => {
@@ -186,6 +191,34 @@ describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => 
       expect(gastroPaths).toContain("/workspace/pedidos");
       expect(gastroPaths).toContain("/workspace/pdv/cozinha");
       expect(gastroPaths).toContain("/workspace/pdv/comandas");
+    });
+
+    it("valida schemas de Ficha Técnica Recursiva (Sabores/Modificadores, Fator de Conversão e Serviços Compostos)", () => {
+      const modifierLink = linkProductRecipeSchema.parse({
+        productId: "11111111-1111-4111-8111-111111111111",
+        modifierId: "22222222-2222-4222-8222-222222222222",
+        recipeId: "33333333-3333-4333-8333-333333333333",
+        modifierOptionLabel: "Sabor: Chilli Mexicano",
+        isPrimaryGargalo: true,
+        quantity: 1,
+      });
+      expect(modifierLink.modifierId).toBe("22222222-2222-4222-8222-222222222222");
+      expect(modifierLink.isPrimaryGargalo).toBe(true);
+
+      const purchaseWithConversion = recordSupplyPurchaseSchema.parse({
+        supplyId: "11111111-1111-4111-8111-111111111111",
+        quantity: 2,
+        conversionFactor: 12,
+        totalCostCents: 14400,
+      });
+      expect(purchaseWithConversion.conversionFactor).toBe(12);
+
+      const serviceDeduction = deductSuppliesForServiceAppointmentSchema.parse({
+        appointmentId: "44444444-4444-4444-8444-444444444444",
+        bookingServiceId: "55555555-5555-4555-8555-555555555555",
+        serviceTitle: "Mechas & Descoloração",
+      });
+      expect(serviceDeduction.bookingServiceId).toBe("55555555-5555-4555-8555-555555555555");
     });
   });
 });
