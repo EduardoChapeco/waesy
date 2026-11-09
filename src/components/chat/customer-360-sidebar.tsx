@@ -337,7 +337,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         {threadId && (
           <div className="space-y-2">
             <span className="text-xs font-bold text-foreground block">Etiquetas de Atendimento (Tags)</span>
-            <ThreadTagsPicker threadId={threadId} />
+            <ThreadTagsPicker threadId={threadId} tags={data?.thread?.tags || []} onTagsChange={(newTags) => setData((prev: any) => prev ? { ...prev, thread: { ...(prev.thread || {}), tags: newTags } } : prev)} />
           </div>
         )}
 

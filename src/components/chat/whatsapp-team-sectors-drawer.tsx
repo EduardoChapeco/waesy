@@ -235,7 +235,7 @@ export function WhatsAppTeamSectorsDrawer({
               name: d.name,
               description: d.aiSdrSkillPrompt || d.autoGreetingMessage,
               color: d.colorToken,
-              instanceIds: [instanceId],
+              instanceIds: instanceId ? [instanceId] : (d.whatsappInstanceId ? [d.whatsappInstanceId] : []),
               assignedAgentIds: d.assignedAgentIds,
               roundRobinEnabled: d.routingMode === 'round_robin',
               aiSdrEnabled: d.aiSdrEnabled,
