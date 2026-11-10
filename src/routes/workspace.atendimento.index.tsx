@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TransferChatThreadModal } from "@/components/chat/TransferChatThreadModal";
 import { QuickAnswersManagerModal } from "@/components/chat/QuickAnswersManagerModal";
@@ -77,7 +77,15 @@ import {
   CalendarClock,
   ArrowRightLeft,
   Zap,
+  MoreVertical,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -510,9 +518,59 @@ function WorkspaceAtendimentoPage() {
 
   // Estados de Conversas
   const [threads, setThreads] = useState<any[]>(initialThreads || []);
-  const [activeThreadId, setActiveThreadId] = useState<string | null>(
-    (searchParams as any).threadId || (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null,
-  );
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(() => {
+    if ((searchParams as any)?.threadId) return (searchParams as any).threadId;
+    if (typeof window !== "undefined" && window.innerWidth < 768) return null;
+    return (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null;
+  });
+
+  const activeThreadIdRef = useRef<string | null>(activeThreadId);
+  useEffect(() => {
+    activeThreadIdRef.current = activeThreadId;
+  }, [activeThreadId]);
+
+  const statusFilterRef = useRef(statusFilter);
+  useEffect(() => {
+    statusFilterRef.current = statusFilter;
+  }, [statusFilter]);
+
+  const threadsRef = useRef(threads);
+  useEffect(() => {
+    threadsRef.current = threads;
+  }, [threads]);
+
+  // Revalidação em background da lista de conversas
+  const reloadThreads = useCallback(async () => {
+    if (!store?.id) return;
+    try {
+      const sf = statusFilterRef.current;
+      const res = await listChatThreads({
+        data: {
+          store_id: store.id,
+          status: (sf === "waiting" ? "open" : sf) as any,
+        },
+      });
+      if (res?.threads) {
+        setThreads(res.threads);
+      }
+    } catch (e) {
+      console.warn("[atendimento] Erro ao recarregar threads:", e);
+    }
+  }, [store?.id]);
+
+  // Revalidação em background das mensagens da conversa ativa
+  const reloadActiveMessages = useCallback(async (targetThreadId?: string) => {
+    const tId = targetThreadId || activeThreadIdRef.current;
+    if (!tId) return;
+    try {
+      const res: any = await getChatMessages({ data: { threadId: tId } });
+      if (res?.messages && activeThreadIdRef.current === tId) {
+        setMessages(res.messages);
+      }
+    } catch (e) {
+      console.warn("[atendimento] Erro ao recarregar mensagens:", e);
+    }
+  }, []);
 
   useEffect(() => {
     if ((searchParams as any)?.search) {
@@ -637,7 +695,7 @@ function WorkspaceAtendimentoPage() {
     }
   }, [messages, loadingMessages]);
 
-  // Realtime
+  // Realtime Estável de Alta Performance (Zero Teardown em Troca de Conversa)
   useEffect(() => {
     if (!store?.id) return;
     const rt = getRealtimeChannel(`store-chat-${store.id}`);
@@ -649,29 +707,76 @@ function WorkspaceAtendimentoPage() {
         { event: "INSERT", schema: "public", table: "chat_messages" },
         (payload: any) => {
           const newMsg = payload.new as any;
-          if (newMsg.thread_id === activeThreadId) {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev;
-              return [...prev, newMsg];
-            });
+          if (!newMsg) return;
+
+          const currentActive = activeThreadIdRef.current;
+          const isCurrentActive = newMsg.thread_id === currentActive;
+
+          if (isCurrentActive) {
+            // Se mensagem for criptografada ou externa, revalida via server para decodificação perfeita
+            if (newMsg.is_encrypted || (typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
+              reloadActiveMessages(newMsg.thread_id);
+            } else {
+              setMessages((prev) => {
+                if (prev.some((m) => m.id === newMsg.id)) return prev;
+                return [...prev, newMsg];
+              });
+            }
+
             if (!newMsg.is_staff_reply) {
               playMessageChime();
             }
+          } else if (!newMsg.is_staff_reply) {
+            playMessageChime();
           }
-          // Atualiza o snippet na lista de threads
-          setThreads((prev) =>
-            prev.map((t) => {
-              if (t.id === newMsg.thread_id) {
+
+          // Atualiza lista de conversas: move para o topo ou sincroniza nova conversa
+          const exists = threadsRef.current.some((t) => t.id === newMsg.thread_id);
+          if (exists) {
+            setThreads((prev) => {
+              const target = prev.find((t) => t.id === newMsg.thread_id);
+              if (!target) return prev;
+              const cleanPreview = (typeof newMsg.message === "string" && !newMsg.message.startsWith("waesy-msg:"))
+                ? newMsg.message
+                : (target.last_message || "Nova mensagem");
+              const updated = {
+                ...target,
+                last_message: cleanPreview,
+                is_last_reply_staff: newMsg.is_staff_reply,
+                updated_at: newMsg.created_at || new Date().toISOString(),
+              };
+              return [updated, ...prev.filter((t) => t.id !== newMsg.thread_id)];
+            });
+            if (newMsg.is_encrypted || (typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
+              reloadThreads();
+            }
+          } else {
+            reloadThreads();
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "chat_messages" },
+        (payload: any) => {
+          const updatedMsg = payload.new as any;
+          if (!updatedMsg) return;
+
+          if (updatedMsg.thread_id === activeThreadIdRef.current) {
+            setMessages((prev) =>
+              prev.map((m) => {
+                if (m.id !== updatedMsg.id) return m;
                 return {
-                  ...t,
-                  last_message: newMsg.message,
-                  is_last_reply_staff: newMsg.is_staff_reply,
-                  updated_at: newMsg.created_at,
+                  ...m,
+                  delivery_status: updatedMsg.delivery_status || m.delivery_status,
+                  external_message_id: updatedMsg.external_message_id || m.external_message_id,
+                  sent_at: updatedMsg.sent_at || m.sent_at,
+                  delivered_at: updatedMsg.delivered_at || m.delivered_at,
+                  payload: { ...(m.payload || {}), ...(updatedMsg.payload || {}) },
                 };
-              }
-              return t;
-            }),
-          );
+              })
+            );
+          }
         },
       )
       .on(
@@ -680,13 +785,11 @@ function WorkspaceAtendimentoPage() {
         (payload: any) => {
           const newThread = payload.new as any;
           // Ignora threads de IA/Copilot
-          if (newThread.thread_type === "ai_assistant" || newThread.thread_type === "copilot") {
+          if (newThread?.thread_type === "ai_assistant" || newThread?.thread_type === "copilot") {
             return;
           }
           if (newThread?.store_id === store?.id) {
-            listChatThreads({ data: { store_id: store?.id, status: (statusFilter === "waiting" ? "open" : statusFilter) as any } }).then((res) => {
-              if (res?.threads) setThreads(res.threads);
-            });
+            reloadThreads();
             playMessageChime();
           }
         },
@@ -749,7 +852,39 @@ function WorkspaceAtendimentoPage() {
     return () => {
       rt.unsubscribe();
     };
-  }, [store?.id, activeThreadId, statusFilter]);
+  }, [store?.id, reloadThreads, reloadActiveMessages]);
+
+  // Listener de Visibilidade & Retomada de Foco (Zero Lag Mobile/Background)
+  useEffect(() => {
+    const handleRevalidation = () => {
+      if (document.visibilityState === "visible") {
+        reloadThreads();
+        if (activeThreadIdRef.current) {
+          reloadActiveMessages(activeThreadIdRef.current);
+        }
+      }
+    };
+    window.addEventListener("visibilitychange", handleRevalidation);
+    window.addEventListener("focus", handleRevalidation);
+    return () => {
+      window.removeEventListener("visibilitychange", handleRevalidation);
+      window.removeEventListener("focus", handleRevalidation);
+    };
+  }, [reloadThreads, reloadActiveMessages]);
+
+  // Polling Leve de Segurança a Cada 15s (Tolerância a Wi-Fi Instável)
+  useEffect(() => {
+    if (!store?.id) return;
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        reloadThreads();
+        if (activeThreadIdRef.current) {
+          reloadActiveMessages(activeThreadIdRef.current);
+        }
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [store?.id, reloadThreads, reloadActiveMessages]);
 
   // Enviar Mensagem
   const handleSend = async (e?: React.FormEvent) => {
@@ -777,23 +912,24 @@ function WorkspaceAtendimentoPage() {
         },
       });
 
-      setMessages((prev) => [...prev, sent]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === sent.id)) return prev;
+        return [...prev, sent];
+      });
       setText("");
       setIsWhisperMode(false);
 
-      setThreads((prev) =>
-        prev.map((t) => {
-          if (t.id === activeThreadId) {
-            return {
-              ...t,
-              last_message: isWhisperMode ? `[Nota Interna]: ${text.trim()}` : text.trim(),
-              is_last_reply_staff: true,
-              updated_at: new Date().toISOString(),
-            };
-          }
-          return t;
-        }),
-      );
+      setThreads((prev) => {
+        const target = prev.find((t) => t.id === activeThreadId);
+        if (!target) return prev;
+        const updatedTarget = {
+          ...target,
+          last_message: isWhisperMode ? `[Nota Interna]: ${text.trim()}` : text.trim(),
+          is_last_reply_staff: true,
+          updated_at: new Date().toISOString(),
+        };
+        return [updatedTarget, ...prev.filter((t) => t.id !== activeThreadId)];
+      });
     } catch (err: any) {
       toast.error(err.message || "Erro ao despachar mensagem.");
     } finally {
@@ -1138,7 +1274,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="ml-auto">
                   <Select value={deptFilter} onValueChange={setDeptFilter}>
-                    <SelectTrigger className="h-8 text-xs rounded-lg border-border/60">
+                    <SelectTrigger className="h-11 min-h-11 px-3 text-xs rounded-lg border-border/60 bg-muted/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
                       <SelectValue placeholder="Setor" />
                     </SelectTrigger>
                     <SelectContent className="rounded-lg">
@@ -1330,9 +1466,9 @@ function WorkspaceAtendimentoPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   {/* Sinalizador Janela 24h WhatsApp */}
-                  <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
+                  <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
                     <Clock className="size-3 text-primary shrink-0" />
                     <span
                       className={cn(
@@ -1346,65 +1482,7 @@ function WorkspaceAtendimentoPage() {
                     </span>
                   </div>
 
-                  {/* Dossiê no CRM */}
-                  {activeThread.customer?.id && (
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Abrir dossiê no CRM"
-                    >
-                      <Link to="/workspace/clientes/$id" params={{ id: activeThread.customer.id }}>
-                        <Building2 className="size-4 text-primary" />
-                        <span className="hidden xl:inline">CRM</span>
-                      </Link>
-                    </Button>
-                  )}
-
-                  {/* Chamados de Suporte & SAC */}
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                    title="Abrir central de chamados e suporte"
-                  >
-                    <Link to="/workspace/suporte">
-                      <HelpCircle className="size-4 text-sky-500" />
-                      <span className="hidden xl:inline">Chamados</span>
-                    </Link>
-                  </Button>
-
-                  {/* Transferir Atendimento (Whaticket Hand-off) */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setTransferModalOpen(true)}
-                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                    title="Transferir para outro setor ou atendente com nota de contexto"
-                  >
-                    <ArrowRightLeft className="size-4 text-primary" />
-                    <span className="hidden sm:inline">Transferir</span>
-                  </Button>
-
-                  {/* Agendar Mensagem de Follow-up WhatsApp */}
-                  {activeThread.channel === "whatsapp" && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setScheduleModalOpen(true)}
-                      className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Agendar envio de mensagem futura"
-                    >
-                      <CalendarClock className="size-4 text-warning-strong" />
-                      <span className="hidden sm:inline">Agendar</span>
-                    </Button>
-                  )}
-
-                  {/* Ação de Arquivar / Desarquivar */}
+                  {/* Ação Primária: Finalizar / Desarquivar Atendimento */}
                   <Button
                     type="button"
                     variant="outline"
@@ -1413,51 +1491,121 @@ function WorkspaceAtendimentoPage() {
                     onClick={() =>
                       activeThread?.id && handleArchiveThread(activeThread.id, activeThread.status !== "archived")
                     }
-                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0"
                     title={activeThread.status === "archived" ? "Desarquivar conversa" : "Arquivar conversa"}
                   >
                     {activeThread.status === "archived" ? (
                       <>
-                        <ArchiveRestore className="size-4" />
+                        <ArchiveRestore className="size-4 shrink-0" />
                         <span className="hidden sm:inline">Desarquivar</span>
                       </>
                     ) : (
                       <>
-                        <Archive className="size-4" />
+                        <Archive className="size-4 shrink-0" />
                         <span className="hidden sm:inline">Finalizar & CSAT</span>
                       </>
                     )}
                   </Button>
 
-                  {/* Toggle Linha do Tempo na Conversa */}
+                  {/* Toggle Perfil 360 */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                        setMobileCustomer360Open((prev) => !prev);
+                      } else {
+                        setShowCustomer360((prev) => !prev);
+                      }
+                    }}
+                    className={cn(
+                      "h-11 min-h-11 text-xs font-bold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
+                      showCustomer360 ? "bg-muted" : "",
+                    )}
+                    title="Alternar Dossiê Perfil 360º"
+                    aria-label="Perfil 360"
+                  >
+                    <UserCheck className="size-4 mr-0 sm:mr-1 shrink-0" />
+                    <span className="hidden sm:inline">Perfil 360º</span>
+                  </Button>
+
+                  {/* Toggle Linha do Tempo (Visível em Telas Amplas) */}
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => setShowLiveTimeline((prev) => !prev)}
                     className={cn(
-                      "h-11 min-h-11 text-xs font-semibold rounded-lg px-3 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                      "hidden 2xl:flex h-11 min-h-11 text-xs font-semibold rounded-lg px-3 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
                       showLiveTimeline ? "bg-primary/15 text-primary border-primary/40 font-bold" : "",
                     )}
                     title="Exibir Linha do Tempo de eventos, pedidos e planilhas do cliente"
                   >
-                    <GitBranch className="size-4 text-primary" />
-                    <span className="hidden sm:inline">Linha do Tempo</span>
+                    <GitBranch className="size-4 text-primary shrink-0" />
+                    <span>Linha do Tempo</span>
                   </Button>
 
-                  {/* Toggle Perfil 360 */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => { if (typeof window !== "undefined" && window.innerWidth < 1024) setMobileCustomer360Open((prev) => !prev); else setShowCustomer360((prev) => !prev); }}
-                    className={cn(
-                      "h-11 text-xs font-bold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
-                      showCustomer360 ? "bg-muted" : "",
-                    )}
-                  >
-                    <UserCheck className="size-4 mr-1" />
-                    <span className="hidden sm:inline">Perfil 360º</span>
-                  </Button>
+                  {/* Menu Dropdown de Ações Operacionais Avançadas */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-11 min-w-11 min-h-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+                        title="Mais Ações de Atendimento"
+                        aria-label="Mais Ações de Atendimento"
+                      >
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-border shadow-overlay">
+                      <DropdownMenuItem
+                        onClick={() => setTransferModalOpen(true)}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                      >
+                        <ArrowRightLeft className="size-4 text-primary shrink-0" />
+                        <span>Transferir Atendimento</span>
+                      </DropdownMenuItem>
+
+                      {activeThread.channel === "whatsapp" && (
+                        <DropdownMenuItem
+                          onClick={() => setScheduleModalOpen(true)}
+                          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                        >
+                          <CalendarClock className="size-4 text-warning-strong shrink-0" />
+                          <span>Agendar Mensagem</span>
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuItem
+                        onClick={() => setShowLiveTimeline((prev) => !prev)}
+                        className="2xl:hidden h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                      >
+                        <GitBranch className="size-4 text-primary shrink-0" />
+                        <span>{showLiveTimeline ? "Ocultar Linha do Tempo" : "Linha do Tempo"}</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator className="my-1 border-border/60" />
+
+                      {activeThread.customer?.id && (
+                        <DropdownMenuItem asChild className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2">
+                          <Link to="/workspace/clientes/$id" params={{ id: activeThread.customer.id }}>
+                            <Building2 className="size-4 text-primary shrink-0" />
+                            <span>Abrir Dossiê no CRM</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuItem asChild className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2">
+                        <Link to="/workspace/suporte">
+                          <HelpCircle className="size-4 text-sky-500 shrink-0" />
+                          <span>Central de Chamados SAC</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -1853,18 +2001,20 @@ function WorkspaceAtendimentoPage() {
                       <Lock className="size-4" />
                     </Button>
 
-                    {/* Botão Enviar */}
+                    {/* Botão Enviar Responsivo */}
                     <Button
                       type="submit"
                       disabled={isSending || !text.trim()}
-                      className="h-11 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer"
+                      className="size-11 sm:w-auto sm:px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center"
+                      title="Enviar mensagem"
+                      aria-label="Enviar mensagem"
                     >
                       {isSending ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
                         <>
-                          <span>Enviar</span>
-                          <Send className="size-4" />
+                          <span className="hidden sm:inline">Enviar</span>
+                          <Send className="size-4 shrink-0" />
                         </>
                       )}
                     </Button>
@@ -2152,10 +2302,11 @@ function WorkspaceAtendimentoPage() {
                   className="h-11 px-3 rounded-md bg-muted/50 border border-border/60 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <option value="all">Criador: Todos</option>
-                  <option value="Diretoria">Diretoria</option>
-                  <option value="Helena Costa">Helena Costa</option>
-                  <option value="Roberto Alves">Roberto Alves</option>
-                  <option value="Fernanda Lima">Fernanda Lima</option>
+                  {Array.from(new Set(intranetChannels.map((c) => c.creator).filter(Boolean))).map((creator) => (
+                    <option key={creator} value={creator}>
+                      {creator}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -2547,12 +2698,12 @@ function WorkspaceAtendimentoPage() {
           {/* Barra de Filtros SDR */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70 shadow-2xs">
             <div className="relative flex-1 max-w-md">
-              <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
+              <Search className="size-4 absolute left-3 top-3.5 text-muted-foreground" />
               <Input
                 placeholder="Buscar por anúncio ou resumo da IA..."
                 value={sdrSearchTerm}
                 onChange={(e) => setSdrSearchTerm(e.target.value)}
-                className="pl-8 h-9 rounded-lg text-xs bg-muted/40"
+                className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/40 focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
 
@@ -2722,7 +2873,7 @@ function WorkspaceAtendimentoPage() {
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
               <span className="text-xs text-muted-foreground font-semibold">Tempo Médio 1ª Resposta</span>
               <p className="text-2xl font-bold font-mono text-foreground">
-                {metrics?.sla_first_response_min || 3.5} min
+                {metrics?.sla_first_response_min ? `${metrics.sla_first_response_min} min` : "—"}
               </p>
             </div>
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
@@ -2922,7 +3073,7 @@ function WorkspaceAtendimentoPage() {
                           updated[idx] = { ...updated[idx], hours: e.target.value };
                           setSupportSchedules(updated);
                         }}
-                        className="h-8 text-xs bg-background mt-1"
+                        className="h-11 min-h-11 px-3 text-xs bg-background mt-1 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-primary"
                         placeholder="Ex: 08:00 às 18:00 ou Fechado"
                       />
                     </div>

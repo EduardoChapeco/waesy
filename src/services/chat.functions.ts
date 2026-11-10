@@ -433,6 +433,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  thread_id: input.threadId,
  message: input.message,
  message_type: input.message_type,
+ channel: thread.context_type || "web",
  attachments: input.attachments,
  payload: finalPayload,
  is_staff_reply: true,
