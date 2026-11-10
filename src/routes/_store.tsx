@@ -128,12 +128,12 @@ function StoreLayout() {
  }, [carts, globalCarts, initCart]);
 
   // Zero-Trust Civil Root na Vitrine Pública (DEC-206):
-  // Garante que o usuário que navega no marketplace/vitrine pública opere sempre em sua Identidade Civil,
-  // sem purgar o tenant corporativo caso esteja com o /workspace aberto em outra aba.
+  // A vitrine pública opera sob identidade civil pessoal na camada SSR.
+  // Preserva o contexto de store no cookie caso o lojista esteja alternando entre vitrine e workspace.
   useEffect(() => {
     if (typeof window !== "undefined") {
       const activeCtx = getClientActiveContext();
-      if (activeCtx === "store") {
+      if (!activeCtx) {
         window.document.cookie =
           "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
       }

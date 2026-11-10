@@ -233,15 +233,17 @@ export function getBrowserClient(): SupabaseClient {
               namesBeingSetWithValue.add(name);
             }
 
-            // Expira variantes legadas com Domain explícito
-            for (const domain of legacyDomains) {
-              document.cookie = serializeCookieHeader(name, "", {
-                path: "/",
-                maxAge: 0,
-                domain,
-                sameSite: "lax",
-                secure: isSecure,
-              });
+            // Expira variantes legadas com Domain explícito apenas durante logout/remoção
+            if (isDeleting) {
+              for (const domain of legacyDomains) {
+                document.cookie = serializeCookieHeader(name, "", {
+                  path: "/",
+                  maxAge: 0,
+                  domain,
+                  sameSite: "lax",
+                  secure: isSecure,
+                });
+              }
             }
 
             const cleanOptions = { ...options };

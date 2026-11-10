@@ -133,14 +133,26 @@ export const syncSessionToCookies = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: { access_token, refresh_token } }) => {
     try {
-      const ssrClient = await getSSRClient();
+      let resHeaders: Headers | undefined;
+      try {
+        resHeaders = getResponseHeaders() as unknown as Headers;
+      } catch {
+        resHeaders = undefined;
+      }
+      const ssrClient = await getSSRClient(resHeaders);
       await ssrClient.auth.setSession({ access_token, refresh_token });
       const { clearIdentityCache } = await import("@/lib/server-access");
       clearIdentityCache();
-      return { success: true };
+      const identity = await getServerIdentity().catch(() => null);
+      return {
+        success: true,
+        user_id: identity?.id || null,
+        store_id: identity?.store_id || null,
+        memberships: identity?.memberships || [],
+      };
     } catch (e: any) {
       console.warn("[auth] Falha ao sincronizar cookies de sessão:", e?.message);
-      return { success: false };
+      return { success: false, user_id: null, store_id: null, memberships: [] };
     }
   });
 
@@ -337,12 +349,12 @@ export const signInWithPassword = createServerFn({ method: "POST" })
     // Inicialização Inteligente de Contexto no Login (DEC-446):
     // Se o usuário possui empresa/loja vinculada, ativa automaticamente o contexto 'store'
     // e seu tenant primário, garantindo que o redirecionamento ao Workspace não caia em laço civil.
+    let targetStoreId: string | null = null;
     try {
       const { setCookie } = await import("@tanstack/start-server-core");
       const isProd = process.env.NODE_ENV === "production";
       const adminDb = getServerClient();
 
-      let targetStoreId: string | null = null;
       if (data.user?.id) {
         const [wmRes, profRes] = await Promise.all([
           adminDb
@@ -434,6 +446,8 @@ export const signInWithPassword = createServerFn({ method: "POST" })
             email: data.user.email,
           }
         : null,
+      store_id: targetStoreId,
+      role: targetStoreId ? "owner" : ((data.user?.app_metadata?.role as any) || "customer"),
     };
   } catch (e: unknown) {
  logSystemError({ route: "auth.functions.signInWithPassword", error: e, payload: { email, identifier } });
