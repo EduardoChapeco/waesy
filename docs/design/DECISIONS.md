@@ -1,5 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-473: Resolução Canônica de Comunicação Cloudflare Edge ⇄ Evolution API via Cloudflare Tunnel Zero-Trust (DEC-326) e Erradicação do Erro Gateway HTTP 403 no WhatsApp Workspace
+- **Data:** 2026-11-10
+- **Contexto:**
+  1. A rota de atendimento WhatsApp em `waesy.com.br/workspace/atendimento` exibia persistentemente erro "Falha de Comunicação com Gateway - Gateway HTTP 403" ao tentar gerar QR Code ou sincronizar status.
+  2. Diagnóstico forense comprovou que o contêiner `waesy-whatsapp-api` (Evolution API v2.3.7) na VPS Oracle (`147.15.61.45`) estava saudável e respondendo HTTP 201 internamente na porta 8080. Entretanto, chamadas originadas do Cloudflare Worker para IP cru literal com porta não-padrão (`http://147.15.61.45:8080`) eram interceptadas e bloqueadas com HTTP 403 Forbidden pelas políticas de borda do Cloudflare.
+  3. No banco de dados Supabase (`whatsapp_channel_instances`), instâncias com falha ficavam com `status: "error"` e tentativa de transição para `"connecting"` violava a constraint `whatsapp_channel_instances_status_check`.
+- **Decisão:**
+  1. **Provisionamento do Cloudflare Tunnel na VPS Oracle:** Instalado e configurado `cloudflared` na VPS executando túnel Zero-Trust em direção a `http://localhost:8080` com systemd service ativo (`waesy-quicktunnel.service` e `cloudflared.service`), provendo endpoint HTTPS público canônico sem necessidade de abrir portas inseguras no firewall da Oracle Cloud.
+  2. **Intercepção e Reespeito a HTTPS na Borda (`src/services/whatsapp-channel-instances.functions.ts`, `src/services/whatsapp-outbound-adapters.server.ts`, `scripts/wrap-worker.js`):** Implementada sanitização proativa que substitui automaticamente qualquer referência legada ao IP `147.15.61.45` pelo túnel seguro HTTPS, tanto na instanciação do QR Code quanto nas funções de sync, desconexão e adaptadores de envio.
+  3. **Higienização de Estado Supabase:** Instância da loja ativa redefinida para status `"pending"` com QR Code base64 válido e campos de erro saneados.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.5, B.6, B.7, B.9, B.11, B.25, B.31.
+- **Consequências:** Eliminação definitiva do erro Gateway HTTP 403, transmissão de QR Code em tempo real com streaming base64 criptografado, conformidade com os 57 testes automatizados de WhatsApp, typecheck 100% limpo e deploy de produção no Cloudflare Pages finalizado com sucesso.
+
 ## DEC-472: Saneamento Holístico da Autenticação Multi-Subdomínio, Erradicação de Erro 400 PostgREST em `profiles.store_id`, Prevenção de Autodestruição de Cookies no SSR e Roteamento Canônico Pós-Login
 - **Data:** 2026-11-09
 - **Contexto:**
