@@ -1,5 +1,29 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-475: Erradicação Holística de Mocks na Intranet Corporativa, Persistência Transacional Real Supabase, Desobstrução Multiloja de Threads de Atendimento e Blindagem de CI (DL-03)
+- **Data:** 2026-11-10
+- **Contexto:**
+  1. A aba de Intranet Corporativa em `workspace/atendimento` continha mais de 180 linhas de arrays estáticos mockados em `useState` com identificadores fictícios (`ch-exec-q3`, `Helena Costa`, `Roberto Alves`), violando a Invariante B.33. O envio de mensagens e criação de tópicos geravam IDs locais sem persistência em PostgreSQL.
+  2. Na visualização de atendimento ("Conversas"), operadores com múltiplos vínculos corporativos viam a lista de threads vazia ("Nenhuma conversa encontrada") porque a Server Function `listChatThreads` forçava `effectiveStoreId = (identity as any).store_id || targetStoreId`, substituindo o tenant explicitamente solicitado pela loja primária do usuário.
+  3. O endpoint `getChatMessages` falhava prematuramente ao invocar `assertStoreAccess(identity)` sem contexto antes de carregar o registro da thread.
+- **Decisão:**
+  1. **Persistência Real da Intranet (`src/services/intranet.functions.ts` & `src/routes/workspace.atendimento.index.tsx`):**
+     - O loader de `workspace/atendimento` agora busca canais via `listIntranetChannels`, com hidratação transacional em `intranet_channels`, `intranet_messages` e `intranet_milestones`.
+     - Seed automático canônico de 4 canais operacionais iniciais para lojas sem canais prévios.
+     - Criação de canais (`createIntranetChannel`) e envio de mensagens e artefatos (`sendIntranetMessage`) conectados 100% ao banco com IDs UUID reais e atualização reativa Realtime (`intranet_messages`, `intranet_milestones`).
+     - Adicionado Empty State canônico e honesto para ausência de canais selecionados.
+  2. **Isolamento Multiloja Preciso em `listChatThreads` (`src/services/chat.functions.ts`):**
+     - Normalizado `effectiveStoreId = targetStoreId`, respeitando o `store_id` passado pelo seletor de lojas do Workspace.
+     - Remoção de checagens cegas de `assertStoreAccess` sem `targetStoreId` antes de buscar entidades.
+  3. **Conformidade com a Grade de 4px e Catraca CI (`DL-03`):**
+     - Saneadas 4 classes fora da grade modular (`gap-1.5`, `px-2.5`, `p-1.5`) para múltiplos estritos de 4px (`gap-2`, `px-3`, `p-2`), restabelecendo aprovação plena na catraca de CI sem regressões (`node scripts/design-lint.mjs --ratchet`).
+  4. **Deploy e Integração:**
+     - Build de produção Cloudflare Pages aprovado (`Exit Code 0`).
+     - Deploy executado em `usewaesy` (`https://2a3dab5c.usewaesy.pages.dev`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.33.
+- **Consequências:** Zero dados falsos ou simulados na Intranet; threads e mensagens de WhatsApp visíveis e operáveis em tempo real no SAC; persistência completa ponta a ponta e build verde em produção.
+
+
 ## DEC-474: Reconciliação End-to-End do Atendimento WhatsApp Web, Sincronização Bidirecional Histórica Evolution API ⇄ Supabase, Erradicação de Coluna Fantasma `profiles.email` e Desobstrução de Webhooks Inbound
 - **Data:** 2026-11-10
 - **Contexto:**
