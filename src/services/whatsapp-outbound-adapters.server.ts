@@ -34,7 +34,8 @@ function identifierValue(...values: unknown[]): string | null {
   return value === undefined ? null : String(value);
 }
 function baseUrl(instance: OutboundInstance, secret: Record<string, unknown>, fallback: string | null): string {
-  const value = stringValue(instance.public_config?.base_url, secret.base_url, fallback);
+  let value = stringValue(instance.public_config?.base_url, secret.base_url, fallback);
+  if (value && value.includes("147.15.61.45")) value = process.env.EVOLUTION_API_URL?.trim() || "https://feb-genre-kathy-indicator.trycloudflare.com";
   if (!value) throw new OutboundAdapterError("MISSING_BASE_URL", "Base URL do provider não configurada", false);
   try { const parsed = new URL(value); if (!/^https?:$/.test(parsed.protocol)) throw new Error(); return value.replace(/\/$/, ""); } catch { throw new OutboundAdapterError("INVALID_BASE_URL", "Base URL do provider inválida", false); }
 }

@@ -33,7 +33,7 @@ const targetAnonKey = secrets.VITE_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KE
 const targetServiceRoleKey = secrets.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const targetVaultMasterKey = secrets.VAULT_MASTER_KEY || process.env.VAULT_MASTER_KEY || targetServiceRoleKey;
 const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://usewaesy.pages.dev";
-const targetEvolutionUrl = secrets.EVOLUTION_API_URL || process.env.EVOLUTION_API_URL || "http://147.15.61.45:8080";
+const targetEvolutionUrl = secrets.EVOLUTION_API_URL || process.env.EVOLUTION_API_URL || "https://feb-genre-kathy-indicator.trycloudflare.com";
 const targetEvolutionKey = secrets.EVOLUTION_API_KEY || process.env.EVOLUTION_API_KEY || "WaesyApiKey_Master_2026_WhatsApp";
 
 const fallbackEnv = {

@@ -156,11 +156,13 @@ export const listWhatsAppChannelAudit = createServerFn({ method: "GET" }).valida
 
 // ─── Integração Direta Evolution API server-side e QR Code ao vivo ───
 
-const EVOLUTION_BASE_URL = process.env.EVOLUTION_API_URL?.trim() || "http://147.15.61.45:8080";
+const CANONICAL_EVOLUTION_TUNNEL_URL = "https://feb-genre-kathy-indicator.trycloudflare.com";
+const EVOLUTION_BASE_URL = process.env.EVOLUTION_API_URL?.trim() || CANONICAL_EVOLUTION_TUNNEL_URL;
 const DEFAULT_WEBHOOK_ORIGIN = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
 
 function requireEvolutionBaseUrl(): string {
-  const url = process.env.EVOLUTION_API_URL?.trim() || EVOLUTION_BASE_URL || "http://147.15.61.45:8080";
+  const envUrl = process.env.EVOLUTION_API_URL?.trim();
+  const url = envUrl && !envUrl.includes("147.15.61.45") ? envUrl : EVOLUTION_BASE_URL;
   return url.replace(/\/$/, "");
 }
 
@@ -467,7 +469,8 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
     }
 
     const externalName = instance.external_instance_id || instance.instance_key;
-    const baseUrl = String((instance.public_config as any)?.base_url || requireEvolutionBaseUrl()).replace(/\/$/, "");
+    const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");
+    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
     const apiKey = requireEvolutionMasterKey();
 
     let liveState = "close";
@@ -590,7 +593,8 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
 
     if (instance.provider === "evolution_api") {
       const externalName = instance.external_instance_id || instance.instance_key;
-      const baseUrl = String((instance.public_config as any)?.base_url || requireEvolutionBaseUrl()).replace(/\/$/, "");
+      const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");
+    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
       await fetch(`${baseUrl}/instance/logout/${encodeURIComponent(externalName)}`, {
         method: "DELETE",
         headers: { apikey: requireEvolutionMasterKey() },
