@@ -120,7 +120,22 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Circle,
+  AlertCircle,
 } from "lucide-react";
+
+function MessageDeliveryStatusIcon({ status }: { status?: string }) {
+  if (status === "read") {
+    return <CheckCheck className="size-3.5 text-sky-500 dark:text-sky-400 inline" aria-label="Lida" />;
+  }
+  if (status === "delivered") {
+    return <CheckCheck className="size-3.5 text-muted-foreground inline" aria-label="Entregue" />;
+  }
+  if (status === "failed") {
+    return <AlertCircle className="size-3 text-destructive inline" aria-label="Falha de envio" />;
+  }
+  return <Check className="size-3 text-muted-foreground inline" aria-label="Enviada" />;
+}
 import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
 import {
   ChatQuickComposerModals,
@@ -453,13 +468,7 @@ function WorkspaceAtendimentoPage() {
   const [isWhisperMode, setIsWhisperMode] = useState(false);
   const [aiAutoReplyPerThread, setAiAutoReplyPerThread] = useState<Record<string, boolean>>({});
   const [assignedAgentPerThread, setAssignedAgentPerThread] = useState<Record<string, string>>({});
-  const [baseQuickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || [
-    { id: "qr_ola", shortcut: "ola", title: "Saudação de Boas-Vindas", content: "Olá {{nome}}! Seja bem-vindo ao atendimento oficial da {{loja}}. Como podemos ajudar?", category: "geral" },
-    { id: "qr_pix", shortcut: "pix", title: "Chave PIX", content: "Nossa chave PIX oficial é gerada diretamente no seu pedido com confirmação automática em segundos!", category: "financeiro" },
-    { id: "qr_horarios", shortcut: "horarios", title: "Horários de Expediente", content: "Atendemos de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", category: "suporte" },
-    { id: "qr_rastreio", shortcut: "rastreio", title: "Rastreio do Pedido", content: "Seu pedido está em trânsito e você pode acompanhar pelo link de rastreio oficial.", category: "logistica" },
-    { id: "qr_cardapio", shortcut: "cardapio", title: "Cardápio e Catálogo", content: "Confira todos os itens do nosso cardápio atualizado no link da vitrine!", category: "vendas" }
-  ]);
+  const [baseQuickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || []);
 
   const quickReplies = useMemo<QuickReplyItem[]>(() => { const byShortcut = new Map<string, QuickReplyItem>(); for (const item of baseQuickReplies) byShortcut.set(String(item.shortcut || "").toLowerCase(), item); for (const m of storeMacros as any[]) { const sc = String(m.shortcut || "").toLowerCase(); if (sc) byShortcut.set(sc, { id: m.id, shortcut: sc, title: m.title || sc, content: m.message || m.content || "", category: m.category || "geral" }); } return Array.from(byShortcut.values()); }, [baseQuickReplies, storeMacros]);
   // Ticket Resolver Modal state
@@ -472,15 +481,10 @@ function WorkspaceAtendimentoPage() {
   // Estados de Horários de Atendimento & Ausência (Persistidos)
   const initialSupportSettings = (store?.settings as any)?.support_settings || {};
   const [supportSchedules, setSupportSchedules] = useState<Array<{ day: string; hours: string; active: boolean }>>(
-    initialSupportSettings.support_schedules || [
-      { day: "Segunda a Sexta", hours: "08:00 às 18:00", active: true },
-      { day: "Sábado", hours: "08:00 às 12:00", active: true },
-      { day: "Domingo e Feriados", hours: "Fechado", active: false },
-    ],
+    initialSupportSettings.support_schedules || [],
   );
   const [awayMessage, setAwayMessage] = useState<string>(
-    initialSupportSettings.away_message ||
-      "Olá! Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h. Deixe sua mensagem que responderemos assim que nossa equipe iniciar o expediente!",
+    initialSupportSettings.away_message || "",
   );
   const [autoReplyEnabled, setAutoReplyEnabled] = useState<boolean>(
     initialSupportSettings.auto_reply_enabled ?? true,
@@ -914,22 +918,22 @@ function WorkspaceAtendimentoPage() {
         <div className="flex items-center justify-between gap-3 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
-              Atendimento Omnichannel
+              Atendimento
             </h1>
-            <span className="hidden sm:inline-block text-xs text-muted-foreground">
+            <span className="hidden sm:inline-block text-xs text-muted-foreground font-medium">
               • {store?.name || "Workspace"}
             </span>
           </div>
 
           {/* Status de Presença do Atendente */}
-          <div className="flex items-center gap-2 shrink-0 bg-muted/60 p-1 rounded-lg border border-border/60">
+          <div className="flex items-center gap-1 shrink-0 bg-muted/40 p-1 rounded-lg border border-border/60">
             <button
               type="button"
               onClick={() => setAgentPresence("online")}
               className={cn(
-                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "px-3 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "online"
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
+                  ? "bg-background text-foreground shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -940,9 +944,9 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("busy")}
               className={cn(
-                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "px-3 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "busy"
-                  ? "bg-warning/15 text-warning-strong  font-bold"
+                  ? "bg-background text-foreground shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -953,13 +957,13 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("away")}
               className={cn(
-                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "px-3 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "away"
-                  ? "bg-muted text-muted-foreground font-bold"
+                  ? "bg-background text-foreground shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className="size-2 rounded-full bg-muted-foreground/50" />
+              <span className="size-2 rounded-full bg-muted-foreground/60" />
               <span>Pausa</span>
             </button>
           </div>
@@ -1005,7 +1009,7 @@ function WorkspaceAtendimentoPage() {
             </Badge>
           </button>
 
-          {/* Aba 2: Leads SDR / IA */}
+          {/* Aba 3: Leads SDR */}
           <button
             type="button"
             onClick={() => setActiveHubTab("sdr")}
@@ -1017,7 +1021,7 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             <Bot className="size-4" />
-            <span>Leads SDR / IA</span>
+            <span>Leads SDR</span>
             {sdrMetrics?.total > 0 && (
               <Badge variant="secondary" className="text-xs h-4 px-2 font-mono">
                 {sdrMetrics.total}
@@ -1025,7 +1029,7 @@ function WorkspaceAtendimentoPage() {
             )}
           </button>
 
-          {/* Aba 3: Telemetria & Filas */}
+          {/* Aba 4: Filas & Métricas */}
           <button
             type="button"
             onClick={() => setActiveHubTab("metrics")}
@@ -1037,10 +1041,10 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             <Activity className="size-4" />
-            <span>Telemetria & Filas</span>
+            <span>Filas & Métricas</span>
           </button>
 
-          {/* Aba 4: Conexão WhatsApp Web */}
+          {/* Aba 5: Conexão WhatsApp */}
           <button
             type="button"
             onClick={() => setActiveHubTab("whatsapp")}
@@ -1052,10 +1056,10 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             <Smartphone className="size-4" />
-            <span>Conexão WhatsApp</span>
+            <span>WhatsApp</span>
           </button>
 
-          {/* Aba 5: Horários & Setores */}
+          {/* Aba 6: Horários & Turnos */}
           <button
             type="button"
             onClick={() => setActiveHubTab("hours")}
@@ -1067,11 +1071,11 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             <Clock className="size-4" />
-            <span>Horários & Setores</span>
+            <span>Horários</span>
           </button>
           <button type="button" onClick={() => setTeamSectorsDrawerOpen(true)} className="px-4 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-2 bg-foreground text-background cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary">
             <Sliders className="size-4" />
-            <span>Configurações</span>
+            <span>Setores</span>
           </button>
         </div>
       </header>
@@ -1654,7 +1658,7 @@ function WorkspaceAtendimentoPage() {
                           <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1">
                             {isStaff ? "Equipe / Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
                             {formatDate(msg.created_at)}
-                            {isStaff && <CheckCheck className="size-3 text-primary inline" />}
+                            {isStaff && <MessageDeliveryStatusIcon status={msg.delivery_status} />}
                           </span>
                         </div>
                       );
@@ -1682,7 +1686,7 @@ function WorkspaceAtendimentoPage() {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
-                          {isStaff && <CheckCheck className="size-3 text-primary inline" />}
+                          {isStaff && <MessageDeliveryStatusIcon status={msg.delivery_status} />}
                         </span>
                       </div>
                     );
@@ -2176,113 +2180,133 @@ function WorkspaceAtendimentoPage() {
               </div>
             </div>
 
-            {/* Grupos Colapsáveis por Departamento */}
+            {/* Grupos Colapsáveis por Departamento ou Estado Vazio */}
             <div className="flex-1 overflow-y-auto no-scrollbar p-2 space-y-2">
-              {(
-                [
-                  "Executivo",
-                  "Comercial",
-                  "Marketing",
-                  "Operações",
-                  "Financeiro",
-                  "Suporte",
-                ] as const
-              ).map((dept) => {
-                const deptChannels = intranetChannels.filter((c) => {
-                  if (c.department !== dept) return false;
-                  if (intranetScopeFilter !== "all" && c.scope !== intranetScopeFilter) return false;
-                  if (intranetCreatorFilter !== "all" && c.creator !== intranetCreatorFilter)
-                    return false;
-                  if (
-                    intranetSearch.trim() &&
-                    !c.title.toLowerCase().includes(intranetSearch.toLowerCase()) &&
-                    !c.creator.toLowerCase().includes(intranetSearch.toLowerCase())
-                  ) {
-                    return false;
-                  }
-                  return true;
-                });
+              {intranetChannels.length === 0 ? (
+                <div className="py-8 px-4 text-center text-xs text-muted-foreground space-y-3">
+                  <Hash className="size-8 text-muted-foreground/40 mx-auto" />
+                  <p className="font-semibold text-foreground">Nenhum canal cadastrado</p>
+                  <p className="text-2xs text-muted-foreground">
+                    Crie canais temáticos por departamento para organizar a comunicação interna da equipe.
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setNewChannelModalOpen(true)}
+                    className="h-11 min-h-11 w-full gap-2 text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>Criar Primeiro Canal</span>
+                  </Button>
+                </div>
+              ) : (
+                (
+                  [
+                    "Executivo",
+                    "Comercial",
+                    "Marketing",
+                    "Operações",
+                    "Financeiro",
+                    "Suporte",
+                  ] as const
+                ).map((dept) => {
+                  const deptChannels = intranetChannels.filter((c) => {
+                    if (c.department !== dept) return false;
+                    if (intranetScopeFilter !== "all" && c.scope !== intranetScopeFilter) return false;
+                    if (intranetCreatorFilter !== "all" && c.creator !== intranetCreatorFilter)
+                      return false;
+                    if (
+                      intranetSearch.trim() &&
+                      !c.title.toLowerCase().includes(intranetSearch.toLowerCase()) &&
+                      !c.creator.toLowerCase().includes(intranetSearch.toLowerCase())
+                    ) {
+                      return false;
+                    }
+                    return true;
+                  });
 
-                const isCollapsed = Boolean(collapsedDepts[dept]);
+                  const isCollapsed = Boolean(collapsedDepts[dept]);
 
-                return (
-                  <div key={dept} className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCollapsedDepts((prev) => ({ ...prev, [dept]: !prev[dept] }))
-                      }
-                      className="w-full h-11 min-h-11 px-2 rounded-md flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <span className="flex items-center gap-2">
-                        {isCollapsed ? (
-                          <ChevronRight className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )}
-                        <span>{dept}</span>
-                      </span>
-                      <Badge variant="outline" className="text-2xs font-mono">
-                        {deptChannels.length}
-                      </Badge>
-                    </button>
+                  return (
+                    <div key={dept} className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedDepts((prev) => ({ ...prev, [dept]: !prev[dept] }))
+                        }
+                        className="w-full h-11 min-h-11 px-2 rounded-md flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <span className="flex items-center gap-2">
+                          {isCollapsed ? (
+                            <ChevronRight className="size-3.5" />
+                          ) : (
+                            <ChevronDown className="size-3.5" />
+                          )}
+                          <span>{dept}</span>
+                        </span>
+                        <Badge variant="outline" className="text-2xs font-mono">
+                          {deptChannels.length}
+                        </Badge>
+                      </button>
 
-                    {!isCollapsed &&
-                      deptChannels.map((ch) => {
-                        const isSelected = ch.id === activeIntranetChannel?.id;
-                        return (
-                          <button
-                            key={ch.id}
-                            type="button"
-                            onClick={() => setActiveIntranetChannelId(ch.id)}
-                            className={cn(
-                              "w-full p-3 rounded-lg text-left transition-colors cursor-pointer border space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                              isSelected
-                                ? "bg-primary/10 border-primary/40 text-foreground"
-                                : "bg-card border-border/50 hover:bg-muted/40 text-foreground",
-                            )}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <span className="text-xs font-bold leading-snug line-clamp-1">
-                                {ch.title}
-                              </span>
-                              <span className="text-2xs font-mono text-muted-foreground shrink-0">
-                                {ch.updatedAt}
-                              </span>
-                            </div>
+                      {!isCollapsed &&
+                        deptChannels.map((ch) => {
+                          const isSelected = ch.id === activeIntranetChannel?.id;
+                          return (
+                            <button
+                              key={ch.id}
+                              type="button"
+                              onClick={() => setActiveIntranetChannelId(ch.id)}
+                              className={cn(
+                                "w-full p-3 rounded-lg text-left transition-colors cursor-pointer border space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                isSelected
+                                  ? "bg-primary/10 border-primary/40 text-foreground"
+                                  : "bg-card border-border/50 hover:bg-muted/40 text-foreground",
+                              )}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="text-xs font-bold leading-snug line-clamp-1">
+                                  {ch.title}
+                                </span>
+                                <span className="text-2xs font-mono text-muted-foreground shrink-0">
+                                  {ch.updatedAt}
+                                </span>
+                              </div>
 
-                            <div className="flex items-center flex-wrap gap-2 text-2xs">
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "text-2xs gap-1",
-                                  ch.scope === "private"
-                                    ? "bg-warning/10 text-warning-strong  border-warning/30"
-                                    : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-                                )}
-                              >
-                                {ch.scope === "private" ? (
-                                  <Lock className="size-2.5" />
-                                ) : (
-                                  <Hash className="size-2.5" />
-                                )}
-                                <span>{ch.scope === "private" ? "Privado" : "Público"}</span>
-                              </Badge>
+                              <div className="flex items-center flex-wrap gap-2 text-2xs">
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "text-2xs gap-1",
+                                    ch.scope === "private"
+                                      ? "bg-warning/10 text-warning-strong  border-warning/30"
+                                      : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+                                  )}
+                                >
+                                  {ch.scope === "private" ? (
+                                    <Lock className="size-2.5" />
+                                  ) : (
+                                    <Hash className="size-2.5" />
+                                  )}
+                                  <span>{ch.scope === "private" ? "Privado" : "Público"}</span>
+                                </Badge>
 
-                              <Badge variant="secondary" className="text-2xs">
-                                {ch.department}
-                              </Badge>
+                                <Badge variant="secondary" className="text-2xs">
+                                  {ch.department}
+                                </Badge>
 
-                              <span className="text-muted-foreground ml-auto truncate">
-                                por {ch.creator}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                  </div>
-                );
-              })}
+                                <span className="text-muted-foreground ml-auto truncate">
+                                  por {ch.creator}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </aside>
 
@@ -2356,20 +2380,51 @@ function WorkspaceAtendimentoPage() {
                     </Badge>
                   </div>
 
-                  <div className="relative pl-7 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-500/40">
-                    {activeIntranetChannel.milestones.map((ms) => (
-                      <div key={ms.id} className="relative flex items-start justify-between gap-3 text-xs">
-                        <span className=" -left-7 top-0.5 size-5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                          <Check className="size-3" />
+                  <div className="relative pl-7 space-y-3 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-500/40">
+                    {activeIntranetChannel.milestones.map((ms: any) => (
+                      <button
+                        key={ms.id}
+                        type="button"
+                        onClick={() => {
+                          const nextDone = !ms.done;
+                          toggleIntranetMilestone({ data: { milestoneId: ms.id, done: nextDone } }).catch((err) =>
+                            console.warn("[intranet] Erro ao alternar marco:", err),
+                          );
+                          setIntranetChannels((prev) =>
+                            prev.map((ch) =>
+                              ch.id === activeIntranetChannel.id
+                                ? {
+                                    ...ch,
+                                    milestones: ch.milestones.map((m: any) =>
+                                      m.id === ms.id ? { ...m, done: nextDone } : m,
+                                    ),
+                                  }
+                                : ch,
+                            ),
+                          );
+                        }}
+                        className="w-full relative flex items-start justify-between gap-3 text-xs text-left p-1 rounded-md hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <span
+                          className={cn(
+                            "size-5 rounded-full border flex items-center justify-center shrink-0 mt-1 transition-colors",
+                            ms.done
+                              ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40"
+                              : "bg-muted text-muted-foreground border-border/80",
+                          )}
+                        >
+                          {ms.done ? <Check className="size-3" /> : <Circle className="size-2 text-muted-foreground" />}
                         </span>
                         <div className="min-w-0 flex-1 space-y-1">
-                          <p className="font-semibold text-foreground">{ms.label}</p>
-                          <p className="text-muted-foreground">{ms.detail}</p>
+                          <p className={cn("font-semibold text-foreground", ms.done && "line-through text-muted-foreground")}>
+                            {ms.label}
+                          </p>
+                          {ms.detail && <p className="text-2xs text-muted-foreground">{ms.detail}</p>}
                         </div>
                         <span className="font-mono text-2xs text-muted-foreground shrink-0">
                           {ms.time}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
 
@@ -2781,26 +2836,25 @@ function WorkspaceAtendimentoPage() {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-muted/10">
           <div className="space-y-1">
             <h2 className="text-base font-bold text-foreground">
-              Instâncias & Conexão WhatsApp Web
+              WhatsApp
             </h2>
             <p className="text-xs text-muted-foreground">
-              Conecte o número de WhatsApp da sua empresa para enviar e receber mensagens diretamente no Waesy.
+              Status da instância corporativa e conexão com aparelhos.
             </p>
           </div>
 
-          {/* Cards de Instâncias Conectadas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Card de Conexão Ativa / QR Code */}
+          <div className="max-w-2xl mx-auto">
+            {/* Card Soberano de Conexão Ativa / QR Code */}
             <div className="bg-card p-6 rounded-lg border border-border/80 space-y-5 shadow-xs">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
-                    <Smartphone className="size-5" />
+                <div className="flex items-center gap-3">
+                  <div className="size-11 rounded-lg bg-muted flex items-center justify-center font-bold border border-border/60">
+                    <Smartphone className="size-5 text-foreground" />
                   </div>
                   <div>
                     <h3 className="font-bold text-sm text-foreground">WhatsApp Business</h3>
                     <p className="text-xs text-muted-foreground font-mono">
-                      {whatsappInstances[0]?.display_phone_number || "Conectar Aparelho"}
+                      {whatsappInstances[0]?.display_phone_number || "Aguardando pareamento"}
                     </p>
                   </div>
                 </div>
@@ -2811,31 +2865,18 @@ function WorkspaceAtendimentoPage() {
                     "text-xs px-2 py-1 font-bold",
                     whatsappInstances.some((i) => i.is_active && i.status === "connected")
                       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                      : "bg-warning/15 text-warning-strong  border-warning/30",
+                      : "bg-muted text-muted-foreground border-border/80",
                   )}
                 >
                   {whatsappInstances.some((i) => i.is_active && i.status === "connected")
                     ? "Conectado"
-                    : "Aguardando Leitura"}
+                    : "Aguardando Conexão"}
                 </Badge>
               </div>
 
-              {/* Instruções de Conexão WhatsApp Web */}
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Como conectar seu WhatsApp Web no Waesy:
-                </h4>
-                <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
-                  <li>Abra o aplicativo do WhatsApp no celular da sua empresa.</li>
-                  <li>Toque no menu de 3 pontinhos (Android) ou Configurações (iPhone).</li>
-                  <li>Selecione <strong>Aparelhos conectados</strong> e depois <strong>Conectar um aparelho</strong>.</li>
-                  <li>Aponte a câmera do celular para o QR Code abaixo para sincronizar.</li>
-                </ol>
-              </div>
-
               {/* Área do QR Code */}
-              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 rounded-lg bg-muted/10 space-y-3">
-                <div className="size-48 bg-card p-3 rounded-lg border border-border flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center p-6 border border-border/80 rounded-lg bg-muted/20 space-y-4">
+                <div className="size-52 bg-background p-3 rounded-lg border border-border flex items-center justify-center">
                   {whatsappInstances[0]?.public_config?.qr_code_url ? (
                     <img
                       src={normalizeWhatsAppQrDataUri(whatsappInstances[0].public_config.qr_code_url) || String(whatsappInstances[0].public_config.qr_code_url)}
@@ -2843,15 +2884,15 @@ function WorkspaceAtendimentoPage() {
                       className="size-full object-contain"
                     />
                   ) : (
-                    <QrCode className="size-40 text-neutral-900" />
+                    <QrCode className="size-40 text-muted-foreground/60" />
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
                   {whatsappInstances[0]?.public_config?.qr_code_url
-                    ? "Use este QR Code para conectar o aparelho."
-                    : "O provedor ainda não disponibilizou um QR Code persistido para esta instância."}
+                    ? "Aponte a câmera no WhatsApp > Aparelhos Conectados."
+                    : "Instância pronta. Clique em Gerar QR Code para sincronizar seu aparelho."}
                 </p>
-                <div className="flex flex-wrap items-center justify-center gap-2">
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
                   <Button
                     type="button"
                     size="sm"
@@ -2885,37 +2926,6 @@ function WorkspaceAtendimentoPage() {
                 </div>
               </div>
             </div>
-
-            {/* Configurações do Canal */}
-            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground">Diretrizes de Operação do Canal</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                O ecossistema Waesy opera em conformidade com as regras de mensageria da Meta Cloud API e WhatsApp Web:
-              </p>
-
-              <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
-                  <span className="font-bold text-foreground block">Janela de Conversação de 24 Horas</span>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Respostas da equipe após 24h sem nova mensagem do cliente exigem envio de modelo de mensagem aprovado.
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
-                  <span className="font-bold text-foreground block">Roteamento Inteligente por Setor</span>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Clientes podem selecionar departamento pelo menu inicial ou ser transferidos entre atendentes.
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
-                  <span className="font-bold text-foreground block">Histórico Unificado & Zero Deleção Física</span>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Todas as conversas arquivadas permanecem preservadas para auditoria, histórico de pedidos e SAC.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -2942,48 +2952,71 @@ function WorkspaceAtendimentoPage() {
                 <span className="text-xs text-muted-foreground font-mono">Sincronizado</span>
               </div>
               <div className="space-y-3 text-xs">
-                {supportSchedules.map((item, idx) => (
-                  <div
-                    key={item.day}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 gap-3"
-                  >
-                    <div className="flex-1">
-                      <span className="font-bold text-foreground block">{item.day}</span>
-                      <Input
-                        value={item.hours}
-                        onChange={(e) => {
-                          const updated = [...supportSchedules];
-                          updated[idx] = { ...updated[idx], hours: e.target.value };
-                          setSupportSchedules(updated);
-                        }}
-                        className="h-11 min-h-11 px-3 text-xs bg-background mt-1 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-primary"
-                        placeholder="Ex: 08:00 às 18:00 ou Fechado"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 pt-4">
-                      <Switch
-                        id={`schedule-switch-${idx}`}
-                        checked={item.active}
-                        onCheckedChange={(checked) => {
-                          const updated = [...supportSchedules];
-                          updated[idx] = { ...updated[idx], active: checked };
-                          setSupportSchedules(updated);
-                        }}
-                      />
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-xs font-semibold select-none",
-                          item.active
-                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                            : "bg-muted text-muted-foreground border-border/50",
-                        )}
-                      >
-                        {item.active ? "Ativo" : "Fechado"}
-                      </Badge>
-                    </div>
+                {supportSchedules.length === 0 ? (
+                  <div className="p-6 text-center rounded-lg border border-dashed border-border/80 space-y-3">
+                    <Clock className="size-8 text-muted-foreground/40 mx-auto" />
+                    <p className="text-xs text-muted-foreground font-medium">Nenhum turno de atendimento configurado.</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setSupportSchedules([
+                          { day: "Segunda a Sexta", hours: "08:00 às 18:00", active: true },
+                          { day: "Sábado", hours: "08:00 às 12:00", active: true },
+                          { day: "Domingo e Feriados", hours: "Fechado", active: false },
+                        ])
+                      }
+                      className="h-11 min-h-11 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary mx-auto"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Configurar Horários Padrão</span>
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  supportSchedules.map((item, idx) => (
+                    <div
+                      key={item.day}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 gap-3"
+                    >
+                      <div className="flex-1">
+                        <span className="font-bold text-foreground block">{item.day}</span>
+                        <Input
+                          value={item.hours}
+                          onChange={(e) => {
+                            const updated = [...supportSchedules];
+                            updated[idx] = { ...updated[idx], hours: e.target.value };
+                            setSupportSchedules(updated);
+                          }}
+                          className="h-11 min-h-11 px-3 text-xs bg-background mt-1 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-primary"
+                          placeholder="Ex: 08:00 às 18:00 ou Fechado"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 pt-4">
+                        <Switch
+                          id={`schedule-switch-${idx}`}
+                          checked={item.active}
+                          onCheckedChange={(checked) => {
+                            const updated = [...supportSchedules];
+                            updated[idx] = { ...updated[idx], active: checked };
+                            setSupportSchedules(updated);
+                          }}
+                        />
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-xs font-semibold select-none",
+                            item.active
+                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                              : "bg-muted text-muted-foreground border-border/50",
+                          )}
+                        >
+                          {item.active ? "Ativo" : "Fechado"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               <Button

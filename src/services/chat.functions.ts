@@ -286,7 +286,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
 
  const { data: messages, error } = await db
  .from("chat_messages")
- .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload")
+ .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status")
  .eq("thread_id", threadId)
  .order("created_at", { ascending: true });
 
@@ -359,7 +359,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
                 sent_at: occurredAt,
                 delivered_at: occurredAt,
                 created_at: occurredAt,
-              }).select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload").maybeSingle();
+              }).select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status").maybeSingle();
               if (createdMsg) rawMessages.push(createdMsg);
             }
           }

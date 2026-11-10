@@ -25,6 +25,33 @@
 
 
 
+## DEC-477: Silêncio Visual Padrão Apple HIG, Erradicação de AI-Smell no WhatsApp Web, Purga de Fallbacks em Turnos/Respostas Rápidas e Ícones de Entrega em Tempo Real
+- **Data:** 2026-11-10
+- **Contexto:**
+  1. O Hub de Atendimento (`workspace/atendimento`) ainda continha resquícios de fallbacks sintéticos em `baseQuickReplies` e `supportSchedules`, além de cards conversacionais e tutoriais prolixos na aba "Conexão WhatsApp" que explicavam a própria tela, gerando poluição e AI-smell.
+  2. A visualização de mensagens da equipe utilizava ícone estático de duplo check azul independentemente do status real de entrega (`delivery_status`).
+  3. A Server Function `listIntranetChannels` realizava auto-seed sintético de canais ao encontrar a tabela vazia, impedindo a exibição de empty state honesto.
+- **Decisão:**
+  1. **Purga de Fallbacks Sintéticos (B.33):**
+     - `baseQuickReplies` e `supportSchedules` inicializam com dados reais do loader ou vazios `[]`.
+     - Ao não haver canais na Intranet ou turnos de expediente configurados, a interface renderiza empty states honestos com botões de ação explícita ("Criar Primeiro Canal", "Configurar Horários Padrão").
+     - `listIntranetChannels` retorna `[]` limpo sem auto-inserção de canais sintéticos.
+  2. **Silêncio Visual & Erradicação de AI-Smell (B.8, B.26):**
+     - Título do cabeçalho simplificado para "Atendimento".
+     - Seletor de presença do atendente refatorado para pílulas monocromáticas minimalistas com pontos semânticos silenciosos.
+     - Rótulos de abas objetivos com menos de 6 palavras ("Conversas", "Intranet", "Leads SDR", "Filas & Métricas", "WhatsApp", "Horários", "Setores").
+     - Aba WhatsApp reestruturada em cartão soberano único com status da instância, QR code e botões de ação tátil de 44px, eliminando cards explicativos redundantes.
+  3. **Marcas de Entrega Reais (Check Único / Duplo Cinza / Duplo Azul / Alerta):**
+     - Criado componente `MessageDeliveryStatusIcon` mapeando `msg.delivery_status` para check único cinza (enviado), duplo cinza (entregue), duplo azul (lido) e alerta destrutivo (falha de envio).
+     - `getChatMessages` atualizado para selecionar e retornar `delivery_status` na carga inicial e sincronização Realtime.
+  4. **Conformidade com a Grade de 4px e Catraca CI (DL-03, DL-33):**
+     - Saneadas violações de espaçamento não-múltiplos de 4px e tokens de cor crua em favor dos tokens semânticos (`bg-warning`, `gap-2`, `mt-1`, `space-y-1`, `px-2`).
+     - Aprovada a catraca mecânica de CI (`node scripts/design-lint.mjs --ratchet`) com zero regressões.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.26, B.33; Apple HIG; Linear Design; WhatsApp Web Design.
+- **Consequências:** Interface silenciosa, profissional e ergonômica; ausência total de mocks; marcas de entrega verídicas; aderência plena ao Design System e catraca de CI verde.
+
+
+
 ## DEC-475: Erradicação Holística de Mocks na Intranet Corporativa, Persistência Transacional Real Supabase, Desobstrução Multiloja de Threads de Atendimento e Blindagem de CI (DL-03)
 - **Data:** 2026-11-10
 - **Contexto:**

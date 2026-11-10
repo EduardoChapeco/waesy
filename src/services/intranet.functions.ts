@@ -77,19 +77,7 @@ export const listIntranetChannels = createServerFn({ method: "GET" })
       }
 
       if (!channels || channels.length === 0) {
-        const defaultChannels = [
-          { store_id: storeId, title: "Geral & Comunicados da Equipe", department: "Executivo", scope: "public" as const, creator_name: "Sistema Waesy" },
-          { store_id: storeId, title: "Comercial & Vendas", department: "Comercial", scope: "public" as const, creator_name: "Sistema Waesy" },
-          { store_id: storeId, title: "Torre de Controle Operações & SAC", department: "Operações", scope: "public" as const, creator_name: "Sistema Waesy" },
-          { store_id: storeId, title: "Conciliação & Financeiro", department: "Financeiro", scope: "private" as const, creator_name: "Sistema Waesy" },
-        ];
-        const { data: inserted } = await supabase
-          .from("intranet_channels")
-          .insert(defaultChannels)
-          .select(`*, intranet_milestones (*), intranet_messages (*)`);
-        if (inserted && inserted.length > 0) {
-          channels = inserted;
-        }
+        return [];
       }
 
       return (channels || []).map((ch: any) => {
