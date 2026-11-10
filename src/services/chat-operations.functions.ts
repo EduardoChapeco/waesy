@@ -15,10 +15,14 @@ import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-
 export const listQuickAnswersSchema = z.object({
   category: z.string().optional(),
   search: z.string().optional(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
 });
 
 export const createQuickAnswerSchema = z.object({
   id: z.string().uuid().optional(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
   shortcut: z.string().min(1).max(50),
   title: z.string().min(1).max(100),
   message: z.string().min(1).max(2000),
@@ -55,13 +59,19 @@ export function interpolateTemplateVariables(
 
 export const deleteQuickAnswerSchema = z.object({
   id: z.string().uuid(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
 });
 
 export const listTagsSchema = z.object({
   is_kanban_column: z.boolean().optional(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
 });
 
 export const createTagSchema = z.object({
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
   name: z.string().min(1).max(50),
   color_hex: z.string().min(2).default("primary"),
   is_kanban_column: z.boolean().default(false),
@@ -71,15 +81,21 @@ export const createTagSchema = z.object({
 export const assignTagSchema = z.object({
   threadId: z.string().uuid(),
   tagId: z.string().uuid(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
 });
 
 export const removeTagSchema = z.object({
   threadId: z.string().uuid(),
   tagId: z.string().uuid(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
 });
 
 export const scheduleMessageSchema = z.object({
   threadId: z.string().uuid().optional().nullable(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
   recipientPhone: z.string().min(8),
   messageText: z.string().min(1).max(2000),
   scheduledFor: z.string().datetime(),
@@ -87,6 +103,8 @@ export const scheduleMessageSchema = z.object({
 
 export const cancelScheduledMessageSchema = z.object({
   id: z.string().uuid(),
+  store_id: z.string().optional(),
+  storeId: z.string().optional(),
 });
 
 // ============================================================
@@ -100,13 +118,15 @@ export const listStoreQuickAnswers = createServerFn({ method: "GET" })
       const category = data?.category;
       const search = data?.search;
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = data?.store_id || data?.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) return [];
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       let query = db
         .from("store_quick_answers")
         .select("id, store_id, shortcut, title, message, category, media_url, created_at, updated_at")
-        .eq("store_id", identity.store_id)
+        .eq("store_id", targetStoreId)
         .order("shortcut", { ascending: true });
 
       if (category && category !== "all") {
@@ -134,7 +154,9 @@ export const createStoreQuickAnswer = createServerFn({ method: "POST" })
     try {
       const { id, shortcut, title, message, category, media_url } = input;
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = input.store_id || input.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) throw new Error("Loja não informada.");
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       const cleanShortcut = shortcut.replace(/^\//, "").toLowerCase().trim();
@@ -153,7 +175,7 @@ export const createStoreQuickAnswer = createServerFn({ method: "POST" })
             updated_at: nowIso,
           })
           .eq("id", id)
-          .eq("store_id", identity.store_id)
+          .eq("store_id", targetStoreId)
           .select()
           .single();
         if (updateErr) throw updateErr;
@@ -163,7 +185,7 @@ export const createStoreQuickAnswer = createServerFn({ method: "POST" })
           .from("store_quick_answers")
           .upsert(
             {
-              store_id: identity.store_id,
+              store_id: targetStoreId,
               shortcut: cleanShortcut,
               title: title.trim(),
               message: message.trim(),
@@ -185,7 +207,7 @@ export const createStoreQuickAnswer = createServerFn({ method: "POST" })
         .from("chat_quick_replies")
         .upsert(
           {
-            store_id: identity.store_id,
+            store_id: targetStoreId,
             shortcut: cleanShortcut.slice(0, 30),
             title: title.trim().slice(0, 60),
             content: message.trim().slice(0, 1000),
@@ -208,24 +230,27 @@ export const createStoreQuickAnswer = createServerFn({ method: "POST" })
 
 export const deleteStoreQuickAnswer = createServerFn({ method: "POST" })
   .validator(deleteQuickAnswerSchema)
-  .handler(async ({ data: { id } }) => {
+  .handler(async ({ data }) => {
     try {
+      const { id } = data;
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = data.store_id || data.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) throw new Error("Loja não informada.");
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       const { data: existing } = await db
         .from("store_quick_answers")
         .select("shortcut")
         .eq("id", id)
-        .eq("store_id", identity.store_id)
+        .eq("store_id", targetStoreId)
         .maybeSingle();
 
       const { error } = await db
         .from("store_quick_answers")
         .delete()
         .eq("id", id)
-        .eq("store_id", identity.store_id);
+        .eq("store_id", targetStoreId);
 
       if (error) throw error;
 
@@ -233,7 +258,7 @@ export const deleteStoreQuickAnswer = createServerFn({ method: "POST" })
         await db
           .from("chat_quick_replies")
           .delete()
-          .eq("store_id", identity.store_id)
+          .eq("store_id", targetStoreId)
           .eq("shortcut", existing.shortcut)
           .then(() => null, () => null);
       }
@@ -255,13 +280,15 @@ export const listChatThreadTags = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = data?.store_id || data?.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) return [];
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       let query = db
         .from("chat_thread_tags")
         .select("id, store_id, name, color_hex, is_kanban_column, kanban_order, created_at")
-        .eq("store_id", identity.store_id)
+        .eq("store_id", targetStoreId)
         .order("kanban_order", { ascending: true })
         .order("name", { ascending: true });
 
@@ -284,14 +311,16 @@ export const createChatThreadTag = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = input.store_id || input.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) throw new Error("Loja não informada.");
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       const { data: tag, error } = await db
         .from("chat_thread_tags")
         .upsert(
           {
-            store_id: identity.store_id,
+            store_id: targetStoreId,
             name: input.name.trim(),
             color_hex: input.color_hex,
             is_kanban_column: input.is_kanban_column,
@@ -314,10 +343,12 @@ export const createChatThreadTag = createServerFn({ method: "POST" })
 
 export const assignTagToThread = createServerFn({ method: "POST" })
   .validator(assignTagSchema)
-  .handler(async ({ data: { threadId, tagId } }) => {
+  .handler(async ({ data: { threadId, tagId, store_id, storeId } }) => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = store_id || storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) throw new Error("Loja não informada.");
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       const { data: assignment, error } = await db
@@ -326,7 +357,7 @@ export const assignTagToThread = createServerFn({ method: "POST" })
           {
             thread_id: threadId,
             tag_id: tagId,
-            store_id: identity.store_id,
+            store_id: targetStoreId,
             assigned_by: identity.id,
           },
           { onConflict: "thread_id,tag_id" }
@@ -345,10 +376,12 @@ export const assignTagToThread = createServerFn({ method: "POST" })
 
 export const removeTagFromThread = createServerFn({ method: "POST" })
   .validator(removeTagSchema)
-  .handler(async ({ data: { threadId, tagId } }) => {
+  .handler(async ({ data: { threadId, tagId, store_id, storeId } }) => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = store_id || storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) throw new Error("Loja não informada.");
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       const { error } = await db
@@ -356,7 +389,7 @@ export const removeTagFromThread = createServerFn({ method: "POST" })
         .delete()
         .eq("thread_id", threadId)
         .eq("tag_id", tagId)
-        .eq("store_id", identity.store_id);
+        .eq("store_id", targetStoreId);
 
       if (error) throw error;
       return { success: true };
@@ -376,7 +409,9 @@ export const scheduleWhatsAppMessage = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = input.store_id || input.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) throw new Error("Loja não informada.");
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       const cleanPhone = input.recipientPhone.replace(/\D/g, "");
@@ -384,7 +419,7 @@ export const scheduleWhatsAppMessage = createServerFn({ method: "POST" })
       const { data: item, error } = await db
         .from("whatsapp_scheduled_messages")
         .insert({
-          store_id: identity.store_id,
+          store_id: targetStoreId,
           thread_id: input.threadId || null,
           recipient_phone: cleanPhone,
           message_text: input.messageText.trim(),
@@ -405,17 +440,19 @@ export const scheduleWhatsAppMessage = createServerFn({ method: "POST" })
   });
 
 export const listScheduledWhatsAppMessages = createServerFn({ method: "GET" })
-  .validator(z.object({ threadId: z.string().uuid().optional() }).optional())
+  .validator(z.object({ threadId: z.string().uuid().optional(), store_id: z.string().optional(), storeId: z.string().optional() }).optional())
   .handler(async ({ data }) => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = data?.store_id || data?.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) return [];
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       let query = db
         .from("whatsapp_scheduled_messages")
         .select("id, thread_id, recipient_phone, message_text, scheduled_for, status, sent_at, created_at")
-        .eq("store_id", identity.store_id)
+        .eq("store_id", targetStoreId)
         .order("scheduled_for", { ascending: true });
 
       if (data?.threadId) {
@@ -434,17 +471,20 @@ export const listScheduledWhatsAppMessages = createServerFn({ method: "GET" })
 
 export const cancelScheduledWhatsAppMessage = createServerFn({ method: "POST" })
   .validator(cancelScheduledMessageSchema)
-  .handler(async ({ data: { id } }) => {
+  .handler(async ({ data }) => {
     try {
+      const { id } = data;
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+      const targetStoreId = data.store_id || data.storeId || identity?.store_id || identity?.memberships?.[0]?.store_id;
+      if (!targetStoreId) throw new Error("Loja não informada.");
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
       const db = getServerClient();
 
       const { error } = await db
         .from("whatsapp_scheduled_messages")
         .update({ status: "cancelled", updated_at: new Date().toISOString() })
         .eq("id", id)
-        .eq("store_id", identity.store_id)
+        .eq("store_id", targetStoreId)
         .eq("status", "scheduled");
 
       if (error) throw error;
