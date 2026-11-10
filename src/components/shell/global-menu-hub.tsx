@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/services/auth.functions";
+import { getBrowserClient } from "@/lib/supabase";
 import { setClientContextCookies } from "@/lib/context-auth";
 import { toast } from "sonner";
 
@@ -95,6 +96,10 @@ export function GlobalMenuHub({
 
   const handleLogout = async () => {
     try {
+      if (typeof window !== "undefined") {
+        await getBrowserClient().auth.signOut().catch(() => {});
+        setClientContextCookies({ context: "civil" });
+      }
       await signOut();
       toast.success("Sessão encerrada com sucesso.");
       onOpenChange(false);

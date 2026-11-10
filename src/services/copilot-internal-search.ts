@@ -78,7 +78,7 @@ function uniqueKinds(prompt: string): InternalSearchKind[] {
 function firstImage(row: Record<string, any>): string | null {
   const images = row.images ?? row.image_urls ?? row.gallery;
   if (Array.isArray(images)) return typeof images[0] === "string" ? images[0] : images[0]?.url ?? null;
-  return row.image_url ?? row.cover_image ?? row.banner_url ?? row.avatar_url ?? null;
+  return row.logo_url ?? row.settings?.logoUrl ?? row.settings?.logo_url ?? row.settings?.brand_kit?.logo_url ?? row.image_url ?? row.cover_image ?? row.banner_url ?? row.avatar_url ?? null;
 }
 
 function firstText(row: Record<string, any>, keys: string[]): string | undefined {
@@ -274,6 +274,16 @@ async function searchTable(
     if (table === "classifieds" || table === "events" || table === "directory_listings" || table === "news_articles" || table === "jobs") {
       const status = String(row.status ?? row.visibility ?? "").toLowerCase();
       if (status && !["active", "published", "approved", "live", "public", "open"].includes(status)) return null;
+    }
+
+    if (
+      row.waesy_marketplace_enabled === false ||
+      row.publish_to_marketplace === false ||
+      row.is_published_to_marketplace === false ||
+      row.settings?.waesy_marketplace_enabled === false ||
+      row.settings?.publish_to_marketplace === false
+    ) {
+      return null;
     }
 
     // Se não há tokens discriminatórios na busca do usuário, exibe registros padrão

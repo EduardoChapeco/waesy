@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   getLegacyCookieDomainsToPurge,
+  inspectCanonicalSessionFromCookies,
   inspectEncodedSessionString,
   parseRawCookieStringPreservingDuplicates,
   resolveCanonicalAuthCookies,
+  resolveCanonicalCookieDomain,
+  resolveOrphanAuthCookiesToExpire,
 } from "../auth-cookie-sanitizer";
 
 function makeJwt(exp: number, sub = "user-123"): string {
@@ -135,5 +138,95 @@ describe("auth-cookie-sanitizer", () => {
       ".www.usewaesy.com",
     ]);
     expect(getLegacyCookieDomainsToPurge("localhost:3000")).toEqual([]);
+  });
+
+  it("resolves canonical shared cookie domain for subdomains and apex domains", () => {
+    expect(resolveCanonicalCookieDomain("waesy.com.br")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("painel.waesy.com.br")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("studio.waesy.com.br:443")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("turis.waesy.com.br")).toBe(".waesy.com.br");
+    expect(resolveCanonicalCookieDomain("usewaesy.com")).toBe(".usewaesy.com");
+    expect(resolveCanonicalCookieDomain("usewaesy.pages.dev")).toBeUndefined();
+    expect(resolveCanonicalCookieDomain("localhost:3000")).toBeUndefined();
+  });
+
+  it("NEVER expires waesy-auth-token.0 when @supabase/ssr performs a differential write of only waesy-auth-token.1", () => {
+    const twoChunkSession = splitIntoChunks(makeEncodedSession(1900000999, 3500));
+    expect(twoChunkSession).toHaveLength(2);
+
+    const rawCookies = parseRawCookieStringPreservingDuplicates(
+      twoChunkSession.map((c) => `${c.name}=${c.value}`).join("; "),
+    );
+
+    // Simula applyServerStorage do @supabase/ssr enviando apenas o chunk .1 (porque .0 não mudou)
+    const differentialCookiesToSet = [
+      {
+        name: "waesy-auth-token.1",
+        value: twoChunkSession[1]!.value,
+        options: { maxAge: 31536000 },
+      },
+    ];
+
+    const orphansToExpire = resolveOrphanAuthCookiesToExpire(rawCookies, differentialCookiesToSet);
+    expect(orphansToExpire).not.toContain("waesy-auth-token.0");
+    expect(orphansToExpire).toEqual([]);
+  });
+
+  it("NEVER expires session chunks when setting waesy-auth-token-code-verifier during OAuth PKCE", () => {
+    const twoChunkSession = splitIntoChunks(makeEncodedSession(1900000999, 3500));
+    const rawCookies = parseRawCookieStringPreservingDuplicates(
+      twoChunkSession.map((c) => `${c.name}=${c.value}`).join("; "),
+    );
+
+    const verifierToSet = [
+      {
+        name: "waesy-auth-token-code-verifier",
+        value: "pkce-verifier-secret",
+        options: { maxAge: 3600 },
+      },
+    ];
+
+    const orphansToExpire = resolveOrphanAuthCookiesToExpire(rawCookies, verifierToSet);
+    expect(orphansToExpire).toEqual([]);
+  });
+
+  it("expires rejected orphan .2 and stale unchunked cookie during differential chunk write while preserving .0", () => {
+    const olderThreeChunkSession = splitIntoChunks(makeEncodedSession(1700000100, 6800));
+    const newerTwoChunkSession = splitIntoChunks(makeEncodedSession(1900000999, 3500));
+    const staleUnchunked = makeEncodedSession(1700000050, 100);
+
+    const rawCookies = parseRawCookieStringPreservingDuplicates(
+      [
+        `waesy-auth-token=${staleUnchunked}`,
+        `${newerTwoChunkSession[0]!.name}=${newerTwoChunkSession[0]!.value}`,
+        `${newerTwoChunkSession[1]!.name}=${newerTwoChunkSession[1]!.value}`,
+        `${olderThreeChunkSession[2]!.name}=${olderThreeChunkSession[2]!.value}`,
+      ].join("; "),
+    );
+
+    const differentialCookiesToSet = [
+      {
+        name: "waesy-auth-token.1",
+        value: newerTwoChunkSession[1]!.value,
+        options: { maxAge: 31536000 },
+      },
+    ];
+
+    const orphansToExpire = resolveOrphanAuthCookiesToExpire(rawCookies, differentialCookiesToSet);
+    expect(orphansToExpire).not.toContain("waesy-auth-token.0");
+    expect(orphansToExpire).not.toContain("waesy-auth-token.1");
+    expect(orphansToExpire).toEqual(["waesy-auth-token", "waesy-auth-token.2"]);
+  });
+
+  it("extracts canonical session metadata from chunked and unchunked cookies", () => {
+    const twoChunkSession = splitIntoChunks(makeEncodedSession(1900000999, 3500));
+    const rawCookies = parseRawCookieStringPreservingDuplicates(
+      twoChunkSession.map((c) => `${c.name}=${c.value}`).join("; "),
+    );
+
+    const meta = inspectCanonicalSessionFromCookies(rawCookies);
+    expect(meta).not.toBeNull();
+    expect(meta?.expiresAt).toBe(1900000999);
+    expect(meta?.refreshToken).toBe("rt_1900000999");
   });
 });

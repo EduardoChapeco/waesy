@@ -166,13 +166,26 @@ export function CanonicalStoreProfileView({
     store?.logo_url ||
     store?.avatar_url ||
     store?.avatarUrl ||
+    store?.image_url ||
+    store?.imageUrl ||
     (Array.isArray(store?.photos) && store.photos.length > 0
       ? typeof store.photos[0] === "string" ? store.photos[0] : store.photos[0]?.url
       : null) ||
+    (Array.isArray(store?.images) && typeof store.images[0] === "string" ? store.images[0] : null) ||
     settings?.logoUrl ||
     settings?.logo_url ||
     settings?.avatar_url ||
     settings?.avatarUrl ||
+    settings?.image_url ||
+    settings?.imageUrl ||
+    (Array.isArray(settings?.photos) && typeof settings.photos[0] === "string" ? settings.photos[0] : null) ||
+    settings?.brand_kit?.logo_url ||
+    settings?.brand_kit?.logoUrl ||
+    settings?.brandKit?.logo_url ||
+    settings?.brandKit?.logoUrl ||
+    store?.bannerUrl ||
+    store?.banner_url ||
+    coverUrl ||
     null;
 
   const [logoLoadError, setLogoLoadError] = useState(false);

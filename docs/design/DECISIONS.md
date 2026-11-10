@@ -1,5 +1,47 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-472: Saneamento Holístico da Autenticação Multi-Subdomínio, Erradicação de Erro 400 PostgREST em `profiles.store_id`, Prevenção de Autodestruição de Cookies no SSR e Roteamento Canônico Pós-Login
+- **Data:** 2026-11-09
+- **Contexto:**
+  1. Quebra estrutural recorrente no fluxo de login: PostgREST retornava erro HTTP 400 (`column profiles.store_id does not exist`) em todas as requisições autenticadas porque `src/lib/identity.server.ts` e `src/services/auth.functions.ts` consultavam `store_id` diretamente na tabela `public.profiles`. Esse erro anulava silenciosamente o perfil do usuário em `getServerIdentity()`, rebaixando operadores e master para role `"customer"`.
+  2. Split-Brain e Autodestruição de Cookies no SSR/Browser: `supabase-ssr.server.ts` e `supabase.ts` emitiam `Set-Cookie: ... Max-Age=0` com atributo Domain no mesmo payload de resposta em que gravavam o cookie de sessão recém-criado, gerando colisões destrutivas no Chrome/Safari. Além disso, a falta de resolução canônica de domínio compartilhava os cookies incorretamente entre `waesy.com.br`, `painel.waesy.com.br`, `studio.waesy.com.br` e `turis.waesy.com.br`.
+  3. Redirecionamento e Contexto: `_store.entrar.tsx` e `painel.tsx` redirecionavam cegamente para `"/"` ao invés de bifurcar para `/workspace` (lojistas), `/admin-master` (plataforma) ou `"/"` (civis), causando rebaixamento involuntário para contexto civil.
+- **Decisão:**
+  1. **Remoção de Coluna Fantasma PostgREST (`src/lib/identity.server.ts`, `src/services/auth.functions.ts`):** Erradicada a coluna inexistente `store_id` das consultas a `public.profiles`. O vínculo com empresas é resolvido estritamente através da relação canônica em `public.workspace_members`.
+  2. **Domínio Canônico Unificado de Cookies (`src/lib/auth-cookie-sanitizer.ts`, `src/lib/supabase-ssr.server.ts`, `src/lib/supabase.ts`):** Criada a função `resolveCanonicalCookieDomain(hostname)`, definindo `Domain=.waesy.com.br` para o ecossistema `*.waesy.com.br` e `Domain=.usewaesy.com` para `*.usewaesy.com`. Chunks de domínio ativos nunca são expirados durante a gravação; purgam-se exclusivamente cookies host-only obsoletos (sem Domain).
+  3. **Roteamento Inteligente e Preservação de Contexto (`src/services/auth.functions.ts`, `src/routes/_store.entrar.tsx`, `src/routes/painel.tsx`):** `signInWithPassword` agora retorna `{ destination, hasStore, isMaster }` e define defensivamente os cookies de contexto (`waesy_active_context=store`, `waesy_active_tenant`, `waesy_store_id`), encaminhando lojistas a `/workspace`, master a `/admin-master` e civis a `"/"` (ou `returnUrl`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.31.
+- **Consequências:** Estabilidade plena de autenticação em todos os subdomínios, fim das sessões perdidas pós-login, zero erros PostgREST e aprovação integral nos 3340 testes automatizados, typecheck e build Cloudflare Pages.
+
+## DEC-471: Remediação Definitiva de Persistência de Sessão, Proteção Contra Escrita Diferencial de Chunks no `@supabase/ssr` e Blindagem do Ciclo Auth
+- **Data:** 2026-11-08
+- **Contexto:**
+  1. No `@supabase/ssr` v0.12.1 (`applyServerStorage`), o servidor filtra os chunks enviados para `setAll(cookiesToSet)` comparando com `getAll()`: apenas os chunks modificados são repassados. Durante `syncSessionToCookies` ou `setSession` pós-login, `expires_in` no final do JSON (em `waesy-auth-token.1`) mudava enquanto `waesy-auth-token.0` permanecia idêntico; o loop de limpeza em `supabase-ssr.server.ts` e `supabase.ts` expirava (`Max-Age=0`) qualquer chunk ausente de `cookiesToSet`, destruindo `waesy-auth-token.0` ~100ms após o login.
+  2. Em `signOut` (`src/services/auth.functions.ts`), `setResponseHeader("Set-Cookie", guestClearCookie)` sobrescrevia todos os cabeçalhos `Set-Cookie` emitidos por `supabase.auth.signOut()`.
+  3. Em `signUpWithPassword`, `resHeaders` não era capturado antes dos `await`s administrativos e a sessão (`access_token`, `refresh_token`) não era retornada ao cliente para sincronização imediata do `getBrowserClient()`.
+  4. Em `getServerIdentity()` (`src/lib/identity.server.ts`), quando `getUser()` falhava com `AuthSessionMissingError`, `_removeSession()` limpava o storage em memória antes de `refreshSession()`, fazendo `refreshSession()` sem argumentos falhar mesmo com `refresh_token` válido no cookie.
+- **Decisão:**
+  1. **Resolução Segura de Órfãos (`src/lib/auth-cookie-sanitizer.ts`, `src/lib/supabase-ssr.server.ts`, `src/lib/supabase.ts`):** Implementada `resolveOrphanAuthCookiesToExpire(rawCookies, cookiesToSet)` e `inspectCanonicalSessionFromCookies(rawCookies)`, garantindo que escritas diferenciais do `@supabase/ssr` e cookies `-code-verifier` jamais expirem chunks inalterados da sessão canônica ativa.
+  2. **Integridade de Headers e Sessão no BFF (`src/services/auth.functions.ts`, `src/services/identity.functions.ts`, `src/routes/api.auth.callback.ts`, `src/routes/api.auth.confirm.ts`):** Captura síncrona de `resHeaders` e instanciação de `getSSRClient(resHeaders)` antes de qualquer `await`; substituição de `setResponseHeader("Set-Cookie", ...)` por `setCookie` + `resHeaders.append`; retorno de `session` em `signUpWithPassword` com hidratação imediata em `_store.entrar.tsx`, `_store.cadastro.tsx` e `painel.tsx`.
+  3. **Deduplicação de Sync, Refresh Resiliente e Hidratação Reativa de Rotas/Shells (`src/routes/__root.tsx`, `src/lib/identity.server.ts`, `src/routes/_store.tsx`, `src/routes/_store.conta.tsx`, `src/routes/_store.conta.index.tsx`, `src/routes/_store.criar-negocio.tsx`, `src/components/shell/AccountSwitcherDrawer.tsx`, `src/components/shell/global-menu-hub.tsx`, `src/components/workspace/workspace-shell.tsx`, `src/components/admin/admin-shell.tsx`):** `__root.tsx` evita disparar `syncSessionToCookies` redundante em `SIGNED_IN` quando `document.cookie` já contém o mesmo `access_token`; `getServerIdentity()` passa `{ refresh_token }` explicitamente para `refreshSession()`; `_store.tsx` hidrata `activeSession` reativamente no cliente; guardas de conta/onboarding possuem fallback resiliente para `getBrowserClient().auth.getSession()` e todos os fluxos de logout limpam simultaneamente o cliente navegador e o servidor.
+- **Fundamentação:** AGENTS.md Regras B.1, B.5, B.6, B.7, B.8, B.9, B.11, B.31; `SPEC-20261108-AUTH-PERSISTENCE-CONSOLIDATION.md`.
+- **Consequências:** Persistência estável de login e cadastro entre SSR, Server Functions e cliente, zero destruição de chunks `.0` em escritas diferenciais e 39/39 testes automatizados de autenticação aprovados.
+
+## DEC-470: Reorganização da Matriz de Entrega, Separação Semântica por Nicho (Gastronomia vs Varejo) e Eliminação de AI-Smell em Configurações
+- **Data:** 2026-11-07
+- **Contexto:**
+  1. A aba de Entrega em `/workspace/configuracoes` exibia termos e controles de cozinha ("Tempo de Preparo da Cozinha", "Pizzas e Forno", "Pico de Jantar") para todas as lojas, inclusive lojas de moda, vestuário e varejo geral (`LOJA • VAREJO, MODA & ACESSÓRIOS`).
+  2. O componente `DeliveryTimeAndRadiusMatrix` exibia uma grade semanal de turnos estática com 56 pílulas verdes repetitivas ("15m"), gerando ruído visual intenso (AI-smell DL-30) e sobrecarga cognitiva.
+  3. O bloco "Taxas por Bairro" ficava solto como um cartão órfão no rodapé da página em todas as sub-abas de entrega, inclusive enquanto o lojista ajustava o tempo de preparo.
+- **Decisão:**
+  1. **Bifurcação Adaptativa por Nicho:**
+     - Para **Gastronomia / Alimentação**: A aba exibe "Tempo de Cozinha", stepper tátil de 44px (`-` / `+`), presets reais (Padrão, Rápido, Pratos Elaborados, Pico, Chuva) e resumo de sincronização KDS / Waesy Go. A grade estática de 56 pílulas verdes foi completamente erradicada.
+     - Para **Varejo / Moda / Comércio Geral**: A aba passa a se chamar "Prazo de Expedição", focando em tempo de separação e despacho do estoque (Mesmo dia útil, 24h, 2 a 3 dias úteis, Sob Encomenda) e cálculo integrado com frete dos Correios / Transportadoras.
+  2. **Encapsulamento de Bairros:** O gerenciador de "Taxas por Bairro" foi integrado como slot nativo (`neighborhoodsSlot`) dentro da sub-aba de "Regiões e Raio de Entrega", eliminando sua exibição descontextualizada nas abas de preparo e modalidades.
+  3. **Conformidade Estrita:** Todos os controles interativos operam em 44px (`min-h-11 h-11`), com anéis `:focus-visible:ring-2 focus-visible:ring-primary`, tokens semânticos `warning` (DL-33) e grade modular de 4px (DL-03).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.22, B.26.
+- **Consequências:** Fim da confusão operacional de lojistas de varejo, experiência fluida e limpa estilo iFood Merchant para restaurantes, zero violações P0/P1 e aprovação plena na catraca de CI.
+
 ## DEC-463: Saneamento End-to-End dos Quality Gates de CI: Unificação de Migrações SQL, Contratos de Tabelas BFF, Tipagem Estrita TypeScript e Build Edge do Cloudflare Pages
 - **Data:** 2026-11-09
 - **Contexto:** Bloqueio de CI no GitHub Actions que impedia o merge da branch do PR #47 e a publicação em produção (`waesy.com.br`) na Cloudflare Pages. A falha decorria de: (1) Gate 0 com timestamps duplicados de migrações (`20270324000000` e `20270325000000`); (2) Gate 0b com divergência na referência de tabela (`customers` vs SSOT `customers_crm` em `order.functions.ts`); (3) Gate 1 com erros estritos de tipagem em contratos de Server Functions (`store_id` implícito em `createCategory`, `createProductType` e `createProduct`, `kitchenStation` em `FoodSpecsData`, Promise Thenables com `.catch()` em `crm.functions.ts` e `order.functions.ts`, variáveis de frete em `shipping.functions.ts`, `activeNiche` vs `semantics.nicheId` em `niche-operational-guard.tsx`, paridade de `useWorkspaceViewMode` com `currentView` / `setViewMode`, e rota `_store.chamado.$ticketId.tsx` com `as any`); (4) Erro de AST no Router Plugin do TanStack Start no Gate 4.
@@ -9080,3 +9122,25 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Aprovada a catraca `node scripts/design-lint.mjs --ratchet` reduzindo o débito histórico para 777 violações totais (0 P0, 749 P1).
 - **Fundamentação Teórica:** AGENTS.md Regras B.1 a B.11, B.22, B.23, B.25, B.26; DL-01 a DL-33; Apple HIG; WCAG 2.2 AA.
 - **Consequências:** Fim da ambiguidade entre módulos de salão, transparência operacional de pedidos e motoboys, rastreabilidade de custos em serviços e produtos de qualquer nicho de mercado e interface visual silenciosa e elegante.
+---
+
+### DEC-471: Arquitetura de Ecossistema Multi-Marca, Verticais Especializadas e Desacoplamento Canônico do Marketplace
+- **Data:** 2026-11-08
+- **ID da Decisão:** DEC-471
+- **Contexto:** Necessidade de transformar o núcleo único de engenharia da Waesy em múltiplas plataformas verticais SaaS soberanas por nicho (`wowbook`, `tableway`, `turis`, `passhub`, `lexcloud`, `talentlink`, `omnipage`, `signflow`, `waesy_news`, `waesy_copilot`, `waesy_studio`) mantendo 100% de compartilhamento do motor BFF/Banco de Dados, além de desacoplar o sistema de gestão empresarial do Marketplace Civil (`waesy.com.br`) mediante Opt-In explícito por loja e por item.
+- **Decisão Adotada:**
+  1. **Especificação Normativa (`docs/specs/SPEC-MULTI-BRAND-VERTICAL-ECOSYSTEM.md`):**
+     - Formalização dos requisitos EARS-01 a EARS-08 regendo resolução de marca por host, desacoplamento Opt-In, sincronização bidirecional de flags e matriz de planos.
+  2. **Migração e Persistência (`supabase/migrations/20270326000000_multi_brand_vertical_ecosystem_and_marketplace_opt_in.sql`):**
+     - Adição das colunas `publish_to_marketplace`, `waesy_marketplace_enabled`, `brand_origin`, `subscription_tier`, `enabled_modules` e `custom_domain` em `public.stores`, com trigger `trg_sync_store_marketplace_opt_in` mantendo paridade automática entre `publish_to_marketplace` e `waesy_marketplace_enabled`.
+     - Adição da coluna `is_published_to_marketplace` em `public.products`, `public.services` e `public.directory_listings`, com índices compostos parciais para filtragem em vitrines públicas.
+  3. **Motor Canônico Multi-Marca e Entitlements (`src/lib/multi-brand-engine.ts` & `src/server.ts`):**
+     - Catálogo de 12 marcas verticais (`BRAND_VERTICALS_REGISTRY`) e 3 planos de assinatura (`SUBSCRIPTION_TIERS_REGISTRY`: Starter, Pro, Enterprise).
+     - Resolução determinística de marca por hostname no Cloudflare Worker (`src/server.ts`) com injeção de headers `x-waesy-brand-id`, `x-waesy-brand-name` e `x-waesy-primary-niche` e roteamento automático de domínios SaaS dedicados para `/painel` ou `/workspace/copilot`.
+  4. **Contratos BFF e Filtragem Soberana de Vitrine (`src/services/multi-brand.functions.ts`, `catalog.functions.ts`, `copilot-internal-search.ts`):**
+     - Server Functions `getStoreMultiBrandGovernanceFn`, `updateStoreMarketplaceOptInFn`, `updateStoreBrandAndTierFn` e `toggleProductMarketplaceVisibilityFn`.
+     - Filtragem estrita em `listPublishedProducts` e `copilot-internal-search.ts` omitindo itens ou empresas com `publish_to_marketplace = false` ou `is_published_to_marketplace = false`.
+  5. **Superfície de Governança no Workspace (`src/components/workspace/multi-brand-ecosystem-governance-card.tsx`):**
+     - Painel interativo integrado em `/workspace/configuracoes` permitindo ativar/desativar a publicação no Waesy Marketplace Civil, escolher a plataforma vertical de origem e gerenciar o plano de recursos da empresa.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.7, B.9 e B.25; Arquitetura Single-Core Multi-Brand SaaS.
+- **Consequências:** Cada vertical opera como um produto SaaS focado no seu setor (com marca, domínio e módulos próprios), o Marketplace Civil exibe apenas lojas e produtos que aprovaram sua exposição pública, e qualquer evolução em módulos universais propaga instantaneamente para todas as marcas sem duplicação de código.

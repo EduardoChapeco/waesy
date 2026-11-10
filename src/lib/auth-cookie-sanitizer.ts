@@ -17,7 +17,7 @@ export interface RawCookieEntry {
   value: string;
 }
 
-interface ParsedSessionMetadata {
+export interface ParsedSessionMetadata {
   accessToken: string;
   refreshToken: string;
   userId: string | null;
@@ -338,6 +338,22 @@ export function parseRawCookieStringPreservingDuplicates(cookieString: string): 
 }
 
 /**
+ * Retorna o domínio canônico compartilhado para cookies de autenticação da plataforma
+ * (ex: `.waesy.com.br` para permitir acesso unificado a painel, studio, turis e vitrine).
+ * Retorna `undefined` para localhost, IPs ou domínios de sufixo público (ex: `.pages.dev`).
+ */
+export function resolveCanonicalCookieDomain(hostname: string): string | undefined {
+  const clean = (hostname || "").toLowerCase().split(":")[0].trim();
+  if (clean.includes("waesy.com.br")) {
+    return ".waesy.com.br";
+  }
+  if (clean.includes("usewaesy.com")) {
+    return ".usewaesy.com";
+  }
+  return undefined;
+}
+
+/**
  * Retorna a lista de domínios legados que devem ser expirados proativamente
  * para erradicar cookies duplicados (`Domain=.waesy.com.br` vs host-only).
  */
@@ -369,3 +385,121 @@ export const AUTH_COOKIE_CHUNK_NAMES = [
   `${AUTH_COOKIE_BASE}.3`,
   `${AUTH_COOKIE_BASE}.4`,
 ];
+
+/**
+ * Inspeciona os cookies brutos, resolve a sessão canônica vencedora e retorna seus metadados
+ * (`accessToken`, `refreshToken`, `userId`, `expiresAt`), ou `null` se não houver sessão íntegra.
+ */
+export function inspectCanonicalSessionFromCookies(
+  rawCookies: RawCookieEntry[],
+): ParsedSessionMetadata | null {
+  if (!rawCookies || rawCookies.length === 0) return null;
+  const canonical = resolveCanonicalAuthCookies(rawCookies);
+  const unchunked = canonical.find((c) => c.name === AUTH_COOKIE_BASE);
+  if (unchunked?.value) {
+    return inspectEncodedSessionString(unchunked.value);
+  }
+
+  const chunks = canonical
+    .map((c) => {
+      const m = c.name.match(/^waesy-auth-token\.(\d+)$/);
+      return m ? { idx: parseInt(m[1], 10), value: c.value } : null;
+    })
+    .filter((item): item is { idx: number; value: string } => item !== null)
+    .sort((a, b) => a.idx - b.idx);
+
+  if (chunks.length === 0) return null;
+  const combined = chunks.map((c) => c.value).join("");
+  return inspectEncodedSessionString(combined);
+}
+
+/**
+ * Determina de forma segura quais cookies de sessão (`waesy-auth-token*`) são órfãos comprovados
+ * e devem ser expirados durante uma chamada a `setAll(cookiesToSet)`.
+ *
+ * PROTEÇÃO CRÍTICA CONTRA ESCRITA DIFERENCIAL DO `@supabase/ssr`:
+ * No `@supabase/ssr` v0.12.1 (`applyServerStorage`), o servidor filtra e envia para `setAll`
+ * APENAS os chunks cujo valor mudou em relação a `getAll()` (por exemplo, enviando apenas
+ * `waesy-auth-token.1` quando `expires_in` muda no final do JSON e `waesy-auth-token.0` permanece igual).
+ * Portanto, NUNCA devemos expirar `waesy-auth-token.0` (ou qualquer chunk pertencente à sessão canônica)
+ * apenas porque ele não veio em `cookiesToSet`.
+ */
+export function resolveOrphanAuthCookiesToExpire(
+  rawCookies: RawCookieEntry[],
+  cookiesToSet: Array<{ name: string; value: string; options?: { maxAge?: number } }>,
+): string[] {
+  if (!cookiesToSet || cookiesToSet.length === 0) return [];
+
+  const namesBeingSetWithValue = new Set<string>();
+  const namesBeingDeletedExplicitly = new Set<string>();
+
+  for (const item of cookiesToSet) {
+    const isDeleting = !item.value || item.options?.maxAge === 0;
+    if (isDeleting) {
+      namesBeingDeletedExplicitly.add(item.name);
+    } else {
+      namesBeingSetWithValue.add(item.name);
+    }
+  }
+
+  const isSettingUnchunked = namesBeingSetWithValue.has(AUTH_COOKIE_BASE);
+  const isSettingChunked = [...namesBeingSetWithValue].some((n) =>
+    /^waesy-auth-token\.\d+$/.test(n),
+  );
+  const isDeletingAuthSession =
+    !isSettingUnchunked &&
+    !isSettingChunked &&
+    [...namesBeingDeletedExplicitly].some((n) => AUTH_COOKIE_CHUNK_NAMES.includes(n));
+
+  // Caso 1: Nem sessão nem logout (ex.: gravando apenas `waesy-auth-token-code-verifier` para PKCE/OAuth)
+  if (!isSettingUnchunked && !isSettingChunked && !isDeletingAuthSession) {
+    return [];
+  }
+
+  // Caso 2: Logout explícito (`signOut`) — garante que todos os slots não listados em `cookiesToSet` também expirem
+  if (isDeletingAuthSession) {
+    return AUTH_COOKIE_CHUNK_NAMES.filter((n) => !namesBeingDeletedExplicitly.has(n));
+  }
+
+  const rawAuthNames = new Set(
+    (rawCookies || [])
+      .map((c) => {
+        if (LEGACY_SB_REGEX.test(c.name)) {
+          return c.name.replace(/^sb-\w+-auth-token/, AUTH_COOKIE_BASE);
+        }
+        return c.name;
+      })
+      .filter((n) => AUTH_COOKIE_CHUNK_NAMES.includes(n)),
+  );
+
+  // Caso 3: Nova sessão cabe inteira no cookie unchunked (`waesy-auth-token` <= 3180 bytes)
+  // Qualquer chunk `.0`..`.4` presente nos cookies brutos é órfão e deve ser expirado.
+  if (isSettingUnchunked) {
+    return AUTH_COOKIE_CHUNK_NAMES.filter(
+      (n) =>
+        n !== AUTH_COOKIE_BASE &&
+        rawAuthNames.has(n) &&
+        !namesBeingDeletedExplicitly.has(n),
+    );
+  }
+
+  // Caso 4: Sessão chunked (`waesy-auth-token.0`, `.1`, ...) está sendo gravada total ou diferencialmente.
+  // Preserva todos os chunks que estão sendo gravados AGORA + todos os chunks da sessão canônica atual
+  // que não foram marcados para deleção explícita pelo `@supabase/ssr`.
+  const canonical = resolveCanonicalAuthCookies(rawCookies || []);
+  const canonicalChunkNames = canonical
+    .filter((c) => /^waesy-auth-token\.\d+$/.test(c.name))
+    .map((c) => c.name);
+
+  const activeSessionNames = new Set<string>([
+    ...namesBeingSetWithValue,
+    ...canonicalChunkNames.filter((n) => !namesBeingDeletedExplicitly.has(n)),
+  ]);
+
+  return AUTH_COOKIE_CHUNK_NAMES.filter(
+    (n) =>
+      rawAuthNames.has(n) &&
+      !activeSessionNames.has(n) &&
+      !namesBeingDeletedExplicitly.has(n),
+  );
+}

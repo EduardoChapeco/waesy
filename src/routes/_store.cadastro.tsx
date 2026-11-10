@@ -70,11 +70,25 @@ function RegisterPage() {
  return;
  }
 
+ if ((result as any).session?.access_token && (result as any).session?.refresh_token) {
+ try {
+ const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+ sanitizeBrowserAuthCookies();
+ await getBrowserClient().auth.setSession({
+ access_token: (result as any).session.access_token,
+ refresh_token: (result as any).session.refresh_token,
+ });
+ sanitizeBrowserAuthCookies();
+ } catch (clientErr) {
+ console.warn("[auth] Falha ao sincronizar sessão pós-cadastro no cliente:", clientErr);
+ }
+ }
+
  toast.success("Conta criada com sucesso.");
  if (typeof window !== "undefined") {
  sessionStorage.setItem("waesy_just_registered", "true");
  }
- await new Promise((r) => setTimeout(r, 100));
+ await router.invalidate();
  await getUserSession().catch(() => null);
  window.location.href = returnUrl || "/";
  } catch (e: unknown) {

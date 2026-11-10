@@ -48,6 +48,7 @@ import { useAccountSwitcherDrawer } from "@/lib/drawer-store";
 import { VerifiedBadge } from "@/components/common/VerifiedBadge";
 import { setClientContextCookies, getClientActiveContext } from "@/lib/context-auth";
 import { signOut } from "@/services/auth.functions";
+import { getBrowserClient } from "@/lib/supabase";
 
 export interface AccountSwitcherDrawerProps {
   session?: any;
@@ -80,6 +81,12 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
       setClientContextCookies({ context: "civil" });
       navigate({ to: "/conta" });
     } else if (type === "store") {
+      const targetStoreId =
+        session?.activeTenantId ||
+        session?.store_id ||
+        session?.memberships?.[0]?.store_id ||
+        undefined;
+      setClientContextCookies({ context: "store", storeId: targetStoreId });
       navigate({ to: "/workspace" as any });
     } else if (type === "courier") {
       setClientContextCookies({ context: "courier" });
@@ -98,6 +105,9 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
   const handleLogout = async () => {
     setOpen(false);
     try {
+      if (typeof window !== "undefined") {
+        await getBrowserClient().auth.signOut().catch(() => {});
+      }
       await signOut();
     } catch {
       // Ignora erro de rede em logout

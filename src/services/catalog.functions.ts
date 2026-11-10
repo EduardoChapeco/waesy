@@ -241,6 +241,9 @@ export const listPublishedProducts = createServerFn({ method: "GET" })
  query = query.eq("store_id", storeId);
  }
 
+ if (isPublicNicheQuery) {
+ query = query.neq("is_published_to_marketplace", false);
+ }
  // Para a lógica de variantes funcionarem com !inner, temos que garantir que estão ativas e com estoque
  query = query.eq("product_variants.status", "active");
 
@@ -951,7 +954,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  if (error || !store) {
  const { data: dirListing } = await db
  .from("directory_listings")
- .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings)")
+ .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, logo_url, banner_url, settings)")
  .or(isUuid ? `id.eq.${storeIdToUse},store_id.eq.${storeIdToUse}` : `slug.eq.${storeIdToUse},id.eq.${storeIdToUse}`)
  .limit(1)
  .maybeSingle();
@@ -1014,37 +1017,79 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  (typeof settings.coverUrl === "string" ? settings.coverUrl : null) ||
  resolvedBannerUrl;
 
- let resolvedLogoUrl =
+  let resolvedLogoUrl =
    (store.logo_url as string | null) ||
    ((store as any).avatar_url as string | null) ||
    (typeof settings.logoUrl === "string" ? settings.logoUrl : null) ||
    (typeof settings.logo_url === "string" ? settings.logo_url : null) ||
    (typeof settings.avatar_url === "string" ? settings.avatar_url : null) ||
    (typeof settings.avatarUrl === "string" ? settings.avatarUrl : null) ||
+   (typeof settings.image_url === "string" ? settings.image_url : null) ||
+   (typeof settings.imageUrl === "string" ? settings.imageUrl : null) ||
+   (typeof settings.brand_kit?.logo_url === "string" ? settings.brand_kit.logo_url : null) ||
+   (typeof settings.brand_kit?.logoUrl === "string" ? settings.brand_kit.logoUrl : null) ||
+   (typeof settings.brandKit?.logo_url === "string" ? settings.brandKit.logo_url : null) ||
+   (typeof settings.brandKit?.logoUrl === "string" ? settings.brandKit.logoUrl : null) ||
+   (Array.isArray(settings.photos) && typeof settings.photos[0] === "string" ? settings.photos[0] : null) ||
    null;
 
  if (!resolvedLogoUrl) {
+  try {
+   const { data: linkedListing } = await db
+    .from("directory_listings")
+    .select("*")
+    .or(`store_id.eq.${store.id},id.eq.${store.id}${store.slug ? `,slug.eq.${store.slug}` : ""}`)
+    .limit(1)
+    .maybeSingle();
+
+   if (linkedListing) {
+    const firstPhoto = Array.isArray(linkedListing.photos) && linkedListing.photos.length > 0
+      ? (typeof linkedListing.photos[0] === "string" ? linkedListing.photos[0] : (linkedListing.photos[0] as any)?.url)
+      : null;
+    resolvedLogoUrl =
+     (linkedListing as any).avatar_url ||
+     (linkedListing as any).image_url ||
+     (linkedListing as any).logo_url ||
+     (linkedListing.metadata as any)?.logo_url ||
+     (linkedListing.metadata as any)?.logoUrl ||
+     (linkedListing.metadata as any)?.image_url ||
+     (Array.isArray((linkedListing as any).images) && typeof (linkedListing as any).images[0] === "string" ? (linkedListing as any).images[0] : null) ||
+     firstPhoto ||
+     (linkedListing as any).banner_url ||
+     null;
+   }
+  } catch {
+   // Silencioso
+  }
+  if (!resolvedLogoUrl && store.name) {
    try {
-     const { data: linkedDir } = await db
-       .from("directory_listings")
-       .select("avatar_url, photos, banner_url, metadata")
-       .eq("store_id", store.id)
-       .limit(1)
-       .maybeSingle();
-     if (linkedDir) {
-       const firstPhoto = Array.isArray(linkedDir.photos) && linkedDir.photos.length > 0
-         ? (typeof linkedDir.photos[0] === "string" ? linkedDir.photos[0] : (linkedDir.photos[0] as any)?.url)
-         : null;
-       resolvedLogoUrl =
-         linkedDir.avatar_url ||
-         (linkedDir.metadata as any)?.logo_url ||
-         (linkedDir.metadata as any)?.logoUrl ||
-         (linkedDir.metadata as any)?.image_url ||
-         firstPhoto ||
-         linkedDir.banner_url ||
-         null;
-     }
+    const { data: byNameListing } = await db
+     .from("directory_listings")
+     .select("avatar_url, image_url, logo_url, banner_url, photos, images, metadata")
+     .ilike("business_name", store.name)
+     .limit(1)
+     .maybeSingle();
+    if (byNameListing) {
+     const firstPhoto = Array.isArray(byNameListing.photos) && byNameListing.photos.length > 0
+       ? (typeof byNameListing.photos[0] === "string" ? byNameListing.photos[0] : (byNameListing.photos[0] as any)?.url)
+       : null;
+     resolvedLogoUrl =
+      (byNameListing as any).avatar_url ||
+      (byNameListing as any).image_url ||
+      (byNameListing as any).logo_url ||
+      (byNameListing.metadata as any)?.logo_url ||
+      (byNameListing.metadata as any)?.logoUrl ||
+      (byNameListing.metadata as any)?.image_url ||
+      (Array.isArray((byNameListing as any).images) && typeof (byNameListing as any).images[0] === "string" ? (byNameListing as any).images[0] : null) ||
+      firstPhoto ||
+      (byNameListing as any).banner_url ||
+      null;
+    }
    } catch {}
+  }
+  if (!resolvedLogoUrl && resolvedBannerUrl) {
+   resolvedLogoUrl = resolvedBannerUrl;
+  }
  }
 
  const profile: PublicStoreProfileDTO = {

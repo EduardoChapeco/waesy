@@ -4,6 +4,7 @@ import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, 
 
 import { cn } from "@/lib/utils";
 import { signOut } from "@/services/auth.functions";
+import { getBrowserClient } from "@/lib/supabase";
 import { setTenantContext } from "@/services/identity.functions";
 import { setClientContextCookies, getClientActiveTenant } from "@/lib/context-auth";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,12 @@ import { WorkspaceAccountSwitcher } from "./workspace-account-switcher";
 import { WorkspaceAllToolsDialog } from "./workspace-all-tools-dialog";
 import { WorkspaceSidebarFlyout } from "./workspace-sidebar-flyout";
 import { WorkspaceAccessDenied } from "./workspace-access-denied";
+import {
+  getBrandVerticalById,
+  resolveBrandContextFromHost,
+  canAccessModule,
+  type SubscriptionTierId,
+} from "@/lib/multi-brand-engine";
 
 
 function getStoreContextualAction(storeData: any) {
@@ -165,10 +172,40 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     ? "owner"
     : (activeStore?.role || session?.role || "collaborator").toLowerCase();
 
-  const activeModules = getSidebarConfig(activeStore, {
+  const rawStoreEntity = activeStore?.store || activeStore;
+  const activeBrandVertical = (() => {
+    const explicitBrand = rawStoreEntity?.brand_origin || rawStoreEntity?.settings?.brand_origin;
+    if (explicitBrand) return getBrandVerticalById(explicitBrand);
+    if (typeof window !== "undefined") {
+      const hostResolved = resolveBrandContextFromHost(window.location.host);
+      if (hostResolved.id !== "waesy") return hostResolved;
+    }
+    return getBrandVerticalById("waesy_studio");
+  })();
+  const activeStoreTier: SubscriptionTierId =
+    (rawStoreEntity?.subscription_tier || rawStoreEntity?.settings?.subscription_tier || "pro") as SubscriptionTierId;
+  const activeEnabledModules: string[] = Array.isArray(rawStoreEntity?.enabled_modules)
+    ? rawStoreEntity.enabled_modules
+    : Array.isArray(rawStoreEntity?.settings?.enabled_modules)
+      ? rawStoreEntity.settings.enabled_modules
+      : [];
+
+  const rawSidebarModules = getSidebarConfig(activeStore, {
     isMasterMode: false,
     userRole: effectiveUserRole,
   });
+  const activeModules = rawSidebarModules
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (isPlatformAdmin) return true;
+        if (activeStoreTier === "starter" && activeEnabledModules.length > 0) {
+          return canAccessModule(rawStoreEntity, group.id);
+        }
+        return true;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
   const currentSemantics = getNicheSemantics(activeStore);
 
   // Governança Granular de RBAC: Verificação de Permissão de Acesso à Rota Ativa
@@ -440,6 +477,10 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
   const handleLogout = async () => {
     try {
+      if (typeof window !== "undefined") {
+        await getBrowserClient().auth.signOut().catch(() => {});
+        setClientContextCookies({ context: "civil" });
+      }
       await signOut();
       window.location.href = "/";
     } catch (e) {
@@ -873,6 +914,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             {activeMasterPillar && (
               <div className="hidden waesy-expanded-flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground">{activeMasterPillar.label}</span>
+                <span className="px-2 py-1 rounded-md border border-border/60 bg-muted/40 text-2xs font-semibold text-muted-foreground">
+                  {activeBrandVertical.shortName}
+                </span>
               </div>
             )}
 

@@ -14,10 +14,11 @@ import { z } from "zod";
 import { SupabaseUnconfiguredError } from "./supabase";
 import { getEnvVar } from "./env";
 import {
-  AUTH_COOKIE_CHUNK_NAMES,
   getLegacyCookieDomainsToPurge,
   parseRawCookieStringPreservingDuplicates,
   resolveCanonicalAuthCookies,
+  resolveCanonicalCookieDomain,
+  resolveOrphanAuthCookiesToExpire,
 } from "./auth-cookie-sanitizer";
 
 const EnvSchema = z.object({
@@ -101,13 +102,20 @@ export function getSSRClient(preCapturedHeaders?: Headers | null) {
     } catch {}
   }
 
+  const isProd = process.env.NODE_ENV === "production";
+  let cookieDomain: string | undefined = resolveCanonicalCookieDomain(capturedHost);
+  if (!cookieDomain && capturedHost.includes("waesy.com.br")) {
+    cookieDomain = ".waesy.com.br";
+  }
+
   return createServerClient(env.data.VITE_SUPABASE_URL, env.data.VITE_SUPABASE_ANON_KEY, {
     cookieOptions: {
       name: "waesy-auth-token",
       maxAge: 60 * 60 * 24 * 365,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
       path: "/",
+      ...(cookieDomain ? { domain: cookieDomain } : {}),
     },
     cookies: {
       getAll() {
@@ -135,55 +143,52 @@ export function getSSRClient(preCapturedHeaders?: Headers | null) {
             } catch {}
           }
 
-          const isProd = process.env.NODE_ENV === "production";
-          let cookieDomain: string | undefined = undefined;
-          if (host.includes("waesy.com.br")) {
-            cookieDomain = ".waesy.com.br";
-          } else if (host.includes("usewaesy.com")) {
-            cookieDomain = ".usewaesy.com";
+          const activeCookieDomain = resolveCanonicalCookieDomain(host) || cookieDomain;
+          let cookieHeader = capturedCookieHeader;
+          if (!cookieHeader) {
+            try {
+              cookieHeader = getRequestHeader("cookie") || "";
+            } catch {}
           }
-          const legacyDomains = getLegacyCookieDomainsToPurge(host);
-          const namesBeingSetWithValue = new Set<string>();
+          const rawEntries = parseRawCookieStringPreservingDuplicates(cookieHeader);
 
           cookiesToSet.forEach(({ name, value, options }) => {
             const isDeleting = !value || options?.maxAge === 0;
-            if (!isDeleting) {
-              namesBeingSetWithValue.add(name);
+
+            // Se operando com domínio canônico compartilhado (.waesy.com.br),
+            // expira eventual variante host-only (sem domain) para eliminar colisões
+            if (activeCookieDomain) {
+              safeEmitCookie(capturedResHeaders, name, "", {
+                path: "/",
+                maxAge: 0,
+                sameSite: "lax",
+                secure: isProd,
+              });
             }
 
-            // 1. Limpa variantes com Domain=.waesy.com.br / .usewaesy.com para eliminar split-brain (domain: cookieDomain)
-            for (const domain of legacyDomains) {
-              safeAppendRawClearCookie(capturedResHeaders, name, domain, isProd);
-            }
-
-            // 2. Grava (ou expira) o cookie canônico host-only (sem domain wildcard)
-            const cleanOptions = { ...options };
-            delete cleanOptions.domain;
-
+            // Grava o cookie canônico (com domain em produção ou host-only em dev/pages.dev)
             safeEmitCookie(capturedResHeaders, name, isDeleting ? "" : value, {
-              ...cleanOptions,
+              ...options,
               maxAge: isDeleting ? 0 : (options?.maxAge ?? 60 * 60 * 24 * 365),
               sameSite: options?.sameSite === "none" ? "none" : "lax",
               secure: isProd,
               path: "/",
+              ...(activeCookieDomain ? { domain: activeCookieDomain } : {}),
             });
           });
 
-          // 3. Se uma nova sessão está sendo gravada, expira quaisquer chunks órfãos que não fazem parte dela
-          if (namesBeingSetWithValue.size > 0) {
-            for (const candidateName of AUTH_COOKIE_CHUNK_NAMES) {
-              if (!namesBeingSetWithValue.has(candidateName)) {
-                for (const domain of legacyDomains) {
-                  safeAppendRawClearCookie(capturedResHeaders, candidateName, domain, isProd);
-                }
-                safeEmitCookie(capturedResHeaders, candidateName, "", {
-                  maxAge: 0,
-                  sameSite: "lax",
-                  secure: isProd,
-                  path: "/",
-                });
-              }
+          // 3. Expira exclusivamente chunks órfãos comprovados, preservando chunks inalterados da sessão ativa
+          const orphanNames = resolveOrphanAuthCookiesToExpire(rawEntries, cookiesToSet);
+          for (const orphanName of orphanNames) {
+            if (activeCookieDomain) {
+              safeAppendRawClearCookie(capturedResHeaders, orphanName, activeCookieDomain, isProd);
             }
+            safeEmitCookie(capturedResHeaders, orphanName, "", {
+              maxAge: 0,
+              sameSite: "lax",
+              secure: isProd,
+              path: "/",
+            });
           }
         } catch {
           // Silently ignore cookie setting outside request context

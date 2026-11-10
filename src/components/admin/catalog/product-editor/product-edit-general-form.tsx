@@ -107,6 +107,7 @@ export function ProductEditGeneralForm({
       preparation_time_minutes: (product as any)?.preparation_time_minutes || "",
       type_id: product?.type_id || "none",
       show_stock_publicly: product?.show_stock_publicly ?? false,
+      is_published_to_marketplace: (product as any)?.is_published_to_marketplace ?? (product?.attributes as any)?.is_published_to_marketplace ?? true,
       attributes: product?.attributes || {},
     },
   });
@@ -206,10 +207,12 @@ export function ProductEditGeneralForm({
             ? parseInt(values.preparation_time_minutes, 10)
             : null,
           show_stock_publicly: values.show_stock_publicly ?? false,
+          is_published_to_marketplace: values.is_published_to_marketplace !== false,
           category_ids: selectedCategory && selectedCategory !== "none" ? [selectedCategory] : [],
           type_id: values.type_id !== "none" ? values.type_id : null,
           attributes: {
             ...(values.attributes || {}),
+            is_published_to_marketplace: values.is_published_to_marketplace !== false,
             logistics,
             weight_kg: values.weight_kg ? parseFloat(values.weight_kg) : null,
             dimensions: `${values.length_cm || 0} x ${values.width_cm || 0} x ${values.height_cm || 0} cm`,
@@ -553,6 +556,20 @@ export function ProductEditGeneralForm({
           <div className="space-y-2">
             <Label>Meta Description (SEO)</Label>
             <Textarea {...register("meta_description")} className="min-h-16" />
+          </div>
+          <div className="p-4 rounded-lg border border-border bg-muted/20 flex items-center justify-between gap-4">
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-foreground">Exibir no Waesy Marketplace Civil</Label>
+              <p className="text-xs text-muted-foreground">
+                Permite que este item apareça no feed e buscas públicas do Waesy Marketplace quando a loja tiver o canal ativo.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={watch("is_published_to_marketplace") !== false}
+              onChange={(e) => setValue("is_published_to_marketplace", e.target.checked)}
+              className="size-5 rounded border-border accent-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            />
           </div>
         </div>
       </div>
