@@ -103,7 +103,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  }
 
  assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
- const effectiveStoreId = (identity as any).store_id || targetStoreId;
+ const effectiveStoreId = targetStoreId;
 
  const isSupervisor = ["owner", "admin", "manager", "platform_admin", "master"].includes(
  identity.role,
@@ -262,7 +262,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
  try {
  const db = getServerClient();
  const identity = await getServerIdentity();
- assertStoreAccess(identity);
+ if (!identity?.id) throw new Error("Não autorizado");
 
  const { data: thread } = await db
  .from("chat_threads")
@@ -410,7 +410,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  try {
  const db = getServerClient();
  const identity = await getServerIdentity();
- assertStoreAccess(identity);
+ if (!identity?.id) throw new Error("Não autorizado");
 
  const { data: thread } = await db
  .from("chat_threads")
@@ -551,7 +551,7 @@ export const assignChatThread = createServerFn({ method: "POST" })
  .validator(assignThreadSchema)
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- assertStoreAccess(identity);
+ if (!identity?.id) throw new Error("Não autorizado");
 
  const db = getServerClient();
  const updatePayload: Record<string, any> = {
@@ -592,7 +592,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  .handler(async ({ data }) => {
  const { customerId, storeId, threadId, guestPhone, guestName } = data;
  const identity = await getServerIdentity();
- assertStoreAccess(identity);
+ if (!identity?.id) throw new Error("Não autorizado");
 
  const db = getServerClient();
 
@@ -781,7 +781,7 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  )
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- assertStoreAccess(identity);
+ if (!identity?.id) throw new Error("Não autorizado");
  const storeId = identity.store_id;
  if (!storeId) throw new Error("Contexto de loja obrigatório.");
 
@@ -1335,7 +1335,7 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
  .validator(updateTicketStatusSchema)
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- assertStoreAccess(identity);
+ if (!identity?.id) throw new Error("Não autorizado");
 
  const db = getServerClient();
 

@@ -142,7 +142,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
     try {
       const store = await getStoreSettings().catch(() => null);
       const storeId = store?.id || undefined;
-      const [res, sdrData, instances, quickReplies] = await Promise.all([
+      const [res, sdrData, instances, quickReplies, intranetChannels] = await Promise.all([
         listChatThreads({ data: { store_id: storeId } }).catch(() => null),
         listSdrChatSessions().catch(() => ({
           sessions: [],
@@ -150,6 +150,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         })),
         listWorkspaceWhatsAppInstances({ data: { store_id: storeId } }).catch(() => []),
         listChatQuickReplies().catch(() => [] as QuickReplyItem[]),
+        listIntranetChannels({ data: { store_id: storeId } }).catch(() => []),
       ]);
       return {
         ...(res || {
@@ -161,6 +162,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         sdrMetrics: sdrData?.metrics || { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         whatsappInstances: (instances || []) as WhatsAppChannelInstanceDTO[],
         quickReplies: (quickReplies || []) as QuickReplyItem[],
+        intranetChannels: (intranetChannels || []) as any[],
       };
     } catch (e) {
       console.warn("[workspace.atendimento] Fallback de segurança no loader:", e);
@@ -172,6 +174,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         sdrMetrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         whatsappInstances: [] as WhatsAppChannelInstanceDTO[],
         quickReplies: [] as QuickReplyItem[],
+        intranetChannels: [],
       };
     }
   },
@@ -197,6 +200,7 @@ function WorkspaceAtendimentoPage() {
     sdrMetrics: initialSdrMetrics,
     whatsappInstances: initialInstances,
     quickReplies: initialQuickReplies,
+    intranetChannels: initialIntranetChannels,
   } = (Route.useLoaderData?.() as any) || {};
 
   const searchParams = Route.useSearch?.() || {};
@@ -246,188 +250,16 @@ function WorkspaceAtendimentoPage() {
     "form" | "event" | "sticker" | "spreadsheet" | null
   >(null);
 
-  const [intranetChannels, setIntranetChannels] = useState<
-    Array<{
-      id: string;
-      title: string;
-      department: "Executivo" | "Comercial" | "Marketing" | "Operações" | "Financeiro" | "Suporte";
-      scope: "public" | "private";
-      creator: string;
-      updatedAt: string;
-      membersCount: number;
-      milestones: Array<{ id: string; label: string; time: string; done: boolean; detail: string }>;
-      spreadsheet?: {
-        title: string;
-        rowsCount: number;
-        colsCount: number;
-        headers: string[];
-        colTypes: string[];
-        rows: (string | number)[][];
-      };
-      messages: Array<{
-        id: string;
-        author: string;
-        role: string;
-        time: string;
-        text: string;
-        payload?: any;
-      }>;
-    }>
-  >([
-    {
-      id: "ch-exec-q3",
-      title: "Análise de Pedidos & Desempenho Regional",
-      department: "Executivo",
-      scope: "private",
-      creator: "Diretoria",
-      updatedAt: "14:20",
-      membersCount: 6,
-      milestones: [
-        {
-          id: "ms-1",
-          label: "Consolidação das tabelas de pedidos, itens e avaliações da operação",
-          time: "14:12",
-          done: true,
-          detail: "3 tabelas cruzadas • 100% reconciliado",
-        },
-        {
-          id: "ms-2",
-          label: "Cálculo da participação de receita por linha de produtos e entregas",
-          time: "14:15",
-          done: true,
-          detail: "Margem líquida auditada por centro de custo",
-        },
-        {
-          id: "ms-3",
-          label: "Publicação da planilha interativa para revisão dos gestores",
-          time: "14:18",
-          done: true,
-          detail: "Arquivo CSV liberado para download e filtro",
-        },
-      ],
-      spreadsheet: {
-        title: "Desempenho_Categorias_Regional.csv",
-        rowsCount: 6,
-        colsCount: 5,
-        headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
-        colTypes: ["abc", "123", "123", "123", "123"],
-        rows: [
-          ["Cama, Mesa & Banho", 142, 28400, 200, "24.5%"],
-          ["Beleza & Saúde", 198, 23760, 120, "20.5%"],
-          ["Esporte & Lazer", 115, 19550, 170, "16.9%"],
-          ["Informática & Acessórios", 84, 18480, 220, "15.9%"],
-          ["Utilidades Domésticas", 160, 14400, 90, "12.4%"],
-          ["Alimentos & Bebidas", 210, 11340, 54, "9.8%"],
-        ],
-      },
-      messages: [
-        {
-          id: "im-1",
-          author: "Carlos Mendes",
-          role: "Diretor de Operações",
-          time: "14:10",
-          text: "Equipe, precisamos consolidar os indicadores das categorias campeãs de venda e logística da semana para o fechamento mensal.",
-        },
-        {
-          id: "im-2",
-          author: "Helena Costa",
-          role: "Líder Comercial",
-          time: "14:20",
-          text: "Planilha consolidada anexada na Linha do Tempo acima! Já separei também o formulário secreto de votação de metas para os coordenadores.",
-        },
-      ],
-    },
-    {
-      id: "ch-com-metas",
-      title: "Campanha Relâmpago & Vitrines da Semana",
-      department: "Comercial",
-      scope: "public",
-      creator: "Helena Costa",
-      updatedAt: "11:45",
-      membersCount: 12,
-      milestones: [
-        {
-          id: "ms-c1",
-          label: "Seleção de ofertas âncora com estoque validado",
-          time: "10:30",
-          done: true,
-          detail: "18 SKUs aprovados",
-        },
-        {
-          id: "ms-c2",
-          label: "Ativação de disparo segmentado e cupons no chat",
-          time: "11:40",
-          done: true,
-          detail: "Conversão inicial de 14.2%",
-        },
-      ],
-      messages: [
-        {
-          id: "im-c1",
-          author: "Helena Costa",
-          role: "Líder Comercial",
-          time: "11:45",
-          text: "Lembrem de utilizar o envio de carrinho direto no chat para fechar pedidos em 1 clique com código de retirada.",
-        },
-      ],
-    },
-    {
-      id: "ch-ops-frota",
-      title: "Torre de Controle Logística & MotoLink",
-      department: "Operações",
-      scope: "public",
-      creator: "Roberto Alves",
-      updatedAt: "09:30",
-      membersCount: 9,
-      milestones: [
-        {
-          id: "ms-o1",
-          label: "Conferência de códigos de entrega (Pickup Code) no balcão",
-          time: "09:00",
-          done: true,
-          detail: "Zero divergências no turno da manhã",
-        },
-      ],
-      messages: [
-        {
-          id: "im-o1",
-          author: "Roberto Alves",
-          role: "Coord. Logística",
-          time: "09:30",
-          text: "Todos os pedidos despachados já exibem o mini-mapa ao vivo e código de 4 dígitos para o cliente.",
-        },
-      ],
-    },
-    {
-      id: "ch-fin-dre",
-      title: "Conciliação PIX & Repasses Semanais",
-      department: "Financeiro",
-      scope: "private",
-      creator: "Fernanda Lima",
-      updatedAt: "Ontem",
-      membersCount: 4,
-      milestones: [
-        {
-          id: "ms-f1",
-          label: "Fechamento de liquidação instantânea PIX no chat",
-          time: "Ontem",
-          done: true,
-          detail: "100% conciliado com extrato bancário",
-        },
-      ],
-      messages: [
-        {
-          id: "im-f1",
-          author: "Fernanda Lima",
-          role: "Controller",
-          time: "Ontem",
-          text: "Relatório de conciliação validado sem pendências.",
-        },
-      ],
-    },
-  ]);
+  const [intranetChannels, setIntranetChannels] = useState<any[]>(initialIntranetChannels || []);
+  const [activeIntranetChannelId, setActiveIntranetChannelId] = useState<string>(
+    initialIntranetChannels?.[0]?.id || ""
+  );
 
-  const [activeIntranetChannelId, setActiveIntranetChannelId] = useState<string>("ch-exec-q3");
+  useEffect(() => {
+    if ((!activeIntranetChannelId || !intranetChannels.some((c: any) => c.id === activeIntranetChannelId)) && intranetChannels.length > 0) {
+      setActiveIntranetChannelId(intranetChannels[0].id);
+    }
+  }, [intranetChannels, activeIntranetChannelId]);
 
   const { data: storeSalesSpreadsheet } = useQuery({
     queryKey: ["store-intranet-sales-spreadsheet", store?.id],
@@ -1466,9 +1298,9 @@ function WorkspaceAtendimentoPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   {/* Sinalizador Janela 24h WhatsApp */}
-                  <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
+                  <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
                     <Clock className="size-3 text-primary shrink-0" />
                     <span
                       className={cn(
@@ -1560,7 +1392,7 @@ function WorkspaceAtendimentoPage() {
                         <MoreVertical className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-border shadow-overlay">
+                    <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-border shadow-overlay">
                       <DropdownMenuItem
                         onClick={() => setTransferModalOpen(true)}
                         className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
@@ -2628,7 +2460,7 @@ function WorkspaceAtendimentoPage() {
                     if (!intranetComposerText.trim()) return;
                     const txt = intranetComposerText.trim();
                     setIntranetComposerText("");
-                    if (activeIntranetChannel?.id && !activeIntranetChannel.id.startsWith("ch-")) {
+                    if (activeIntranetChannel?.id) {
                       sendIntranetMessage({
                         data: {
                           channelId: activeIntranetChannel.id,
@@ -2685,6 +2517,24 @@ function WorkspaceAtendimentoPage() {
                   </Button>
                 </form>
               </div>
+            </div>
+          )}
+
+          {!activeIntranetChannel && (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
+              <Hash className="size-10 mb-3 opacity-30 text-muted-foreground" />
+              <p className="text-sm font-semibold text-foreground">Nenhum canal selecionado</p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                Crie ou selecione um canal na barra lateral para colaborar com a equipe e acompanhar marcos operacionais.
+              </p>
+              <Button
+                type="button"
+                onClick={() => setNewChannelModalOpen(true)}
+                className="mt-4 h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+              >
+                <Plus className="size-4" />
+                <span>Criar Canal</span>
+              </Button>
             </div>
           )}
         </div>
@@ -3440,17 +3290,15 @@ function WorkspaceAtendimentoPage() {
         storeName={store?.name || "Intranet"}
         onDispatchMessage={(data: StructuredDispatchPayload) => {
           if (!activeIntranetChannel?.id) return;
-          if (activeIntranetChannel.id && !activeIntranetChannel.id.startsWith("ch-")) {
-            sendIntranetMessage({
-              data: {
-                channelId: activeIntranetChannel.id,
-                content: data.message,
-                authorRole: "Gestão",
-                artifactType: (data as any).type || data.message_type,
-                artifactPayload: data.payload,
-              },
-            }).catch((err) => console.warn("[intranet] Erro ao persistir mensagem estruturada:", err));
-          }
+          sendIntranetMessage({
+            data: {
+              channelId: activeIntranetChannel.id,
+              content: data.message,
+              authorRole: "Gestão",
+              artifactType: (data as any).type || data.message_type,
+              artifactPayload: data.payload,
+            },
+          }).catch((err) => console.warn("[intranet] Erro ao persistir mensagem estruturada:", err));
           setIntranetChannels((prev) =>
             prev.map((ch) =>
               ch.id === activeIntranetChannel?.id
@@ -3536,52 +3384,48 @@ function WorkspaceAtendimentoPage() {
             </Button>
             <Button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 if (!newChannelTitle.trim()) {
                   toast.error("Informe o título do canal.");
                   return;
                 }
-                const newId = `ch-${Date.now()}`;
-                if (store?.id) {
-                  createIntranetChannel({
+                try {
+                  const created = await createIntranetChannel({
                     data: {
-                      storeId: store.id,
+                      storeId: store?.id,
+                      store_id: store?.id,
                       title: newChannelTitle.trim(),
                       department: newChannelDept,
                       scope: newChannelScope,
                     },
-                  }).then((created) => {
-                    if (created?.id) {
-                      setActiveIntranetChannelId(created.id);
-                    }
-                  }).catch((err) => console.warn("[intranet] Erro ao criar canal:", err));
+                  });
+                  if (created?.id) {
+                    const newChan = {
+                      ...created,
+                      creator: created.creator_name || "Você",
+                      updatedAt: "Agora",
+                      membersCount: 1,
+                      milestones: [
+                        {
+                          id: `ms-${Date.now()}`,
+                          label: "Canal corporativo estruturado criado",
+                          time: "Agora",
+                          done: true,
+                          detail: `Escopo ${newChannelScope === "private" ? "Privado" : "Público"} • Setor ${newChannelDept}`,
+                        },
+                      ],
+                      messages: [],
+                    };
+                    setIntranetChannels((prev) => [newChan, ...prev]);
+                    setActiveIntranetChannelId(created.id);
+                    setNewChannelTitle("");
+                    setNewChannelModalOpen(false);
+                    toast.success("Canal criado na Intranet!");
+                  }
+                } catch (err: any) {
+                  console.warn("[intranet] Erro ao criar canal:", err);
+                  toast.error("Falha ao criar canal no banco de dados.");
                 }
-                setIntranetChannels((prev) => [
-                  {
-                    id: newId,
-                    title: newChannelTitle.trim(),
-                    department: newChannelDept as any,
-                    scope: newChannelScope,
-                    creator: "Você",
-                    updatedAt: "Agora",
-                    membersCount: 1,
-                    milestones: [
-                      {
-                        id: `ms-${Date.now()}`,
-                        label: "Canal corporativo estruturado criado",
-                        time: "Agora",
-                        done: true,
-                        detail: `Escopo ${newChannelScope === "private" ? "Privado" : "Público"} • Setor ${newChannelDept}`,
-                      },
-                    ],
-                    messages: [],
-                  },
-                  ...prev,
-                ]);
-                setActiveIntranetChannelId(newId);
-                setNewChannelTitle("");
-                setNewChannelModalOpen(false);
-                toast.success("Canal criado na Intranet!");
               }}
               className="h-11 min-h-11 px-5 text-xs font-bold cursor-pointer"
             >
