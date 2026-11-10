@@ -28,6 +28,7 @@ import {
 } from "@/services/intranet.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getRealtimeChannel } from "@/services/realtime-channel";
+import { getClientActiveTenant } from "@/lib/context-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -137,11 +138,13 @@ export const Route = createFileRoute("/workspace/atendimento/")({
   validateSearch: (search: Record<string, unknown>) => ({
     threadId: typeof search.threadId === "string" ? search.threadId : undefined,
     search: typeof search.search === "string" ? search.search : undefined,
+    storeId: typeof search.storeId === "string" ? search.storeId : undefined,
   }),
-  loader: async () => {
+  loaderDeps: ({ search }) => ({ storeId: search.storeId }),
+  loader: async ({ deps }) => {
     try {
-      const store = await getStoreSettings().catch(() => null);
-      const storeId = store?.id || undefined;
+      const store = await getStoreSettings({ data: { store_id: deps?.storeId } }).catch(() => null);
+      const storeId = store?.id || deps?.storeId || undefined;
       const [res, sdrData, instances, quickReplies, intranetChannels] = await Promise.all([
         listChatThreads({ data: { store_id: storeId } }).catch(() => null),
         listSdrChatSessions().catch(() => ({
@@ -356,6 +359,32 @@ function WorkspaceAtendimentoPage() {
     return (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null;
   });
 
+  useEffect(() => {
+    if (initialThreads) {
+      setThreads(initialThreads);
+    }
+  }, [initialThreads]);
+
+  useEffect(() => {
+    if (!activeThreadId && threads.length > 0 && typeof window !== "undefined" && window.innerWidth >= 768) {
+      setActiveThreadId(threads[0].id);
+    }
+  }, [threads, activeThreadId]);
+
+  // Client-side fallback defensivo para sincronizar threads com o tenant ativo do workspace
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const activeTenant = getClientActiveTenant();
+    const effectiveStore = store?.id || activeTenant;
+    if (effectiveStore && threads.length === 0) {
+      listChatThreads({ data: { store_id: effectiveStore } }).then((res) => {
+        if (res?.threads && res.threads.length > 0) {
+          setThreads(res.threads);
+        }
+      }).catch(() => {});
+    }
+  }, [store?.id, threads.length]);
+
   const activeThreadIdRef = useRef<string | null>(activeThreadId);
   useEffect(() => {
     activeThreadIdRef.current = activeThreadId;
@@ -373,12 +402,14 @@ function WorkspaceAtendimentoPage() {
 
   // Revalidação em background da lista de conversas
   const reloadThreads = useCallback(async () => {
-    if (!store?.id) return;
+    const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+    const effectiveStoreId = store?.id || activeTenant;
+    if (!effectiveStoreId) return;
     try {
       const sf = statusFilterRef.current;
       const res = await listChatThreads({
         data: {
-          store_id: store.id,
+          store_id: effectiveStoreId,
           status: (sf === "waiting" ? "open" : sf) as any,
         },
       });
@@ -529,8 +560,10 @@ function WorkspaceAtendimentoPage() {
 
   // Realtime Estável de Alta Performance (Zero Teardown em Troca de Conversa)
   useEffect(() => {
-    if (!store?.id) return;
-    const rt = getRealtimeChannel(`store-chat-${store.id}`);
+    const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+    const effectiveStoreId = store?.id || activeTenant;
+    if (!effectiveStoreId) return;
+    const rt = getRealtimeChannel(`store-chat-${effectiveStoreId}`);
     if (!rt.channel) return;
 
     rt.channel
@@ -620,7 +653,7 @@ function WorkspaceAtendimentoPage() {
           if (newThread?.thread_type === "ai_assistant" || newThread?.thread_type === "copilot") {
             return;
           }
-          if (newThread?.store_id === store?.id) {
+          if (newThread?.store_id === effectiveStoreId) {
             reloadThreads();
             playMessageChime();
           }
@@ -631,7 +664,7 @@ function WorkspaceAtendimentoPage() {
         { event: "INSERT", schema: "public", table: "intranet_messages" },
         (payload: any) => {
           const newMsg = payload.new as any;
-          if (newMsg && newMsg.store_id === store?.id) {
+          if (newMsg && newMsg.store_id === effectiveStoreId) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === newMsg.channel_id) {
@@ -662,7 +695,7 @@ function WorkspaceAtendimentoPage() {
         { event: "*", schema: "public", table: "intranet_milestones" },
         (payload: any) => {
           const updated = payload.new as any;
-          if (updated && updated.store_id === store?.id) {
+          if (updated && updated.store_id === effectiveStoreId) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === updated.channel_id) {

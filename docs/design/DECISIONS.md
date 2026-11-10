@@ -1,5 +1,30 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-476: Blindagem da Ingestão e Sincronização Omnichannel Realtime (Multi-Tenant Resolution, Supabase Realtime Publication e Fallback Defensivo de Sessão)
+- **Data:** 2026-11-10
+- **Contexto:**
+  1. No painel de Atendimento Omnichannel (`/workspace/atendimento`), instâncias conectadas do WhatsApp Business exibiam 30+ threads ativas em PostgreSQL (`chat_threads`), mas a interface de usuário permanecia em estado vazio ("Nenhuma conversa encontrada") sob determinadas condições de navegação client-side.
+  2. O loader da rota TanStack Router não validava `storeId` em `validateSearch` nem declarava `loaderDeps`, provocando perda de contexto quando o operador navegava com parâmetros de busca de tenant.
+  3. `getStoreSettings` operava sem passagem explícita de `store_id`, caindo para o primeiro vínculo estático do perfil do usuário em vez do tenant ativo selecionado na interface do Workspace.
+  4. As tabelas `intranet_channels`, `intranet_messages` e `intranet_milestones` não estavam registradas na publicação `supabase_realtime` do PostgreSQL, e as tabelas `chat_messages` e `chat_threads` não possuíam `REPLICA IDENTITY FULL`, gerando payloads truncados em mutações de UPDATE/DELETE pelo WebSocket.
+- **Decisão:**
+  1. **Contrato de Rota TanStack Router (`src/routes/workspace.atendimento.index.tsx`):**
+     - Declarados `storeId` em `validateSearch` e `loaderDeps: ({ search }) => ({ storeId: search.storeId })`.
+     - Loader passa `deps?.storeId` para `getStoreSettings`, `listChatThreads`, `listWorkspaceWhatsAppInstances` e `listIntranetChannels`.
+     - Injetado fallback reativo no cliente que sincroniza `threads` diretamente com o tenant ativo armazenado via `getClientActiveTenant()`.
+  2. **Configuração Canônica de Supabase Realtime (`PostgreSQL`):**
+     - Executado `ALTER PUBLICATION supabase_realtime ADD TABLE` para `intranet_channels`, `intranet_messages` e `intranet_milestones`.
+     - Configurado `REPLICA IDENTITY FULL` em `chat_messages`, `chat_threads`, `intranet_messages` e `intranet_milestones`.
+  3. **Conexão Realtime Multiplexada (`workspace.atendimento.index.tsx`):**
+     - Sincronização em tempo real das mensagens e threads vinculada a `effectiveStoreId`, com escuta de eventos `INSERT`/`UPDATE`/`DELETE` e reconciliação delta de status de entrega (`delivered`, `read`, `failed`).
+  4. **Deploy & Verificação de Produção:**
+     - Build de produção Cloudflare Pages aprovado sem warnings bloqueantes.
+     - Deploy executado em `https://c7c40eed.usewaesy.pages.dev` e ativo em `waesy.com.br`.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.31, B.33.
+- **Consequências:** Sincronização instantânea e bidirecional de mensagens e threads em tempo real, persistência atômica, zero mocks ou dados fictícios, build verde e catraca de CI aprovada.
+
+
+
 ## DEC-475: Erradicação Holística de Mocks na Intranet Corporativa, Persistência Transacional Real Supabase, Desobstrução Multiloja de Threads de Atendimento e Blindagem de CI (DL-03)
 - **Data:** 2026-11-10
 - **Contexto:**
