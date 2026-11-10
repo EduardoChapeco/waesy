@@ -174,7 +174,47 @@ async function processClaimedRow(db: ReturnType<typeof getServerClient>, row: Cl
     await db.from("whatsapp_delivery_events").upsert({ store_id: row.store_id, phone_number_id: instance.phone_number_id || instance.instance_key, external_message_id: result.externalMessageId, delivery_status: "accepted", recipient_phone: row.recipient_phone, payload: result.response, occurred_at: new Date().toISOString() }, { onConflict: "store_id,external_message_id,delivery_status" });
     if (row.thread_id) {
       const text = typeof row.payload.text === "string" ? row.payload.text : `[${row.message_type}]`;
-      await db.from("chat_messages").insert({ thread_id: row.thread_id, message: await encryptConversationMessageForThread(row.store_id, row.thread_id, text), message_type: row.message_type, is_staff_reply: true, channel: "whatsapp", is_encrypted: true, encryption_version: 2, encrypted_at: new Date().toISOString(), external_message_id: result.externalMessageId, delivery_status: "accepted", sent_at: new Date().toISOString(), payload: { channel: "whatsapp", provider: row.provider, instance_id: instance.id, to: row.recipient_phone, message_id: result.externalMessageId } });
+      const { data: existingChatMsg } = await db
+        .from("chat_messages")
+        .select("id")
+        .eq("thread_id", row.thread_id)
+        .eq("is_staff_reply", true)
+        .is("external_message_id", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingChatMsg) {
+        await db
+          .from("chat_messages")
+          .update({
+            external_message_id: result.externalMessageId,
+            delivery_status: "accepted",
+            sent_at: new Date().toISOString(),
+          })
+          .eq("id", existingChatMsg.id);
+      } else {
+        await db.from("chat_messages").insert({
+          thread_id: row.thread_id,
+          message: await encryptConversationMessageForThread(row.store_id, row.thread_id, text),
+          message_type: row.message_type,
+          is_staff_reply: true,
+          channel: "whatsapp",
+          is_encrypted: true,
+          encryption_version: 2,
+          encrypted_at: new Date().toISOString(),
+          external_message_id: result.externalMessageId,
+          delivery_status: "accepted",
+          sent_at: new Date().toISOString(),
+          payload: {
+            channel: "whatsapp",
+            provider: row.provider,
+            instance_id: instance.id,
+            to: row.recipient_phone,
+            message_id: result.externalMessageId,
+          },
+        });
+      }
     }
     await recordAttempt(db, row, workerId, { outcome: "accepted", externalMessageId: result.externalMessageId, httpStatus: result.httpStatus, durationMs: Date.now() - startedAt, metadata: { channel_instance_id: instance.id } });
     return "accepted";

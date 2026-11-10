@@ -89,6 +89,7 @@ import { playMessageChime } from "@/lib/audio-chimes";
 import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.functions";
 import {
   listWorkspaceWhatsAppInstances, normalizeWhatsAppQrDataUri,
+  syncWhatsAppChatsFromEvolution,
   type WhatsAppChannelInstanceDTO,
 } from "@/services/whatsapp-channel-instances.functions";
 import { Link } from "@tanstack/react-router";
@@ -449,13 +450,48 @@ function WorkspaceAtendimentoPage() {
   // Instâncias de WhatsApp
   const [whatsappInstances, setWhatsappInstances] = useState<WhatsAppChannelInstanceDTO[]>(initialInstances || []);
   const [isRefreshingWhatsApp, setIsRefreshingWhatsApp] = useState(false);
+  const [isSyncingWhatsApp, setIsSyncingWhatsApp] = useState(false);
+
+  const handleSyncWhatsApp = async () => {
+    setIsSyncingWhatsApp(true);
+    try {
+      const res = await syncWhatsAppChatsFromEvolution();
+      const threadsRes = await listChatThreads();
+      if (threadsRes?.threads) {
+        setThreads(threadsRes.threads);
+      }
+      toast.success(
+        res?.importedCount
+          ? `${res.importedCount} conversas sincronizadas do WhatsApp!`
+          : "Sincronização concluída. Todas as conversas estão atualizadas."
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao sincronizar conversas do WhatsApp.");
+    } finally {
+      setIsSyncingWhatsApp(false);
+    }
+  };
 
   const handleRefreshWhatsAppStatus = async () => {
     setIsRefreshingWhatsApp(true);
     try {
-      const instances = await listWorkspaceWhatsAppInstances();
+      const [instances, syncRes] = await Promise.all([
+        listWorkspaceWhatsAppInstances(),
+        syncWhatsAppChatsFromEvolution().catch((e) => {
+          console.warn("[whatsapp] Falha no sync automático:", e);
+          return null;
+        }),
+      ]);
       setWhatsappInstances(instances);
-      toast.success("Status da conexão WhatsApp atualizado.");
+      const threadsRes = await listChatThreads().catch(() => null);
+      if (threadsRes?.threads) {
+        setThreads(threadsRes.threads);
+      }
+      toast.success(
+        syncRes?.importedCount
+          ? `Status atualizado! ${syncRes.importedCount} conversas sincronizadas.`
+          : "Status da conexão WhatsApp atualizado."
+      );
     } catch (error: any) {
       toast.error(error?.message || "Não foi possível atualizar a conexão WhatsApp.");
     } finally {
@@ -639,7 +675,7 @@ function WorkspaceAtendimentoPage() {
       )
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_threads" },
+        { event: "*", schema: "public", table: "chat_threads" },
         (payload: any) => {
           const newThread = payload.new as any;
           // Ignora threads de IA/Copilot
@@ -1052,14 +1088,27 @@ function WorkspaceAtendimentoPage() {
           >
             {/* Busca & Chips de Status */}
             <div className="p-3 border-b border-border/80 space-y-2 bg-card">
-              <div className="relative">
-                <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar conversa ou telefone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/40"
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar conversa ou telefone..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/40"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleSyncWhatsApp}
+                  disabled={isSyncingWhatsApp}
+                  title="Sincronizar conversas do WhatsApp"
+                  className="size-11 min-w-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <RefreshCw className={cn("size-4", isSyncingWhatsApp && "animate-spin text-primary")} />
+                </Button>
               </div>
 
               
@@ -1107,7 +1156,7 @@ function WorkspaceAtendimentoPage() {
             {/* Lista de Threads de Conversas */}
             <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40">
               {filteredThreads.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground text-xs space-y-2">
+                <div className="p-8 text-center text-muted-foreground text-xs space-y-3">
                   <MessageSquare className="size-8 mx-auto opacity-40" />
                   <p className="font-semibold text-foreground">Nenhuma conversa encontrada</p>
                   <p className="text-xs">
@@ -1115,6 +1164,17 @@ function WorkspaceAtendimentoPage() {
                       ? "Não há conversas arquivadas no momento."
                       : "Mensagens recebidas de clientes ou WhatsApp aparecerão aqui."}
                   </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSyncWhatsApp}
+                    disabled={isSyncingWhatsApp}
+                    className="h-11 min-h-11 text-xs gap-2 mt-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <RefreshCw className={cn("size-3.5", isSyncingWhatsApp && "animate-spin text-primary")} />
+                    <span>{isSyncingWhatsApp ? "Sincronizando..." : "Sincronizar conversas do WhatsApp"}</span>
+                  </Button>
                 </div>
               ) : (
                 filteredThreads.map((t) => {

@@ -699,3 +699,199 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
     });
     return saved as WhatsAppChannelInstanceDTO;
   });
+
+export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
+  .validator(z.object({ instanceId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação obrigatória.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "support", "agent", "sales"]);
+    const storeId = identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+
+    const db = getServerClient();
+    let query = db
+      .from("whatsapp_channel_instances")
+      .select("id, store_id, provider, instance_key, external_instance_id, public_config, display_phone_number")
+      .eq("store_id", storeId)
+      .eq("provider", "evolution_api")
+      .eq("is_active", true);
+
+    if (data?.instanceId) {
+      query = query.eq("id", data.instanceId);
+    } else {
+      query = query.order("is_default", { ascending: false }).limit(1);
+    }
+
+    const { data: instance, error } = await query.maybeSingle();
+    if (error || !instance) throw new Error("Nenhuma instância ativa do WhatsApp encontrada.");
+
+    const externalName = instance.external_instance_id || instance.instance_key;
+    const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");
+    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
+    const apiKey = requireEvolutionMasterKey();
+
+    // 1. Garantir webhook ativo na Evolution API
+    const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(instance.instance_key)}`;
+    await fetch(`${baseUrl}/webhook/set/${encodeURIComponent(externalName)}`, {
+      method: "POST",
+      headers: { apikey: apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        webhook: {
+          enabled: true,
+          url: webhookUrl,
+          byEvents: false,
+          base64: true,
+          events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"],
+        },
+      }),
+      signal: AbortSignal.timeout(6000),
+    }).catch(() => null);
+
+    // 2. Buscar conversas recentes na Evolution API
+    const chatsRes = await fetch(`${baseUrl}/chat/findChats/${encodeURIComponent(externalName)}`, {
+      method: "POST",
+      headers: { apikey: apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!chatsRes.ok) {
+      throw new Error(`Falha ao consultar conversas no gateway WhatsApp: HTTP ${chatsRes.status}`);
+    }
+
+    const rawChats = (await chatsRes.json().catch(() => [])) as Array<Record<string, any>>;
+    if (!Array.isArray(rawChats)) return { importedCount: 0, totalFound: 0 };
+
+    let importedCount = 0;
+    const validChats = rawChats
+      .filter((c) => {
+        const jid = String(c.remoteJid || "");
+        return jid && !jid.startsWith("0@") && !jid.includes("@broadcast");
+      })
+      .slice(0, 40);
+
+    for (const chat of validChats) {
+      try {
+        const remoteJid = String(chat.remoteJid || "");
+        const remoteJidAlt = String(chat.lastMessage?.key?.remoteJidAlt || chat.remoteJidAlt || "");
+        const rawPhoneSource = (remoteJid.endsWith("@lid") && remoteJidAlt) ? remoteJidAlt : remoteJid;
+        const digits = rawPhoneSource.replace(/@.*$/, "").replace(/\D/g, "");
+        if (digits.length < 8) continue;
+        const phone = `+${digits}`;
+
+        const isGroup = remoteJid.includes("@g.us");
+        const pushName = String(chat.pushName || chat.lastMessage?.pushName || phone);
+        const lastMsgObj = chat.lastMessage?.message || {};
+        const text = String(
+          lastMsgObj.conversation ||
+          lastMsgObj.extendedTextMessage?.text ||
+          lastMsgObj.imageMessage?.caption ||
+          lastMsgObj.videoMessage?.caption ||
+          lastMsgObj.documentMessage?.caption ||
+          (lastMsgObj.imageMessage ? "[Imagem]" : lastMsgObj.audioMessage ? "[Áudio]" : lastMsgObj.documentMessage ? "[Documento]" : "[Mensagem WhatsApp]")
+        ).trim();
+
+        const timestampSeconds = Number(chat.lastMessage?.messageTimestamp || Date.now() / 1000);
+        const occurredAt = new Date(timestampSeconds < 2_000_000_000 ? timestampSeconds * 1000 : timestampSeconds).toISOString();
+
+        const { resolveWhatsAppIdentity } = await import("./whatsapp-automation-runtime.server");
+        const identityRecord = await resolveWhatsAppIdentity({
+          storeId,
+          instanceId: instance.id,
+          provider: "evolution_api",
+          externalUserId: remoteJid,
+          phone,
+          displayName: pushName,
+        });
+
+        if (!identityRecord?.id) continue;
+
+        let thread = null;
+        const { data: foundThread } = await db
+          .from("chat_threads")
+          .select("id")
+          .eq("store_id", storeId)
+          .eq("entity_id", phone)
+          .maybeSingle();
+
+        if (foundThread) {
+          thread = foundThread;
+          await db
+            .from("chat_threads")
+            .update({
+              guest_name: pushName,
+              last_message_text: text.slice(0, 200),
+              last_message_at: occurredAt,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", thread.id);
+        } else {
+          const syntheticEmail = `${digits}@whatsapp.waesy`;
+          const { data: newThread, error: newThErr } = await db
+            .from("chat_threads")
+            .insert({
+              store_id: storeId,
+              channel_instance_id: instance.id,
+              channel_identity_id: identityRecord.id,
+              guest_name: pushName,
+              guest_email: syntheticEmail,
+              status: "open",
+              subject: isGroup ? `Grupo: ${pushName}` : `WhatsApp ${phone}`,
+              context_type: "whatsapp",
+              entity_id: phone,
+              department: "geral",
+              priority: "normal",
+              last_customer_message_at: occurredAt,
+              last_message_text: text.slice(0, 200),
+              last_message_at: occurredAt,
+              created_at: occurredAt,
+              updated_at: occurredAt,
+            })
+            .select("id")
+            .single();
+
+          if (newThErr) continue;
+          thread = newThread;
+        }
+
+        if (thread?.id && text && chat.lastMessage?.key?.id) {
+          const fromMe = Boolean(chat.lastMessage?.key?.fromMe);
+          const externalId = String(chat.lastMessage.key.id);
+          const { data: existingMsg } = await db
+            .from("chat_messages")
+            .select("id")
+            .eq("thread_id", thread.id)
+            .eq("external_message_id", externalId)
+            .maybeSingle();
+
+          if (!existingMsg) {
+            await db.from("chat_messages").insert({
+              thread_id: thread.id,
+              channel_identity_id: identityRecord.id,
+              channel: "whatsapp",
+              message: text,
+              message_type: "text",
+              is_staff_reply: fromMe,
+              provider: "evolution_api",
+              external_message_id: externalId,
+              delivery_status: fromMe ? "sent" : "delivered",
+              sent_at: occurredAt,
+              delivered_at: occurredAt,
+              created_at: occurredAt,
+            });
+          }
+        }
+
+        importedCount++;
+      } catch (chatItemErr) {
+        console.warn("[whatsapp-sync] Erro ao sincronizar conversa individual:", chatItemErr);
+      }
+    }
+
+    return {
+      importedCount,
+      totalFound: rawChats.length,
+      connectedPhone: instance.display_phone_number,
+    };
+  });

@@ -159,7 +159,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  if (profileIds.size > 0) {
  const { data: profilesData } = await db
  .from("profiles")
- .select("id, full_name, email, phone, avatar_url")
+ .select("id, full_name, phone, avatar_url")
  .in("id", Array.from(profileIds));
 
  for (const p of profilesData || []) {
@@ -254,7 +254,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
 
  const { data: thread } = await db
  .from("chat_threads")
- .select("id, store_id, customer_id, order_id, department, status, thread_type, context_type, metadata")
+ .select("id, store_id, customer_id, order_id, department, status, thread_type, context_type, metadata, entity_id, channel_instance_id")
  .eq("id", threadId)
  .eq("store_id", identity.store_id)
  .single();
@@ -278,14 +278,110 @@ export const getChatMessages = createServerFn({ method: "GET" })
  .eq("thread_id", threadId)
  .order("created_at", { ascending: true });
 
- if (error) throw error;
- return {
- thread,
- messages: (messages || []).map((m: any) => ({
-   ...m,
-   is_internal: Boolean(m.payload?.is_internal),
- })),
- };
+  if (error) throw error;
+  let rawMessages = (messages || []) as any[];
+
+  // On-demand message history sync from Evolution API se a thread tiver historico escasso
+  if (thread.context_type === "whatsapp" && (thread as any).entity_id && rawMessages.length <= 1) {
+    try {
+      const cleanDigits = String((thread as any).entity_id).replace(/\D/g, "");
+      const remoteJid = `${cleanDigits}@s.whatsapp.net`;
+      const { data: inst } = await db
+        .from("whatsapp_channel_instances")
+        .select("id, instance_key, external_instance_id, public_config")
+        .eq("store_id", thread.store_id)
+        .eq("provider", "evolution_api")
+        .eq("is_active", true)
+        .order("is_default", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (inst) {
+        const externalName = inst.external_instance_id || inst.instance_key;
+        const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
+        const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
+          ? configuredUrl
+          : (process.env.EVOLUTION_API_URL?.trim() || "https://feb-genre-kathy-indicator.trycloudflare.com");
+        const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "WaesyApiKey_Master_2026_WhatsApp";
+
+        const evoRes = await fetch(`${baseUrl}/chat/findMessages/${encodeURIComponent(externalName)}`, {
+          method: "POST",
+          headers: { apikey: apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            where: { key: { remoteJid } },
+            limit: 30,
+          }),
+          signal: AbortSignal.timeout(6000),
+        });
+
+        if (evoRes.ok) {
+          const evoJson: any = await evoRes.json().catch(() => ({}));
+          const records = evoJson?.messages?.records || (Array.isArray(evoJson) ? evoJson : []);
+          for (const rec of records) {
+            const key = rec.key || {};
+            const externalId = String(key.id || "");
+            if (!externalId) continue;
+            const fromMe = Boolean(key.fromMe);
+            const msg = rec.message || {};
+            const text = String(
+              msg.conversation ||
+              msg.extendedTextMessage?.text ||
+              msg.imageMessage?.caption ||
+              (msg.imageMessage ? "[Imagem]" : msg.audioMessage ? "[Áudio]" : "")
+            ).trim();
+            if (!text) continue;
+
+            const ts = Number(rec.messageTimestamp || Date.now() / 1000);
+            const occurredAt = new Date(ts < 2_000_000_000 ? ts * 1000 : ts).toISOString();
+            const exists = rawMessages.some((m: any) => m.external_message_id === externalId);
+            if (!exists) {
+              const { data: createdMsg } = await db.from("chat_messages").insert({
+                thread_id: thread.id,
+                channel: "whatsapp",
+                message: text,
+                message_type: "text",
+                is_staff_reply: fromMe,
+                provider: "evolution_api",
+                external_message_id: externalId,
+                delivery_status: fromMe ? "sent" : "delivered",
+                sent_at: occurredAt,
+                delivered_at: occurredAt,
+                created_at: occurredAt,
+              }).select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload").maybeSingle();
+              if (createdMsg) rawMessages.push(createdMsg);
+            }
+          }
+          rawMessages.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        }
+      }
+    } catch (pullErr) {
+      console.warn("[chat] Erro ao sincronizar historico da Evolution API:", pullErr);
+    }
+  }
+
+  const decryptedMessages = await Promise.all(
+    rawMessages.map(async (m: any) => {
+      let text = m.message;
+      if (typeof text === "string" && text.startsWith("waesy-msg:")) {
+        try {
+          const { decryptConversationMessageForThread } = await import("@/lib/conversation-crypto.server");
+          text = await decryptConversationMessageForThread(thread.store_id, thread.id, text);
+        } catch {
+          // fallback
+        }
+      }
+      return {
+        ...m,
+        message: text,
+        is_internal: Boolean(m.payload?.is_internal),
+      };
+    })
+  );
+
+  return {
+    thread,
+    messages: decryptedMessages,
+  };
  } catch (e: any) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error("[chat] getChatMessages error:", e);
@@ -505,7 +601,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  if (resolvedCustomerId) {
    const profileRes = await db
      .from("profiles")
-     .select("id, full_name, phone, email, avatar_url, created_at")
+     .select("id, full_name, phone, avatar_url, created_at")
      .eq("id", resolvedCustomerId)
      .maybeSingle();
    profileData = profileRes.data || null;
@@ -514,7 +610,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    if (cleanDigits.length >= 8) {
      const profileByPhone = await db
        .from("profiles")
-       .select("id, full_name, phone, email, avatar_url, created_at")
+       .select("id, full_name, phone, avatar_url, created_at")
        .or(`phone.eq.${rawPhone},phone.eq.+${cleanDigits},phone.eq.${cleanDigits}`)
        .limit(1)
        .maybeSingle();
@@ -693,14 +789,14 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  if (thread.customer_id) {
  const { data: profile } = await db
  .from("profiles")
- .select("full_name, phone, email")
+ .select("full_name, phone")
  .eq("id", thread.customer_id)
  .maybeSingle();
 
  if (profile) {
  fullName = profile.full_name || fullName;
  phone = profile.phone || phone;
- email = profile.email || email;
+ email = (profile as any)?.email || email;
  }
  }
 
@@ -1637,8 +1733,8 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
         .update({
           full_name: fullName,
           ...(phone !== undefined ? { phone: phone || null } : {}),
-          ...(email !== undefined ? { email: email || null } : {}),
-          ...(documentCpf !== undefined ? { document_cpf: documentCpf || null } : {}),
+
+          ...(documentCpf !== undefined ? { cpf: documentCpf || null } : {}),
           ...(city !== undefined ? { city: city || null } : {}),
           updated_at: new Date().toISOString(),
         })

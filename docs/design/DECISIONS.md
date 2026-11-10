@@ -1,5 +1,25 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-474: Reconciliação End-to-End do Atendimento WhatsApp Web, Sincronização Bidirecional Histórica Evolution API ⇄ Supabase, Erradicação de Coluna Fantasma `profiles.email` e Desobstrução de Webhooks Inbound
+- **Data:** 2026-11-10
+- **Contexto:**
+  1. Após conexão bem-sucedida do WhatsApp na rota `waesy.com.br/workspace/atendimento`, a aba de conversas exibia estado vazio ("Nenhuma conversa encontrada") e mensagens recebidas de clientes ou do histórico da Evolution API não apareciam no chat.
+  2. Diagnóstico forense revelou múltiplos gaps de barreira arquitetural:
+     - **Ausência de Webhook Registrado:** A instância na Evolution API possuía `webhook: null`. Ao conectar um número já pareado, o webhook não era auto-configurado.
+     - **Barreira de Autenticação no Webhook Inbound:** O endpoint `handleUnofficialWhatsAppWebhook` rejeitava chamadas legítimas da Evolution API interna com HTTP 401 por exigir cabeçalho `x-waesy-signature` não enviado pelo provider.
+     - **Constraint Database de E-mail Sintético:** Inserções de novos contatos de WhatsApp em `chat_threads` falhavam com erro 500 violando a check constraint `customer_or_guest CHECK (customer_id IS NOT NULL OR guest_email IS NOT NULL)`.
+     - **Coluna Inexistente `profiles.email` no PostgREST:** Funções `listChatThreads`, `getCustomer360Context`, `convertChatThreadToCrmLead` e `updateCustomerProfileFromChat` consultavam ou atualizavam a coluna inexistente `email` em `public.profiles`, resultando em falhas silenciosas que esvaziavam a lista de threads.
+     - **Falta de Sincronização On-Demand e Botão no Workspace:** O operador não possuía ação de sincronização de histórico das 350+ conversas persistidas localmente no contêiner da Evolution API.
+- **Decisão:**
+  1. **Sincronização Histórica Bidirecional (`src/services/whatsapp-channel-instances.functions.ts`):** Implementada a função `syncWhatsAppChatsFromEvolution` que garante registro automático do webhook na Evolution API (`QRCODE_UPDATED`, `CONNECTION_UPDATE`, `MESSAGES_UPSERT`, `MESSAGES_UPDATE`, `SEND_MESSAGE`), importa todas as conversas ativas para `chat_threads` e `chat_messages` com `guest_email: ${digits}@whatsapp.waesy` satisfazendo a constraint de integridade.
+  2. **Hidratação Sob Demanda no Chat (`src/services/chat.functions.ts`):** Ao abrir qualquer conversa com histórico escasso no Workspace, `getChatMessages` consulta dinamicamente a Evolution API (`/chat/findMessages/:instance`), preenchendo as últimas 30 mensagens com deduplicação e decodificação transparente.
+  3. **Erradicação da Coluna Fantasma `profiles.email`:** Consultas em `chat.functions.ts` saneadas para consultar apenas colunas canônicas existentes em `profiles` (`id, full_name, phone, avatar_url, created_at`), preservando o e-mail nos dados de identidade da conversa (`chat_threads.guest_email`).
+  4. **Autenticação Flexível e Reabertura de Threads no Webhook (`src/services/whatsapp-provider-webhook.server.ts`):** Webhooks recebidos da Evolution API autenticam via API Key, secret compartilhado ou túnel HTTPS interno. Ao receber mensagens de números existentes, o webhook localiza a conversa por telefone/identidade, reabre o ticket e atualiza o snippet em tempo real.
+  5. **Interface de Usuário Atendimento (`src/routes/workspace.atendimento.index.tsx`):** Adicionados botões táteis de sincronização no cabeçalho da busca e no empty state, além de reatividade em tempo real expandida para `event: "*"` na tabela `chat_threads`.
+  6. **Deduplicação de Mensagens Outbox (`src/services/whatsapp-outbox.worker.ts`):** Disparos manuais do operador pelo chat não geram mensagens duplicadas no banco ao serem processados pelo worker de saída.
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.31.
+- **Consequências:** Reconciliação completa entre Evolution API, Supabase e Cloudflare Pages, importação instantânea de histórico com 1 clique, zero quebras no chat, build limpo e deploy aprovado em produção.
+
 ## DEC-473: Resolução Canônica de Comunicação Cloudflare Edge ⇄ Evolution API via Cloudflare Tunnel Zero-Trust (DEC-326) e Erradicação do Erro Gateway HTTP 403 no WhatsApp Workspace
 - **Data:** 2026-11-10
 - **Contexto:**
