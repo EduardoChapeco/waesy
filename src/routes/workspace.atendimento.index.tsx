@@ -132,14 +132,15 @@ export const Route = createFileRoute("/workspace/atendimento/")({
   }),
   loader: async () => {
     try {
-      const [res, store, sdrData, instances, quickReplies] = await Promise.all([
-        listChatThreads().catch(() => null),
-        getStoreSettings().catch(() => null),
+      const store = await getStoreSettings().catch(() => null);
+      const storeId = store?.id || undefined;
+      const [res, sdrData, instances, quickReplies] = await Promise.all([
+        listChatThreads({ data: { store_id: storeId } }).catch(() => null),
         listSdrChatSessions().catch(() => ({
           sessions: [],
           metrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         })),
-        listWorkspaceWhatsAppInstances().catch(() => []),
+        listWorkspaceWhatsAppInstances({ data: { store_id: storeId } }).catch(() => []),
         listChatQuickReplies().catch(() => [] as QuickReplyItem[]),
       ]);
       return {
@@ -455,8 +456,8 @@ function WorkspaceAtendimentoPage() {
   const handleSyncWhatsApp = async () => {
     setIsSyncingWhatsApp(true);
     try {
-      const res = await syncWhatsAppChatsFromEvolution();
-      const threadsRes = await listChatThreads();
+      const res = await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id } });
+      const threadsRes = await listChatThreads({ data: { store_id: store?.id } });
       if (threadsRes?.threads) {
         setThreads(threadsRes.threads);
       }
@@ -476,14 +477,14 @@ function WorkspaceAtendimentoPage() {
     setIsRefreshingWhatsApp(true);
     try {
       const [instances, syncRes] = await Promise.all([
-        listWorkspaceWhatsAppInstances(),
-        syncWhatsAppChatsFromEvolution().catch((e) => {
+        listWorkspaceWhatsAppInstances({ data: { store_id: store?.id } }),
+        syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id } }).catch((e) => {
           console.warn("[whatsapp] Falha no sync automático:", e);
           return null;
         }),
       ]);
       setWhatsappInstances(instances);
-      const threadsRes = await listChatThreads().catch(() => null);
+      const threadsRes = await listChatThreads({ data: { store_id: store?.id } }).catch(() => null);
       if (threadsRes?.threads) {
         setThreads(threadsRes.threads);
       }
@@ -587,7 +588,7 @@ function WorkspaceAtendimentoPage() {
 
   // Recarregar threads ao alternar statusFilter (para suportar 'archived' via backend)
   useEffect(() => {
-    listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } })
+    listChatThreads({ data: { store_id: store?.id, status: (statusFilter === "waiting" ? "open" : statusFilter) as any } })
       .then((res) => {
         if (res?.threads) {
           setThreads(res.threads);
@@ -683,7 +684,7 @@ function WorkspaceAtendimentoPage() {
             return;
           }
           if (newThread?.store_id === store?.id) {
-            listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } }).then((res) => {
+            listChatThreads({ data: { store_id: store?.id, status: (statusFilter === "waiting" ? "open" : statusFilter) as any } }).then((res) => {
               if (res?.threads) setThreads(res.threads);
             });
             playMessageChime();
@@ -881,7 +882,7 @@ function WorkspaceAtendimentoPage() {
         (t.last_message || "").toLowerCase().includes(searchTerm.toLowerCase());
       return matchDept && matchSearch;
     });
-  }, [threads, deptFilter, searchTerm]);
+  }, [threads, statusFilter, deptFilter, searchTerm]);
 
   // Filtros SDR
   const filteredSdrSessions = useMemo(() => {
@@ -3218,7 +3219,7 @@ function WorkspaceAtendimentoPage() {
           departmentLabels={{ geral: "Geral", vendas: "Vendas", suporte: "Suporte", financeiro: "Financeiro" }}
           teamMembers={teamMembers}
           onSuccess={() => {
-            listChatThreads().then((res) => {
+            listChatThreads({ data: { store_id: store?.id } }).then((res) => {
               if (res?.threads) setThreads(res.threads);
             }).catch(() => {});
           }}

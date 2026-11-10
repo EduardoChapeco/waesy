@@ -44,13 +44,17 @@ async function audit(instanceId: string | null, storeId: string, actorId: string
   await getServerClient().from("whatsapp_channel_audit_events").insert({ instance_id: instanceId, store_id: storeId, actor_id: actorId, action, severity, metadata });
 }
 
-export const listWorkspaceWhatsAppInstances = createServerFn({ method: "GET" }).handler(async () => {
-  const identity = await getServerIdentity();
-  assertStoreAccess(identity, ["owner", "admin", "manager"]);
-  const { data, error } = await getServerClient().from("whatsapp_channel_instances").select(PublicFields).eq("store_id", identity.store_id).order("created_at", { ascending: false });
-  if (error) throw new Error(`Falha ao listar instâncias WhatsApp: ${error.message}`);
-  return (data || []) as WhatsAppChannelInstanceDTO[];
-});
+export const listWorkspaceWhatsAppInstances = createServerFn({ method: "GET" })
+  .validator((input?: { store_id?: string; storeId?: string }) => input)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const targetStoreId = data?.store_id || data?.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!targetStoreId) return [] as WhatsAppChannelInstanceDTO[];
+    assertStoreAccess(identity, ["owner", "admin", "manager"], targetStoreId);
+    const { data: list, error } = await getServerClient().from("whatsapp_channel_instances").select(PublicFields).eq("store_id", targetStoreId).order("created_at", { ascending: false });
+    if (error) throw new Error(`Falha ao listar instâncias WhatsApp: ${error.message}`);
+    return (list || []) as WhatsAppChannelInstanceDTO[];
+  });
 
 export const listMasterWhatsAppInstances = createServerFn({ method: "GET" }).handler(async () => {
   await requireMaster();
@@ -701,13 +705,14 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
   });
 
 export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
-  .validator(z.object({ instanceId: z.string().uuid().optional() }).optional())
+  .validator(z.object({ instanceId: z.string().uuid().optional(), storeId: z.string().uuid().optional(), store_id: z.string().uuid().optional() }).optional())
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
-    assertStoreAccess(identity, ["owner", "admin", "manager", "support", "agent", "sales"]);
-    const storeId = identity.store_id;
-    if (!storeId) throw new Error("Loja obrigatória.");
+    const targetStoreId = data?.storeId || data?.store_id || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!targetStoreId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "support", "agent", "sales"], targetStoreId);
+    const storeId = (identity as any).store_id || targetStoreId;
 
     const db = getServerClient();
     let query = db

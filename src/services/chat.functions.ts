@@ -16,6 +16,8 @@ export const listStaffThreadsSchema = z.object({
  department: z.string().optional(),
  assigned_to: z.string().optional(),
  status: z.enum(["open", "closed", "archived", "all"]).default("all"),
+ store_id: z.string().uuid().optional(),
+ storeId: z.string().uuid().optional(),
 });
 
 export const sendStaffMessageSchema = z.object({
@@ -84,14 +86,24 @@ export const listChatThreads = createServerFn({ method: "GET" })
  try {
  const db = getServerClient();
  const identity = await getServerIdentity().catch(() => null);
- if (!identity?.store_id) {
+ if (!identity?.id) {
  return {
  threads: [],
  metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
  };
  }
 
- assertStoreAccess(identity, STAFF_ROLES, identity.store_id);
+ const requestedStoreId = data?.store_id || data?.storeId;
+ const targetStoreId = requestedStoreId || identity.store_id || identity.memberships?.[0]?.store_id || null;
+ if (!targetStoreId) {
+ return {
+ threads: [],
+ metrics: { total: 0, open: 0, closed: 0, avg_rating: null, sla_first_response_min: null },
+ };
+ }
+
+ assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
+ const effectiveStoreId = (identity as any).store_id || targetStoreId;
 
  const isSupervisor = ["owner", "admin", "manager", "platform_admin", "master"].includes(
  identity.role,
@@ -107,7 +119,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  chat_messages(id, message, message_type, created_at, is_staff_reply, attachments, payload)
  `,
  )
- .eq("store_id", identity.store_id)
+ .eq("store_id", effectiveStoreId)
 		.not("thread_type", "in", "(ai_assistant,copilot,project)")
  .order("updated_at", { ascending: false });
 
@@ -199,7 +211,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
         tags: thread.tags || [],
  updated_at: thread.updated_at,
  created_at: thread.created_at,
- last_message: lastMsg ? lastMsg.message : "",
+ last_message: (lastMsg?.message && !lastMsg.message.startsWith("waesy-msg:")) ? lastMsg.message : (thread.last_message_text || (lastMsg ? "[Mensagem]" : "")),
  last_message_type: lastMsg ? lastMsg.message_type : "text",
  is_last_reply_staff: lastMsg ? lastMsg.is_staff_reply : false,
  total_messages: messages.length,
@@ -256,10 +268,10 @@ export const getChatMessages = createServerFn({ method: "GET" })
  .from("chat_threads")
  .select("id, store_id, customer_id, order_id, department, status, thread_type, context_type, metadata, entity_id, channel_instance_id")
  .eq("id", threadId)
- .eq("store_id", identity.store_id)
  .single();
 
  if (!thread) throw new Error("Conversa não encontrada ou acesso negado.");
+ assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
   if (
     thread.thread_type === 'ai_assistant' ||
     thread.thread_type === 'copilot' ||
@@ -404,10 +416,10 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  .from("chat_threads")
  .select("id, store_id, context_type, entity_id, channel_instance_id, metadata, assigned_to_profile_id")
  .eq("id", input.threadId)
- .eq("store_id", identity.store_id)
  .single();
 
  if (!thread) throw new Error("Conversa não encontrada ou acesso negado.");
+ assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
 
  const isInternal = Boolean(input.is_internal);
  const finalPayload = {
