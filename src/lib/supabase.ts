@@ -238,6 +238,7 @@ export function getBrowserClient(): SupabaseClient {
           if (typeof document === "undefined" || typeof window === "undefined") return;
           const isSecure = window.location.protocol === "https:";
           const activeDomain = resolveCanonicalCookieDomain(window.location.hostname) || clientDomain;
+          const legacyDomains = getLegacyCookieDomainsToPurge(window.location.hostname);
           const rawEntries = parseRawCookieStringPreservingDuplicates(document.cookie || "");
 
           cookiesToSet.forEach(({ name, value, options }) => {
