@@ -35,6 +35,7 @@ const targetVaultMasterKey = secrets.VAULT_MASTER_KEY || process.env.VAULT_MASTE
 const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://usewaesy.pages.dev";
 const targetEvolutionUrl = secrets.EVOLUTION_API_URL || process.env.EVOLUTION_API_URL || "https://feb-genre-kathy-indicator.trycloudflare.com";
 const targetEvolutionKey = secrets.EVOLUTION_API_KEY || process.env.EVOLUTION_API_KEY || "WaesyApiKey_Master_2026_WhatsApp";
+const targetWorkerToken = secrets.WHATSAPP_WORKER_TOKEN || process.env.WHATSAPP_WORKER_TOKEN || "WaesyWorkerToken_Master_2026";
 
 const fallbackEnv = {
   VITE_SUPABASE_URL: targetSupabaseUrl,
@@ -48,6 +49,7 @@ const fallbackEnv = {
   VITE_SITE_URL: targetSiteUrl,
   EVOLUTION_API_URL: targetEvolutionUrl,
   EVOLUTION_API_KEY: targetEvolutionKey,
+  WHATSAPP_WORKER_TOKEN: targetWorkerToken,
   VITE_APP_URL: targetSiteUrl,
 };
 

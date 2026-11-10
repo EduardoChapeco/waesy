@@ -204,6 +204,44 @@ export async function runWhatsAppOutboxWorker(options?: {
   const db = getServerClient();
   const runStartedAt = new Date().toISOString();
   await touchWorkerHeartbeat(db, workerId, { status: "running", lastRunAt: runStartedAt });
+
+  // Promove mensagens agendadas com prazo atingido para a fila ativa de outbox
+  try {
+    const nowIso = new Date().toISOString();
+    const { data: dueScheduled } = await db
+      .from("whatsapp_scheduled_messages")
+      .select("id, store_id, thread_id, recipient_phone, message_text")
+      .eq("status", "scheduled")
+      .lte("scheduled_for", nowIso)
+      .limit(20);
+
+    if (dueScheduled && dueScheduled.length > 0) {
+      for (const item of dueScheduled) {
+        const { error: upsertErr } = await db.from("whatsapp_outbox").upsert(
+          {
+            store_id: item.store_id,
+            thread_id: item.thread_id,
+            provider: "evolution_api",
+            idempotency_key: `scheduled_msg:${item.id}`,
+            recipient_phone: item.recipient_phone,
+            message_type: "text",
+            payload: { text: item.message_text },
+            status: "pending",
+          },
+          { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
+        );
+        if (!upsertErr) {
+          await db
+            .from("whatsapp_scheduled_messages")
+            .update({ status: "sent", sent_at: nowIso, updated_at: nowIso })
+            .eq("id", item.id);
+        }
+      }
+    }
+  } catch (schedErr) {
+    console.warn("[whatsapp-worker] promocoes de agendadas ignoradas:", schedErr);
+  }
+
   const { data: claimed, error } = await db.rpc("claim_whatsapp_outbox", {
     p_worker_id: workerId,
     p_batch_size: Math.min(100, Math.max(1, options?.batchSize || 25)),
