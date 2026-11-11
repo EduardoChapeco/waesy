@@ -438,6 +438,19 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
     const hasOtherActiveDefault = Boolean(existingDefault && existingDefault.id !== existing?.id);
     const shouldBeDefault = isThisAlreadyDefault || !hasOtherActiveDefault;
 
+    // Se deve ser padrão, despromove qualquer outra instância default prévia da mesma loja para blindar contra race condition
+    if (shouldBeDefault) {
+      let demoteDefaultQuery = db
+        .from("whatsapp_channel_instances")
+        .update({ is_default: false, updated_at: new Date().toISOString() })
+        .eq("store_id", storeId)
+        .eq("is_default", true);
+      if (existing?.id) {
+        demoteDefaultQuery = demoteDefaultQuery.neq("id", existing.id);
+      }
+      await demoteDefaultQuery;
+    }
+
     const upsertPayload = {
       ...(existing?.id ? { id: existing.id } : {}),
       store_id: storeId,
@@ -459,13 +472,40 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
       created_by: identity.id,
     };
 
-    const { data: saved, error } = await db
+    let saved: WhatsAppChannelInstanceDTO | null = null;
+    const { data: initialSaved, error: initialError } = await db
       .from("whatsapp_channel_instances")
       .upsert(upsertPayload, { onConflict: "store_id,instance_key" })
       .select(PublicFields)
       .single();
 
-    if (error) throw new Error(`Erro ao persistir instância QR Code: ${error.message}`);
+    if (initialError) {
+      // Blindagem contra duplicate key na unique constraint uq_whatsapp_default_instance_per_store
+      if (
+        initialError.message.includes("uq_whatsapp_default_instance_per_store") ||
+        (initialError as any).code === "23505"
+      ) {
+        const retryPayload = { ...upsertPayload, is_default: false };
+        const { data: retrySaved, error: retryError } = await db
+          .from("whatsapp_channel_instances")
+          .upsert(retryPayload, { onConflict: "store_id,instance_key" })
+          .select(PublicFields)
+          .single();
+
+        if (retryError) {
+          throw new Error(`Erro ao persistir instância QR Code: ${retryError.message}`);
+        }
+        saved = retrySaved as WhatsAppChannelInstanceDTO;
+      } else {
+        throw new Error(`Erro ao persistir instância QR Code: ${initialError.message}`);
+      }
+    } else {
+      saved = initialSaved as WhatsAppChannelInstanceDTO;
+    }
+
+    if (!saved) {
+      throw new Error("Erro desconhecido ao registrar instância WhatsApp.");
+    }
 
     await audit(
       String(saved.id),

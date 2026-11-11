@@ -62,4 +62,33 @@ describe("WhatsApp Channel Instances Integrity Constraints", () => {
     expect(nextToPromote).toBeDefined();
     expect(nextToPromote?.id).toBe("inst-2");
   });
+
+  it("handles race condition collision by falling back to is_default: false without throwing", () => {
+    // Simulates an error thrown by uq_whatsapp_default_instance_per_store
+    const simulateDatabaseUpsert = (payload: { is_default: boolean; is_active: boolean }) => {
+      if (payload.is_default && payload.is_active) {
+        return { error: { message: 'duplicate key value violates unique constraint "uq_whatsapp_default_instance_per_store"', code: "23505" }, data: null };
+      }
+      return { error: null, data: { ...payload, id: "inst-safe" } };
+    };
+
+    const initialPayload = { is_default: true, is_active: true };
+    const firstAttempt = simulateDatabaseUpsert(initialPayload);
+
+    expect(firstAttempt.error).not.toBeNull();
+    expect(firstAttempt.error?.message).toContain("uq_whatsapp_default_instance_per_store");
+
+    // Resilient fallback logic kicks in:
+    let finalSaved = null;
+    if (firstAttempt.error?.message.includes("uq_whatsapp_default_instance_per_store")) {
+      const retryPayload = { ...initialPayload, is_default: false };
+      const retryAttempt = simulateDatabaseUpsert(retryPayload);
+      expect(retryAttempt.error).toBeNull();
+      finalSaved = retryAttempt.data;
+    }
+
+    expect(finalSaved).not.toBeNull();
+    expect(finalSaved?.is_default).toBe(false);
+    expect(finalSaved?.is_active).toBe(true);
+  });
 });

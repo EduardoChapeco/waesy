@@ -1899,10 +1899,10 @@ function WorkspaceAtendimentoPage() {
                     size="sm"
                     onClick={() => setQuickAnswersModalOpen(true)}
                     className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-border/70 text-foreground hover:bg-muted cursor-pointer"
-                    title="Gerenciar respostas rápidas personalizadas"
+                    title="Gerenciar respostas rápidas e atalhos comerciais"
                   >
                     <Zap className="size-3 text-warning-strong" />
-                    <span>Macros</span>
+                    <span>Atalhos</span>
                   </Button>
 
                   {(storeMacros.length > 0
@@ -1979,7 +1979,7 @@ function WorkspaceAtendimentoPage() {
                         placeholder={
                           isWhisperMode
                             ? "Escreva uma nota interna (visível apenas para sua equipe)..."
-                            : "Digite sua mensagem ou use / para macros (Enter para enviar)..."
+                            : "Digite sua mensagem ou use / para atalhos rápidos (Enter para enviar)..."
                         }
                         className={cn(
                           "min-h-11 max-h-32 text-xs rounded-lg resize-none p-3",
