@@ -349,16 +349,48 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
           qrBase64 = firstConnect.qrCodeBase64;
           pairingCode = firstConnect.pairingCode;
 
-          // Se a instância existente travou sem emitir QR Code, reinicia sessão e busca novamente
+          // Se a instância existente travou sem emitir QR Code ou se foi gerado um novo externalName, cria a nova instância
           if (!qrBase64) {
-            await fetch(`${baseUrl}/instance/restart/${encodeURIComponent(externalName)}`, {
-              method: "PUT",
-              headers: { apikey: apiKey },
-              signal: AbortSignal.timeout(6000),
+            const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
+              method: "POST",
+              headers: { apikey: apiKey, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                instanceName: externalName,
+                qrcode: true,
+                integration: "WHATSAPP-BAILEYS",
+                webhook: {
+                  url: webhookUrl,
+                  byEvents: false,
+                  base64: true,
+                  events: [
+                    "QRCODE_UPDATED",
+                    "CONNECTION_UPDATE",
+                    "MESSAGES_UPSERT",
+                    "MESSAGES_UPDATE",
+                    "SEND_MESSAGE",
+                  ],
+                },
+              }),
+              signal: AbortSignal.timeout(12000),
             }).catch(() => null);
-            const retryConnect = await fetchInstanceConnectQr();
-            qrBase64 = retryConnect.qrCodeBase64;
-            pairingCode = retryConnect.pairingCode || pairingCode;
+
+            if (freshCreateRes && freshCreateRes.ok) {
+              const freshJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
+              const freshExtracted = extractEvolutionQrPayload(freshJson);
+              qrBase64 = freshExtracted.qrCodeBase64;
+              pairingCode = freshExtracted.pairingCode;
+            }
+
+            if (!qrBase64) {
+              await fetch(`${baseUrl}/instance/restart/${encodeURIComponent(externalName)}`, {
+                method: "PUT",
+                headers: { apikey: apiKey },
+                signal: AbortSignal.timeout(6000),
+              }).catch(() => null);
+              const retryConnect = await fetchInstanceConnectQr();
+              qrBase64 = retryConnect.qrCodeBase64;
+              pairingCode = retryConnect.pairingCode || pairingCode;
+            }
           }
         }
       } else {

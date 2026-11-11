@@ -32,6 +32,7 @@ import {
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getRealtimeChannel } from "@/services/realtime-channel";
 import { getClientActiveTenant } from "@/lib/context-auth";
+import { getBrowserClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -649,15 +650,19 @@ function WorkspaceAtendimentoPage() {
       .catch(() => {});
   }, [statusFilter]);
 
-  // Cálculo da Janela de 24h WhatsApp Meta Cloud API
+  // Cálculo de Disponibilidade e Janela WhatsApp (Meta Cloud API exige template após 24h; canais Web/Evolution operam 24/7)
   const isWhatsAppWindowOpen = useMemo(() => {
+    const defaultInstance = whatsappInstances.find((i) => i.is_default) || whatsappInstances[0];
+    const isUnofficial = defaultInstance?.connection_mode === "unofficial" || defaultInstance?.provider === "evolution_api" || !defaultInstance;
+    if (isUnofficial) return true;
+
     if (!messages || messages.length === 0) return true;
     const customerMsgs = messages.filter((m) => !m.is_staff_reply && m.created_at);
     if (customerMsgs.length === 0) return true;
     const lastCustomerMsg = customerMsgs[customerMsgs.length - 1];
     const diffHours = (Date.now() - new Date(lastCustomerMsg.created_at).getTime()) / (1000 * 60 * 60);
     return diffHours <= 24;
-  }, [messages]);
+  }, [messages, whatsappInstances]);
 
   // Carregamento de Mensagens
   useEffect(() => {
@@ -1501,7 +1506,7 @@ function WorkspaceAtendimentoPage() {
                         <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0 border border-emerald-500/20">
                           <span
                             className={cn("size-2 rounded-full shrink-0", isWhatsAppWindowOpen ? "bg-emerald-500" : "bg-muted-foreground")}
-                            title={isWhatsAppWindowOpen ? "Janela 24h WhatsApp Ativa" : "Janela 24h Expirada"}
+                            title={isWhatsAppWindowOpen ? "Canal WhatsApp Ativo" : "Janela Meta Cloud Expirada (Exige Template)"}
                           />
                           <span>WhatsApp</span>
                         </span>
@@ -1726,7 +1731,7 @@ function WorkspaceAtendimentoPage() {
                           {messages.length} mensagens sincronizadas e auditadas na conversa
                         </p>
                         <p className="text-muted-foreground">
-                          Janela 24h: {isWhatsAppWindowOpen ? "Ativa para resposta livre" : "Exige template"}
+                          {isWhatsAppWindowOpen ? "Canal ativo para envio direto de mensagens" : "Janela Meta Cloud expirada (exige template aprovado)"}
                         </p>
                       </div>
                       <span className="font-mono text-muted-foreground shrink-0">

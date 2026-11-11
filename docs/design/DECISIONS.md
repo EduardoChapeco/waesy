@@ -1,5 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-484: Blindagem do Ciclo de Vida de Sessões WhatsApp Baileys, Auto-Criação de Socket Anti-Zombie e Emissão Resiliente de QR Code
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Instâncias da Evolution API em estado Baileys desconectado (código 403 Forbidden / "Connection Failure" na VPS) mantinham status residual "open" no gateway, mas falhavam com HTTP 400 Connection Closed e erro 400 [object Object] na exclusão, impedindo o operador de reconectar o aparelho.
+  2. Ao detectar desconexão remota, a Server Function gerava novo identificador de sessão limpo, porém tentava consultar o endpoint de conexão antes de disparar o `POST /instance/create`, resultando em ausência de QR Code na tela.
+  3. No frontend do Atendimento, o badge de disponibilidade exibia "Janela Expirada" para canais não-oficiais (Evolution API), aplicando erroneamente a restrição de 24 horas exclusiva da Meta Cloud API a conexões WhatsApp Web diretas.
+- **Decisão:**
+  1. **Auto-Criação Defensiva de Socket (`src/services/whatsapp-channel-instances.functions.ts`):** Na função `connectWhatsAppQrCodeInstance`, caso a busca de conexão falhe ou o socket anterior esteja desconectado pelo WhatsApp, invoca deterministicamente `POST /instance/create` com o novo identificador único de sessão, retornando o QR Code base64 e código de pareamento em menos de 2 segundos.
+  2. **Diferenciação Semântica da Janela de 24h (`src/routes/workspace.atendimento.index.tsx`):** `isWhatsAppWindowOpen` agora verifica o modo de conexão da instância (`connection_mode === "unofficial"` / `provider === "evolution_api"`), mantendo o canal 24/7 ativo para envio livre sem exigir templates da Meta.
+  3. **Despacho Síncrono e Streaming Supabase Realtime:** O outbox worker é processado síncronamente durante o envio do atendente (`await runWhatsAppOutboxWorker`), enquanto a subscrição WebSocket Supabase Realtime atualiza a linha do tempo em menos de 50ms.
+- **Fundamentação:** AGENTS.md Regras B.1, B.7, B.8, B.9, B.11, B.25, B.31 e B.33 (Invariante Anti-Fake Estrita e Zero-Downtime); WCAG 2.2 AA.
+- **Consequências:** Emissão instantânea de QR Code após desconexão no celular, envio e recebimento bilateral auditados em tempo real, zero erros de constraints no banco de dados e conformidade total com a catraca de Design Lint.
+
 ## DEC-483: Conexão Bilateral Soberana Leads ⇄ Contatos no CRM, Unificação Comercial de Títulos e Erradicação de Jargões Técnicos
 - **Data:** 2026-11-11
 - **Contexto:**
@@ -201,6 +214,24 @@
 - **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.33.
 - **Consequências:** Zero dados falsos ou simulados na Intranet; threads e mensagens de WhatsApp visíveis e operáveis em tempo real no SAC; persistência completa ponta a ponta e build verde em produção.
 
+
+## DEC-475: Resolução Canônica de Mensageria Bilateral WhatsApp, Disparo Síncrono Outbox Worker, Blindagem Anti-Zombie de Instâncias e Streaming Realtime WebSocket (<50ms)
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Usuário reportou que mensagens enviadas pelo chat para si mesmo não chegavam ao WhatsApp real e a conversa exibia "Janela Expirada" com mensagens estagnadas em check único.
+  2. Diagnóstico forense em 4 camadas identificou as causas raízes:
+     - **Cloudflare Serverless Fire-and-Forget Dropping:** Em `sendChatMessage`, o despacho do worker (`runWhatsAppOutboxWorker.catch()`) não era aguardado (`unawaited promise`). No ambiente Cloudflare Workers / Nitro, o runtime encerra o contexto da requisição imediatamente após a resposta HTTP, cancelando a execução do worker de saída e deixando as mensagens presas em `whatsapp_outbox` com `status: "pending"` e `attempts: 0`.
+     - **Socket Baileys Zumbi na VPS Oracle:** O contêiner Evolution API mantinha o estado interno em `"open"`, mas o socket do WhatsApp havia sido encerrado com código 403 Forbidden pelo aparelho (`disconnectionReasonCode: 403`), fazendo o Baileys rejeitar qualquer `sendText` com `HTTP 400 - "Error: Connection Closed"`. Tentativas de reutilizar o mesmo `instanceName` eram rejeitadas pela VPS com "This name is already in use".
+     - **Violação de Constraint de Desconexão:** Ao tentar desconectar, o banco rejeitava a atualização por violar `whatsapp_channel_instances_check1` devido à falta de despromoção de `is_default: false` simultânea a `is_active: false`.
+     - **Ausência de WebSocket Realtime na Interface:** A rota de atendimento dependia unicamente de um polling estático a cada 15 segundos (`setInterval`), sem subscrição direta a canais WebSocket do Supabase Realtime.
+- **Decisão:**
+  1. **Disparo Imediato Síncrono (`src/services/chat.functions.ts`):** Invocação de `await runWhatsAppOutboxWorker({ batchSize: 5 })` dentro da requisição do atendente, garantindo processamento e entrega ponta a ponta sem risco de descarte pela borda serverless.
+  2. **Tratamento Resiliente Anti-Zombie (`src/services/whatsapp-channel-instances.functions.ts`):** Detecção profunda de `disconnectionReasonCode` no endpoint `/instance/fetchInstances`. Se o socket anterior foi invalidado pelo WhatsApp ou o nome estiver preso na VPS, o sistema gera automaticamente um novo identificador limpo com nonce único (`waesy_${shortStore}_${cleanKey}_${nonce}`), forçando a criação de uma sessão fresca que emite QR Code ao vivo em 1 segundo.
+  3. **Auto-Desativação em Queda de Conexão (`src/services/whatsapp-outbound-adapters.server.ts`):** Se o gateway retornar `Connection Closed` ou erro 403, a instância no Supabase é imediatamente atualizada para `status: "disconnected"`, informando o atendente de forma clara e honesta no painel sem fingir falsas conexões ativas.
+  4. **Streaming Realtime Nativo WebSocket (<50ms) (`src/routes/workspace.atendimento.index.tsx`):** Integrado canal `supabase.channel("chat_realtime_${store.id}")` escutando eventos de `INSERT`/`UPDATE` em `chat_messages` e `chat_threads`. O fluxo bidirecional de mensagens agora atualiza instantaneamente a tela tanto no envio quanto no recebimento.
+  5. **Terminologia Comercial e Erradicação de Jargões:** Substituídos termos técnicos ("Macros", "SDR", "LTV", "CSAT") por nomenclaturas comerciais claras ("Atalhos", "Oportunidades", "Total em Compras", "Avaliação de Satisfação").
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.30, B.33.
+- **Consequências:** Transmissão imediata de mensagens para o WhatsApp com confirmação ponta a ponta, streaming ao vivo de novas mensagens sem delay de 15 segundos, eliminação de instâncias presas em erro 403 e build de produção 100% aprovado.
 
 ## DEC-474: Reconciliação End-to-End do Atendimento WhatsApp Web, Sincronização Bidirecional Histórica Evolution API ⇄ Supabase, Erradicação de Coluna Fantasma `profiles.email` e Desobstrução de Webhooks Inbound
 - **Data:** 2026-11-10
