@@ -53,6 +53,7 @@ export function WhatsAppQrConnectModal({
   isPlatformMaster = false,
 }: WhatsAppQrConnectModalProps) {
   const [selectedMode, setSelectedMode] = useState<"qr_baileys" | "meta_official">("qr_baileys");
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(
     instances[0]?.id || null,
   );
@@ -99,10 +100,12 @@ export function WhatsAppQrConnectModal({
   const [metaAccessToken, setMetaAccessToken] = useState("");
   const [metaVerifyToken, setMetaVerifyToken] = useState("");
 
-  const activeInstance = (instances || []).find((item) => item.id === selectedInstanceId) || instances?.[0] || null;
+  const activeInstance = !isCreatingNew
+    ? ((instances || []).find((item) => item.id === selectedInstanceId) || instances?.[0] || null)
+    : null;
 
   useEffect(() => {
-    if (activeInstance) {
+    if (!isCreatingNew && activeInstance) {
       setSelectedInstanceId(activeInstance.id);
       setDisplayName(activeInstance.display_name);
       setInstanceKey(activeInstance.instance_key);
@@ -116,7 +119,7 @@ export function WhatsAppQrConnectModal({
       setIsGlobalMaster(Boolean(activeInstance.public_config?.is_global_master));
       setAutoImportHistory(Boolean((activeInstance.public_config as any)?.auto_import_history));
     }
-  }, [activeInstance?.id]);
+  }, [activeInstance?.id, isCreatingNew]);
 
   // Verifica expiração do QR Code (60s sem leitura)
   useEffect(() => {
@@ -183,7 +186,7 @@ export function WhatsAppQrConnectModal({
     try {
       const result = await connectWhatsAppQrCodeInstance({
         data: {
-          id: selectedInstanceId || undefined,
+          id: isCreatingNew ? undefined : selectedInstanceId || undefined,
           displayName: displayName.trim() || "WhatsApp Principal",
           instanceKey: instanceKey.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_") || "principal",
           department: department.trim() || "Geral",
@@ -191,6 +194,7 @@ export function WhatsAppQrConnectModal({
           autoImportHistory,
         },
       });
+      setIsCreatingNew(false);
       setSelectedInstanceId(result.instance.id);
       setQrBase64(result.qrCodeBase64);
       setPairingCode(result.pairingCode);
@@ -272,10 +276,11 @@ export function WhatsAppQrConnectModal({
   };
 
   const handleStartNewNumber = () => {
+    setIsCreatingNew(true);
     setSelectedInstanceId(null);
     setDisplayName(`WhatsApp Setor ${(instances?.length || 0) + 1}`);
     setInstanceKey(`setor_${(instances?.length || 0) + 1}`);
-    setDepartment("Vendas & Comercial");
+    setDepartment("Comercial");
     setQrBase64(null);
     setPairingCode(null);
     setQrExpired(false);
@@ -363,10 +368,13 @@ export function WhatsAppQrConnectModal({
             <button
               key={inst.id}
               type="button"
-              onClick={() => setSelectedInstanceId(inst.id)}
+              onClick={() => {
+                setIsCreatingNew(false);
+                setSelectedInstanceId(inst.id);
+              }}
               className={cn(
                 "h-11 min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                selectedInstanceId === inst.id
+                !isCreatingNew && (selectedInstanceId === inst.id || (!selectedInstanceId && instances[0]?.id === inst.id))
                   ? "border-primary bg-primary/10 text-foreground"
                   : "border-border bg-card text-muted-foreground hover:text-foreground",
               )}
@@ -384,7 +392,17 @@ export function WhatsAppQrConnectModal({
             </button>
           ))}
 
-          {canManageConnection && (
+          {isCreatingNew && (
+            <Badge
+              variant="outline"
+              className="h-11 min-h-11 px-3 text-xs border-primary bg-primary/10 text-primary font-bold flex items-center gap-2"
+            >
+              <Plus className="size-3.5" />
+              Novo Número (Configurando...)
+            </Badge>
+          )}
+
+          {canManageConnection && !isCreatingNew && (
             <Button
               type="button"
               variant="outline"
@@ -453,78 +471,80 @@ export function WhatsAppQrConnectModal({
             </p>
           </div>
         ) : selectedMode === "qr_baileys" ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-1 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1 items-stretch">
             {/* Coluna Esquerda: Dados do Número, Setor e Ações da Conexão */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-foreground">Nome de Identificação do Aparelho</Label>
-                <Input
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Ex.: WhatsApp Comercial / Vendas"
-                  className="h-11 min-h-11 text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-4 flex flex-col justify-between">
+              <div className="space-y-4">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground">Chave do Canal</Label>
+                  <Label className="text-xs font-semibold text-foreground">Nome de Identificação do Aparelho</Label>
                   <Input
-                    value={instanceKey}
-                    onChange={(e) =>
-                      setInstanceKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "_"))
-                    }
-                    placeholder="vendas_01"
-                    className="h-11 min-h-11 text-xs font-mono"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground">Setor Padrão</Label>
-                  <Input
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="Vendas, Suporte..."
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Ex.: WhatsApp Comercial / Vendas"
                     className="h-11 min-h-11 text-xs"
                   />
                 </div>
-              </div>
 
-              {isPlatformMaster && (
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5 cursor-pointer">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Chave do Canal</Label>
+                    <Input
+                      value={instanceKey}
+                      onChange={(e) =>
+                        setInstanceKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "_"))
+                      }
+                      placeholder="vendas_01"
+                      className="h-11 min-h-11 text-xs font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Setor Padrão</Label>
+                    <Input
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      placeholder="Vendas, Suporte..."
+                      className="h-11 min-h-11 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {isPlatformMaster && (
+                  <label className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isGlobalMaster}
+                      onChange={(e) => setIsGlobalMaster(e.target.checked)}
+                      className="size-4 accent-primary"
+                    />
+                    <div className="text-xs">
+                      <span className="font-bold flex items-center gap-1">
+                        <Globe className="size-3.5 text-primary" />
+                        Número Global Oficial Waesy
+                      </span>
+                      <span className="text-xs text-muted-foreground block">
+                        Ativa auto-verificação de perfil civil, chamada Waesy Go e cotações aéreas.
+                      </span>
+                    </div>
+                  </label>
+                )}
+
+                <label className="flex items-start gap-3 p-3 rounded-lg border border-border/70 bg-muted/20 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={isGlobalMaster}
-                    onChange={(e) => setIsGlobalMaster(e.target.checked)}
-                    className="size-4 accent-primary"
+                    checked={autoImportHistory}
+                    onChange={(e) => setAutoImportHistory(e.target.checked)}
+                    className="size-4 accent-primary mt-1 cursor-pointer shrink-0"
                   />
-                  <div className="text-xs">
-                    <span className="font-bold flex items-center gap-1">
-                      <Globe className="size-3.5 text-primary" />
-                      Número Global Oficial Waesy
+                  <div className="text-xs space-y-1">
+                    <span className="font-semibold block text-foreground">
+                      Importar conversas anteriores do aparelho
                     </span>
-                    <span className="text-xs text-muted-foreground block">
-                      Ativa auto-verificação de perfil civil, chamada Waesy Go e cotações aéreas.
+                    <span className="text-muted-foreground block text-xs leading-relaxed">
+                      Sincroniza contatos, fotos e conversas existentes no aparelho para o atendimento.
                     </span>
                   </div>
                 </label>
-              )}
-
-              <label className="flex items-start gap-3 p-3 rounded-lg border border-border/70 bg-muted/20 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoImportHistory}
-                  onChange={(e) => setAutoImportHistory(e.target.checked)}
-                  className="size-4 accent-primary mt-1 cursor-pointer shrink-0"
-                />
-                <div className="text-xs space-y-1">
-                  <span className="font-semibold block text-foreground">
-                    Importar conversas anteriores do aparelho
-                  </span>
-                  <span className="text-muted-foreground block text-xs leading-relaxed">
-                    Sincroniza contatos e mensagens antigas existentes no celular para o painel de atendimento.
-                  </span>
-                </div>
-              </label>
+              </div>
 
               {/* Bloco de Ações do Aparelho */}
               <div className="pt-2">
@@ -564,7 +584,7 @@ export function WhatsAppQrConnectModal({
                       {isGenerating ? "Gerando na VPS..." : qrBase64 ? "Atualizar QR Code" : "Gerar QR Code Ao Vivo"}
                     </Button>
 
-                    {selectedInstanceId && (
+                    {!isCreatingNew && selectedInstanceId && (
                       <Button
                         type="button"
                         variant="outline"
@@ -582,7 +602,7 @@ export function WhatsAppQrConnectModal({
             </div>
 
             {/* Coluna Direita: Visor do QR Code e Status em Tempo Real */}
-            <div className="lg:col-span-5 flex flex-col items-center justify-center p-5 rounded-xl border border-border/80 bg-muted/15 space-y-4 text-center">
+            <div className="flex flex-col items-center justify-center p-5 rounded-xl border border-border/80 bg-muted/15 space-y-4 text-center">
               {isGenerating ? (
                 <div className="flex flex-col items-center text-center space-y-3 py-10">
                   <div className="size-14 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -601,7 +621,7 @@ export function WhatsAppQrConnectModal({
                     <CheckCircle2 className="size-8" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-foreground">WhatsApp Conectado</h4>
+                    <h4 className="text-sm font-bold text-foreground">WhatsApp Conectado e Ativo</h4>
                     <p className="text-xs font-mono font-semibold text-foreground">
                       {activeInstance?.display_phone_number || "Sessão ativa na VPS"}
                     </p>
@@ -620,7 +640,7 @@ export function WhatsAppQrConnectModal({
                     <AlertTriangle className="size-7" />
                   </div>
                   <div className="space-y-1 max-w-xs">
-                    <h4 className="text-sm font-bold text-foreground">Falha de Comunicação</h4>
+                    <h4 className="text-sm font-bold text-foreground">Falha de Comunicação com Gateway</h4>
                     <p className="text-xs text-muted-foreground break-words">
                       {lastErrorMessage}
                     </p>

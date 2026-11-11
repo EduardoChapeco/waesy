@@ -318,8 +318,8 @@ function WorkspaceAtendimentoPage() {
   // Status de presença do atendente
   const [agentPresence, setAgentPresence] = useState<"online" | "busy" | "away">("online");
 
-  // Filtro de status da lista (all: ativas | open: novas | archived: arquivadas)
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "waiting" | "archived">("all");
+  // Filtro de status da lista (all: ativas | direct: individuais | groups: grupos | open: novas | waiting: aguardando | archived: arquivadas)
+  const [statusFilter, setStatusFilter] = useState<"all" | "direct" | "groups" | "open" | "waiting" | "archived">("all");
   const [deptFilter, setDeptFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState((searchParams as any).search || "");
 
@@ -1067,11 +1067,14 @@ function WorkspaceAtendimentoPage() {
   // Filtros de busca de threads
   const filteredThreads = useMemo(() => {
     return threads.filter((t) => {
-      // Filtro de 4 Abas Estilo WhatsApp Web / Whaticket
+      // Filtros de Abas: Todas, Individuais, Grupos, Abertas, Aguardando, Arquivadas
+      const isGrp = Boolean(t.is_group || t.is_channel || t.thread_type === "group" || t.thread_type === "channel");
+      if (statusFilter === "direct" && isGrp) return false;
+      if (statusFilter === "groups" && !isGrp) return false;
       if (statusFilter === "open" && t.status !== "open") return false;
       if (statusFilter === "archived" && t.status !== "archived") return false;
       if (statusFilter === "waiting" && (t.status === "archived" || t.is_last_reply_staff)) return false;
-      if (statusFilter === "all" && t.status === "archived") return false;
+      if ((statusFilter === "all" || statusFilter === "direct" || statusFilter === "groups") && t.status === "archived") return false;
       const matchDept = deptFilter === "all" || t.department === deptFilter;
       const matchSearch =
         !searchTerm.trim() ||
@@ -1311,10 +1314,12 @@ function WorkspaceAtendimentoPage() {
               </div>
 
               
-              {/* Chips Rápidos de 4 Abas: Todas / Abertas / Aguardando / Arquivadas (WhatsApp Web / Whaticket) */}
+              {/* Chips Rápidos de Abas: Todas / Individuais / Grupos / Abertas / Aguardando / Arquivadas */}
               <div className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar py-1">
                 {[
                   { id: "all", label: "Todas" },
+                  { id: "direct", label: "Individuais" },
+                  { id: "groups", label: "Grupos" },
                   { id: "open", label: "Abertas" },
                   { id: "waiting", label: "Aguardando" },
                   { id: "archived", label: "Arquivadas" },
@@ -1379,6 +1384,10 @@ function WorkspaceAtendimentoPage() {
                 filteredThreads.map((t) => {
                   const isActive = t.id === activeThreadId;
                   const isWhatsApp = t.channel === "whatsapp" || t.context_type === "whatsapp";
+                  const isGrp = Boolean(t.is_group || t.thread_type === "group");
+                  const isChan = Boolean(t.is_channel || t.thread_type === "channel");
+                  const avatarSrc = t.avatar_url || t.customer?.avatar_url;
+
                   return (
                     <button
                       key={t.id}
@@ -1390,16 +1399,24 @@ function WorkspaceAtendimentoPage() {
                           : "hover:bg-muted/40",
                       )}
                     >
-                      {/* Avatar com foto real ou iniciais */}
-                      {t.customer?.avatar_url ? (
+                      {/* Avatar com foto real do WhatsApp ou ícone de grupo/iniciais */}
+                      {avatarSrc ? (
                         <img
-                          src={t.customer.avatar_url}
-                          alt={t.customer?.full_name || "Cliente"}
+                          src={avatarSrc}
+                          alt={t.customer?.full_name || "Conversa"}
                           className="size-10 rounded-full object-cover shrink-0 border border-border/60"
                           onError={(e) => {
                             (e.currentTarget as HTMLElement).style.display = "none";
                           }}
                         />
+                      ) : isGrp ? (
+                        <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                          <Users className="size-5" />
+                        </div>
+                      ) : isChan ? (
+                        <div className="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                          <Radio className="size-5" />
+                        </div>
                       ) : (
                         <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
                           {(t.customer?.full_name || "C")[0].toUpperCase()}
@@ -1408,9 +1425,13 @@ function WorkspaceAtendimentoPage() {
 
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center justify-between gap-1">
-                          <span className="font-bold text-xs text-foreground truncate">
-                            {t.customer?.full_name || "Cliente"}
-                          </span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            {isGrp && <Users className="size-3.5 text-primary shrink-0" />}
+                            {isChan && <Radio className="size-3.5 text-emerald-600 shrink-0" />}
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {t.customer?.full_name || "Cliente"}
+                            </span>
+                          </div>
                           <span className="text-xs text-muted-foreground shrink-0 font-mono">
                             {formatRelativeTime(t.updated_at)}
                           </span>
@@ -1421,9 +1442,25 @@ function WorkspaceAtendimentoPage() {
                           {t.last_message || "Sem mensagens"}
                         </p>
 
-                        <div className="flex items-center gap-2 pt-1">
-                          {/* Badge de Canal: WhatsApp verde ou Chat Web */}
-                          {isWhatsApp ? (
+                        <div className="flex items-center gap-2 pt-1 flex-wrap">
+                          {/* Badge de Canal / Tipo */}
+                          {isGrp ? (
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-2 py-0 h-4 bg-primary/10 text-primary border-primary/30 gap-1 font-semibold"
+                            >
+                              <Users className="size-3" />
+                              <span>Grupo WhatsApp</span>
+                            </Badge>
+                          ) : isChan ? (
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-2 py-0 h-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1 font-semibold"
+                            >
+                              <Radio className="size-3" />
+                              <span>Canal</span>
+                            </Badge>
+                          ) : isWhatsApp ? (
                             <Badge
                               variant="outline"
                               className="text-xs px-2 py-0 h-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1 font-semibold"
@@ -1481,16 +1518,24 @@ function WorkspaceAtendimentoPage() {
                     <ArrowLeft className="size-5" />
                   </Button>
 
-                  {/* Avatar do cliente */}
-                  {activeThread.customer?.avatar_url ? (
+                  {/* Avatar do cliente ou grupo com foto real do WhatsApp */}
+                  {activeThread.avatar_url || activeThread.customer?.avatar_url ? (
                     <img
-                      src={activeThread.customer.avatar_url}
-                      alt={activeThread.customer?.full_name || "Cliente"}
+                      src={activeThread.avatar_url || activeThread.customer?.avatar_url}
+                      alt={activeThread.customer?.full_name || "Conversa"}
                       className="size-10 rounded-full object-cover shrink-0 border border-border/60"
                       onError={(e) => {
                         (e.currentTarget as HTMLElement).style.display = "none";
                       }}
                     />
+                  ) : activeThread.is_group || activeThread.thread_type === "group" ? (
+                    <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                      <Users className="size-5" />
+                    </div>
+                  ) : activeThread.is_channel || activeThread.thread_type === "channel" ? (
+                    <div className="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                      <Radio className="size-5" />
+                    </div>
                   ) : (
                     <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
                       {(activeThread.customer?.full_name || "C")[0].toUpperCase()}
@@ -1498,11 +1543,21 @@ function WorkspaceAtendimentoPage() {
                   )}
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
                       <h3 className="font-bold text-sm sm:text-base text-foreground truncate min-w-0">
-                        {activeThread.customer?.full_name || "Cliente"}
+                        {activeThread.customer?.full_name || "Conversa"}
                       </h3>
-                      {activeThread.channel === "whatsapp" && (
+                      {activeThread.is_group || activeThread.thread_type === "group" ? (
+                        <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary shrink-0 border border-primary/20">
+                          <Users className="size-3 text-primary" />
+                          <span>Grupo WhatsApp</span>
+                        </span>
+                      ) : activeThread.is_channel || activeThread.thread_type === "channel" ? (
+                        <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0 border border-emerald-500/20">
+                          <Radio className="size-3 text-emerald-600" />
+                          <span>Canal</span>
+                        </span>
+                      ) : activeThread.channel === "whatsapp" && (
                         <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0 border border-emerald-500/20">
                           <span
                             className={cn("size-2 rounded-full shrink-0", isWhatsAppWindowOpen ? "bg-emerald-500" : "bg-muted-foreground")}
@@ -2098,7 +2153,11 @@ function WorkspaceAtendimentoPage() {
             <div className="hidden lg:block w-80 xl:w-96 border-l border-border/80 bg-background overflow-y-auto no-scrollbar shrink-0 p-4">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-4">
                 <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
-                  Perfil 360º do Cliente
+                  {activeThread?.is_group || activeThread?.thread_type === "group"
+                    ? "Dossiê do Grupo WhatsApp"
+                    : activeThread?.is_channel || activeThread?.thread_type === "channel"
+                    ? "Dossiê do Canal"
+                    : "Perfil 360º do Cliente"}
                 </span>
                 <Button
                   type="button"
@@ -2191,6 +2250,9 @@ function WorkspaceAtendimentoPage() {
                 guestPhone={activeThread?.customer?.phone}
                 niche={semantics.nicheId}
                 storeName={store?.name}
+                isGroup={Boolean(activeThread?.is_group || activeThread?.thread_type === "group")}
+                isChannel={Boolean(activeThread?.is_channel || activeThread?.thread_type === "channel")}
+                avatarUrl={activeThread?.avatar_url || activeThread?.customer?.avatar_url}
                 onQuickSendMessage={(msgText) => setText(msgText)}
                 onOpenTransfer={() => setTransferModalOpen(true)}
                 onOpenSchedule={() => setScheduleModalOpen(true)}
@@ -2203,7 +2265,11 @@ function WorkspaceAtendimentoPage() {
             <SheetContent side="right" className="lg:hidden w-full sm:max-w-md p-0 overflow-y-auto">
               <SheetHeader className="p-4 border-b border-border/60">
                 <SheetTitle className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
-                  Perfil 360º do Cliente
+                  {activeThread?.is_group || activeThread?.thread_type === "group"
+                    ? "Dossiê do Grupo WhatsApp"
+                    : activeThread?.is_channel || activeThread?.thread_type === "channel"
+                    ? "Dossiê do Canal"
+                    : "Perfil 360º do Cliente"}
                 </SheetTitle>
               </SheetHeader>
               {activeThread?.id && (
@@ -2289,6 +2355,9 @@ function WorkspaceAtendimentoPage() {
                   guestPhone={activeThread?.customer?.phone}
                   niche={semantics.nicheId}
                   storeName={store?.name}
+                  isGroup={Boolean(activeThread?.is_group || activeThread?.thread_type === "group")}
+                  isChannel={Boolean(activeThread?.is_channel || activeThread?.thread_type === "channel")}
+                  avatarUrl={activeThread?.avatar_url || activeThread?.customer?.avatar_url}
                   onQuickSendMessage={(msgText) => { setText(msgText); setMobileCustomer360Open(false); }}
                   onOpenTransfer={() => { setMobileCustomer360Open(false); setTransferModalOpen(true); }}
                   onOpenSchedule={() => { setMobileCustomer360Open(false); setScheduleModalOpen(true); }}

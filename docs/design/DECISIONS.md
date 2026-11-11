@@ -1,5 +1,26 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-486: Identificação de Grupos/Comunidades no WhatsApp, Sincronização de Fotos de Perfil e Dossiê Adaptativo
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. No Hub de Atendimento (`/workspace/atendimento`), conversas de grupos (`@g.us`) e canais (`@newsletter`) do WhatsApp eram renderizadas como contatos individuais, sem distinção visual, gerando confusão operacional entre clientes reais e grupos corporativos/comunitários.
+  2. Imagens de avatar e fotos de perfil dos contatos e grupos do WhatsApp não eram sincronizadas pela Evolution API, exibindo avatares genéricos e vazios.
+  3. No modal de conexão QR Code (`whatsapp-qr-connect-modal.tsx`), a tentativa de adicionar um novo número ("+ Adicionar outro número") colidia com o fallback automático para a instância padrão existente ou disparava colisão de constraint de banco.
+  4. O painel lateral Customer 360 exibia blocos irrelevantes (LTV individual, última compra pessoal, pendência de CPF) quando a thread ativa era um grupo comunitário ou canal.
+- **Decisão:**
+  1. **Classificação Determinística de Grupos e Canais (`src/services/chat.functions.ts` e `src/services/whatsapp-channel-instances.functions.ts`):**
+     - Em `listChatThreads`, detecção via JID (`@g.us`, `@newsletter`, IDs numéricos de grupos >15 dígitos), enriquecendo os DTOs com `is_group`, `is_channel`, `avatar_url` e `metadata`.
+     - Em `syncWhatsAppChatsFromEvolution`, consulta paralela a contatos e grupos via `POST /chat/findContacts`, indexando nomes e fotos reais (`profilePicUrl` -> `avatar_url`) e persistindo no metadata das threads.
+  2. **Dossiê 360° Adaptativo (`src/components/chat/customer-360-sidebar.tsx`):**
+     - Quando a thread é um grupo ou canal, o dossiê adapta seu título para "Dossiê do Grupo WhatsApp", renderiza avatar/ícone dedicado de grupo (`<Users />`), e omite métricas financeiras individuais (LTV, faturas pessoais e cadastro de pessoa física).
+  3. **Filtros por Chips e Badges Visuais (`src/routes/workspace.atendimento.index.tsx`):**
+     - Inclusão dos filtros "Todas", "Individuais", "Grupos", "Abertas", "Aguardando", "Arquivadas" na lista de conversas.
+     - Badges explícitos "Grupo WhatsApp" com ícone canônico e fotos reais renderizadas diretamente com tratamento defensivo.
+  4. **Blindagem de Constraints e Design Lint:**
+     - Ajuste de espaçamentos para a grade estrita de 4px e eliminação de classes arbitrárias (`text-[10px]` -> `text-xs`), assegurando aprovação plena na catraca de CI (`node scripts/design-lint.mjs --ratchet`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.26, B.27, B.31 e B.33; WCAG 2.2 AA.
+- **Consequências:** Grupos e canais perfeitamente diferenciados e filtráveis no atendimento, fotos reais do WhatsApp importadas, experiência adaptativa no Dossiê 360 e estabilidade total no banco de dados.
+
 ## DEC-484: Blindagem do Ciclo de Vida de Sessões WhatsApp Baileys, Auto-Criação de Socket Anti-Zombie e Emissão Resiliente de QR Code
 - **Data:** 2026-11-11
 - **Contexto:**

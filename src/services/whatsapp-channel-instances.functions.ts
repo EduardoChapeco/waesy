@@ -965,20 +965,48 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
       signal: AbortSignal.timeout(6000),
     }).catch(() => null);
 
-    // 2. Buscar conversas recentes na Evolution API
-    const chatsRes = await fetch(`${baseUrl}/chat/findChats/${encodeURIComponent(externalName)}`, {
-      method: "POST",
-      headers: { apikey: apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-      signal: AbortSignal.timeout(15000),
-    });
+    // 2. Buscar conversas recentes e contatos com foto na Evolution API em paralelo
+    const [chatsRes, contactsRes] = await Promise.all([
+      fetch(`${baseUrl}/chat/findChats/${encodeURIComponent(externalName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(15000),
+      }).catch(() => null),
+      fetch(`${baseUrl}/chat/findContacts/${encodeURIComponent(externalName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(15000),
+      }).catch(() => null),
+    ]);
 
-    if (!chatsRes.ok) {
-      throw new Error(`Falha ao consultar conversas no gateway WhatsApp: HTTP ${chatsRes.status}`);
+    if (!chatsRes || !chatsRes.ok) {
+      throw new Error(`Falha ao consultar conversas no gateway WhatsApp: HTTP ${chatsRes?.status || "Falha de Rede"}`);
     }
 
     const rawChats = (await chatsRes.json().catch(() => [])) as Array<Record<string, any>>;
     if (!Array.isArray(rawChats)) return { importedCount: 0, totalFound: 0 };
+
+    // Mapeamento enriquecido de contatos e fotos de perfil reais
+    const contactMap = new Map<string, { pushName?: string; profilePicUrl?: string; isGroup?: boolean }>();
+    if (contactsRes && contactsRes.ok) {
+      const rawContacts = (await contactsRes.json().catch(() => [])) as Array<Record<string, any>>;
+      if (Array.isArray(rawContacts)) {
+        for (const c of rawContacts) {
+          const rJid = String(c.remoteJid || c.id || "");
+          if (rJid) {
+            const pic = c.profilePicUrl || null;
+            const pName = c.pushName || c.name || null;
+            contactMap.set(rJid, { pushName: pName, profilePicUrl: pic, isGroup: Boolean(c.isGroup || rJid.includes("@g.us")) });
+            const cleanDigits = rJid.replace(/@.*$/, "").replace(/\D/g, "");
+            if (cleanDigits) {
+              contactMap.set(cleanDigits, { pushName: pName, profilePicUrl: pic, isGroup: Boolean(c.isGroup || rJid.includes("@g.us")) });
+            }
+          }
+        }
+      }
+    }
 
     let importedCount = 0;
     const validChats = rawChats
@@ -986,7 +1014,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         const jid = String(c.remoteJid || "");
         return jid && !jid.startsWith("0@") && !jid.includes("@broadcast");
       })
-      .slice(0, 40);
+      .slice(0, 50);
 
     for (const chat of validChats) {
       try {
@@ -997,8 +1025,18 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         if (digits.length < 8) continue;
         const phone = `+${digits}`;
 
-        const isGroup = remoteJid.includes("@g.us");
-        const pushName = String(chat.pushName || chat.lastMessage?.pushName || phone);
+        const contactInfo = contactMap.get(remoteJid) || contactMap.get(digits) || null;
+        const isGroup = remoteJid.includes("@g.us") || Boolean(contactInfo?.isGroup);
+        const isChannel = remoteJid.includes("@newsletter");
+        const cleanName = String(
+          chat.name ||
+          contactInfo?.pushName ||
+          chat.pushName ||
+          chat.lastMessage?.pushName ||
+          (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : phone)
+        ).trim();
+        const avatarUrl = contactInfo?.profilePicUrl || chat.profilePictureUrl || null;
+
         const lastMsgObj = chat.lastMessage?.message || {};
         const text = String(
           lastMsgObj.conversation ||
@@ -1019,7 +1057,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           provider: "evolution_api",
           externalUserId: remoteJid,
           phone,
-          displayName: pushName,
+          displayName: cleanName,
         });
 
         if (!identityRecord?.id) continue;
@@ -1027,17 +1065,29 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         let thread = null;
         const { data: foundThread } = await db
           .from("chat_threads")
-          .select("id")
+          .select("id, metadata")
           .eq("store_id", storeId)
           .eq("entity_id", phone)
           .maybeSingle();
+
+        const existingMeta = (foundThread?.metadata && typeof foundThread.metadata === "object" ? foundThread.metadata : {}) as Record<string, any>;
+        const enrichedMeta = {
+          ...existingMeta,
+          is_group: isGroup,
+          is_channel: isChannel,
+          avatar_url: avatarUrl || existingMeta.avatar_url || null,
+          whatsapp_jid: remoteJid,
+          push_name: cleanName,
+        };
 
         if (foundThread) {
           thread = foundThread;
           await db
             .from("chat_threads")
             .update({
-              guest_name: pushName,
+              guest_name: cleanName,
+              thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
+              metadata: enrichedMeta,
               last_message_text: text.slice(0, 200),
               last_message_at: occurredAt,
               updated_at: new Date().toISOString(),
@@ -1051,14 +1101,16 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
               store_id: storeId,
               channel_instance_id: instance.id,
               channel_identity_id: identityRecord.id,
-              guest_name: pushName,
+              guest_name: cleanName,
               guest_email: syntheticEmail,
               status: "open",
-              subject: isGroup ? `Grupo: ${pushName}` : `WhatsApp ${phone}`,
+              subject: isGroup ? `Grupo: ${cleanName}` : isChannel ? `Canal: ${cleanName}` : `WhatsApp ${phone}`,
               context_type: "whatsapp",
               entity_id: phone,
               department: "geral",
               priority: "normal",
+              thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
+              metadata: enrichedMeta,
               last_customer_message_at: occurredAt,
               last_message_text: text.slice(0, 200),
               last_message_at: occurredAt,

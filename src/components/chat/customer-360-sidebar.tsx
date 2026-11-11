@@ -20,6 +20,8 @@ import {
   Save,
   RefreshCw,
   GitBranch,
+  Users,
+  Radio,
 } from "lucide-react";
 import { formatBRL } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
@@ -55,6 +57,9 @@ interface Customer360SidebarProps {
   className?: string;
   niche?: string;
   storeName?: string;
+  isGroup?: boolean;
+  isChannel?: boolean;
+  avatarUrl?: string | null;
   onQuickSendMessage?: (text: string) => void;
   onOpenTransfer?: () => void;
   onOpenSchedule?: () => void;
@@ -66,8 +71,12 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   threadId,
   guestName,
   guestPhone,
+  className,
   niche,
   storeName,
+  isGroup = false,
+  isChannel = false,
+  avatarUrl,
   onQuickSendMessage,
   onOpenTransfer,
   onOpenSchedule,
@@ -278,33 +287,55 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
   return (
     <div className="space-y-5 p-4 text-xs font-sans">
-      {/* 1. Dados Cadastrais Rápidos */}
+      {/* 1. Dados Cadastrais / Identificação do Cliente ou Grupo */}
       <div className="flex items-start gap-3 border-b border-border/50 pb-4">
         <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-extrabold text-sm shrink-0 border border-primary/20">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="size-full rounded-lg object-cover" />
+          {avatarUrl || profile?.avatar_url ? (
+            <img src={avatarUrl || profile.avatar_url} alt="" className="size-full rounded-lg object-cover" />
+          ) : isGroup ? (
+            <Users className="size-5 text-primary" />
+          ) : isChannel ? (
+            <Radio className="size-5 text-emerald-600" />
           ) : (
             (profile?.full_name || guestName || "C")[0].toUpperCase()
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-1">
-          <h4 className="font-bold text-foreground truncate text-sm">
-            {profile?.full_name || guestName || "Cliente Waesy"}
-          </h4>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="font-bold text-foreground truncate text-sm">
+              {profile?.full_name || guestName || (isGroup ? "Grupo WhatsApp" : "Cliente Waesy")}
+            </h4>
+            {isGroup && (
+              <Badge variant="outline" className="text-xs px-2 py-0 h-4 bg-primary/10 text-primary border-primary/30 font-bold gap-1 shrink-0">
+                <Users className="size-2.5" />
+                Grupo
+              </Badge>
+            )}
+            {isChannel && (
+              <Badge variant="outline" className="text-xs px-2 py-0 h-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-bold gap-1 shrink-0">
+                <Radio className="size-2.5" />
+                Canal
+              </Badge>
+            )}
+          </div>
           {(profile?.phone || guestPhone) && (
             <p className="text-muted-foreground text-xs truncate flex items-center gap-1 font-mono">
               <Phone className="size-3 shrink-0" />
               {profile?.phone || guestPhone}
             </p>
           )}
-          <p className="text-muted-foreground text-xs truncate flex items-center gap-1">
-            <Mail className="size-3 shrink-0" />
-            {profile?.email || "Sem e-mail cadastrado"}
-          </p>
+          {!isGroup && !isChannel && (
+            <p className="text-muted-foreground text-xs truncate flex items-center gap-1">
+              <Mail className="size-3 shrink-0" />
+              {profile?.email || "Sem e-mail cadastrado"}
+            </p>
+          )}
         </div>
-        <Button type="button" size="sm" onClick={() => setIsEditingProfile((prev) => !prev)} className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-muted text-foreground hover:bg-foreground hover:text-background cursor-pointer">
-          {isEditingProfile ? "Fechar" : "Editar"}
-        </Button>
+        {!isGroup && !isChannel && (
+          <Button type="button" size="sm" onClick={() => setIsEditingProfile((prev) => !prev)} className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-muted text-foreground hover:bg-foreground hover:text-background cursor-pointer">
+            {isEditingProfile ? "Fechar" : "Editar"}
+          </Button>
+        )}
       </div>
       {isEditingProfile && (
         <div className="p-3 rounded-xl bg-muted/50 space-y-2">
@@ -418,46 +449,48 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         )}
       </div>
 
-      {/* 2. Resumo Financeiro (Total em Compras, Última Compra, Situação) */}
-      <div className="space-y-2 border-b border-border/50 pb-4">
-        <span className="text-xs font-semibold text-foreground block">Resumo Financeiro</span>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="p-3 rounded-lg bg-muted/20 border border-border/70 space-y-1">
-            <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-              <DollarSign className="size-3 text-emerald-600" />
-              Total em Compras
-            </span>
-            <p className="text-sm font-extrabold text-foreground">
-              {formatBRL((metrics?.ltv_cents || 0) / 100)}
-            </p>
+      {/* 2. Resumo Financeiro (Total em Compras, Última Compra, Situação - Apenas Contatos Individuais) */}
+      {!isGroup && !isChannel && (
+        <div className="space-y-2 border-b border-border/50 pb-4">
+          <span className="text-xs font-semibold text-foreground block">Resumo Financeiro</span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/70 space-y-1">
+              <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
+                <DollarSign className="size-3 text-emerald-600" />
+                Total em Compras
+              </span>
+              <p className="text-sm font-extrabold text-foreground">
+                {formatBRL((metrics?.ltv_cents || 0) / 100)}
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/70 space-y-1">
+              <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
+                <Calendar className="size-3 text-primary" />
+                Última Compra
+              </span>
+              <p className="text-xs font-bold text-foreground truncate">
+                {metrics?.last_purchase_at ? formatDate(metrics.last_purchase_at) : "Nenhuma compra"}
+              </p>
+            </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-muted/20 border border-border/70 space-y-1">
-            <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-              <Calendar className="size-3 text-primary" />
-              Última Compra
+          <div
+            className={`p-3 rounded-lg border flex items-center justify-between ${
+              (metrics?.pending_debt_cents || 0) > 0
+                ? "bg-destructive/10 border-destructive/30 text-destructive"
+                : "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+            }`}
+          >
+            <span className="font-semibold text-xs">Situação Financeira</span>
+            <span className="font-extrabold text-xs">
+              {(metrics?.pending_debt_cents || 0) > 0
+                ? `Pendência: ${formatBRL((metrics.pending_debt_cents || 0) / 100)}`
+                : "Adimplente (R$ 0,00)"}
             </span>
-            <p className="text-xs font-bold text-foreground truncate">
-              {metrics?.last_purchase_at ? formatDate(metrics.last_purchase_at) : "Nenhuma compra"}
-            </p>
           </div>
         </div>
-
-        <div
-          className={`p-3 rounded-lg border flex items-center justify-between ${
-            (metrics?.pending_debt_cents || 0) > 0
-              ? "bg-destructive/10 border-destructive/30 text-destructive"
-              : "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-          }`}
-        >
-          <span className="font-semibold text-xs">Situação Financeira</span>
-          <span className="font-extrabold text-xs">
-            {(metrics?.pending_debt_cents || 0) > 0
-              ? `Pendência: ${formatBRL((metrics.pending_debt_cents || 0) / 100)}`
-              : "Adimplente (R$ 0,00)"}
-          </span>
-        </div>
-      </div>
+      )}
 
   {/* Viagens & Reservas Ativas (Padrão Blis.ai / Voll) */}
   {(trips.length > 0 || credits.length > 0) && (

@@ -188,6 +188,10 @@ export const listChatThreads = createServerFn({ method: "GET" })
  const lastMsg = messages[0];
  const customerProfile = thread.customer_id ? profilesMap.get(thread.customer_id) : null;
  const agentProfile = thread.assigned_to_profile_id ? profilesMap.get(thread.assigned_to_profile_id) : null;
+ const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+ const threadIsGroup = Boolean(thread.thread_type === "group" || threadMeta.is_group || String(thread.entity_id || "").includes("@g.us") || (String(thread.entity_id || "").length > 14 && String(thread.entity_id || "").startsWith("+120")));
+ const threadIsChannel = Boolean(thread.thread_type === "channel" || threadMeta.is_channel || String(thread.entity_id || "").includes("@newsletter"));
+ const threadAvatar = threadMeta.avatar_url || customerProfile?.avatar_url || null;
 
  return {
  id: thread.id,
@@ -197,14 +201,18 @@ export const listChatThreads = createServerFn({ method: "GET" })
  priority: thread.priority || "normal",
  satisfaction_rating: thread.satisfaction_rating,
  assigned_agent: agentProfile,
- thread_type: thread.thread_type,
+ thread_type: threadIsGroup ? "group" : threadIsChannel ? "channel" : thread.thread_type,
+ is_group: threadIsGroup,
+ is_channel: threadIsChannel,
+ avatar_url: threadAvatar,
+ metadata: threadMeta,
 			context_type: thread.context_type,
 			channel: thread.context_type === "whatsapp" ? "whatsapp" : "web",
 			customer: customerProfile || {
-				full_name: thread.guest_name || (thread.context_type === "whatsapp" ? ("WhatsApp " + (thread.entity_id || "")) : "Cliente"),
+				full_name: thread.guest_name || (threadIsGroup ? "Grupo WhatsApp" : threadIsChannel ? "Canal WhatsApp" : thread.context_type === "whatsapp" ? ("WhatsApp " + (thread.entity_id || "")) : "Cliente"),
 				email: thread.guest_email || "",
 				phone: thread.entity_id || "",
-				avatar_url: null,
+				avatar_url: threadAvatar,
 			},
  order_id: thread.order_id,
  internal_notes: thread.internal_notes,
