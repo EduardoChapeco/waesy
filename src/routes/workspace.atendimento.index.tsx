@@ -17,6 +17,9 @@ import {
   updateTicketStatus,
   archiveChatThread,
   saveStoreSupportSettings,
+  clearChatThreadMessagesLocal,
+  deleteChatThreadLocal,
+  resetStoreChatHistoryLocal,
 } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import {
@@ -79,6 +82,10 @@ import {
   ArrowRightLeft,
   Zap,
   MoreVertical,
+  Eraser,
+  Trash2,
+  Ban,
+  PowerOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -99,6 +106,7 @@ import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.f
 import {
   listWorkspaceWhatsAppInstances, normalizeWhatsAppQrDataUri,
   syncWhatsAppChatsFromEvolution,
+  disconnectWhatsAppInstance,
   type WhatsAppChannelInstanceDTO,
 } from "@/services/whatsapp-channel-instances.functions";
 import { Link } from "@tanstack/react-router";
@@ -144,13 +152,21 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
+export type AtendimentoSearch = {
+  threadId?: string;
+  search?: string;
+  storeId?: string;
+};
+
 export const Route = createFileRoute("/workspace/atendimento/")({
   head: () => ({ meta: [{ title: "Atendimento Omnichannel & WhatsApp" }] }),
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): AtendimentoSearch => ({
     threadId: typeof search.threadId === "string" ? search.threadId : undefined,
     search: typeof search.search === "string" ? search.search : undefined,
     storeId: typeof search.storeId === "string" ? search.storeId : undefined,
@@ -355,6 +371,111 @@ function WorkspaceAtendimentoPage() {
       toast.error(error?.message || "Não foi possível atualizar a conexão WhatsApp.");
     } finally {
       setIsRefreshingWhatsApp(false);
+    }
+  };
+
+  // Estados para Desconexão Completa do WhatsApp
+  const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
+  const [deepDisconnect, setDeepDisconnect] = useState(false);
+  const [isDisconnectingWhatsApp, setIsDisconnectingWhatsApp] = useState(false);
+
+  const handleDisconnectWhatsApp = async () => {
+    const instId = whatsappInstances[0]?.id;
+    if (!instId || !store?.id) {
+      toast.error("Nenhuma instância ativa do WhatsApp selecionada.");
+      return;
+    }
+    setIsDisconnectingWhatsApp(true);
+    try {
+      await disconnectWhatsAppInstance({
+        data: {
+          id: instId,
+          storeId: store.id,
+          deepDisconnect,
+        },
+      });
+      const instances = await listWorkspaceWhatsAppInstances({ data: { store_id: store.id } }).catch(() => []);
+      setWhatsappInstances(instances);
+      setDisconnectModalOpen(false);
+      toast.success(deepDisconnect ? "WhatsApp desconectado e credenciais removidas." : "WhatsApp desconectado com sucesso.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao desconectar instância.");
+    } finally {
+      setIsDisconnectingWhatsApp(false);
+    }
+  };
+
+  // Estados para Limpar e Excluir Conversas Localmente (Sem afetar o WhatsApp do cliente)
+  const [clearMessagesModalOpen, setClearMessagesModalOpen] = useState(false);
+  const [isClearingMessages, setIsClearingMessages] = useState(false);
+
+  const handleClearThreadMessages = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    setIsClearingMessages(true);
+    try {
+      await clearChatThreadMessagesLocal({
+        data: { threadId: activeThread.id, storeId: store.id },
+      });
+      setMessages([]);
+      setClearMessagesModalOpen(false);
+      const threadsRes = await listChatThreads({ data: { store_id: store.id } }).catch(() => null);
+      if (threadsRes?.threads) setThreads(threadsRes.threads);
+      toast.success("Mensagens apagadas estritamente no sistema local.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao limpar mensagens.");
+    } finally {
+      setIsClearingMessages(false);
+    }
+  };
+
+  const [deleteThreadModalOpen, setDeleteThreadModalOpen] = useState(false);
+  const [isDeletingThread, setIsDeletingThread] = useState(false);
+
+  const handleDeleteThread = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    setIsDeletingThread(true);
+    try {
+      await deleteChatThreadLocal({
+        data: { threadId: activeThread.id, storeId: store.id },
+      });
+      setMessages([]);
+      setDeleteThreadModalOpen(false);
+      const remainingThreads = threads.filter((t) => t.id !== activeThread.id);
+      setThreads(remainingThreads);
+      setActiveThreadId(remainingThreads.length > 0 ? remainingThreads[0].id : null);
+      toast.success("Conversa excluída do sistema local.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir conversa.");
+    } finally {
+      setIsDeletingThread(false);
+    }
+  };
+
+  const [resetHistoryModalOpen, setResetHistoryModalOpen] = useState(false);
+  const [resetConfirmationCode, setResetConfirmationCode] = useState("");
+  const [isResettingHistory, setIsResettingHistory] = useState(false);
+
+  const handleResetStoreHistory = async () => {
+    if (!store?.id) return;
+    if (resetConfirmationCode.trim() !== "RESETAR") {
+      toast.error("Digite RESETAR para confirmar a exclusão do histórico local.");
+      return;
+    }
+    setIsResettingHistory(true);
+    try {
+      const res = await resetStoreChatHistoryLocal({
+        data: { storeId: store.id, confirmationCode: "RESETAR" },
+      });
+      setThreads([]);
+      setMessages([]);
+      setActiveThreadId(null);
+      setResetHistoryModalOpen(false);
+      setResetConfirmationCode("");
+      toast.success(`Histórico local resetado! ${res.deletedThreadsCount} conversas removidas do sistema.`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao resetar histórico da loja.");
+    } finally {
+      setIsResettingHistory(false);
     }
   };
 
@@ -672,7 +793,7 @@ function WorkspaceAtendimentoPage() {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === newMsg.channel_id) {
-                  const exists = c.messages.some((m) => m.id === newMsg.id);
+                  const exists = c.messages.some((m: any) => m.id === newMsg.id);
                   if (exists) return c;
                   return {
                     ...c,
@@ -705,7 +826,7 @@ function WorkspaceAtendimentoPage() {
                 if (c.id === updated.channel_id) {
                   return {
                     ...c,
-                    milestones: c.milestones.map((m) =>
+                    milestones: c.milestones.map((m: any) =>
                       m.id === updated.id ? { ...m, done: updated.done, label: updated.label, detail: updated.detail } : m
                     ),
                   };
@@ -1473,6 +1594,24 @@ function WorkspaceAtendimentoPage() {
                           <span>Central de Chamados SAC</span>
                         </Link>
                       </DropdownMenuItem>
+
+                      <DropdownMenuSeparator className="my-1 border-border/60" />
+
+                      <DropdownMenuItem
+                        onClick={() => setClearMessagesModalOpen(true)}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-warning-strong hover:bg-warning/10"
+                      >
+                        <Eraser className="size-4 shrink-0" />
+                        <span>Limpar mensagens (no sistema)</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => setDeleteThreadModalOpen(true)}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="size-4 shrink-0" />
+                        <span>Excluir conversa (no sistema)</span>
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -1665,6 +1804,7 @@ function WorkspaceAtendimentoPage() {
                     }
 
                     // Balão Normal estilo WhatsApp Web
+                    const isRevoked = Boolean(msg.is_revoked_by_sender || msg.payload?.is_revoked_by_sender);
                     return (
                       <div
                         key={msg.id}
@@ -1678,7 +1818,15 @@ function WorkspaceAtendimentoPage() {
                               : "bg-card border border-border/80 text-foreground rounded-tl-xs",
                           )}
                         >
-                          <p className="whitespace-pre-wrap break-words">{msg.message}</p>
+                          {isRevoked && (
+                            <div className="flex items-center gap-1 text-xs font-semibold mb-1 pb-1 border-b border-border/40 opacity-80">
+                              <Ban className="size-3.5 shrink-0" />
+                              <span>Apagada no WhatsApp pelo remetente</span>
+                            </div>
+                          )}
+                          <p className={cn("whitespace-pre-wrap break-words", isRevoked && "italic")}>
+                            {msg.message}
+                          </p>
                         </div>
                         <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
                           {isStaff ? "Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
@@ -2462,7 +2610,7 @@ function WorkspaceAtendimentoPage() {
 
                 {/* Mensagens e Cards Estruturados dos Colaboradores */}
                 <div className="space-y-3">
-                  {activeIntranetChannel.messages.map((m) => (
+                  {activeIntranetChannel.messages.map((m: any) => (
                     <div
                       key={m.id}
                       className="rounded-xl border border-border/70 bg-card p-4 space-y-2"
@@ -2923,7 +3071,41 @@ function WorkspaceAtendimentoPage() {
                     <RefreshCw className={cn("size-4", isRefreshingWhatsApp && "animate-spin motion-reduce:animate-none")} />
                     Atualizar status
                   </Button>
+                  {whatsappInstances.length > 0 && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setDisconnectModalOpen(true)}
+                      className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer border-destructive/40 text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive"
+                    >
+                      <PowerOff className="size-4" />
+                      Desconectar WhatsApp
+                    </Button>
+                  )}
                 </div>
+              </div>
+            </div>
+
+            {/* Card de Gestão e Higienização Local do SAC */}
+            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs mt-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-foreground">Higienização do Sistema Local</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Ferramentas para apagar ou resetar conversas estritamente no banco do Waesy, sem deletar nada no WhatsApp dos clientes.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setResetHistoryModalOpen(true)}
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer border-destructive/40 text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive shrink-0"
+                >
+                  <Trash2 className="size-4" />
+                  Resetar Histórico Local
+                </Button>
               </div>
             </div>
           </div>
@@ -3498,6 +3680,191 @@ function WorkspaceAtendimentoPage() {
               Criar Canal
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Desconectar WhatsApp */}
+      <Dialog open={disconnectModalOpen} onOpenChange={setDisconnectModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <PowerOff className="size-5 text-destructive" />
+              <span>Desconectar WhatsApp</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Deseja desconectar o aparelho WhatsApp vinculado? A sessão será despareada no aparelho e na VPS.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label htmlFor="deep-disconnect-toggle" className="text-xs font-semibold text-foreground cursor-pointer">
+                  Limpeza total da sessão
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Remove completamente os dados e arquivos da sessão na VPS.
+                </p>
+              </div>
+              <Switch
+                id="deep-disconnect-toggle"
+                checked={deepDisconnect}
+                onCheckedChange={setDeepDisconnect}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDisconnectModalOpen(false)}
+              disabled={isDisconnectingWhatsApp}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDisconnectWhatsApp}
+              disabled={isDisconnectingWhatsApp}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isDisconnectingWhatsApp && <Loader2 className="size-4 animate-spin" />}
+              Confirmar Desconexão
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Limpar Mensagens no Sistema Local */}
+      <Dialog open={clearMessagesModalOpen} onOpenChange={setClearMessagesModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Eraser className="size-5 text-warning-strong" />
+              <span>Limpar Mensagens (No Sistema)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Esta ação apagará todas as mensagens desta conversa armazenadas no banco de dados do Waesy. As mensagens permanecerão intactas no WhatsApp do cliente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning-strong">
+            As mensagens serão removidas do histórico da sua equipe. O cliente continuará vendo as mensagens no WhatsApp dele.
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setClearMessagesModalOpen(false)}
+              disabled={isClearingMessages}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleClearThreadMessages}
+              disabled={isClearingMessages}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isClearingMessages && <Loader2 className="size-4 animate-spin" />}
+              Limpar Mensagens Locais
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Excluir Conversa no Sistema Local */}
+      <Dialog open={deleteThreadModalOpen} onOpenChange={setDeleteThreadModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Trash2 className="size-5 text-destructive" />
+              <span>Excluir Conversa (No Sistema)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Esta conversa e todo o seu histórico serão removidos do painel da sua loja. O contato do cliente e as mensagens no WhatsApp dele NÃO sofrerão nenhuma alteração.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteThreadModalOpen(false)}
+              disabled={isDeletingThread}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteThread}
+              disabled={isDeletingThread}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isDeletingThread && <Loader2 className="size-4 animate-spin" />}
+              Excluir Conversa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Resetar Histórico Completo Local */}
+      <Dialog open={resetHistoryModalOpen} onOpenChange={setResetHistoryModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Trash2 className="size-5 text-destructive" />
+              <span>Resetar Histórico Local da Loja</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Exclui todas as conversas e mensagens arquivadas no banco do Waesy para esta loja. Nenhuma mensagem ou chat será apagado no WhatsApp dos clientes ou na VPS.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <p className="text-xs text-foreground font-semibold">
+              Para confirmar, digite <span className="font-mono text-destructive font-bold">RESETAR</span> no campo abaixo:
+            </p>
+            <Input
+              value={resetConfirmationCode}
+              onChange={(e) => setResetConfirmationCode(e.target.value)}
+              placeholder="RESETAR"
+              className="h-11 min-h-11 font-mono uppercase text-xs"
+            />
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setResetHistoryModalOpen(false);
+                setResetConfirmationCode("");
+              }}
+              disabled={isResettingHistory}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleResetStoreHistory}
+              disabled={isResettingHistory || resetConfirmationCode.trim() !== "RESETAR"}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isResettingHistory && <Loader2 className="size-4 animate-spin" />}
+              Confirmar Reset Local
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

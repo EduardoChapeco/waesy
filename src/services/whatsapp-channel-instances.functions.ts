@@ -573,17 +573,27 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
     };
   });
 
+export const disconnectWhatsAppInstanceSchema = z.object({
+  id: z.string().uuid().optional(),
+  instanceId: z.string().uuid().optional(),
+  storeId: z.string().uuid().optional(),
+  store_id: z.string().uuid().optional(),
+  deepDisconnect: z.boolean().optional(),
+});
+
 export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
+  .validator(disconnectWhatsAppInstanceSchema)
   .handler(async ({ data }) => {
-    const { id: instanceId, storeId: inputStoreId } = data;
+    const instanceId = data.id || data.instanceId;
+    if (!instanceId) throw new Error("ID da instância obrigatório.");
+    const inputStoreId = data.storeId || data.store_id;
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
-    if (identity.role !== "platform_admin") {
-      assertStoreAccess(identity, ["owner", "admin", "manager"]);
-    }
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
+    if (identity.role !== "platform_admin") {
+      assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+    }
 
     const db = getServerClient();
     const { data: instance } = await db
@@ -598,20 +608,37 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
     if (instance.provider === "evolution_api") {
       const externalName = instance.external_instance_id || instance.instance_key;
       const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");
-    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
+      const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
+      // 1. Desconecta a sessão atual no WhatsApp Web
       await fetch(`${baseUrl}/instance/logout/${encodeURIComponent(externalName)}`, {
         method: "DELETE",
         headers: { apikey: requireEvolutionMasterKey() },
         signal: AbortSignal.timeout(6000),
       }).catch(() => null);
+
+      // 2. Se solicitada desconexão profunda, remove a instância na Evolution API
+      if (data.deepDisconnect) {
+        await fetch(`${baseUrl}/instance/delete/${encodeURIComponent(externalName)}`, {
+          method: "DELETE",
+          headers: { apikey: requireEvolutionMasterKey() },
+          signal: AbortSignal.timeout(6000),
+        }).catch(() => null);
+      }
     }
 
+    const currentConfig = (instance.public_config && typeof instance.public_config === "object" ? instance.public_config : {}) as Record<string, unknown>;
     const { data: updated, error } = await db
       .from("whatsapp_channel_instances")
       .update({
         status: "disconnected",
         is_active: false,
-        public_config: { ...(instance.public_config || {}), qr_code_url: null },
+        display_phone_number: data.deepDisconnect ? null : instance.display_phone_number,
+        public_config: {
+          ...currentConfig,
+          qr_code_url: null,
+          pairing_code: null,
+          last_webhook_state: "close",
+        },
         updated_at: new Date().toISOString(),
       })
       .eq("id", instance.id)

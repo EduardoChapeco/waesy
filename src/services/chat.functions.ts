@@ -386,6 +386,8 @@ export const getChatMessages = createServerFn({ method: "GET" })
         ...m,
         message: text,
         is_internal: Boolean(m.payload?.is_internal),
+        is_revoked_by_sender: Boolean(m.payload?.is_revoked_by_sender),
+        revoked_at: (m.payload?.revoked_at as string) || null,
       };
     })
   );
@@ -2238,6 +2240,132 @@ export const submitPublicTicketCsat = createServerFn({ method: "POST" })
       success: true,
       csat: csatPayload,
       reopened: !problemResolved,
+    };
+  });
+
+// ============================================================
+// Reset e Higienização Local de Conversas (Sem tocar no WhatsApp)
+// ============================================================
+
+export const clearChatThreadMessagesSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+});
+
+export const clearChatThreadMessagesLocal = createServerFn({ method: "POST" })
+  .validator(clearChatThreadMessagesSchema)
+  .handler(async ({ data: { threadId, storeId: inputStoreId } }) => {
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+
+    const db = getServerClient();
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .single();
+
+    if (!thread) throw new Error("Conversa não localizada para esta loja.");
+
+    // Apaga estritamente as mensagens locais do sistema Waesy (NÃO envia delete ao WhatsApp)
+    const { error: deleteErr } = await db
+      .from("chat_messages")
+      .delete()
+      .eq("thread_id", threadId);
+
+    if (deleteErr) throw new Error(`Falha ao limpar mensagens locais: ${deleteErr.message}`);
+
+    await db
+      .from("chat_threads")
+      .update({
+        last_message_text: null,
+        last_message_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", threadId);
+
+    return { success: true, threadId, message: "Mensagens apagadas estritamente no sistema local." };
+  });
+
+export const deleteChatThreadLocalSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+});
+
+export const deleteChatThreadLocal = createServerFn({ method: "POST" })
+  .validator(deleteChatThreadLocalSchema)
+  .handler(async ({ data: { threadId, storeId: inputStoreId } }) => {
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+
+    const db = getServerClient();
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .single();
+
+    if (!thread) throw new Error("Conversa não localizada.");
+
+    await db.from("chat_messages").delete().eq("thread_id", threadId);
+    await db.from("chat_conversation_keys").delete().eq("thread_id", threadId);
+    const { error } = await db.from("chat_threads").delete().eq("id", threadId).eq("store_id", storeId);
+    if (error) throw new Error(`Falha ao excluir conversa do sistema: ${error.message}`);
+
+    return { success: true, threadId, message: "Conversa excluída do sistema local." };
+  });
+
+export const resetStoreChatHistorySchema = z.object({
+  storeId: z.string().uuid(),
+  confirmationCode: z.literal("RESETAR"),
+});
+
+export const resetStoreChatHistoryLocal = createServerFn({ method: "POST" })
+  .validator(resetStoreChatHistorySchema)
+  .handler(async ({ data: { storeId } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "platform_admin"], storeId);
+
+    const db = getServerClient();
+    const { data: threads } = await db
+      .from("chat_threads")
+      .select("id")
+      .eq("store_id", storeId);
+
+    const threadIds = (threads || []).map((t) => t.id);
+    let deletedMessagesCount = 0;
+
+    if (threadIds.length > 0) {
+      const { count } = await db
+        .from("chat_messages")
+        .delete({ count: "exact" })
+        .in("thread_id", threadIds);
+
+      deletedMessagesCount = count || 0;
+
+      await db
+        .from("chat_conversation_keys")
+        .delete()
+        .in("thread_id", threadIds);
+
+      await db
+        .from("chat_threads")
+        .delete()
+        .eq("store_id", storeId);
+    }
+
+    return {
+      success: true,
+      storeId,
+      deletedThreadsCount: threadIds.length,
+      deletedMessagesCount,
+      message: "Histórico de conversas da loja resetado com sucesso no sistema local.",
     };
   });
 export const _chatOmnichannelReady = (() => { const created = true;

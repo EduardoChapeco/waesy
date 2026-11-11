@@ -1,5 +1,34 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-478: Desconexão Completa do WhatsApp, Higienização & Reset Local de Conversas e Preservação Probatória de Mensagens Revogadas (Invariante B.33)
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Operadores e gestores do Hub de Atendimento (`/workspace/atendimento`) necessitavam de ferramentas completas para desconectar a sessão do WhatsApp Business (logout de aparelho pareado e remoção profunda da sessão na VPS da Evolution API).
+  2. Operadores e supervisores necessitavam de ferramentas para limpar mensagens locais de uma conversa aberta ou excluir conversas inteiras do sistema Waesy sem enviar requisições de delete para o WhatsApp do cliente.
+  3. Gestores de loja demandavam uma ferramenta com confirmação estrita de segurança (palavra "RESETAR") para resetar o histórico geral de atendimento local no banco de dados.
+  4. Invariante B.33 Anti-Fake & Auditoria Jurídica SAC: quando clientes apagam mensagens ("Apagar para todos") no WhatsApp, o sistema Waesy não deve deletar o registro em `chat_messages`. Deve preservar o texto original intacto para histórico comercial e segurança jurídica da loja, marcando `is_revoked_by_sender: true` e exibindo um indicador visual discreto.
+- **Decisão:**
+  1. **Inbound Anti-Deleção e Auditoria Probatória (`whatsapp-provider-webhook.server.ts` & `api.webhooks.whatsapp.ts`):**
+     - Criada função `extractRevokedMessageIds` e despachante `persistRevokedMessage`, interceptando eventos `messages.delete` da Evolution API e mensagens de protocolo Baileys (`protocolMessage.type === 0`).
+     - Em vez de excluir a mensagem, o sistema atualiza `chat_messages` gravando `payload.is_revoked_by_sender: true` e `payload.revoked_at`, propagando o evento via Supabase Realtime sem perda de dados.
+     - Interceptação espelhada implementada na rota de webhook oficial da Meta Cloud API.
+  2. **Server Functions de Higienização Local (`src/services/chat.functions.ts`):**
+     - Criadas `clearChatThreadMessagesLocal` (limpa mensagens da thread no PostgreSQL local), `deleteChatThreadLocal` (exclui a thread e histórico local) e `resetStoreChatHistoryLocal` (reset completo do atendimento da loja mediante autorização de proprietário/administrador).
+     - Todas as funções validam governança multi-tenant com `assertStoreAccess` e operam estritamente no banco local sem disparar requisições ao WhatsApp dos contatos.
+  3. **Desconexão Completa e Limpeza da Instância (`src/services/whatsapp-channel-instances.functions.ts`):**
+     - `disconnectWhatsAppInstance` atualizado com schema flexível e suporte a `deepDisconnect`, executando logout e deleção de sessão na Evolution API e limpando chaves de QR code e pareamento.
+  4. **Interface Silenciosa e Ergonômica (`src/routes/workspace.atendimento.index.tsx`):**
+     - Adicionado botão "Desconectar WhatsApp" no card soberano da aba WhatsApp com diálogo de confirmação e toggle de limpeza profunda.
+     - Adicionados itens "Limpar mensagens (no sistema)" e "Excluir conversa (no sistema)" no menu suspenso de ações da conversa ativa.
+     - Adicionado card de higienização local com modal seguro exigindo digitação de "RESETAR".
+     - Mensagens revogadas exibem badge discreto "Apagada no WhatsApp pelo remetente" mantendo o conteúdo perfeitamente legível para a equipe.
+     - Alvos de toque padronizados em 44px (`h-11 min-h-11`), conformidade estrita com a grade modular de 4px (DL-03) e cores semânticas (DL-33).
+  5. **Verificação de Engenharia:**
+     - Testes unitários do webhook executados com 6/6 testes aprovados em Vitest.
+     - Catraca CI (`node scripts/design-lint.mjs --ratchet`) aprovada com 0 novas violações P0/P1.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.25, B.26, B.33; Apple HIG; Linear Design; Invariante de Segurança e Auditoria SAC.
+- **Consequências:** Controle total sobre sessões do WhatsApp, higienização local soberana sem afetar aparelhos dos clientes, retenção jurídica contra mensagens apagadas por terceiros e zero mocks.
+
 ## DEC-476: Blindagem da Ingestão e Sincronização Omnichannel Realtime (Multi-Tenant Resolution, Supabase Realtime Publication e Fallback Defensivo de Sessão)
 - **Data:** 2026-11-10
 - **Contexto:**

@@ -194,6 +194,89 @@ async function persistInboundMessage(db: ReturnType<typeof getServerClient>, pro
   return { threadId: thread.id, messageId: insertedMessageId };
 }
 
+export function extractRevokedMessageIds(body: JsonObject): string[] {
+  const ids: string[] = [];
+  const data = body.data || {};
+  if (Array.isArray(data.keys)) {
+    for (const k of data.keys) {
+      const id = firstString(k?.id, k?.key?.id);
+      if (id && !ids.includes(id)) ids.push(id);
+    }
+  }
+  if (Array.isArray(body.keys)) {
+    for (const k of body.keys) {
+      const id = firstString(k?.id, k?.key?.id);
+      if (id && !ids.includes(id)) ids.push(id);
+    }
+  }
+  const directId = firstString(data.id, data.key?.id, body.id, body.key?.id);
+  if (directId && !ids.includes(directId)) ids.push(directId);
+
+  for (const item of messageItems(body)) {
+    const proto = item.message?.protocolMessage || item.protocolMessage;
+    if (proto && (proto.type === 0 || proto.type === "REVOKE" || String(proto.type).toUpperCase() === "REVOKE")) {
+      const protoKeyId = firstString(proto.key?.id, proto.keyId);
+      if (protoKeyId && !ids.includes(protoKeyId)) ids.push(protoKeyId);
+    }
+  }
+  return ids;
+}
+
+async function persistRevokedMessage(
+  db: ReturnType<typeof getServerClient>,
+  provider: UnofficialWhatsAppProvider,
+  instance: JsonObject,
+  body: JsonObject,
+  externalMessageId: string,
+  occurredAt = new Date().toISOString(),
+) {
+  const storeId = String(instance.store_id);
+  const eventKey = stableKey(["revoke", provider, instance.id, externalMessageId, occurredAt]);
+  await db.from("whatsapp_provider_webhook_events").upsert(
+    {
+      provider,
+      instance_id: instance.id,
+      store_id: storeId,
+      event_key: eventKey,
+      event_type: "message_revoked",
+      external_message_id: externalMessageId,
+      payload_hash: hashBody(JSON.stringify(body)),
+      payload: { external_message_id: externalMessageId, revoked_at: occurredAt, provider },
+      signature_verified: true,
+      processing_status: "processed",
+      processed_at: new Date().toISOString(),
+    },
+    { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true },
+  );
+
+  const { data: messages } = await db
+    .from("chat_messages")
+    .select("id, thread_id, payload")
+    .eq("channel", "whatsapp")
+    .eq("external_message_id", externalMessageId);
+
+  // Invariante B.33 Anti-Fake & Auditoria SAC:
+  // Mensagens excluídas por clientes no WhatsApp NÃO são excluídas no sistema Waesy.
+  // Preserva o registro original intacto em chat_messages, atualizando apenas a flag de revogação.
+  for (const msg of messages || []) {
+    const currentPayload = (msg.payload && typeof msg.payload === "object" ? msg.payload : {}) as Record<string, unknown>;
+    await db
+      .from("chat_messages")
+      .update({
+        payload: {
+          ...currentPayload,
+          is_revoked_by_sender: true,
+          revoked_at: occurredAt,
+          revocation_event: "messages.delete",
+        },
+      })
+      .eq("id", msg.id)
+      .eq("thread_id", msg.thread_id);
+  }
+
+  return { externalMessageId, revoked: true, preservedMessagesCount: messages?.length || 0 };
+}
+
 export async function handleUnofficialWhatsAppWebhook(request: Request, provider: UnofficialWhatsAppProvider, instanceKey: string) {
   const rawBody = await request.text();
   if (new TextEncoder().encode(rawBody).byteLength > 1_048_576) return json({ error: "Webhook payload too large" }, 413);
@@ -258,16 +341,39 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
     }).eq("id", instance.id);
     return json({ ok: true, provider, instance: instanceKey, event: name, status: statusMap });
   }
-  const isDelivery = name.includes("update") || name.includes("receipt") || name.includes("status");
+  const isRevoke = name.includes("delete") || name.includes("revoke");
+  const isDelivery = !isRevoke && (name.includes("update") || name.includes("receipt") || name.includes("status"));
   const results: unknown[] = [];
   try {
-    if (isDelivery) {
+    if (isRevoke) {
+      const revokedIds = extractRevokedMessageIds(body);
+      const occurredAt = eventTime(body.timestamp || body.data?.timestamp);
+      for (const externalId of revokedIds) {
+        results.push(await persistRevokedMessage(db, provider, instance, body, externalId, occurredAt));
+      }
+    } else if (isDelivery) {
       for (const item of statusItems(body)) {
+        const proto = item.message?.protocolMessage || item.protocolMessage;
+        if (proto && (proto.type === 0 || proto.type === "REVOKE" || String(proto.type).toUpperCase() === "REVOKE")) {
+          const protoKeyId = firstString(proto.key?.id, proto.keyId);
+          if (protoKeyId) {
+            results.push(await persistRevokedMessage(db, provider, instance, body, protoKeyId, eventTime(item.timestamp || body.timestamp)));
+            continue;
+          }
+        }
         const delivery = normalizedDelivery(provider, body, item);
         if (delivery) results.push(await persistDelivery(db, provider, instance, body, delivery));
       }
     } else {
       for (const item of messageItems(body)) {
+        const proto = item.message?.protocolMessage || item.protocolMessage;
+        if (proto && (proto.type === 0 || proto.type === "REVOKE" || String(proto.type).toUpperCase() === "REVOKE")) {
+          const protoKeyId = firstString(proto.key?.id, proto.keyId);
+          if (protoKeyId) {
+            results.push(await persistRevokedMessage(db, provider, instance, body, protoKeyId, eventTime(item.messageTimestamp || item.timestamp || body.timestamp)));
+            continue;
+          }
+        }
         const message = normalizedMessage(provider, body, item);
         if (message) results.push(await persistInboundMessage(db, provider, instance, body, message));
       }

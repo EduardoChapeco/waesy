@@ -274,6 +274,35 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                 // request já inseriu a mesma chave. Nunca reexecute lead/thread/flows.
                 if (!inboxMessage || inboxMessage.status === "processed" || inboxMessage.status === "ignored") continue;
 
+                // INVARIANTE B.33 ANTI-FAKE: Mensagens apagadas pelo cliente no WhatsApp NÃO são excluídas no sistema Waesy
+                const isRevokeProtocol = message.type === "protocol" || message.protocol?.type === "message_revoke";
+                if (isRevokeProtocol) {
+                  const targetMsgId = String(message.protocol?.message_id || message.protocolMessage?.key?.id || "");
+                  if (targetMsgId) {
+                    const { data: revMsgs } = await supabase
+                      .from("chat_messages")
+                      .select("id, payload")
+                      .eq("external_message_id", targetMsgId);
+                    for (const rm of revMsgs || []) {
+                      const curPayload = (rm.payload && typeof rm.payload === "object" ? rm.payload : {}) as Record<string, unknown>;
+                      await supabase.from("chat_messages").update({
+                        payload: {
+                          ...curPayload,
+                          is_revoked_by_sender: true,
+                          revoked_at: eventTime(message.timestamp),
+                          revocation_provider: WHATSAPP_META_CHANNEL_PROVIDER,
+                        },
+                      }).eq("id", rm.id);
+                    }
+                  }
+                  await supabase
+                    .from("whatsapp_webhook_inbox")
+                    .update({ status: "processed", processed_at: new Date().toISOString() })
+                    .eq("store_id", targetStoreId)
+                    .eq("event_key", messageEventKey);
+                  continue;
+                }
+
                 const { text: messageText, type: messageType } = messageContent(message);
                 const occurredAt = eventTime(message.timestamp);
                 const customerName =
