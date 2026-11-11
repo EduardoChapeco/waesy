@@ -321,7 +321,7 @@ export function WhatsAppQrConnectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-screen overflow-y-auto pt-safe-modal">
+      <DialogContent size="xl" className="max-h-screen overflow-y-auto pt-safe-modal">
         <DialogHeader>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -535,41 +535,43 @@ export function WhatsAppQrConnectModal({
                 </ol>
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-2">
+              <div className="space-y-2 pt-2">
                 <Button
                   type="button"
                   onClick={handleGenerateQrCode}
                   disabled={isGenerating}
-                  className="h-11 min-h-11 flex-1 text-xs font-bold gap-2"
+                  className="w-full h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <QrCode className="size-4" />
                   {isGenerating ? "Gerando na VPS..." : qrBase64 ? "Atualizar QR Code" : "Gerar QR Code Ao Vivo"}
                 </Button>
 
                 {selectedInstanceId && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleManualSync}
-                    disabled={isSyncing}
-                    className="h-11 min-h-11 text-xs gap-2"
-                  >
-                    <RefreshCw className={cn("size-4", isSyncing && "animate-spin motion-reduce:animate-none")} />
-                    Sincronizar
-                  </Button>
-                )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleManualSync}
+                      disabled={isSyncing}
+                      className="h-11 min-h-11 text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <RefreshCw className={cn("size-4", isSyncing && "animate-spin motion-reduce:animate-none")} />
+                      Sincronizar
+                    </Button>
 
-                {selectedInstanceId && connectionStatus === "connected" && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleDisconnect}
-                    disabled={isDisconnecting}
-                    className="h-11 min-h-11 text-xs text-destructive gap-2"
-                  >
-                    <PowerOff className="size-4" />
-                    Desconectar
-                  </Button>
+                    {connectionStatus === "connected" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleDisconnect}
+                        disabled={isDisconnecting}
+                        className="h-11 min-h-11 text-xs font-medium text-destructive hover:bg-destructive/10 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive"
+                      >
+                        <PowerOff className="size-4" />
+                        Desconectar
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

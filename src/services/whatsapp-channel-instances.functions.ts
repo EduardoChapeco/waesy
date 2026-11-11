@@ -93,6 +93,20 @@ async function saveInstance(input: z.infer<typeof SaveSchema>, mode: "workspace"
 
   const db = getServerClient();
   const secretPayloadEncrypted = Object.keys(input.secretPayload).length > 0 ? encryptSecret(JSON.stringify(input.secretPayload)) : undefined;
+
+  const targetIsDefault = Boolean(input.isDefault && input.isActive);
+  if (targetIsDefault) {
+    let demoteQuery = db
+      .from("whatsapp_channel_instances")
+      .update({ is_default: false, updated_at: new Date().toISOString() })
+      .eq("store_id", storeId)
+      .eq("is_default", true);
+    if (input.id) {
+      demoteQuery = demoteQuery.neq("id", input.id);
+    }
+    await demoteQuery;
+  }
+
   const row = {
     ...(input.id ? { id: input.id } : {}),
     store_id: storeId,
@@ -102,7 +116,7 @@ async function saveInstance(input: z.infer<typeof SaveSchema>, mode: "workspace"
     instance_key: input.instanceKey,
     status: input.isActive ? "pending" : "disabled",
     is_active: input.isActive,
-    is_default: input.isDefault && input.isActive,
+    is_default: targetIsDefault,
     phone_number_id: input.phoneNumberId || null,
     business_account_id: input.businessAccountId || null,
     display_phone_number: input.displayPhoneNumber || null,
@@ -133,7 +147,21 @@ async function toggleInstance(input: z.infer<typeof ToggleSchema>, mode: "worksp
   if (!storeId) throw new Error("Loja autenticada obrigatória para alterar instâncias.");
   if (mode === "workspace") assertStoreAccess(identity, ["owner", "admin", "manager"]);
   const db = getServerClient();
-  const { data, error } = await db.from("whatsapp_channel_instances").update({ is_active: input.active, status: input.active ? "pending" : "disabled", updated_at: new Date().toISOString() }).eq("id", input.id).eq("store_id", storeId).select(PublicFields).single();
+  const updatePayload: Record<string, unknown> = {
+    is_active: input.active,
+    status: input.active ? "pending" : "disabled",
+    updated_at: new Date().toISOString(),
+  };
+  if (!input.active) {
+    updatePayload.is_default = false;
+  }
+  const { data, error } = await db
+    .from("whatsapp_channel_instances")
+    .update(updatePayload)
+    .eq("id", input.id)
+    .eq("store_id", storeId)
+    .select(PublicFields)
+    .single();
   if (error) throw new Error(`Falha ao alterar status da instância: ${error.message}`);
   await audit(String(input.id), storeId, actorId, input.active ? "instance.enabled" : "instance.disabled", input.active ? "info" : "warning");
   return data as WhatsAppChannelInstanceDTO;
@@ -395,6 +423,21 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
 
     const isConnected = connectionState === "connected";
     const mappedDbStatus = isConnected ? "connected" : connectionState === "error" ? "error" : "pending";
+
+    // Busca se já existe uma instância ativa e padrão nesta loja
+    const { data: existingDefault } = await db
+      .from("whatsapp_channel_instances")
+      .select("id")
+      .eq("store_id", storeId)
+      .eq("is_default", true)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    // Se a instância atual já for a padrão ou não houver nenhuma outra instância padrão ativa, assume default
+    const isThisAlreadyDefault = Boolean(existing?.id && existing.is_default && existingDefault?.id === existing.id);
+    const hasOtherActiveDefault = Boolean(existingDefault && existingDefault.id !== existing?.id);
+    const shouldBeDefault = isThisAlreadyDefault || !hasOtherActiveDefault;
+
     const upsertPayload = {
       ...(existing?.id ? { id: existing.id } : {}),
       store_id: storeId,
@@ -406,7 +449,7 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
       webhook_url: webhookUrl,
       status: mappedDbStatus,
       is_active: true,
-      is_default: existing?.is_default ?? true,
+      is_default: shouldBeDefault,
       public_config: updatedPublicConfig,
       secret_payload_encrypted: secretEncrypted,
       last_error_code: gatewayErrorCode,
@@ -635,6 +678,7 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
       .update({
         status: "disconnected",
         is_active: false,
+        is_default: false,
         display_phone_number: data.deepDisconnect ? null : instance.display_phone_number,
         public_config: {
           ...currentConfig,
@@ -649,6 +693,28 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error(`Falha ao desconectar instância: ${error.message}`);
+
+    // Se a instância desconectada era a padrão da loja, promove outra instância conectada e ativa (se houver)
+    if (instance.is_default) {
+      const { data: nextActive } = await db
+        .from("whatsapp_channel_instances")
+        .select("id")
+        .eq("store_id", storeId)
+        .eq("is_active", true)
+        .eq("status", "connected")
+        .neq("id", instance.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (nextActive?.id) {
+        await db
+          .from("whatsapp_channel_instances")
+          .update({ is_default: true, updated_at: new Date().toISOString() })
+          .eq("id", nextActive.id);
+      }
+    }
+
     await audit(String(instance.id), storeId, identity.id, "instance.disconnected", "warning");
     return updated as WhatsAppChannelInstanceDTO;
   });

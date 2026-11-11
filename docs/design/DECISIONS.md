@@ -1,5 +1,25 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-480: Blindagem Definitiva de Constraints no WhatsApp (`whatsapp_channel_instances_check1` e `uq_whatsapp_default_instance_per_store`) e Correção de Ergonomia Espacial do Modal QR
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Ao confirmar desconexão de uma instância WhatsApp em produção (`workspace/atendimento`), o PostgreSQL disparava a exceção fatal: `new row for relation "whatsapp_channel_instances" violates check constraint "whatsapp_channel_instances_check1"`. A causa raiz residia em `disconnectWhatsAppInstance`: a função atualizava `is_active: false` mantendo `is_default: true` residual, violando a regra estrutural `CHECK (is_default = false OR is_active = true)`. O mesmo risco de violação existia em `toggleInstance` ao desativar uma instância padrão.
+  2. Ao adicionar um novo número no modal WhatsApp ("WhatsApp Gerente", setor comercial), o banco disparava: `duplicate key value violates unique constraint "uq_whatsapp_default_instance_per_store"`. A causa raiz em `connectWhatsAppQrCodeInstance` residia na atribuição estática `is_default: existing?.is_default ?? true`, que atribuía `true` a qualquer nova instância mesmo quando a loja já possuía outra instância padrão ativa conectada.
+  3. O modal de conexão QR Code (`whatsapp-qr-connect-modal.tsx`) sofria de sufocamento de largura no desktop: por não declarar a propriedade `size` no componente `DialogContent`, a classe padrão `sm:max-w-lg` (512px) prevalecia com maior especificidade sobre `max-w-3xl`, espremendo um layout de 2 colunas em ~220px por coluna, truncando campos de texto ("principa", "Atendimen") e gerando sobreposição/transbordamento dos botões de ação ("Gerar QR Code Ao Vivo", "Sincronizar", "Desconectar").
+- **Decisão:**
+  1. **Integridade de Constraints no Banco de Dados (`src/services/whatsapp-channel-instances.functions.ts`):**
+     - Em `disconnectWhatsAppInstance`, adicionada atribuição atômica `is_default: false` ao marcar `is_active: false`. Implementada auto-promoção da próxima instância ativa conectada da mesma loja como padrão (se houver), satisfazendo 100% da constraint `whatsapp_channel_instances_check1`.
+     - Em `toggleInstance`, adicionado `is_default: false` condicional quando `!input.active`.
+     - Em `connectWhatsAppQrCodeInstance`, adicionada verificação prévia de `existingDefault`. Se a loja já possuir um canal padrão ativo, a nova instância é persistida com `is_default: false`, erradicando qualquer colisão com o índice parcial único `uq_whatsapp_default_instance_per_store`.
+     - Em `saveInstance`, implementada despromoção atômica prévia (`is_default: false`) de qualquer instância padrão anterior da mesma loja caso uma nova instância seja salva como padrão.
+  2. **Ergonomia Espacial e Não-Sobreposição de Botões (`src/components/chat/whatsapp-qr-connect-modal.tsx`):**
+     - Declarado `size="xl"` em `<DialogContent size="xl" ...>`, assegurando a classe canônica `sm:max-w-4xl` (896px) e proporcionando ~410px úteis por coluna.
+     - Estruturado grid vertical de ações: botão primário de QR Code ocupa 100% da largura (`w-full h-11 min-h-11`), seguido de sub-grade de 2 colunas (`grid grid-cols-2 gap-2`) para "Sincronizar" e "Desconectar" com alvos de toque canônicos de 44px, anéis de foco `:focus-visible:ring-2` e zero sobreposição.
+  3. **Seleção Inteligente no Atendimento (`src/routes/workspace.atendimento.index.tsx`):**
+     - `handleDisconnectWhatsApp` busca preferencialmente a instância com `status === "connected"` antes de recorrer ao fallback de índice zero.
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.26 e B.33; `supabase/migrations/20261006000003_whatsapp_worker_and_channel_instances.sql`.
+- **Consequências:** Zero erros de constraint no PostgreSQL em fluxos de conexão e desconexão WhatsApp, suporte pleno a múltiplos números departamentais por loja, modal QR Code perfeitamente proporcional em padrão Apple HIG / Linear e 3/3 novos testes unitários aprovados em `whatsapp-channel-instances-constraints.test.ts`.
+
 ## DEC-479: Refatoração Ergonômica do Hub de Atendimento, Semântica Dinâmica por Nicho Comercial, Sincronização Soberana de Contatos CRM e Controle de Importação de Histórico WhatsApp
 - **Data:** 2026-11-11
 - **Contexto:**

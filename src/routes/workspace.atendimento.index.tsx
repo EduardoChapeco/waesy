@@ -380,7 +380,8 @@ function WorkspaceAtendimentoPage() {
   const [isDisconnectingWhatsApp, setIsDisconnectingWhatsApp] = useState(false);
 
   const handleDisconnectWhatsApp = async () => {
-    const instId = whatsappInstances[0]?.id;
+    const inst = whatsappInstances.find((i) => i.status === "connected") || whatsappInstances[0];
+    const instId = inst?.id;
     if (!instId || !store?.id) {
       toast.error("Nenhuma instância ativa do WhatsApp selecionada.");
       return;
