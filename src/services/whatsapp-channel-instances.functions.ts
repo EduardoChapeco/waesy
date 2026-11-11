@@ -292,7 +292,7 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
 
     const shortStore = storeId.replace(/-/g, "").slice(0, 8);
     const cleanKey = (instanceKey || existing?.instance_key || `wa_${shortStore}`).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
-    const externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
+    let externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
     const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(cleanKey)}`;
 
     let qrBase64: string | null = null;
@@ -324,10 +324,27 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
 
       if (stateRes.ok) {
         const stateJson = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
-        const rawState = String(stateJson?.instance?.state || stateJson?.state || "").toLowerCase();
+        let rawState = String(stateJson?.instance?.state || stateJson?.state || "").toLowerCase();
+        
+        // Verificação profunda anti-zombie: se o socket foi desconectado pelo WhatsApp (código 403/erro), força re-emissão de QR
         if (rawState === "open") {
-          connectionState = "connected";
-        } else {
+          const infoRes = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
+            method: "GET",
+            headers: { apikey: apiKey },
+            signal: AbortSignal.timeout(6000),
+          }).catch(() => null);
+          const infoList = infoRes && infoRes.ok ? await infoRes.json().catch(() => []) : [];
+          const first = Array.isArray(infoList) ? infoList[0] : infoList;
+          if (first?.disconnectionReasonCode || first?.disconnectionAt) {
+            rawState = "close";
+            // Cria um identificador limpo para escapar do socket travado na VPS
+            externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
+          } else {
+            connectionState = "connected";
+          }
+        }
+
+        if (rawState !== "open") {
           const firstConnect = await fetchInstanceConnectQr();
           qrBase64 = firstConnect.qrCodeBase64;
           pairingCode = firstConnect.pairingCode;
@@ -383,7 +400,28 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
           qrBase64 = fallbackConnect.qrCodeBase64;
           pairingCode = fallbackConnect.pairingCode;
           if (!qrBase64) {
-            throw new Error(createJson?.response?.message?.[0] || createJson?.message || `Evolution API HTTP ${createRes.status}`);
+            // Se o nome está em uso por uma sessão zumbi inacessível, cria com sufixo fresco
+            externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
+            const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
+              method: "POST",
+              headers: { apikey: apiKey, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                instanceName: externalName,
+                qrcode: true,
+                integration: "WHATSAPP-BAILEYS",
+                webhook: { url: webhookUrl, byEvents: false, base64: true, events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"] }
+              }),
+              signal: AbortSignal.timeout(12000),
+            });
+            const freshCreateJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
+            const freshExtracted = extractEvolutionQrPayload(freshCreateJson);
+            qrBase64 = freshExtracted.qrCodeBase64;
+            pairingCode = freshExtracted.pairingCode;
+            if (!qrBase64) {
+              const followUp = await fetchInstanceConnectQr();
+              qrBase64 = followUp.qrCodeBase64;
+              pairingCode = followUp.pairingCode;
+            }
           }
         } else {
           throw new Error(createJson?.response?.message?.[0] || createJson?.message || `Evolution API HTTP ${createRes.status}`);

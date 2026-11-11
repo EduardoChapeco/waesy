@@ -865,6 +865,70 @@ function WorkspaceAtendimentoPage() {
     };
   }, [reloadThreads, reloadActiveMessages]);
 
+  // Subscrição Supabase Realtime (Streaming ao Vivo <50ms de Mensagens e Conversas)
+  useEffect(() => {
+    if (!store?.id) return;
+    let supabase: any = null;
+    try {
+      supabase = getBrowserClient();
+    } catch {
+      return;
+    }
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel(`chat_realtime_${store.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "chat_messages",
+        },
+        (payload: any) => {
+          // Streaming ao vivo de nova mensagem recebida ou enviada
+          if (activeThreadIdRef.current && payload.new?.thread_id === activeThreadIdRef.current) {
+            reloadActiveMessages(activeThreadIdRef.current);
+          }
+          reloadThreads();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "chat_threads",
+          filter: `store_id=eq.${store.id}`,
+        },
+        () => {
+          reloadThreads();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "whatsapp_channel_instances",
+          filter: `store_id=eq.${store.id}`,
+        },
+        () => {
+          // Atualiza o estado da conexão instantaneamente ao parear QR Code ou desconectar
+          listWorkspaceWhatsAppInstances({ data: { store_id: store.id } })
+            .then((list) => setWhatsappInstances(list))
+            .catch(() => {});
+        }
+      )
+      .subscribe();
+
+    return () => {
+      try {
+        supabase.removeChannel(channel);
+      } catch {}
+    };
+  }, [store?.id, reloadThreads, reloadActiveMessages]);
+
   // Polling Leve de Segurança a Cada 15s (Tolerância a Wi-Fi Instável)
   useEffect(() => {
     if (!store?.id) return;

@@ -107,7 +107,29 @@ async function sendEvolution(instance: OutboundInstance, message: OutboundMessag
   }
   const response = await fetch(url, { method: "POST", headers: { apikey: apiKey, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
   const json = await readJson(response);
-  if (!response.ok) throw providerError("Evolution API", response, json);
+  if (!response.ok) {
+    const errorBodyStr = JSON.stringify(json);
+    if (errorBodyStr.includes("Connection Closed") || response.status === 403) {
+      try {
+        const { getServerClient } = await import("@/lib/supabase");
+        await getServerClient()
+          .from("whatsapp_channel_instances")
+          .update({
+            status: "disconnected",
+            is_active: false,
+            is_default: false,
+            last_error_code: "CONNECTION_CLOSED",
+            last_error_message: "Sessão do WhatsApp desconectada pelo aparelho. Por favor reconecte via QR Code no painel.",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", instance.id);
+      } catch (e) {
+        console.warn("[whatsapp-outbound] Erro ao desativar instancia desconectada:", e);
+      }
+      throw new OutboundAdapterError("CONNECTION_CLOSED", "Sessão do WhatsApp desconectada pelo aparelho. Por favor reconecte via QR Code no painel.", false, response.status);
+    }
+    throw providerError("Evolution API", response, json);
+  }
   const externalMessageId = stringValue((json.key as Record<string, unknown> | undefined)?.id);
   if (!externalMessageId) throw new OutboundAdapterError("MISSING_EXTERNAL_ID", "Evolution aceitou a mensagem sem retornar key.id", true, response.status);
   return { externalMessageId, httpStatus: response.status, response: json };

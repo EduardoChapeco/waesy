@@ -508,11 +508,9 @@ export const sendChatMessage = createServerFn({ method: "POST" })
          // Disparo imediato do outbox worker para envio sem latencia ao cliente
          try {
            const { runWhatsAppOutboxWorker } = await import("./whatsapp-outbox.worker");
-           runWhatsAppOutboxWorker({ batchSize: 5 }).catch((wErr) => {
-             console.warn("[chat.functions] Disparo imediato do outbox em background falhou:", wErr);
-           });
+           await runWhatsAppOutboxWorker({ batchSize: 5 });
          } catch (workerImportErr) {
-           console.warn("[chat.functions] Nao foi possivel carregar whatsapp-outbox.worker:", workerImportErr);
+           console.warn("[chat.functions] Erro ao despachar whatsapp-outbox.worker no envio:", workerImportErr);
          }
        } else {
          const { sendWhatsAppNotification } = await import("./integrations.functions");
