@@ -1,5 +1,41 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-479: Refatoração Ergonômica do Hub de Atendimento, Semântica Dinâmica por Nicho Comercial, Sincronização Soberana de Contatos CRM e Controle de Importação de Histórico WhatsApp
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Truncamento prematuro de nomes e telefones de clientes no cabeçalho da conversa ativa no Hub de Atendimento (`/workspace/atendimento`), com botões comprimidos e sobrecarregados de jargões técnicos ("Finalizar & CSAT", "Janela 24h Aberta", "Perfil 360º", "Linha do Tempo").
+  2. Ocorrência de mensagens exibidas como `[Mensagem text recebida]` devido a limitações na extração de texto de eventos do WhatsApp (mensagens de botões, listas e mídias sem caption).
+  3. Trilho de macros de envio rápido rígido e descontextualizado (exibindo `/rastreio` de encomendas físicas para estabelecimentos de Turismo e Viagens).
+  4. Barra lateral "Perfil 360º do Cliente" poluída por terminologia técnica ("Estágio IA -> Humano", "Fila Automática (Round-Robin)", "Total Gasto (LTV)", botão primário concorrente "+ Demanda").
+  5. Desacoplamento entre as ações do atendimento ("Gerar Card de Lead no CRM" e edição de perfil) e o módulo soberano de Contatos da loja (`customers_crm`), impedindo que o contato figurasse na carteira de clientes.
+  6. Ausência de opção explícita para o lojista/administrador escolher se deseja ou não importar o histórico anterior de conversas do aparelho ao parear via QR Code.
+- **Decisão:**
+  1. **Cabeçalho Ergonômico e Limpo (`workspace.atendimento.index.tsx`):**
+     - O bloco do contato passa a operar com `flex-1 min-w-0`, eliminando truncamento precoce de nomes e números em viewports desktop e móveis.
+     - Jargões técnicos foram expurgados: "Finalizar & CSAT" substituído por "Encerrar" (com ícone `CheckCircle2` em tom esmeralda silencioso), "Janela 24h Aberta" por badge discreto "WhatsApp Ativo", "Perfil 360º" por "Ficha" e "Linha do Tempo" por "Histórico".
+  2. **Extração Resiliente de Texto & Erradicação de Mensagens Sintéticas (`whatsapp-provider-webhook.server.ts`):**
+     - Função `messageText` aprimorada para extrair payloads de botões interativos (`buttonsResponseMessage`), listas (`listResponseMessage`), mensagens editadas (`editedMessage`) e payloads aninhados.
+     - Se o payload for texto sem corpo, retorna identificador honesto sem colchetes crus do tipo "text". Mensagens com mídia retornam marcadores canônicos ("[Imagem]", "[Áudio]", "[Vídeo]", "[Documento]").
+  3. **Semântica Contextual por Nicho Comercial (`workspace.atendimento.index.tsx`):**
+     - Integração plena com `getNicheSemantics(store)`: o trilho de macros rápidas é gerado dinamicamente para cada vertical:
+       * **Turismo & Viagens:** `/ola` (Saudação), `/roteiro` (Roteiros & Destinos), `/cotacao` (Cotação de Pacote), `/embarque` (Informações de Embarque), `/pix` (Chave PIX) e `/horarios` (Atendimento).
+       * **Gastronomia & Delivery:** `/ola`, `/cardapio`, `/pedido`, `/pix` e `/horarios`.
+       * **Varejo & Moda:** `/ola`, `/catalogo`, `/rastreio`, `/pix` e `/horarios`.
+       * **Serviços & Procedimentos:** `/ola`, `/servicos`, `/agendamento`, `/pix` e `/horarios`.
+     - Substituição de "Fila Automática (Round-Robin)" pelo termo comercial "Distribuição Automática".
+  4. **Harmonização do Painel Lateral (`customer-360-sidebar.tsx`):**
+     - Bloco de Handoff remodelado para "Modo de Atendimento" com botões ergonômicos e claros: "IA Copilot", "Fila de Espera" e "Humano".
+     - Seção financeira renomeada para "Resumo Financeiro", com rótulo comercial honesto "Total em Compras" e "Situação Financeira" ("Adimplente" ou "Pendência").
+     - Seção de ocorrências renomeada para "Solicitações & Chamados", substituindo o botão conflitante azul por `variant="outline"` neutro ("+ Nova Solicitação") e o botão de resolução para "Encerrar Chamado".
+     - Rótulos contextuais dinâmicos conforme nicho da loja ("Histórico de Reservas & Viagens" e "Nova Cotação / Reserva" para turismo).
+  5. **Sincronização Soberana de Contatos CRM (`chat.functions.ts`):**
+     - `convertChatThreadToCrmLead` e `updateCustomerProfileFromChat` atualizados para verificar e persistir atomicamente na tabela master de contatos da loja (`customers_crm`). Contatos do chat passam a figurar imediatamente na carteira de Clientes (`/workspace/clientes`) com vínculo bidirecional ao CRM de Vendas.
+  6. **Controle de Importação de Histórico WhatsApp (`whatsapp-qr-connect-modal.tsx` & `whatsapp-channel-instances.functions.ts`):**
+     - Adicionado switch/checkbox comercial explícito: "Importar conversas anteriores do aparelho".
+     - Parâmetro `auto_import_history` persistido em `public_config` e respeitado por `syncWhatsAppChatsFromEvolution`, permitindo iniciar com o painel limpo apenas com mensagens novas em tempo real.
+- **Fundamentação:** Diretrizes Apple HIG / Linear, Invariante B.8 (Eliminação de AI-Smell e Ação Primária Única), Invariante B.26 (Piso de 44px) e Invariante B.33 (Erradicação de Fallbacks Sintéticos e Anti-Fake Estrita).
+- **Consequências:** Zero termos técnicos para operadores civis, preservação do espaço útil de cabeçalho, sincronização transparente de contatos no ecossistema e conformidade mecânica com a catraca de CI (`design-lint --ratchet` aprovado).
+
 ## DEC-478: Desconexão Completa do WhatsApp, Higienização & Reset Local de Conversas e Preservação Probatória de Mensagens Revogadas (Invariante B.33)
 - **Data:** 2026-11-11
 - **Contexto:**

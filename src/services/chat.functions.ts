@@ -814,6 +814,65 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  email = (profile as any)?.email || email;
  }
  }
+ 
+ // Sincronização Soberana com a Carteira de Clientes / Contatos da Loja (customers_crm)
+ let resolvedCustomerId = thread.customer_id || null;
+ try {
+  let existingCrmCustomer = null;
+  if (phone) {
+   const { data: foundByPhone } = await db
+    .from("customers_crm")
+    .select("id")
+    .eq("store_id", storeId)
+    .eq("phone", phone)
+    .is("deleted_at", null)
+    .maybeSingle();
+   existingCrmCustomer = foundByPhone;
+  }
+  if (!existingCrmCustomer && email) {
+   const { data: foundByEmail } = await db
+    .from("customers_crm")
+    .select("id")
+    .eq("store_id", storeId)
+    .eq("email", email)
+    .is("deleted_at", null)
+    .maybeSingle();
+   existingCrmCustomer = foundByEmail;
+  }
+  if (existingCrmCustomer) {
+   resolvedCustomerId = existingCrmCustomer.id;
+   await db
+    .from("customers_crm")
+    .update({
+     full_name: fullName,
+     updated_at: new Date().toISOString(),
+    })
+    .eq("id", existingCrmCustomer.id);
+  } else {
+   const { data: newCustomer } = await db
+    .from("customers_crm")
+    .insert({
+     store_id: storeId,
+     full_name: fullName,
+     phone: phone || null,
+     email: email || null,
+     kind: "individual",
+     channel: thread.context_type === "whatsapp" ? "whatsapp" : "chat",
+     status: "active",
+     tags: ["lead", "atendimento"],
+     notes: data.notes || `Contato originado via Atendimento da Thread ${thread.id}`,
+     created_at: new Date().toISOString(),
+     updated_at: new Date().toISOString(),
+    })
+    .select("id")
+    .maybeSingle();
+   if (newCustomer?.id) {
+    resolvedCustomerId = newCustomer.id;
+   }
+  }
+ } catch (crmSyncErr) {
+  console.warn("[chat.functions] Aviso ao sincronizar com customers_crm:", crmSyncErr);
+ }
 
  const { data: lead, error: leadErr } = await db
  .from("leads_crm")
@@ -823,7 +882,7 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  full_name: fullName,
  phone,
  email,
- customer_id: thread.customer_id || null,
+ customer_id: resolvedCustomerId,
  assigned_to: data.assignedTo || identity.id,
  source: thread.context_type === "whatsapp" ? "WhatsApp Atendimento" : "Chat Central",
  destination_of_interest: data.destinationOfInterest || null,
@@ -1786,6 +1845,77 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
         })
         .eq("id", threadId)
         .eq("store_id", identity.store_id);
+    }
+
+    // Sincronização em customers_crm da loja
+    try {
+      const storeId = identity.store_id;
+      if (storeId) {
+        let existing = null;
+        if (customerId) {
+          const { data: foundById } = await db
+            .from("customers_crm")
+            .select("id")
+            .eq("store_id", storeId)
+            .eq("id", customerId)
+            .is("deleted_at", null)
+            .maybeSingle();
+          existing = foundById;
+        }
+        if (!existing && phone) {
+          const { data: foundByPhone } = await db
+            .from("customers_crm")
+            .select("id")
+            .eq("store_id", storeId)
+            .eq("phone", phone)
+            .is("deleted_at", null)
+            .maybeSingle();
+          existing = foundByPhone;
+        }
+        if (!existing && email) {
+          const { data: foundByEmail } = await db
+            .from("customers_crm")
+            .select("id")
+            .eq("store_id", storeId)
+            .eq("email", email)
+            .is("deleted_at", null)
+            .maybeSingle();
+          existing = foundByEmail;
+        }
+
+        if (existing) {
+          await db
+            .from("customers_crm")
+            .update({
+              full_name: fullName,
+              ...(phone !== undefined ? { phone: phone || null } : {}),
+              ...(email !== undefined ? { email: email || null } : {}),
+              ...(documentCpf !== undefined ? { document: documentCpf || null } : {}),
+              ...(city !== undefined ? { city: city || null } : {}),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id);
+        } else {
+          await db
+            .from("customers_crm")
+            .insert({
+              store_id: storeId,
+              full_name: fullName,
+              phone: phone || null,
+              email: email || null,
+              document: documentCpf || null,
+              city: city || null,
+              kind: "individual",
+              channel: "chat",
+              status: "active",
+              tags: ["contato", "atendimento"],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+        }
+      }
+    } catch (crmErr) {
+      console.warn("[chat.functions] Erro ao sincronizar updateCustomerProfileFromChat em customers_crm:", crmErr);
     }
 
     return {

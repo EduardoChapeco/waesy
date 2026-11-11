@@ -33,7 +33,58 @@ function messageType(item: JsonObject): string {
 }
 function messageText(item: JsonObject): string {
   const message = (item.message || {}) as JsonObject;
-  return firstString(item.messageBody, item.text, item.body, message.conversation, message.extendedTextMessage?.text, message.imageMessage?.caption, message.videoMessage?.caption, message.documentMessage?.caption) || `[Mensagem ${messageType(item)} recebida]`;
+  const edited = (message.editedMessage as JsonObject) || {};
+  const editedMsg = (edited.message as JsonObject) || {};
+  const buttons = (message.buttonsResponseMessage as JsonObject) || {};
+  const list = (message.listResponseMessage as JsonObject) || {};
+  const template = (message.templateButtonReplyMessage as JsonObject) || {};
+  const interactive = (message.interactiveResponseMessage as JsonObject) || {};
+  const interactiveBody = (interactive.body as JsonObject) || {};
+
+  const extracted = firstString(
+    item.messageBody,
+    item.text,
+    item.body,
+    item.content,
+    message.conversation,
+    message.extendedTextMessage?.text,
+    message.imageMessage?.caption,
+    message.videoMessage?.caption,
+    message.documentMessage?.caption,
+    edited.conversation,
+    edited.extendedTextMessage?.text,
+    editedMsg.conversation,
+    editedMsg.extendedTextMessage?.text,
+    buttons.selectedDisplayText,
+    buttons.selectedButtonId,
+    list.title,
+    list.description,
+    template.selectedDisplayText,
+    interactiveBody.text,
+    item.messageText,
+    (item.data as JsonObject)?.message?.conversation,
+    (item.data as JsonObject)?.message?.extendedTextMessage?.text
+  );
+
+  if (extracted) return extracted;
+
+  const type = messageType(item);
+  switch (type) {
+    case "image":
+      return "[Imagem]";
+    case "video":
+      return "[Vídeo]";
+    case "audio":
+      return "[Áudio]";
+    case "document":
+      return "[Documento]";
+    case "location":
+      return "[Localização]";
+    case "contact":
+      return "[Contato]";
+    default:
+      return "[Mensagem]";
+  }
 }
 function eventName(body: JsonObject): string { return (firstString(body.event, body.type) || "messages.upsert").toLowerCase().replace(/_/g, "."); }
 function messageItems(body: JsonObject): JsonObject[] {

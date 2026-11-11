@@ -220,6 +220,7 @@ export const ConnectQrSchema = z.object({
   instanceKey: z.string().trim().min(2).max(80).regex(/^[a-z0-9][a-z0-9_-]*$/).optional(),
   department: z.string().trim().max(60).optional(),
   isGlobalMaster: z.boolean().default(false),
+  autoImportHistory: z.boolean().default(false),
 });
 
 export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
@@ -232,6 +233,7 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
       instanceKey,
       department,
       isGlobalMaster,
+      autoImportHistory,
     } = data;
 
     const identity = await getServerIdentity();
@@ -379,6 +381,7 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
       pairing_code: pairingCode,
       department: department || existing?.public_config?.department || "Geral",
       is_global_master: isGlobalMaster || Boolean(existing?.public_config?.is_global_master),
+      auto_import_history: autoImportHistory ?? (existing?.public_config as any)?.auto_import_history ?? false,
       last_qr_generated_at: new Date().toISOString(),
       last_error_message: gatewayErrorMessage,
     };
@@ -732,7 +735,7 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
   });
 
 export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
-  .validator(z.object({ instanceId: z.string().uuid().optional(), storeId: z.string().uuid().optional(), store_id: z.string().uuid().optional() }).optional())
+  .validator(z.object({ instanceId: z.string().uuid().optional(), storeId: z.string().uuid().optional(), store_id: z.string().uuid().optional(), forceImport: z.boolean().optional() }).optional())
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
@@ -757,6 +760,12 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
 
     const { data: instance, error } = await query.maybeSingle();
     if (error || !instance) throw new Error("Nenhuma instância ativa do WhatsApp encontrada.");
+
+    // Se a instância não tem permissão para importar histórico e não foi forçado pelo usuário
+    const shouldImportHistory = Boolean(data?.forceImport || (instance.public_config as any)?.auto_import_history);
+    if (!shouldImportHistory) {
+      return { importedCount: 0, totalFound: 0, skipped: true, message: "Importação de histórico desativada para esta instância." };
+    }
 
     const externalName = instance.external_instance_id || instance.instance_key;
     const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");

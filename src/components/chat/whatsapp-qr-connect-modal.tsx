@@ -65,6 +65,9 @@ export function WhatsAppQrConnectModal({
   const [department, setDepartment] = useState(
     String(instances[0]?.public_config?.department || "Atendimento Geral"),
   );
+  const [autoImportHistory, setAutoImportHistory] = useState(
+    Boolean((instances[0]?.public_config as any)?.auto_import_history),
+  );
   const [isGlobalMaster, setIsGlobalMaster] = useState(
     Boolean(instances[0]?.public_config?.is_global_master),
   );
@@ -111,6 +114,7 @@ export function WhatsAppQrConnectModal({
       setQrGeneratedAt((activeInstance.public_config?.last_qr_generated_at as string) || null);
       setQrExpired(false);
       setIsGlobalMaster(Boolean(activeInstance.public_config?.is_global_master));
+      setAutoImportHistory(Boolean((activeInstance.public_config as any)?.auto_import_history));
     }
   }, [activeInstance?.id]);
 
@@ -184,6 +188,7 @@ export function WhatsAppQrConnectModal({
           instanceKey: instanceKey.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_") || "principal",
           department: department.trim() || "Geral",
           isGlobalMaster: isPlatformMaster && isGlobalMaster,
+          autoImportHistory,
         },
       });
       setSelectedInstanceId(result.instance.id);
@@ -503,6 +508,23 @@ export function WhatsAppQrConnectModal({
                   </div>
                 </label>
               )}
+
+              <label className="flex items-start gap-3 p-3 rounded-lg border border-border/70 bg-muted/20 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={autoImportHistory}
+                  onChange={(e) => setAutoImportHistory(e.target.checked)}
+                  className="size-4 accent-primary mt-1 cursor-pointer shrink-0"
+                />
+                <div className="text-xs space-y-1">
+                  <span className="font-semibold block text-foreground">
+                    Importar conversas anteriores do aparelho
+                  </span>
+                  <span className="text-muted-foreground block text-xs leading-relaxed">
+                    Se ativado, sincroniza as conversas e contatos existentes no WhatsApp para o painel. Se desmarcado, inicia apenas com mensagens em tempo real a partir de agora.
+                  </span>
+                </div>
+              </label>
 
               <div className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-2">
                 <p className="text-xs font-bold text-foreground">Como escanear:</p>

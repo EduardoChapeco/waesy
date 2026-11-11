@@ -1397,7 +1397,7 @@ function WorkspaceAtendimentoPage() {
             >
               {/* Header da Conversa Ativa */}
               <div className="p-3 sm:p-4 bg-card border-b border-border/80 flex items-center justify-between gap-3 shrink-0">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3">
                   <Button
                     type="button"
                     variant="ghost"
@@ -1425,19 +1425,19 @@ function WorkspaceAtendimentoPage() {
                     </div>
                   )}
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-sm text-foreground truncate">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h3 className="font-bold text-sm sm:text-base text-foreground truncate max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl">
                         {activeThread.customer?.full_name || "Cliente"}
                       </h3>
                       {activeThread.channel === "whatsapp" && (
-                        <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                        <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
                           (WhatsApp)
                         </span>
                       )}
                     </div>
                     
-                    <p className="text-xs text-muted-foreground truncate font-mono">
+                    <p className="text-xs text-muted-foreground truncate font-mono select-all">
                       {activeThread.customer?.phone || activeThread.customer?.email || "Atendimento Direto"}
                     </p>
                     {/* Tags Semânticas Coloridas (Whaticket / CRM Parity) */}
@@ -1458,19 +1458,17 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   {/* Sinalizador Janela 24h WhatsApp */}
-                  <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
-                    <Clock className="size-3 text-primary shrink-0" />
-                    <span
-                      className={cn(
-                        "text-xs",
-                        isWhatsAppWindowOpen
-                          ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                          : "text-muted-foreground",
-                      )}
+                  {activeThread.channel === "whatsapp" && (
+                    <div
+                      className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-medium shrink-0 bg-muted/40 border-border/60"
+                      title={isWhatsAppWindowOpen ? "Janela oficial do WhatsApp de 24 horas ativa para envio livre" : "Janela de 24h expirada"}
                     >
-                      {isWhatsAppWindowOpen ? "Janela 24h Aberta" : "Janela Expirada"}
-                    </span>
-                  </div>
+                      <span className={cn("size-2 rounded-full shrink-0", isWhatsAppWindowOpen ? "bg-emerald-500" : "bg-muted-foreground")} />
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {isWhatsAppWindowOpen ? "WhatsApp Ativo" : "Janela Expirada"}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Ação Primária: Finalizar / Desarquivar Atendimento */}
                   <Button
@@ -1482,17 +1480,17 @@ function WorkspaceAtendimentoPage() {
                       activeThread?.id && handleArchiveThread(activeThread.id, activeThread.status !== "archived")
                     }
                     className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0"
-                    title={activeThread.status === "archived" ? "Desarquivar conversa" : "Arquivar conversa"}
+                    title={activeThread.status === "archived" ? "Reabrir conversa" : "Encerrar atendimento"}
                   >
                     {activeThread.status === "archived" ? (
                       <>
                         <ArchiveRestore className="size-4 shrink-0" />
-                        <span className="hidden sm:inline">Desarquivar</span>
+                        <span className="hidden sm:inline">Reabrir</span>
                       </>
                     ) : (
                       <>
-                        <Archive className="size-4 shrink-0" />
-                        <span className="hidden sm:inline">Finalizar & CSAT</span>
+                        <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                        <span className="hidden sm:inline">Encerrar</span>
                       </>
                     )}
                   </Button>
@@ -1510,14 +1508,14 @@ function WorkspaceAtendimentoPage() {
                       }
                     }}
                     className={cn(
-                      "h-11 min-h-11 text-xs font-bold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
-                      showCustomer360 ? "bg-muted" : "",
+                      "h-11 min-h-11 text-xs font-semibold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
+                      showCustomer360 ? "bg-muted font-bold" : "",
                     )}
-                    title="Alternar Dossiê Perfil 360º"
-                    aria-label="Perfil 360"
+                    title="Exibir dados e ficha do cliente"
+                    aria-label="Ficha do Cliente"
                   >
                     <UserCheck className="size-4 mr-0 sm:mr-1 shrink-0" />
-                    <span className="hidden sm:inline">Perfil 360º</span>
+                    <span className="hidden sm:inline">Ficha</span>
                   </Button>
 
                   {/* Toggle Linha do Tempo (Visível em Telas Amplas) */}
@@ -1530,10 +1528,10 @@ function WorkspaceAtendimentoPage() {
                       "hidden 2xl:flex h-11 min-h-11 text-xs font-semibold rounded-lg px-3 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
                       showLiveTimeline ? "bg-primary/15 text-primary border-primary/40 font-bold" : "",
                     )}
-                    title="Exibir Linha do Tempo de eventos, pedidos e planilhas do cliente"
+                    title="Exibir histórico de pedidos, planilhas e formulários do cliente"
                   >
-                    <GitBranch className="size-4 text-primary shrink-0" />
-                    <span>Linha do Tempo</span>
+                    <Clock className="size-4 text-primary shrink-0" />
+                    <span>Histórico</span>
                   </Button>
 
                   {/* Menu Dropdown de Ações Operacionais Avançadas */}
@@ -1941,12 +1939,38 @@ function WorkspaceAtendimentoPage() {
 
                   {(storeMacros.length > 0
                     ? storeMacros.map((m: any) => ({ cmd: m.shortcut, text: m.message, label: m.title }))
-                    : [
-                        { cmd: "ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?", label: "Saudação" },
-                        { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido. O comprovante é validado automaticamente!", label: "Chave PIX" },
-                        { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
-                        { cmd: "rastreio", text: "Seu pedido está em processamento logístico e você pode acompanhar pelo link de rastreio acima.", label: "Rastreio" },
-                      ]
+                    : semantics.nicheId === "tourism"
+                      ? [
+                          { cmd: "ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa agência. Como podemos te ajudar a planejar sua próxima viagem?", label: "Saudação" },
+                          { cmd: "roteiro", text: "Temos roteiros completos e pacotes disponíveis com saídas programadas. Gostaria de receber a programação detalhada?", label: "Roteiros" },
+                          { cmd: "cotacao", text: "Para preparar sua cotação personalizada, por favor nos informe a data desejada, quantidade de passageiros e acomodação.", label: "Cotação" },
+                          { cmd: "embarque", text: "As informações de ponto de embarque, horários e documentação necessária constam no seu comprovante de reserva.", label: "Embarque" },
+                          { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente na sua reserva. O comprovante é validado automaticamente!", label: "Chave PIX" },
+                          { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                        ]
+                      : semantics.nicheId === "gastronomy"
+                        ? [
+                            { cmd: "ola", text: "Olá! Seja muito bem-vindo ao nosso atendimento. Como podemos te atender hoje?", label: "Saudação" },
+                            { cmd: "cardapio", text: "Acesse nosso cardápio digital completo pelo link acima para conferir os pratos e montar seu pedido!", label: "Cardápio" },
+                            { cmd: "pedido", text: "Seu pedido foi recebido e já está em preparação na nossa cozinha!", label: "Status Pedido" },
+                            { cmd: "pix", text: "Nossa chave PIX oficial é gerada diretamente no seu pedido para confirmação automática.", label: "Chave PIX" },
+                            { cmd: "horarios", text: "Nosso horário de funcionamento é de Terça a Domingo das 18h às 23h30.", label: "Horários" },
+                          ]
+                        : semantics.nicheId === "retail"
+                          ? [
+                              { cmd: "ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa loja. Em que posso te ajudar hoje?", label: "Saudação" },
+                              { cmd: "catalogo", text: "Acesse nosso catálogo completo com lançamentos e disponibilidade em tempo real no link acima!", label: "Catálogo" },
+                              { cmd: "rastreio", text: "Seu pedido está em separação/transporte e você pode acompanhar pelo link de rastreio acima.", label: "Rastreio" },
+                              { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido.", label: "Chave PIX" },
+                              { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                            ]
+                          : [
+                              { cmd: "ola", text: "Olá! Seja muito bem-vindo ao nosso atendimento. Como podemos te ajudar?", label: "Saudação" },
+                              { cmd: "servicos", text: "Conheça nossos serviços e procedimentos disponíveis com atendimento personalizado.", label: "Serviços" },
+                              { cmd: "agendamento", text: "Para agendar seu horário, por favor informe a data de preferência e o procedimento desejado.", label: "Agendamento" },
+                              { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido/comanda.", label: "Chave PIX" },
+                              { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                            ]
                   ).map((macro: any) => (
                     <button
                       key={macro.cmd}
@@ -2132,7 +2156,7 @@ function WorkspaceAtendimentoPage() {
                     }}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <option value="">Fila Automática (Round-Robin)</option>
+                    <option value="">Distribuição Automática</option>
                     {(teamMembers || []).map((m: any) => (
                       <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
                         {m.full_name || m.name || m.email || "Atendente"}
@@ -2147,6 +2171,8 @@ function WorkspaceAtendimentoPage() {
                 threadId={activeThread?.id}
                 guestName={activeThread?.customer?.full_name}
                 guestPhone={activeThread?.customer?.phone}
+                niche={semantics.nicheId}
+                storeName={store?.name}
                 onQuickSendMessage={(msgText) => setText(msgText)}
                 onOpenTransfer={() => setTransferModalOpen(true)}
                 onOpenSchedule={() => setScheduleModalOpen(true)}
@@ -2228,7 +2254,7 @@ function WorkspaceAtendimentoPage() {
                     }}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <option value="">Fila Automática (Round-Robin)</option>
+                    <option value="">Distribuição Automática</option>
                     {(teamMembers || []).map((m: any) => (
                       <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
                         {m.full_name || m.name || m.email || "Atendente"}
@@ -2243,6 +2269,8 @@ function WorkspaceAtendimentoPage() {
                   threadId={activeThread?.id}
                   guestName={activeThread?.customer?.full_name}
                   guestPhone={activeThread?.customer?.phone}
+                  niche={semantics.nicheId}
+                  storeName={store?.name}
                   onQuickSendMessage={(msgText) => { setText(msgText); setMobileCustomer360Open(false); }}
                   onOpenTransfer={() => { setMobileCustomer360Open(false); setTransferModalOpen(true); }}
                   onOpenSchedule={() => { setMobileCustomer360Open(false); setScheduleModalOpen(true); }}

@@ -53,6 +53,8 @@ interface Customer360SidebarProps {
   guestName?: string;
   guestPhone?: string;
   className?: string;
+  niche?: string;
+  storeName?: string;
   onQuickSendMessage?: (text: string) => void;
   onOpenTransfer?: () => void;
   onOpenSchedule?: () => void;
@@ -64,10 +66,13 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   threadId,
   guestName,
   guestPhone,
+  niche,
+  storeName,
   onQuickSendMessage,
   onOpenTransfer,
   onOpenSchedule,
 }) => {
+  const isTourism = niche === "tourism" || String(storeName || "").toLowerCase().includes("tour") || String(storeName || "").toLowerCase().includes("viag") || String(storeName || "").toLowerCase().includes("excurs");
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -319,15 +324,41 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         </div>
       )}
       {threadId && (
-        <div className="p-3 rounded-xl bg-muted/40 space-y-2">
+        <div className="p-3 rounded-xl bg-muted/40 space-y-2 border border-border/60">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground">Estágio IA → Humano</span>
-            <Badge variant="secondary" className="text-xs">{handoffMode === "ai_triage" ? "IA Atendendo" : handoffMode === "human_queue" ? "Fila Humana" : "Humano Ativo"}</Badge>
+            <span className="text-xs font-semibold text-foreground">Modo de Atendimento</span>
+            <Badge variant="secondary" className="text-xs font-medium">
+              {handoffMode === "ai_triage" ? "IA Ativa" : handoffMode === "human_queue" ? "Fila de Espera" : "Atendimento Humano"}
+            </Badge>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-            <button type="button" onClick={() => handleChangeHandoff("ai_triage")} className={`h-11 min-h-11 rounded-lg px-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${handoffMode === "ai_triage" ? "bg-primary text-primary-foreground" : "bg-card text-foreground"}`}>1. IA 1º</button>
-            <button type="button" onClick={() => handleChangeHandoff("human_queue")} className={`h-11 min-h-11 rounded-lg px-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${handoffMode === "human_queue" ? "bg-primary text-primary-foreground" : "bg-card text-foreground"}`}>2. Fila</button>
-            <button type="button" onClick={() => handleChangeHandoff("human_active")} className={`h-11 min-h-11 rounded-lg px-2 text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary ${handoffMode === "human_active" ? "bg-foreground text-background" : "bg-card text-foreground"}`}>3. Humano</button>
+            <button
+              type="button"
+              onClick={() => handleChangeHandoff("ai_triage")}
+              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
+                handoffMode === "ai_triage" ? "bg-primary text-primary-foreground font-bold" : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
+              }`}
+            >
+              IA Copilot
+            </button>
+            <button
+              type="button"
+              onClick={() => handleChangeHandoff("human_queue")}
+              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
+                handoffMode === "human_queue" ? "bg-primary text-primary-foreground font-bold" : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
+              }`}
+            >
+              Fila de Espera
+            </button>
+            <button
+              type="button"
+              onClick={() => handleChangeHandoff("human_active")}
+              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
+                handoffMode === "human_active" ? "bg-foreground text-background font-bold" : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
+              }`}
+            >
+              Humano
+            </button>
           </div>
         </div>
       )}
@@ -387,14 +418,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         )}
       </div>
 
-      {/* 2. Resumo Financeiro (LTV, Última Compra, Inadimplência) */}
+      {/* 2. Resumo Financeiro (Total em Compras, Última Compra, Situação) */}
       <div className="space-y-2 border-b border-border/50 pb-4">
-        <span className="text-xs font-bold text-foreground block">Resumo Financeiro (LTV & Carteira)</span>
+        <span className="text-xs font-semibold text-foreground block">Resumo Financeiro</span>
         <div className="grid grid-cols-2 gap-2">
           <div className="p-3 rounded-lg bg-muted/20 border border-border/70 space-y-1">
             <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
               <DollarSign className="size-3 text-emerald-600" />
-              Total Gasto (LTV)
+              Total em Compras
             </span>
             <p className="text-sm font-extrabold text-foreground">
               {formatBRL((metrics?.ltv_cents || 0) / 100)}
@@ -419,10 +450,10 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               : "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
           }`}
         >
-          <span className="font-semibold text-xs">Pendências / Inadimplência</span>
+          <span className="font-semibold text-xs">Situação Financeira</span>
           <span className="font-extrabold text-xs">
             {(metrics?.pending_debt_cents || 0) > 0
-              ? formatBRL((metrics.pending_debt_cents || 0) / 100)
+              ? `Pendência: ${formatBRL((metrics.pending_debt_cents || 0) / 100)}`
               : "Adimplente (R$ 0,00)"}
           </span>
         </div>
@@ -482,18 +513,23 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     </div>
   )}
 
- {/* Tickets / Chamados Abertos */}
- {/* Tickets / Chamados Abertos & Gestão de Demandas */}
+ {/* Solicitações & Chamados do Cliente */}
  {(true || tickets.length > 0) && (
  <div className="space-y-2 border-b border-border/50 pb-4">
  <div className="flex items-center justify-between gap-2">
- <span className="text-xs font-bold text-foreground flex items-center gap-2">
+ <span className="text-xs font-semibold text-foreground flex items-center gap-2">
  <ShieldAlert className="size-3.5 text-primary" />
- Demandas & Tickets ({tickets.length})
+ Solicitações & Chamados ({tickets.length})
  </span>
  {threadId && (
-   <Button type="button" size="sm" onClick={() => setIsCreatingTicket((prev) => !prev)} className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer">
-     {isCreatingTicket ? "Cancelar" : "+ Demanda"}
+   <Button
+     type="button"
+     variant="outline"
+     size="sm"
+     onClick={() => setIsCreatingTicket((prev) => !prev)}
+     className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-border/80 text-foreground hover:bg-muted cursor-pointer"
+   >
+     {isCreatingTicket ? "Cancelar" : "+ Nova Solicitação"}
    </Button>
  )}
  </div>
@@ -551,7 +587,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
            <span>Enviar Link</span>
          </button>
          <button type="button" onClick={() => handleAddTicketStep(t.id, "Atendimento finalizado e solucionado", "resolved")} className="h-11 min-h-11 rounded-lg bg-foreground text-background text-xs font-bold px-2 flex items-center justify-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
-           <span>Resolver & CSAT</span>
+           <span>Encerrar Chamado</span>
          </button>
        </div>
      </div>
@@ -658,9 +694,9 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       {/* Histórico Recente de Compras */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-foreground flex items-center gap-2">
+          <span className="text-xs font-semibold text-foreground flex items-center gap-2">
             <ShoppingBag className="size-3.5 text-primary" />
-            Histórico de Pedidos ({orders.length})
+            {isTourism ? `Histórico de Reservas & Viagens (${orders.length})` : `Histórico de Compras (${orders.length})`}
           </span>
         </div>
 
@@ -726,7 +762,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
       {/* 4. Ações Rápidas no Painel Lateral (1 Clique) */}
       <div className="pt-2 border-t border-border/50 space-y-2">
-        <span className="text-xs font-bold text-foreground block">Ações Rápidas do Atendimento</span>
+        <span className="text-xs font-semibold text-foreground block">Ações Rápidas do Atendimento</span>
 
         <div className="grid grid-cols-1 gap-2">
           <Button
@@ -736,7 +772,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring border-primary/40 text-primary hover:bg-primary/10"
           >
             <Receipt className="size-4" />
-            <span>Criar Pedido / Orçamento</span>
+            <span>{isTourism ? "Nova Cotação / Reserva" : "Criar Pedido / Orçamento"}</span>
           </Button>
 
           {onOpenTransfer && (
@@ -768,13 +804,13 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               type="button"
               variant="outline"
               onClick={() => {
-                setLeadTitle(`Oportunidade - ${profile?.full_name || guestName || "Cliente"}`);
+                setLeadTitle(isTourism ? `Cotação Viagem - ${profile?.full_name || guestName || "Cliente"}` : `Oportunidade - ${profile?.full_name || guestName || "Cliente"}`);
                 setIsCreatingLead(true);
               }}
               className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <UserCheck className="size-4" />
-              <span>Gerar Card de Lead no CRM</span>
+              <span>Adicionar ao CRM de Vendas</span>
             </Button>
           )}
 
@@ -786,7 +822,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             >
               <Link to="/workspace/clientes/$id" params={{ id: resolvedCustomerId }}>
                 <User className="size-4 text-primary" />
-                <span>Abrir Dossiê Completo</span>
+                <span>Ficha do Cliente no CRM</span>
                 <ArrowUpRight className="size-3.5 ml-auto text-muted-foreground" />
               </Link>
             </Button>
