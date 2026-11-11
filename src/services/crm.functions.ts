@@ -1320,14 +1320,76 @@ export const createLead = createServerFn({ method: "POST" })
  if (error) throw error;
 
  if (data?.id) {
- try {
- await (supabase.rpc as any)("deduplicate_and_link_lead_to_customer", {
- p_lead_id: data.id,
- p_store_id: identity.store_id,
- });
- } catch {
- // deduplicação silenciosa
- }
+  let linkedCustomerId: string | null = null;
+  try {
+   const { data: rpcRes } = await (supabase.rpc as any)("deduplicate_and_link_lead_to_customer", {
+    p_lead_id: data.id,
+    p_store_id: identity.store_id,
+   });
+   if (rpcRes) linkedCustomerId = String(rpcRes);
+  } catch {
+   // Fallback defensivo em TypeScript
+  }
+
+  // Se a RPC não vinculou diretamente, garante a sincronização determinística na tabela soberana customers_crm
+  if (!linkedCustomerId) {
+   try {
+    let existingCustomer: { id: string } | null = null;
+    if (payload.phone) {
+     const { data: foundPhone } = await supabase
+      .from("customers_crm")
+      .select("id")
+      .eq("store_id", identity.store_id)
+      .eq("phone", payload.phone)
+      .is("deleted_at", null)
+      .maybeSingle();
+     existingCustomer = foundPhone;
+    }
+    if (!existingCustomer && payload.email) {
+     const { data: foundEmail } = await supabase
+      .from("customers_crm")
+      .select("id")
+      .eq("store_id", identity.store_id)
+      .eq("email", payload.email)
+      .is("deleted_at", null)
+      .maybeSingle();
+     existingCustomer = foundEmail;
+    }
+
+    if (existingCustomer) {
+     linkedCustomerId = existingCustomer.id;
+    } else {
+     const { data: newCust } = await supabase
+      .from("customers_crm")
+      .insert({
+       store_id: identity.store_id,
+       full_name: payload.full_name,
+       name: payload.full_name,
+       phone: payload.phone || null,
+       email: payload.email || null,
+       kind: "individual",
+       status: "active",
+       tags: ["lead", payload.source || "comercial"],
+       notes: payload.notes || `Contato criado a partir da oportunidade "${payload.title}"`,
+       created_at: new Date().toISOString(),
+       updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .maybeSingle();
+     if (newCust?.id) linkedCustomerId = newCust.id;
+    }
+
+    if (linkedCustomerId) {
+     await supabase
+      .from("leads_crm")
+      .update({ customer_id: linkedCustomerId, updated_at: new Date().toISOString() })
+      .eq("id", data.id);
+     data.customer_id = linkedCustomerId;
+    }
+   } catch (syncErr) {
+    console.warn("[crm] Aviso ao sincronizar oportunidade com customers_crm:", syncErr);
+   }
+  }
  }
 
  return { status: "success" as const, lead: data };

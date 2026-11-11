@@ -1061,7 +1061,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.name}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, name: e.target.value }))}
                       placeholder="Ex: Roberto Carlos Silva"
-                      className="h-8 text-xs rounded-lg"
+                      className="h-11 min-h-11 text-xs rounded-lg"
                       required
                     />
                   </div>
@@ -1071,7 +1071,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.phone}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, phone: e.target.value }))}
                       placeholder="(49) 99999-9999"
-                      className="h-8 text-xs rounded-lg"
+                      className="h-11 min-h-11 text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1081,7 +1081,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.email}
                       onChange={(e) => setNewLeadForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="roberto@email.com"
-                      className="h-8 text-xs rounded-lg"
+                      className="h-11 min-h-11 text-xs rounded-lg"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1090,7 +1090,7 @@ function WorkspaceComercialPage() {
                       value={newLeadForm.source}
                       onValueChange={(val) => setNewLeadForm((prev) => ({ ...prev, source: val }))}
                     >
-                      <SelectTrigger className="h-8 text-xs rounded-lg">
+                      <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-lg">
@@ -1102,6 +1102,11 @@ function WorkspaceComercialPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400">
+                  <UserCheck className="size-4 shrink-0" />
+                  <span>Contato sincronizado diretamente com a Carteira de Clientes da loja.</span>
                 </div>
               </div>
 

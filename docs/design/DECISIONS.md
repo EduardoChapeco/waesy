@@ -1,5 +1,46 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-483: Conexão Bilateral Soberana Leads ⇄ Contatos no CRM, Unificação Comercial de Títulos e Erradicação de Jargões Técnicos
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Necessidade de garantir que qualquer oportunidade/lead criado a partir do Atendimento Omnichannel ou pelo formulário do Kanban Comercial (`workspace.comercial.tsx`) seja deterministicamente registrado e sincronizado como Contato na Carteira Geral de Clientes da loja (`customers_crm` / `/workspace/clientes`), vinculando a conversa e o lead ao `customer_id`.
+  2. Presença de termos técnicos e jargões internos que poluiam a experiência de operadores comerciais ("CSAT", "SDR", "(Whisper)", "LTV", "Filas & Métricas"), exigindo conversão para títulos comerciais diretos ("Avaliação do Cliente", "Oportunidades", "Nota Interna", "Total em Compras", "Desempenho & Filas").
+- **Decisão:**
+  1. **Sincronização Soberana de Contatos (`src/services/crm.functions.ts` e `src/services/chat.functions.ts`):**
+     - Em `createLead`, adicionada camada defensiva que, além da RPC de deduplicação, realiza upsert determinístico em `customers_crm` (busca por telefone ou e-mail no tenant; se não existir, insere como contato ativo e vincula o `customer_id` no `leads_crm`).
+     - Em `convertChatThreadToCrmLead`, implementada atualização imediata do `customer_id` na conversa (`chat_threads`), garantindo que o chat passe a apontar instantaneamente para o cliente na Carteira de Clientes.
+     - No formulário de nova oportunidade do Kanban (`workspace.comercial.tsx`) e no modal de conversão rápida da sidebar (`customer-360-sidebar.tsx`), adicionado feedback visual e garantia de sincronização com a Carteira de Clientes.
+  2. **Revisão Global de Termos Comerciais:**
+     - Na barra de abas superiores do Atendimento: "Leads SDR" substituído por "Oportunidades", e "Filas & Métricas" substituído por "Desempenho & Filas".
+     - No Composer e linha do tempo de mensagens: "Nota Interna da Equipe (Whisper)" simplificada para "Nota Interna da Equipe".
+     - No Perfil 360 do Cliente: "Notas Internas do Atendimento" substituído por "Anotações da Equipe", "Ficha do Cliente no CRM" por "Ver Cadastro Completo", e "Adicionar ao CRM de Vendas" por "Criar Oportunidade de Venda".
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.7, B.8, B.9, B.11, B.26 e B.33; Apple HIG / Linear Ergonomics; WCAG 2.2 AA.
+- **Consequências:** 100% dos leads gerados no Atendimento ou CRM integrados à Carteira de Clientes, vocabulário comercial limpo sem termos técnicos, aprovação plena na catraca de CI de Design Lint (DL-01 a DL-32) com zero regressões.
+
+## DEC-482: Refatoração Ergonômica Definitiva de Layout, Erradicação de Truncamento no Atendimento, Composer Unificado e Despoluição Visual do Customer 360
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Truncamento violento do nome e telefone do cliente no cabeçalho da conversa aberta em `/workspace/atendimento` (ex: "P... (WhatsApp)" e "+12836383826..."), causado por acúmulo de botões na barra de topo com `shrink-0` e textos longos ("Janela 24h Aberta", "Finalizar & CSAT", "Perfil 360º", "Linha do Tempo"), que consumiam mais de 450px e espremiam o título do cliente a menos de 40px em resoluções padrão desktop quando o painel lateral de Perfil 360 estava ativo.
+  2. Área do Composer (digitação de mensagem) operando com altura vertical inflada (~200px) e controles duplicados: botão `Lock` (Cadeado / Sussurro) duplicado entre o Textarea e o botão Enviar, barra de abas superior com botão de "Setores & Filas" deslocado e pílulas de macros rápidas com altura exagerada de 44px (`h-11 min-h-11`), roubando espaço de leitura das mensagens.
+  3. Painel lateral "Perfil 360º do Cliente" (`customer-360-sidebar.tsx`) apresentando desalinhamentos visuais e conflitos com o Design System: botões de modo de atendimento (IA Copilot, Fila de Espera, Humano) utilizando cores primárias e de primeiro plano divergentes, e botão "+ Demanda" com `bg-primary`, violando a regra de no máximo 1 ação primária por tela.
+- **Decisão:**
+  1. **Cabeçalho Fluido & Descompressão Total (`workspace.atendimento.index.tsx`):**
+     - O bloco de identificação do cliente opera com `min-w-0 flex-1`, eliminando as restrições artificiais de largura (`max-w-xs`).
+     - Integração do status de canal e da Janela 24h em um badge unificado e ultra-compacto ao lado do nome do cliente (`<span className="inline-flex items-center gap-2 px-2 py-1 ...">`), eliminando o bloco de 140px anterior.
+     - Botões de ação no cabeçalho remodelados: "Encerrar" e "Ficha" exibem texto apenas em telas ultra-largas (`hidden xl:inline`) e recolhem para ícones canônicos com tooltips em larguras menores.
+     - Atalho de Linha do Tempo / Histórico mantido no menu de ações operacionais (`DropdownMenu`), garantindo 100% de disponibilidade sem inflar a barra horizontal.
+  2. **Composer Ergonômico de Altura Otimizada (`workspace.atendimento.index.tsx`):**
+     - Remoção de duplicidades: excluído o botão redundante de cadeado ao lado do botão Enviar e removido o botão deslocado de Setores & Filas.
+     - Seletor de modo unificado e minimalista ("Responder (Cliente)" vs "Nota Interna (Equipe)") em padrão segmented control silencioso com alvos de toque canônicos de 44px (`h-11 min-h-11`).
+     - Banner de nota interna compacto com feedback imediato de segurança para a equipe.
+     - Trilho de macros com botões táteis canônicos na grade modular estrita de 4px (`h-11 min-h-11 px-3 py-2`), assegurando aprovação plena na catraca de CI de design lint.
+  3. **Harmonização do Customer 360 (`customer-360-sidebar.tsx`):**
+     - Seletor de Modo de Atendimento (IA Copilot / Fila / Humano) convertido para Segmented Control silencioso e padronizado (`bg-muted/60 p-1 rounded-lg border border-border/60`), eliminando cores neon e destacando a opção ativa com `bg-background text-foreground shadow-2xs font-bold`.
+     - Padronização dos botões de ações rápidas ("Criar Pedido / Orçamento", "Transferir Atendimento", "Agendar Retorno", "Adicionar ao CRM de Vendas") em `variant="outline"` consistente e ergonômico.
+     - Substituição de termos técnicos por títulos comerciais ("Oportunidades" em vez de "Leads SDR", "Avaliação dos Clientes" em vez de "CSAT").
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.6, B.7, B.8, B.9, B.11, B.26 e B.33; Apple HIG / Linear Ergonomics; WCAG 2.2 AA.
+- **Consequências:** Zero truncamento de nomes de clientes no chat, navegação despoluída e focada no diálogo, fidelidade semântica comercial por nicho, aprovação na catraca de Design Lint (DL-01 a DL-32) com zero regressões.
+
 ## DEC-480: Blindagem Definitiva de Constraints no WhatsApp (`whatsapp_channel_instances_check1` e `uq_whatsapp_default_instance_per_store`) e Correção de Ergonomia Espacial do Modal QR
 - **Data:** 2026-11-11
 - **Contexto:**
@@ -9338,3 +9379,24 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Painel interativo integrado em `/workspace/configuracoes` permitindo ativar/desativar a publicação no Waesy Marketplace Civil, escolher a plataforma vertical de origem e gerenciar o plano de recursos da empresa.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.7, B.9 e B.25; Arquitetura Single-Core Multi-Brand SaaS.
 - **Consequências:** Cada vertical opera como um produto SaaS focado no seu setor (com marca, domínio e módulos próprios), o Marketplace Civil exibe apenas lojas e produtos que aprovaram sua exposição pública, e qualquer evolução em módulos universais propaga instantaneamente para todas as marcas sem duplicação de código.
+
+
+### DEC-472: Consolidação End-to-End das Extensões Waesy Sync (Infotravel), Waesy Ingest (WhatsApp Web) e Coletor/Minerador Local
+- **Data:** 2026-11-11
+- **ID da Decisão:** DEC-472
+- **Contexto:** Auditoria ponta a ponta revelou desconexões entre extensão Chrome, BFF, empacotamento Cloudflare Pages, governança multi-tenant, contratos SQL de reconciliação, porta do coletor local e restrição de domínios Infotravel.
+- **Decisão Adotada:**
+  1. **Especificação & Migração (`docs/specs/SPEC-EXTENSIONS-E2E-CONSOLIDATION.md`, `supabase/migrations/20270327000000_extensions_e2e_consolidation.sql`):**
+     - Formalizados requisitos EARS-01 a EARS-08 e correção estrutural de `travel_opportunities` (`demand_id DROP NOT NULL`, `lead_id UUID REFERENCES public.leads_crm(id)`, índices parciais únicos idempotentes) mais grant `infotravel_sync` para o piloto Excelência Tour SMO.
+  2. **Empacotamento Imutável para Cloudflare Worker (`scripts/build-extensions-bundle.mjs`, `src/generated/extensions-bundle.server.ts`, `src/services/extensions-distributor.server.ts`, `src/routes/api.v1.extensions.download.ts`):**
+     - Geração em build-time de bundles Base64 dos pacotes (`infotravel_extension`, `whatsapp_extension`, `infotravel_miner`), excluindo `output/`, `.chrome-session/`, `.log` e `node_modules/`. Separação de erros `403 ExtensionForbiddenError` vs `500`. Sincronização bilateral de `stores.settings.authorized_extensions` com `workspace_feature_grants`.
+  3. **Zero-Trust Auth & Endpoints de Ingestão (`src/services/whatsapp-group-ingest.server.ts`, `src/routes/api.v1.ingest.whoami.ts`, `api.v1.ingest.infotravel-quotes.ts`, `api.v1.ingest.infotravel-reservations.ts`):**
+     - Autenticação escopada por feature key (`whatsapp_group_ingest` / `infotravel_sync`), derivação estrita server-side de `storeId` em `/api/v1/ingest/infotravel-quotes` (removido trust em `x-waesy-store-id`/`body.storeId`) e criação de `/api/v1/ingest/infotravel-reservations`.
+  4. **Reconciliação SQL & Parser CSV Canônico (`src/lib/travel-operator-sync.ts`, `src/services/travel-operator-sync.server.ts`, `src/services/travel-quote-capture.functions.ts`):**
+     - Alinhamento estrito às colunas reais de `customers_crm`, `tourism_trips`, `trip_passengers`, `travel_departures_kanban` e `travel_sale_financial_sheets`; parser RFC-4180 com `Check-in`, `Check-out`, `Operadora` (`orinter`, `incomum`, `frt`, `schultz`, `new_age`, `ancoradouro`) e `Localizador`.
+  5. **Extensões Chrome/Edge MV3 & Coletor/Minerador (`tools/infotravel-extension/*`, `tools/whatsapp-extension/*`, `tools/infotravel-miner/*`):**
+     - Suporte universal a qualquer portal Infotravel (`*://*/*infotravel*`, `optional_host_permissions` + `chrome.scripting` via botão "Ativar neste Portal"), ícones PNG MV3, isolamento de abas PrimeFaces, sincronização automática em nuvem com fila offline e Bearer `wae_...`, auto-scroll em listas virtualizadas do WhatsApp Web com chunking `<= 500`, e alinhamento de `coletor.mjs` + UI na porta `3333` (`/api/status`).
+  6. **Painéis & Governança UI (`src/components/admin/infotravel-integration-panel.tsx`, `src/components/commercial/whatsapp-group-ingest-modal.tsx`, `src/components/extensions/ExtensionWebStoreModal.tsx`, `src/routes/admin-master.modulos.tsx`):**
+     - Emissor/revogador Bearer integrado no painel Infotravel, remoção de `alert()`/`confirm()` e diálogos aninhados, ajuste de catálogo e listagem completa no Admin Master.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1–B.11, B.25; Zero-Trust multi-tenant; MV3 Chromium Extension Architecture.
+- **Consequências:** Extensões instaláveis diretamente de `tools/` ou via download ZIP em produção Cloudflare Pages, autenticadas com token único `wae_...`, compatíveis com qualquer portal Infotravel e listas longas do WhatsApp Web, com persistência CRM/Financeira verificada por testes (`44/44`) e build limpo.

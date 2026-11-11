@@ -321,7 +321,7 @@ export function WhatsAppQrConnectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="xl" className="max-h-screen overflow-y-auto pt-safe-modal">
+      <DialogContent size="xl" className="sm:max-w-4xl w-full p-6 space-y-5 rounded-2xl border-border/80">
         <DialogHeader>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -453,38 +453,38 @@ export function WhatsAppQrConnectModal({
             </p>
           </div>
         ) : selectedMode === "qr_baileys" ? (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-2">
-            {/* Coluna Esquerda: Dados do Número e Setor */}
-            <div className="md:col-span-6 space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Nome de Identificação do Aparelho</Label>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-1 items-start">
+            {/* Coluna Esquerda: Dados do Número, Setor e Ações da Conexão */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-foreground">Nome de Identificação do Aparelho</Label>
                 <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Ex.: WhatsApp Recepção / Vendas"
-                  className="h-11 text-xs"
+                  placeholder="Ex.: WhatsApp Comercial / Vendas"
+                  className="h-11 min-h-11 text-xs"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Chave do Canal</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">Chave do Canal</Label>
                   <Input
                     value={instanceKey}
                     onChange={(e) =>
                       setInstanceKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "_"))
                     }
                     placeholder="vendas_01"
-                    className="h-11 text-xs font-mono"
+                    className="h-11 min-h-11 text-xs font-mono"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Setor Padrão</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">Setor Padrão</Label>
                   <Input
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="Vendas, Suporte, Mobilidade..."
-                    className="h-11 text-xs"
+                    placeholder="Vendas, Suporte..."
+                    className="h-11 min-h-11 text-xs"
                   />
                 </div>
               </div>
@@ -503,7 +503,7 @@ export function WhatsAppQrConnectModal({
                       Número Global Oficial Waesy
                     </span>
                     <span className="text-xs text-muted-foreground block">
-                      Ativa auto-verificação de perfil civil, chamada de corrida/frete Waesy Go e cotações aéreas via WhatsApp.
+                      Ativa auto-verificação de perfil civil, chamada Waesy Go e cotações aéreas.
                     </span>
                   </div>
                 </label>
@@ -521,32 +521,14 @@ export function WhatsAppQrConnectModal({
                     Importar conversas anteriores do aparelho
                   </span>
                   <span className="text-muted-foreground block text-xs leading-relaxed">
-                    Se ativado, sincroniza as conversas e contatos existentes no WhatsApp para o painel. Se desmarcado, inicia apenas com mensagens em tempo real a partir de agora.
+                    Sincroniza contatos e mensagens antigas existentes no celular para o painel de atendimento.
                   </span>
                 </div>
               </label>
 
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-2">
-                <p className="text-xs font-bold text-foreground">Como escanear:</p>
-                <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Clique em <strong>Gerar QR Code Ao Vivo</strong> abaixo.</li>
-                  <li>No celular, abra o WhatsApp &gt; <strong>Aparelhos conectados</strong>.</li>
-                  <li>Toque em <strong>Conectar um aparelho</strong> e aponte para a tela.</li>
-                </ol>
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <Button
-                  type="button"
-                  onClick={handleGenerateQrCode}
-                  disabled={isGenerating}
-                  className="w-full h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <QrCode className="size-4" />
-                  {isGenerating ? "Gerando na VPS..." : qrBase64 ? "Atualizar QR Code" : "Gerar QR Code Ao Vivo"}
-                </Button>
-
-                {selectedInstanceId && (
+              {/* Bloco de Ações do Aparelho */}
+              <div className="pt-2">
+                {connectionStatus === "connected" ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Button
                       type="button"
@@ -556,19 +538,42 @@ export function WhatsAppQrConnectModal({
                       className="h-11 min-h-11 text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <RefreshCw className={cn("size-4", isSyncing && "animate-spin motion-reduce:animate-none")} />
-                      Sincronizar
+                      Sincronizar Status
                     </Button>
 
-                    {connectionStatus === "connected" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleDisconnect}
+                      disabled={isDisconnecting}
+                      className="h-11 min-h-11 text-xs font-medium text-destructive hover:bg-destructive/10 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive"
+                    >
+                      <PowerOff className="size-4" />
+                      Desconectar
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      onClick={handleGenerateQrCode}
+                      disabled={isGenerating}
+                      className="w-full h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <QrCode className="size-4" />
+                      {isGenerating ? "Gerando na VPS..." : qrBase64 ? "Atualizar QR Code" : "Gerar QR Code Ao Vivo"}
+                    </Button>
+
+                    {selectedInstanceId && (
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={handleDisconnect}
-                        disabled={isDisconnecting}
-                        className="h-11 min-h-11 text-xs font-medium text-destructive hover:bg-destructive/10 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive"
+                        onClick={handleManualSync}
+                        disabled={isSyncing}
+                        className="w-full h-11 min-h-11 text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                       >
-                        <PowerOff className="size-4" />
-                        Desconectar
+                        <RefreshCw className={cn("size-4", isSyncing && "animate-spin motion-reduce:animate-none")} />
+                        Sincronizar Status
                       </Button>
                     )}
                   </div>
@@ -576,35 +581,38 @@ export function WhatsAppQrConnectModal({
               </div>
             </div>
 
-            {/* Coluna Direita: Visor do QR Code em Tempo Real */}
-            <div className="md:col-span-6 flex flex-col items-center justify-center p-6 rounded-lg border-2 border-dashed border-border bg-muted/10 space-y-3">
+            {/* Coluna Direita: Visor do QR Code e Status em Tempo Real */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center p-5 rounded-xl border border-border/80 bg-muted/15 space-y-4 text-center">
               {isGenerating ? (
                 <div className="flex flex-col items-center text-center space-y-3 py-10">
-                  <div className="size-16 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                    <RefreshCw className="size-8 animate-spin motion-reduce:animate-none" />
+                  <div className="size-14 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <RefreshCw className="size-7 animate-spin motion-reduce:animate-none" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-foreground">Conectando à VPS Oracle...</h4>
+                    <h4 className="text-sm font-bold text-foreground">Conectando ao Gateway...</h4>
                     <p className="text-xs text-muted-foreground max-w-xs">
-                      Iniciando sessão Baileys e requisitando handshake seguro em tempo real.
+                      Iniciando sessão Baileys na VPS e requisitando handshake seguro em tempo real.
                     </p>
                   </div>
                 </div>
               ) : connectionStatus === "connected" ? (
-                <div className="flex flex-col items-center text-center space-y-3 py-6">
-                  <div className="size-16 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
-                    <CheckCircle2 className="size-10" />
+                <div className="flex flex-col items-center text-center space-y-4 py-4 w-full">
+                  <div className="size-14 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle2 className="size-8" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-foreground">WhatsApp Conectado e Ativo</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {activeInstance?.display_phone_number || "Sessão autenticada na VPS Oracle Cloud"}
+                    <h4 className="text-sm font-bold text-foreground">WhatsApp Conectado</h4>
+                    <p className="text-xs font-mono font-semibold text-foreground">
+                      {activeInstance?.display_phone_number || "Sessão ativa na VPS"}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-xs gap-1">
-                    <Radio className="size-3 text-emerald-500" />
-                    Recebendo e enviando mensagens em tempo real
+                  <Badge variant="outline" className="text-xs gap-2 py-1 px-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
+                    <Radio className="size-3 text-emerald-500 animate-pulse" />
+                    Online • Recebendo e enviando mensagens
                   </Badge>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-xs pt-1">
+                    Este aparelho está sincronizado com a central de atendimento e pronto para múltiplos atendentes.
+                  </p>
                 </div>
               ) : connectionStatus === "error" && lastErrorMessage && !qrBase64 ? (
                 <div className="flex flex-col items-center text-center space-y-3 py-6">
@@ -612,7 +620,7 @@ export function WhatsAppQrConnectModal({
                     <AlertTriangle className="size-7" />
                   </div>
                   <div className="space-y-1 max-w-xs">
-                    <h4 className="text-sm font-bold text-foreground">Falha de Comunicação com Gateway</h4>
+                    <h4 className="text-sm font-bold text-foreground">Falha de Comunicação</h4>
                     <p className="text-xs text-muted-foreground break-words">
                       {lastErrorMessage}
                     </p>
@@ -650,9 +658,9 @@ export function WhatsAppQrConnectModal({
                   </Button>
                 </div>
               ) : qrBase64 ? (
-                <>
+                <div className="flex flex-col items-center space-y-3 w-full">
                   {/* design-lint-ignore DL-18 reason:"Fundo branco obrigatório para leitura óptica de QR Code por câmeras de smartphone" expiry:"2027-10-30" */}
-                  <div className="size-56 bg-white p-3 rounded-lg border border-border flex items-center justify-center">
+                  <div className="size-52 bg-white p-3 rounded-xl border border-border flex items-center justify-center shadow-xs">
                     <img
                       src={qrBase64.startsWith("data:") ? qrBase64 : `data:image/png;base64,${qrBase64}`}
                       alt="QR Code WhatsApp Waesy"
@@ -660,7 +668,7 @@ export function WhatsAppQrConnectModal({
                     />
                   </div>
                   {pairingCode && (
-                    <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/80 w-full max-w-xs">
+                    <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-card border border-border/80 w-full max-w-xs">
                       <div className="text-left min-w-0">
                         <span className="text-xs uppercase tracking-wider text-muted-foreground block font-bold">Código de Pareamento</span>
                         <span className="font-mono text-sm font-bold tracking-widest text-foreground block">
@@ -682,16 +690,34 @@ export function WhatsAppQrConnectModal({
                       </Button>
                     </div>
                   )}
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium text-center">
-                    Aguardando leitura pelo celular (atualização automática)...
-                  </p>
-                </>
+                  <div className="w-full text-left bg-card border border-border/70 rounded-lg p-3 space-y-1 text-xs">
+                    <span className="font-bold text-foreground block">Como escanear:</span>
+                    <ol className="text-muted-foreground space-y-1 list-decimal list-inside text-xs">
+                      <li>No celular, abra o <strong>WhatsApp</strong>.</li>
+                      <li>Toque em <strong>Aparelhos conectados &gt; Conectar um aparelho</strong>.</li>
+                      <li>Aponte a câmera para o QR Code acima.</li>
+                    </ol>
+                  </div>
+                </div>
               ) : (
                 <div className="flex flex-col items-center text-center space-y-3 py-8">
-                  <QrCode className="size-24 text-muted-foreground/40" />
-                  <p className="text-xs text-muted-foreground max-w-xs">
-                    Clique em <strong>Gerar QR Code Ao Vivo</strong> para requisitar um código instantâneo ao servidor WhatsApp.
-                  </p>
+                  <div className="size-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground/50">
+                    <QrCode className="size-8" />
+                  </div>
+                  <div className="space-y-1 max-w-xs">
+                    <h4 className="text-sm font-bold text-foreground">Aguardando Pareamento</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Clique em <strong>Gerar QR Code Ao Vivo</strong> para emitir o código de conexão para o seu celular.
+                    </p>
+                  </div>
+                  <div className="w-full text-left bg-card border border-border/70 rounded-lg p-3 space-y-1 text-xs mt-2">
+                    <span className="font-bold text-foreground block">Como escanear:</span>
+                    <ol className="text-muted-foreground space-y-1 list-decimal list-inside text-xs">
+                      <li>No celular, abra o <strong>WhatsApp</strong>.</li>
+                      <li>Toque em <strong>Aparelhos conectados &gt; Conectar um aparelho</strong>.</li>
+                      <li>Aponte a câmera para o QR Code.</li>
+                    </ol>
+                  </div>
                 </div>
               )}
             </div>

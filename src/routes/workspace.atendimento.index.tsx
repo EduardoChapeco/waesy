@@ -376,11 +376,12 @@ function WorkspaceAtendimentoPage() {
 
   // Estados para Desconexão Completa do WhatsApp
   const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
+  const [selectedDisconnectInstanceId, setSelectedDisconnectInstanceId] = useState<string | null>(null);
   const [deepDisconnect, setDeepDisconnect] = useState(false);
   const [isDisconnectingWhatsApp, setIsDisconnectingWhatsApp] = useState(false);
 
   const handleDisconnectWhatsApp = async () => {
-    const inst = whatsappInstances.find((i) => i.status === "connected") || whatsappInstances[0];
+    const inst = (selectedDisconnectInstanceId ? whatsappInstances.find((i) => i.id === selectedDisconnectInstanceId) : null) || whatsappInstances.find((i) => i.status === "connected") || whatsappInstances[0];
     const instId = inst?.id;
     if (!instId || !store?.id) {
       toast.error("Nenhuma instância ativa do WhatsApp selecionada.");
@@ -398,6 +399,7 @@ function WorkspaceAtendimentoPage() {
       const instances = await listWorkspaceWhatsAppInstances({ data: { store_id: store.id } }).catch(() => []);
       setWhatsappInstances(instances);
       setDisconnectModalOpen(false);
+      setSelectedDisconnectInstanceId(null);
       toast.success(deepDisconnect ? "WhatsApp desconectado e credenciais removidas." : "WhatsApp desconectado com sucesso.");
     } catch (err: any) {
       toast.error(err?.message || "Falha ao desconectar instância.");
@@ -1143,7 +1145,7 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             <Bot className="size-4" />
-            <span>Leads SDR</span>
+            <span>Oportunidades</span>
             {sdrMetrics?.total > 0 && (
               <Badge variant="secondary" className="text-xs h-4 px-2 font-mono">
                 {sdrMetrics.total}
@@ -1151,7 +1153,7 @@ function WorkspaceAtendimentoPage() {
             )}
           </button>
 
-          {/* Aba 4: Filas & Métricas */}
+          {/* Aba 4: Desempenho & Filas */}
           <button
             type="button"
             onClick={() => setActiveHubTab("metrics")}
@@ -1163,7 +1165,7 @@ function WorkspaceAtendimentoPage() {
             )}
           >
             <Activity className="size-4" />
-            <span>Filas & Métricas</span>
+            <span>Desempenho & Filas</span>
           </button>
 
           {/* Aba 5: Conexão WhatsApp */}
@@ -1428,12 +1430,16 @@ function WorkspaceAtendimentoPage() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="font-bold text-sm sm:text-base text-foreground truncate max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl">
+                      <h3 className="font-bold text-sm sm:text-base text-foreground truncate min-w-0">
                         {activeThread.customer?.full_name || "Cliente"}
                       </h3>
                       {activeThread.channel === "whatsapp" && (
-                        <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
-                          (WhatsApp)
+                        <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0 border border-emerald-500/20">
+                          <span
+                            className={cn("size-2 rounded-full shrink-0", isWhatsAppWindowOpen ? "bg-emerald-500" : "bg-muted-foreground")}
+                            title={isWhatsAppWindowOpen ? "Janela 24h WhatsApp Ativa" : "Janela 24h Expirada"}
+                          />
+                          <span>WhatsApp</span>
                         </span>
                       )}
                     </div>
@@ -1458,20 +1464,7 @@ function WorkspaceAtendimentoPage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Sinalizador Janela 24h WhatsApp */}
-                  {activeThread.channel === "whatsapp" && (
-                    <div
-                      className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-medium shrink-0 bg-muted/40 border-border/60"
-                      title={isWhatsAppWindowOpen ? "Janela oficial do WhatsApp de 24 horas ativa para envio livre" : "Janela de 24h expirada"}
-                    >
-                      <span className={cn("size-2 rounded-full shrink-0", isWhatsAppWindowOpen ? "bg-emerald-500" : "bg-muted-foreground")} />
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {isWhatsAppWindowOpen ? "WhatsApp Ativo" : "Janela Expirada"}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Ação Primária: Finalizar / Desarquivar Atendimento */}
+                  {/* Ação: Encerrar / Reabrir Atendimento */}
                   <Button
                     type="button"
                     variant="outline"
@@ -1486,17 +1479,17 @@ function WorkspaceAtendimentoPage() {
                     {activeThread.status === "archived" ? (
                       <>
                         <ArchiveRestore className="size-4 shrink-0" />
-                        <span className="hidden sm:inline">Reabrir</span>
+                        <span className="hidden xl:inline">Reabrir</span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
-                        <span className="hidden sm:inline">Encerrar</span>
+                        <span className="hidden xl:inline">Encerrar</span>
                       </>
                     )}
                   </Button>
 
-                  {/* Toggle Perfil 360 */}
+                  {/* Toggle Ficha do Cliente (Perfil 360) */}
                   <Button
                     type="button"
                     variant="outline"
@@ -1515,27 +1508,11 @@ function WorkspaceAtendimentoPage() {
                     title="Exibir dados e ficha do cliente"
                     aria-label="Ficha do Cliente"
                   >
-                    <UserCheck className="size-4 mr-0 sm:mr-1 shrink-0" />
-                    <span className="hidden sm:inline">Ficha</span>
+                    <UserCheck className="size-4 mr-0 xl:mr-1 shrink-0" />
+                    <span className="hidden xl:inline">Ficha</span>
                   </Button>
 
-                  {/* Toggle Linha do Tempo (Visível em Telas Amplas) */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowLiveTimeline((prev) => !prev)}
-                    className={cn(
-                      "hidden 2xl:flex h-11 min-h-11 text-xs font-semibold rounded-lg px-3 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
-                      showLiveTimeline ? "bg-primary/15 text-primary border-primary/40 font-bold" : "",
-                    )}
-                    title="Exibir histórico de pedidos, planilhas e formulários do cliente"
-                  >
-                    <Clock className="size-4 text-primary shrink-0" />
-                    <span>Histórico</span>
-                  </Button>
-
-                  {/* Menu Dropdown de Ações Operacionais Avançadas */}
+                  {/* Menu Dropdown de Ações Operacionais */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -1736,7 +1713,7 @@ function WorkspaceAtendimentoPage() {
                             <div className="flex items-center justify-between text-xs font-bold">
                               <span className="flex items-center gap-2 text-warning-strong ">
                                 <Lock className="size-4 shrink-0" />
-                                <span>Nota Interna da Equipe (Whisper)</span>
+                                <span>Nota Interna da Equipe</span>
                               </span>
                               <span className="font-mono text-xs opacity-75">{formatDate(msg.created_at)}</span>
                             </div>
@@ -1859,7 +1836,7 @@ function WorkspaceAtendimentoPage() {
                   />
                 )}
 
-                {/* Seletor de Modo: Responder ao Cliente vs Nota Interna da Equipe (Padrão TrackChat / WhatsOmni) */}
+                {/* Seletor de Modo: Responder ao Cliente vs Nota Interna da Equipe */}
                 <div className="flex items-center justify-between gap-2 pb-1">
                   <div className="inline-flex items-center rounded-lg bg-muted/60 p-1 border border-border/60">
                     <button
@@ -1868,7 +1845,7 @@ function WorkspaceAtendimentoPage() {
                       className={cn(
                         "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                         !isWhisperMode
-                          ? "bg-background text-foreground font-bold"
+                          ? "bg-background text-foreground font-bold shadow-2xs"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -1889,52 +1866,42 @@ function WorkspaceAtendimentoPage() {
                       <span>Nota Interna (Equipe)</span>
                     </button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setTeamSectorsDrawerOpen(true)}
-                    className="h-11 min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground gap-2"
-                  >
-                    <Layers className="size-3.5 text-primary" />
-                    <span className="hidden sm:inline">Setores & Filas</span>
-                  </Button>
                 </div>
 
-                {/* Banner Modo Nota Interna (Whisper) com Design Âmbar Whaticket/Chatwoot */}
+                {/* Banner Modo Nota Interna (Whisper) */}
                 {isWhisperMode && (
-                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong  text-xs font-semibold animate-in fade-in">
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong text-xs font-medium animate-in fade-in">
                     <div className="flex items-center gap-2">
-                      <Lock className="size-4 shrink-0 text-warning-strong " />
-                      <span>Nota Interna Privada: Visível apenas para a equipe (NÃO é enviada ao WhatsApp).</span>
+                      <Lock className="size-3.5 shrink-0 text-warning-strong" />
+                      <span>Nota interna privada: visível apenas para a equipe (não enviada ao WhatsApp).</span>
                     </div>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsWhisperMode(false)}
-                      className="h-11 min-h-11 px-3 text-xs text-warning-strong  hover:bg-warning/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 px-3 text-xs text-warning-strong hover:bg-warning/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      Voltar ao Chat
+                      Cancelar
                     </Button>
                   </div>
                 )}
 
-                {/* Trilho de Respostas Rápidas / Macros */}
+                {/* Trilho de Respostas Rápidas / Macros Compacto */}
                 <div
                   role="tablist"
                   aria-label="Atalhos Rápidos"
-                  className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar"
+                  className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar py-1"
                 >
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => setQuickAnswersModalOpen(true)}
-                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-warning/30 text-warning-strong hover:bg-warning/10 cursor-pointer"
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-border/70 text-foreground hover:bg-muted cursor-pointer"
                     title="Gerenciar respostas rápidas personalizadas"
                   >
-                    <Zap className="size-3.5" />
+                    <Zap className="size-3 text-warning-strong" />
                     <span>Macros</span>
                   </Button>
 
@@ -1977,7 +1944,7 @@ function WorkspaceAtendimentoPage() {
                       key={macro.cmd}
                       type="button"
                       onClick={() => setText(interpolateTemplateVariables(macro.text, { customerName: activeThread.customer?.full_name, customerPhone: activeThread.customer?.phone, storeName: store?.name }))}
-                      className="h-11 min-h-11 px-3 py-2 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      className="h-11 min-h-11 px-3 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     >
                       /{macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
                     </button>
@@ -1993,7 +1960,7 @@ function WorkspaceAtendimentoPage() {
                       size="icon"
                       onClick={() => setLiveComposerTrayOpen(true)}
                       className="size-11 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                      title="Abrir ferramentas rápidas: Formulário, Evento, Planilha, Sticker"
+                      title="Abrir ferramentas rápidas: Formulário, Evento, Planilha, Proposta"
                       aria-label="Abrir ferramentas rápidas"
                     >
                       <Plus className="size-4" />
@@ -2023,25 +1990,6 @@ function WorkspaceAtendimentoPage() {
                         rows={1}
                       />
                     </div>
-
-                    {/* Botão Modo Sussurro */}
-                    <Button
-                      type="button"
-                      variant={isWhisperMode ? "default" : "outline"}
-                      size="icon"
-                      onClick={() => setIsWhisperMode(!isWhisperMode)}
-                      className={cn(
-                        "size-11 rounded-lg shrink-0 cursor-pointer",
-                        isWhisperMode ? "bg-warning hover:bg-warning-strong text-warning-strong" : "",
-                      )}
-                      title={
-                        isWhisperMode
-                          ? "Desativar modo sussurro (voltar para resposta pública)"
-                          : "Ativar modo sussurro (nota interna invisível ao cliente)"
-                      }
-                    >
-                      <Lock className="size-4" />
-                    </Button>
 
                     {/* Botão Enviar Responsivo */}
                     <Button
@@ -2855,9 +2803,9 @@ function WorkspaceAtendimentoPage() {
                   <Bot className="size-6" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-bold text-foreground">Nenhuma conversa com SDR encontrada</p>
+                  <p className="text-sm font-bold text-foreground">Nenhuma oportunidade qualificada encontrada</p>
                   <p className="text-xs text-muted-foreground max-w-sm">
-                    As mensagens e intenções de compra de clientes com a IA aparecerão aqui.
+                    As mensagens e intenções de compra captadas pelo atendimento aparecerão aqui.
                   </p>
                 </div>
               </div>
@@ -2992,7 +2940,7 @@ function WorkspaceAtendimentoPage() {
               </p>
             </div>
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
-              <span className="text-xs text-muted-foreground font-semibold">Satisfação (CSAT)</span>
+              <span className="text-xs text-muted-foreground font-semibold">Avaliação dos Clientes</span>
               {Number(metrics?.avg_rating || 0) > 0 ? (
                 <p className="text-2xl font-bold font-mono text-warning-strong flex items-center gap-1">
                   <Star className="size-5 fill-warning" />
@@ -3011,113 +2959,179 @@ function WorkspaceAtendimentoPage() {
       {/* ======================================================== */}
       {activeHubTab === "whatsapp" && (
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-muted/10">
-          <div className="space-y-1">
-            <h2 className="text-base font-bold text-foreground">
-              WhatsApp
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Status da instância corporativa e conexão com aparelhos.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="text-base font-bold text-foreground">
+                Canais WhatsApp
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Gerencie aparelhos conectados, setores de atendimento e rotas de entrada.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                onClick={() => setQrConnectModalOpen(true)}
+                className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <QrCode className="size-4" />
+                Conectar Novo Aparelho
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setTeamSectorsDrawerOpen(true)}
+                className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Layers className="size-4" />
+                Setores & Permissões
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleRefreshWhatsAppStatus}
+                disabled={isRefreshingWhatsApp}
+                className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <RefreshCw className={cn("size-4", isRefreshingWhatsApp && "animate-spin motion-reduce:animate-none")} />
+                Atualizar
+              </Button>
+            </div>
           </div>
 
-          <div className="max-w-2xl mx-auto">
-            {/* Card Soberano de Conexão Ativa / QR Code */}
-            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-5 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="size-11 rounded-lg bg-muted flex items-center justify-center font-bold border border-border/60">
-                    <Smartphone className="size-5 text-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-foreground">WhatsApp Business</h3>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {whatsappInstances[0]?.display_phone_number || "Aguardando pareamento"}
-                    </p>
-                  </div>
+          <div className="space-y-4">
+            {whatsappInstances.length === 0 ? (
+              <div className="bg-card p-10 rounded-xl border border-border/80 text-center space-y-4 max-w-xl mx-auto shadow-xs">
+                <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                  <Smartphone className="size-8" />
                 </div>
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-xs px-2 py-1 font-bold",
-                    whatsappInstances.some((i) => i.is_active && i.status === "connected")
-                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                      : "bg-muted text-muted-foreground border-border/80",
-                  )}
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-foreground">Nenhum WhatsApp Conectado</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
+                    Conecte o WhatsApp corporativo da sua loja para iniciar atendimentos com múltiplos operadores e respostas automatizadas.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => setQrConnectModalOpen(true)}
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
                 >
-                  {whatsappInstances.some((i) => i.is_active && i.status === "connected")
-                    ? "Conectado"
-                    : "Aguardando Conexão"}
-                </Badge>
+                  <QrCode className="size-4" />
+                  Conectar Aparelho via QR Code
+                </Button>
               </div>
-
-              {/* Área do QR Code */}
-              <div className="flex flex-col items-center justify-center p-6 border border-border/80 rounded-lg bg-muted/20 space-y-4">
-                <div className="size-52 bg-background p-3 rounded-lg border border-border flex items-center justify-center">
-                  {whatsappInstances[0]?.public_config?.qr_code_url ? (
-                    <img
-                      src={normalizeWhatsAppQrDataUri(whatsappInstances[0].public_config.qr_code_url) || String(whatsappInstances[0].public_config.qr_code_url)}
-                      alt="QR Code de conexão do WhatsApp"
-                      className="size-full object-contain"
-                    />
-                  ) : (
-                    <QrCode className="size-40 text-muted-foreground/60" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  {whatsappInstances[0]?.public_config?.qr_code_url
-                    ? "Aponte a câmera no WhatsApp > Aparelhos Conectados."
-                    : "Instância pronta. Clique em Gerar QR Code para sincronizar seu aparelho."}
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setQrConnectModalOpen(true)}
-                    className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <QrCode className="size-4" />
-                    Gerar QR Code / Novo Número
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setTeamSectorsDrawerOpen(true)}
-                    className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <Layers className="size-4" />
-                    Setores & Permissões
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleRefreshWhatsAppStatus}
-                    disabled={isRefreshingWhatsApp}
-                    className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <RefreshCw className={cn("size-4", isRefreshingWhatsApp && "animate-spin motion-reduce:animate-none")} />
-                    Atualizar status
-                  </Button>
-                  {whatsappInstances.length > 0 && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setDisconnectModalOpen(true)}
-                      className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer border-destructive/40 text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive"
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {whatsappInstances.map((inst) => {
+                  const isConnected = inst.is_active && inst.status === "connected";
+                  const qrUrl = inst.public_config?.qr_code_url ? normalizeWhatsAppQrDataUri(inst.public_config.qr_code_url) || String(inst.public_config.qr_code_url) : null;
+                  return (
+                    <div
+                      key={inst.id}
+                      className={cn(
+                        "bg-card p-5 rounded-xl border space-y-4 shadow-xs flex flex-col justify-between transition-colors",
+                        isConnected ? "border-emerald-500/40" : "border-border/80"
+                      )}
                     >
-                      <PowerOff className="size-4" />
-                      Desconectar WhatsApp
-                    </Button>
-                  )}
-                </div>
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={cn(
+                              "size-10 rounded-lg flex items-center justify-center shrink-0 border",
+                              isConnected ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30" : "bg-muted text-muted-foreground border-border/60"
+                            )}>
+                              <Smartphone className="size-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-sm text-foreground truncate">
+                                {inst.display_name}
+                              </h3>
+                              <p className="text-xs text-muted-foreground font-mono truncate">
+                                {inst.display_phone_number || "Aguardando pareamento"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {inst.is_default && (
+                              <Badge variant="secondary" className="text-xs font-semibold">
+                                Padrão
+                              </Badge>
+                            )}
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs px-2 py-1 font-bold",
+                                isConnected
+                                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                                  : inst.status === "error"
+                                  ? "bg-destructive/15 text-destructive border-destructive/30"
+                                  : "bg-warning/15 text-warning-strong border-warning/30"
+                              )}
+                            >
+                              {isConnected ? "Conectado" : inst.status === "error" ? "Falha" : "Aguardando"}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="bg-muted/30 rounded-lg p-2 space-y-1 text-xs">
+                          <div className="flex items-center justify-between text-muted-foreground">
+                            <span>Setor:</span>
+                            <span className="font-semibold text-foreground">{String(inst.public_config?.department || "Geral")}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-muted-foreground">
+                            <span>Tipo:</span>
+                            <span className="font-medium text-foreground">{inst.provider === "meta_cloud_api" ? "Meta Cloud Oficial" : "QR Code (VPS)"}</span>
+                          </div>
+                        </div>
+
+                        {!isConnected && qrUrl && (
+                          /* design-lint-ignore DL-18 reason:"Fundo branco obrigatório para leitura óptica de QR Code por câmeras de smartphone" expiry:"2027-10-30" */
+                          <div className="size-36 mx-auto bg-white p-2 rounded-lg border border-border flex items-center justify-center shadow-2xs">
+                            <img
+                              src={qrUrl}
+                              alt="QR Code"
+                              className="size-full object-contain"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-border/60 flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setQrConnectModalOpen(true)}
+                          className="h-11 min-h-11 flex-1 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <QrCode className="size-4" />
+                          {isConnected ? "Gerenciar" : "Parear"}
+                        </Button>
+
+                        {isConnected && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedDisconnectInstanceId(inst.id);
+                              setDisconnectModalOpen(true);
+                            }}
+                            className="h-11 min-h-11 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 border-destructive/40 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive shrink-0"
+                          >
+                            <PowerOff className="size-4" />
+                            Desconectar
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+            )}
 
             {/* Card de Gestão e Higienização Local do SAC */}
-            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs mt-4">
+            <div className="bg-card p-6 rounded-xl border border-border/80 space-y-4 shadow-xs mt-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h3 className="font-bold text-sm text-foreground">Higienização do Sistema Local</h3>
@@ -3376,7 +3390,7 @@ function WorkspaceAtendimentoPage() {
                       )}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-xs font-semibold">
-                        <span>{isAssistant ? "Assistente SDR (IA)" : "Cliente / Comprador"}</span>
+                        <span>{isAssistant ? "Atendimento Virtual" : "Cliente"}</span>
                         {msg.at && (
                           <span>
                             {new Date(msg.at).toLocaleTimeString("pt-BR", {
@@ -3721,7 +3735,7 @@ function WorkspaceAtendimentoPage() {
               <span>Desconectar WhatsApp</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Deseja desconectar o aparelho WhatsApp vinculado? A sessão será despareada no aparelho e na VPS.
+              Deseja desconectar o aparelho {selectedDisconnectInstanceId ? `"${whatsappInstances.find((i) => i.id === selectedDisconnectInstanceId)?.display_name || "WhatsApp"}"` : "WhatsApp"} vinculado? A sessão será despareada no aparelho e na VPS.
             </DialogDescription>
           </DialogHeader>
 

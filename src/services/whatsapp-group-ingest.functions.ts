@@ -5,6 +5,7 @@ import { getServerClient } from "@/lib/supabase";
 import { requireOwner, requireStaff, getServerIdentity } from "@/lib/server-access";
 import {
   INGEST_FEATURE_KEY,
+  INFOTRAVEL_INGEST_FEATURE_KEY,
   hashToken,
   isExcelenciaTourStore,
 } from "@/services/whatsapp-group-ingest.server";
@@ -19,14 +20,23 @@ export interface IngestStatusDTO {
 }
 
 /** Obtém o status de habilitação e tokens ativos do workspace atual com reconhecimento de Admin Master e Excelência Tour. */
-export const getIngestStatusFn = createServerFn({ method: "GET" }).handler(async (): Promise<IngestStatusDTO> => {
+export const getIngestStatusFn = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        featureKey: z.enum(["whatsapp_group_ingest", "infotravel_sync"]).optional(),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }): Promise<IngestStatusDTO> => {
+    const featureKey = data?.featureKey || INGEST_FEATURE_KEY;
   const staff = await requireStaff();
   const identity = await getServerIdentity();
   const supabase = getServerClient();
 
   const { data: store } = await supabase
     .from("stores")
-    .select("id, name, slug, city")
+    .select("id, name, slug, city, settings")
     .eq("id", staff.store_id)
     .maybeSingle();
 
@@ -34,7 +44,7 @@ export const getIngestStatusFn = createServerFn({ method: "GET" }).handler(async
     .from("workspace_feature_grants")
     .select("enabled")
     .eq("store_id", staff.store_id)
-    .eq("feature_key", INGEST_FEATURE_KEY)
+    .eq("feature_key", featureKey)
     .maybeSingle();
 
   const isAdminMaster = Boolean(
@@ -48,7 +58,16 @@ export const getIngestStatusFn = createServerFn({ method: "GET" }).handler(async
   );
 
   const isExcelencia = isExcelenciaTourStore(store);
-  const isFeatureGranted = Boolean(grant?.enabled) || isAdminMaster || isExcelencia;
+  const storeSettings = (store?.settings || {}) as Record<string, any>;
+  const authorizedExts = Array.isArray(storeSettings.authorized_extensions)
+    ? (storeSettings.authorized_extensions as string[])
+    : [];
+  const isAuthorizedByStoreSettings =
+    authorizedExts.includes("*") ||
+    (featureKey === INGEST_FEATURE_KEY && authorizedExts.includes("whatsapp_extension")) ||
+    (featureKey === INFOTRAVEL_INGEST_FEATURE_KEY &&
+      (authorizedExts.includes("infotravel_extension") || authorizedExts.includes("infotravel_miner")));
+  const isFeatureGranted = Boolean(grant?.enabled) || isAdminMaster || isExcelencia || isAuthorizedByStoreSettings;
 
   // Auto-cura: se o usuário ou loja possui direito mas o registro de grant ainda não constava na tabela, provisiona
   if (isFeatureGranted && !grant?.enabled && staff.store_id) {
@@ -58,7 +77,7 @@ export const getIngestStatusFn = createServerFn({ method: "GET" }).handler(async
         .upsert(
           {
             store_id: staff.store_id,
-            feature_key: INGEST_FEATURE_KEY,
+            feature_key: featureKey,
             enabled: true,
             granted_at: new Date().toISOString(),
             granted_by: staff.id || identity.id || null,
@@ -102,8 +121,9 @@ export const getIngestStatusFn = createServerFn({ method: "GET" }).handler(async
 
 /** Emite um token de ingestão. O valor em claro é devolvido UMA vez; só o hash é salvo. */
 export const issueIngestTokenFn = createServerFn({ method: "POST" })
-  .validator(z.object({ label: z.string().trim().max(80).optional() }))
+  .validator(z.object({ label: z.string().trim().max(80).optional(), featureKey: z.enum(["whatsapp_group_ingest", "infotravel_sync"]).optional() }))
   .handler(async ({ data }) => {
+    const featureKey = data?.featureKey || INGEST_FEATURE_KEY;
     const owner = await requireOwner();
     const identity = await getServerIdentity();
     const supabase = getServerClient();
@@ -112,14 +132,14 @@ export const issueIngestTokenFn = createServerFn({ method: "POST" })
       .from("workspace_feature_grants")
       .select("enabled")
       .eq("store_id", owner.store_id)
-      .eq("feature_key", INGEST_FEATURE_KEY)
+      .eq("feature_key", featureKey)
       .maybeSingle();
 
     let isGranted = Boolean(grant?.enabled);
     if (!isGranted) {
       const { data: store } = await supabase
         .from("stores")
-        .select("id, name, slug, city")
+        .select("id, name, slug, city, settings")
         .eq("id", owner.store_id)
         .maybeSingle();
 
@@ -133,7 +153,17 @@ export const issueIngestTokenFn = createServerFn({ method: "POST" })
         (owner.role as string) === "admin_master"
       );
 
-      if (isAdminMaster || isExcelenciaTourStore(store)) {
+      const storeSettings = (store?.settings || {}) as Record<string, any>;
+      const authorizedExts = Array.isArray(storeSettings.authorized_extensions)
+        ? (storeSettings.authorized_extensions as string[])
+        : [];
+      const isAuthorizedByStoreSettings =
+        authorizedExts.includes("*") ||
+        (featureKey === INGEST_FEATURE_KEY && authorizedExts.includes("whatsapp_extension")) ||
+        (featureKey === INFOTRAVEL_INGEST_FEATURE_KEY &&
+          (authorizedExts.includes("infotravel_extension") || authorizedExts.includes("infotravel_miner")));
+
+      if (isAdminMaster || isExcelenciaTourStore(store) || isAuthorizedByStoreSettings) {
         isGranted = true;
         try {
           await supabase
@@ -141,7 +171,7 @@ export const issueIngestTokenFn = createServerFn({ method: "POST" })
             .upsert(
               {
                 store_id: owner.store_id,
-                feature_key: INGEST_FEATURE_KEY,
+                feature_key: featureKey,
                 enabled: true,
                 granted_at: new Date().toISOString(),
                 granted_by: owner.id || identity.id || null,

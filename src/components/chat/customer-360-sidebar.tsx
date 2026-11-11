@@ -223,7 +223,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       const res = await addSupportTicketStep({ data: { ticketId, threadId: threadId || null, stepLabel: label, nextStatus } });
       setStepInputByTicket((prev) => ({ ...prev, [ticketId]: "" }));
       setData((prev: any) => prev ? { ...prev, tickets: (prev.tickets || []).map((t: any) => (t.id === ticketId ? { ...t, ...res.ticket, steps: res.steps } : t)) } : prev);
-      toast.success(nextStatus === "resolved" ? "Chamado resolvido e link CSAT enviado ao cliente!" : "Etapa adicionada à linha do tempo do chamado!");
+      toast.success(nextStatus === "resolved" ? "Chamado resolvido e link de avaliação enviado ao cliente!" : "Etapa adicionada à linha do tempo do chamado!");
     } catch (err: any) { toast.error(err?.message || "Erro ao adicionar etapa."); }
   };
 
@@ -331,12 +331,12 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               {handoffMode === "ai_triage" ? "IA Ativa" : handoffMode === "human_queue" ? "Fila de Espera" : "Atendimento Humano"}
             </Badge>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 bg-muted/60 p-1 rounded-lg border border-border/60">
             <button
               type="button"
               onClick={() => handleChangeHandoff("ai_triage")}
-              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
-                handoffMode === "ai_triage" ? "bg-primary text-primary-foreground font-bold" : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
+              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary ${
+                handoffMode === "ai_triage" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               IA Copilot
@@ -344,17 +344,17 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             <button
               type="button"
               onClick={() => handleChangeHandoff("human_queue")}
-              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
-                handoffMode === "human_queue" ? "bg-primary text-primary-foreground font-bold" : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
+              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary ${
+                handoffMode === "human_queue" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Fila de Espera
+              Fila
             </button>
             <button
               type="button"
               onClick={() => handleChangeHandoff("human_active")}
-              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
-                handoffMode === "human_active" ? "bg-foreground text-background font-bold" : "bg-card text-muted-foreground hover:text-foreground border border-border/50"
+              className={`h-11 min-h-11 rounded-lg px-2 text-xs font-semibold cursor-pointer transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary ${
+                handoffMode === "human_active" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Humano
@@ -394,17 +394,17 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         {threadId && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-foreground">Notas Internas do Atendimento</label>
+              <label className="text-xs font-bold text-foreground">Anotações da Equipe</label>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 disabled={isSavingNotes}
                 onClick={handleSaveInternalNotes}
-                className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-primary"
+                className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Save className="size-3.5" />
-                {isSavingNotes ? "Salvando..." : "Salvar Nota"}
+                {isSavingNotes ? "Salvando..." : "Salvar Anotação"}
               </Button>
             </div>
             <textarea
@@ -769,7 +769,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             type="button"
             variant="outline"
             onClick={() => setIsBudgetPadOpen(true)}
-            className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring border-primary/40 text-primary hover:bg-primary/10"
+            className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary border-border/70 text-foreground hover:bg-muted"
           >
             <Receipt className="size-4" />
             <span>{isTourism ? "Nova Cotação / Reserva" : "Criar Pedido / Orçamento"}</span>
@@ -810,7 +810,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               className="w-full h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <UserCheck className="size-4" />
-              <span>Adicionar ao CRM de Vendas</span>
+              <span>Criar Oportunidade de Venda</span>
             </Button>
           )}
 
@@ -822,7 +822,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             >
               <Link to="/workspace/clientes/$id" params={{ id: resolvedCustomerId }}>
                 <User className="size-4 text-primary" />
-                <span>Ficha do Cliente no CRM</span>
+                <span>Ver Cadastro Completo</span>
                 <ArrowUpRight className="size-3.5 ml-auto text-muted-foreground" />
               </Link>
             </Button>
@@ -835,7 +835,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-md rounded-2xl bg-card border border-border p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
-          <h3 className="font-bold text-foreground text-sm">Criar Lead no Funil Comercial</h3>
+          <h3 className="font-bold text-foreground text-sm">Nova Oportunidade Comercial</h3>
           <button
             type="button"
             onClick={() => setIsCreatingLead(false)}
@@ -879,6 +879,11 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               placeholder="O que o cliente está buscando..."
             />
           </div>
+
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/60 text-xs text-muted-foreground">
+            <UserCheck className="size-4 text-emerald-600 shrink-0" />
+            <span>Contato será vinculado automaticamente à Carteira de Clientes da loja.</span>
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
@@ -901,9 +906,9 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                   },
                 });
                 setIsCreatingLead(false);
-                toast.success("Lead criado com sucesso no CRM!");
+                toast.success("Oportunidade adicionada com sucesso ao funil de vendas!");
               } catch (err: any) {
-                toast.error(err.message || "Erro ao criar lead.");
+                toast.error(err.message || "Erro ao criar oportunidade.");
               }
             }}
             className="h-11 min-h-11 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"

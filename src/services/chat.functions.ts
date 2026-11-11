@@ -870,6 +870,17 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
     resolvedCustomerId = newCustomer.id;
    }
   }
+
+  // Vincula imediatamente o contato à conversa no atendimento se ainda não estiver associado
+  if (resolvedCustomerId && !thread.customer_id) {
+   await db
+    .from("chat_threads")
+    .update({
+     customer_id: resolvedCustomerId,
+     updated_at: new Date().toISOString(),
+    })
+    .eq("id", thread.id);
+  }
  } catch (crmSyncErr) {
   console.warn("[chat.functions] Aviso ao sincronizar com customers_crm:", crmSyncErr);
  }
