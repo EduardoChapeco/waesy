@@ -350,7 +350,7 @@ export default function WorkspaceCrmPage() {
 
         <Card className="p-4 rounded-lg bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">LTV Médio</span>
+            <span className="text-xs font-medium text-muted-foreground">Média por Cliente</span>
             <div className="size-8 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
               <DollarSign className="size-4" />
             </div>
@@ -536,7 +536,7 @@ export default function WorkspaceCrmPage() {
                   <th className="py-3 px-4 font-bold hidden sm:table-cell">Contato</th>
                   <th className="py-3 px-4 font-bold hidden md:table-cell">Status</th>
                   <th className="py-3 px-4 font-bold hidden lg:table-cell">Canal</th>
-                  <th className="py-3 px-4 font-bold text-right">LTV</th>
+                  <th className="py-3 px-4 font-bold text-right">Total em Compras</th>
                   <th className="py-3 px-4 font-bold text-right">Ações</th>
                 </tr>
               </thead>

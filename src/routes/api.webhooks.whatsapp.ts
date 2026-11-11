@@ -73,17 +73,17 @@ function messageContent(message: Record<string, any>): { text: string; type: str
   if (typeof caption === "string" && caption.trim()) return { text: caption, type };
 
   const labels: Record<string, string> = {
-    image: "[Imagem recebida]",
-    video: "[Vídeo recebido]",
-    audio: "[Áudio recebido]",
-    document: "[Documento recebido]",
-    sticker: "[Sticker recebido]",
-    location: "[Localização recebida]",
-    contacts: "[Contato recebido]",
-    reaction: "[Reação recebida]",
+    image: "[Imagem]",
+    video: "[Vídeo]",
+    audio: "[Áudio]",
+    document: "[Documento]",
+    sticker: "[Figurinha]",
+    location: "[Localização]",
+    contacts: "[Contato]",
+    reaction: "[Reação]",
   };
 
-  return { text: labels[type] ?? "[Mensagem recebida]", type };
+  return { text: labels[type] ?? "[Mensagem]", type };
 }
 
 function eventTime(timestamp: unknown): string {
