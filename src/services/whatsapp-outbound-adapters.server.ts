@@ -34,9 +34,9 @@ function identifierValue(...values: unknown[]): string | null {
   return value === undefined ? null : String(value);
 }
 function baseUrl(instance: OutboundInstance, secret: Record<string, unknown>, fallback: string | null): string {
-  let value = stringValue(instance.public_config?.base_url, secret.base_url, fallback);
-  if (value && value.includes("147.15.61.45")) value = process.env.EVOLUTION_API_URL?.trim() || "https://feb-genre-kathy-indicator.trycloudflare.com";
-  if (!value) throw new OutboundAdapterError("MISSING_BASE_URL", "Base URL do provider não configurada", false);
+  let value = stringValue(instance.public_config?.base_url, secret.base_url, fallback, process.env.EVOLUTION_API_URL);
+  if (value && value.includes("147.15.61.45")) value = stringValue(process.env.EVOLUTION_API_URL, fallback);
+  if (!value) throw new OutboundAdapterError("MISSING_BASE_URL", "Base URL do provider não configurada (defina EVOLUTION_API_URL ou configure o túnel persistente da instância)", false);
   try { const parsed = new URL(value); if (!/^https?:$/.test(parsed.protocol)) throw new Error(); return value.replace(/\/$/, ""); } catch { throw new OutboundAdapterError("INVALID_BASE_URL", "Base URL do provider inválida", false); }
 }
 function retryableStatus(status: number) { return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500; }
@@ -105,28 +105,68 @@ async function sendEvolution(instance: OutboundInstance, message: OutboundMessag
     body = { number, mediatype: kind, media: mediaSource(message.payload), ...(caption(message.payload) ? { caption: caption(message.payload) } : {}), ...(mimeType(message.payload) ? { mimetype: mimeType(message.payload) } : {}), ...(fileName(message.payload) ? { fileName: fileName(message.payload) } : {}) };
     const q = quoted(message.payload); if (q) body.quoted = q;
   }
-  const response = await fetch(url, { method: "POST", headers: { apikey: apiKey, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
+  let response: Response;
+  try {
+    response = await fetch(url, { method: "POST", headers: { apikey: apiKey, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
+  } catch (networkErr: unknown) {
+    const errObj = networkErr as { name?: string; message?: string };
+    const errName = String(errObj?.name || "");
+    const errMsg = String(errObj?.message || networkErr || "");
+    const isTimeout = errName === "TimeoutError" || errName === "AbortError" || /timeout|aborted/i.test(errMsg);
+    if (isTimeout) {
+      throw new OutboundAdapterError(
+        "UNCERTAIN_SEND_STATE",
+        "Timeout ao aguardar confirmação do gateway Evolution API; envio em estado incerto (aguardando conciliação via webhook).",
+        true,
+      );
+    }
+    throw new OutboundAdapterError(
+      "GATEWAY_UNREACHABLE",
+      `Gateway WhatsApp inacessível na tentativa de envio: ${errMsg.slice(0, 200)}`,
+      true,
+    );
+  }
   const json = await readJson(response);
   if (!response.ok) {
     const errorBodyStr = JSON.stringify(json);
-    if (errorBodyStr.includes("Connection Closed") || response.status === 403) {
+    const lowerErr = errorBodyStr.toLowerCase();
+    if (response.status === 502 || response.status === 503 || response.status === 504 || response.status === 530 || lowerErr.includes("cloudflare") || lowerErr.includes("error 1033")) {
+      throw new OutboundAdapterError(
+        "TUNNEL_UNAVAILABLE",
+        `Túnel ou gateway WhatsApp temporariamente indisponível (HTTP ${response.status}).`,
+        true,
+        response.status,
+      );
+    }
+    const isSessionRevoked = response.status === 401 || lowerErr.includes("logged out") || lowerErr.includes("device_removed") || lowerErr.includes("session_revoked");
+    if (isSessionRevoked || errorBodyStr.includes("Connection Closed")) {
+      const nextStatus = isSessionRevoked ? "revoked" : "degraded";
+      const nextCode = isSessionRevoked ? "SESSION_REVOKED" : "TEMPORARY_SEND_FAILURE";
+      const nextMsg = isSessionRevoked
+        ? "Sessão do WhatsApp revogada no aparelho. Reconecte via QR Code no painel."
+        : "Oscilação na conexão com a sessão WhatsApp (Connection Closed). Verifique o status da instância ou aguarde reconexão.";
       try {
         const { getServerClient } = await import("@/lib/supabase");
+        const currentConfig = (instance.public_config && typeof instance.public_config === "object" ? instance.public_config : {}) as Record<string, unknown>;
         await getServerClient()
           .from("whatsapp_channel_instances")
           .update({
-            status: "disconnected",
-            is_active: false,
-            is_default: false,
-            last_error_code: "CONNECTION_CLOSED",
-            last_error_message: "Sessão do WhatsApp desconectada pelo aparelho. Por favor reconecte via QR Code no painel.",
+            status: nextStatus,
+            // Mantém is_active = true para jamais bloquear o recebimento de webhooks CONNECTION_UPDATE / QRCODE_UPDATED
+            last_error_code: nextCode,
+            last_error_message: nextMsg,
+            public_config: {
+              ...currentConfig,
+              diagnostic_state: isSessionRevoked ? "session_revoked" : "temporary_send_failure",
+              last_send_failure_at: new Date().toISOString(),
+            },
             updated_at: new Date().toISOString(),
           })
           .eq("id", instance.id);
       } catch (e) {
-        console.warn("[whatsapp-outbound] Erro ao desativar instancia desconectada:", e);
+        console.warn("[whatsapp-outbound] Erro ao registrar diagnóstico da instância:", e);
       }
-      throw new OutboundAdapterError("CONNECTION_CLOSED", "Sessão do WhatsApp desconectada pelo aparelho. Por favor reconecte via QR Code no painel.", false, response.status);
+      throw new OutboundAdapterError(nextCode, nextMsg, !isSessionRevoked, response.status);
     }
     throw providerError("Evolution API", response, json);
   }

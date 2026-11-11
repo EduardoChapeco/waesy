@@ -418,6 +418,7 @@ import { Route as ApiAuthLinkedinCallbackRouteImport } from './routes/api.auth.l
 import { Route as ApiAuthMarketplaceCallbackRouteImport } from './routes/api.auth.marketplace.callback'
 import { Route as ApiV1ExtensionsDownloadRouteImport } from './routes/api.v1.extensions.download'
 import { Route as ApiV1IngestInfotravelQuotesRouteImport } from './routes/api.v1.ingest.infotravel-quotes'
+import { Route as ApiV1IngestInfotravelReservationsRouteImport } from './routes/api.v1.ingest.infotravel-reservations'
 import { Route as ApiV1IngestWhatsappContactsRouteImport } from './routes/api.v1.ingest.whatsapp-contacts'
 import { Route as ApiV1IngestWhoamiRouteImport } from './routes/api.v1.ingest.whoami'
 import { Route as ApiV1PublicDiscoveryRouteImport } from './routes/api.v1.public.discovery'
@@ -2608,6 +2609,12 @@ const ApiV1IngestInfotravelQuotesRoute =
     path: '/api/v1/ingest/infotravel-quotes',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiV1IngestInfotravelReservationsRoute =
+  ApiV1IngestInfotravelReservationsRouteImport.update({
+    id: '/api/v1/ingest/infotravel-reservations',
+    path: '/api/v1/ingest/infotravel-reservations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiV1IngestWhatsappContactsRoute =
   ApiV1IngestWhatsappContactsRouteImport.update({
     id: '/api/v1/ingest/whatsapp-contacts',
@@ -3269,6 +3276,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/api/v1/extensions/download': typeof ApiV1ExtensionsDownloadRoute
   '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/infotravel-reservations': typeof ApiV1IngestInfotravelReservationsRoute
   '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
   '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
@@ -3713,6 +3721,7 @@ export interface FileRoutesByTo {
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/api/v1/extensions/download': typeof ApiV1ExtensionsDownloadRoute
   '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/infotravel-reservations': typeof ApiV1IngestInfotravelReservationsRoute
   '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
   '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
@@ -4168,6 +4177,7 @@ export interface FileRoutesById {
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/api/v1/extensions/download': typeof ApiV1ExtensionsDownloadRoute
   '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/infotravel-reservations': typeof ApiV1IngestInfotravelReservationsRoute
   '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
   '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
@@ -4623,6 +4633,7 @@ export interface FileRouteTypes {
     | '/api/auth/marketplace/callback'
     | '/api/v1/extensions/download'
     | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/infotravel-reservations'
     | '/api/v1/ingest/whatsapp-contacts'
     | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
@@ -5067,6 +5078,7 @@ export interface FileRouteTypes {
     | '/api/auth/marketplace/callback'
     | '/api/v1/extensions/download'
     | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/infotravel-reservations'
     | '/api/v1/ingest/whatsapp-contacts'
     | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
@@ -5521,6 +5533,7 @@ export interface FileRouteTypes {
     | '/api/auth/marketplace/callback'
     | '/api/v1/extensions/download'
     | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/infotravel-reservations'
     | '/api/v1/ingest/whatsapp-contacts'
     | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
@@ -5623,6 +5636,7 @@ export interface RootRouteChildren {
   ApiAuthMarketplaceCallbackRoute: typeof ApiAuthMarketplaceCallbackRoute
   ApiV1ExtensionsDownloadRoute: typeof ApiV1ExtensionsDownloadRoute
   ApiV1IngestInfotravelQuotesRoute: typeof ApiV1IngestInfotravelQuotesRoute
+  ApiV1IngestInfotravelReservationsRoute: typeof ApiV1IngestInfotravelReservationsRoute
   ApiV1IngestWhatsappContactsRoute: typeof ApiV1IngestWhatsappContactsRoute
   ApiV1IngestWhoamiRoute: typeof ApiV1IngestWhoamiRoute
   ApiV1PublicDiscoveryRoute: typeof ApiV1PublicDiscoveryRoute
@@ -8495,6 +8509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiV1IngestInfotravelQuotesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/ingest/infotravel-reservations': {
+      id: '/api/v1/ingest/infotravel-reservations'
+      path: '/api/v1/ingest/infotravel-reservations'
+      fullPath: '/api/v1/ingest/infotravel-reservations'
+      preLoaderRoute: typeof ApiV1IngestInfotravelReservationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/ingest/whatsapp-contacts': {
       id: '/api/v1/ingest/whatsapp-contacts'
       path: '/api/v1/ingest/whatsapp-contacts'
@@ -9848,6 +9869,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthMarketplaceCallbackRoute: ApiAuthMarketplaceCallbackRoute,
   ApiV1ExtensionsDownloadRoute: ApiV1ExtensionsDownloadRoute,
   ApiV1IngestInfotravelQuotesRoute: ApiV1IngestInfotravelQuotesRoute,
+  ApiV1IngestInfotravelReservationsRoute:
+    ApiV1IngestInfotravelReservationsRoute,
   ApiV1IngestWhatsappContactsRoute: ApiV1IngestWhatsappContactsRoute,
   ApiV1IngestWhoamiRoute: ApiV1IngestWhoamiRoute,
   ApiV1PublicDiscoveryRoute: ApiV1PublicDiscoveryRoute,

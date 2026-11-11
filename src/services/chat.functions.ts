@@ -294,7 +294,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
 
  const { data: messages, error } = await db
  .from("chat_messages")
- .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status")
+ .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
  .eq("thread_id", threadId)
  .order("created_at", { ascending: true });
 
@@ -321,8 +321,9 @@ export const getChatMessages = createServerFn({ method: "GET" })
         const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
         const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
           ? configuredUrl
-          : (process.env.EVOLUTION_API_URL?.trim() || "https://feb-genre-kathy-indicator.trycloudflare.com");
-        const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "WaesyApiKey_Master_2026_WhatsApp";
+          : (process.env.EVOLUTION_API_URL?.trim() || "");
+        const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+        if (!baseUrl || !apiKey) throw new Error("Evolution API URL/Key não configuradas no ambiente.");
 
         const evoRes = await fetch(`${baseUrl}/chat/findMessages/${encodeURIComponent(externalName)}`, {
           method: "POST",
@@ -507,7 +508,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
              idempotency_key: `chat_msg:${msg.id}`,
              recipient_phone: cleanPhone,
              message_type: "text",
-             payload: { text: input.message },
+             payload: { text: input.message, chat_message_id: msg.id },
              status: "pending",
            },
            { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
@@ -545,7 +546,13 @@ export const sendChatMessage = createServerFn({ method: "POST" })
    }
  }
 
- return msg;
+ const { data: updatedMsg } = await db
+   .from("chat_messages")
+   .select("id, thread_id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
+   .eq("id", msg.id)
+   .maybeSingle();
+
+ return updatedMsg || msg;
  } catch (e: any) {
  console.error("[chat] sendChatMessage error:", e);
  throw new Error(e.message || "Erro ao enviar mensagem.");
@@ -601,6 +608,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  const { customerId, storeId, threadId, guestPhone, guestName } = data;
  const identity = await getServerIdentity();
  if (!identity?.id) throw new Error("Não autorizado");
+ assertStoreAccess(identity, STAFF_ROLES, storeId);
 
  const db = getServerClient();
 
@@ -608,7 +616,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  if (threadId) {
    const { data: threadRow } = await db
      .from("chat_threads")
-     .select("id, customer_id, guest_name, guest_email, entity_id, department, priority, status, internal_notes, tags, assigned_to_profile_id")
+     .select("id, customer_id, guest_name, guest_email, entity_id, department, priority, status, internal_notes, tags, assigned_to_profile_id, metadata")
      .eq("id", threadId)
      .eq("store_id", storeId)
      .maybeSingle();
@@ -617,44 +625,72 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
 
  let resolvedCustomerId = customerId || threadContext?.customer_id || null;
  const rawPhone = guestPhone || threadContext?.entity_id || null;
+ const cleanDigits = rawPhone ? String(rawPhone).replace(/\D/g, "") : "";
 
  let profileData: any = null;
  if (resolvedCustomerId) {
    const profileRes = await db
      .from("profiles")
-     .select("id, full_name, phone, avatar_url, created_at")
+     .select("id, full_name, phone, avatar_url, created_at, cpf, city")
      .eq("id", resolvedCustomerId)
      .maybeSingle();
    profileData = profileRes.data || null;
- } else if (rawPhone) {
-   const cleanDigits = String(rawPhone).replace(/\D/g, "");
-   if (cleanDigits.length >= 8) {
-     const profileByPhone = await db
-       .from("profiles")
-       .select("id, full_name, phone, avatar_url, created_at")
-       .or(`phone.eq.${rawPhone},phone.eq.+${cleanDigits},phone.eq.${cleanDigits}`)
-       .limit(1)
-       .maybeSingle();
-     if (profileByPhone.data) {
-       profileData = profileByPhone.data;
-       resolvedCustomerId = profileByPhone.data.id;
-     }
+ } else if (cleanDigits.length >= 8) {
+   const profileByPhone = await db
+     .from("profiles")
+     .select("id, full_name, phone, avatar_url, created_at, cpf, city")
+     .or(`phone.eq.${rawPhone},phone.eq.+${cleanDigits},phone.eq.${cleanDigits}`)
+     .limit(1)
+     .maybeSingle();
+   if (profileByPhone.data) {
+     profileData = profileByPhone.data;
+     resolvedCustomerId = profileByPhone.data.id;
    }
  }
 
- const customerPhone = profileData?.phone || rawPhone || null;
- if (!profileData) {
-   profileData = {
-     id: resolvedCustomerId,
-     full_name: guestName || threadContext?.guest_name || customerPhone || "Visitante em Atendimento",
-     phone: customerPhone,
-     email: threadContext?.guest_email || null,
-     avatar_url: null,
-     created_at: null,
-   };
+ // Consulta também o cadastro comercial na carteira da loja (customers_crm) para enriquecimento 360º
+ let crmCustomer: any = null;
+ if (resolvedCustomerId || cleanDigits.length >= 8) {
+   const crmOrParts: string[] = [];
+   if (resolvedCustomerId) crmOrParts.push(`id.eq.${resolvedCustomerId}`);
+   if (cleanDigits.length >= 8) {
+     crmOrParts.push(`phone.eq.+${cleanDigits}`, `phone.eq.${cleanDigits}`);
+     if (rawPhone) crmOrParts.push(`phone.eq.${rawPhone}`);
+   }
+   const { data: crmRow } = await db
+     .from("customers_crm")
+     .select("id, full_name, phone, email, document, city, tags, notes, created_at")
+     .eq("store_id", storeId)
+     .is("deleted_at", null)
+     .or(crmOrParts.join(","))
+     .order("updated_at", { ascending: false })
+     .limit(1)
+     .maybeSingle();
+   if (crmRow) {
+     crmCustomer = crmRow;
+     if (!resolvedCustomerId) resolvedCustomerId = crmRow.id;
+   }
  }
 
- const [ordersRes, ticketsRes, tripsRes, creditsRes, leadRes, quotesRes, contractsRes, debtRes] = await Promise.all([
+ const customerPhone = profileData?.phone || crmCustomer?.phone || rawPhone || null;
+ const overrideMeta = (threadContext?.metadata as any)?.customer_profile_override || null;
+ profileData = {
+   id: resolvedCustomerId,
+   full_name: overrideMeta?.full_name || crmCustomer?.full_name || profileData?.full_name || guestName || threadContext?.guest_name || customerPhone || "Visitante em Atendimento",
+   phone: overrideMeta?.phone || customerPhone,
+   email: overrideMeta?.email || crmCustomer?.email || threadContext?.guest_email || null,
+   document_cpf: overrideMeta?.document_cpf || crmCustomer?.document || profileData?.cpf || null,
+   city: overrideMeta?.city || crmCustomer?.city || profileData?.city || null,
+   avatar_url: profileData?.avatar_url || (threadContext?.metadata as any)?.avatar_url || null,
+   created_at: profileData?.created_at || crmCustomer?.created_at || null,
+ };
+
+ const leadOrFilters: string[] = [];
+ if (resolvedCustomerId) leadOrFilters.push(`customer_id.eq.${resolvedCustomerId}`);
+ if (customerPhone) leadOrFilters.push(`phone.eq.${customerPhone}`);
+ if (cleanDigits.length >= 8) leadOrFilters.push(`phone.eq.+${cleanDigits}`, `phone.eq.${cleanDigits}`);
+
+ const [ordersRes, ticketsRes, tripsRes, creditsRes, leadsRes, quotesRes, contractsRes, debtRes, docsRes, invoicesRes] = await Promise.all([
    resolvedCustomerId
      ? db.from("orders").select("id, total_amount_cents, status, created_at, payment_method").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
      : Promise.resolve({ data: [] as any[] }),
@@ -665,22 +701,15 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
      ? db.from("tourism_trips").select("id, trip_number, title, destination_city, travel_start_date, travel_end_date, total_cents, status").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("travel_start_date", { ascending: false }).limit(5)
      : Promise.resolve({ data: [] as any[] }),
    db.from("air_ticket_credits").select("id, airline, original_pnr, remaining_amount_cents, expires_at, status").eq("agency_id", storeId).eq("status", "active").limit(5),
-   resolvedCustomerId || customerPhone
+   leadOrFilters.length > 0
      ? db
          .from("leads_crm")
-         .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, created_at")
+         .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
          .eq("store_id", storeId)
-         .or(
-           resolvedCustomerId && customerPhone
-             ? `customer_id.eq.${resolvedCustomerId},phone.eq.${customerPhone}`
-             : resolvedCustomerId
-               ? `customer_id.eq.${resolvedCustomerId}`
-               : `phone.eq.${customerPhone}`,
-         )
+         .or(leadOrFilters.join(","))
          .order("created_at", { ascending: false })
-         .limit(1)
-         .maybeSingle()
-     : Promise.resolve({ data: null }),
+         .limit(20)
+     : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
      ? db.from("travel_quotes").select("id, quote_number, title, destination, total_cents, status, created_at").eq("agency_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(5)
      : Promise.resolve({ data: [] as any[] }),
@@ -690,7 +719,42 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    resolvedCustomerId
      ? db.from("customer_debt_ledger").select("id, amount_cents, status, reason, created_at").eq("customer_id", resolvedCustomerId).eq("status", "pending")
      : Promise.resolve({ data: [] as any[] }),
+   resolvedCustomerId
+     ? db.from("crm_customer_documents").select("id, title, document_type, file_url, status, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
+     : Promise.resolve({ data: [] as any[] }),
+   resolvedCustomerId
+     ? db.from("financial_transactions").select("id, description, amount_cents, status, due_date, payment_method, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
+     : Promise.resolve({ data: [] as any[] }),
  ]);
+
+ const opportunities = (leadsRes?.data as any[]) || [];
+ const activeLeadIdFromThread = (threadContext?.metadata as any)?.active_lead_id;
+ let linkedLead: any = null;
+ if (activeLeadIdFromThread === "none") {
+   linkedLead = null;
+ } else if (typeof activeLeadIdFromThread === "string" && activeLeadIdFromThread.length > 10) {
+   linkedLead = opportunities.find((op) => op.id === activeLeadIdFromThread) || null;
+   if (!linkedLead) {
+     const { data: explicitLead } = await db
+       .from("leads_crm")
+       .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+       .eq("id", activeLeadIdFromThread)
+       .eq("store_id", storeId)
+       .maybeSingle();
+     if (explicitLead) {
+       linkedLead = explicitLead;
+       opportunities.unshift(explicitLead);
+     }
+   }
+ } else if (threadId) {
+   // Seleciona oportunidade explicitamente originada por esta conversa; caso contrário não força associação 1:1 cega se houver múltiplas fechadas
+   linkedLead =
+     opportunities.find((op) => typeof op.notes === "string" && op.notes.includes(threadId)) ||
+     opportunities.find((op) => !["won", "lost", "converted"].includes(String(op.status))) ||
+     null;
+ } else {
+   linkedLead = opportunities[0] || null;
+ }
 
  const orders = ordersRes.data || [];
  const paidOrders = orders.filter((o: any) => ["completed", "delivered", "paid"].includes(o.status));
@@ -699,9 +763,21 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  const pendingDebts = (debtRes?.data as any[]) || [];
  const pendingDebtCents = pendingDebts.reduce((acc: number, curr: any) => acc + (Number(curr.amount_cents) || 0), 0);
 
+ const memberRole = identity.memberships?.find((m) => m.store_id === storeId)?.role || identity.role || "agent";
+ const isManagerOrAdmin = ["platform_admin", "owner", "admin", "manager"].includes(memberRole);
+
  return {
    profile: profileData,
+   crmCustomer,
    threadContext,
+   thread: threadContext,
+   permissions: {
+     role: memberRole,
+     canManageOpportunities: true,
+     canMoveKanbanStage: true,
+     canViewFinancials: isManagerOrAdmin || ["seller", "sales", "finance", "support", "agent"].includes(memberRole),
+     canManageContracts: isManagerOrAdmin || ["seller", "sales"].includes(memberRole),
+   },
    metrics: {
      total_orders: orders.length,
      ltv_cents: totalSpentCents,
@@ -713,12 +789,129 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    trips: (tripsRes?.data as any[]) || [],
    credits: (creditsRes?.data as any[]) || [],
    tickets: ticketsRes.data || [],
-   linkedLead: leadRes?.data || null,
+   opportunities,
+   linkedLead,
    quotes: (quotesRes?.data as any[]) || [],
    contracts: (contractsRes?.data as any[]) || [],
+   documents: (docsRes?.data as any[]) || [],
+   invoices: (invoicesRes?.data as any[]) || [],
    debts: pendingDebts,
  };
  });
+
+export const linkThreadToCrmOpportunitySchema = z.object({
+  threadId: z.string().uuid(),
+  leadId: z.string().nullable(),
+});
+
+export const linkThreadToCrmOpportunity = createServerFn({ method: "POST" })
+  .validator(linkThreadToCrmOpportunitySchema)
+  .handler(async ({ data: { threadId, leadId } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const { data: current } = await db
+      .from("chat_threads")
+      .select("id, store_id, metadata")
+      .eq("id", threadId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (!current) throw new Error("Conversa não encontrada.");
+
+    let linkedLead: any = null;
+    if (leadId && leadId !== "none") {
+      const { data: foundLead } = await db
+        .from("leads_crm")
+        .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+        .eq("id", leadId)
+        .eq("store_id", identity.store_id)
+        .single();
+      if (!foundLead) throw new Error("Oportunidade não encontrada nesta loja.");
+      linkedLead = foundLead;
+    }
+
+    const nextMeta = {
+      ...(((current.metadata as any) || {}) as Record<string, any>),
+      active_lead_id: leadId || "none",
+      linked_opportunity_updated_at: new Date().toISOString(),
+    };
+
+    await db
+      .from("chat_threads")
+      .update({
+        metadata: nextMeta,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", threadId)
+      .eq("store_id", identity.store_id);
+
+    return { success: true, linkedLead };
+  });
+
+export const registerCrmCommercialActivitySchema = z.object({
+  leadId: z.string().uuid(),
+  threadId: z.string().uuid().optional().nullable(),
+  activityText: z.string().trim().min(2).max(400),
+  activityType: z.enum(["call", "whatsapp_followup", "proposal_sent", "meeting", "note"]).default("whatsapp_followup"),
+});
+
+export const registerCrmCommercialActivity = createServerFn({ method: "POST" })
+  .validator(registerCrmCommercialActivitySchema)
+  .handler(async ({ data }) => {
+    const { leadId, threadId, activityText, activityType } = data;
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const { data: lead, error: leadErr } = await db
+      .from("leads_crm")
+      .select("id, checklist, notes")
+      .eq("id", leadId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (leadErr || !lead) throw new Error("Oportunidade comercial não localizada.");
+
+    const existingChecklist = Array.isArray(lead.checklist) ? lead.checklist : [];
+    const newEntry = {
+      id: `act-${Date.now()}`,
+      text: `[${activityType.toUpperCase()}] ${activityText}`,
+      done: true,
+      created_at: new Date().toISOString(),
+      author_id: identity.id,
+    };
+    const updatedChecklist = [...existingChecklist, newEntry];
+
+    const { data: updatedLead, error: updErr } = await db
+      .from("leads_crm")
+      .update({
+        checklist: updatedChecklist,
+        last_contact_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId)
+      .eq("store_id", identity.store_id)
+      .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+      .single();
+
+    if (updErr) throw new Error(`Falha ao registrar atividade comercial: ${updErr.message}`);
+
+    if (threadId) {
+      await db.from("chat_messages").insert({
+        thread_id: threadId,
+        message: `[ATIVIDADE COMERCIAL] ${activityText}`,
+        message_type: "system_event",
+        payload: { is_internal: true, lead_id: leadId, activity: newEntry },
+        is_staff_reply: true,
+        sender_id: identity.id,
+        sender_profile_id: identity.id,
+      });
+    }
+
+    return { success: true, lead: updatedLead, activity: newEntry };
+  });
 
 export const updateCustomerFunnelStageSchema = z.object({
   storeId: z.string().uuid().optional(),
@@ -746,7 +939,7 @@ export const updateCustomerFunnelStage = createServerFn({ method: "POST" })
         .update({ status: stage, updated_at: new Date().toISOString() })
         .eq("id", leadId)
         .eq("store_id", storeId)
-        .select("id, status, title, estimated_budget, source, destination_of_interest")
+        .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
         .single();
       if (error) throw new Error(`Erro ao atualizar etapa do funil: ${error.message}`);
       return updated;
@@ -767,9 +960,18 @@ export const updateCustomerFunnelStage = createServerFn({ method: "POST" })
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .select("id, status, title, estimated_budget, source, destination_of_interest")
+      .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
       .single();
     if (error) throw new Error(`Erro ao criar registro no funil: ${error.message}`);
+
+    if (threadId && created?.id) {
+      const { data: currentThread } = await db.from("chat_threads").select("metadata").eq("id", threadId).eq("store_id", storeId).maybeSingle();
+      await db.from("chat_threads").update({
+        metadata: { ...(((currentThread?.metadata as any) || {}) as Record<string, any>), active_lead_id: created.id },
+        updated_at: new Date().toISOString(),
+      }).eq("id", threadId).eq("store_id", storeId);
+    }
+
     return created;
   });
 
@@ -792,11 +994,12 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  if (!identity?.id) throw new Error("Não autorizado");
  const storeId = identity.store_id;
  if (!storeId) throw new Error("Contexto de loja obrigatório.");
+ assertStoreAccess(identity, STAFF_ROLES, storeId);
 
  const db = getServerClient();
  const { data: thread } = await db
  .from("chat_threads")
- .select("id, store_id, customer_id, guest_name, guest_email, entity_id, context_type")
+ .select("id, store_id, customer_id, guest_name, guest_email, entity_id, context_type, metadata")
  .eq("id", data.threadId)
  .eq("store_id", storeId)
  .single();
@@ -826,12 +1029,14 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  try {
   let existingCrmCustomer = null;
   if (phone) {
+   const cleanDigits = String(phone).replace(/\D/g, "");
    const { data: foundByPhone } = await db
     .from("customers_crm")
     .select("id")
     .eq("store_id", storeId)
-    .eq("phone", phone)
+    .or(cleanDigits.length >= 8 ? `phone.eq.${phone},phone.eq.+${cleanDigits},phone.eq.${cleanDigits}` : `phone.eq.${phone}`)
     .is("deleted_at", null)
+    .limit(1)
     .maybeSingle();
    existingCrmCustomer = foundByPhone;
   }
@@ -842,6 +1047,7 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
     .eq("store_id", storeId)
     .eq("email", email)
     .is("deleted_at", null)
+    .limit(1)
     .maybeSingle();
    existingCrmCustomer = foundByEmail;
   }
@@ -876,17 +1082,6 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
     resolvedCustomerId = newCustomer.id;
    }
   }
-
-  // Vincula imediatamente o contato à conversa no atendimento se ainda não estiver associado
-  if (resolvedCustomerId && !thread.customer_id) {
-   await db
-    .from("chat_threads")
-    .update({
-     customer_id: resolvedCustomerId,
-     updated_at: new Date().toISOString(),
-    })
-    .eq("id", thread.id);
-  }
  } catch (crmSyncErr) {
   console.warn("[chat.functions] Aviso ao sincronizar com customers_crm:", crmSyncErr);
  }
@@ -909,12 +1104,25 @@ export const convertChatThreadToCrmLead = createServerFn({ method: "POST" })
  created_at: new Date().toISOString(),
  updated_at: new Date().toISOString(),
  })
- .select("id, title, status, full_name, phone, email")
+ .select("id, title, status, full_name, phone, email, estimated_budget, destination_of_interest, created_at")
  .single();
 
  if (leadErr) {
  throw new Error(`Falha ao criar card no CRM: ${leadErr.message}`);
  }
+
+ // Vincula a oportunidade recém-criada como oportunidade ativa da conversa atual (relação 1:N)
+ await db
+   .from("chat_threads")
+   .update({
+     ...(resolvedCustomerId && !thread.customer_id ? { customer_id: resolvedCustomerId } : {}),
+     metadata: {
+       ...(((thread as any).metadata || {}) as Record<string, any>),
+       active_lead_id: lead.id,
+     },
+     updated_at: new Date().toISOString(),
+   })
+   .eq("id", thread.id);
 
  await db.from("chat_messages").insert({
  thread_id: data.threadId,

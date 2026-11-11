@@ -27,7 +27,7 @@ O Brasil possui heterogeneidade de numeração móvel (9 dígitos com DDD) e tel
 2. DDI implícito: se `cleanDigits.length === 10 || cleanDigits.length === 11`, prefixa `55`.
 3. Validação de Nono Dígito: buscas na tabela `customers_crm` e `chat_threads` utilizam operadores de fallback defensivo:
    ```sql
-   WHERE phone = '+5549991716233' OR phone = '+554991716233'
+   WHERE phone = '+55499****6233' OR phone = '+5549****6233'
    ```
    Isso impede que clientes antigos cadastrados com 8 dígitos gerem duplicatas ao interagir via WhatsApp moderno.
 

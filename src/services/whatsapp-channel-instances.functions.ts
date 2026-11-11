@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import { encryptSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 
 const ProviderSchema = z.enum(["meta_cloud_api", "evolution_api", "wasender_api", "render_bridge", "custom_webhook"]);
 const ModeSchema = z.enum(["official", "unofficial"]);
@@ -188,20 +188,224 @@ export const listWhatsAppChannelAudit = createServerFn({ method: "GET" }).valida
 
 // ─── Integração Direta Evolution API server-side e QR Code ao vivo ───
 
-const CANONICAL_EVOLUTION_TUNNEL_URL = "https://feb-genre-kathy-indicator.trycloudflare.com";
-const EVOLUTION_BASE_URL = process.env.EVOLUTION_API_URL?.trim() || CANONICAL_EVOLUTION_TUNNEL_URL;
 const DEFAULT_WEBHOOK_ORIGIN = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
 
-function requireEvolutionBaseUrl(): string {
-  const envUrl = process.env.EVOLUTION_API_URL?.trim();
-  const url = envUrl && !envUrl.includes("147.15.61.45") ? envUrl : EVOLUTION_BASE_URL;
-  return url.replace(/\/$/, "");
+async function resolveEvolutionGatewayConfig(
+  db: ReturnType<typeof getServerClient>,
+  storeId: string,
+  instance?: { id?: string; public_config?: Record<string, unknown> | null; secret_payload_encrypted?: string | null } | null,
+): Promise<{ baseUrl: string; apiKey: string }> {
+  let baseUrl = "";
+  let apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+
+  const cfgUrl = typeof instance?.public_config?.base_url === "string" ? instance.public_config.base_url.trim() : "";
+  if (cfgUrl && !cfgUrl.includes("147.15.61.45")) {
+    baseUrl = cfgUrl.replace(/\/$/, "");
+  }
+  const envUrl = process.env.EVOLUTION_API_URL?.trim() || "";
+  if (!baseUrl && envUrl && !envUrl.includes("147.15.61.45")) {
+    baseUrl = envUrl.replace(/\/$/, "");
+  }
+
+  if (instance?.secret_payload_encrypted) {
+    try {
+      const parsed = JSON.parse(decryptSecret(instance.secret_payload_encrypted)) as Record<string, unknown>;
+      if (!apiKey && typeof parsed.api_key === "string" && parsed.api_key.trim()) apiKey = parsed.api_key.trim();
+      if (!baseUrl && typeof parsed.base_url === "string" && !parsed.base_url.includes("147.15.61.45")) {
+        baseUrl = parsed.base_url.trim().replace(/\/$/, "");
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!baseUrl || !apiKey) {
+    const { data: rows } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, store_id, public_config, secret_payload_encrypted")
+      .eq("provider", "evolution_api")
+      .not("secret_payload_encrypted", "is", null)
+      .order("is_active", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(5);
+
+    for (const row of rows || []) {
+      const rCfg = (row.public_config && typeof row.public_config === "object" ? row.public_config : {}) as Record<string, unknown>;
+      if (!baseUrl && typeof rCfg.base_url === "string" && rCfg.base_url.trim() && !rCfg.base_url.includes("147.15.61.45")) {
+        baseUrl = rCfg.base_url.trim().replace(/\/$/, "");
+      }
+      if (row.secret_payload_encrypted) {
+        try {
+          const parsed = JSON.parse(decryptSecret(row.secret_payload_encrypted)) as Record<string, unknown>;
+          if (!apiKey && typeof parsed.api_key === "string" && parsed.api_key.trim()) apiKey = parsed.api_key.trim();
+          if (!baseUrl && typeof parsed.base_url === "string" && !parsed.base_url.includes("147.15.61.45")) {
+            baseUrl = parsed.base_url.trim().replace(/\/$/, "");
+          }
+        } catch {
+          // ignore
+        }
+      }
+      if (baseUrl && apiKey) break;
+    }
+  }
+
+  if (!baseUrl) {
+    throw new Error("EVOLUTION_API_URL não configurada ou aponta para IP legado sem túnel HTTPS.");
+  }
+  if (!apiKey) {
+    throw new Error("EVOLUTION_API_KEY não configurada no ambiente do servidor.");
+  }
+  return { baseUrl, apiKey };
 }
 
-function requireEvolutionMasterKey(): string {
-  const key = process.env.EVOLUTION_API_KEY?.trim();
-  if (key) return key;
-  return "WaesyApiKey_Master_2026_WhatsApp";
+export type WhatsAppDiagnosticSessionState =
+  | "connected"
+  | "connecting"
+  | "disconnected"
+  | "session_revoked"
+  | "gateway_unreachable"
+  | "tunnel_unavailable"
+  | "unknown"
+  | "temporary_send_failure";
+
+export type WhatsAppSessionHealthEvaluation = {
+  diagnosticState: WhatsAppDiagnosticSessionState;
+  dbStatus: "connected" | "pending" | "disconnected" | "revoked" | "degraded";
+  isHealthy: boolean;
+  reason: string;
+};
+
+export function classifyWhatsAppSessionHealth(input: {
+  connectionStateStatus?: string | null;
+  connectionStateHttpStatus?: number | null;
+  fetchInstancesRecord?: Record<string, unknown> | null;
+  lastWebhookState?: string | null;
+  lastWebhookAt?: string | null;
+  lastConnectedAt?: string | null;
+  lastSendFailureCode?: string | null;
+  lastSendFailureAt?: string | null;
+  hasQrCode?: boolean;
+  networkError?: string | null;
+}): WhatsAppSessionHealthEvaluation {
+  const httpStatus = input.connectionStateHttpStatus ?? null;
+  const netErr = String(input.networkError || "").toLowerCase();
+
+  if (
+    httpStatus === 502 ||
+    httpStatus === 503 ||
+    httpStatus === 504 ||
+    httpStatus === 530 ||
+    netErr.includes("cloudflare") ||
+    netErr.includes("1033") ||
+    netErr.includes("tunnel")
+  ) {
+    return {
+      diagnosticState: "tunnel_unavailable",
+      dbStatus: "degraded",
+      isHealthy: false,
+      reason: `Túnel com a VPS indisponível (${httpStatus ? `HTTP ${httpStatus}` : input.networkError}).`,
+    };
+  }
+
+  if (httpStatus === null && netErr) {
+    return {
+      diagnosticState: "gateway_unreachable",
+      dbStatus: "degraded",
+      isHealthy: false,
+      reason: `Gateway Evolution inacessível: ${input.networkError}`,
+    };
+  }
+
+  const liveState = String(input.connectionStateStatus || "").toLowerCase();
+  const fetchRec = input.fetchInstancesRecord || null;
+  const fetchStatus = String(fetchRec?.connectionStatus || fetchRec?.state || "").toLowerCase();
+  const disconnectCode = Number(fetchRec?.disconnectionReasonCode ?? 0);
+  const disconnectAtMs = fetchRec?.disconnectionAt ? new Date(String(fetchRec.disconnectionAt)).getTime() : 0;
+  const updatedAtMs = fetchRec?.updatedAt ? new Date(String(fetchRec.updatedAt)).getTime() : 0;
+  const lastConnectedMs = input.lastConnectedAt ? new Date(input.lastConnectedAt).getTime() : 0;
+  const lastWebhookMs = input.lastWebhookAt ? new Date(input.lastWebhookAt).getTime() : 0;
+
+  // Avalia se disconnectionReasonCode = 401 é revogação atual ou histórico já superado por reconexão posterior
+  const reconnectedAfterDisconnect =
+    disconnectAtMs > 0 &&
+    ((lastConnectedMs > disconnectAtMs) ||
+      (input.lastWebhookState === "open" && lastWebhookMs > disconnectAtMs) ||
+      (updatedAtMs > disconnectAtMs + 5000 && (liveState === "open" || fetchStatus === "open")));
+
+  if (disconnectCode === 401 && !reconnectedAfterDisconnect && (fetchStatus === "close" || liveState === "close")) {
+    return {
+      diagnosticState: "session_revoked",
+      dbStatus: "revoked",
+      isHealthy: false,
+      reason: "Sessão desconectada ou revogada pelo aparelho celular (código 401). Reconecte via QR Code.",
+    };
+  }
+
+  // Divergência entre /instance/connectionState ("open") e /instance/fetchInstances ("close"): evita falso "connected" (estado zombie)
+  if (liveState === "open" && fetchStatus === "close" && !reconnectedAfterDisconnect) {
+    if (disconnectCode === 401) {
+      return {
+        diagnosticState: "session_revoked",
+        dbStatus: "revoked",
+        isHealthy: false,
+        reason: "Estado divergente: connectionState reportou open, mas fetchInstances indica sessão revogada (401).",
+      };
+    }
+    return {
+      diagnosticState: "disconnected",
+      dbStatus: "disconnected",
+      isHealthy: false,
+      reason: "Estado divergente: connectionState reportou open, mas a instância encontra-se fechada no catálogo do gateway.",
+    };
+  }
+
+  if (liveState === "open") {
+    const failureMs = input.lastSendFailureAt ? new Date(input.lastSendFailureAt).getTime() : 0;
+    const isRecentSendFailure =
+      input.lastSendFailureCode === "TEMPORARY_SEND_FAILURE" &&
+      failureMs > 0 &&
+      Date.now() - failureMs < 2 * 60 * 1000 &&
+      failureMs > lastWebhookMs;
+    if (isRecentSendFailure) {
+      return {
+        diagnosticState: "temporary_send_failure",
+        dbStatus: "degraded",
+        isHealthy: false,
+        reason: "Sessão reportada como aberta, mas houve falha transitória recente de envio.",
+      };
+    }
+    return {
+      diagnosticState: "connected",
+      dbStatus: "connected",
+      isHealthy: true,
+      reason: "Sessão conectada e validada em múltiplos sinais.",
+    };
+  }
+
+  if (liveState === "connecting" || input.hasQrCode) {
+    return {
+      diagnosticState: "connecting",
+      dbStatus: "pending",
+      isHealthy: false,
+      reason: "Aguardando leitura do QR Code ou negociação da sessão.",
+    };
+  }
+
+  if (liveState === "close" || fetchStatus === "close") {
+    return {
+      diagnosticState: "disconnected",
+      dbStatus: "disconnected",
+      isHealthy: false,
+      reason: "Sessão desconectada.",
+    };
+  }
+
+  return {
+    diagnosticState: "unknown",
+    dbStatus: "degraded",
+    isHealthy: false,
+    reason: "Estado da sessão não pôde ser determinado com segurança.",
+  };
 }
 
 export function normalizeWhatsAppQrDataUri(rawQr: unknown): string | null {
@@ -300,8 +504,7 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
     let connectionState: "connected" | "connecting" | "error" = "connecting";
     let gatewayErrorCode: string | null = null;
     let gatewayErrorMessage: string | null = null;
-    const baseUrl = requireEvolutionBaseUrl();
-    const apiKey = requireEvolutionMasterKey();
+    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, existing as any);
 
     const fetchInstanceConnectQr = async (): Promise<{ qrCodeBase64: string | null; pairingCode: string | null }> => {
       const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
@@ -629,22 +832,31 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
     }
 
     const externalName = instance.external_instance_id || instance.instance_key;
-    const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");
-    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
-    const apiKey = requireEvolutionMasterKey();
+    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
 
-    let liveState = "close";
+    let liveState: string | null = null;
+    let stateHttpStatus: number | null = null;
+    let fetchRecord: Record<string, unknown> | null = null;
     let connectedPhone: string | null = instance.display_phone_number;
     let qrCodeBase64: string | null = normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url);
     let pairingCode: string | null = ((instance.public_config as any)?.pairing_code as string) || null;
     let syncErrorMessage: string | null = null;
 
     try {
-      const stateRes = await fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
-        method: "GET",
-        headers: { apikey: apiKey },
-        signal: AbortSignal.timeout(6000),
-      });
+      const [stateRes, infoRes] = await Promise.all([
+        fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
+          method: "GET",
+          headers: { apikey: apiKey },
+          signal: AbortSignal.timeout(6000),
+        }),
+        fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
+          method: "GET",
+          headers: { apikey: apiKey },
+          signal: AbortSignal.timeout(6000),
+        }).catch(() => null),
+      ]);
+
+      stateHttpStatus = stateRes.status;
       if (stateRes.ok) {
         const json = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
         liveState = String(json?.instance?.state || json?.state || "close").toLowerCase();
@@ -652,24 +864,23 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
         syncErrorMessage = `Gateway HTTP ${stateRes.status}`;
       }
 
-      if (liveState === "open") {
-        qrCodeBase64 = null;
-        pairingCode = null;
-        const infoRes = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
-          method: "GET",
-          headers: { apikey: apiKey },
-          signal: AbortSignal.timeout(6000),
-        });
-        if (infoRes.ok) {
-          const infoList = await infoRes.json().catch(() => []);
-          const first = Array.isArray(infoList) ? infoList[0] : infoList;
+      if (infoRes && infoRes.ok) {
+        const infoList = await infoRes.json().catch(() => []);
+        const first = (Array.isArray(infoList) ? infoList[0] : infoList) as Record<string, any> | undefined;
+        if (first && typeof first === "object") {
+          fetchRecord = first;
           const ownerJid = String(first?.ownerJid || first?.instance?.owner || "");
           if (ownerJid) {
             const digits = ownerJid.replace(/@.*$/, "").replace(/\D/g, "");
             if (digits.length >= 8) connectedPhone = `+${digits}`;
           }
         }
-      } else {
+      }
+
+      if (liveState === "open") {
+        qrCodeBase64 = null;
+        pairingCode = null;
+      } else if (stateRes.ok) {
         // Busca QR Code atualizado enquanto aguarda leitura
         const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
           method: "GET",
@@ -687,21 +898,33 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
       syncErrorMessage = err instanceof Error ? err.message : "Oscilação de rede ao consultar gateway WhatsApp";
     }
 
-    const mappedStatus =
-      liveState === "open"
-        ? "connected"
-        : liveState === "connecting" || Boolean(qrCodeBase64)
-          ? "pending"
-          : syncErrorMessage
-            ? "error"
-            : "disconnected";
+    const currentPub = ((instance.public_config as Record<string, unknown>) || {});
+    const health = classifyWhatsAppSessionHealth({
+      connectionStateStatus: liveState,
+      connectionStateHttpStatus: stateHttpStatus,
+      fetchInstancesRecord: fetchRecord,
+      lastWebhookState: typeof currentPub.last_webhook_state === "string" ? currentPub.last_webhook_state : null,
+      lastWebhookAt: typeof currentPub.last_webhook_at === "string" ? currentPub.last_webhook_at : null,
+      lastConnectedAt: typeof currentPub.last_connected_at === "string" ? currentPub.last_connected_at : null,
+      lastSendFailureCode: instance.last_error_code,
+      lastSendFailureAt: typeof currentPub.last_send_failure_at === "string" ? currentPub.last_send_failure_at : null,
+      hasQrCode: Boolean(qrCodeBase64),
+      networkError: syncErrorMessage,
+    });
+
+    const mappedStatus = health.dbStatus;
+    const nowIso = new Date().toISOString();
 
     const nextPublicConfig = {
-      ...(instance.public_config || {}),
+      ...currentPub,
       qr_code_url: mappedStatus === "connected" ? null : qrCodeBase64,
       pairing_code: mappedStatus === "connected" ? null : pairingCode,
-      last_synced_state: liveState,
-      ...(mappedStatus !== "connected" && qrCodeBase64 ? { last_qr_generated_at: new Date().toISOString() } : {}),
+      last_synced_state: liveState || "unknown",
+      diagnostic_state: health.diagnosticState,
+      diagnostic_reason: health.reason,
+      ...(mappedStatus === "connected" ? { last_connected_at: nowIso, session_revoked: false } : {}),
+      ...(health.diagnosticState === "session_revoked" ? { session_revoked: true } : {}),
+      ...(mappedStatus !== "connected" && qrCodeBase64 ? { last_qr_generated_at: nowIso } : {}),
     };
 
     const { data: updated } = await db
@@ -711,10 +934,10 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
         is_active: mappedStatus === "connected" || instance.is_active,
         display_phone_number: connectedPhone,
         public_config: nextPublicConfig,
-        last_error_code: mappedStatus === "connected" ? null : syncErrorMessage ? "SYNC_ERROR" : instance.last_error_code,
-        last_error_message: mappedStatus === "connected" ? null : syncErrorMessage || instance.last_error_message,
-        last_health_check_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        last_error_code: mappedStatus === "connected" ? null : health.diagnosticState.toUpperCase(),
+        last_error_message: mappedStatus === "connected" ? null : syncErrorMessage || health.reason,
+        last_health_check_at: nowIso,
+        updated_at: nowIso,
       })
       .eq("id", instance.id)
       .select(PublicFields)
@@ -723,9 +946,10 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
     return {
       instance: (updated || instance) as WhatsAppChannelInstanceDTO,
       state: mappedStatus,
+      diagnosticState: health.diagnosticState,
       qrCodeBase64: mappedStatus === "connected" ? null : qrCodeBase64,
       pairingCode: mappedStatus === "connected" ? null : pairingCode,
-      errorMessage: mappedStatus === "connected" ? null : syncErrorMessage || instance.last_error_message || null,
+      errorMessage: mappedStatus === "connected" ? null : syncErrorMessage || health.reason || null,
     };
   });
 
@@ -763,12 +987,11 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
 
     if (instance.provider === "evolution_api") {
       const externalName = instance.external_instance_id || instance.instance_key;
-      const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");
-      const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
+      const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
       // 1. Desconecta a sessão atual no WhatsApp Web
       await fetch(`${baseUrl}/instance/logout/${encodeURIComponent(externalName)}`, {
         method: "DELETE",
-        headers: { apikey: requireEvolutionMasterKey() },
+        headers: { apikey: apiKey },
         signal: AbortSignal.timeout(6000),
       }).catch(() => null);
 
@@ -776,7 +999,7 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
       if (data.deepDisconnect) {
         await fetch(`${baseUrl}/instance/delete/${encodeURIComponent(externalName)}`, {
           method: "DELETE",
-          headers: { apikey: requireEvolutionMasterKey() },
+          headers: { apikey: apiKey },
           signal: AbortSignal.timeout(6000),
         }).catch(() => null);
       }
@@ -944,9 +1167,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
     }
 
     const externalName = instance.external_instance_id || instance.instance_key;
-    const configuredUrl = String((instance.public_config as any)?.base_url || "").replace(/\/$/, "");
-    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45") ? configuredUrl : requireEvolutionBaseUrl();
-    const apiKey = requireEvolutionMasterKey();
+    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
 
     // 1. Garantir webhook ativo na Evolution API
     const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(instance.instance_key)}`;
@@ -1028,13 +1249,25 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         const contactInfo = contactMap.get(remoteJid) || contactMap.get(digits) || null;
         const isGroup = remoteJid.includes("@g.us") || Boolean(contactInfo?.isGroup);
         const isChannel = remoteJid.includes("@newsletter");
-        const cleanName = String(
-          chat.name ||
-          contactInfo?.pushName ||
-          chat.pushName ||
-          chat.lastMessage?.pushName ||
-          (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : phone)
-        ).trim();
+        const isLastFromMe = Boolean(chat.lastMessage?.key?.fromMe);
+        const safeCandidate = (...candidates: unknown[]): string | null => {
+          for (const cand of candidates) {
+            if (typeof cand !== "string") continue;
+            const trimmed = cand.trim();
+            if (!trimmed) continue;
+            const lower = trimmed.toLowerCase();
+            if (lower === "você" || lower === "voce" || lower === "you" || lower === "eu") continue;
+            return trimmed;
+          }
+          return null;
+        };
+        const cleanName =
+          safeCandidate(
+            chat.name,
+            contactInfo?.pushName,
+            chat.pushName,
+            isLastFromMe ? null : chat.lastMessage?.pushName,
+          ) || (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : phone);
         const avatarUrl = contactInfo?.profilePicUrl || chat.profilePictureUrl || null;
 
         const lastMsgObj = chat.lastMessage?.message || {};
@@ -1057,7 +1290,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           provider: "evolution_api",
           externalUserId: remoteJid,
           phone,
-          displayName: cleanName,
+          displayName: cleanName !== phone ? cleanName : null,
         });
 
         if (!identityRecord?.id) continue;
@@ -1065,9 +1298,10 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         let thread = null;
         const { data: foundThread } = await db
           .from("chat_threads")
-          .select("id, metadata")
+          .select("id, metadata, guest_name")
           .eq("store_id", storeId)
-          .eq("entity_id", phone)
+          .or(`entity_id.eq.${phone},entity_id.eq.${digits}`)
+          .limit(1)
           .maybeSingle();
 
         const existingMeta = (foundThread?.metadata && typeof foundThread.metadata === "object" ? foundThread.metadata : {}) as Record<string, any>;
@@ -1082,10 +1316,11 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
 
         if (foundThread) {
           thread = foundThread;
+          const preservedName = safeCandidate(cleanName !== phone ? cleanName : null, foundThread.guest_name) || phone;
           await db
             .from("chat_threads")
             .update({
-              guest_name: cleanName,
+              guest_name: preservedName,
               thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
               metadata: enrichedMeta,
               last_message_text: text.slice(0, 200),
@@ -1111,7 +1346,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
               priority: "normal",
               thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
               metadata: enrichedMeta,
-              last_customer_message_at: occurredAt,
+              ...(isLastFromMe ? {} : { last_customer_message_at: occurredAt }),
               last_message_text: text.slice(0, 200),
               last_message_at: occurredAt,
               created_at: occurredAt,
@@ -1146,7 +1381,11 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
               external_message_id: externalId,
               delivery_status: fromMe ? "sent" : "delivered",
               sent_at: occurredAt,
-              delivered_at: occurredAt,
+              ...(fromMe ? {} : { delivered_at: occurredAt }),
+              payload: {
+                from_me: fromMe,
+                origin: fromMe ? "whatsapp_device_sync" : "whatsapp_customer_sync",
+              },
               created_at: occurredAt,
             });
           }

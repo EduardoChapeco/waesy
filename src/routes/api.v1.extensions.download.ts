@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  ExtensionForbiddenError,
   assertExtensionDownloadAuthorized,
   buildExtensionZip,
   type ExtensionPackageType,
@@ -42,6 +43,18 @@ export const Route = createFileRoute("/api/v1/extensions/download")({
             },
           });
         } catch (err: any) {
+          const isForbidden = err instanceof ExtensionForbiddenError || err?.status === 403;
+          if (!isForbidden) {
+            console.error("[api/v1/extensions/download] Erro interno ao empacotar extensão:", err);
+            return Response.json(
+              {
+                error: err?.message || "Erro interno ao gerar pacote da extensão.",
+                can_request: false,
+                extension_type: typeParam,
+              },
+              { status: 500 }
+            );
+          }
           console.warn("[api/v1/extensions/download] Acesso negado:", err?.message);
           return Response.json(
             {

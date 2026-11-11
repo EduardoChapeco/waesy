@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { authenticateIngest } from "@/services/whatsapp-group-ingest.server";
-import { getServerClient } from "@/lib/supabase";
+import { resolveIngestTokenIdentity } from "@/services/whatsapp-group-ingest.server";
+
 
 function cors(request: Request): Record<string, string> {
   const origin = request.headers.get("origin") || "";
   return {
-    "access-control-allow-origin": origin.startsWith("chrome-extension://") ? origin : "null",
+    "access-control-allow-origin": (origin.startsWith("chrome-extension://") || origin.includes("localhost") || origin.includes("127.0.0.1") || origin.includes("waesy.com.br") || origin.includes("usewaesy.pages.dev")) ? origin : "null",
     "access-control-allow-headers": "authorization, content-type",
     "access-control-allow-methods": "GET, OPTIONS",
     vary: "Origin",
@@ -20,14 +20,17 @@ export const Route = createFileRoute("/api/v1/ingest/whoami")({
 
       GET: async ({ request }: { request: Request }) => {
         const headers = cors(request);
-        const auth = await authenticateIngest(request);
-        if (!auth.ok) return Response.json({ entitlement: false }, { status: auth.status, headers });
-        const { data: store } = await getServerClient()
-          .from("stores")
-          .select("name")
-          .eq("id", auth.storeId)
-          .maybeSingle();
-        return Response.json({ entitlement: true, store: store?.name ?? null }, { headers });
+        const auth = await resolveIngestTokenIdentity(request);
+        if (!auth.ok) return Response.json({ entitlement: false, error: auth.error }, { status: auth.status, headers });
+        return Response.json(
+          {
+            entitlement: true,
+            store: auth.store.name,
+            storeInfo: auth.store,
+            scopes: auth.scopes,
+          },
+          { headers },
+        );
       },
     },
   },

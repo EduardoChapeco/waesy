@@ -159,6 +159,7 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
 
   // 1. Checa mensagem de ausência fora de horário de expediente ou saudação
   await checkStoreBusinessHoursAndAutoReply({ ...input, senderName }).catch(() => null);
+  await evaluateControlledAiInboundRuntime(input).catch(() => null);
 
   const eligibleFlows = (flows || []).filter(
     (f: any) =>
@@ -225,6 +226,325 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
     }
   }
   return results;
+}
+
+export type ControlledAiMode = "disabled" | "assisted" | "sandbox";
+
+export interface ControlledAiDecisionLog {
+  decisionId: string;
+  timestamp: string;
+  storeId: string;
+  threadId: string;
+  mode: ControlledAiMode;
+  intent: "quote_request" | "support_issue" | "financial_query" | "human_handoff" | "general_inquiry";
+  agentSlug: string;
+  actionTaken:
+    | "halted_disabled"
+    | "halted_human_active"
+    | "halted_from_me"
+    | "halted_loop_guard"
+    | "halted_cooldown"
+    | "handoff_to_human_queue"
+    | "copilot_suggestion_saved"
+    | "sandbox_outbox_queued";
+  reason: string;
+  suggestedReply?: string;
+  crmContextSummary?: {
+    opportunitiesCount: number;
+    activeStage: string | null;
+    quotesCount: number;
+  };
+}
+
+export function detectInboundIntent(text: string): {
+  intent: ControlledAiDecisionLog["intent"];
+  agentSlug: string;
+} {
+  const normalized = String(text || "").toLowerCase();
+  if (/(atendente|humano|pessoa|falar com algu[eé]m|gerente|reclama[cç][aã]o|cancelar)/i.test(normalized)) {
+    return { intent: "human_handoff", agentSlug: "human_supervisor" };
+  }
+  if (/(or[cç]amento|cota[cç][aã]o|pacote|roteiro|viagem|pre[cç]o|valor|excurs[aã]o|passagem|reserva)/i.test(normalized)) {
+    return { intent: "quote_request", agentSlug: "commercial_closer" };
+  }
+  if (/(boleto|pix|fatura|pagamento|cobran[cç]a|recibo|parcela)/i.test(normalized)) {
+    return { intent: "financial_query", agentSlug: "sdr_agent" };
+  }
+  if (/(problema|erro|ajuda|suporte|atraso|chamado|d[uú]vida)/i.test(normalized)) {
+    return { intent: "support_issue", agentSlug: "sdr_agent" };
+  }
+  return { intent: "general_inquiry", agentSlug: "sdr_agent" };
+}
+
+export async function evaluateControlledAiInboundRuntime(input: {
+  storeId: string;
+  instanceId: string | null;
+  provider: string;
+  threadId: string;
+  identityId: string;
+  phone: string;
+  text: string;
+  eventId?: string | null;
+  payload: Record<string, any>;
+}): Promise<ControlledAiDecisionLog> {
+  const db = getServerClient();
+  const nowIso = new Date().toISOString();
+  const decisionId = createHash("sha256")
+    .update(`${input.storeId}:${input.threadId}:${input.eventId || input.text}:${nowIso.slice(0, 16)}`)
+    .digest("hex")
+    .slice(0, 24);
+
+  // 1. Proteção absoluta contra loop de mensagens enviadas pelo próprio celular/sistema
+  if (input.payload?.fromMe === true || input.payload?.origin === "whatsapp_device" || input.payload?.origin === "waesy_panel") {
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode: "disabled",
+      intent: "general_inquiry",
+      agentSlug: "none",
+      actionTaken: "halted_from_me",
+      reason: "Mensagem originada pelo próprio estabelecimento (fromMe=true).",
+    };
+  }
+
+  // 2. Carrega configuração da loja (Modo padrão: disabled em produção)
+  const { data: store } = await db
+    .from("stores")
+    .select("name, settings")
+    .eq("id", input.storeId)
+    .maybeSingle();
+
+  const aiConfig = ((store?.settings as any)?.ai_automation_config || {}) as {
+    mode?: ControlledAiMode;
+    enabled_agents?: string[];
+    sandbox_allowed_phones?: string[];
+    max_consecutive_turns?: number;
+    cooldown_seconds?: number;
+  };
+
+  const mode: ControlledAiMode = aiConfig.mode || "disabled";
+  const { intent, agentSlug } = detectInboundIntent(input.text);
+
+  if (mode === "disabled") {
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode: "disabled",
+      intent,
+      agentSlug,
+      actionTaken: "halted_disabled",
+      reason: "Automação de IA desativada por padrão em produção para esta loja.",
+    };
+  }
+
+  if (
+    Array.isArray(aiConfig.enabled_agents) &&
+    aiConfig.enabled_agents.length > 0 &&
+    !aiConfig.enabled_agents.includes(agentSlug) &&
+    intent !== "human_handoff"
+  ) {
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode,
+      intent,
+      agentSlug,
+      actionTaken: "halted_disabled",
+      reason: `Agente ${agentSlug} desativado na configuração da loja.`,
+    };
+  }
+
+  // 3. Carrega thread e verifica handoff humano, cooldown e limite de turnos
+  const { data: thread } = await db
+    .from("chat_threads")
+    .select("id, customer_id, guest_name, guest_phone, metadata")
+    .eq("id", input.threadId)
+    .eq("store_id", input.storeId)
+    .maybeSingle();
+
+  const meta = (thread?.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+
+  if (meta.handoff_mode === "human_active" || meta.handoff_mode === "human_queue" || meta.ai_auto_reply_enabled === false) {
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode,
+      intent,
+      agentSlug,
+      actionTaken: "halted_human_active",
+      reason: `Conversa sob controle humano (${meta.handoff_mode || "ai_paused"}).`,
+    };
+  }
+
+  if (intent === "human_handoff") {
+    const nextMeta = {
+      ...meta,
+      handoff_mode: "human_queue",
+      ai_auto_reply_enabled: false,
+      ai_halted_reason: "customer_requested_human",
+      ai_halted_at: nowIso,
+    };
+    await db
+      .from("chat_threads")
+      .update({ metadata: nextMeta, updated_at: nowIso })
+      .eq("id", input.threadId)
+      .eq("store_id", input.storeId);
+
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode,
+      intent,
+      agentSlug,
+      actionTaken: "handoff_to_human_queue",
+      reason: "Cliente solicitou atendimento humano; IA pausada imediatamente.",
+    };
+  }
+
+  const maxTurns = typeof aiConfig.max_consecutive_turns === "number" ? aiConfig.max_consecutive_turns : 5;
+  const currentTurns = Number(meta.ai_consecutive_turns || 0);
+  if (currentTurns >= maxTurns) {
+    return {
+      decisionId,
+      timestamp: nowIso,
+      storeId: input.storeId,
+      threadId: input.threadId,
+      mode,
+      intent,
+      agentSlug,
+      actionTaken: "halted_loop_guard",
+      reason: `Limite máximo de turnos consecutivos da IA atingido (${currentTurns}/${maxTurns}).`,
+    };
+  }
+
+  const cooldownSeconds = typeof aiConfig.cooldown_seconds === "number" ? aiConfig.cooldown_seconds : 15;
+  if (meta.ai_last_reply_at) {
+    const elapsedMs = Date.now() - new Date(meta.ai_last_reply_at).getTime();
+    if (Number.isFinite(elapsedMs) && elapsedMs >= 0 && elapsedMs < cooldownSeconds * 1000) {
+      return {
+        decisionId,
+        timestamp: nowIso,
+        storeId: input.storeId,
+        threadId: input.threadId,
+        mode,
+        intent,
+        agentSlug,
+        actionTaken: "halted_cooldown",
+        reason: `Cooldown anti-rajada ativo (${Math.ceil((cooldownSeconds * 1000 - elapsedMs) / 1000)}s restantes).`,
+      };
+    }
+  }
+
+  // 4. Acesso contextual controlado ao CRM (mesmo store_id)
+  const phoneDigits = String(input.phone || "").replace(/\D/g, "");
+  let opportunitiesCount = 0;
+  let activeStage: string | null = null;
+  let quotesCount = 0;
+
+  if (phoneDigits.length >= 8) {
+    const suffix = phoneDigits.slice(-8);
+    const [leadsRes, quotesRes] = await Promise.all([
+      db.from("leads_crm").select("id, status, name").eq("store_id", input.storeId).ilike("phone", `%${suffix}%`).limit(5),
+      db.from("travel_quotes").select("id, status").eq("store_id", input.storeId).limit(5),
+    ]);
+    opportunitiesCount = (leadsRes.data || []).length;
+    activeStage = leadsRes.data?.[0]?.status || null;
+    quotesCount = (quotesRes.data || []).length;
+  }
+
+  const customerName = String(thread?.guest_name || input.payload?.pushName || "Cliente").trim();
+  const storeName = String(store?.name || "Nossa Equipe").trim();
+  const suggestedReply =
+    intent === "quote_request"
+      ? `Olá, ${customerName}! Aqui é o assistente da ${storeName}. Identifiquei seu interesse em cotação/roteiro${opportunitiesCount > 0 ? ` (já localizei seu histórico comercial conosco)` : ""}. Qual destino e período você planeja para prepararmos sua proposta?`
+      : intent === "financial_query"
+      ? `Olá, ${customerName}! Recebi sua solicitação sobre pagamento/fatura na ${storeName}. Já estou verificando os detalhes financeiros do seu cadastro.`
+      : `Olá, ${customerName}! Bem-vindo(a) à ${storeName}. Como posso ajudar você hoje?`;
+
+  const crmContextSummary = { opportunitiesCount, activeStage, quotesCount };
+
+  const decisionLog: ControlledAiDecisionLog = {
+    decisionId,
+    timestamp: nowIso,
+    storeId: input.storeId,
+    threadId: input.threadId,
+    mode,
+    intent,
+    agentSlug,
+    actionTaken: mode === "sandbox" ? "sandbox_outbox_queued" : "copilot_suggestion_saved",
+    reason:
+      mode === "sandbox"
+        ? "Resposta gerada em modo Sandbox controlado e enfileirada com idempotência."
+        : "Sugestão gerada em modo Copilot Assistido para revisão do atendente.",
+    suggestedReply,
+    crmContextSummary,
+  };
+
+  const sandboxAllowed =
+    mode === "sandbox" &&
+    (!Array.isArray(aiConfig.sandbox_allowed_phones) ||
+      aiConfig.sandbox_allowed_phones.length === 0 ||
+      aiConfig.sandbox_allowed_phones.some((p) => phoneDigits.endsWith(String(p).replace(/\D/g, "").slice(-8))));
+
+  if (mode === "sandbox" && sandboxAllowed) {
+    const idempotencyKey = `ai_sandbox:${input.storeId}:${input.threadId}:${input.eventId || decisionId}`;
+    await db.from("whatsapp_outbox").upsert(
+      {
+        store_id: input.storeId,
+        thread_id: input.threadId,
+        channel_instance_id: input.instanceId,
+        provider: input.provider,
+        idempotency_key: idempotencyKey,
+        recipient_phone: input.phone,
+        message_type: "text",
+        payload: {
+          text: suggestedReply,
+          origin: "ai_sandbox",
+          agent_slug: agentSlug,
+          intent,
+        },
+        status: "pending",
+      },
+      { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
+    );
+  } else {
+    decisionLog.actionTaken = "copilot_suggestion_saved";
+  }
+
+  const prevLogs = Array.isArray(meta.ai_decision_logs) ? meta.ai_decision_logs.slice(-9) : [];
+  await db
+    .from("chat_threads")
+    .update({
+      metadata: {
+        ...meta,
+        ai_consecutive_turns: currentTurns + 1,
+        ai_last_reply_at: nowIso,
+        ai_copilot_suggestion: {
+          decisionId,
+          agentSlug,
+          intent,
+          suggestedReply,
+          createdAt: nowIso,
+          crmContextSummary,
+        },
+        ai_decision_logs: [...prevLogs, decisionLog],
+      },
+      updated_at: nowIso,
+    })
+    .eq("id", input.threadId)
+    .eq("store_id", input.storeId);
+
+  return decisionLog;
 }
 
 export function protectedInboundPreview(text: string) { return encryptConversationMessage(text); }

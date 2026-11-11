@@ -31,7 +31,13 @@ import { Link } from "@tanstack/react-router";
 import {
   getCustomer360Context,
   assignChatThread,
-  updateCustomerFunnelStage, updateCustomerProfileFromChat, updateThreadAiHandoffMode, createSupportTicketFromChat, addSupportTicketStep,
+  updateCustomerFunnelStage,
+  updateCustomerProfileFromChat,
+  updateThreadAiHandoffMode,
+  createSupportTicketFromChat,
+  addSupportTicketStep,
+  linkThreadToCrmOpportunity,
+  registerCrmCommercialActivity,
 } from "@/services/chat.functions";
 import { ThreadTagsPicker } from "@/components/chat/ThreadTagsPicker";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
@@ -108,6 +114,10 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const [newTicketPriority, setNewTicketPriority] = useState<"low" | "normal" | "high" | "urgent">("normal");
   const [isSavingTicket, setIsSavingTicket] = useState(false);
   const [stepInputByTicket, setStepInputByTicket] = useState<Record<string, string>>({});
+  const [isLinkingOpportunity, setIsLinkingOpportunity] = useState(false);
+  const [activityTitle, setActivityTitle] = useState("");
+  const [activityType, setActivityType] = useState<"note" | "call" | "whatsapp_followup" | "proposal_sent" | "meeting">("whatsapp_followup");
+  const [isSavingActivity, setIsSavingActivity] = useState(false);
 
   const loadContext = useCallback(() => {
     if (!storeId || (!customerId && !threadId && !guestPhone && !guestName)) return;
@@ -179,12 +189,83 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           stage: nextStage as any,
         },
       });
-      setData((prev: any) => (prev ? { ...prev, linkedLead: updatedLead } : prev));
+      setData((prev: any) => {
+        if (!prev) return prev;
+        const existingOpps = Array.isArray(prev.opportunities) ? prev.opportunities : [];
+        const hasOpp = existingOpps.some((op: any) => op.id === updatedLead?.id);
+        const nextOpps = updatedLead
+          ? hasOpp
+            ? existingOpps.map((op: any) => (op.id === updatedLead.id ? updatedLead : op))
+            : [updatedLead, ...existingOpps]
+          : existingOpps;
+        return { ...prev, linkedLead: updatedLead, opportunities: nextOpps };
+      });
       toast.success("Etapa do funil atualizada!");
     } catch (err: any) {
       toast.error(err?.message || "Erro ao atualizar etapa do funil.");
     } finally {
       setIsUpdatingStage(false);
+    }
+  };
+
+  const handleSelectOpportunity = async (selectedLeadId: string) => {
+    if (!threadId) return;
+    setIsLinkingOpportunity(true);
+    try {
+      const targetId = selectedLeadId === "" ? null : selectedLeadId;
+      await linkThreadToCrmOpportunity({
+        data: {
+          threadId,
+          leadId: targetId,
+        },
+      });
+      const matchedOpp = targetId
+        ? (data?.opportunities || []).find((op: any) => op.id === targetId) || null
+        : null;
+      setData((prev: any) => (prev ? { ...prev, linkedLead: matchedOpp } : prev));
+      if (matchedOpp?.status) {
+        setFunnelStage(matchedOpp.status);
+      }
+      toast.success(targetId ? "Oportunidade vinculada à conversa." : "Conversa desvinculada da oportunidade.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao vincular oportunidade.");
+    } finally {
+      setIsLinkingOpportunity(false);
+    }
+  };
+
+  const handleAddCommercialActivity = async () => {
+    const activeLeadId = data?.linkedLead?.id;
+    if (!activeLeadId) {
+      toast.error("Selecione ou crie uma oportunidade antes de registrar uma atividade.");
+      return;
+    }
+    if (!activityTitle.trim()) {
+      toast.error("Informe a descrição da atividade comercial.");
+      return;
+    }
+    setIsSavingActivity(true);
+    try {
+      const res = await registerCrmCommercialActivity({
+        data: {
+          leadId: activeLeadId,
+          threadId: threadId || null,
+          activityText: activityTitle.trim(),
+          activityType,
+        },
+      });
+      setActivityTitle("");
+      setData((prev: any) => {
+        if (!prev) return prev;
+        const updatedLead = res.lead || prev.linkedLead;
+        const nextOpps = (prev.opportunities || []).map((op: any) => (op.id === updatedLead.id ? updatedLead : op));
+        return { ...prev, linkedLead: updatedLead, opportunities: nextOpps };
+      });
+      toast.success("Atividade comercial registrada na oportunidade.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao registrar atividade comercial.");
+    } finally {
+      setIsSavingActivity(false);
     }
   };
 
@@ -282,8 +363,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     credits = [],
     quotes = [],
     contracts = [],
+    opportunities = [],
+    documents = [],
+    invoices = [],
+    permissions,
   } = data;
   const resolvedCustomerId = profile?.id || customerId;
+  const activeOpportunity = data?.linkedLead || null;
+  const activeChecklist = Array.isArray(activeOpportunity?.checklist) ? activeOpportunity.checklist : [];
 
   return (
     <div className="space-y-5 p-4 text-xs font-sans">
@@ -404,9 +491,42 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         )}
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-foreground flex items-center gap-2">
-            <GitBranch className="size-3.5 text-primary" />
-            Status no Funil Comercial
+          <div className="flex items-center justify-between gap-2">
+            <label className="text-xs font-bold text-foreground flex items-center gap-2">
+              <GitBranch className="size-3.5 text-primary" />
+              Oportunidades ({opportunities.length})
+            </label>
+            {threadId && (
+              <button
+                type="button"
+                onClick={() => {
+                  setLeadTitle(isTourism ? `Cotação Viagem - ${profile?.full_name || guestName || "Cliente"}` : `Oportunidade - ${profile?.full_name || guestName || "Cliente"}`);
+                  setIsCreatingLead(true);
+                }}
+                className="h-11 min-h-11 px-3 rounded-lg bg-primary/10 text-primary font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                + Nova Oportunidade
+              </button>
+            )}
+          </div>
+          {threadId && opportunities.length > 0 && (
+            <select
+              value={activeOpportunity?.id || ""}
+              disabled={isLinkingOpportunity}
+              onChange={(e) => handleSelectOpportunity(e.target.value)}
+              className="h-11 min-h-11 w-full rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">Sem oportunidade vinculada a esta conversa</option>
+              {opportunities.map((opp: any) => (
+                <option key={opp.id} value={opp.id}>
+                  {opp.title || opp.name || "Oportunidade"} · {FUNNEL_STAGES.find((s) => s.value === opp.status)?.label || opp.status}
+                  {opp.estimated_budget ? ` (${formatBRL(Number(opp.estimated_budget))})` : opp.estimated_value_cents ? ` (${formatBRL(opp.estimated_value_cents / 100)})` : ""}
+                </option>
+              ))}
+            </select>
+          )}
+          <label className="text-xs font-semibold text-muted-foreground block">
+            Etapa no Kanban Comercial {activeOpportunity ? `(${activeOpportunity.title || activeOpportunity.name})` : "(Cria ou atualiza oportunidade)"}
           </label>
           <select
             value={funnelStage}
@@ -420,6 +540,59 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               </option>
             ))}
           </select>
+
+          {activeOpportunity && (
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-foreground">Atividades da Oportunidade ({activeChecklist.length})</span>
+                {activeOpportunity.estimated_value_cents ? (
+                  <Badge variant="outline" className="text-xs font-mono">
+                    {formatBRL(activeOpportunity.estimated_value_cents / 100)}
+                  </Badge>
+                ) : null}
+              </div>
+              {activeChecklist.length > 0 && (
+                <div className="space-y-1 max-h-28 overflow-y-auto no-scrollbar pr-1">
+                  {activeChecklist.slice(-5).map((act: any) => (
+                    <div key={act.id || act.text || act.title} className="text-xs text-muted-foreground flex items-center justify-between gap-2">
+                      <span className="truncate">• {act.text || act.title}</span>
+                      {act.created_at && (
+                        <span className="text-xs opacity-70 shrink-0">{formatDate(act.created_at)}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center gap-1 pt-1">
+                <select
+                  value={activityType}
+                  onChange={(e) => setActivityType(e.target.value as any)}
+                  className="h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <option value="whatsapp_followup">Follow-up</option>
+                  <option value="call">Ligação</option>
+                  <option value="proposal_sent">Proposta</option>
+                  <option value="meeting">Reunião</option>
+                  <option value="note">Nota</option>
+                </select>
+                <input
+                  value={activityTitle}
+                  onChange={(e) => setActivityTitle(e.target.value)}
+                  placeholder="Registrar atividade..."
+                  className="flex-1 h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={isSavingActivity}
+                  onClick={handleAddCommercialActivity}
+                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {isSavingActivity ? "..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {threadId && (
@@ -724,6 +897,62 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         </div>
       )}
 
+      {/* Documentos e Cobranças do Cliente */}
+      {(documents.length > 0 || (permissions?.canViewFinancials !== false && invoices.length > 0)) && (
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-foreground flex items-center gap-2">
+            <FileText className="size-3.5 text-primary" />
+            Documentos & Cobranças ({documents.length + invoices.length})
+          </span>
+          <div className="space-y-2 max-h-44 overflow-y-auto no-scrollbar pr-1">
+            {documents.map((doc: any) => (
+              <div key={doc.id} className="p-3 rounded-lg bg-muted/20 border border-border/70 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="font-bold text-foreground text-xs block truncate">
+                    {doc.title || doc.document_type || "Documento"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {doc.status || "Anexado"}
+                  </span>
+                </div>
+                {doc.file_url && (
+                  <a
+                    href={doc.file_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-11 min-h-11 px-3 rounded-lg border border-border bg-background text-xs font-semibold flex items-center gap-1 text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <span>Abrir</span>
+                    <ArrowUpRight className="size-3.5" />
+                  </a>
+                )}
+              </div>
+            ))}
+            {permissions?.canViewFinancials !== false &&
+              invoices.map((inv: any) => (
+                <div key={inv.id} className="p-3 rounded-lg bg-muted/20 border border-border/70 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="font-bold text-foreground text-xs block truncate">
+                      {inv.description || "Cobrança / Fatura"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {inv.due_date ? `Venc: ${formatDate(inv.due_date)}` : inv.status}
+                    </span>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-extrabold text-foreground text-xs block">
+                      {formatBRL((inv.amount_cents || 0) / 100)}
+                    </span>
+                    <Badge variant="outline" className="text-xs uppercase">
+                      {inv.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Histórico Recente de Compras */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -939,6 +1168,10 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                   },
                 });
                 setIsCreatingLead(false);
+                setLeadTitle("");
+                setLeadBudget("");
+                setLeadNotes("");
+                loadContext();
                 toast.success("Oportunidade adicionada com sucesso ao funil de vendas!");
               } catch (err: any) {
                 toast.error(err.message || "Erro ao criar oportunidade.");

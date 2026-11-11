@@ -44,9 +44,8 @@ vi.mock('@/lib/supabase', () => {
     travel_opportunities: []
   };
 
-  return {
-    supabase: {
-      from: vi.fn((table: string) => ({
+  const client = {
+    from: vi.fn((table: string) => ({
         insert: vi.fn((payload: any) => {
           const rows = Array.isArray(payload) ? payload : [payload];
           const inserted = rows.map((r, i) => ({ id: `gen-id-${Date.now()}-${i}`, ...r }));
@@ -82,7 +81,10 @@ vi.mock('@/lib/supabase', () => {
           error: null
         }))
       }))
-    }
+    };
+  return {
+    supabase: client,
+    getServerClient: () => client,
   };
 });
 

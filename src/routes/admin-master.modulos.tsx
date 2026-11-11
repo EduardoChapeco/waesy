@@ -78,6 +78,7 @@ function AdminMasterModulosPage() {
   const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
   const [togglingStoreExtension, setTogglingStoreExtension] = useState<string | null>(null);
   const [storeSearch, setStoreSearch] = useState("");
+  const [showAllStores, setShowAllStores] = useState(false);
   const [storeModalType, setStoreModalType] = useState<ExtensionPackageType | null>(null);
 
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
@@ -203,8 +204,21 @@ function AdminMasterModulosPage() {
     }
   };
 
+  const isExcelenciaTourRecord = (store: any) => {
+    const slug = String(store?.slug || "").toLowerCase().trim();
+    const name = String(store?.name || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    return (
+      slug === "excelencia-tour-smo" ||
+      slug === "excelencia-tour" ||
+      name.includes("excelencia tour")
+    );
+  };
+
   const isStoreExtensionAuthorized = (store: any, type: ExtensionPackageType) => {
-    if (store.slug === "excelencia-tour-smo" || store.name?.toLowerCase().includes("excelência tour")) {
+    if (isExcelenciaTourRecord(store)) {
       return true;
     }
     const authorized: string[] = store.settings?.authorized_extensions || [];
@@ -212,7 +226,7 @@ function AdminMasterModulosPage() {
   };
 
   const isStoreExempt = (store: any) => {
-    return store.slug === "excelencia-tour-smo" || store.name?.toLowerCase().includes("excelência tour");
+    return isExcelenciaTourRecord(store);
   };
 
   const formatRequestDate = (isoString?: string | null) => {
@@ -844,7 +858,7 @@ function AdminMasterModulosPage() {
                         </td>
                       </tr>
                     ) : (
-                      filteredPlatformStores.slice(0, 15).map((store) => {
+                      (showAllStores ? filteredPlatformStores : filteredPlatformStores.slice(0, 15)).map((store) => {
                         const isExempt = isStoreExempt(store);
                         const authInfotravel = isStoreExtensionAuthorized(store, "infotravel_extension");
                         const authWhatsapp = isStoreExtensionAuthorized(store, "whatsapp_extension");
@@ -960,8 +974,19 @@ function AdminMasterModulosPage() {
                 </table>
               </div>
               {filteredPlatformStores.length > 15 && (
-                <div className="p-2 text-center bg-muted/20 text-3xs text-muted-foreground border-t border-border/40">
-                  Mostrando 15 de {filteredPlatformStores.length} lojas. Use a busca acima para filtrar.
+                <div className="p-2 flex items-center justify-center gap-3 bg-muted/20 text-3xs text-muted-foreground border-t border-border/40">
+                  <span>
+                    Mostrando {showAllStores ? filteredPlatformStores.length : 15} de {filteredPlatformStores.length} lojas.
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllStores((prev) => !prev)}
+                    className="h-8 px-2 text-2xs font-semibold text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {showAllStores ? "Recolher lista" : "Ver todas"}
+                  </Button>
                 </div>
               )}
             </div>

@@ -3,30 +3,34 @@ import { toast } from "sonner";
 import {
   Plane,
   Download,
-  FolderOpen,
   RefreshCw,
-  Play,
   CheckCircle2,
-  AlertCircle,
   ShieldCheck,
   FileSpreadsheet,
   Cpu,
-  Layers,
   Clock,
   ExternalLink,
-  ChevronRight,
   Database,
   UploadCloud,
   FileUp,
+  Key,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ExtensionWebStoreModal } from "@/components/extensions/ExtensionWebStoreModal";
 import type { ExtensionPackageType } from "@/services/extensions-distributor.functions";
 import { ingestOperatorSyncBatch, listTravelOperatorSyncRuns } from "@/services/travel-operator-sync.functions";
+import { parseOperatorCsvToSyncItems } from "@/lib/travel-operator-sync";
+import {
+  getIngestStatusFn,
+  issueIngestTokenFn,
+  revokeIngestTokensFn,
+  type IngestStatusDTO,
+} from "@/services/whatsapp-group-ingest.functions";
 
 interface OperatorInfo {
   id: string;
@@ -82,6 +86,13 @@ export function InfotravelIntegrationPanel() {
   const [downloadingType, setDownloadingType] = useState<string | null>(null);
   const [webStoreType, setWebStoreType] = useState<ExtensionPackageType>("infotravel_extension");
   const [isWebStoreOpen, setIsWebStoreOpen] = useState(false);
+  const [tokenStatus, setTokenStatus] = useState<IngestStatusDTO | null>(null);
+  const [issuedToken, setIssuedToken] = useState<string | null>(null);
+  const [isIssuingToken, setIsIssuingToken] = useState(false);
+  const [isRevokingTokens, setIsRevokingTokens] = useState(false);
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [copiedToken, setCopiedToken] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   const openStoreShowcase = (type: ExtensionPackageType) => {
     setWebStoreType(type);
@@ -108,7 +119,7 @@ export function InfotravelIntegrationPanel() {
       const disposition = res.headers.get("content-disposition") || "";
       let filename =
         type === "infotravel_extension"
-          ? "waesy-sync-infotravel-v2.1.zip"
+          ? "waesy-sync-infotravel-v2.2.zip"
           : "waesy-miner-infotravel-scripts.zip";
       const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
       if (filenameMatch?.[1]) filename = filenameMatch[1];
@@ -140,10 +151,65 @@ export function InfotravelIntegrationPanel() {
     }
   };
 
+  const loadTokenStatus = async () => {
+    try {
+      const res = await getIngestStatusFn({ data: { featureKey: "infotravel_sync" } });
+      setTokenStatus(res);
+    } catch {
+      // Sem permissão ou não autenticado
+    }
+  };
+
+  const handleIssueToken = async () => {
+    setIsIssuingToken(true);
+    try {
+      const res = await issueIngestTokenFn({
+        data: {
+          label: "Waesy Sync (Infotravel)",
+          featureKey: "infotravel_sync",
+        },
+      });
+      setIssuedToken(res.token);
+      toast.success("Token Waesy Sync gerado! Copie agora para colar na extensão.");
+      await loadTokenStatus();
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao gerar token Waesy Sync.");
+    } finally {
+      setIsIssuingToken(false);
+    }
+  };
+
+  const handleRevokeTokens = async () => {
+    setIsRevokingTokens(true);
+    try {
+      await revokeIngestTokensFn();
+      setIssuedToken(null);
+      setConfirmRevoke(false);
+      toast.success("Tokens revogados com sucesso.");
+      await loadTokenStatus();
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao revogar tokens.");
+    } finally {
+      setIsRevokingTokens(false);
+    }
+  };
+
+  const handleCopyText = (value: string, isUrl: boolean) => {
+    navigator.clipboard.writeText(value);
+    if (isUrl) {
+      setCopiedUrl(true);
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } else {
+      setCopiedToken(true);
+      setTimeout(() => setCopiedToken(false), 2000);
+    }
+    toast.success("Copiado para a área de transferência!");
+  };
+
   const checkCollectorStatus = async () => {
     setIsCheckingCollector(true);
     try {
-      const res = await fetch("http://127.0.0.1:3847/api/status", {
+      const res = await fetch("http://127.0.0.1:3333/api/status", {
         method: "GET",
         signal: AbortSignal.timeout(2000),
       }).catch(() => null);
@@ -153,7 +219,7 @@ export function InfotravelIntegrationPanel() {
         setIsCollectorActive(true);
         if (typeof data.totalTrips === "number") setTotalMinedTrips(data.totalTrips);
         if (typeof data.totalPax === "number") setTotalMinedPax(data.totalPax);
-        toast.success("Coletor local ativo e comunicando na porta 3847.");
+        toast.success("Coletor local ativo e comunicando na porta 3333.");
       } else {
         setIsCollectorActive(false);
       }
@@ -166,6 +232,7 @@ export function InfotravelIntegrationPanel() {
 
   useEffect(() => {
     void loadPersistedSyncStats();
+    void loadTokenStatus();
     void checkCollectorStatus();
   }, []);
 
@@ -180,56 +247,15 @@ export function InfotravelIntegrationPanel() {
 
       if (file.name.endsWith(".json")) {
         const json = JSON.parse(text);
-        parsedItems = Array.isArray(json) ? json : [json];
-      } else if (file.name.endsWith(".csv")) {
-        const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-        if (lines.length > 1) {
-          // Extrai linhas da tabela ignorando BOM UTF-8
-          const dataLines = lines.slice(1);
-          const reservationsMap = new Map<string, any>();
-
-          for (const line of dataLines) {
-            const cols = line.split(";").map((c) => c.replace(/^"|"$/g, "").trim());
-            const id = cols[0];
-            if (!id) continue;
-
-            if (!reservationsMap.has(id)) {
-              reservationsMap.set(id, {
-                id,
-                status: cols[1] || "Confirmada",
-                criacao: cols[2] || "",
-                contato: cols[3] || "",
-                email: cols[4] || "",
-                telefone: cols[5] || "",
-                hotel: cols[12] || "",
-                acomodacao: cols[13] || "",
-                valorTotal: cols[14] || "0,00",
-                taxas: cols[15] || "0,00",
-                impostos: cols[16] || "0,00",
-                formaPagto: cols[17] || "Faturado",
-                statusPagto: cols[18] || "Aprovado",
-                scoreConfianca: Number(cols[19]) || 80,
-                bancoEmissor: cols[20] || "",
-                parcelamento: cols[21] || "1x",
-                comissao: cols[22] || "0,00",
-                passageiros: [],
-              });
-            }
-
-            const current = reservationsMap.get(id);
-            const paxName = cols[6];
-            if (paxName) {
-              current.passageiros.push({
-                nome: paxName,
-                cpf: cols[7] || "",
-                birthDate: cols[8] || "",
-                tipo: cols[10] || "ADT",
-                titular: cols[11]?.toLowerCase() === "sim" || current.passageiros.length === 0,
-              });
-            }
-          }
-          parsedItems = Array.from(reservationsMap.values());
+        if (Array.isArray(json)) {
+          parsedItems = json;
+        } else if (Array.isArray(json?.reservasColetadas)) {
+          parsedItems = json.reservasColetadas;
+        } else if (json) {
+          parsedItems = [json];
         }
+      } else if (file.name.endsWith(".csv")) {
+        parsedItems = parseOperatorCsvToSyncItems(text, "orinter");
       }
 
       if (parsedItems.length === 0) {
@@ -237,9 +263,10 @@ export function InfotravelIntegrationPanel() {
         return;
       }
 
+      const detectedOp = parsedItems[0]?.operatorSlug || "orinter";
       const res = await ingestOperatorSyncBatch({
         data: {
-          operatorCode: "orinter",
+          operatorCode: detectedOp,
           items: parsedItems,
         },
       });
@@ -468,6 +495,140 @@ export function InfotravelIntegrationPanel() {
               <ExternalLink className="mr-2 size-4" />
               Ver na Store
             </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Token de Autenticação Bearer para Waesy Sync */}
+      <div className="rounded-lg border border-border/60 bg-card p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Key className="size-4.5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-foreground">Credencial Bearer Waesy Sync</h3>
+              <p className="text-xs text-muted-foreground">
+                Cole a URL do servidor e o token wae_... na aba Conexão Waesy da extensão.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {tokenStatus?.hasActiveToken && !confirmRevoke && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isRevokingTokens}
+                onClick={() => setConfirmRevoke(true)}
+                className="h-11 min-h-11 px-3 text-xs text-destructive hover:bg-destructive/10 border-destructive/30 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Revogar Tokens
+              </Button>
+            )}
+
+            {tokenStatus?.hasActiveToken && confirmRevoke && (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  disabled={isRevokingTokens}
+                  onClick={handleRevokeTokens}
+                  className="h-11 min-h-11 px-3 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {isRevokingTokens ? "Revogando..." : "Confirmar Revogação"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmRevoke(false)}
+                  className="h-11 min-h-11 px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            )}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isIssuingToken}
+              onClick={handleIssueToken}
+              className="h-11 min-h-11 px-4 text-xs font-semibold border-primary/50 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Key className="mr-2 size-3.5" />
+              {isIssuingToken ? "Gerando..." : "Gerar Novo Token"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+              URL do Servidor Waesy
+            </span>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br"}
+                className="h-11 font-mono text-xs bg-muted/40"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  handleCopyText(
+                    typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br",
+                    true
+                  )
+                }
+                aria-label="Copiar URL do Servidor"
+                className="h-11 min-h-11 w-11 px-0 shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {copiedUrl ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4" />}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {issuedToken ? "Novo Token Gerado (Copie Agora)" : "Status dos Tokens"}
+            </span>
+            {issuedToken ? (
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  value={issuedToken}
+                  className="h-11 font-mono text-xs bg-muted/40 font-semibold"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleCopyText(issuedToken, false)}
+                  aria-label="Copiar Token"
+                  className="h-11 min-h-11 w-11 px-0 shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {copiedToken ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4" />}
+                </Button>
+              </div>
+            ) : (
+              <div className="h-11 rounded-md border border-border bg-muted/30 px-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  {tokenStatus?.hasActiveToken
+                    ? `${tokenStatus.activeTokenCount} token(s) ativo(s)`
+                    : "Nenhum token ativo — clique em Gerar Novo Token"}
+                </span>
+                {tokenStatus?.lastUsedAt && (
+                  <span className="text-2xs">
+                    Último uso: {new Date(tokenStatus.lastUsedAt).toLocaleDateString("pt-BR")}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

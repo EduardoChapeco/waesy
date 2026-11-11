@@ -43,7 +43,7 @@ Ao interrogar o endpoint `/instance/fetchInstances` da Evolution API na Oracle C
   {
     "name": "waesy_c6ccd3b2_principal",
     "connectionStatus": "open",
-    "ownerJid": "554936300312@s.whatsapp.net",
+    "ownerJid": "5549****0312@s.whatsapp.net",
     "disconnectionReasonCode": 403,
     "disconnectionAt": "2026-11-11T13:06:07.000Z"
   }
@@ -54,13 +54,13 @@ Ao interrogar o endpoint `/instance/fetchInstances` da Evolution API na Oracle C
 O Baileys recebeu código `403 Forbidden` do WhatsApp (sessão revogada no aparelho celular), porém o endpoint simplificado `/instance/connectionState` continuava reportando `state: "open"` porque a instância não havia sofrido restart na VPS.
 
 ### Evidência 2: Registro de Falhas no Banco de Dados (`whatsapp_outbox`)
-A consulta aos registros reais de outbox confirmou que as mensagens enviadas ao número de teste (`+554991716233`) falharam com `HTTP 400 Bad Request` pelo gateway e entraram em `dead_letter`:
+A consulta aos registros reais de outbox confirmou que as mensagens enviadas ao número de teste (`+5549****6233`) falharam com `HTTP 400 Bad Request` pelo gateway e entraram em `dead_letter`:
 
 | Outbox ID | Destinatário | Status | Código de Erro | Mensagem de Erro | Data/Hora (UTC) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `572b4e4a-...` | `+554991716233` | `dead_letter` | `HTTP_400` | `Bad Request (Connection Closed)` | 2026-11-11 13:06:07 |
-| `0604afe5-...` | `+554991716233` | `dead_letter` | `HTTP_400` | `Bad Request (Connection Closed)` | 2026-11-11 13:06:04 |
-| `a679fd9c-...` | `+554991716233` | `dead_letter` | `HTTP_400` | `Bad Request (Connection Closed)` | 2026-11-11 13:05:49 |
+| `572b4e4a-...` | `+5549****6233` | `dead_letter` | `HTTP_400` | `Bad Request (Connection Closed)` | 2026-11-11 13:06:07 |
+| `0604afe5-...` | `+5549****6233` | `dead_letter` | `HTTP_400` | `Bad Request (Connection Closed)` | 2026-11-11 13:06:04 |
+| `a679fd9c-...` | `+5549****6233` | `dead_letter` | `HTTP_400` | `Bad Request (Connection Closed)` | 2026-11-11 13:05:49 |
 
 ### Evidência 3: Descarte de Mensagens do Próprio Aparelho (`fromMe: true`)
 No arquivo `src/services/whatsapp-provider-webhook.server.ts`, a linha 167 estabelece:

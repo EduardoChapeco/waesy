@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { decryptSecret } from "@/lib/crypto-vault.server";
-import { encryptConversationMessageForThread, redactConversationPayload } from "@/lib/conversation-crypto.server";
+import { decryptConversationMessageForThread, encryptConversationMessageForThread, redactConversationPayload } from "@/lib/conversation-crypto.server";
 import { verifyWebhookSignature } from "@/lib/webhook-signature";
 import { dispatchWhatsAppInboundFlows, resolveWhatsAppIdentity } from "@/services/whatsapp-automation-runtime.server";
 
@@ -108,14 +108,31 @@ function statusValue(value: unknown): "sent" | "delivered" | "read" | "failed" |
   if (["4", "5", "READ", "PLAYED"].includes(normalized)) return "read";
   return null;
 }
+function isSyntheticSelfLabel(value: string | null | undefined): boolean {
+  if (!value) return true;
+  const clean = value.trim().toLowerCase();
+  return clean === "você" || clean === "voce" || clean === "you" || clean === "eu";
+}
 function normalizedMessage(provider: UnofficialWhatsAppProvider, body: JsonObject, item: JsonObject): NormalizedMessage | null {
   const key = messageKey(item);
   const externalMessageId = firstString(key.id, item.id, item.messageId);
   if (!externalMessageId) return null;
-  const externalUserId = firstString(key.senderPn, key.remoteJid, key.cleanedSenderPn, item.from, item.sender, body.sender);
-  const phone = remotePhone(firstString(key.senderPn, key.cleanedSenderPn, key.remoteJid, item.from, item.sender, body.sender));
+  const fromMe = key.fromMe === true || item.fromMe === true;
+  const rawRemoteJid = firstString(key.remoteJid, item.remoteJid);
+  if (rawRemoteJid === "status@broadcast") return null;
+  const resolvedRemoteJid = rawRemoteJid && rawRemoteJid.endsWith("@lid")
+    ? firstString(key.remoteJidAlt, key.senderPn, key.cleanedSenderPn, rawRemoteJid)
+    : rawRemoteJid;
+  const externalUserId = fromMe
+    ? firstString(resolvedRemoteJid, key.remoteJidAlt, item.to, item.recipient, body.recipient)
+    : firstString(key.senderPn, resolvedRemoteJid, key.cleanedSenderPn, item.from, item.sender, body.sender);
+  const phone = fromMe
+    ? remotePhone(firstString(resolvedRemoteJid, key.remoteJidAlt, item.to, item.recipient, body.recipient))
+    : remotePhone(firstString(key.senderPn, key.cleanedSenderPn, resolvedRemoteJid, item.from, item.sender, body.sender));
   const occurredAt = eventTime(item.messageTimestamp || item.timestamp || body.timestamp);
-  return { externalMessageId, externalUserId, phone, text: messageText(item), messageType: messageType(item), occurredAt, fromMe: key.fromMe === true || item.fromMe === true, pushName: firstString(item.pushName, item.senderName, body.pushName), payload: redactConversationPayload({ provider, event_type: eventName(body), external_message_id: externalMessageId, external_user_id: externalUserId, phone, message_type: messageType(item), timestamp: item.messageTimestamp || item.timestamp || body.timestamp }) };
+  const rawPushName = fromMe ? null : firstString(item.pushName, item.senderName, body.pushName);
+  const pushName = rawPushName && !isSyntheticSelfLabel(rawPushName) ? rawPushName : null;
+  return { externalMessageId, externalUserId, phone, text: messageText(item), messageType: messageType(item), occurredAt, fromMe, pushName, payload: redactConversationPayload({ provider, event_type: eventName(body), external_message_id: externalMessageId, external_user_id: externalUserId, phone, message_type: messageType(item), from_me: fromMe, timestamp: item.messageTimestamp || item.timestamp || body.timestamp }) };
 }
 function normalizedDelivery(provider: UnofficialWhatsAppProvider, body: JsonObject, item: JsonObject): NormalizedDelivery | null {
   const key = messageKey(item);
@@ -131,7 +148,7 @@ export function normalizeUnofficialDelivery(provider: UnofficialWhatsAppProvider
 function deliveryRank(value: string | null): number { return ({ accepted: 1, sent: 2, delivered: 3, read: 4, failed: 5 } as Record<string, number>)[value || ""] || 0; }
 function campaignDeliveryRank(value: string | null): number { return ({ eligible: 0, queued: 1, accepted: 2, sent: 3, failed: 3, delivered: 4, read: 5 } as Record<string, number>)[value || ""] ?? -1; }
 
-async function persistDelivery(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, delivery: NormalizedDelivery) {
+export async function persistDelivery(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, delivery: NormalizedDelivery) {
   const storeId = String(instance.store_id);
   const phoneNumberId = String(instance.instance_key);
   const eventKey = stableKey(["delivery", provider, instance.id, delivery.externalMessageId, delivery.deliveryStatus, delivery.occurredAt, delivery.remoteJid]);
@@ -163,46 +180,215 @@ async function persistDelivery(db: ReturnType<typeof getServerClient>, provider:
   return { eventKey, matchedMessages: messages?.length || 0 };
 }
 
-async function persistInboundMessage(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, message: NormalizedMessage) {
-  if (message.fromMe || !message.phone) return { ignored: "outgoing_or_without_phone" };
+export async function persistInboundMessage(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, message: NormalizedMessage) {
+  if (!message.phone) return { ignored: "without_phone" };
   const storeId = String(instance.store_id);
   const eventKey = stableKey(["message", provider, instance.id, message.externalMessageId]);
-  const { data: event, error: eventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: "message", external_message_id: message.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: message.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
+  const { data: event, error: eventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: message.fromMe ? "outbound_echo" : "message", external_message_id: message.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: message.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
   if (eventError) throw eventError;
   // A ausência de data significa duplicata sob concorrência, não um novo evento.
   if (!event || event.processing_status === "processed") return { duplicate: true };
-  const identity = await resolveWhatsAppIdentity({ storeId, instanceId: instance.id, provider, externalUserId: message.externalUserId, phone: message.phone, displayName: message.pushName });
+  const identity = await resolveWhatsAppIdentity({
+    storeId,
+    instanceId: instance.id,
+    provider,
+    externalUserId: message.externalUserId,
+    phone: message.phone,
+    displayName: message.fromMe ? null : message.pushName,
+  });
   if (!identity) return { ignored: "identity_not_resolved" };
+  const cleanDigits = message.phone.replace(/\D/g, "");
   let { data: thread } = await db
     .from("chat_threads")
-    .select("id")
+    .select("id, metadata, guest_name")
     .eq("store_id", storeId)
-    .or(`channel_identity_id.eq.${identity.id},entity_id.eq.${message.phone}`)
+    .or(`channel_identity_id.eq.${identity.id},entity_id.eq.${message.phone},entity_id.eq.${cleanDigits}`)
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const cleanDigits = message.phone.replace(/\D/g, "");
   const syntheticEmail = `${cleanDigits}@whatsapp.waesy`;
+  const isGroupJid = Boolean(message.externalUserId && message.externalUserId.endsWith("@g.us"));
   if (!thread) {
+    const safeGuestName = (!message.fromMe && message.pushName && !isSyntheticSelfLabel(message.pushName))
+      ? message.pushName
+      : (identity.display_name && !isSyntheticSelfLabel(identity.display_name) ? identity.display_name : message.phone);
     const created = await db.from("chat_threads").insert({
       store_id: storeId,
       channel_instance_id: instance.id,
       channel_identity_id: identity.id,
-      guest_name: identity.display_name || message.phone,
+      guest_name: safeGuestName,
+      guest_phone: message.phone,
       guest_email: syntheticEmail,
       status: "open",
       subject: `WhatsApp ${message.phone}`,
       context_type: "whatsapp",
+      thread_type: isGroupJid ? "group" : "direct",
       entity_id: message.phone,
       department: "geral",
       priority: "normal",
-      last_customer_message_at: message.occurredAt,
+      ...(message.fromMe ? {} : { last_customer_message_at: message.occurredAt }),
       last_message_text: message.text.slice(0, 200),
       last_message_at: message.occurredAt,
-    }).select("id").single();
+      metadata: {
+        is_group: isGroupJid,
+        remote_jid: message.externalUserId,
+        ...(message.fromMe ? { handoff_mode: "human_active", ai_auto_reply_enabled: false, last_device_reply_at: message.occurredAt } : {}),
+      },
+    }).select("id, metadata, guest_name").single();
     if (created.error) throw created.error;
     thread = created.data;
   }
+
+  // Tratamento determinístico de mensagens enviadas pelo aparelho ou ecoadas pelo provedor (fromMe: true)
+  if (message.fromMe) {
+    const { data: existingByExternalId } = await db
+      .from("chat_messages")
+      .select("id, delivery_status, payload")
+      .eq("thread_id", thread.id)
+      .eq("external_message_id", message.externalMessageId)
+      .maybeSingle();
+
+    if (existingByExternalId) {
+      const currentRank = deliveryRank(existingByExternalId.delivery_status);
+      const nextStatus = currentRank < deliveryRank("sent") ? "sent" : existingByExternalId.delivery_status;
+      await db.from("chat_messages").update({
+        delivery_status: nextStatus,
+        sent_at: message.occurredAt,
+      }).eq("id", existingByExternalId.id);
+      if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
+      return { threadId: thread.id, messageId: existingByExternalId.id, reconciled: "existing_external_id" };
+    }
+
+    // Conciliação com whatsapp_outbox ou mensagem enviada pelo painel ainda sem external_message_id (janela de 5 min)
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: outboxMatch } = await db
+      .from("whatsapp_outbox")
+      .select("id, idempotency_key, status, payload, external_message_id")
+      .eq("store_id", storeId)
+      .eq("thread_id", thread.id)
+      .gte("updated_at", fiveMinAgo)
+      .order("updated_at", { ascending: false })
+      .limit(10);
+
+    const matchedOutbox = (outboxMatch || []).find((row: JsonObject) => {
+      if (row.external_message_id === message.externalMessageId) return true;
+      const outboxText = typeof row.payload?.text === "string" ? row.payload.text.trim() : "";
+      return !row.external_message_id && outboxText.length > 0 && outboxText === message.text.trim();
+    });
+
+    let candidateChatMessageId: string | null = null;
+    if (matchedOutbox) {
+      const fromPayload = typeof matchedOutbox.payload?.chat_message_id === "string" ? matchedOutbox.payload.chat_message_id : null;
+      const fromKey = typeof matchedOutbox.idempotency_key === "string" && matchedOutbox.idempotency_key.startsWith("chat_msg:")
+        ? matchedOutbox.idempotency_key.slice("chat_msg:".length)
+        : null;
+      candidateChatMessageId = fromPayload || fromKey;
+      await db.from("whatsapp_outbox").update({
+        status: "accepted",
+        external_message_id: message.externalMessageId,
+        locked_by: null,
+        locked_at: null,
+        last_error_code: null,
+        last_error_message: null,
+        updated_at: new Date().toISOString(),
+      }).eq("id", matchedOutbox.id);
+    }
+
+    if (!candidateChatMessageId) {
+      const { data: recentUnlinked } = await db
+        .from("chat_messages")
+        .select("id, message, is_encrypted")
+        .eq("thread_id", thread.id)
+        .eq("is_staff_reply", true)
+        .is("external_message_id", null)
+        .gte("created_at", fiveMinAgo)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      for (const candidate of recentUnlinked || []) {
+        let plainText = String(candidate.message || "");
+        if (plainText.startsWith("waesy-msg:")) {
+          try {
+            plainText = await decryptConversationMessageForThread(storeId, thread.id, plainText);
+          } catch {
+            // noop
+          }
+        }
+        if (plainText.trim() === message.text.trim()) {
+          candidateChatMessageId = candidate.id;
+          break;
+        }
+      }
+    }
+
+    if (candidateChatMessageId) {
+      const { data: targetRow } = await db.from("chat_messages").select("id, payload").eq("id", candidateChatMessageId).maybeSingle();
+      if (targetRow) {
+        const existingPayload = (targetRow.payload && typeof targetRow.payload === "object" ? targetRow.payload : {}) as Record<string, unknown>;
+        await db.from("chat_messages").update({
+          external_message_id: message.externalMessageId,
+          provider,
+          delivery_status: "sent",
+          sent_at: message.occurredAt,
+          failed_at: null,
+          error_code: null,
+          error_message: null,
+          payload: {
+            ...existingPayload,
+            origin: existingPayload.origin || "waesy_panel",
+            from_me: true,
+            reconciled_via_webhook: true,
+            external_message_id: message.externalMessageId,
+          },
+        }).eq("id", targetRow.id);
+        if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
+        return { threadId: thread.id, messageId: targetRow.id, reconciled: "outbox_or_inflight_matched" };
+      }
+    }
+
+    // Mensagem genuinamente enviada pelo aplicativo WhatsApp (celular ou WhatsApp Web)
+    const encryptedOutbound = await encryptConversationMessageForThread(storeId, thread.id, message.text);
+    const { data: createdDeviceMsg, error: deviceInsertError } = await db.from("chat_messages").insert({
+      thread_id: thread.id,
+      channel_identity_id: identity.id,
+      channel: "whatsapp",
+      message: encryptedOutbound,
+      message_type: message.messageType,
+      is_staff_reply: true,
+      is_encrypted: true,
+      encryption_version: 2,
+      encrypted_at: new Date().toISOString(),
+      provider,
+      external_message_id: message.externalMessageId,
+      delivery_status: "sent",
+      sent_at: message.occurredAt,
+      payload: {
+        ...message.payload,
+        from_me: true,
+        origin: "whatsapp_device",
+        instance_id: instance.id,
+      },
+      created_at: message.occurredAt,
+    }).select("id").single();
+    if (deviceInsertError) throw deviceInsertError;
+
+    const currentThreadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, unknown>;
+    await db.from("chat_threads").update({
+      last_message_text: message.text.slice(0, 200),
+      last_message_at: message.occurredAt,
+      updated_at: new Date().toISOString(),
+      metadata: {
+        ...currentThreadMeta,
+        handoff_mode: "human_active",
+        ai_auto_reply_enabled: false,
+        last_device_reply_at: message.occurredAt,
+      },
+    }).eq("id", thread.id).eq("store_id", storeId);
+
+    if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
+    return { threadId: thread.id, messageId: createdDeviceMsg?.id || null, origin: "whatsapp_device" };
+  }
+
   const encrypted = await encryptConversationMessageForThread(storeId, thread.id, message.text);
   let insertedMessageId: string | null = null;
   const { data: existingMsg } = await db
@@ -230,15 +416,65 @@ async function persistInboundMessage(db: ReturnType<typeof getServerClient>, pro
       delivery_status: "delivered",
       sent_at: message.occurredAt,
       delivered_at: message.occurredAt,
-      payload: message.payload,
+      payload: { ...message.payload, origin: "whatsapp_customer", from_me: false },
       created_at: message.occurredAt,
     }).select("id").single();
     if (insertError) throw insertError;
     insertedMessageId = createdMsg?.id || null;
   }
   if (insertedMessageId) {
-    await db.from("chat_threads").update({ last_customer_message_at: message.occurredAt, last_message_text: message.text.slice(0, 200), last_message_at: message.occurredAt, updated_at: new Date().toISOString(), status: "open" }).eq("id", thread.id).eq("store_id", storeId);
+    const shouldHealGuestName = Boolean(
+      message.pushName &&
+      !isSyntheticSelfLabel(message.pushName) &&
+      (isSyntheticSelfLabel(thread.guest_name) || thread.guest_name === message.phone || thread.guest_name === cleanDigits)
+    );
+    await db.from("chat_threads").update({
+      ...(shouldHealGuestName ? { guest_name: message.pushName } : {}),
+      last_customer_message_at: message.occurredAt,
+      last_message_text: message.text.slice(0, 200),
+      last_message_at: message.occurredAt,
+      updated_at: new Date().toISOString(),
+      status: "open",
+    }).eq("id", thread.id).eq("store_id", storeId);
     try { if (cleanDigits.length >= 10) await db.from("profiles").update({ phone_verified_at: new Date().toISOString() }).or(`phone.eq.${message.phone},phone.eq.${cleanDigits}`).is("phone_verified_at", null); } catch { /* noop */ }
+    if (!isGroupJid && cleanDigits.length >= 8) {
+      try {
+        const suffix = cleanDigits.slice(-8);
+        const { data: existingCrm } = await db
+          .from("customers_crm")
+          .select("id, full_name")
+          .eq("store_id", storeId)
+          .ilike("phone", `%${suffix}%`)
+          .limit(1)
+          .maybeSingle();
+        const contactName =
+          message.pushName && !isSyntheticSelfLabel(message.pushName)
+            ? message.pushName
+            : existingCrm?.full_name || message.phone;
+        if (existingCrm?.id) {
+          await db
+            .from("customers_crm")
+            .update({
+              ...(message.pushName && !isSyntheticSelfLabel(message.pushName) && (!existingCrm.full_name || isSyntheticSelfLabel(existingCrm.full_name))
+                ? { full_name: message.pushName }
+                : {}),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existingCrm.id)
+            .eq("store_id", storeId);
+        } else {
+          await db.from("customers_crm").insert({
+            store_id: storeId,
+            full_name: contactName,
+            phone: message.phone,
+            source: "whatsapp",
+            updated_at: new Date().toISOString(),
+          });
+        }
+      } catch {
+        /* noop */
+      }
+    }
     await dispatchWhatsAppInboundFlows({ storeId, instanceId: instance.id, provider, threadId: thread.id, identityId: identity.id, phone: message.phone, text: message.text, eventId: event?.id || null, payload: { ...message.payload, event_type: eventName(body) } });
   }
   if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
@@ -345,7 +581,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   if (instanceError || !instance || !instance.is_active) return json({ error: "Unknown or inactive WhatsApp instance" }, 404);
   const secrets = secretConfig(instance.secret_payload_encrypted);
   const secret = firstString(secrets.webhook_secret, secrets.webhookSecret, secrets.secret, secrets.api_key);
-  const masterApiKey = process.env.EVOLUTION_API_KEY?.trim() || "WaesyApiKey_Master_2026_WhatsApp";
+  const masterApiKey = process.env.EVOLUTION_API_KEY?.trim() || null;
   const receivedApiKey = firstString(
     request.headers.get("apikey"),
     request.headers.get("x-api-key"),
@@ -353,7 +589,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   );
 
   let isVerified = false;
-  if (receivedApiKey && (receivedApiKey === secret || receivedApiKey === masterApiKey)) {
+  if (receivedApiKey && ((secret && receivedApiKey === secret) || (masterApiKey && receivedApiKey === masterApiKey))) {
     isVerified = true;
   } else if (secret && (request.headers.has("x-waesy-signature") || request.headers.has("x-webhook-signature"))) {
     const verification = verifyWebhookSignature(rawBody, request.headers, secret, {
@@ -361,8 +597,11 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
       timestampHeader: request.headers.has("x-waesy-timestamp") ? "x-waesy-timestamp" : "x-webhook-timestamp",
     });
     isVerified = verification.ok;
-  } else if (provider === "evolution_api" || !secret) {
-    // Webhook direto da Evolution API interna sob túnel HTTPS isolado
+  } else if (provider === "evolution_api" && !secret && !masterApiKey) {
+    // Webhook direto da Evolution API interna quando nenhum segredo explícito foi provisionado
+    isVerified = true;
+  } else if (provider === "evolution_api" && !receivedApiKey && !request.headers.has("x-waesy-signature")) {
+    // Compatibilidade com Evolution API v2 que envia webhook sem header apikey customizado
     isVerified = true;
   }
 
@@ -370,25 +609,33 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   const name = eventName(body);
   if (name === "connection.update" || name === "qrcode.updated") {
     const state = firstString(body.data?.state, body.state) || (name === "qrcode.updated" ? "connecting" : "connecting");
-    const statusMap = state === "open" ? "connected" : state === "close" ? "disconnected" : "pending";
+    const statusReason = Number(body.data?.statusReason ?? body.statusReason ?? 0);
+    const isRevoked = state === "close" && statusReason === 401;
+    const statusMap = state === "open" ? "connected" : isRevoked ? "revoked" : state === "close" ? "disconnected" : "pending";
     const ownerPhone = remotePhone(firstString(body.data?.ownerJid, body.data?.wuid, body.sender));
     const rawQr = firstString(body.data?.qrcode?.base64, body.qrcode?.base64, body.data?.base64);
     const normalizedQr = rawQr ? (rawQr.startsWith("data:") ? rawQr : `data:image/png;base64,${rawQr}`) : null;
     const pairingCode = firstString(body.data?.qrcode?.pairingCode, body.qrcode?.pairingCode, body.data?.pairingCode);
+    const nowIso = new Date().toISOString();
     const currentPublicConfig = (instance.public_config && typeof instance.public_config === "object" ? instance.public_config : {}) as Record<string, unknown>;
     const nextPublicConfig: Record<string, unknown> = {
       ...currentPublicConfig,
-      ...(normalizedQr ? { qr_code_url: normalizedQr, last_qr_generated_at: new Date().toISOString() } : {}),
-      ...(statusMap === "connected" ? { qr_code_url: null } : {}),
+      ...(normalizedQr ? { qr_code_url: normalizedQr, last_qr_generated_at: nowIso } : {}),
+      ...(statusMap === "connected" ? { qr_code_url: null, session_revoked: false, last_connected_at: nowIso } : {}),
+      ...(isRevoked ? { session_revoked: true, last_revoked_at: nowIso } : {}),
       ...(pairingCode ? { pairing_code: pairingCode } : {}),
       last_webhook_state: state,
+      last_webhook_at: nowIso,
+      last_status_reason: statusReason || null,
     };
     await db.from("whatsapp_channel_instances").update({
       status: statusMap,
       ...(ownerPhone ? { display_phone_number: ownerPhone } : {}),
+      ...(statusMap === "connected" ? { last_error_code: null, last_error_message: null } : {}),
+      ...(isRevoked ? { last_error_code: "SESSION_REVOKED_401", last_error_message: "Sessão desconectada ou revogada no aparelho WhatsApp." } : {}),
       public_config: nextPublicConfig,
-      last_health_check_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      last_health_check_at: nowIso,
+      updated_at: nowIso,
     }).eq("id", instance.id);
     return json({ ok: true, provider, instance: instanceKey, event: name, status: statusMap });
   }

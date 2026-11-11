@@ -133,17 +133,59 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-function MessageDeliveryStatusIcon({ status }: { status?: string }) {
+function MessageDeliveryStatusIcon({
+  status,
+  deliveryState,
+  errorMessage,
+}: {
+  status?: string | null;
+  deliveryState?: string | null;
+  errorMessage?: string | null;
+}) {
   if (status === "read") {
-    return <CheckCheck className="size-3.5 text-sky-500 dark:text-sky-400 inline" aria-label="Lida" />;
+    return (
+      <span title="Lida pelo destinatário" className="inline-flex items-center">
+        <CheckCheck className="size-3.5 text-sky-500 dark:text-sky-400 inline" aria-label="Lida" />
+      </span>
+    );
   }
   if (status === "delivered") {
-    return <CheckCheck className="size-3.5 text-muted-foreground inline" aria-label="Entregue" />;
+    return (
+      <span title="Entregue no aparelho" className="inline-flex items-center">
+        <CheckCheck className="size-3.5 text-muted-foreground inline" aria-label="Entregue" />
+      </span>
+    );
   }
   if (status === "failed") {
-    return <AlertCircle className="size-3 text-destructive inline" aria-label="Falha de envio" />;
+    const label =
+      deliveryState === "dead_letter"
+        ? "Falha permanente (Dead-Letter)"
+        : deliveryState === "retry_scheduled"
+          ? "Falha (Retentativa agendada)"
+          : "Falha no envio";
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-destructive font-semibold"
+        title={errorMessage || label}
+        aria-label={label}
+      >
+        <AlertCircle className="size-3.5 inline shrink-0" />
+        <span>{label}</span>
+      </span>
+    );
   }
-  return <Check className="size-3 text-muted-foreground inline" aria-label="Enviada" />;
+  if (status === "sent" || status === "accepted") {
+    return (
+      <span title="Enviada ao gateway" className="inline-flex items-center">
+        <Check className="size-3 text-muted-foreground inline" aria-label="Enviada" />
+      </span>
+    );
+  }
+  return (
+    <span title="Aguardando confirmação do gateway" className="inline-flex items-center">
+      <Clock className="size-3 text-muted-foreground/70 inline" aria-label="Pendente" />
+    </span>
+  );
 }
 import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
 import {
@@ -691,13 +733,24 @@ function WorkspaceAtendimentoPage() {
     }
   }, [messages, loadingMessages]);
 
-  // Realtime Estável de Alta Performance (Zero Teardown em Troca de Conversa)
+  // Subscrição Unificada Supabase Realtime (Zero Duplicidade, Reconexão Resiliente e Catch-Up Automático)
   useEffect(() => {
     const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
     const effectiveStoreId = store?.id || activeTenant;
     if (!effectiveStoreId) return;
     const rt = getRealtimeChannel(`store-chat-${effectiveStoreId}`);
     if (!rt.channel) return;
+
+    let hadDisconnection = false;
+    const runCatchUp = () => {
+      reloadThreads();
+      if (activeThreadIdRef.current) {
+        reloadActiveMessages(activeThreadIdRef.current);
+      }
+      listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
+        .then((list) => setWhatsappInstances(list))
+        .catch(() => {});
+    };
 
     rt.channel
       .on(
@@ -711,12 +764,13 @@ function WorkspaceAtendimentoPage() {
           const isCurrentActive = newMsg.thread_id === currentActive;
 
           if (isCurrentActive) {
-            // Se mensagem for criptografada ou externa, revalida via server para decodificação perfeita
             if (newMsg.is_encrypted || (typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
               reloadActiveMessages(newMsg.thread_id);
             } else {
               setMessages((prev) => {
-                if (prev.some((m) => m.id === newMsg.id)) return prev;
+                if (prev.some((m) => m.id === newMsg.id || (newMsg.external_message_id && m.external_message_id === newMsg.external_message_id))) {
+                  return prev.map((m) => (m.id === newMsg.id ? { ...m, ...newMsg } : m));
+                }
                 return [...prev, newMsg];
               });
             }
@@ -728,7 +782,6 @@ function WorkspaceAtendimentoPage() {
             playMessageChime();
           }
 
-          // Atualiza lista de conversas: move para o topo ou sincroniza nova conversa
           const exists = threadsRef.current.some((t) => t.id === newMsg.thread_id);
           if (exists) {
             setThreads((prev) => {
@@ -764,13 +817,20 @@ function WorkspaceAtendimentoPage() {
             setMessages((prev) =>
               prev.map((m) => {
                 if (m.id !== updatedMsg.id) return m;
+                const mergedPayload = { ...(m.payload || {}), ...(updatedMsg.payload || {}) };
                 return {
                   ...m,
-                  delivery_status: updatedMsg.delivery_status || m.delivery_status,
-                  external_message_id: updatedMsg.external_message_id || m.external_message_id,
-                  sent_at: updatedMsg.sent_at || m.sent_at,
-                  delivered_at: updatedMsg.delivered_at || m.delivered_at,
-                  payload: { ...(m.payload || {}), ...(updatedMsg.payload || {}) },
+                  delivery_status: updatedMsg.delivery_status ?? m.delivery_status,
+                  external_message_id: updatedMsg.external_message_id ?? m.external_message_id,
+                  sent_at: updatedMsg.sent_at ?? m.sent_at,
+                  delivered_at: updatedMsg.delivered_at ?? m.delivered_at,
+                  read_at: updatedMsg.read_at ?? m.read_at,
+                  failed_at: updatedMsg.failed_at ?? m.failed_at,
+                  error_code: updatedMsg.error_code ?? m.error_code,
+                  error_message: updatedMsg.error_message ?? m.error_message,
+                  is_revoked_by_sender: Boolean(mergedPayload.is_revoked_by_sender || m.is_revoked_by_sender),
+                  revoked_at: (mergedPayload.revoked_at as string) || m.revoked_at || null,
+                  payload: mergedPayload,
                 };
               })
             );
@@ -779,17 +839,25 @@ function WorkspaceAtendimentoPage() {
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "chat_threads" },
+        { event: "*", schema: "public", table: "chat_threads", filter: `store_id=eq.${effectiveStoreId}` },
         (payload: any) => {
           const newThread = payload.new as any;
-          // Ignora threads de IA/Copilot
           if (newThread?.thread_type === "ai_assistant" || newThread?.thread_type === "copilot") {
             return;
           }
-          if (newThread?.store_id === effectiveStoreId) {
-            reloadThreads();
-            playMessageChime();
+          reloadThreads();
+          if (newThread?.id && newThread.id === activeThreadIdRef.current) {
+            reloadActiveMessages(newThread.id);
           }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_channel_instances", filter: `store_id=eq.${effectiveStoreId}` },
+        () => {
+          listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
+            .then((list) => setWhatsappInstances(list))
+            .catch(() => {});
         },
       )
       .on(
@@ -845,14 +913,40 @@ function WorkspaceAtendimentoPage() {
           }
         },
       )
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          hadDisconnection = true;
+        } else if (status === "SUBSCRIBED" && hadDisconnection) {
+          hadDisconnection = false;
+          runCatchUp();
+        }
+      });
+
+    let authSubscription: { unsubscribe: () => void } | null = null;
+    try {
+      const supabase = getBrowserClient();
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        if ((event === "TOKEN_REFRESHED" || event === "SIGNED_IN") && session?.access_token) {
+          try {
+            supabase.realtime.setAuth(session.access_token);
+          } catch {
+            // noop
+          }
+          runCatchUp();
+        }
+      });
+      authSubscription = data?.subscription || null;
+    } catch {
+      // noop
+    }
 
     return () => {
+      authSubscription?.unsubscribe();
       rt.unsubscribe();
     };
   }, [store?.id, reloadThreads, reloadActiveMessages]);
 
-  // Listener de Visibilidade & Retomada de Foco (Zero Lag Mobile/Background)
+  // Listener de Visibilidade, Retomada de Foco e Reconexão de Rede (Zero Lag Mobile/Background)
   useEffect(() => {
     const handleRevalidation = () => {
       if (document.visibilityState === "visible") {
@@ -864,75 +958,13 @@ function WorkspaceAtendimentoPage() {
     };
     window.addEventListener("visibilitychange", handleRevalidation);
     window.addEventListener("focus", handleRevalidation);
+    window.addEventListener("online", handleRevalidation);
     return () => {
       window.removeEventListener("visibilitychange", handleRevalidation);
       window.removeEventListener("focus", handleRevalidation);
+      window.removeEventListener("online", handleRevalidation);
     };
   }, [reloadThreads, reloadActiveMessages]);
-
-  // Subscrição Supabase Realtime (Streaming ao Vivo <50ms de Mensagens e Conversas)
-  useEffect(() => {
-    if (!store?.id) return;
-    let supabase: any = null;
-    try {
-      supabase = getBrowserClient();
-    } catch {
-      return;
-    }
-    if (!supabase) return;
-
-    const channel = supabase
-      .channel(`chat_realtime_${store.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "chat_messages",
-        },
-        (payload: any) => {
-          // Streaming ao vivo de nova mensagem recebida ou enviada
-          if (activeThreadIdRef.current && payload.new?.thread_id === activeThreadIdRef.current) {
-            reloadActiveMessages(activeThreadIdRef.current);
-          }
-          reloadThreads();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "chat_threads",
-          filter: `store_id=eq.${store.id}`,
-        },
-        () => {
-          reloadThreads();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "whatsapp_channel_instances",
-          filter: `store_id=eq.${store.id}`,
-        },
-        () => {
-          // Atualiza o estado da conexão instantaneamente ao parear QR Code ou desconectar
-          listWorkspaceWhatsAppInstances({ data: { store_id: store.id } })
-            .then((list) => setWhatsappInstances(list))
-            .catch(() => {});
-        }
-      )
-      .subscribe();
-
-    return () => {
-      try {
-        supabase.removeChannel(channel);
-      } catch {}
-    };
-  }, [store?.id, reloadThreads, reloadActiveMessages]);
 
   // Polling Leve de Segurança a Cada 15s (Tolerância a Wi-Fi Instável)
   useEffect(() => {
@@ -975,11 +1007,20 @@ function WorkspaceAtendimentoPage() {
       });
 
       setMessages((prev) => {
-        if (prev.some((m) => m.id === sent.id)) return prev;
+        if (prev.some((m) => m.id === sent.id)) {
+          return prev.map((m) => (m.id === sent.id ? { ...m, ...sent } : m));
+        }
         return [...prev, sent];
       });
       setText("");
       setIsWhisperMode(false);
+
+      if ((sent as any)?.delivery_status === "failed") {
+        toast.error(
+          (sent as any)?.error_message ||
+            "Mensagem salva no histórico, mas o envio pelo WhatsApp falhou. Verifique a conexão da instância.",
+        );
+      }
 
       setThreads((prev) => {
         const target = prev.find((t) => t.id === activeThreadId);
@@ -1895,9 +1936,19 @@ function WorkspaceAtendimentoPage() {
                             />
                           </div>
                           <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1">
-                            {isStaff ? "Equipe / Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
+                            {isStaff
+                              ? msg.payload?.origin === "whatsapp_device"
+                                ? "Celular WhatsApp"
+                                : "Equipe / Você"
+                              : activeThread.customer?.full_name || "Cliente"} •{" "}
                             {formatDate(msg.created_at)}
-                            {isStaff && <MessageDeliveryStatusIcon status={msg.delivery_status} />}
+                            {isStaff && (
+                              <MessageDeliveryStatusIcon
+                                status={msg.delivery_status}
+                                deliveryState={msg.payload?.delivery_state}
+                                errorMessage={msg.error_message || msg.payload?.last_error_message}
+                              />
+                            )}
                           </span>
                         </div>
                       );
@@ -1905,6 +1956,8 @@ function WorkspaceAtendimentoPage() {
 
                     // Balão Normal estilo WhatsApp Web
                     const isRevoked = Boolean(msg.is_revoked_by_sender || msg.payload?.is_revoked_by_sender);
+                    const isFromDevice = Boolean(msg.payload?.origin === "whatsapp_device");
+                    const msgErrorText = msg.error_message || msg.payload?.last_error_message || null;
                     return (
                       <div
                         key={msg.id}
@@ -1914,7 +1967,9 @@ function WorkspaceAtendimentoPage() {
                           className={cn(
                             "max-w-md sm:max-w-md rounded-lg p-3 text-xs leading-relaxed shadow-xs",
                             isStaff
-                              ? "bg-primary text-primary-foreground font-medium rounded-tr-xs"
+                              ? msg.delivery_status === "failed"
+                                ? "bg-destructive/15 border border-destructive/50 text-foreground font-medium rounded-tr-xs"
+                                : "bg-primary text-primary-foreground font-medium rounded-tr-xs"
                               : "bg-card border border-border/80 text-foreground rounded-tl-xs",
                           )}
                         >
@@ -1927,14 +1982,26 @@ function WorkspaceAtendimentoPage() {
                           <p className={cn("whitespace-pre-wrap break-words", isRevoked && "italic")}>
                             {msg.message}
                           </p>
+                          {isStaff && msg.delivery_status === "failed" && msgErrorText && (
+                            <div className="mt-2 pt-2 border-t border-destructive/30 text-destructive text-xs flex items-center gap-1">
+                              <AlertTriangle className="size-3.5 shrink-0" />
+                              <span>{String(msgErrorText)}</span>
+                            </div>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
-                          {isStaff ? "Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
+                          {isStaff ? (isFromDevice ? "Celular WhatsApp" : "Você") : activeThread.customer?.full_name || "Cliente"} •{" "}
                           {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
-                          {isStaff && <MessageDeliveryStatusIcon status={msg.delivery_status} />}
+                          {isStaff && (
+                            <MessageDeliveryStatusIcon
+                              status={msg.delivery_status}
+                              deliveryState={msg.payload?.delivery_state}
+                              errorMessage={msgErrorText}
+                            />
+                          )}
                         </span>
                       </div>
                     );

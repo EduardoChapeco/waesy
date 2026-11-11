@@ -1,5 +1,20 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-487: Fase 2 de Correção e Homologação End-to-End do Ecossistema WhatsApp, Outbox, Realtime, CRM 360° (1:N) e Runtime Controlado de IA
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. Mensagens enviadas pelo aplicativo WhatsApp do celular da loja (`fromMe: true`) eram descartadas pelo receptor de webhooks ou atribuídas ao remetente errado (`body.sender` da loja e `pushName: "Você"`), gerando perda de sincronização bidirecional.
+  2. Falhas transitórias de envio (`"Connection Closed"`) marcavam `is_active: false` em `whatsapp_channel_instances`, silenciando webhooks futuros (`404 Instância não localizada`), enquanto o health check confiava apenas em `/instance/connectionState` sem cruzar `/instance/fetchInstances` e timestamps de reconexão.
+  3. Falhas no worker (`whatsapp-outbox.worker.ts`) não atualizavam o status de `chat_messages` nem exibiam erro visual na bolha da conversa; timeouts de envio (`UNCERTAIN_SEND_STATE`) careciam de conciliação pré-retry; a UI possuía dois `useEffect` Realtime duplicados sem catch-up na reconexão.
+  4. O painel Customer 360° limitava oportunidades do cliente a `.limit(1)`, impedindo relacionamento 1:N entre cliente e múltiplas oportunidades no Kanban Comercial.
+- **Decisão:**
+  1. **Sincronização Bidirecional `fromMe: true` e Conciliação Anti-Duplicidade (`whatsapp-provider-webhook.server.ts`):** Extração determinística do destinatário via `key.remoteJid`/`key.remoteJidAlt`, bloqueio de rótulos sintéticos (`"Você"`/`"You"`), conciliação com `whatsapp_outbox` e `chat_messages` para evitar duplicação em ecos do Waesy, persistência de mensagens do celular com `origin: "whatsapp_device"` e pausa automática da IA (`handoff_mode: "human_active"`).
+  2. **Health Check Multi-Sinal e Preservação de Webhooks (`whatsapp-outbound-adapters.server.ts`, `whatsapp-channel-instances.functions.ts`):** Preservação estrita de `is_active: true` em falhas de envio; implementação de `classifyWhatsAppSessionHealth` avaliando `connectionState`, `fetchInstances`, `disconnectionReasonCode` e `disconnectionAt` vs `last_connected_at`/`updatedAt`; script `scripts/ops/oracle-whatsapp-gateway-setup.sh` para túnel Cloudflare nomeado persistente.
+  3. **Visibilidade de Falhas, Realtime Unificado e CRM 1:N (`whatsapp-outbox.worker.ts`, `chat.functions.ts`, `workspace.atendimento.index.tsx`, `customer-360-sidebar.tsx`):** Vínculo `chat_msg:<uuid>`, conciliação de `UNCERTAIN_SEND_STATE`, propagação de `delivery_status: "failed"` para a UI, canal Realtime único com catch-up em reconexão/renovação de JWT, e seletor 1:N de oportunidades com registro de atividades comerciais.
+  4. **Runtime Controlado de IA (`whatsapp-automation-runtime.server.ts`) e Homologação (20 Cenários):** Implementação de `evaluateControlledAiInboundRuntime` (`disabled` por padrão, `assisted` Copilot e `sandbox`), proteção contra loops e handoff humano imediato; 46/46 testes aprovados nas 5 suítes Vitest e aprovação na catraca de Design Lint (0 P0).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.7, B.8, B.9, B.11, B.25, B.26, B.31 e B.33; Documentos 01 a 11 da Auditoria Master.
+- **Consequências:** Sincronização WhatsApp bidirecional confiável entre celular e painel Waesy, visibilidade transparente de erros de entrega, CRM 360° 1:N completo e IA protegida contra loops.
+
 ## DEC-486: Identificação de Grupos/Comunidades no WhatsApp, Sincronização de Fotos de Perfil e Dossiê Adaptativo
 - **Data:** 2026-11-11
 - **Contexto:**

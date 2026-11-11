@@ -393,6 +393,79 @@
       margin-bottom: 10px;
     }
 
+    /* Banner inline e Ativacao de Portal */
+    .inline-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      border: 1px solid rgba(88, 166, 255, 0.35);
+      background: rgba(88, 166, 255, 0.12);
+      color: #cfe5ff;
+    }
+    .inline-banner.show { display: block; }
+    .inline-banner.success {
+      border-color: rgba(63, 185, 80, 0.4);
+      background: rgba(63, 185, 80, 0.12);
+      color: #b7f5be;
+    }
+    .inline-banner.warn {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.12);
+      color: #fde68a;
+    }
+    .inline-banner.error {
+      border-color: rgba(248, 81, 73, 0.4);
+      background: rgba(248, 81, 73, 0.12);
+      color: #fecaca;
+    }
+    .portal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #161b22;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+    .operator-pill {
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      background: rgba(88, 166, 255, 0.14);
+      color: #58a6ff;
+      border: 1px solid rgba(88, 166, 255, 0.3);
+    }
+    .btn-compact {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(88, 166, 255, 0.45);
+      background: rgba(88, 166, 255, 0.16);
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-compact:hover { background: rgba(88, 166, 255, 0.25); }
+    .btn-compact:focus-visible { outline: 2px solid #58a6ff; outline-offset: 2px; }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #c9d1d9;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
     .footer {
       border-top: 1px solid rgba(255, 255, 255, 0.06);
       padding-top: 10px;
@@ -413,7 +486,7 @@
       <div class="brand-icon">W</div>
       <div>
         <div class="brand-title">Waesy Sync</div>
-        <div class="brand-subtitle">Excelência Tour • Operadoras & Infotravel</div>
+        <div class="brand-subtitle">Operadoras & Qualquer Portal Infotravel</div>
       </div>
     </div>
     <div id="statusBadge" class="status-badge offline">
@@ -422,13 +495,15 @@
     </div>
   </div>
 
+  <div id="inlineBanner" class="inline-banner" role="status" aria-live="polite"></div>
+
   <!-- Barra de Abas -->
   <div class="nav-tabs" role="tablist">
     <button class="tab-btn active" data-tab="tab-dashboard" role="tab" aria-selected="true">
       Dashboard
     </button>
     <button class="tab-btn" data-tab="tab-quotes" role="tab" aria-selected="false">
-      Cotações & Radar (<span id="tabQuotesCount">0</span>)
+      Cotações (<span id="tabQuotesCount">0</span>)
     </button>
     <button class="tab-btn" data-tab="tab-config" role="tab" aria-selected="false">
       Conexão Waesy
@@ -440,6 +515,16 @@
 
   <!-- ABA 1: DASHBOARD -->
   <div id="tab-dashboard" class="tab-panel active">
+    <div class="portal-bar">
+      <div>
+        <span style="color:#8b949e;">Operadora: </span>
+        <span id="operatorPill" class="operator-pill">Detectando...</span>
+      </div>
+      <button id="activatePortalBtn" class="btn-compact" type="button" style="display:none;">
+        Ativar neste Portal
+      </button>
+    </div>
+
     <div class="grid-kpis">
       <div class="kpi-card">
         <div class="kpi-label">Reservas Processadas</div>
@@ -466,12 +551,15 @@
       </div>
       <input id="pacingSlider" type="range" min="1" max="6" value="2" class="range-input" aria-label="Velocidade da Varredura">
       <div class="control-hint">
-        Simula o comportamento humano com variação de tempo randômica a cada requisição, prevenindo bloqueios ou CAPTCHAs.
+        Variação randômica entre requisições para proteger sua sessão em Orinter, FRT, Incomum, Schultz e portais Infotravel.
       </div>
     </div>
 
     <button id="toggleSyncBtn" class="btn-action btn-primary" aria-label="Iniciar ou Pausar Sincronização">
       <span id="toggleSyncText">Iniciar Sincronização em 2º Plano</span>
+    </button>
+    <button id="syncReservationsBtn" class="btn-action btn-secondary" aria-label="Enviar Reservas Coletadas ao Waesy CRM">
+      Enviar Reservas Coletadas ao Waesy CRM
     </button>
   </div>
 
@@ -483,7 +571,7 @@
         <span id="quotesBadgeCount" class="control-pill">0 orçamentos</span>
       </div>
       <p style="font-size: 11px; color: #8b949e; margin-top: 4px;">
-        Cotações de voos, hotéis e carrinhos visualizados nas operadoras capturados passivamente para cruzar com clientes do CRM.
+        Cotações de voos, hotéis e carrinhos capturadas nas operadoras para cruzar com clientes do CRM.
       </p>
     </div>
 
@@ -507,16 +595,20 @@
         <input id="waesyServerUrlInput" type="text" class="text-input" value="https://waesy.com.br" placeholder="https://waesy.com.br">
       </div>
       <div class="form-group">
-        <label class="form-label" for="waesyStoreIdInput">ID da Loja / Workspace (Excelência Tour SMO)</label>
-        <input id="waesyStoreIdInput" type="text" class="text-input" placeholder="ID da loja ou gerado automaticamente">
+        <label class="form-label" for="waesyTokenInput">Token de Integração Waesy (wae_...)</label>
+        <input id="waesyTokenInput" type="password" class="text-input" placeholder="wae_xxxxxxxxxxxxxxxxxxxxxxxx">
       </div>
-      <button id="saveConfigBtn" class="btn-action btn-primary" style="margin-top: 8px;">
+      <label class="checkbox-row" for="autoSyncCheckbox">
+        <input id="autoSyncCheckbox" type="checkbox" checked>
+        <span>Sincronizar reservas automaticamente com a nuvem Waesy</span>
+      </label>
+      <button id="saveConfigBtn" class="btn-action btn-primary" style="margin-top: 10px;">
         Salvar Configurações de Conexão
       </button>
       <button id="testConnectionBtn" class="btn-action btn-secondary">
-        Testar Conexão com Servidor
+        Validar Token e Servidor
       </button>
-      <div id="testConnResult" style="font-size: 11px; margin-top: 6px; text-align: center;"></div>
+      <div id="testConnResult" style="font-size: 11px; margin-top: 8px; text-align: center;"></div>
     </div>
   </div>
 
@@ -540,8 +632,8 @@
 
   <!-- Rodapé -->
   <div class="footer">
-    <span>Waesy Sync v2.1.0 • Manifest V3</span>
-    <span>Excelência Tour SMO</span>
+    <span>Waesy Sync v2.2.0 • Manifest V3</span>
+    <span>Any Infotravel Portal</span>
   </div>
 
   <script src="popup.js"></script>

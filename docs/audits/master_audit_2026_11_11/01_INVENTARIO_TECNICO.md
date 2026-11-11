@@ -72,7 +72,7 @@ waesy/
 1. **Evolution API v2.3.7 na Oracle Cloud:**
    - **Localização:** VPS Oracle Cloud (IP `147.15.61.45:8080`).
    - **Túnel Ativo:** `https://feb-genre-kathy-indicator.trycloudflare.com`.
-   - **Autenticação:** Header `apikey: WaesyApiKey_Master_2026_WhatsApp`.
+   - **Autenticação:** Header `apikey: [REDACTED_EVOLUTION_MASTER_KEY]` (exposto anteriormente em fallback de código; requer rotação).
    - **Dependência:** Essencial para conexões WhatsApp via QR Code (Baileys).
 
 2. **Supabase Cloud (PostgreSQL + Realtime + Storage):**
