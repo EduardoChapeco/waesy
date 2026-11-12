@@ -257,9 +257,13 @@ export const listChatThreads = createServerFn({ method: "GET" })
        : lastPublicMsg.message_type === "sticker" ? "[Figurinha]"
        : "[Mensagem]";
    }
+   const hasInternalNotes = messages.some((m: any) => m.payload?.is_internal || m.payload?.is_whisper || m.message_type === "internal_note" || m.message_type === "system_event");
+   if (hasInternalNotes) {
+     return "(Apenas anotações internas)";
+   }
    return thread.last_message_text && !thread.last_message_text.startsWith("waesy-msg:")
      ? thread.last_message_text
-     : (messages.length > 0 ? "(Apenas anotações internas)" : "");
+     : "";
  })(),
  last_message_type: lastPublicMsg ? lastPublicMsg.message_type : (lastMsg ? lastMsg.message_type : "text"),
  is_last_reply_staff: lastPublicMsg ? Boolean(lastPublicMsg.is_staff_reply) : false,
@@ -578,7 +582,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
     input.is_internal ||
     input.payload?.is_internal ||
     input.payload?.is_whisper ||
-    input.message_type === "internal_note" ||
+    ((input.message_type as string) === "internal_note") ||
     (input.message_type === "system_event" && input.payload?.is_whisper)
   );
  const finalPayload = {
@@ -2860,16 +2864,21 @@ export const deleteChatContactPermanently = createServerFn({ method: "POST" })
 
     if (!thread) throw new Error("Conversa ou contato não localizado.");
 
-    // 1. Limpa histórico de mensagens e chaves criptográficas
-    await db.from("chat_messages").delete().eq("thread_id", threadId);
+    // 1. Limpa histórico de mensagens e chaves criptográficas (preservando notas internas da equipe para auditoria)
+    await db.from("chat_messages").delete().eq("thread_id", threadId).neq("message_type", "internal_note").neq("message_type", "system_event");
     await db.from("chat_conversation_keys").delete().eq("thread_id", threadId);
 
     // 2. Remove da fila de outbox pendente (se houver)
     await db.from("whatsapp_outbox").delete().eq("thread_id", threadId).eq("store_id", storeId);
 
-    // 3. Exclui a thread principal
-    const { error: threadErr } = await db.from("chat_threads").delete().eq("id", threadId).eq("store_id", storeId);
-    if (threadErr) throw new Error(`Falha ao excluir conversa: ${threadErr.message}`);
+    // 3. Exclui a thread principal se não houver anotações internas remanescentes
+    const { count: remainingNotesCount } = await db.from("chat_messages").select("id", { count: "exact", head: true }).eq("thread_id", threadId);
+    if ((remainingNotesCount || 0) === 0) {
+      const { error: threadErr } = await db.from("chat_threads").delete().eq("id", threadId).eq("store_id", storeId);
+      if (threadErr) throw new Error(`Falha ao excluir conversa: ${threadErr.message}`);
+    } else {
+      await db.from("chat_threads").update({ status: "archived", last_message_text: "(Histórico WhatsApp excluído - Anotações internas preservadas)" }).eq("id", threadId);
+    }
 
     // 4. Se solicitado, expurga/inativa o contato no CRM para empresas de marketing
     if (deleteFromCrm && thread.customer_id) {
@@ -2958,10 +2967,16 @@ export const reviewChatContactDeletionRequest = createServerFn({ method: "POST" 
 
     const nowIso = new Date().toISOString();
     if (approved) {
-      await db.from("chat_messages").delete().eq("thread_id", req.thread_id);
+      await db.from("chat_messages").delete().eq("thread_id", req.thread_id).neq("message_type", "internal_note").neq("message_type", "system_event");
       await db.from("chat_conversation_keys").delete().eq("thread_id", req.thread_id);
       await db.from("whatsapp_outbox").delete().eq("thread_id", req.thread_id).eq("store_id", req.store_id);
-      await db.from("chat_threads").delete().eq("id", req.thread_id).eq("store_id", req.store_id);
+      
+      const { count: remainingReqNotes } = await db.from("chat_messages").select("id", { count: "exact", head: true }).eq("thread_id", req.thread_id);
+      if ((remainingReqNotes || 0) === 0) {
+        await db.from("chat_threads").delete().eq("id", req.thread_id).eq("store_id", req.store_id);
+      } else {
+        await db.from("chat_threads").update({ status: "archived", last_message_text: "(Histórico WhatsApp excluído pelo supervisor - Anotações internas preservadas)" }).eq("id", req.thread_id);
+      }
 
       if (deleteFromCrm && req.customer_id) {
         await db.from("customers_crm").update({ deleted_at: nowIso }).eq("id", req.customer_id).eq("store_id", req.store_id);

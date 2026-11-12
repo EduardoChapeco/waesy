@@ -72,6 +72,7 @@ import {
   RefreshCw,
   Layers,
   ShieldCheck,
+  ShieldAlert,
   Bot,
   Star,
   Flame,
@@ -543,10 +544,38 @@ function WorkspaceAtendimentoPage() {
   };
 
   const [supervisorRequestsModalOpen, setSupervisorRequestsModalOpen] = useState(false);
+  const [requestDeletionModalOpen, setRequestDeletionModalOpen] = useState(false);
+  const [requestDeletionReason, setRequestDeletionReason] = useState("");
+  const [isSubmittingDeletionRequest, setIsSubmittingDeletionRequest] = useState(false);
   const [pendingDeletionRequests, setPendingDeletionRequests] = useState<any[]>([]);
   const [isLoadingDeletionRequests, setIsLoadingDeletionRequests] = useState(false);
   const [isReviewingRequest, setIsReviewingRequest] = useState<string | null>(null);
   const [isGeneratingAiCopilot, setIsGeneratingAiCopilot] = useState(false);
+
+  const handleRequestContactDeletion = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    if (!requestDeletionReason.trim()) {
+      toast.error("Informe a justificativa para a solicitação.");
+      return;
+    }
+    setIsSubmittingDeletionRequest(true);
+    try {
+      await requestChatContactDeletion({
+        data: {
+          threadId: activeThread.id,
+          storeId: store.id,
+          reason: requestDeletionReason.trim(),
+        },
+      });
+      toast.success("Solicitação enviada ao supervisor com sucesso.");
+      setRequestDeletionModalOpen(false);
+      setRequestDeletionReason("");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao enviar solicitação.");
+    } finally {
+      setIsSubmittingDeletionRequest(false);
+    }
+  };
 
   const loadPendingDeletionRequests = async () => {
     if (!store?.id || !isSupervisor) return;
@@ -805,6 +834,11 @@ function WorkspaceAtendimentoPage() {
     threadsRef.current = threads;
   }, [threads]);
 
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   // Revalidação em background da lista de conversas
   const reloadThreads = useCallback(async () => {
     const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
@@ -819,6 +853,10 @@ function WorkspaceAtendimentoPage() {
         },
       });
       if (res?.threads) {
+        if (res.threads.length === 0 && threadsRef.current.length > 0 && (sf === "all" || sf === "direct" || sf === "open")) {
+          console.warn("[atendimento] listChatThreads retornou 0 threads inesperadamente; mantendo lista ativa em cache.");
+          return;
+        }
         setThreads(res.threads);
       }
     } catch (e) {
@@ -833,6 +871,10 @@ function WorkspaceAtendimentoPage() {
     try {
       const res: any = await getChatMessages({ data: { threadId: tId } });
       if (res?.messages && activeThreadIdRef.current === tId) {
+        if (res.messages.length === 0 && messagesRef.current.length > 0) {
+          console.warn("[atendimento] getChatMessages retornou 0 mensagens inesperadamente; mantendo mensagens ativas em cache.");
+          return;
+        }
         setMessages(res.messages);
       }
     } catch (e) {
@@ -4967,6 +5009,54 @@ function WorkspaceAtendimentoPage() {
               className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
             >
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Colaborador: Solicitar Exclusão de Contato ao Supervisor */}
+      <Dialog open={requestDeletionModalOpen} onOpenChange={setRequestDeletionModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <ShieldAlert className="size-5 text-warning-strong" />
+              <span>Solicitar Exclusão ao Supervisor</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Como medida de segurança, a exclusão definitiva de contatos e históricos exige autorização de um supervisor. Informe o motivo abaixo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-foreground">
+              Justificativa da exclusão <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              value={requestDeletionReason}
+              onChange={(e) => setRequestDeletionReason(e.target.value)}
+              placeholder="Ex: Contato inválido/trocado, spam repetitivo, ou solicitação expressa do cliente."
+              rows={3}
+              className="text-xs resize-none"
+            />
+          </div>
+
+          <DialogFooter className="flex flex-row items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRequestDeletionModalOpen(false)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isSubmittingDeletionRequest || !requestDeletionReason.trim()}
+              onClick={handleRequestContactDeletion}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isSubmittingDeletionRequest && <Loader2 className="size-4 animate-spin" />}
+              Enviar Solicitação
             </Button>
           </DialogFooter>
         </DialogContent>
