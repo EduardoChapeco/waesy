@@ -479,6 +479,7 @@ function WorkspaceLayout() {
   const isStandaloneVerticalApp =
     isStandaloneRequested &&
     (pathname.startsWith("/workspace/atendimento") ||
+      pathname.startsWith("/workspace/copilot") ||
       pathname.startsWith("/workspace/pdv") ||
       pathname.startsWith("/workspace/pedidos/gestor"));
   const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isContractEditor || isStandaloneVerticalApp;

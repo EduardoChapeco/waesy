@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getSafeBuilderHref } from "@/lib/builder/safe-href";
 import { getSectionStyle } from "../utils";
-import type { SoftwareFeatureShowcaseBlockData, OmniBlockStyling } from "../types";
+import type { SoftwareFeatureShowcaseBlockData, OmniBlockStyling } from "@/types/omni-builder";
 
 export interface SoftwareFeatureShowcaseProps {
   id?: string;

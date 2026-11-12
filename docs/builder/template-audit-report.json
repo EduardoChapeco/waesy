@@ -1,14 +1,109 @@
 {
-  "generatedAt": "2026-10-20T19:50:15.899Z",
+  "generatedAt": "2026-11-12T16:46:13.200Z",
   "summary": {
-    "total": 12,
-    "passed": 0,
-    "warnings": 3,
-    "failed": 9,
-    "reviewRequired": 12,
+    "total": 22,
+    "passed": 5,
+    "warnings": 7,
+    "failed": 10,
+    "reviewRequired": 22,
     "publishableFailed": 0
   },
   "templates": [
+    {
+      "templateId": "template_ifood_delivery_showcase",
+      "templateName": "Vitrine Comercial Estilo iFood Delivery",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 2194,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_waesy_super_vitrine",
+      "templateName": "Super Vitrine Estilo App Waesy",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 10,
+        "serializedBytes": 6656,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_ifood_delivery_vitrine",
+      "templateName": "Delivery & Mercado Express (Estilo App)",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 8,
+        "serializedBytes": 3952,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_classifieds_portal_vitrine",
+      "templateName": "Portal de Veículos, Imóveis & Classificados",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 6,
+        "serializedBytes": 3274,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_social_creator_store",
+      "templateName": "Vitrine Social, Reels & Loja Oficial",
+      "status": "pass",
+      "score": 100,
+      "findings": [],
+      "metrics": {
+        "blockCount": 6,
+        "serializedBytes": 3744,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
     {
       "templateId": "template_legal_jus",
       "templateName": "Advocacia & Jurídico",
@@ -305,6 +400,190 @@
       "metrics": {
         "blockCount": 4,
         "serializedBytes": 2954,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_editorial_news",
+      "templateName": "Portal de Notícias Editorial (Jornal Regional)",
+      "status": "fail",
+      "score": 35,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[0].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[1].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_CTA_MISSING",
+          "category": "content",
+          "severity": "error",
+          "path": "blocks[2].config.tiers[2].ctaHref",
+          "message": "Configure um destino CTA seguro para este plano; a publicação não redireciona para uma rota genérica do workspace."
+        },
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[2].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        }
+      ],
+      "metrics": {
+        "blockCount": 4,
+        "serializedBytes": 5012,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_saas_beauty_belasis",
+      "templateName": "Sistema de Gestão para Salão, Barbearia e Estética",
+      "status": "warn",
+      "score": 90,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[5].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        },
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[6].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        }
+      ],
+      "metrics": {
+        "blockCount": 9,
+        "serializedBytes": 10642,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_saas_food_restaurante",
+      "templateName": "Sistema de Gestão & Delivery para Restaurantes",
+      "status": "warn",
+      "score": 90,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[5].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        },
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[6].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        }
+      ],
+      "metrics": {
+        "blockCount": 9,
+        "serializedBytes": 10905,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_saas_b2b_mercos",
+      "templateName": "Software de Força de Vendas e E-commerce B2B",
+      "status": "warn",
+      "score": 90,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[5].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        },
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[6].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        }
+      ],
+      "metrics": {
+        "blockCount": 9,
+        "serializedBytes": 11817,
+        "imageReferences": 0,
+        "externalImageReferences": 0,
+        "assetsWithProvenance": 0
+      },
+      "limitations": [
+        "Auditoria de performance é estática: não executa navegador, rede, Lighthouse nem mede LCP/INP/CLS/TTFB.",
+        "Contraste só é calculado quando foreground e background são cores hex opacas explícitas; gradientes e imagens exigem revisão visual.",
+        "Metadados fornecidos pelo usuário/provedor são evidência de provenance, não uma opinião jurídica sobre licença."
+      ]
+    },
+    {
+      "templateId": "template_saas_supermarket_osuper",
+      "templateName": "Plataforma de E-commerce & Picking para Supermercados",
+      "status": "warn",
+      "score": 90,
+      "findings": [
+        {
+          "ruleId": "CONTENT_PRICING_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[5].config.tiers",
+          "message": "Revise preço, periodicidade, condições e política de reembolso com dados atuais do negócio."
+        },
+        {
+          "ruleId": "CONTENT_SOCIAL_PROOF_REVIEW",
+          "category": "content",
+          "severity": "warning",
+          "path": "blocks[6].config.testimonials",
+          "message": "Confirme que cada depoimento é real, autorizado e fiel; o campo verified não comprova autenticidade."
+        }
+      ],
+      "metrics": {
+        "blockCount": 9,
+        "serializedBytes": 12857,
         "imageReferences": 0,
         "externalImageReferences": 0,
         "assetsWithProvenance": 0

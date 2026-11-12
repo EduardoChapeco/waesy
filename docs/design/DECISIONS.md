@@ -1,5 +1,19 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-492: Templates Canônicos de Landing Pages de Vendas para Sistemas Verticais (SaaS) no OmniBuilder com Paridade Belasis, Avec, iFood Parceiros, Mercos e OSuper
+- **Data:** 2026-11-12
+- **Contexto:**
+  1. Necessidade de permitir que cada vertical de sistema na plataforma Waesy (Beleza/Salões, Gastronomia/Restaurantes, B2B/Distribuição/Força de Vendas e Supermercados/Picking) possua landing page própria de vendas com design, tom de voz, métricas e seções personalizadas criadas dentro do OmniBuilder existente.
+  2. Paridade visual e funcional completa inspirada nos líderes de mercado: Belasis e Avec (Agendamento 24h, divisão de comissões, clube de assinaturas, lembrete WhatsApp anti-falta), iFood Parceiros e 99Food (Gestor de pedidos, cardápio visual, taxa fixa R$ 0,99 Waesy Go vs 23% de marketplaces, calculadoras de ROI), Mercos (App força de vendas 100% offline, catálogo digital, regras de desconto/Saldo Flex, integração com 250+ ERPs), e OSuper (App próprio no iOS/Android, separação no corredor via bipagem, pesagem fracionada, substituição via WhatsApp e tabloides digitais).
+  3. Ausência de bloco nativo interativo de vitrine de módulos de software no OmniBuilder (`software_feature_tabs`), com navegação por abas acessível, checklist de benefícios, cards de preview e CTAs táteis.
+- **Decisão:**
+  1. **Bloco Canônico Interativo de Vitrine de Software (`src/components/builder/blocks/SoftwareFeatureShowcase.tsx`, `src/types/omni-builder.ts`, `src/components/builder/registry.ts`, `src/components/builder/universal-block-inspector.tsx`):** Criação do componente e schema `software_feature_tabs`, registrado nos blocos canônicos com suporte a abas de módulos com ícones, descrições, listas de benefícios checados, preview de tela do sistema, badges e CTAs táteis de 44px (`h-11`). Suporte no Universal Inspector para edição dinâmica do array de abas.
+  2. **Quatro Templates Oficiais de Vendas de Sistemas Verticais (`src/lib/builder/omni-templates.ts`):** Implementação de `template_saas_beauty_belasis` (Beleza & Estética), `template_saas_food_restaurante` (Gastronomia & Delivery), `template_saas_b2b_mercos` (Indústria, Distribuidoras & Força de Vendas) e `template_saas_supermarket_osuper` (Supermercados & Mercados Locais), integrados ao catálogo geral (`VERTICAL_SYSTEMS_SAAS_TEMPLATES` e `NICHE_TEMPLATE_MATRIX`).
+  3. **Integração no Studio Catalog e Rota CMS (`src/lib/builder/studio-catalog.ts`, `src/routes/workspace.cms.paginas.index.tsx`):** Registro de metadados de catálogo (objetivos, tags, copyFramework e assetSlots) e mapeamento dos nichos no seletor de templates do CMS com ícones temáticos (`Scissors`, `ShoppingCart`, etc.).
+  4. **Verificação & Catraca de Qualidade:** 37 testes automatizados de OmniBuilder aprovados (incluindo testes de paridade e regras de negócio), auditoria do Studio sem erros nos novos templates (score 90), auditoria de contraste APCA/WCAG aprovada e zero regressões na catraca mecânica de CI (`node scripts/design-lint.mjs --ratchet`).
+- **Fundamentação:** AGENTS.md Regras B.1, B.2, B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.22, B.26, B.31, B.33 e SPEC-20261112-VERTICAL-SAAS-OMNI-BUILDER-TEMPLATES.md.
+- **Consequências:** Cada vertical do ecossistema Waesy agora conta com um site/landing page de vendas de alta conversão pronto para publicar ou personalizar no OmniBuilder, replicando com fidelidade as melhores práticas e propostas de valor dos softwares de ponta do mercado.
+
 ## DEC-491: Arquitetura Modular de Planos por Vertical, Modo Standalone (Fullscreen Dedicado) para Atendimento e PDV, Governança Comercial no Admin Master e Deploy Completo em Produção
 - **Data:** 2026-11-12
 - **Contexto:**
