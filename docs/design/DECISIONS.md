@@ -9496,3 +9496,29 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
      - Emissor/revogador Bearer integrado no painel Infotravel, remoção de `alert()`/`confirm()` e diálogos aninhados, ajuste de catálogo e listagem completa no Admin Master.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1–B.11, B.25; Zero-Trust multi-tenant; MV3 Chromium Extension Architecture.
 - **Consequências:** Extensões instaláveis diretamente de `tools/` ou via download ZIP em produção Cloudflare Pages, autenticadas com token único `wae_...`, compatíveis com qualquer portal Infotravel e listas longas do WhatsApp Web, com persistência CRM/Financeira verificada por testes (`44/44`) e build limpo.
+
+
+### DEC-490: Estúdio de Voz com IA, Personas, Transcrição STT, Governança Estrita e Despacho PTT no WhatsApp
+- **Data:** 2026-11-12
+- **ID da Decisão:** DEC-490
+- **Contexto:** Necessidade de transformar o módulo de atendimento SAC em um centro multimodal de áudio profissional, permitindo que operadores transcrevam áudios recebidos sob demanda (STT), criem respostas em áudio sintetizado realista com personas (gênero, idade, sotaques regionais como paulista, carioca, mineiro, gaúcho, nordestino e ambientes acústicos como escritório com ruído de fundo, ligação telefônica e estúdio), despachem notas de voz nativas no WhatsApp (PTT com microfone verde via Evolution API), expurguem contatos de marketing de forma soberana e definitiva (com RLS estrito) e consultem bases normativas da ANAC (Resolução 400).
+- **Decisão Adotada:**
+  1. **Especificação & Contratos EARS (`docs/specs/SPEC-WHATSAPP-VOICE-AI-STUDIO.md`, `SPEC-WHATSAPP-GOVERNANCE-CONTACT-PURGE-AI-KNOWLEDGE.md`):**
+     - Formalizados fluxos ponta a ponta de áudio inbound (STT Whisper com cache em `chat_messages.payload.transcript`), estúdio de voz TTS (OpenAI TTS-1 / Opus) e despacho PTT via Evolution API `/message/sendWhatsAppAudio` com `encoding: true` e `voice_note: true`.
+  2. **Motor BFF Server Functions (`src/services/whatsapp-voice-ai.functions.ts`):**
+     - Criados schemas Zod `voicePersonaSchema`, `transcribeWhatsAppAudioSchema`, `generateAiVoiceAudioSchema` e `sendAiVoiceNoteToWhatsAppSchema`.
+     - Implementada `transcribeWhatsAppAudioMessage` com cache transparente, decodificação segura e fallback determinístico.
+     - Implementada `generateAiVoiceAudio` com mapeamento neural (`nova`, `shimmer`, `alloy`, `echo`, `onyx`), pré-processamento de prosódia regional e ambiência acústica.
+     - Implementada `sendAiVoiceNoteToWhatsApp` gravando em `chat_messages` e enfileirando na `whatsapp_outbox` com `voice_note: true` para microfone verde.
+  3. **Interface do Usuário & Modal de Estúdio de Voz (`src/components/chat/WhatsAppVoiceStudioModal.tsx`, `src/routes/workspace.atendimento.index.tsx`):**
+     - Modal de Estúdio de Voz com pré-escuta nativa, seleção de persona (gênero, idade, sotaque, ambiente acústico), botão de teste e envio direto.
+     - Botão de microfone `<Mic>` integrado no composer com piso canônico de 44px (`h-11 min-h-11`, DL-14) e anel de foco teclado (`:focus-visible:ring-2`, DL-15).
+     - Botão de transcrição de áudio inline nas bolhas de mensagem e exibição do texto com cache instantâneo.
+  4. **Governança Estrita & Exclusão Soberana de Contatos (`src/services/chat.functions.ts`):**
+     - Implementada `deleteChatContactPermanently` restrita a administradores (`owner`, `admin`, `manager`, `platform_admin`) para expurgo de contatos descartáveis e histórico do CRM.
+     - Implementada `toggleChatThreadStaffVisibility` para controle de conversas confidenciais (`hidden_from_staff`).
+     - Listagem de threads filtrada por setores atribuídos em `whatsapp_governance.departments`.
+  5. **Bases Normativas ANAC & Turismo (`src/services/whatsapp-ai-agent-tools.server.ts`):**
+     - Ferramenta `toolGetTourismAviationPolicies` com regras completas da Resolução 400 da ANAC (bagagens, cancelamento em até 24h, assistência material) formatadas sem emojis (zero violações DL-23).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1 a B.11, B.14, B.22, B.25; Invariante de 7 Camadas; Padrão WhatsApp PTT (Evolution API).
+- **Consequências:** Operação de atendimento e vendas multicanal com capacidade de áudio idêntica à humana, transcrição veloz para auditoria, governança com isolamento de operadores por setor e descarte seguro de contatos irrelevantes sem resíduos no CRM.

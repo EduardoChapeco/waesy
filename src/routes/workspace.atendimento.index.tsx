@@ -7,6 +7,8 @@ import { QuickAnswersManagerModal } from "@/components/chat/QuickAnswersManagerM
 import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
 import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
 import { WhatsAppTeamSectorsDrawer } from "@/components/chat/whatsapp-team-sectors-drawer";
+import { WhatsAppVoiceStudioModal } from "@/components/chat/WhatsAppVoiceStudioModal";
+import { transcribeWhatsAppAudioMessage } from "@/services/whatsapp-voice-ai.functions";
 import { listStoreQuickAnswers, interpolateTemplateVariables } from "@/services/chat-operations.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import {
@@ -95,6 +97,7 @@ import {
   Film,
   Volume2,
   Eye,
+  Mic,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -696,6 +699,8 @@ function WorkspaceAtendimentoPage() {
   const [text, setText] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [fetchingMediaMap, setFetchingMediaMap] = useState<Record<string, boolean>>({});
+  const [voiceStudioModalOpen, setVoiceStudioModalOpen] = useState(false);
+  const [transcribingAudioMap, setTranscribingAudioMap] = useState<Record<string, boolean>>({});
   const [isSending, setIsSending] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [showCustomer360, setShowCustomer360] = useState(true);
@@ -785,6 +790,39 @@ function WorkspaceAtendimentoPage() {
       toast.error(err?.message || "Erro ao baixar mídia do WhatsApp");
     } finally {
       setFetchingMediaMap((prev) => ({ ...prev, [msg.id]: false }));
+    }
+  };
+
+  const handleTranscribeAudio = async (msg: any) => {
+    if (!activeThread?.id || !msg.id) return;
+    setTranscribingAudioMap((prev) => ({ ...prev, [msg.id]: true }));
+    try {
+      const res = await transcribeWhatsAppAudioMessage({
+        data: {
+          threadId: activeThread.id,
+          messageId: msg.id,
+        },
+      });
+      if (res?.transcript) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id
+              ? {
+                  ...m,
+                  payload: {
+                    ...(m.payload || {}),
+                    transcript: res.transcript,
+                  },
+                }
+              : m,
+          ),
+        );
+        toast.success("Áudio transcrito com sucesso!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao transcrever áudio.");
+    } finally {
+      setTranscribingAudioMap((prev) => ({ ...prev, [msg.id]: false }));
     }
   };
 
@@ -2253,9 +2291,29 @@ function WorkspaceAtendimentoPage() {
 
                           {/* Áudio */}
                           {mediaType === "audio" && (
-                            <div className="my-2">
+                            <div className="my-2 space-y-1">
                               {mediaUrl ? (
-                                <audio src={mediaUrl} controls className="w-64 max-w-full h-11" />
+                                <>
+                                  <audio src={mediaUrl} controls className="w-64 max-w-full h-11" />
+                                  {msg.payload?.transcript ? (
+                                    <div className="mt-1 p-2 rounded bg-background/30 border border-border/40 text-xs">
+                                      <span className="font-semibold block opacity-80 text-xs uppercase tracking-wide">
+                                        Transcrição (IA):
+                                      </span>
+                                      <p className="italic mt-1 whitespace-pre-wrap">{msg.payload.transcript}</p>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTranscribeAudio(msg)}
+                                      disabled={transcribingAudioMap[msg.id]}
+                                      className="mt-1 h-11 min-h-11 px-3 rounded text-xs font-medium flex items-center gap-2 text-muted-foreground hover:text-foreground bg-background/20 hover:bg-background/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                                    >
+                                      <FileText className="size-4 shrink-0" />
+                                      <span>{transcribingAudioMap[msg.id] ? "Transcrevendo..." : "Transcrever com IA"}</span>
+                                    </button>
+                                  )}
+                                </>
                               ) : (
                                 <button
                                   type="button"
@@ -2489,6 +2547,19 @@ function WorkspaceAtendimentoPage() {
                       aria-label="Abrir ferramentas rápidas"
                     >
                       <Plus className="size-4" />
+                    </Button>
+
+                    {/* Botão Estúdio de Voz IA (Personas, Sotaques e Ambientes Acústicos) */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setVoiceStudioModalOpen(true)}
+                      className="size-11 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary text-primary hover:text-primary hover:bg-primary/10"
+                      title="Estúdio de Voz IA (Personas, Sotaques e Ambientes Acústicos)"
+                      aria-label="Estúdio de Voz IA"
+                    >
+                      <Mic className="size-4" />
                     </Button>
 
                     <div className="flex-1 relative">
@@ -4509,6 +4580,23 @@ function WorkspaceAtendimentoPage() {
           name: String(m.full_name || m.name || m.email || "Atendente"),
           role: String(m.role || "operator"),
         }))}
+      />
+
+      {/* Estúdio de Voz IA (Personas, Sotaques Regionais, Ambientes Acústicos e PTT) */}
+      <WhatsAppVoiceStudioModal
+        open={voiceStudioModalOpen}
+        onOpenChange={setVoiceStudioModalOpen}
+        threadId={activeThread?.id || ""}
+        storeId={store?.id}
+        initialText={text}
+        onVoiceSent={() => {
+          setText("");
+          if (activeThreadId) {
+            getChatMessages({ data: { threadId: activeThreadId } })
+              .then((res: any) => setMessages(res?.messages || []))
+              .catch(() => {});
+          }
+        }}
       />
 
       {/* Lightbox para Mídia / Imagens / Figurinhas Expandidas */}
