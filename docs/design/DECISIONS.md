@@ -1,5 +1,20 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-488: Suporte Completo a Rich Media no Atendimento SAC WhatsApp, Normalização de Figurinhas (Anti-{mensagem}), Lightbox Acessível e Cache Sob Demanda
+- **Data:** 2026-11-11
+- **Contexto:**
+  1. No WhatsApp Hub de Atendimento, figurinhas (stickers) eram incorretamente classificadas como texto e rotuladas com fallbacks estáticos `{mensagem}` ou `[Mensagem]` devido à ausência de `stickerMessage` nos normalizadores Baileys (`whatsapp-provider-webhook.server.ts` e `chat.functions.ts`).
+  2. Mídias recebidas (fotos, vídeos, áudios, documentos e figurinhas) não tinham seus anexos (`attachments`) nem metadados (`payload.media`) persistidos no banco `chat_messages`, impedindo renderização visual rica e gerando caixas de texto genéricas.
+  3. A UI do Atendimento SAC (`workspace.atendimento.index.tsx`) carecia de renderizadores especializados para figurinhas flutuantes transparentes, pré-visualização de fotos com Lightbox modal acessível (WCAG 2.2 AA), reprodutores nativos de vídeo e áudio, cartões de download de documentos e mecanismo sob demanda de carregamento base64 via `/chat/getBase64FromMediaMessage`.
+  4. O adapter outbound (`whatsapp-outbound-adapters.server.ts`) e os esquemas Zod (`chat.functions.ts`) rejeitavam tipos `"sticker"` e attachments em formato data URI (base64).
+- **Decisão:**
+  1. **Normalização Abrangente de Mídias e Desempacotamento Baileys (`whatsapp-provider-webhook.server.ts`):** Extração de `stickerMessage`, `imageMessage`, `videoMessage`, `audioMessage` e `documentMessage`, com desempacotamento recursivo de invólucros (`ephemeralMessage`, `viewOnceMessage`, `viewOnceMessageV2`, `documentWithCaptionMessage`). Identificação de stickers com tipo `"sticker"`, preview `"[Figurinha]"` e persistência dos campos `attachments` e `payload.media`.
+  2. **Persistência On-Demand & Cache Base64 (`chat.functions.ts`):** Criação da server function `getWhatsAppMediaBase64` com cache permanente em `chat_messages` para mídias não baixadas no webhook inicial; ampliação dos schemas `sendStaffMessageSchema` e `sendCustomerMessageSchema` aceitando tipos estendidos e data URIs.
+  3. **Despacho Outbound de Figurinhas (`whatsapp-outbound-adapters.server.ts`):** Inclusão de `"sticker"` em `MEDIA_TYPES`, roteamento para `/message/sendSticker` na Evolution API e mapeamento de campos compatíveis em WaSenderAPI.
+  4. **Renderização Visual Nativa e Lightbox Acessível (`workspace.atendimento.index.tsx`):** Exibição de figurinhas transparentes flutuantes (sem containeritis), fotos com ampliação via `<Dialog>`, reprodutor de vídeo/áudio com alvos táteis mínimos de 44px (`h-11`), cartões de documentos com botão de download, conformidade total com Design Lint (0 P0, 0 novas violações) e suíte de testes Vitest dedicada com 16 testes aprovados.
+- **Fundamentação:** AGENTS.md Regras B.4, B.5, B.6, B.7, B.8, B.9, B.11, B.22, B.25, B.26, B.30, B.33, SPEC-WHATSAPP-RICH-MEDIA-REALTIME-E2E.md e Apple HIG.
+- **Consequências:** Erradicação definitiva do problema de figurinhas como `{mensagem}`, visualização instantânea ao vivo de todas as mídias recebidas no WhatsApp Web/SAC, conformidade integral com acessibilidade e catraca de CI 100% verde.
+
 ## DEC-487: Fase 2 de Correção e Homologação End-to-End do Ecossistema WhatsApp, Outbox, Realtime, CRM 360° (1:N) e Runtime Controlado de IA
 - **Data:** 2026-11-11
 - **Contexto:**

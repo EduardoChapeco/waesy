@@ -9,7 +9,16 @@ export type UnofficialWhatsAppProvider = "evolution_api" | "wasender_api";
 // Payloads de providers externos são deliberadamente dinâmicos; o boundary é validado pelos normalizadores.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type JsonObject = Record<string, any>;
-type NormalizedMessage = { externalMessageId: string; externalUserId: string | null; phone: string | null; text: string; messageType: string; occurredAt: string; fromMe: boolean; pushName: string | null; payload: JsonObject };
+export type ExtractedMedia = {
+  type: "sticker" | "image" | "video" | "audio" | "document" | null;
+  url: string | null;
+  mimetype: string | null;
+  fileName: string | null;
+  caption: string | null;
+  thumbnailUrl: string | null;
+  isAnimated?: boolean;
+};
+type NormalizedMessage = { externalMessageId: string; externalUserId: string | null; phone: string | null; text: string; messageType: string; occurredAt: string; fromMe: boolean; pushName: string | null; attachments: string[]; media: ExtractedMedia | null; payload: JsonObject };
 type NormalizedDelivery = { externalMessageId: string; deliveryStatus: "sent" | "delivered" | "read" | "failed"; remoteJid: string | null; recipientPhone: string | null; occurredAt: string; errorCode: string | null; errorMessage: string | null; payload: JsonObject };
 
 function hashBody(rawBody: string) { return createHash("sha256").update(rawBody).digest("hex"); }
@@ -21,8 +30,60 @@ function eventTime(value: unknown, fallback = new Date().toISOString()): string 
 function normalizedPhone(value: unknown): string | null { const digits = String(value || "").replace(/\D/g, ""); return digits.length >= 7 ? `+${digits}` : null; }
 function remotePhone(value: unknown): string | null { const text = firstString(value); return text ? normalizedPhone(text.replace(/@.*$/, "")) : null; }
 function messageKey(item: JsonObject): JsonObject { return (item.key || item.message?.key || {}) as JsonObject; }
-function messageType(item: JsonObject): string {
-  const message = (item.message || {}) as JsonObject;
+export function unwrapBaileysMessage(raw: unknown): JsonObject {
+  if (!raw || typeof raw !== "object") return {};
+  const obj = raw as JsonObject;
+  if (obj.ephemeralMessage?.message) return unwrapBaileysMessage(obj.ephemeralMessage.message);
+  if (obj.viewOnceMessage?.message) return unwrapBaileysMessage(obj.viewOnceMessage.message);
+  if (obj.viewOnceMessageV2?.message) return unwrapBaileysMessage(obj.viewOnceMessageV2.message);
+  if (obj.documentWithCaptionMessage?.message) return unwrapBaileysMessage(obj.documentWithCaptionMessage.message);
+  return obj;
+}
+function formatDataUri(raw: string | null | undefined, defaultMime: string): string | null {
+  if (!raw || typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("data:")) return trimmed;
+  if (/^[A-Za-z0-9+/=]+$/.test(trimmed.slice(0, 50))) {
+    return `data:${defaultMime};base64,${trimmed}`;
+  }
+  return null;
+}
+export function extractMediaPayload(item: JsonObject): ExtractedMedia {
+  const type = messageType(item);
+  if (type === "text" || type === "location" || type === "contact") {
+    return { type: null, url: null, mimetype: null, fileName: null, caption: null, thumbnailUrl: null };
+  }
+  const message = unwrapBaileysMessage(item.message || item.data?.message || {});
+  const msgObj = (message[`${type}Message`] as JsonObject) || {};
+  const caption = firstString(msgObj.caption, item.caption);
+  const fileName = firstString(msgObj.fileName, msgObj.title, item.fileName);
+  let defaultMime = "application/octet-stream";
+  if (type === "sticker") defaultMime = "image/webp";
+  else if (type === "image") defaultMime = "image/jpeg";
+  else if (type === "video") defaultMime = "video/mp4";
+  else if (type === "audio") defaultMime = "audio/ogg";
+  else if (type === "document") defaultMime = "application/pdf";
+  const mimetype = firstString(msgObj.mimetype, item.mimetype, item.mimeType) || defaultMime;
+  const rawBase64 = firstString(item.base64, item.data?.base64, message.base64, msgObj.base64, item.mediaBase64);
+  const dataUri = formatDataUri(rawBase64, mimetype);
+  const rawThumb = firstString(msgObj.jpegThumbnail, msgObj.pngThumbnail);
+  const thumbnailUrl = formatDataUri(rawThumb, type === "sticker" ? "image/png" : "image/jpeg");
+  const remoteUrl = firstString(item.mediaUrl, item.data?.mediaUrl, item.url, msgObj.url);
+  const effectiveUrl = dataUri || (remoteUrl && !remoteUrl.includes("mmg.whatsapp.net") ? remoteUrl : null) || thumbnailUrl;
+  return {
+    type: type as any,
+    url: effectiveUrl,
+    mimetype,
+    fileName,
+    caption,
+    thumbnailUrl,
+    isAnimated: Boolean(msgObj.isAnimated),
+  };
+}
+export function messageType(item: JsonObject): string {
+  const message = unwrapBaileysMessage(item.message || item.data?.message || {});
+  const rawType = String(item.messageType || item.type || "").toLowerCase();
+  if (rawType.includes("sticker") || message.stickerMessage) return "sticker";
   if (message.imageMessage) return "image";
   if (message.videoMessage) return "video";
   if (message.audioMessage) return "audio";
@@ -31,8 +92,10 @@ function messageType(item: JsonObject): string {
   if (message.contactMessage || message.contactsArrayMessage) return "contact";
   return "text";
 }
-function messageText(item: JsonObject): string {
-  const message = (item.message || {}) as JsonObject;
+export function messageText(item: JsonObject): string {
+  const message = unwrapBaileysMessage(item.message || item.data?.message || {});
+  const rawType = String(item.messageType || item.type || "").toLowerCase();
+  if (rawType.includes("sticker") || message.stickerMessage) return "[Figurinha]";
   const edited = (message.editedMessage as JsonObject) || {};
   const editedMsg = (edited.message as JsonObject) || {};
   const buttons = (message.buttonsResponseMessage as JsonObject) || {};
@@ -70,6 +133,8 @@ function messageText(item: JsonObject): string {
 
   const type = messageType(item);
   switch (type) {
+    case "sticker":
+      return "[Figurinha]";
     case "image":
       return "[Imagem]";
     case "video":
@@ -132,7 +197,9 @@ function normalizedMessage(provider: UnofficialWhatsAppProvider, body: JsonObjec
   const occurredAt = eventTime(item.messageTimestamp || item.timestamp || body.timestamp);
   const rawPushName = fromMe ? null : firstString(item.pushName, item.senderName, body.pushName);
   const pushName = rawPushName && !isSyntheticSelfLabel(rawPushName) ? rawPushName : null;
-  return { externalMessageId, externalUserId, phone, text: messageText(item), messageType: messageType(item), occurredAt, fromMe, pushName, payload: redactConversationPayload({ provider, event_type: eventName(body), external_message_id: externalMessageId, external_user_id: externalUserId, phone, message_type: messageType(item), from_me: fromMe, timestamp: item.messageTimestamp || item.timestamp || body.timestamp }) };
+  const media = extractMediaPayload(item);
+  const attachments = media.url ? [media.url] : [];
+  return { externalMessageId, externalUserId, phone, text: messageText(item), messageType: messageType(item), occurredAt, fromMe, pushName, attachments, media: media.type ? media : null, payload: redactConversationPayload({ provider, event_type: eventName(body), external_message_id: externalMessageId, external_user_id: externalUserId, phone, message_type: messageType(item), from_me: fromMe, timestamp: item.messageTimestamp || item.timestamp || body.timestamp }) };
 }
 function normalizedDelivery(provider: UnofficialWhatsAppProvider, body: JsonObject, item: JsonObject): NormalizedDelivery | null {
   const key = messageKey(item);
@@ -254,6 +321,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       await db.from("chat_messages").update({
         delivery_status: nextStatus,
         sent_at: message.occurredAt,
+      attachments: message.attachments,
       }).eq("id", existingByExternalId.id);
       if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
       return { threadId: thread.id, messageId: existingByExternalId.id, reconciled: "existing_external_id" };
@@ -330,6 +398,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
           provider,
           delivery_status: "sent",
           sent_at: message.occurredAt,
+      attachments: message.attachments,
           failed_at: null,
           error_code: null,
           error_message: null,
@@ -362,8 +431,10 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       external_message_id: message.externalMessageId,
       delivery_status: "sent",
       sent_at: message.occurredAt,
+      attachments: message.attachments,
       payload: {
         ...message.payload,
+        media: message.media,
         from_me: true,
         origin: "whatsapp_device",
         instance_id: instance.id,
@@ -415,8 +486,9 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       external_message_id: message.externalMessageId,
       delivery_status: "delivered",
       sent_at: message.occurredAt,
+      attachments: message.attachments,
       delivered_at: message.occurredAt,
-      payload: { ...message.payload, origin: "whatsapp_customer", from_me: false },
+      payload: { ...message.payload, media: message.media, origin: "whatsapp_customer", from_me: false },
       created_at: message.occurredAt,
     }).select("id").single();
     if (insertError) throw insertError;

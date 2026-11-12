@@ -20,6 +20,7 @@ import {
   clearChatThreadMessagesLocal,
   deleteChatThreadLocal,
   resetStoreChatHistoryLocal,
+  getWhatsAppMediaBase64,
 } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import {
@@ -87,6 +88,11 @@ import {
   Trash2,
   Ban,
   PowerOff,
+  Download,
+  Image as ImageIcon,
+  Film,
+  Volume2,
+  Eye,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -628,6 +634,8 @@ function WorkspaceAtendimentoPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [text, setText] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [fetchingMediaMap, setFetchingMediaMap] = useState<Record<string, boolean>>({});
   const [isSending, setIsSending] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [showCustomer360, setShowCustomer360] = useState(true);
@@ -673,6 +681,50 @@ function WorkspaceAtendimentoPage() {
       toast.error(err?.message || "Erro ao salvar configurações de atendimento.");
     } finally {
       setIsSavingSupportSettings(false);
+    }
+  };
+
+  const handleFetchMedia = async (msg: any) => {
+    const extId = msg.external_message_id || msg.payload?.external_message_id || msg.payload?.id;
+    if (!activeThread?.id || !extId) {
+      toast.error("Identificador de mensagem não disponível");
+      return;
+    }
+    setFetchingMediaMap((prev) => ({ ...prev, [msg.id]: true }));
+    try {
+      const res = await getWhatsAppMediaBase64({
+        data: {
+          threadId: activeThread.id,
+          messageId: msg.id,
+          externalMessageId: extId,
+        },
+      });
+      if (res?.base64) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id
+              ? {
+                  ...m,
+                  attachments: [res.base64],
+                  payload: {
+                    ...(m.payload || {}),
+                    media: {
+                      ...(m.payload?.media || {}),
+                      type: m.message_type || "sticker",
+                      url: res.base64,
+                      mimetype: res.mimetype,
+                    },
+                  },
+                }
+              : m,
+          ),
+        );
+        toast.success("Mídia carregada!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao baixar mídia do WhatsApp");
+    } finally {
+      setFetchingMediaMap((prev) => ({ ...prev, [msg.id]: false }));
     }
   };
 
@@ -1954,7 +2006,80 @@ function WorkspaceAtendimentoPage() {
                       );
                     }
 
-                    // Balão Normal estilo WhatsApp Web
+                    // Balão Normal e Mídias estilo WhatsApp Web
+                    const mediaInfo = msg.payload?.media || null;
+                    const mediaType =
+                      msg.message_type === "sticker" || mediaInfo?.type === "sticker"
+                        ? "sticker"
+                        : msg.message_type === "image" || mediaInfo?.type === "image"
+                        ? "image"
+                        : msg.message_type === "video" || mediaInfo?.type === "video"
+                        ? "video"
+                        : msg.message_type === "audio" || mediaInfo?.type === "audio"
+                        ? "audio"
+                        : msg.message_type === "document" || mediaInfo?.type === "document"
+                        ? "document"
+                        : null;
+
+                    const mediaUrl =
+                      Array.isArray(msg.attachments) && msg.attachments.length > 0 && typeof msg.attachments[0] === "string"
+                        ? msg.attachments[0]
+                        : mediaInfo?.url || mediaInfo?.base64 || null;
+
+                    const isSticker = mediaType === "sticker";
+
+                    if (isSticker) {
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col ${isStaff ? "items-end" : "items-start"} my-1`}
+                        >
+                          {Boolean(msg.is_revoked_by_sender || msg.payload?.is_revoked_by_sender) ? (
+                            <div className="p-2 rounded-lg bg-muted text-muted-foreground text-xs italic flex items-center gap-2">
+                              <Ban className="size-3.5 shrink-0" />
+                              <span>Figurinha apagada pelo remetente</span>
+                            </div>
+                          ) : mediaUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setLightboxUrl(mediaUrl)}
+                              className="group relative cursor-pointer p-1 rounded-lg transition-transform hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
+                              title="Clique para ampliar a figurinha"
+                            >
+                              <img
+                                src={mediaUrl}
+                                alt="Figurinha WhatsApp"
+                                className="size-32 sm:size-36 object-contain"
+                              />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleFetchMedia(msg)}
+                              disabled={fetchingMediaMap[msg.id]}
+                              className="h-11 min-h-11 px-3 rounded-lg border border-border/80 bg-card text-foreground text-xs font-medium flex items-center gap-2 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
+                            >
+                              <Sparkles className="size-4 text-warning-strong shrink-0" />
+                              <span>{fetchingMediaMap[msg.id] ? "Baixando figurinha..." : "Carregar figurinha"}</span>
+                            </button>
+                          )}
+                          <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
+                            {isStaff ? (Boolean(msg.payload?.origin === "whatsapp_device") ? "Celular WhatsApp" : "Você") : activeThread?.customer?.full_name || "Cliente"} •{" "}
+                            {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                            {isStaff && (
+                              <MessageDeliveryStatusIcon
+                                status={msg.delivery_status}
+                                deliveryState={msg.payload?.delivery_state}
+                                errorMessage={msg.error_message || msg.payload?.last_error_message || null}
+                              />
+                            )}
+                          </span>
+                        </div>
+                      );
+                    }
                     const isRevoked = Boolean(msg.is_revoked_by_sender || msg.payload?.is_revoked_by_sender);
                     const isFromDevice = Boolean(msg.payload?.origin === "whatsapp_device");
                     const msgErrorText = msg.error_message || msg.payload?.last_error_message || null;
@@ -1979,9 +2104,127 @@ function WorkspaceAtendimentoPage() {
                               <span>Apagada no WhatsApp pelo remetente</span>
                             </div>
                           )}
-                          <p className={cn("whitespace-pre-wrap break-words", isRevoked && "italic")}>
-                            {msg.message}
-                          </p>
+                          {/* Foto / Imagem */}
+                          {mediaType === "image" && (
+                            <div className="mb-2">
+                              {mediaUrl ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setLightboxUrl(mediaUrl)}
+                                  className="relative overflow-hidden rounded-md group cursor-pointer block border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+                                  title="Clique para ampliar a imagem"
+                                >
+                                  <img
+                                    src={mediaUrl}
+                                    alt={mediaInfo?.caption || "Foto WhatsApp"}
+                                    className="max-h-60 max-w-full rounded-md object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Eye className="size-6 text-foreground" />
+                                  </div>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md bg-background/20 hover:bg-background/30 text-xs font-medium flex items-center gap-2 cursor-pointer border border-border/40 focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  <ImageIcon className="size-4 shrink-0" />
+                                  <span>{fetchingMediaMap[msg.id] ? "Baixando foto..." : "Carregar foto"}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Vídeo */}
+                          {mediaType === "video" && (
+                            <div className="mb-2">
+                              {mediaUrl ? (
+                                <video
+                                  src={mediaUrl}
+                                  controls
+                                  className="max-w-xs sm:max-w-sm rounded-md border border-border/60"
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md bg-background/20 hover:bg-background/30 text-xs font-medium flex items-center gap-2 cursor-pointer border border-border/40 focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  <Film className="size-4 shrink-0" />
+                                  <span>{fetchingMediaMap[msg.id] ? "Baixando vídeo..." : "Carregar vídeo"}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Áudio */}
+                          {mediaType === "audio" && (
+                            <div className="my-2">
+                              {mediaUrl ? (
+                                <audio src={mediaUrl} controls className="w-64 max-w-full h-11" />
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md bg-background/20 hover:bg-background/30 text-xs font-medium flex items-center gap-2 cursor-pointer border border-border/40 focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  <Volume2 className="size-4 shrink-0" />
+                                  <span>{fetchingMediaMap[msg.id] ? "Baixando áudio..." : "Ouvir áudio"}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Documento */}
+                          {mediaType === "document" && (
+                            <div className="mb-2 p-2 rounded-md bg-background/20 border border-border/40 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <FileText className="size-5 shrink-0 opacity-80" />
+                                <div className="min-w-0">
+                                  <p className="font-semibold truncate text-xs">{mediaInfo?.fileName || "Documento"}</p>
+                                  <p className="text-2xs opacity-75 truncate">{mediaInfo?.mimetype || "Arquivo"}</p>
+                                </div>
+                              </div>
+                              {mediaUrl ? (
+                                <a
+                                  href={mediaUrl}
+                                  download={mediaInfo?.fileName || "documento"}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-md hover:bg-background/30 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+                                  title="Baixar arquivo"
+                                >
+                                  <Download className="size-4" />
+                                </a>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md text-xs font-medium flex items-center gap-2 bg-background/30 hover:bg-background/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  {fetchingMediaMap[msg.id] ? "Baixando..." : "Baixar"}
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Texto da mensagem */}
+                          {Boolean(
+                            msg.message &&
+                              !(
+                                ["[Imagem]", "[Vídeo]", "[Áudio]", "[Documento]", "[Figurinha]"].includes(msg.message) &&
+                                mediaUrl
+                              ),
+                          ) && (
+                            <p className={cn("whitespace-pre-wrap break-words", isRevoked && "italic")}>
+                              {msg.message}
+                            </p>
+                          )}
                           {isStaff && msg.delivery_status === "failed" && msgErrorText && (
                             <div className="mt-2 pt-2 border-t border-destructive/30 text-destructive text-xs flex items-center gap-1">
                               <AlertTriangle className="size-3.5 shrink-0" />
@@ -4139,6 +4382,22 @@ function WorkspaceAtendimentoPage() {
           role: String(m.role || "operator"),
         }))}
       />
+
+      {/* Lightbox para Mídia / Imagens / Figurinhas Expandidas */}
+      <Dialog open={Boolean(lightboxUrl)} onOpenChange={() => setLightboxUrl(null)}>
+        <DialogContent className="sm:max-w-3xl p-2 bg-background border-border/80 flex flex-col items-center justify-center">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Visualização de Mídia</DialogTitle>
+          </DialogHeader>
+          {lightboxUrl && (
+            <img
+              src={lightboxUrl}
+              alt="Mídia expandida"
+              className="max-h-full max-w-full object-contain rounded-md"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

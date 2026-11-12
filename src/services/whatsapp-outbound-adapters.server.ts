@@ -18,7 +18,7 @@ export type OutboundMessage = {
 };
 export type AdapterResult = { externalMessageId: string; httpStatus: number; response: Record<string, unknown> };
 
-const MEDIA_TYPES = new Set(["image", "video", "audio", "document"]);
+const MEDIA_TYPES = new Set(["image", "video", "audio", "document", "sticker"]);
 
 export class OutboundAdapterError extends Error {
   constructor(public readonly code: string, message: string, public readonly retryable: boolean, public readonly httpStatus?: number) { super(message); }
@@ -52,9 +52,9 @@ function mediaSource(payload: Record<string, unknown>): string {
   if (source.startsWith("data:")) return source;
   try { const parsed = new URL(source); if (!/^https?:$/.test(parsed.protocol)) throw new Error(); return source; } catch { throw new OutboundAdapterError("INVALID_MEDIA_SOURCE", "A mídia deve ser uma URL HTTP(S) pública ou data URI", false); }
 }
-function mediaType(message: OutboundMessage): "image" | "video" | "audio" | "document" {
+function mediaType(message: OutboundMessage): "image" | "video" | "audio" | "document" | "sticker" {
   if (!MEDIA_TYPES.has(message.messageType)) throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", `Tipo de mídia não suportado: ${message.messageType}`, false);
-  return message.messageType as "image" | "video" | "audio" | "document";
+  return message.messageType as "image" | "video" | "audio" | "document" | "sticker";
 }
 function caption(payload: Record<string, unknown>): string | undefined { return stringValue(payload.caption, payload.text) || undefined; }
 function mimeType(payload: Record<string, unknown>): string | undefined { return stringValue(payload.mime_type, payload.mimeType) || undefined; }
@@ -95,6 +95,10 @@ async function sendEvolution(instance: OutboundInstance, message: OutboundMessag
     if (!text) throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", "Mensagem de texto vazia", false);
     url = `${root}/message/sendText/${encodeURIComponent(instanceName || "")}`;
     body = { number, text };
+  } else if (type === "sticker") {
+    url = `${root}/message/sendSticker/${encodeURIComponent(instanceName || "")}`;
+    body = { number, sticker: mediaSource(message.payload) };
+    const q = quoted(message.payload); if (q) body.quoted = q;
   } else if (type === "audio" && message.payload.voice_note === true) {
     url = `${root}/message/sendWhatsAppAudio/${encodeURIComponent(instanceName || "")}`;
     body = { number, audio: mediaSource(message.payload), ...(message.payload.encoding === true ? { encoding: true } : {}) };
@@ -189,7 +193,15 @@ async function sendWaSender(instance: OutboundInstance, message: OutboundMessage
     body.text = text;
   } else {
     const source = mediaSource(message.payload);
-    const field = { image: "imageUrl", video: "videoUrl", audio: "audioUrl", document: "documentUrl" }[mediaType(message)];
+    const mType = mediaType(message);
+    const fieldMap: Record<"image" | "video" | "audio" | "document" | "sticker", string> = {
+      image: "imageUrl",
+      video: "videoUrl",
+      audio: "audioUrl",
+      document: "documentUrl",
+      sticker: "stickerUrl",
+    };
+    const field = fieldMap[mType];
     body[field] = source;
     const text = caption(message.payload); if (text) body.text = text;
     const name = fileName(message.payload); if (name && type === "document") body.fileName = name;

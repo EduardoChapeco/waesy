@@ -24,9 +24,9 @@ export const sendStaffMessageSchema = z.object({
   threadId: z.string().uuid(),
   message: z.string().min(1),
   message_type: z
-    .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "pix_payment", "structured_blocks"])
+    .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "pix_payment", "structured_blocks", "sticker", "image", "video", "audio", "document"])
     .default("text"),
-  attachments: z.array(z.string().url()).default([]),
+  attachments: z.array(z.string()).default([]),
   payload: z.record(z.any()).default({}),
   is_internal: z.boolean().default(false),
 });
@@ -35,9 +35,9 @@ export const sendCustomerMessageSchema = z.object({
  threadId: z.string().uuid(),
  message: z.string().min(1),
  message_type: z
- .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "structured_blocks"])
+ .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "structured_blocks", "sticker", "image", "video", "audio", "document"])
  .default("text"),
- attachments: z.array(z.string().url()).default([]),
+ attachments: z.array(z.string()).default([]),
  payload: z.record(z.any()).default({}),
 });
 
@@ -344,13 +344,47 @@ export const getChatMessages = createServerFn({ method: "GET" })
             if (!externalId) continue;
             const fromMe = Boolean(key.fromMe);
             const msg = rec.message || {};
-            const text = String(
-              msg.conversation ||
-              msg.extendedTextMessage?.text ||
-              msg.imageMessage?.caption ||
-              (msg.imageMessage ? "[Imagem]" : msg.audioMessage ? "[Áudio]" : "")
-            ).trim();
-            if (!text) continue;
+            let msgType = "text";
+            let text = "";
+            let mediaUrl: string | null = null;
+            let mediaMime = "application/octet-stream";
+            if (msg.stickerMessage) {
+              msgType = "sticker";
+              text = "[Figurinha]";
+              mediaUrl = rec.base64 || msg.base64 || (msg.stickerMessage.pngThumbnail ? `data:image/png;base64,${msg.stickerMessage.pngThumbnail}` : null);
+              mediaMime = "image/webp";
+            } else if (msg.imageMessage) {
+              msgType = "image";
+              text = msg.imageMessage.caption?.trim() || "[Imagem]";
+              mediaUrl = rec.base64 || msg.base64 || (msg.imageMessage.jpegThumbnail ? `data:image/jpeg;base64,${msg.imageMessage.jpegThumbnail}` : null);
+              mediaMime = "image/jpeg";
+            } else if (msg.videoMessage) {
+              msgType = "video";
+              text = msg.videoMessage.caption?.trim() || "[Vídeo]";
+              mediaUrl = rec.base64 || msg.base64 || null;
+              mediaMime = "video/mp4";
+            } else if (msg.audioMessage) {
+              msgType = "audio";
+              text = "[Áudio]";
+              mediaUrl = rec.base64 || msg.base64 || null;
+              mediaMime = "audio/ogg";
+            } else if (msg.documentMessage) {
+              msgType = "document";
+              text = msg.documentMessage.fileName?.trim() || "[Documento]";
+              mediaUrl = rec.base64 || msg.base64 || null;
+              mediaMime = "application/pdf";
+            } else {
+              text = String(msg.conversation || msg.extendedTextMessage?.text || "").trim();
+            }
+            if (!text && !mediaUrl) continue;
+            if (!text) text = "[Mensagem]";
+
+
+
+
+
+
+
 
             const ts = Number(rec.messageTimestamp || Date.now() / 1000);
             const occurredAt = new Date(ts < 2_000_000_000 ? ts * 1000 : ts).toISOString();
@@ -360,13 +394,18 @@ export const getChatMessages = createServerFn({ method: "GET" })
                 thread_id: thread.id,
                 channel: "whatsapp",
                 message: text,
-                message_type: "text",
+                message_type: msgType,
                 is_staff_reply: fromMe,
                 provider: "evolution_api",
                 external_message_id: externalId,
                 delivery_status: fromMe ? "sent" : "delivered",
                 sent_at: occurredAt,
                 delivered_at: occurredAt,
+                attachments: mediaUrl ? [mediaUrl] : [],
+                payload: {
+                  origin: fromMe ? "whatsapp_device" : "whatsapp_customer",
+                  ...(mediaUrl ? { media: { type: msgType, url: mediaUrl, mimetype: mediaMime } } : {}),
+                },
                 created_at: occurredAt,
               }).select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status").maybeSingle();
               if (createdMsg) rawMessages.push(createdMsg);
@@ -2723,6 +2762,105 @@ export const resetStoreChatHistoryLocal = createServerFn({ method: "POST" })
       message: "Histórico de conversas da loja resetado com sucesso no sistema local.",
     };
   });
+export const getWhatsAppMediaBase64 = createServerFn({ method: "POST" })
+  .validator(z.object({
+    threadId: z.string().uuid(),
+    messageId: z.string().uuid().optional(),
+    externalMessageId: z.string(),
+  }))
+  .handler(async ({ data: { threadId, externalMessageId } }) => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autorizado");
+
+    const db = getServerClient();
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, channel_instance_id")
+      .eq("id", threadId)
+      .maybeSingle();
+
+    if (!thread) throw new Error("Conversa não encontrada");
+    assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
+
+    const { data: existingMsg } = await db
+      .from("chat_messages")
+      .select("id, attachments, payload, message_type")
+      .eq("thread_id", threadId)
+      .eq("external_message_id", externalMessageId)
+      .maybeSingle();
+
+    if (existingMsg && Array.isArray(existingMsg.attachments) && existingMsg.attachments.length > 0 && typeof existingMsg.attachments[0] === "string" && existingMsg.attachments[0].startsWith("data:")) {
+      return {
+        base64: existingMsg.attachments[0],
+        mimetype: String(existingMsg.payload?.media?.mimetype || "image/webp"),
+        cached: true,
+      };
+    }
+
+    const { data: inst } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, instance_key, external_instance_id, public_config")
+      .eq("store_id", thread.store_id)
+      .eq("provider", "evolution_api")
+      .eq("is_active", true)
+      .order("is_default", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!inst) throw new Error("Instância WhatsApp não encontrada para decodificar mídia.");
+
+    const externalName = inst.external_instance_id || inst.instance_key;
+    const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
+    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
+      ? configuredUrl
+      : (process.env.EVOLUTION_API_URL?.trim() || "");
+    const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+    if (!baseUrl || !apiKey) throw new Error("Gateway WhatsApp não configurado.");
+
+    const evoRes = await fetch(`${baseUrl}/chat/getBase64FromMediaMessage/${encodeURIComponent(externalName)}`, {
+      method: "POST",
+      headers: { apikey: apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: { key: { id: externalMessageId } },
+        convertToMp4: false,
+      }),
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (!evoRes.ok) {
+      throw new Error(`Falha ao obter mídia da Evolution API (HTTP ${evoRes.status})`);
+    }
+
+    const evoJson = (await evoRes.json().catch(() => ({}))) as Record<string, any>;
+    const rawBase64 = String(evoJson.base64 || evoJson.data || "").trim();
+    if (!rawBase64) throw new Error("Mídia não retornou base64 válido.");
+
+    const mimetype = String(evoJson.mimetype || evoJson.mimeType || "image/webp");
+    const dataUri = rawBase64.startsWith("data:") ? rawBase64 : `data:${mimetype};base64,${rawBase64}`;
+
+    if (existingMsg?.id) {
+      const curPayload = (existingMsg.payload && typeof existingMsg.payload === "object" ? existingMsg.payload : {}) as Record<string, any>;
+      await db.from("chat_messages").update({
+        attachments: [dataUri],
+        payload: {
+          ...curPayload,
+          media: {
+            ...(curPayload.media || {}),
+            type: existingMsg.message_type || "sticker",
+            url: dataUri,
+            mimetype,
+          },
+        },
+      }).eq("id", existingMsg.id);
+    }
+
+    return {
+      base64: dataUri,
+      mimetype,
+      cached: false,
+    };
+  });
+
 export const _chatOmnichannelReady = (() => { const created = true;
     return created;
   });
