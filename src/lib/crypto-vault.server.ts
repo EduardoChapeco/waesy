@@ -31,24 +31,48 @@ const SEPARATOR = ":";
  * Deriva a chave AES-256 a partir da env var VAULT_MASTER_KEY (ou fallback seguro de serviço).
  * Usa SHA-256 para normalizar qualquer comprimento para exatos 32 bytes.
  */
-function getMasterKey(): Buffer {
+function getCandidateMasterKeys(): Buffer[] {
+  const keys: Buffer[] = [];
+  const seen = new Set<string>();
+
   const envVaultKey = getEnvVar("VAULT_MASTER_KEY") || (typeof process !== "undefined" ? process.env?.VAULT_MASTER_KEY : undefined);
   const rawKey = envVaultKey?.trim();
 
-  if (rawKey !== undefined && rawKey !== "") {
-    if (rawKey.length < 32) {
-      throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres; operação bloqueada em fail-closed.");
+  if (rawKey && rawKey.length >= 32) {
+    const k1 = createHash("sha256").update(rawKey).digest();
+    const hex1 = k1.toString("hex");
+    if (!seen.has(hex1)) {
+      seen.add(hex1);
+      keys.push(k1);
     }
-    return createHash("sha256").update(rawKey).digest();
   }
 
-  // Fallback seguro derivado de SUPABASE_SERVICE_ROLE_KEY para dev / staging resiliente apenas se VAULT_MASTER_KEY não foi declarada
   const serviceKey = getEnvVar("SUPABASE_SERVICE_ROLE_KEY") || (typeof process !== "undefined" ? process.env?.SUPABASE_SERVICE_ROLE_KEY : undefined);
   if (serviceKey && serviceKey.trim().length >= 32) {
-    return createHash("sha256").update(`waesy-vault-entropy:${serviceKey.trim()}`).digest();
+    const cleanService = serviceKey.trim();
+    const k2 = createHash("sha256").update(`waesy-vault-entropy:${cleanService}`).digest();
+    const hex2 = k2.toString("hex");
+    if (!seen.has(hex2)) {
+      seen.add(hex2);
+      keys.push(k2);
+    }
+    const k3 = createHash("sha256").update(cleanService).digest();
+    const hex3 = k3.toString("hex");
+    if (!seen.has(hex3)) {
+      seen.add(hex3);
+      keys.push(k3);
+    }
   }
 
-  throw new Error("[crypto-vault] VAULT_MASTER_KEY ausente ou menor que 32 caracteres; operação bloqueada em fail-closed.");
+  if (keys.length === 0) {
+    throw new Error("[crypto-vault] VAULT_MASTER_KEY ou SUPABASE_SERVICE_ROLE_KEY ausentes ou menores que 32 caracteres; operação bloqueada em fail-closed.");
+  }
+
+  return keys;
+}
+
+function getMasterKey(): Buffer {
+  return getCandidateMasterKeys()[0];
 }
 
 // ─── Criptografia ─────────────────────────────────────────────────────────────
@@ -101,7 +125,7 @@ export function decryptSecret(encryptedPayload: string): string {
   }
 
   const [ivHex, authTagHex, ciphertextHex] = parts;
-  const key = getMasterKey();
+  const candidateKeys = getCandidateMasterKeys();
   const iv = Buffer.from(ivHex, "hex");
   const authTag = Buffer.from(authTagHex, "hex");
   const ciphertext = Buffer.from(ciphertextHex, "hex");
@@ -110,11 +134,19 @@ export function decryptSecret(encryptedPayload: string): string {
     throw new Error(`[crypto-vault] Auth tag inválida (esperado ${TAG_LENGTH} bytes, recebido ${authTag.length})`);
   }
 
-  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: TAG_LENGTH });
-  decipher.setAuthTag(authTag); // Valida integridade — lança se adulterado
+  let lastError: any = null;
+  for (const key of candidateKeys) {
+    try {
+      const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: TAG_LENGTH });
+      decipher.setAuthTag(authTag);
+      const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+      return decrypted.toString("utf-8");
+    } catch (err) {
+      lastError = err;
+    }
+  }
 
-  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return decrypted.toString("utf-8");
+  throw lastError || new Error("[crypto-vault] Falha na autenticação ou integridade do payload");
 }
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────

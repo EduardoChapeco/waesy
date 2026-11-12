@@ -1226,6 +1226,28 @@ function PdvTerminal() {
  </Button>
 
  <Button
+ variant="ghost"
+ size="icon"
+ onClick={() => {
+   if (typeof window !== "undefined") {
+     const isStandalone = new URLSearchParams(window.location.search).get("view") === "standalone";
+     const url = new URL(window.location.href);
+     if (isStandalone) {
+       url.searchParams.delete("view");
+       window.location.href = url.toString();
+     } else {
+       url.searchParams.set("view", "standalone");
+       window.open(url.toString(), "_blank");
+     }
+   }
+ }}
+ className="size-11 min-h-11 sm:size-9 rounded-lg text-muted-foreground hover:text-foreground"
+ title="Abrir PDV em Janela Própria Dedicada (Modo PDV Puro)"
+ >
+ <ExternalLink className="size-4" />
+ </Button>
+
+ <Button
  asChild
  variant="outline"
  size="sm"

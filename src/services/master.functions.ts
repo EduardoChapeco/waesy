@@ -198,7 +198,7 @@ export const getPlatformStoresList = createServerFn({ method: "GET" }).handler(a
  const db = getServerClient();
  const { data, error } = await db
  .from("stores")
- .select("id, name, slug, is_active, created_at, settings")
+ .select("id, name, slug, is_active, created_at, settings, plan_tier")
  .order("created_at", { ascending: false });
 
  if (error) throw new Error("Erro ao buscar lojas: " + error.message);

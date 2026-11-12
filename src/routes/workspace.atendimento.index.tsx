@@ -22,6 +22,12 @@ import {
   clearChatThreadMessagesLocal,
   deleteChatThreadLocal,
   deleteChatContactPermanently,
+  requestChatContactDeletion,
+  reviewChatContactDeletionRequest,
+  listChatContactDeletionRequests,
+  generateTourismAiCopilotReply,
+  generateSmartContextualAiReply,
+  detectStaffFollowUpPromise,
   toggleChatThreadStaffVisibility,
   resetStoreChatHistoryLocal,
   getWhatsAppMediaBase64,
@@ -98,6 +104,10 @@ import {
   Volume2,
   Eye,
   Mic,
+  Play,
+  Pause,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -532,6 +542,150 @@ function WorkspaceAtendimentoPage() {
     }
   };
 
+  const [supervisorRequestsModalOpen, setSupervisorRequestsModalOpen] = useState(false);
+  const [pendingDeletionRequests, setPendingDeletionRequests] = useState<any[]>([]);
+  const [isLoadingDeletionRequests, setIsLoadingDeletionRequests] = useState(false);
+  const [isReviewingRequest, setIsReviewingRequest] = useState<string | null>(null);
+  const [isGeneratingAiCopilot, setIsGeneratingAiCopilot] = useState(false);
+
+  const loadPendingDeletionRequests = async () => {
+    if (!store?.id || !isSupervisor) return;
+    setIsLoadingDeletionRequests(true);
+    try {
+      const res = await listChatContactDeletionRequests({
+        data: { storeId: store.id, status: "pending" },
+      });
+      setPendingDeletionRequests(res?.requests || []);
+    } catch {
+      // noop defensivo
+    } finally {
+      setIsLoadingDeletionRequests(false);
+    }
+  };
+
+  const handleReviewDeletionRequest = async (requestId: string, approved: boolean) => {
+    setIsReviewingRequest(requestId);
+    try {
+      await reviewChatContactDeletionRequest({
+        data: { requestId, approved, deleteFromCrm: true },
+      });
+      toast.success(approved ? "Exclusão autorizada e executada com sucesso." : "Solicitação de exclusão recusada.");
+      setPendingDeletionRequests((prev) => prev.filter((r) => r.id !== requestId));
+      if (approved) {
+        reloadThreads();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao processar solicitação.");
+    } finally {
+      setIsReviewingRequest(null);
+    }
+  };
+
+  const handleGenerateTourismCopilot = async (customQuery?: string) => {
+    if (!activeThread?.id) return;
+    setIsGeneratingAiCopilot(true);
+    try {
+      const res = await generateTourismAiCopilotReply({
+        data: {
+          threadId: activeThread.id,
+          storeId: store?.id,
+          query: customQuery || text || undefined,
+        },
+      });
+      if (res?.suggestedReply) {
+        setText(res.suggestedReply);
+        toast.success("Sugestão IA carregada com pacotes reais e regras da ANAC!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao consultar IA de turismo.");
+    } finally {
+      setIsGeneratingAiCopilot(false);
+    }
+  };
+
+  const [aiAudioPreviewUrl, setAiAudioPreviewUrl] = useState<string | null>(null);
+  const [isGeneratingSmartReply, setIsGeneratingSmartReply] = useState(false);
+  const [isGeneratingSmartAudio, setIsGeneratingSmartAudio] = useState(false);
+  const [isPlayingSmartAudio, setIsPlayingSmartAudio] = useState(false);
+  const aiAudioElementRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleGenerateSmartReply = async (isAudio = false, customInstruction?: string) => {
+    if (!activeThread?.id) return;
+    if (isAudio) setIsGeneratingSmartAudio(true);
+    else setIsGeneratingSmartReply(true);
+
+    try {
+      const res = await generateSmartContextualAiReply({
+        data: {
+          threadId: activeThread.id,
+          storeId: store?.id,
+          customInstruction: customInstruction || text.trim() || undefined,
+          generateAudioPreview: isAudio,
+        },
+      });
+
+      if (res?.suggestedReply) {
+        setText(res.suggestedReply);
+        if (res.audioPreviewUrl) {
+          setAiAudioPreviewUrl(res.audioPreviewUrl);
+          toast.success("Áudio sintetizado com sucesso! Ouça antes de enviar ao cliente.");
+        } else {
+          toast.success("Resposta gerada pela IA com base no histórico do cliente!");
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao gerar resposta com IA.");
+    } finally {
+      setIsGeneratingSmartReply(false);
+      setIsGeneratingSmartAudio(false);
+    }
+  };
+
+  const handleSendAiAudio = async () => {
+    if (!aiAudioPreviewUrl || !activeThread?.id || isSending) return;
+    setIsSending(true);
+    try {
+      await sendChatMessage({
+        data: {
+          threadId: activeThread.id,
+          message: "[Áudio]",
+          message_type: "audio",
+          attachments: [aiAudioPreviewUrl],
+          is_internal: false,
+          payload: {
+            is_ptt: true,
+            channel: "whatsapp",
+            origin: "waesy_ai_voice",
+          },
+        },
+      });
+      setAiAudioPreviewUrl(null);
+      setText("");
+      toast.success("Nota de voz enviada no WhatsApp!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao enviar áudio.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const togglePlaySmartAudio = () => {
+    if (!aiAudioElementRef.current && aiAudioPreviewUrl) {
+      aiAudioElementRef.current = new Audio(aiAudioPreviewUrl);
+      aiAudioElementRef.current.onended = () => setIsPlayingSmartAudio(false);
+    }
+    if (!aiAudioElementRef.current) return;
+
+    if (isPlayingSmartAudio) {
+      aiAudioElementRef.current.pause();
+      setIsPlayingSmartAudio(false);
+    } else {
+      aiAudioElementRef.current.play().then(() => {
+        setIsPlayingSmartAudio(true);
+      }).catch(() => setIsPlayingSmartAudio(false));
+    }
+  };
+
   const handleToggleThreadStaffVisibility = async () => {
     if (!activeThread?.id || !store?.id) return;
     const isCurrentlyHidden = Boolean(activeThread.metadata?.hidden_from_staff);
@@ -695,6 +849,9 @@ function WorkspaceAtendimentoPage() {
     }
   }, [(searchParams as any)?.search, (searchParams as any)?.threadId]);
   const [messages, setMessages] = useState<any[]>([]);
+  const promiseDetection = useMemo(() => {
+    return detectStaffFollowUpPromise(messages);
+  }, [messages]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [text, setText] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -912,6 +1069,12 @@ function WorkspaceAtendimentoPage() {
 
           const currentActive = activeThreadIdRef.current;
           const isCurrentActive = newMsg.thread_id === currentActive;
+          const isInternalMsg = Boolean(
+            newMsg.payload?.is_whisper ||
+            newMsg.payload?.is_internal ||
+            newMsg.message_type === "internal_note" ||
+            (newMsg.message_type === "system_event" && newMsg.payload?.is_whisper)
+          );
 
           if (isCurrentActive) {
             if (newMsg.is_encrypted || (typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
@@ -937,9 +1100,23 @@ function WorkspaceAtendimentoPage() {
             setThreads((prev) => {
               const target = prev.find((t) => t.id === newMsg.thread_id);
               if (!target) return prev;
+              if (isInternalMsg) {
+                return [
+                  {
+                    ...target,
+                    updated_at: newMsg.created_at || new Date().toISOString(),
+                  },
+                  ...prev.filter((t) => t.id !== newMsg.thread_id),
+                ];
+              }
               const cleanPreview = (typeof newMsg.message === "string" && !newMsg.message.startsWith("waesy-msg:"))
                 ? newMsg.message
-                : (target.last_message || "Nova mensagem");
+                : (newMsg.message_type === "image" ? "[Imagem]"
+                  : newMsg.message_type === "video" ? "[Vídeo]"
+                  : newMsg.message_type === "audio" ? "[Áudio]"
+                  : newMsg.message_type === "document" ? "[Documento]"
+                  : newMsg.message_type === "sticker" ? "[Figurinha]"
+                  : (target.last_message || "Nova mensagem"));
               const updated = {
                 ...target,
                 last_message: cleanPreview,
@@ -1177,8 +1354,10 @@ function WorkspaceAtendimentoPage() {
         if (!target) return prev;
         const updatedTarget = {
           ...target,
-          last_message: isWhisperMode ? `[Nota Interna]: ${text.trim()}` : text.trim(),
-          is_last_reply_staff: true,
+          ...(isWhisperMode ? {} : {
+            last_message: text.trim(),
+            is_last_reply_staff: true,
+          }),
           updated_at: new Date().toISOString(),
         };
         return [updatedTarget, ...prev.filter((t) => t.id !== activeThreadId)];
@@ -1464,6 +1643,28 @@ function WorkspaceAtendimentoPage() {
             <Sliders className="size-4" />
             <span>Setores</span>
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                const isStandalone = new URLSearchParams(window.location.search).get("view") === "standalone";
+                const url = new URL(window.location.href);
+                if (isStandalone) {
+                  url.searchParams.delete("view");
+                  url.searchParams.delete("fullscreen");
+                  window.location.href = url.toString();
+                } else {
+                  url.searchParams.set("view", "standalone");
+                  window.open(url.toString(), "_blank");
+                }
+              }
+            }}
+            className="px-3 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            title="Alternar Modo Sistema Dedicado (Tela Cheia sem Menus)"
+          >
+            <Maximize2 className="size-4" />
+            <span className="hidden sm:inline">Modo Fullscreen</span>
+          </button>
         </div>
       </header>
 
@@ -1630,7 +1831,9 @@ function WorkspaceAtendimentoPage() {
 
                         <p className="text-xs text-muted-foreground line-clamp-1 leading-snug">
                           {t.is_last_reply_staff ? "Você: " : ""}
-                          {t.last_message || "Sem mensagens"}
+                          {String(t.last_message || "").startsWith("waesy-msg:")
+                            ? "[Mensagem]"
+                            : (t.last_message || "Sem mensagens")}
                         </p>
 
                         <div className="flex items-center gap-2 pt-1 flex-wrap">
@@ -1904,7 +2107,7 @@ function WorkspaceAtendimentoPage() {
                         <span>Excluir conversa (no sistema)</span>
                       </DropdownMenuItem>
 
-                      {isSupervisor && (
+                      {isSupervisor ? (
                         <>
                           <DropdownMenuSeparator className="my-1 border-border/60" />
                           <DropdownMenuItem
@@ -1932,7 +2135,27 @@ function WorkspaceAtendimentoPage() {
                             <Trash2 className="size-4 shrink-0" />
                             <span>Excluir contato & dados (Definitivo)</span>
                           </DropdownMenuItem>
+
+                          <DropdownMenuSeparator className="my-1 border-border/60" />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              loadPendingDeletionRequests();
+                              setSupervisorRequestsModalOpen(true);
+                            }}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-primary hover:bg-primary/10"
+                          >
+                            <ShieldCheck className="size-4 shrink-0" />
+                            <span>Solicitações de exclusão da equipe</span>
+                          </DropdownMenuItem>
                         </>
+                      ) : (
+                        <DropdownMenuItem
+                          onClick={() => setRequestDeletionModalOpen(true)}
+                          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-warning-strong hover:bg-warning/10"
+                        >
+                          <ShieldAlert className="size-4 shrink-0" />
+                          <span>Solicitar exclusão ao supervisor</span>
+                        </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -2016,6 +2239,28 @@ function WorkspaceAtendimentoPage() {
                       </span>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Alerta de Promessa Pendente / Anti-Esquecimento */}
+              {promiseDetection.hasPendingPromise && (
+                <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 flex items-center justify-between text-xs shrink-0 transition-colors">
+                  <div className="flex items-center gap-2 text-warning-strong min-w-0">
+                    <Clock className="size-4 shrink-0 text-warning-strong" />
+                    <span className="truncate">
+                      Promessa pendente: <strong>&ldquo;{promiseDetection.promiseSnippet}&rdquo;</strong> (há {promiseDetection.elapsedMinutes} min)
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isGeneratingSmartReply}
+                    onClick={() => handleGenerateSmartReply(false, "Cumprir a promessa pendente feita ao cliente de forma objetiva e acolhedora.")}
+                    className="h-11 min-h-11 px-3 text-xs font-semibold text-warning-strong hover:bg-warning/20 border-warning/40 shrink-0 ml-2 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                  >
+                    {isGeneratingSmartReply ? "Gerando..." : "Cumprir com IA"}
+                  </Button>
                 </div>
               )}
 
@@ -2371,7 +2616,14 @@ function WorkspaceAtendimentoPage() {
                               ),
                           ) && (
                             <p className={cn("whitespace-pre-wrap break-words", isRevoked && "italic")}>
-                              {msg.message}
+                              {String(msg.message).startsWith("waesy-msg:")
+                                ? (msg.message_type === "image" ? "[Imagem]"
+                                  : msg.message_type === "video" ? "[Vídeo]"
+                                  : msg.message_type === "audio" ? "[Áudio]"
+                                  : msg.message_type === "document" ? "[Documento]"
+                                  : msg.message_type === "sticker" ? "[Figurinha]"
+                                  : "[Mensagem recebida]")
+                                : msg.message}
                             </p>
                           )}
                           {isStaff && msg.delivery_status === "failed" && msgErrorText && (
@@ -2488,6 +2740,32 @@ function WorkspaceAtendimentoPage() {
                     <span>Atalhos</span>
                   </Button>
 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateSmartReply(false)}
+                    disabled={isGeneratingSmartReply}
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 shrink-0 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    title="Escrever resposta humana e direta com IA lendo o perfil 360 do cliente"
+                  >
+                    <Sparkles className="size-3.5 text-primary" />
+                    <span>{isGeneratingSmartReply ? "Escrevendo..." : "Escrever com IA"}</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateSmartReply(true)}
+                    disabled={isGeneratingSmartAudio}
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 shrink-0 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    title="Gerar áudio com IA e ouvir antes de enviar ao cliente"
+                  >
+                    <Volume2 className="size-3.5 text-primary" />
+                    <span>{isGeneratingSmartAudio ? "Sintetizando..." : "Gerar Áudio IA"}</span>
+                  </Button>
+
                   {(storeMacros.length > 0
                     ? storeMacros.map((m: any) => ({ cmd: m.shortcut, text: m.message, label: m.title }))
                     : semantics.nicheId === "tourism"
@@ -2533,6 +2811,59 @@ function WorkspaceAtendimentoPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Mini Player de Preview de Áudio IA (Ouvir antes de enviar) */}
+                {aiAudioPreviewUrl && (
+                  <div className="p-3 rounded-lg bg-card border border-primary/40 shadow-xs flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        onClick={togglePlaySmartAudio}
+                        className="size-11 min-h-11 rounded-full shrink-0 border-primary/50 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        title={isPlayingSmartAudio ? "Pausar áudio" : "Ouvir áudio antes de enviar"}
+                      >
+                        {isPlayingSmartAudio ? <Pause className="size-4" /> : <Play className="size-4" />}
+                      </Button>
+                      <div className="min-w-0">
+                        <span className="text-xs font-semibold text-foreground flex items-center gap-1">
+                          <Volume2 className="size-3.5 text-primary shrink-0" />
+                          <span>Prévia de Áudio IA (Ouvir antes de enviar)</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground block truncate">
+                          {isPlayingSmartAudio ? "Reproduzindo áudio..." : "Clique no play para escutar antes de despachar"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (aiAudioElementRef.current) aiAudioElementRef.current.pause();
+                          setIsPlayingSmartAudio(false);
+                          setAiAudioPreviewUrl(null);
+                        }}
+                        className="h-11 min-h-11 px-2 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
+                        title="Descartar áudio"
+                      >
+                        <Trash2 className="size-4 shrink-0" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={isSending}
+                        onClick={handleSendAiAudio}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Send className="size-3.5 shrink-0" />
+                        <span>{isSending ? "Enviando..." : "Enviar Áudio"}</span>
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <form onSubmit={handleSend} className="space-y-2">
                   <div className="flex items-end gap-2">
@@ -4553,6 +4884,89 @@ function WorkspaceAtendimentoPage() {
             >
               {isResettingHistory && <Loader2 className="size-4 animate-spin" />}
               Confirmar Reset Local
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Supervisão: Auditoria de Solicitações de Exclusão da Equipe */}
+      <Dialog open={supervisorRequestsModalOpen} onOpenChange={setSupervisorRequestsModalOpen}>
+        <DialogContent className="sm:max-w-xl p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <ShieldCheck className="size-5 text-primary" />
+              <span>Solicitações de Exclusão de Contatos</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Solicitações encaminhadas pelos colaboradores da equipe. Avalie a justificativa antes de autorizar a exclusão permanente do contato e histórico.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {isLoadingDeletionRequests ? (
+              <div className="p-8 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
+                <Loader2 className="size-5 animate-spin text-primary" />
+                <span>Carregando solicitações pendentes...</span>
+              </div>
+            ) : pendingDeletionRequests.length === 0 ? (
+              <div className="p-6 text-center text-xs text-muted-foreground rounded-lg border border-border/60 bg-muted/20">
+                <span>Nenhuma solicitação pendente de exclusão no momento.</span>
+              </div>
+            ) : (
+              pendingDeletionRequests.map((req) => (
+                <div key={req.id} className="p-3 rounded-lg border border-border/70 bg-card space-y-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-foreground truncate">
+                      {req.thread?.guest_name || req.thread?.entity_id || "Contato"}
+                    </span>
+                    <span className="text-2xs text-muted-foreground font-mono">
+                      {new Date(req.created_at).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground bg-muted/30 p-2 rounded text-xs italic">
+                    "{req.reason}"
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-2xs text-muted-foreground">
+                      Solicitado por: <strong className="text-foreground">{req.requester?.full_name || "Colaborador"}</strong>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={Boolean(isReviewingRequest)}
+                        onClick={() => handleReviewDeletionRequest(req.id, false)}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
+                      >
+                        Recusar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        disabled={Boolean(isReviewingRequest)}
+                        onClick={() => handleReviewDeletionRequest(req.id, true)}
+                        className="h-11 min-h-11 px-3 text-xs font-bold gap-1 cursor-pointer"
+                      >
+                        {isReviewingRequest === req.id && <Loader2 className="size-3.5 animate-spin" />}
+                        Aprovar Exclusão
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSupervisorRequestsModalOpen(false)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>

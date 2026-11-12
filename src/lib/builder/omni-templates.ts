@@ -2116,7 +2116,1340 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
       },
     ],
   },
+
+  // 11. SISTEMA VERTICAL: GESTÃO PARA SALÕES, BARBEARIAS E ESTÉTICA (ESTILO BELASIS & AVEC)
+  {
+    id: "template_saas_beauty_belasis",
+    name: "Sistema de Gestão para Salão, Barbearia e Estética",
+    niche: "beauty_saas",
+    description:
+      "Landing page de vendas do software para salões e clínicas estilo Belasis e Avec: agenda online 24h, comissões automáticas, comanda eletrônica, fichas de anamnese, clube de assinaturas, simulador de comissões, vídeo, 3 planos com toggle anual/mensal, depoimentos e formulário de teste grátis 7 dias.",
+    badge: "Paridade Belasis & Avec",
+    blocks: [
+      {
+        type: "hero_minimal_split",
+        config: {
+          badgeText: "O SISTEMA MAIS COMPLETO DO MERCADO DA BELEZA",
+          title: "Organize sua agenda, zere faltas e aumente o faturamento do seu salão",
+          subtitle:
+            "Agendamento online 24h pelo WhatsApp e Instagram, cálculo automático de comissões da equipe, comanda digital e controle financeiro completo. Teste 7 dias grátis sem cartão de crédito.",
+          primaryCta: { label: "Começar Teste Grátis de 7 Dias", href: "#teste-gratis" },
+          secondaryCta: { label: "Ver Demonstração do Software", href: "#modulos" },
+          floatingStat: { label: "REDUÇÃO DE FALTAS", value: "-73% no-show", statusDot: true },
+        },
+      },
+      {
+        type: "infinite_marquee_ribbon",
+        config: {
+          title: "Mais de 12.000 salões, barbearias e clínicas confiam na nossa tecnologia",
+          direction: "left",
+          speedSeconds: 20,
+          pauseOnHover: true,
+          items: [
+            { id: "b-m1", text: "Studio Velvet Hair & Visagismo", badgeText: "Salão Conceito" },
+            { id: "b-m2", text: "Barbearia Dom Corleone", badgeText: "4 Unidades" },
+            { id: "b-m3", text: "Clínica DermaLuxe Estética Avançada", badgeText: "Biomédica" },
+            { id: "b-m4", text: "Espaço Glamour & Spa Urbano", badgeText: "Referência" },
+            { id: "b-m5", text: "Rede D'Ellas Esmalteria", badgeText: "Franquia" },
+            { id: "b-m6", text: "L'Atelier Cabelo & Make", badgeText: "Noivas" },
+          ],
+        },
+      },
+      {
+        type: "software_feature_tabs",
+        config: {
+          title: "Tudo o que seu salão precisa em um único sistema",
+          subtitle:
+            "Esqueça papéis, planilhas confusas e discussões no final do mês. Automatize toda a rotina da sua recepção e equipe profissional.",
+          badgeText: "MÓDULOS INTEGRADOS",
+          tabs: [
+            {
+              id: "tab-agenda",
+              tabLabel: "Agenda Inteligente 24h",
+              tabIconName: "Calendar",
+              title: "Seus clientes agendam pelo WhatsApp e Instagram a qualquer hora",
+              description:
+                "Agenda sincronizada em tempo real que bloqueia conflitos de horários e envia lembretes automáticos com botão de confirmação.",
+              badge: "Zera Faltas",
+              benefits: [
+                "Link de agendamento online personalizado para colocar na Bio do Instagram",
+                "Lembretes automáticos 24h e 2h antes do atendimento com confirmação",
+                "Cobrança de sinal e recebimento de Pix antecipado para garantir o horário",
+                "Bloqueio preventivo de clientes inadimplentes ou com histórico de faltas",
+              ],
+              ctaLabel: "Experimentar a Agenda Grátis",
+              ctaHref: "#teste-gratis",
+              statNumber: "+45 horas",
+              statLabel: "Economizadas por mês na recepção",
+            },
+            {
+              id: "tab-comissoes",
+              tabLabel: "Comissões & Rateio",
+              tabIconName: "Scissors",
+              title: "Cálculo de comissões 100% automático e sem atritos com profissionais",
+              description:
+                "Defina porcentagens personalizadas por profissional ou procedimento, desconte custos de produtos e gere o extrato em 1 clique.",
+              badge: "Sem Erros",
+              benefits: [
+                "Regras flexíveis de comissão: porcentagem, valor fixo ou tabela escalonada",
+                "Desconto automático de taxa de maquininha e custo de insumos (químicos)",
+                "Extrato digital transparente no aplicativo de cada profissional parceiro",
+                "Fechamento quinzenal ou mensal com comprovante detalhado em PDF",
+              ],
+              ctaLabel: "Ver Módulo de Comissões",
+              ctaHref: "#teste-gratis",
+              statNumber: "100% exato",
+              statLabel: "Zere discussões salariais no salão",
+            },
+            {
+              id: "tab-comandas",
+              tabLabel: "Comandas & Anamnese",
+              tabIconName: "Receipt",
+              title: "Comanda eletrônica ágil e fichas de anamnese personalizadas",
+              description:
+                "Abra atendimentos pelo celular ou tablet, lance produtos de consumo e guarde fotos de antes e depois dos clientes.",
+              badge: "Segurança",
+              benefits: [
+                "Lançamento de serviços e vendas de produtos na mesma comanda",
+                "Fichas de anamnese digital com assinatura na tela do tablet",
+                "Galeria de evolução de procedimentos com histórico fotográfico",
+                "Histórico completo de preferências e alergias do cliente",
+              ],
+              ctaLabel: "Conhecer Comanda Digital",
+              ctaHref: "#teste-gratis",
+              statNumber: "0 papel",
+              statLabel: "Operação 100% digital e segura",
+            },
+            {
+              id: "tab-assinaturas",
+              tabLabel: "Clube de Assinaturas",
+              tabIconName: "Sparkles",
+              title: "Faturamento recorrente garantido todo mês com planos e pacotes",
+              description:
+                "Crie planos de barba, cabelo ou manicure com cobrança mensal automática no cartão e aumente a retenção de clientes.",
+              badge: "Receita Previsível",
+              benefits: [
+                "Cobrança automática recorrente sem consumir o limite total do cliente",
+                "Controle de créditos e sessões restantes em tempo real",
+                "Aumento comprovado do ticket médio e da frequência semanal",
+                "Relatório de renovações automáticas e taxa de cancelamento",
+              ],
+              ctaLabel: "Ativar Clube de Assinatura",
+              ctaHref: "#teste-gratis",
+              statNumber: "+300%",
+              statLabel: "Mais previsibilidade financeira",
+            },
+          ],
+        },
+      },
+      {
+        type: "interactive_quote_calculator",
+        config: {
+          title: "Simulador de Comissões e Produtividade da Equipe",
+          subtitle:
+            "Calcule quanto tempo e dinheiro seu salão economiza ao automatizar a gestão de agendamentos e comissões.",
+          basePriceCents: 9900,
+          unitLabel: "Profissional Parceiro",
+          unitPluralLabel: "Profissionais Parceiros",
+          minUnits: 1,
+          maxUnits: 30,
+          defaultUnits: 5,
+          unitPriceCents: 2000,
+          options: [
+            {
+              id: "opt-whatsapp-confirm",
+              label: "Módulo de Confirmação Ativa no WhatsApp",
+              description: "Disparos automáticos com botão de confirmação e reagendamento.",
+              priceCents: 3900,
+              isDefault: true,
+            },
+            {
+              id: "opt-anamnese-digital",
+              label: "Fichas de Anamnese com Assinatura na Tela",
+              description: "Galeria de fotos antes/depois e termos de consentimento com validade.",
+              priceCents: 2900,
+              isDefault: false,
+            },
+          ],
+          whatsappNumber: "5511999998888",
+          submitButtonText: "Quero Este Plano no Meu Salão",
+          successMessage: "Simulação enviada com sucesso! Um consultor entrará em contato para ativar seus 7 dias grátis.",
+          disclaimer: "Valores com desconto especial na modalidade anual. Implantação e suporte inclusos sem custo extra.",
+        },
+      },
+      {
+        type: "video_section",
+        config: {
+          badge: "TOUR GUIADO PELO SISTEMA",
+          title: "Veja o sistema operando em menos de 3 minutos",
+          subtitle:
+            "Interface limpa, moderna e calibrada para iPad, celulares e computadores da recepção.",
+          video_url: "",
+          button_text: "Criar Conta de Teste Grátis",
+          button_link: "#teste-gratis",
+        },
+      },
+      {
+        type: "pricing_three_tiers",
+        config: {
+          title: "Planos Transparentes que Crescem com o Seu Salão",
+          subtitle:
+            "Sem taxa de adesão, sem taxa de cancelamento e com suporte humanizado em português.",
+          tiers: [
+            {
+              id: "tier-beauty-lite",
+              name: "Plano Lite",
+              badge: "Iniciante",
+              priceMonthlyCents: 9900,
+              priceAnnualCents: 7900,
+              description: "Ideal para profissionais autônomos, barbearias individuais e pequenos espaços.",
+              features: [
+                "Agenda online para celular e computador",
+                "Link de agendamento na Bio do Instagram",
+                "Comandas eletrônicas ilimitadas",
+                "Controle de caixa diário",
+                "Suporte via WhatsApp em horário comercial",
+              ],
+              ctaLabel: "Testar Lite Grátis",
+              ctaHref: "#teste-gratis",
+              isPopular: false,
+            },
+            {
+              id: "tier-beauty-pro",
+              name: "Plano Pro",
+              badge: "Mais Escolhido",
+              priceMonthlyCents: 18900,
+              priceAnnualCents: 14900,
+              description: "O pacote completo para salões e clínicas que querem automatizar tudo e crescer.",
+              features: [
+                "Tudo do plano Lite",
+                "Cálculo automático de comissões por profissional",
+                "Lembretes automáticos no WhatsApp que reduzem faltas",
+                "Fichas de anamnese digital com fotos",
+                "Controle completo de estoque e produtos",
+                "App exclusivo para os profissionais da equipe",
+              ],
+              ctaLabel: "Testar Pro Grátis",
+              ctaHref: "#teste-gratis",
+              isPopular: true,
+            },
+            {
+              id: "tier-beauty-scale",
+              name: "Plano Scale & Redes",
+              badge: "Corporativo",
+              priceMonthlyCents: 34900,
+              priceAnnualCents: 27900,
+              description: "Para grandes salões, redes de franquias e clínicas de estética de alto fluxo.",
+              features: [
+                "Tudo do plano Pro",
+                "Gestão multi-unidades com relatórios consolidados",
+                "Clube de assinaturas recorrente integrado",
+                "Emissor ilimitado de Notas Fiscais (NFS-e)",
+                "Gerente de contas e implantação assistida VIP",
+                "API pública de integração",
+              ],
+              ctaLabel: "Falar com Consultor",
+              ctaHref: "#teste-gratis",
+              isPopular: false,
+            },
+          ],
+        },
+      },
+      {
+        type: "testimonials_social_proof",
+        config: {
+          title: "Quem Usa, Recomenda: Salões que Multiplicaram o Faturamento",
+          subtitle: "Mais de 12.000 profissionais da beleza transformaram sua rotina diária.",
+          testimonials: [
+            {
+              id: "t-b1",
+              name: "Camila Guimarães",
+              role: "Proprietária do L'Atelier Concept (Campinas/SP)",
+              rating: 5,
+              comment:
+                "Antes eu perdia 2 domingos no mês calculando comissões em planilhas que sempre davam confusão com a equipe. Hoje o sistema faz tudo automático e cada profissional confere pelo celular.",
+              verified: true,
+            },
+            {
+              id: "t-b2",
+              name: "Rodrigo Silva",
+              role: "Fundador da Rede Barbearia Dom Corleone (4 unidades)",
+              rating: 5,
+              comment:
+                "O agendamento com confirmação no WhatsApp reduziu nossas faltas em mais de 70%. O cliente clica no link do Instagram, escolhe o barbeiro e já recebe o lembrete. É outro nível.",
+              verified: true,
+            },
+            {
+              id: "t-b3",
+              name: "Dra. Juliana Mendes",
+              role: "Diretora da Clínica DermaSkin Estética",
+              rating: 5,
+              comment:
+                "As fichas de anamnese com foto antes e depois deram uma segurança jurídica e profissionalismo incomparáveis aos nossos protocolos de atendimento.",
+              verified: true,
+            },
+          ],
+        },
+      },
+      {
+        type: "faq_clean_accordion",
+        config: {
+          title: "Dúvidas Frequentes sobre a Contratação",
+          subtitle: "Respostas diretas sobre implantação, migração de dados e suporte.",
+          items: [
+            {
+              id: "faq-b1",
+              question: "Como funciona o teste grátis de 7 dias?",
+              answer:
+                "Você cria sua conta em menos de 1 minuto, sem precisar informar cartão de crédito. Durante os 7 dias, tem acesso completo a todos os recursos do plano Pro para testar com sua equipe.",
+            },
+            {
+              id: "faq-b2",
+              question: "Tenho meus clientes em outro sistema ou planilha. Vocês ajudam na migração?",
+              answer:
+                "Sim! Nossa equipe de suporte realiza a importação gratuita da sua lista de clientes e produtos, sem risco de perder dados ou históricos.",
+            },
+            {
+              id: "faq-b3",
+              question: "O sistema exige instalação ou computador específico?",
+              answer:
+                "Não. O sistema é 100% em nuvem e funciona em qualquer celular (Android ou iPhone), iPad/tablet ou computador com internet.",
+            },
+            {
+              id: "faq-b4",
+              question: "Existe taxa de cancelamento ou contrato de fidelidade?",
+              answer:
+                "Zero fidelidade. No faturamento mensal você pode cancelar a qualquer momento sem nenhuma multa ou taxa oculta.",
+            },
+          ],
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Crie Sua Conta Gratuita e Comece em 2 Minutos",
+          subtitle: "Informe seus dados para liberar seu acesso imediato ao sistema com 7 dias grátis.",
+          submitButtonText: "Liberar Meu Acesso Grátis de 7 Dias",
+          whatsappNumber: "5511999998888",
+          showPhoneField: true,
+          showMessageField: true,
+          successMessage: "Acesso gerado com sucesso! Entraremos em contato no WhatsApp com seu login e tour guiado.",
+        },
+      },
+    ],
+  },
+
+  // 12. SISTEMA VERTICAL: GESTÃO & DELIVERY PARA RESTAURANTES (ESTILO IFOOD PARCEIROS & 99FOOD)
+  {
+    id: "template_saas_food_restaurante",
+    name: "Sistema de Gestão & Delivery para Restaurantes",
+    niche: "food_saas",
+    description:
+      "Landing page de vendas do sistema para restaurantes e delivery estilo iFood Parceiros: gestor de pedidos no balcão, cardápio digital com adicionais, logística Waesy Go com taxa fixa de R$ 0,99 vs 23% abusiva, promoções, calculadora de economia, vídeo da cozinha, planos com 1º mês grátis, depoimentos reais e credenciamento em 3 passos.",
+    badge: "Paridade iFood Parceiros",
+    blocks: [
+      {
+        type: "hero_minimal_split",
+        config: {
+          badgeText: "O CANAL DE VENDAS E GESTÃO LÍDER DA SUA CIDADE",
+          title: "Venda muito mais no delivery e balcão sem pagar comissões abusivas",
+          subtitle:
+            "Gestor de pedidos em tempo real, cardápio digital atraente, impressão automática na cozinha e opção de entregadores parceiros com taxa fixa de apenas R$ 0,99 por corrida.",
+          primaryCta: { label: "Cadastrar Meu Restaurante", href: "#credenciamento" },
+          secondaryCta: { label: "Calcular Economia de Taxas", href: "#calculadora" },
+          floatingStat: { label: "COMISSÃO ABUSIVA", value: "0% na sua loja", statusDot: true },
+        },
+      },
+      {
+        type: "infinite_marquee_ribbon",
+        config: {
+          title: "Compatível com as principais impressoras térmicas e sistemas de automação",
+          direction: "left",
+          speedSeconds: 22,
+          pauseOnHover: true,
+          items: [
+            { id: "f-m1", text: "Epson TM-T20X", badgeText: "Térmica" },
+            { id: "f-m2", text: "Bematech MP-4200 TH", badgeText: "Homologada" },
+            { id: "f-m3", text: "Elgin I9 & I8", badgeText: "Cozinha" },
+            { id: "f-m4", text: "Integração WhatsApp Oficial", badgeText: "Automática" },
+            { id: "f-m5", text: "Logística Waesy Go R$ 0,99", badgeText: "Taxa Zero" },
+            { id: "f-m6", text: "Repasses Semanais Garantidos", badgeText: "Sem Atraso" },
+          ],
+        },
+      },
+      {
+        type: "software_feature_tabs",
+        config: {
+          title: "Tudo que sua cozinha e balcão precisam para faturar alto",
+          subtitle:
+            "Do recebimento do pedido no app até a saída com o entregador, cada etapa sincronizada sem gargalos.",
+          badgeText: "RECURSOS OPERACIONAIS",
+          tabs: [
+            {
+              id: "tab-gestor",
+              tabLabel: "Gestor de Pedidos",
+              tabIconName: "Laptop",
+              title: "Receba, aprove e despache pedidos com alertas sonoros instantâneos",
+              description:
+                "Tela limpa para o balcão com kanban de preparo, separação por tempo de cozinha e impressão automática na impressora térmica.",
+              badge: "Sem Atrasos",
+              benefits: [
+                "Alerta sonoro alto e visual impossível de passar despercebido",
+                "Impressão automática dividida por praça (Cozinha, Bar, Balcão)",
+                "Ajuste em 1 toque do tempo estimado de entrega em horários de pico",
+                "Pausa emergencial da loja em caso de chuva ou falta de insumos",
+              ],
+              ctaLabel: "Testar o Gestor de Pedidos",
+              ctaHref: "#credenciamento",
+              statNumber: "3x mais rápido",
+              statLabel: "Na emissão e preparo da cozinha",
+            },
+            {
+              id: "tab-cardapio",
+              tabLabel: "Cardápio Digital",
+              tabIconName: "ShoppingCart",
+              title: "Cardápio que dá água na boca com fotos e personalização de adicionais",
+              description:
+                "Crie combos, grupos de opcionais obrigatórios (ex: ponto da carne, molhos), regras de meio-a-meio e promoções relâmpago.",
+              badge: "Alta Conversão",
+              benefits: [
+                "Grupos de adicionais e complementos ilimitados para elevar o ticket médio",
+                "Regras inteligentes para pizzas meio a meio com cobrança pela maior ou média",
+                "Atualização imediata de preços e itens pausados sem travar a operação",
+                "Fotos em alta resolução otimizadas para carregamento instantâneo no celular",
+              ],
+              ctaLabel: "Criar Cardápio Digital",
+              ctaHref: "#credenciamento",
+              statNumber: "+28% ticket",
+              statLabel: "Com sugestão inteligente de adicionais",
+            },
+            {
+              id: "tab-logistica",
+              tabLabel: "Logística Waesy Go",
+              tabIconName: "Truck",
+              title: "Entregadores parceiros com taxa fixa de R$ 0,99 por entrega",
+              description:
+                "Chega de perder 23% ou 27% do valor do seu prato em comissões abusivas. Chame entregadores verificados com rastreamento GPS em tempo real.",
+              badge: "Revolução Logística",
+              benefits: [
+                "Taxa fixa justa de R$ 0,99 por entrega concluída (sem porcentagens sobre a comida)",
+                "Rastreamento ao vivo por GPS com mapa compartilhado com o cliente",
+                "Código de confirmação de 4 dígitos na entrega que evita fraudes e calotes",
+                "Liberdade total para usar sua frota própria ou chamar entregadores do app",
+              ],
+              ctaLabel: "Simular Economia com Waesy Go",
+              ctaHref: "#calculadora",
+              statNumber: "R$ 0,99 fixo",
+              statLabel: "Economia de até R$ 8.000/mês em taxas",
+            },
+            {
+              id: "tab-promocoes",
+              tabLabel: "Promoções & Fidelidade",
+              tabIconName: "Flame",
+              title: "Atraia clientes nos dias fracos com cupons e cashback inteligente",
+              description:
+                "Dispare campanhas para clientes inativos, ofereça frete grátis inteligente e crie cupons com limite de usos por CPF.",
+              badge: "Mais Faturamento",
+              benefits: [
+                "Cupons promocionais com restrição por valor mínimo de pedido",
+                "Promoções automáticas para terça e quarta-feira de pouco movimento",
+                "Clube de fidelidade que estimula o cliente a pedir toda semana na sua loja",
+                "Comunicação direta com a base de clientes pelo WhatsApp oficial",
+              ],
+              ctaLabel: "Ver Ferramentas de Marketing",
+              ctaHref: "#credenciamento",
+              statNumber: "+40% pedidos",
+              statLabel: "Em dias tradicionalmente fracos",
+            },
+          ],
+        },
+      },
+      {
+        type: "interactive_quote_calculator",
+        config: {
+          title: "Calculadora de Economia: Waesy vs Marketplaces Tradicionais",
+          subtitle:
+            "Veja quanto dinheiro volta para o caixa da sua loja ao fugir das comissões de 23% dos aplicativos convencionais.",
+          basePriceCents: 11000,
+          unitLabel: "Pedido no Delivery / Dia",
+          unitPluralLabel: "Pedidos no Delivery / Dia",
+          minUnits: 10,
+          maxUnits: 200,
+          defaultUnits: 40,
+          unitPriceCents: 99,
+          options: [
+            {
+              id: "opt-entregador-parceiro",
+              label: "Chamada de Entregadores Waesy Go sob Demanda",
+              description: "Frota compartilhada de motoboys verificados com taxa fixa de R$ 0,99.",
+              priceCents: 4000,
+              isDefault: true,
+            },
+            {
+              id: "opt-repasse-rapido",
+              label: "Repasse em 7 Dias de Vendas Online",
+              description: "Fluxo de caixa acelerado para compras com Pix e cartão no aplicativo.",
+              priceCents: 2000,
+              isDefault: true,
+            },
+          ],
+          whatsappNumber: "5511999998888",
+          submitButtonText: "Quero Economizar no Meu Restaurante",
+          successMessage: "Simulação realizada! Nossa equipe de expansão entrará em contato para ativar sua loja.",
+          disclaimer:
+            "Comparativo baseado em ticket médio de R$ 60,00 e comissão de 23% cobrada pelas grandes redes tradicionais.",
+        },
+      },
+      {
+        type: "video_section",
+        config: {
+          badge: "DEMONSTRAÇÃO AO VIVO",
+          title: "Veja como a cozinha recebe e despacha em segundos",
+          subtitle:
+            "Demonstração do Gestor de Pedidos integrado à impressora térmica e aplicativo do entregador.",
+          video_url: "",
+          button_text: "Cadastrar Meu Estabelecimento",
+          button_link: "#credenciamento",
+        },
+      },
+      {
+        type: "pricing_three_tiers",
+        config: {
+          title: "Planos Feitos para Restaurantes de Todos os Portes",
+          subtitle: "Primeiro mês 100% gratuito. Sem cobrança se faturar menos de R$ 1.800 no mês.",
+          tiers: [
+            {
+              id: "tier-food-basico",
+              name: "Plano Básico (Frota Própria)",
+              badge: "Logística Própria",
+              priceMonthlyCents: 11000,
+              priceAnnualCents: 8900,
+              description: "Ideal para restaurantes que já possuem equipe própria de motoboys.",
+              features: [
+                "Gestor de Pedidos para balcão e cozinha",
+                "Cardápio digital atraente com fotos",
+                "Impressão automática em impressoras térmicas",
+                "Controle de áreas e bairros de entrega",
+                "Mensalidade grátis se faturar menos de R$ 1.800",
+                "Primeiro mês de teste gratuito",
+              ],
+              ctaLabel: "Quero o Plano Básico",
+              ctaHref: "#credenciamento",
+              isPopular: false,
+            },
+            {
+              id: "tier-food-entrega",
+              name: "Plano Entrega Waesy Go",
+              badge: "Mais Popular",
+              priceMonthlyCents: 15000,
+              priceAnnualCents: 11900,
+              description: "Acesso total à rede de entregadores parceiros com telemetria GPS e taxa fixa.",
+              features: [
+                "Tudo do Plano Básico",
+                "Chamada de entregadores parceiros 24/7",
+                "Taxa fixa de apenas R$ 0,99 por corrida",
+                "Rastreio em tempo real com mapa para o cliente",
+                "Seguro contra cancelamento e código de 4 dígitos",
+                "Primeiro mês gratuito",
+              ],
+              ctaLabel: "Quero o Plano Entrega",
+              ctaHref: "#credenciamento",
+              isPopular: true,
+            },
+            {
+              id: "tier-food-redes",
+              name: "Plano Redes & Franquias",
+              badge: "Multi-Lojas",
+              priceMonthlyCents: 29000,
+              priceAnnualCents: 23000,
+              description: "Para redes de restaurantes, franquias e dark kitchens com alto volume.",
+              features: [
+                "Tudo do Plano Entrega",
+                "Gestão de múltiplas unidades em painel único",
+                "Roteamento inteligente de pedidos pela loja mais próxima",
+                "Integração via API com seu ERP / Frente de Caixa",
+                "Gestor de contas dedicado e suporte VIP 24h",
+                "Relatórios consolidados de CMV e vendas",
+              ],
+              ctaLabel: "Falar com Consultor",
+              ctaHref: "#credenciamento",
+              isPopular: false,
+            },
+          ],
+        },
+      },
+      {
+        type: "testimonials_social_proof",
+        config: {
+          title: "Histórias Reais de Quem Recuperou a Margem de Lucro",
+          subtitle: "Mais de 3.500 restaurantes, pizzarias e hamburguerias vendendo todos os dias.",
+          testimonials: [
+            {
+              id: "t-f1",
+              name: "Marcio Fagundes",
+              role: "Sócio do Donatello Burger & Pizza",
+              rating: 5,
+              comment:
+                "Nosso delivery faturava R$ 45 mil por mês no app vermelho, mas quase R$ 11 mil ficavam com eles só em comissão. Com o sistema Waesy e a entrega Waesy Go, recuperamos nossa margem e agora sobra dinheiro no caixa.",
+              verified: true,
+            },
+            {
+              id: "t-f2",
+              name: "Fernanda Takahashi",
+              role: "Proprietária do Sushi Ya Delivery",
+              rating: 5,
+              comment:
+                "O gestor de pedidos nunca trava, os alertas sonoros são ótimos e a personalização de combos de sushi fez o ticket médio subir na primeira semana.",
+              verified: true,
+            },
+            {
+              id: "t-f3",
+              name: "Carlos Eduardo",
+              role: "Gerente Geral da Cantina Nonna Rosa",
+              rating: 5,
+              comment:
+                "A facilidade de pausar produtos e criar promoções relâmpago de terça a quinta transformou nossas noites mais fracas em noites cheias.",
+              verified: true,
+            },
+          ],
+        },
+      },
+      {
+        type: "faq_clean_accordion",
+        config: {
+          title: "Perguntas Frequentes de Restaurantes Parceiros",
+          subtitle: "Tudo o que você precisa saber antes de cadastrar seu restaurante.",
+          items: [
+            {
+              id: "faq-f1",
+              question: "O que é necessário para cadastrar meu restaurante?",
+              answer:
+                "Você só precisa ter um CNPJ ativo (pode ser MEI), conta bancária vinculada ao CNPJ para repasses e um celular ou computador para operar o Gestor de Pedidos.",
+            },
+            {
+              id: "faq-f2",
+              question: "Quando começo a pagar a mensalidade?",
+              answer:
+                "O primeiro mês é 100% gratuito. Além disso, a mensalidade só é cobrada caso o restaurante fature mais de R$ 1.800,00 no mês. Se faturar menos, você não paga mensalidade.",
+            },
+            {
+              id: "faq-f3",
+              question: "Como funciona a entrega com taxa fixa de R$ 0,99?",
+              answer:
+                "Diferente de marketplaces que cobram porcentagens absurdas (de 23% a 27%), no Waesy Go a taxa da plataforma é fixa em R$ 0,99 por corrida concluída. O valor da corrida vai integral para o entregador e você mantém seu lucro.",
+            },
+            {
+              id: "faq-f4",
+              question: "Como recebo o dinheiro das vendas online?",
+              answer:
+                "Os repasses das vendas pagas no cartão/Pix pelo app são creditados semanalmente de forma automática na sua conta bancária sem burocracia.",
+            },
+          ],
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Cadastre Seu Restaurante em Poucos Minutos",
+          subtitle: "Preencha os dados da sua empresa para ativarmos seu cardápio e iniciarmos os testes gratuitos.",
+          submitButtonText: "Concluir Cadastro e Começar a Vender",
+          whatsappNumber: "5511999998888",
+          showPhoneField: true,
+          showMessageField: true,
+          successMessage: "Cadastro recebido! Nossa equipe entrará em contato no WhatsApp com seu acesso ao Gestor de Pedidos.",
+        },
+      },
+    ],
+  },
+
+  // 13. SISTEMA VERTICAL: FORÇA DE VENDAS & E-COMMERCE B2B (ESTILO MERCOS)
+  {
+    id: "template_saas_b2b_mercos",
+    name: "Software de Força de Vendas e E-commerce B2B",
+    niche: "b2b_saas",
+    description:
+      "Landing page de vendas do software comercial para indústrias e distribuidoras estilo Mercos: app força de vendas 100% offline, catálogo digital com fotos, políticas comerciais e Saldo Flex, portal do cliente B2B 24/7, integração com mais de 250 ERPs (Totvs, Sankhya, Bling), calculadora de ROI, planos e trial 7 dias.",
+    badge: "Paridade Mercos B2B",
+    blocks: [
+      {
+        type: "hero_minimal_split",
+        config: {
+          badgeText: "O SOFTWARE B2B LÍDER EM EMISSÃO DE PEDIDOS NO BRASIL",
+          title: "Potencialize sua força de vendas e venda 24/7 com E-commerce B2B",
+          subtitle:
+            "Aplicativo 100% offline para representantes emitirem pedidos na rua, catálogo digital com fotos, políticas comerciais rígidas e integração nativa com seu ERP.",
+          primaryCta: { label: "Testar Grátis por 7 Dias", href: "#trial-b2b" },
+          secondaryCta: { label: "Agendar Demonstração VIP", href: "#modulos" },
+          floatingStat: { label: "VOLUME EMITIDO", value: "+R$ 40 Bilhões", statusDot: true },
+        },
+      },
+      {
+        type: "infinite_marquee_ribbon",
+        config: {
+          title: "Integração homologada com mais de 250 ERPs do mercado",
+          direction: "left",
+          speedSeconds: 22,
+          pauseOnHover: true,
+          items: [
+            { id: "m-m1", text: "Totvs Protheus & Datasul", badgeText: "Nativo" },
+            { id: "m-m2", text: "Senior Sistemas ERP", badgeText: "Homologado" },
+            { id: "m-m3", text: "Sankhya Om", badgeText: "API Oficial" },
+            { id: "m-m4", text: "Bling ERP", badgeText: "Plug & Play" },
+            { id: "m-m5", text: "Omie Gestão", badgeText: "Em Nuvem" },
+            { id: "m-m6", text: "Tiny ERP", badgeText: "Sincronizado" },
+            { id: "m-m7", text: "SAP Business One", badgeText: "Enterprise" },
+          ],
+        },
+      },
+      {
+        type: "software_feature_tabs",
+        config: {
+          title: "A esteira completa para indústrias e distribuidoras venderem mais",
+          subtitle:
+            "Do representante na rua até a expedição no armazém, dados sincronizados sem digitação manual de pedidos.",
+          badgeText: "RECURSOS DE GESTÃO B2B",
+          tabs: [
+            {
+              id: "tab-offline",
+              tabLabel: "Força de Vendas Offline",
+              tabIconName: "Smartphone",
+              title: "Aplicativo para representantes que funciona 100% offline",
+              description:
+                "Emita pedidos, consulte estoque, limites de crédito e histórico de compras do cliente mesmo sem nenhum sinal de internet.",
+              badge: "Sem Internet",
+              benefits: [
+                "Funcionamento offline total em celulares e tablets Android e iOS",
+                "Consulta rápida de estoque atualizado e prazo de entrega por lote",
+                "Sincronização automática em segundo plano assim que encontrar sinal",
+                "Histórico das últimas compras e ciclo de reposição de cada cliente",
+              ],
+              ctaLabel: "Testar Aplicativo Força de Vendas",
+              ctaHref: "#trial-b2b",
+              statNumber: "0 atrasos",
+              statLabel: "Pedidos caem no ERP no mesmo segundo",
+            },
+            {
+              id: "tab-catalogo",
+              tabLabel: "Catálogo Digital",
+              tabIconName: "ShoppingBag",
+              title: "Catálogo visual de produtos com fotos em alta e tabelas personalizadas",
+              description:
+                "Apresente produtos de forma profissional com fotos em alta definição, especificações técnicas e preços calculados conforme a tabela do cliente.",
+              badge: "Substitui Papel",
+              benefits: [
+                "Exibição de fotos em alta resolução com zoom e dados técnicos",
+                "Tabelas de preços dinâmicas atribuídas automaticamente por canal e estado",
+                "Filtros ágeis por categoria, marca, disponibilidade e lançamentos",
+                "Fim dos catálogos impressos desatualizados e caros",
+              ],
+              ctaLabel: "Conhecer o Catálogo Digital",
+              ctaHref: "#trial-b2b",
+              statNumber: "+32%",
+              statLabel: "No mix de produtos vendidos",
+            },
+            {
+              id: "tab-politicas",
+              tabLabel: "Políticas Comerciais & Flex",
+              tabIconName: "ShieldCheck",
+              title: "Regras de preço, descontos máximos e Saldo Flex sem perder margem",
+              description:
+                "Garanta a lucratividade da empresa com limites rígidos de desconto, regras fiscais automáticas por UF (ST e ICMS) e controle de conta corrente do vendedor.",
+              badge: "Blindagem de Margem",
+              benefits: [
+                "Bloqueio de pedidos com descontos fora da alçada permitida",
+                "Cálculo automático de impostos, substituição tributária (ST) e frete",
+                "Gestão de Saldo Flex para representantes negociarem com autonomia responsável",
+                "Validação em tempo real do limite de crédito e títulos em aberto",
+              ],
+              ctaLabel: "Ver Gestão de Políticas",
+              ctaHref: "#trial-b2b",
+              statNumber: "100% seguro",
+              statLabel: "Sem pedidos errados na faturamento",
+            },
+            {
+              id: "tab-b2b-store",
+              tabLabel: "E-commerce B2B 24/7",
+              tabIconName: "Laptop",
+              title: "Canal de autoatendimento para clientes recomprarem a qualquer hora",
+              description:
+                "Loja virtual B2B exclusiva para seus clientes lojistas emitirem pedidos de reposição com as condições e prazos comerciais acordados.",
+              badge: "Vendas 24 Horas",
+              benefits: [
+                "Portal B2B com login exclusivo por CNPJ e condições personalizadas",
+                "Emissão de 2ª via de boleto bancário e download de XML da nota fiscal",
+                "Reposição rápida com base nos pedidos anteriores em 2 cliques",
+                "Comissão do representante garantida mesmo nas compras feitas online",
+              ],
+              ctaLabel: "Ativar Loja B2B",
+              ctaHref: "#trial-b2b",
+              statNumber: "+40% recompras",
+              statLabel: "Fora do horário comercial",
+            },
+            {
+              id: "tab-bi",
+              tabLabel: "Inteligência & Curva ABC",
+              tabIconName: "BarChart3",
+              title: "Mais de 30 relatórios gerenciais e acompanhamento de metas",
+              description:
+                "Identifique clientes que estão sumindo (churn), analise a Curva ABC de compradores e produtos, e acompanhe o ranking de metas da equipe.",
+              badge: "Decisões com Dados",
+              benefits: [
+                "Curva ABC de clientes para focar esforços nas contas mais lucrativas",
+                "Alertas automáticos de positivação e clientes em queda de compras",
+                "Dashboard de metas diárias, semanais e mensais por representante",
+                "Relatórios de ticket médio, produtos mais vendidos e margem bruta",
+              ],
+              ctaLabel: "Explorar Relatórios",
+              ctaHref: "#trial-b2b",
+              statNumber: "+25% positivação",
+              statLabel: "Na carteira ativa de clientes",
+            },
+          ],
+        },
+      },
+      {
+        type: "interactive_quote_calculator",
+        config: {
+          title: "Simulador de Retorno sobre Investimento (ROI B2B)",
+          subtitle:
+            "Calcule quanto tempo sua equipe economiza ao eliminar a digitação manual de pedidos e retrabalho.",
+          basePriceCents: 9900,
+          unitLabel: "Representante Comercial",
+          unitPluralLabel: "Representantes Comerciais",
+          minUnits: 1,
+          maxUnits: 100,
+          defaultUnits: 8,
+          unitPriceCents: 9900,
+          options: [
+            {
+              id: "opt-ecommerce-b2b",
+              label: "Portal E-commerce B2B Integrado",
+              description: "Canal de vendas online exclusivo para clientes PJ recomprarem 24/7.",
+              priceCents: 39000,
+              isDefault: true,
+            },
+            {
+              id: "opt-erp-connector",
+              label: "Conector de Integração Bidirecional com ERP",
+              description: "Sincronização automática de produtos, clientes, estoque e pedidos.",
+              priceCents: 25000,
+              isDefault: true,
+            },
+          ],
+          whatsappNumber: "5511999998888",
+          submitButtonText: "Solicitar Proposta Corporativa",
+          successMessage: "Simulação realizada! Nossa equipe de especialistas B2B apresentará uma proposta formal.",
+          disclaimer:
+            "Valores com faturamento mensal. Consulte condições especiais e descontos para planos anuais corporativos.",
+        },
+      },
+      {
+        type: "video_section",
+        config: {
+          badge: "SOFTWARE EM AÇÃO",
+          title: "Da rua até o armazém: veja o fluxo de um pedido",
+          subtitle:
+            "Demonstração de emissão de pedido offline no tablet e sincronização automática com o ERP.",
+          video_url: "",
+          button_text: "Testar por 7 Dias Grátis",
+          button_link: "#trial-b2b",
+        },
+      },
+      {
+        type: "pricing_three_tiers",
+        config: {
+          title: "Planos Estruturados para o Tamanho da sua Operação",
+          subtitle: "Teste grátis por 7 dias sem compromisso. Implantação ágil com acompanhamento especializado.",
+          tiers: [
+            {
+              id: "tier-b2b-essencial",
+              name: "Plano Essencial",
+              badge: "Equipes Enxutas",
+              priceMonthlyCents: 9900,
+              priceAnnualCents: 7900,
+              description: "Para distribuidoras e representações comerciais de até 5 usuários.",
+              features: [
+                "Aplicativo Força de Vendas 100% offline",
+                "Catálogo digital de produtos com fotos",
+                "Controle de tabelas de preços e descontos",
+                "Histórico de clientes e últimos pedidos",
+                "Exportação de relatórios em Excel/PDF",
+                "Suporte prioritário por chat e e-mail",
+              ],
+              ctaLabel: "Testar Essencial",
+              ctaHref: "#trial-b2b",
+              isPopular: false,
+            },
+            {
+              id: "tier-b2b-pro",
+              name: "Plano Pro",
+              badge: "Mais Escolhido",
+              priceMonthlyCents: 15900,
+              priceAnnualCents: 12900,
+              description: "Para empresas estruturadas que necessitam de integração com ERP.",
+              features: [
+                "Tudo do plano Essencial",
+                "Integração bidirecional com seu ERP",
+                "Políticas comerciais avançadas e travas de desconto",
+                "Portal do Cliente B2B com 2ª via de boletos",
+                "Gestão de metas e comissões da equipe",
+                "Treinamento remoto para representantes",
+              ],
+              ctaLabel: "Testar Pro",
+              ctaHref: "#trial-b2b",
+              isPopular: true,
+            },
+            {
+              id: "tier-b2b-enterprise",
+              name: "Plano Performance & Enterprise",
+              badge: "Corporativo",
+              priceMonthlyCents: 24900,
+              priceAnnualCents: 19900,
+              description: "Para indústrias e grandes distribuidoras com processos complexos.",
+              features: [
+                "Tudo do plano Pro",
+                "Gestão completa de Saldo Flex para negociadores",
+                "Relatórios de inteligência e Curva ABC de clientes",
+                "Check-in/Check-out de visitas com telemetria GPS",
+                "Módulo de E-commerce B2B White Label exclusivo",
+                "Gerente de sucesso dedicado e SLA de atendimento VIP",
+              ],
+              ctaLabel: "Falar com Consultor B2B",
+              ctaHref: "#trial-b2b",
+              isPopular: false,
+            },
+          ],
+        },
+      },
+      {
+        type: "testimonials_social_proof",
+        config: {
+          title: "Líderes de Mercado que Confiam na Plataforma",
+          subtitle: "Mais de 10.000 indústrias, distribuidoras e representações comerciais utilizam a solução diariamente.",
+          testimonials: [
+            {
+              id: "t-m1",
+              name: "Eduardo Silveira",
+              role: "Diretor Comercial da Distribuidora Alvorada",
+              rating: 5,
+              comment:
+                "Nossos 35 representantes gastavam horas ligando para a matriz para saber se tinha produto em estoque ou se o cliente tinha crédito. Com o aplicativo offline, eles fecham o pedido na hora e o estoque já é reservado no Protheus.",
+              verified: true,
+            },
+            {
+              id: "t-m2",
+              name: "Renata Vasconcellos",
+              role: "Gerente de TI da Indústria MetalSul",
+              rating: 5,
+              comment:
+                "A integração com o nosso ERP foi impecável. Eliminamos 100% da digitação de pedidos e os erros fiscais de ICMS-ST simplesmente zeraram.",
+              verified: true,
+            },
+            {
+              id: "t-m3",
+              name: "Gustavo Barreto",
+              role: "Escritório de Representação Sul Comercial",
+              rating: 5,
+              comment:
+                "O E-commerce B2B foi uma virada de chave. Nossos clientes repõem mercadoria no sábado e domingo sem precisar nos incomodar e a nossa comissão continua caindo normal.",
+              verified: true,
+            },
+          ],
+        },
+      },
+      {
+        type: "faq_clean_accordion",
+        config: {
+          title: "Dúvidas Frequentes sobre a Solução B2B",
+          subtitle: "Esclarecimentos sobre integração de sistemas, suporte e implantação.",
+          items: [
+            {
+              id: "faq-m1",
+              question: "Como funciona a integração com o meu ERP?",
+              answer:
+                "Possuímos conectores prontos para os principais ERPs do mercado (Totvs, Senior, Sankhya, Bling, Omie, Tiny, SAP B1 e outros). A sincronização de clientes, produtos, preços e pedidos ocorre automaticamente em segundo plano via API segura.",
+            },
+            {
+              id: "faq-m2",
+              question: "O aplicativo realmente funciona sem internet?",
+              answer:
+                "Sim. O banco de dados fica armazenado no dispositivo do representante. Ele pode consultar fotos, preços, limite de crédito e emitir pedidos mesmo em fazendas, estradas ou depósitos sem sinal. Assim que o aparelho detecta sinal Wi-Fi ou 4G, os pedidos são transmitidos ao ERP.",
+            },
+            {
+              id: "faq-m3",
+              question: "Como funciona o período de teste de 7 dias?",
+              answer:
+                "Você cadastra sua empresa gratuitamente, recebe acesso imediato e pode baixar o aplicativo para testar com sua equipe durante 7 dias sem pagar nada e sem cartão de crédito.",
+            },
+            {
+              id: "faq-m4",
+              question: "A equipe de representantes recebe treinamento?",
+              answer:
+                "Sim. Nossos especialistas realizam o onboarding e fornecem materiais práticos em vídeo para que seus vendedores comecem a emitir pedidos no mesmo dia.",
+            },
+          ],
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Agende uma Demonstração Personalizada ou Inicie o Trial",
+          subtitle: "Nossa equipe de consultores B2B apresentará a plataforma configurada para o segmento da sua indústria ou distribuidora.",
+          submitButtonText: "Solicitar Demonstração Gratuita",
+          whatsappNumber: "5511999998888",
+          showPhoneField: true,
+          showMessageField: true,
+          successMessage: "Solicitação recebida com sucesso! Um especialista em vendas B2B entrará em contato em até 2 horas úteis.",
+        },
+      },
+    ],
+  },
+
+  // 14. SISTEMA VERTICAL: E-COMMERCE & PICKING PARA SUPERMERCADOS (ESTILO OSUPER)
+  {
+    id: "template_saas_supermarket_osuper",
+    name: "Plataforma de E-commerce & Picking para Supermercados",
+    niche: "grocery_saas",
+    description:
+      "Landing page de vendas da plataforma de e-grocery para supermercados e atacarejos estilo OSuper: aplicativo e site white label próprio, separador inteligente de gôndola (Picking & Packing), pesagem fracionada de hortifrúti, substituição de produtos via WhatsApp, encartes digitais, simulador de viabilidade, planos e agendamento de diagnóstico.",
+    badge: "Paridade OSuper",
+    blocks: [
+      {
+        type: "hero_minimal_split",
+        config: {
+          badgeText: "A PLATAFORMA LÍDER DE E-COMMERCE PARA O SETOR SUPERMERCADISTA",
+          title: "O e-commerce e aplicativo próprio da sua rede de supermercados",
+          subtitle:
+            "Digitalize sua loja física com picking inteligente nas gôndolas, pesagem fracionada de hortifrúti, integração direta com seu PDV/ERP e entrega expressa ou clique & retire.",
+          primaryCta: { label: "Solicitar Diagnóstico e Demonstração", href: "#diagnostico-mercado" },
+          secondaryCta: { label: "Conhecer o Módulo de Picking", href: "#modulos" },
+          floatingStat: { label: "ASSERTIVIDADE DE PICKING", value: "99.4% no carrinho", statusDot: true },
+        },
+      },
+      {
+        type: "infinite_marquee_ribbon",
+        config: {
+          title: "Integração direta com os principais PDVs e softwares do setor supermercadista",
+          direction: "left",
+          speedSeconds: 22,
+          pauseOnHover: true,
+          items: [
+            { id: "s-m1", text: "Sysmo Sistemas PDV", badgeText: "Homologado" },
+            { id: "s-m2", text: "Scanntech Varejo", badgeText: "Promoções" },
+            { id: "s-m3", text: "VR Software Supermercados", badgeText: "Integrado" },
+            { id: "s-m4", text: "Arius Sistemas", badgeText: "PDV" },
+            { id: "s-m5", text: "Balanças Toledo Prix", badgeText: "Pesagem" },
+            { id: "s-m6", text: "Filizola Balanças", badgeText: "Checkout" },
+            { id: "s-m7", text: "RMS Totvs Supermercados", badgeText: "ERP" },
+          ],
+        },
+      },
+      {
+        type: "software_feature_tabs",
+        config: {
+          title: "Tecnologia de ponta pensada para a complexidade do varejo alimentar",
+          subtitle:
+            "Muito além de um e-commerce tradicional: ferramentas específicas para resolver pesagem, substituição de itens e rotas nas gôndolas.",
+          badgeText: "MÓDULOS DE E-GROCERY",
+          tabs: [
+            {
+              id: "tab-whitelabel",
+              tabLabel: "App & Site White Label",
+              tabIconName: "Smartphone",
+              title: "Canais de venda próprios com a marca e cores da sua rede",
+              description:
+                "Aplicativo nas lojas da Apple e Google, e site responsivo com o logotipo e identidade do seu supermercado, sem competir com terceiros.",
+              badge: "Marca Própria",
+              benefits: [
+                "Aplicativo nativo para iOS e Android publicado na conta da sua empresa",
+                "Site rápido e otimizado com navegação intuitiva por corredores virtuais",
+                "Clube de descontos próprio com cupons exclusivos ativados no aplicativo",
+                "Total soberania sobre sua base de clientes sem intermediários",
+              ],
+              ctaLabel: "Ver Modelo de Aplicativo Próprio",
+              ctaHref: "#diagnostico-mercado",
+              statNumber: "+45% fidelidade",
+              statLabel: "Dos clientes que compram pelo app próprio",
+            },
+            {
+              id: "tab-picking",
+              tabLabel: "Picking & Packing Inteligente",
+              tabIconName: "ShoppingCart",
+              title: "Separador de pedidos nas gôndolas com rota lógica e leitor de código de barras",
+              description:
+                "O aplicativo de picking guia o operador pelos corredores no menor trajeto físico possível, conferindo códigos de barras e agilizando a montagem das caixas.",
+              badge: "Eficiência Máxima",
+              benefits: [
+                "Trajeto inteligente na loja que agrupa itens por seção (hortifrúti, frios, secos)",
+                "Conferência via câmera do celular ou leitor laser para evitar erros de despacho",
+                "Múltiplos pedidos separados simultaneamente pelo mesmo operador (multi-picking)",
+                "Redução comprovada do tempo de separação de 35 para 12 minutos por compra",
+              ],
+              ctaLabel: "Conhecer o Separador de Pedidos",
+              ctaHref: "#diagnostico-mercado",
+              statNumber: "12 min",
+              statLabel: "Tempo médio de separação por pedido",
+            },
+            {
+              id: "tab-pesagem",
+              tabLabel: "Pesagem Fracionada & Balanças",
+              tabIconName: "Receipt",
+              title: "Pesagem exata de hortifrúti, padaria e açougue com balança integrada",
+              description:
+                "Cobrança precisa por peso real: o cliente pede 500g, o separador pesa 530g e o sistema recalcula o valor automaticamente no cartão sem estorno manual.",
+              badge: "Zero Prejuízo",
+              benefits: [
+                "Integração nativa com balanças de conferência (Toledo Prix, Filizola)",
+                "Ajuste automático de valor no cartão conforme o peso exato separado",
+                "Permite ao cliente escolher o ponto de maturação de frutas e cortes de carne",
+                "Fim das divergências entre peso estimado e peso efetivamente entregue",
+              ],
+              ctaLabel: "Ver Módulo de Pesagem",
+              ctaHref: "#diagnostico-mercado",
+              statNumber: "100% exato",
+              statLabel: "Sem perdas na pesagem fracionada",
+            },
+            {
+              id: "tab-rupturas",
+              tabLabel: "Gestão de Rupturas & WhatsApp",
+              tabIconName: "Users",
+              title: "Substituição ágil de produtos em falta com comunicação direta",
+              description:
+                "Se um item estiver esgotado na gôndola, o operador sugere uma substituição com foto diretamente no WhatsApp do cliente para aprovação com 1 toque.",
+              badge: "Sem Ruptura",
+              benefits: [
+                "Sugestão inteligente de produtos alternativos da mesma marca ou categoria",
+                "Envio automático de mensagem e foto no WhatsApp do comprador",
+                "O cliente aprova ou rejeita com 1 toque sem precisar ligar para o SAC",
+                "Atualização automática do status de ruptura no ERP para reabastecimento",
+              ],
+              ctaLabel: "Ver Gestão de Substituições",
+              ctaHref: "#diagnostico-mercado",
+              statNumber: "94% aceite",
+              statLabel: "Nas substituições sugeridas com foto",
+            },
+            {
+              id: "tab-encarte",
+              tabLabel: "Encartes & Tabloide Digital",
+              tabIconName: "Flame",
+              title: "Encarte digital interativo de ofertas integrado direto ao carrinho",
+              description:
+                "Transforme o clássico folheto de ofertas impresso em um tabloide digital no WhatsApp onde o cliente toca no produto e ele já entra na sacola de compras.",
+              badge: "Engajamento Alto",
+              benefits: [
+                "Folheto digital interativo com produtos clicáveis que vão direto ao carrinho",
+                "Distribuição automatizada de ofertas para listas de transmissão do WhatsApp",
+                "Economia de até 80% nos custos de gráfica e impressão de encartes em papel",
+                "Relatório em tempo real de quais ofertas tiveram mais cliques e compras",
+              ],
+              ctaLabel: "Criar Encarte Digital",
+              ctaHref: "#diagnostico-mercado",
+              statNumber: "80% economia",
+              statLabel: "Em custos de gráfica e distribuição de encartes",
+            },
+          ],
+        },
+      },
+      {
+        type: "interactive_quote_calculator",
+        config: {
+          title: "Simulador de Potencial Digital da sua Loja ou Rede",
+          subtitle:
+            "Estime o faturamento adicional que o e-commerce próprio e o picking inteligente trarão para o seu supermercado.",
+          basePriceCents: 49000,
+          unitLabel: "Loja Física na Rede",
+          unitPluralLabel: "Lojas Físicas na Rede",
+          minUnits: 1,
+          maxUnits: 20,
+          defaultUnits: 2,
+          unitPriceCents: 25000,
+          options: [
+            {
+              id: "opt-app-nativo",
+              label: "Aplicativo Nativo Próprio (iOS e Android)",
+              description: "Publicação do app com ícone e nome da sua marca nas lojas oficiais.",
+              priceCents: 40000,
+              isDefault: true,
+            },
+            {
+              id: "opt-picking-multi",
+              label: "Multi-Picking Simultâneo para até 10 Operadores",
+              description: "Separação paralela de múltiplas compras ao mesmo tempo nas gôndolas.",
+              priceCents: 30000,
+              isDefault: true,
+            },
+          ],
+          whatsappNumber: "5511999998888",
+          submitButtonText: "Solicitar Diagnóstico de Viabilidade Digital",
+          successMessage: "Diagnóstico solicitado com sucesso! Nossa equipe de especialistas supermercadistas entrará em contato.",
+          disclaimer:
+            "Projeção baseada em dados médios do setor supermercadista brasileiro (e-grocery representa entre 4% a 8% do faturamento da loja física).",
+        },
+      },
+      {
+        type: "video_section",
+        config: {
+          badge: "TECNOLOGIA NA PRÁTICA",
+          title: "Veja o processo de separação em uma loja real",
+          subtitle:
+            "Acompanhe um operador separando uma compra de 40 itens em menos de 15 minutos com o aplicativo de picking.",
+          video_url: "",
+          button_text: "Agendar Demonstração ao Vivo",
+          button_link: "#diagnostico-mercado",
+        },
+      },
+      {
+        type: "pricing_three_tiers",
+        config: {
+          title: "Estruturas Comerciais Sob Medida para Redes de Supermercados",
+          subtitle: "Implantação assistida, treinamento da equipe de pickers e conexão direta com seu ERP e PDV.",
+          tiers: [
+            {
+              id: "tier-supermarket-loja-unica",
+              name: "Loja Única / Supermercado Independente",
+              badge: "Loja Individual",
+              priceMonthlyCents: 49000,
+              priceAnnualCents: 39000,
+              description: "Para supermercados e hortifrútis de 1 loja física que querem iniciar no digital.",
+              features: [
+                "Site e Web App próprio com as cores do mercado",
+                "Aplicativo de Picking & Packing para 2 operadores",
+                "Pesagem fracionada integrada para hortifrúti",
+                "Gestão de rupturas e substituição via WhatsApp",
+                "Integração de preços e estoque com seu PDV",
+                "Suporte técnico com atendimento prioritário",
+              ],
+              ctaLabel: "Solicitar Proposta",
+              ctaHref: "#diagnostico-mercado",
+              isPopular: false,
+            },
+            {
+              id: "tier-supermarket-rede-media",
+              name: "Rede Média (2 a 5 Lojas)",
+              badge: "Mais Escolhido",
+              priceMonthlyCents: 89000,
+              priceAnnualCents: 71000,
+              description: "A solução completa para redes em expansão que precisam de aplicativo nativo próprio.",
+              features: [
+                "Tudo do plano Loja Única",
+                "Aplicativo nativo próprio para iOS e Android",
+                "Roteamento automático do pedido pela loja mais próxima",
+                "Multi-picking simultâneo para até 10 operadores",
+                "Encartes e tabloides digitais interativos",
+                "Módulo de expedição e motoristas (Clique & Retire e Entrega)",
+              ],
+              ctaLabel: "Solicitar Diagnóstico",
+              ctaHref: "#diagnostico-mercado",
+              isPopular: true,
+            },
+            {
+              id: "tier-supermarket-enterprise",
+              name: "Grandes Redes & Atacarejos",
+              badge: "Enterprise",
+              priceMonthlyCents: 159000,
+              priceAnnualCents: 129000,
+              description: "Para grandes redes, hipermercados e atacarejos com alto volume de pedidos.",
+              features: [
+                "Tudo do plano Rede Média",
+                "Suporte a lojas ilimitadas e dark stores dedicadas",
+                "Operadores e pickers ilimitados",
+                "Infraestrutura de alta escala em nuvem (suporta feirões e Black Friday)",
+                "Integração personalizada com ERPs proprietários ou legados",
+                "Gerente de contas e equipe de engenharia dedicada",
+              ],
+              ctaLabel: "Falar com Consultor Enterprise",
+              ctaHref: "#diagnostico-mercado",
+              isPopular: false,
+            },
+          ],
+        },
+      },
+      {
+        type: "testimonials_social_proof",
+        config: {
+          title: "O Que Dizem os Diretores e Gerentes de Redes de Supermercados",
+          subtitle: "Depoimentos de quem transformou a operação da loja física em uma potência digital.",
+          testimonials: [
+            {
+              id: "t-s1",
+              name: "Valter Campagnolo",
+              role: "Diretor de Operações da Rede SuperMax (6 lojas)",
+              rating: 5,
+              comment:
+                "Nossa maior preocupação era o hortifrúti e as carnes. O módulo de pesagem do sistema resolveu 100% disso: o cliente pede 800g de alcatra, o açougueiro corta 820g e o sistema ajusta a cobrança sem dar prejuízo. Hoje o e-commerce representa 7% das nossas vendas totais.",
+              verified: true,
+            },
+            {
+              id: "t-s2",
+              name: "Claudia Regina",
+              role: "Gerente de E-commerce do Hipermercado Estrela",
+              rating: 5,
+              comment:
+                "O aplicativo de picking reduziu o tempo de separação pela metade. O trajeto inteligente faz os meninos pegarem todos os itens de cada corredor de uma vez, sem ficar andando em círculos pela loja.",
+              verified: true,
+            },
+            {
+              id: "t-s3",
+              name: "Antonio Marcos",
+              role: "Proprietário do Sacolão & Hortifrúti Boa Safra",
+              rating: 5,
+              comment:
+                "O encarte digital no WhatsApp é um sucesso absoluto. O cliente abre o folheto no celular, clica no tomate ou na maçã e a compra já cai no nosso balcão.",
+              verified: true,
+            },
+          ],
+        },
+      },
+      {
+        type: "faq_clean_accordion",
+        config: {
+          title: "Dúvidas Frequentes sobre a Implantação de E-commerce Alimentar",
+          subtitle: "Respostas claras sobre integração com PDV, balanças e treinamento.",
+          items: [
+            {
+              id: "faq-s1",
+              question: "Como os preços e o estoque físico são sincronizados?",
+              answer:
+                "A plataforma conecta diretamente ao banco de dados do seu ERP ou frente de caixa (PDV). Quando um preço muda no PDV da loja física, ele é atualizado no site e aplicativo no mesmo instante.",
+            },
+            {
+              id: "faq-s2",
+              question: "Como funciona a separação (picking) nas gôndolas?",
+              answer:
+                "Os operadores da sua equipe utilizam nosso aplicativo de picking em um smartphone comum. O app organiza os itens na sequência lógica dos corredores da sua loja física e usa a câmera para bipar os códigos de barras, garantindo que o produto correto seja colocado na cesta.",
+            },
+            {
+              id: "faq-s3",
+              question: "E se o cliente pedir uma fruta que está madura demais ou faltar uma marca?",
+              answer:
+                "O operador pode tirar uma foto na hora pelo app de picking e sugerir uma marca alternativa. O cliente recebe uma notificação com a foto no WhatsApp e aprova ou recusa com um simples toque.",
+            },
+            {
+              id: "faq-s4",
+              question: "Vocês fornecem treinamento para a nossa equipe de loja?",
+              answer:
+                "Sim. A implantação inclui treinamento prático para os operadores de picking, encarregados de loja e equipe do SAC, assegurando operação fluida desde o primeiro dia de vendas.",
+            },
+          ],
+        },
+      },
+      {
+        type: "contact_form_direct",
+        config: {
+          title: "Solicite um Diagnóstico de Viabilidade Digital para sua Rede",
+          subtitle: "Nossa equipe de consultores especializados em varejo supermercadista analisará sua praça e apresentará uma proposta personalizada.",
+          submitButtonText: "Solicitar Diagnóstico e Demonstração",
+          whatsappNumber: "5511999998888",
+          showPhoneField: true,
+          showMessageField: true,
+          successMessage: "Diagnóstico solicitado com sucesso! Um consultor de varejo supermercadista entrará em contato em breve.",
+        },
+      },
+    ],
+  },
 ];
+
+export const VERTICAL_SYSTEMS_SAAS_TEMPLATES: NicheTemplateDefinition[] = NICHE_TEMPLATE_MATRIX.slice(-4);
 
 export interface TourismWixAppPageTemplate extends NicheTemplateDefinition {
   slug: string;

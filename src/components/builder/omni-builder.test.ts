@@ -163,8 +163,8 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     expect(customStyle.style.color).toBe("var(--foreground)");
   });
 
-  it("9. Deve conter a matriz canônica expandida com 9 templates de nicho (V137 Niche Matrix)", () => {
-    expect(NICHE_TEMPLATE_MATRIX.length).toBe(15);
+  it("9. Deve conter a matriz canônica expandida com templates de nicho e vendas de software vertical", () => {
+    expect(NICHE_TEMPLATE_MATRIX.length).toBe(19);
 
     const templateIds = NICHE_TEMPLATE_MATRIX.map((t) => t.id);
     expect(templateIds).toContain("template_legal_jus");
@@ -182,6 +182,11 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     expect(templateIds).toContain("template_ifood_delivery_vitrine");
     expect(templateIds).toContain("template_classifieds_portal_vitrine");
     expect(templateIds).toContain("template_social_creator_store");
+    // Novos templates de sistemas verticais (SaaS Sales Pages)
+    expect(templateIds).toContain("template_saas_beauty_belasis");
+    expect(templateIds).toContain("template_saas_food_restaurante");
+    expect(templateIds).toContain("template_saas_b2b_mercos");
+    expect(templateIds).toContain("template_saas_supermarket_osuper");
   });
 
   it("10. Deve garantir validação estrita via OmniPageDocumentSchema para páginas geradas por templates", () => {
@@ -321,6 +326,75 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
     expect(() => OmniPageDocumentSchema.parse(creatorPage)).not.toThrow();
     expect(() => OmniPageDocumentSchema.parse(clinicPage)).not.toThrow();
     expect(() => OmniPageDocumentSchema.parse(darkKitchenPage)).not.toThrow();
+  });
+
+  it("17. Deve conter software_feature_tabs registrado e validado via Zod", async () => {
+    const { SoftwareFeatureShowcaseBlockDataSchema } = await import("./types");
+    const blockDef = getSiteBlockById("software_feature_tabs");
+
+    expect(blockDef).toBeDefined();
+    expect(blockDef.name).toBe("Módulos do Sistema (Abas)");
+    expect(blockDef.category).toBe("services");
+
+    const validData = {
+      title: "Módulos de Gestão",
+      subtitle: "Tudo integrado",
+      tabs: [
+        {
+          id: "tab-1",
+          tabLabel: "Agenda",
+          tabIconName: "Calendar",
+          title: "Agenda 24h",
+          description: "Agendamento online",
+          benefits: ["Sem faltas", "Confirmação WhatsApp"],
+        },
+      ],
+    };
+
+    const parsed = SoftwareFeatureShowcaseBlockDataSchema.parse(validData);
+    expect(parsed.tabs.length).toBe(1);
+    expect(parsed.tabs[0].tabLabel).toBe("Agenda");
+  });
+
+  it("18. Deve aplicar com sucesso os 4 templates de vendas de sistemas verticais (Belasis, iFood, Mercos, OSuper)", () => {
+    // 1. Belasis / Avec (Beleza e Estética)
+    const beautyPage = applyTemplateToPage(
+      createEmptyOmniPage("salao-pro", "Software Salão", "beauty_saas"),
+      "template_saas_beauty_belasis"
+    );
+    expect(beautyPage.blocks.length).toBe(9);
+    expect(beautyPage.blocks.some((b) => b.type === "software_feature_tabs")).toBe(true);
+    expect(beautyPage.blocks.some((b) => b.type === "pricing_three_tiers")).toBe(true);
+    expect(beautyPage.blocks.some((b) => b.type === "interactive_quote_calculator")).toBe(true);
+    expect(() => OmniPageDocumentSchema.parse(beautyPage)).not.toThrow();
+
+    // 2. iFood / 99Food (Restaurantes e Delivery)
+    const foodPage = applyTemplateToPage(
+      createEmptyOmniPage("restaurante-pro", "Software Delivery", "food_saas"),
+      "template_saas_food_restaurante"
+    );
+    expect(foodPage.blocks.length).toBe(9);
+    expect(foodPage.blocks.some((b) => b.type === "software_feature_tabs")).toBe(true);
+    expect(foodPage.blocks.some((b) => b.type === "pricing_three_tiers")).toBe(true);
+    expect(() => OmniPageDocumentSchema.parse(foodPage)).not.toThrow();
+
+    // 3. Mercos (Força de Vendas e B2B)
+    const mercosPage = applyTemplateToPage(
+      createEmptyOmniPage("distribuidora-b2b", "Software B2B", "b2b_saas"),
+      "template_saas_b2b_mercos"
+    );
+    expect(mercosPage.blocks.length).toBe(9);
+    expect(mercosPage.blocks.some((b) => b.type === "software_feature_tabs")).toBe(true);
+    expect(() => OmniPageDocumentSchema.parse(mercosPage)).not.toThrow();
+
+    // 4. OSuper (Supermercados e Picking)
+    const osuperPage = applyTemplateToPage(
+      createEmptyOmniPage("supermercado-tech", "Software Supermercado", "grocery_saas"),
+      "template_saas_supermarket_osuper"
+    );
+    expect(osuperPage.blocks.length).toBe(9);
+    expect(osuperPage.blocks.some((b) => b.type === "software_feature_tabs")).toBe(true);
+    expect(() => OmniPageDocumentSchema.parse(osuperPage)).not.toThrow();
   });
 });
 

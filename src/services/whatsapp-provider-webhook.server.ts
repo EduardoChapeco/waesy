@@ -416,17 +416,15 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
     }
 
     // Mensagem genuinamente enviada pelo aplicativo WhatsApp (celular ou WhatsApp Web)
-    const encryptedOutbound = await encryptConversationMessageForThread(storeId, thread.id, message.text);
     const { data: createdDeviceMsg, error: deviceInsertError } = await db.from("chat_messages").insert({
       thread_id: thread.id,
       channel_identity_id: identity.id,
       channel: "whatsapp",
-      message: encryptedOutbound,
+      message: message.text,
       message_type: message.messageType,
       is_staff_reply: true,
-      is_encrypted: true,
-      encryption_version: 2,
-      encrypted_at: new Date().toISOString(),
+      is_encrypted: false,
+      encryption_version: 1,
       provider,
       external_message_id: message.externalMessageId,
       delivery_status: "sent",
@@ -460,7 +458,6 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
     return { threadId: thread.id, messageId: createdDeviceMsg?.id || null, origin: "whatsapp_device" };
   }
 
-  const encrypted = await encryptConversationMessageForThread(storeId, thread.id, message.text);
   let insertedMessageId: string | null = null;
   const { data: existingMsg } = await db
     .from("chat_messages")
@@ -476,12 +473,11 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       thread_id: thread.id,
       channel_identity_id: identity.id,
       channel: "whatsapp",
-      message: encrypted,
+      message: message.text,
       message_type: message.messageType,
       is_staff_reply: false,
-      is_encrypted: true,
-      encryption_version: 2,
-      encrypted_at: new Date().toISOString(),
+      is_encrypted: false,
+      encryption_version: 1,
       provider,
       external_message_id: message.externalMessageId,
       delivery_status: "delivered",

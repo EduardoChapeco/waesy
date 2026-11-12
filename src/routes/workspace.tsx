@@ -472,7 +472,16 @@ function WorkspaceLayout() {
     pathname.startsWith("/workspace/turismo/propostas/") &&
     pathname !== "/workspace/turismo/propostas";
   const isContractEditor = pathname.includes("/contratos/") && pathname.endsWith("/editor");
-  const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isContractEditor;
+  const isStandaloneRequested =
+    typeof window !== "undefined" &&
+    (new URLSearchParams(window.location.search).get("view") === "standalone" ||
+      new URLSearchParams(window.location.search).get("fullscreen") === "true");
+  const isStandaloneVerticalApp =
+    isStandaloneRequested &&
+    (pathname.startsWith("/workspace/atendimento") ||
+      pathname.startsWith("/workspace/pdv") ||
+      pathname.startsWith("/workspace/pedidos/gestor"));
+  const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isContractEditor || isStandaloneVerticalApp;
 
   const isPlatformAdmin = isPlatformAdminUser(session);
 
@@ -518,7 +527,7 @@ function WorkspaceLayout() {
       "specialist",
       "profissional",
     ];
-    if (!isPlatformAdmin && !IMMERSION_ALLOWED_ROLES.includes(effectiveRole)) {
+    if (!isStandaloneVerticalApp && !isPlatformAdmin && !IMMERSION_ALLOWED_ROLES.includes(effectiveRole)) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <WorkspaceAccessDenied

@@ -24,6 +24,8 @@ import {
   Layers,
   ClipboardList,
   Newspaper,
+  Scissors,
+  ShoppingCart,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -115,12 +117,13 @@ const TEMPLATE_OPTIONS = [
   ].map((t) => {
     let icon = LayoutTemplate;
     if (t.niche === "legal") icon = Scale;
-    if (t.niche === "gastronomy") icon = Utensils;
+    if (t.niche === "gastronomy" || t.niche === "food_saas") icon = Utensils;
     if (t.niche === "tourism") icon = Compass;
-    if (t.niche === "commerce") icon = ShoppingBag;
+    if (t.niche === "commerce" || t.niche === "b2b_saas") icon = ShoppingBag;
+    if (t.niche === "grocery_saas") icon = ShoppingCart;
     if (t.niche === "creators") icon = Camera;
     if (t.niche === "real_estate") icon = Building2;
-    if (t.niche === "services") icon = HeartPulse;
+    if (t.niche === "services" || t.niche === "beauty_saas") icon = t.niche === "beauty_saas" ? Scissors : HeartPulse;
     if (t.niche === "general" || t.id.startsWith("wix_lead")) icon = ClipboardList;
     if (t.niche === "media" || t.id.startsWith("wix_news")) icon = Newspaper;
     return {

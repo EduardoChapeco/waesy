@@ -421,16 +421,14 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   .maybeSingle();
 
                 if (!duplicateMessage) {
-                  const encryptedInboundMessage = await encryptConversationMessageForThread(targetStoreId, threadId, messageText);
                   const { error: chatMessageError } = await supabase.from("chat_messages").insert({
                     thread_id: threadId,
                     channel_identity_id: channelIdentity.id,
-                    message: encryptedInboundMessage,
+                    message: messageText,
                     message_type: messageType,
                     is_staff_reply: false,
-                    is_encrypted: true,
-                    encryption_version: 2,
-                    encrypted_at: new Date().toISOString(),
+                    is_encrypted: false,
+                    encryption_version: 1,
                     channel: "whatsapp",
                     external_message_id: String(message.id),
                     delivery_status: "delivered",

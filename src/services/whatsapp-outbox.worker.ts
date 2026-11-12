@@ -288,13 +288,12 @@ async function processClaimedRow(db: ReturnType<typeof getServerClient>, row: Cl
       } else {
         await db.from("chat_messages").insert({
           thread_id: row.thread_id,
-          message: await encryptConversationMessageForThread(row.store_id, row.thread_id, text),
+          message: text,
           message_type: row.message_type,
           is_staff_reply: true,
           channel: "whatsapp",
-          is_encrypted: true,
-          encryption_version: 2,
-          encrypted_at: nowIso,
+          is_encrypted: false,
+          encryption_version: 1,
           provider: row.provider,
           external_message_id: result.externalMessageId,
           delivery_status: "accepted",

@@ -123,10 +123,11 @@ export const listChatThreads = createServerFn({ method: "GET" })
 		.not("thread_type", "in", "(ai_assistant,copilot,project)")
  .order("updated_at", { ascending: false });
 
- // Filtro de status
+ // Filtro de status canônico do banco (open, closed, archived, pending)
+ const canonicalStatuses = new Set(["open", "closed", "archived", "pending"]);
  if (data?.status === "archived") {
 		query = query.eq("status", "archived");
-	} else if (data?.status && data.status !== "all") {
+	} else if (data?.status && canonicalStatuses.has(data.status)) {
 		query = query.eq("status", data.status);
 	} else {
 		query = query.neq("status", "archived");
@@ -205,6 +206,11 @@ export const listChatThreads = createServerFn({ method: "GET" })
  messages.sort(
  (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
  );
+ // Mensagens públicas (exclui notas internas da equipe para não distorcer a fila de espera do cliente)
+ const publicMessages = messages.filter(
+   (m: any) => !m.payload?.is_internal && !m.payload?.is_whisper && m.message_type !== "internal_note" && m.message_type !== "system_event"
+ );
+ const lastPublicMsg = publicMessages[0];
  const lastMsg = messages[0];
  const customerProfile = thread.customer_id ? profilesMap.get(thread.customer_id) : null;
  const agentProfile = thread.assigned_to_profile_id ? profilesMap.get(thread.assigned_to_profile_id) : null;
@@ -239,9 +245,24 @@ export const listChatThreads = createServerFn({ method: "GET" })
         tags: thread.tags || [],
  updated_at: thread.updated_at,
  created_at: thread.created_at,
- last_message: (lastMsg?.message && !lastMsg.message.startsWith("waesy-msg:")) ? lastMsg.message : (thread.last_message_text || (lastMsg ? "[Mensagem]" : "")),
- last_message_type: lastMsg ? lastMsg.message_type : "text",
- is_last_reply_staff: lastMsg ? lastMsg.is_staff_reply : false,
+ last_message: (() => {
+   if (lastPublicMsg) {
+     if (typeof lastPublicMsg.message === "string" && !lastPublicMsg.message.startsWith("waesy-msg:")) {
+       return lastPublicMsg.message;
+     }
+     return lastPublicMsg.message_type === "image" ? "[Imagem]"
+       : lastPublicMsg.message_type === "video" ? "[Vídeo]"
+       : lastPublicMsg.message_type === "audio" ? "[Áudio]"
+       : lastPublicMsg.message_type === "document" ? "[Documento]"
+       : lastPublicMsg.message_type === "sticker" ? "[Figurinha]"
+       : "[Mensagem]";
+   }
+   return thread.last_message_text && !thread.last_message_text.startsWith("waesy-msg:")
+     ? thread.last_message_text
+     : (messages.length > 0 ? "(Apenas anotações internas)" : "");
+ })(),
+ last_message_type: lastPublicMsg ? lastPublicMsg.message_type : (lastMsg ? lastMsg.message_type : "text"),
+ is_last_reply_staff: lastPublicMsg ? Boolean(lastPublicMsg.is_staff_reply) : false,
  total_messages: messages.length,
  };
  });
@@ -442,12 +463,74 @@ export const getChatMessages = createServerFn({ method: "GET" })
   const decryptedMessages = await Promise.all(
     rawMessages.map(async (m: any) => {
       let text = m.message;
+      let healed = false;
       if (typeof text === "string" && text.startsWith("waesy-msg:")) {
         try {
           const { decryptConversationMessageForThread } = await import("@/lib/conversation-crypto.server");
           text = await decryptConversationMessageForThread(thread.store_id, thread.id, text);
+          if (text && !text.startsWith("waesy-msg:")) {
+            healed = true;
+          }
         } catch {
-          // fallback
+          // fallback para consulta na Evolution API
+        }
+
+        // Se a descriptografia falhou e temos external_message_id, tenta reconciliar via Evolution API
+        if ((!text || text.startsWith("waesy-msg:")) && m.external_message_id) {
+          try {
+            const { data: inst } = await db
+              .from("whatsapp_channel_instances")
+              .select("instance_key, external_instance_id, public_config")
+              .eq("store_id", thread.store_id)
+              .eq("is_active", true)
+              .order("is_default", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (inst) {
+              const externalName = inst.external_instance_id || inst.instance_key;
+              const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
+              const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
+                ? configuredUrl
+                : (process.env.EVOLUTION_API_URL?.trim() || "");
+              const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+
+              if (baseUrl && apiKey) {
+                const evoRes = await fetch(`${baseUrl}/chat/findMessages/${encodeURIComponent(externalName)}`, {
+                  method: "POST",
+                  headers: { apikey: apiKey, "Content-Type": "application/json" },
+                  body: JSON.stringify({ where: { key: { id: m.external_message_id } } }),
+                  signal: AbortSignal.timeout(3500),
+                });
+                if (evoRes.ok) {
+                  const evoJson: any = await evoRes.json().catch(() => ({}));
+                  const recs = evoJson?.messages?.records || (Array.isArray(evoJson) ? evoJson : []);
+                  const found = recs[0]?.message;
+                  const candidateText = found?.conversation || found?.extendedTextMessage?.text || found?.imageMessage?.caption || "";
+                  if (candidateText && candidateText.trim()) {
+                    text = candidateText.trim();
+                    healed = true;
+                  }
+                }
+              }
+            }
+          } catch {
+            // noop
+          }
+        }
+
+        // Se ainda assim permaneceu como waesy-msg:, exibe fallback honesto em vez de hash criptográfico
+        if (typeof text === "string" && text.startsWith("waesy-msg:")) {
+          text = m.message_type === "image" ? "[Imagem]" : m.message_type === "audio" ? "[Áudio]" : m.message_type === "sticker" ? "[Figurinha]" : "[Mensagem]";
+        }
+
+        // Persiste a autocura no banco para curar a linha para sempre
+        if (healed && text && !text.startsWith("waesy-msg:")) {
+          try {
+            await db.from("chat_messages").update({ message: text, is_encrypted: false }).eq("id", m.id);
+          } catch {
+            // noop
+          }
         }
       }
       return {
@@ -491,10 +574,17 @@ export const sendChatMessage = createServerFn({ method: "POST" })
  if (!thread) throw new Error("Conversa não encontrada ou acesso negado.");
  assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
 
- const isInternal = Boolean(input.is_internal);
+ const isInternal = Boolean(
+    input.is_internal ||
+    input.payload?.is_internal ||
+    input.payload?.is_whisper ||
+    input.message_type === "internal_note" ||
+    (input.message_type === "system_event" && input.payload?.is_whisper)
+  );
  const finalPayload = {
    ...(input.payload || {}),
    is_internal: isInternal,
+   ...(isInternal ? { is_whisper: true } : {}),
  };
 
  const { data: msg, error } = await db
@@ -779,7 +869,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
      ? db.from("customer_debt_ledger").select("id, amount_cents, status, reason, created_at").eq("customer_id", resolvedCustomerId).eq("status", "pending")
      : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
-     ? db.from("crm_customer_documents").select("id, title, document_type, file_url, status, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
+     ? db.from("customer_documents").select("id, title, document_type, file_url, verified, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
      : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
      ? db.from("financial_transactions").select("id, description, amount_cents, status, due_date, payment_method, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
@@ -2672,7 +2762,7 @@ export const clearChatThreadMessagesLocal = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
 
     const db = getServerClient();
     const { data: thread } = await db
@@ -2684,13 +2774,24 @@ export const clearChatThreadMessagesLocal = createServerFn({ method: "POST" })
 
     if (!thread) throw new Error("Conversa não localizada para esta loja.");
 
-    // Apaga estritamente as mensagens locais do sistema Waesy (NÃO envia delete ao WhatsApp)
-    const { error: deleteErr } = await db
+    // Apaga estritamente as mensagens do WhatsApp locais (PRESERVA notas internas da equipe intactas)
+    const { data: allMsgs } = await db
       .from("chat_messages")
-      .delete()
+      .select("id, payload, message_type")
       .eq("thread_id", threadId);
 
-    if (deleteErr) throw new Error(`Falha ao limpar mensagens locais: ${deleteErr.message}`);
+    const idsToDelete = (allMsgs || [])
+      .filter((m: any) => !m.payload?.is_internal && !m.payload?.is_whisper && m.message_type !== "internal_note" && m.message_type !== "system_event")
+      .map((m: any) => m.id);
+
+    if (idsToDelete.length > 0) {
+      const { error: deleteErr } = await db
+        .from("chat_messages")
+        .delete()
+        .in("id", idsToDelete);
+
+      if (deleteErr) throw new Error(`Falha ao limpar mensagens locais: ${deleteErr.message}`);
+    }
 
     await db
       .from("chat_threads")
@@ -2701,7 +2802,7 @@ export const clearChatThreadMessagesLocal = createServerFn({ method: "POST" })
       })
       .eq("id", threadId);
 
-    return { success: true, threadId, message: "Mensagens apagadas estritamente no sistema local." };
+    return { success: true, threadId, message: "Mensagens do WhatsApp limpas no sistema local (notas internas preservadas)." };
   });
 
 export const deleteChatThreadLocalSchema = z.object({
@@ -2715,7 +2816,7 @@ export const deleteChatThreadLocal = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
 
     const db = getServerClient();
     const { data: thread } = await db
@@ -2747,7 +2848,7 @@ export const deleteChatContactPermanently = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity, ["owner", "admin", "platform_admin"], storeId);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
 
     const db = getServerClient();
     const { data: thread } = await db
@@ -2780,7 +2881,474 @@ export const deleteChatContactPermanently = createServerFn({ method: "POST" })
     return {
       success: true,
       threadId,
-      message: "Contato e histórico de conversa excluídos definitivamente do sistema.",
+      message: "Contato e histórico excluídos permanentemente conforme solicitação do supervisor.",
+    };
+  });
+
+export const requestChatContactDeletionSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  reason: z.string().min(3, "Justificativa obrigatória para solicitação de exclusão."),
+});
+
+export const requestChatContactDeletion = createServerFn({ method: "POST" })
+  .validator(requestChatContactDeletionSchema)
+  .handler(async ({ data: { threadId, storeId: inputStoreId, reason } }) => {
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+
+    const db = getServerClient();
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, customer_id")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .single();
+
+    if (!thread) throw new Error("Conversa não localizada.");
+
+    const { data: req, error } = await db
+      .from("chat_contact_deletion_requests")
+      .insert({
+        store_id: storeId,
+        thread_id: threadId,
+        customer_id: thread.customer_id || null,
+        requested_by_profile_id: identity.id,
+        reason: reason.trim(),
+        status: "pending",
+      })
+      .select("id, status, created_at")
+      .single();
+
+    if (error) throw new Error(`Falha ao registrar solicitação de exclusão: ${error.message}`);
+    return {
+      success: true,
+      requestId: req.id,
+      message: "Solicitação de exclusão encaminhada ao supervisor com sucesso.",
+    };
+  });
+
+export const reviewChatContactDeletionRequestSchema = z.object({
+  requestId: z.string().uuid(),
+  approved: z.boolean(),
+  reviewNotes: z.string().optional(),
+  deleteFromCrm: z.boolean().default(true),
+});
+
+export const reviewChatContactDeletionRequest = createServerFn({ method: "POST" })
+  .validator(reviewChatContactDeletionRequestSchema)
+  .handler(async ({ data: { requestId, approved, reviewNotes, deleteFromCrm } }) => {
+    const identity = await getServerIdentity();
+    const db = getServerClient();
+
+    const { data: req } = await db
+      .from("chat_contact_deletion_requests")
+      .select("id, store_id, thread_id, customer_id, status")
+      .eq("id", requestId)
+      .single();
+
+    if (!req) throw new Error("Solicitação não encontrada.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], req.store_id);
+
+    if (req.status !== "pending") {
+      throw new Error("Esta solicitação já foi analisada.");
+    }
+
+    const nowIso = new Date().toISOString();
+    if (approved) {
+      await db.from("chat_messages").delete().eq("thread_id", req.thread_id);
+      await db.from("chat_conversation_keys").delete().eq("thread_id", req.thread_id);
+      await db.from("whatsapp_outbox").delete().eq("thread_id", req.thread_id).eq("store_id", req.store_id);
+      await db.from("chat_threads").delete().eq("id", req.thread_id).eq("store_id", req.store_id);
+
+      if (deleteFromCrm && req.customer_id) {
+        await db.from("customers_crm").update({ deleted_at: nowIso }).eq("id", req.customer_id).eq("store_id", req.store_id);
+        await db.from("leads_crm").update({ deleted_at: nowIso }).eq("customer_id", req.customer_id).eq("store_id", req.store_id);
+      }
+    }
+
+    await db
+      .from("chat_contact_deletion_requests")
+      .update({
+        status: approved ? "approved" : "rejected",
+        reviewed_by_profile_id: identity.id,
+        review_notes: reviewNotes || null,
+        reviewed_at: nowIso,
+      })
+      .eq("id", requestId);
+
+    return {
+      success: true,
+      approved,
+      message: approved ? "Exclusão autorizada e executada com sucesso." : "Solicitação de exclusão recusada.",
+    };
+  });
+
+export const listChatContactDeletionRequestsSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  status: z.enum(["pending", "approved", "rejected", "all"]).default("pending"),
+});
+
+export const listChatContactDeletionRequests = createServerFn({ method: "GET" })
+  .validator(listChatContactDeletionRequestsSchema.optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
+
+    const db = getServerClient();
+    let query = db
+      .from("chat_contact_deletion_requests")
+      .select(`
+        id, store_id, thread_id, customer_id, requested_by_profile_id,
+        reviewed_by_profile_id, status, reason, review_notes, created_at, reviewed_at
+      `)
+      .eq("store_id", storeId)
+      .order("created_at", { ascending: false });
+
+    if (data?.status && data.status !== "all") {
+      query = query.eq("status", data.status);
+    }
+
+    const { data: requests, error } = await query;
+    if (error) throw new Error(`Falha ao listar solicitações: ${error.message}`);
+
+    const enriched = await Promise.all(
+      (requests || []).map(async (r: any) => {
+        const { data: reqProfile } = await db.from("profiles").select("id, full_name, email").eq("id", r.requested_by_profile_id).maybeSingle();
+        const { data: thread } = await db.from("chat_threads").select("id, guest_name, entity_id").eq("id", r.thread_id).maybeSingle();
+        return {
+          ...r,
+          requester: reqProfile || { full_name: "Colaborador", email: "" },
+          thread: thread || { guest_name: "Contato", entity_id: "" },
+        };
+      })
+    );
+
+    return { requests: enriched };
+  });
+
+export const generateTourismAiCopilotReplySchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  query: z.string().optional(),
+});
+
+export const generateTourismAiCopilotReply = createServerFn({ method: "POST" })
+  .validator(generateTourismAiCopilotReplySchema)
+  .handler(async ({ data: { threadId, storeId: inputStoreId, query: userQuery } }) => {
+    const identity = await getServerIdentity();
+    const db = getServerClient();
+
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, guest_name, entity_id")
+      .eq("id", threadId)
+      .single();
+
+    if (!thread) throw new Error("Conversa não encontrada.");
+    const effectiveStoreId = inputStoreId || thread.store_id || identity.store_id;
+    assertStoreAccess(identity, STAFF_ROLES, effectiveStoreId);
+
+    const { data: store } = await db.from("stores").select("name").eq("id", effectiveStoreId).single();
+    const storeName = store?.name || "Nossa Agência";
+    const customerName = thread.guest_name || "Cliente";
+
+    let queryText = userQuery || "";
+    if (!queryText) {
+      const { data: lastCustomerMsg } = await db
+        .from("chat_messages")
+        .select("message")
+        .eq("thread_id", threadId)
+        .eq("is_staff_reply", false)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      queryText = lastCustomerMsg?.message || "pacotes e roteiros de viagem";
+    }
+
+    const { toolLookupTourismPackages, toolGetTourismAviationPolicies } = await import("./whatsapp-ai-agent-tools.server");
+    const packages = await toolLookupTourismPackages({ storeId: effectiveStoreId, query: queryText, limit: 2 }).catch(() => []);
+
+    let packageBlock = "";
+    if (packages && packages.length > 0) {
+      const p = packages[0];
+      packageBlock = `\n\n[PACOTE DISPONÍVEL] *${p.title}* (${p.destination})\n- Valor: ${p.priceDisplay}\n- Parcelamento: ${p.installmentTerms}\n- Saídas: ${p.datesDescription || "Consulte saídas"}\n- Inclusões: ${(p.includedItems || []).slice(0, 3).join(", ")}`;
+    }
+
+    let anacBlock = "";
+    if (/(anac|bagagem|mala|cancelamento|arrependimento|no-show|no show|atraso|regras)/i.test(queryText)) {
+      const aviation = toolGetTourismAviationPolicies();
+      if (/(bagagem|mala)/i.test(queryText)) {
+        const p = aviation.policies.find((pol) => pol.topic.includes("Bagagem"));
+        if (p) anacBlock = `\n\n[Regras de Bagagem ANAC]:\n- ${p.rules[0]}\n- ${p.rules[1]}`;
+      } else if (/(cancelamento|arrependimento)/i.test(queryText)) {
+        const p = aviation.policies.find((pol) => pol.topic.includes("Arrependimento"));
+        if (p) anacBlock = `\n\n[Política ANAC / Cancelamento]:\n- ${p.rules[0]}\n- ${p.rules[1]}`;
+      } else {
+        const p = aviation.policies.find((pol) => pol.topic.includes("No-Show"));
+        if (p) anacBlock = `\n\n[Regras da Aviação Civil ANAC]:\n- ${p.rules[0]}`;
+      }
+    }
+
+    const reply = `Olá, ${customerName}! Aqui é da equipe da ${storeName}.${packageBlock}${anacBlock}\n\nFicou alguma dúvida ou gostaria de verificar a disponibilidade para a sua data de preferência?`;
+
+    return {
+      suggestedReply: reply,
+      packagesCount: packages.length,
+      hasAviationRules: Boolean(anacBlock),
+    };
+  });
+
+export interface FollowUpPromiseDetection {
+  hasPendingPromise: boolean;
+  promiseSnippet: string | null;
+  promisedAt: string | null;
+  elapsedMinutes: number | null;
+  promisedByStaffName: string | null;
+}
+
+export function detectStaffFollowUpPromise(messages: any[]): FollowUpPromiseDetection {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return { hasPendingPromise: false, promiseSnippet: null, promisedAt: null, elapsedMinutes: null, promisedByStaffName: null };
+  }
+
+  const sorted = [...messages].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  const promiseRegex = /(j[aá] (te chamo|te aviso|te passo|te mando|vejo|retorno)|vou (cotar|ver|verificar|pesquisar|checar|consultar|calcular|simular|mandar|passar)|logo mais (te )?(envio|mando|passo)|estou vendo (aqui|as melhores)|te passo (j[aá]|logo|assim que)|vou dar uma olhada|vou checar com a operadora|aguarda s[oó] um instante|deixa eu ver aqui)/i;
+
+  let lastStaffPromise: any = null;
+  let hasSubsequentStaffFulfillment = false;
+
+  for (const m of sorted) {
+    const isStaff = Boolean(m.is_staff_reply);
+    const isInternal = Boolean(m.payload?.is_internal || m.payload?.is_whisper || m.message_type === "internal_note" || m.message_type === "system_event");
+    if (isInternal) continue;
+
+    const text = String(m.message || "");
+    if (isStaff) {
+      if (promiseRegex.test(text)) {
+        lastStaffPromise = m;
+        break;
+      } else if (text.length > 50 || text.includes("R$") || text.includes("opções") || text.includes("pacote")) {
+        hasSubsequentStaffFulfillment = true;
+      }
+    }
+  }
+
+  if (lastStaffPromise && !hasSubsequentStaffFulfillment) {
+    const match = String(lastStaffPromise.message || "").match(promiseRegex);
+    const promisedTime = new Date(lastStaffPromise.created_at).getTime();
+    const elapsedMinutes = Math.max(1, Math.round((Date.now() - promisedTime) / 60000));
+    return {
+      hasPendingPromise: true,
+      promiseSnippet: match ? match[0] : String(lastStaffPromise.message).slice(0, 40),
+      promisedAt: lastStaffPromise.created_at,
+      elapsedMinutes,
+      promisedByStaffName: lastStaffPromise.sender_profile_id || "Atendente",
+    };
+  }
+
+  return { hasPendingPromise: false, promiseSnippet: null, promisedAt: null, elapsedMinutes: null, promisedByStaffName: null };
+}
+
+export const generateSmartContextualAiReplySchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  customInstruction: z.string().optional(),
+  generateAudioPreview: z.boolean().default(false),
+  persona: z.any().optional(),
+});
+
+export const generateSmartContextualAiReply = createServerFn({ method: "POST" })
+  .validator(generateSmartContextualAiReplySchema)
+  .handler(async ({ data: { threadId, storeId: inputStoreId, customInstruction, generateAudioPreview, persona } }) => {
+    const identity = await getServerIdentity();
+    const db = getServerClient();
+
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, customer_id, guest_name, entity_id, department, metadata")
+      .eq("id", threadId)
+      .single();
+
+    if (!thread) throw new Error("Conversa não encontrada.");
+    const effectiveStoreId = inputStoreId || thread.store_id || identity.store_id;
+    assertStoreAccess(identity, STAFF_ROLES, effectiveStoreId);
+
+    const { data: store } = await db.from("stores").select("name").eq("id", effectiveStoreId).single();
+    const storeName = store?.name || "Nossa Empresa";
+    const customerName = thread.guest_name || "Cliente";
+
+    // 1. Carrega histórico de mensagens recentes (últimas 15)
+    const { data: rawMessages } = await db
+      .from("chat_messages")
+      .select("id, message, message_type, is_staff_reply, created_at, payload")
+      .eq("thread_id", threadId)
+      .order("created_at", { ascending: false })
+      .limit(15);
+
+    const threadMessages = (rawMessages || []).reverse();
+
+    // 2. Detecta promessas de follow-up ativas
+    const promiseDetection = detectStaffFollowUpPromise(threadMessages);
+
+    // 3. Carrega o contexto 360 do cliente (LTV, viagens compradas, cotações)
+    let tripsCount = 0;
+    let quotesCount = 0;
+    let totalSpentBrl = "R$ 0,00";
+    let isVipOrReturning = false;
+    let lastDestination = "";
+
+    if (thread.customer_id) {
+      const [tripsRes, quotesRes, ordersRes] = await Promise.all([
+        db.from("tourism_trips").select("id, title, destination_city, total_cents").eq("store_id", effectiveStoreId).eq("customer_id", thread.customer_id).limit(5),
+        db.from("travel_quotes").select("id, destination, total_cents").eq("agency_id", effectiveStoreId).eq("customer_id", thread.customer_id).limit(10),
+        db.from("orders").select("total_amount_cents, status").eq("store_id", effectiveStoreId).eq("customer_id", thread.customer_id).in("status", ["completed", "delivered", "paid"]),
+      ]);
+
+      tripsCount = tripsRes.data?.length || 0;
+      quotesCount = quotesRes.data?.length || 0;
+      const spentCents = (ordersRes.data || []).reduce((acc: number, curr: any) => acc + (Number(curr.total_amount_cents) || 0), 0);
+      if (spentCents > 0) {
+        totalSpentBrl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(spentCents / 100);
+      }
+      isVipOrReturning = tripsCount > 0 || quotesCount >= 2;
+      lastDestination = tripsRes.data?.[0]?.destination_city || quotesRes.data?.[0]?.destination || "";
+    }
+
+    // 4. Última mensagem enviada pelo cliente
+    const lastCustomerMsg = [...threadMessages].reverse().find((m) => !m.is_staff_reply);
+    const clientQuery = lastCustomerMsg?.message || customInstruction || "informações sobre opções disponíveis";
+
+    // 5. Consulta Pacotes e Normas ANAC
+    const { toolLookupTourismPackages, toolGetTourismAviationPolicies } = await import("./whatsapp-ai-agent-tools.server");
+    const packages = await toolLookupTourismPackages({ storeId: effectiveStoreId, query: clientQuery, limit: 2 }).catch(() => []);
+
+    let packageData = "";
+    if (packages && packages.length > 0) {
+      const p = packages[0];
+      packageData = `Pacote disponível: ${p.title} em ${p.destination}. Valor: ${p.priceDisplay}, parcelamento: ${p.installmentTerms}. Inclusos: ${(p.includedItems || []).slice(0, 3).join(", ")}.`;
+    }
+
+    let anacData = "";
+    if (/(anac|bagagem|mala|cancelamento|arrependimento|no-show|atraso)/i.test(clientQuery)) {
+      const aviation = toolGetTourismAviationPolicies();
+      if (/(bagagem|mala)/i.test(clientQuery)) {
+        const pol = aviation.policies.find((p) => p.topic.includes("Bagagem"));
+        if (pol) anacData = `Regra ANAC bagagem: ${pol.rules[0]}; ${pol.rules[1]}`;
+      } else if (/(cancelamento|arrependimento)/i.test(clientQuery)) {
+        const pol = aviation.policies.find((p) => p.topic.includes("Arrependimento"));
+        if (pol) anacData = `Regra ANAC cancelamento: ${pol.rules[0]}; ${pol.rules[1]}`;
+      }
+    }
+
+    // 6. Geração da resposta (direta, humana, sem enrolação)
+    let suggestedReply = "";
+    const openaiKey = process.env.OPENAI_API_KEY?.trim() || "";
+    const groqKey = process.env.GROQ_API_KEY?.trim() || "";
+
+    const systemPrompt = `Você é um consultor humano e ágil de atendimento da loja ${storeName}.
+Diretrizes inegociáveis:
+- Fale como uma pessoa real no WhatsApp: direto ao ponto, educado, caloroso, SEM enrolação, SEM clichês ("Com certeza!", "Entendo sua dúvida").
+- Perfil do cliente: ${customerName}. ${isVipOrReturning ? `Cliente recorrente (${tripsCount} viagens já realizadas, ${quotesCount} cotações). Reconheça a relação naturalmente.` : "Novo cliente / lead em primeiro contato."}
+- ${promiseDetection.hasPendingPromise ? `ATENÇÃO: O atendente disse anteriormente "${promiseDetection.promiseSnippet}". Cumpra essa promessa entregando a resposta agora com naturalidade!` : ""}
+- ${customInstruction ? `Instrução do atendente: "${customInstruction}"` : ""}
+- Dados de pacotes da agência: ${packageData || "Nenhum pacote fixo, consulte datas específicas."}
+- Regras ANAC: ${anacData || "Não aplicável."}
+- Responda em no máximo 3 ou 4 frases curtas, fáceis de ler no celular. Termine com uma pergunta clara de avanço.`;
+
+    if (openaiKey || groqKey) {
+      try {
+        const targetUrl = groqKey
+          ? "https://api.groq.com/openai/v1/chat/completions"
+          : "https://api.openai.com/v1/chat/completions";
+        const model = groqKey ? "llama-3.3-70b-versatile" : "gpt-4o-mini";
+
+        const aiRes = await fetch(targetUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${groqKey || openaiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: `Mensagem do cliente: "${clientQuery}". Escreva a resposta humana:` },
+            ],
+            temperature: 0.6,
+            max_tokens: 300,
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (aiRes.ok) {
+          const aiJson = await aiRes.json().catch(() => ({}));
+          suggestedReply = String(aiJson?.choices?.[0]?.message?.content || "").trim();
+        }
+      } catch (err: any) {
+        console.warn("[chat.functions] Falha ao chamar LLM externa:", err?.message);
+      }
+    }
+
+    if (!suggestedReply) {
+      let followUpIntro = "";
+      if (promiseDetection.hasPendingPromise) {
+        followUpIntro = `Conforme prometido, verifiquei aqui para você. `;
+      } else if (isVipOrReturning) {
+        followUpIntro = `Que bom falar com você novamente, ${customerName}! `;
+      } else {
+        followUpIntro = `Olá, ${customerName}! `;
+      }
+
+      let contentBody = "";
+      if (packageData) {
+        contentBody = packageData.replace(/\. /g, "\n- ");
+      } else if (anacData) {
+        contentBody = anacData;
+      } else {
+        contentBody = "Já levantei as melhores opções disponíveis com valores e saídas confirmadas.";
+      }
+
+      suggestedReply = `${followUpIntro}${contentBody}\n\nQuer que eu separe essa reserva ou prefere ajustar alguma data?`;
+    }
+
+    // 7. Geração de Áudio Opcional com Preview
+    let audioPreviewUrl: string | null = null;
+    let audioDuration = 0;
+    if (generateAudioPreview) {
+      const { generateAiVoiceAudio } = await import("./whatsapp-voice-ai.functions");
+      const audioResult = await generateAiVoiceAudio({
+        data: {
+          text: suggestedReply,
+          persona: persona || { gender: "female", age: "adult", accent: "neutro", environment: "office" },
+        },
+      }).catch(() => null);
+
+      if (audioResult) {
+        audioPreviewUrl = audioResult.audioDataUri;
+        audioDuration = audioResult.durationSeconds;
+      }
+    }
+
+    return {
+      suggestedReply,
+      audioPreviewUrl,
+      audioDuration,
+      promiseDetection,
+      customerInsights: {
+        isVipOrReturning,
+        tripsCount,
+        quotesCount,
+        totalSpentBrl,
+        lastDestination,
+      },
     };
   });
 

@@ -120,6 +120,7 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
     "tiers",
     "testimonials",
     "steps",
+    "tabs",
     "options",
     "articles",
     "sections",

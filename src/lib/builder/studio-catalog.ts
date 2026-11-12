@@ -107,6 +107,30 @@ const CATALOG_METADATA: Record<string, {
     copyFramework: "editorial",
     assetSlots: ["logo", "cover", "gallery"],
   },
+  template_saas_beauty_belasis: {
+    goal: "lead_capture",
+    tags: ["saas", "software", "salao", "estetica", "belasis", "avec", "barbearia"],
+    copyFramework: "problem-solution",
+    assetSlots: ["software_mockup", "hero_portrait", "logo"],
+  },
+  template_saas_food_restaurante: {
+    goal: "lead_capture",
+    tags: ["saas", "software", "delivery", "restaurante", "ifood", "99food", "pizzaria"],
+    copyFramework: "problem-solution",
+    assetSlots: ["software_mockup", "food_hero", "logo"],
+  },
+  template_saas_b2b_mercos: {
+    goal: "lead_capture",
+    tags: ["saas", "software", "forca-de-vendas", "b2b", "distribuidora", "mercos", "erp"],
+    copyFramework: "problem-solution",
+    assetSlots: ["software_mockup", "team_portraits", "logo"],
+  },
+  template_saas_supermarket_osuper: {
+    goal: "lead_capture",
+    tags: ["saas", "software", "supermercado", "picking", "osuper", "e-grocery", "hortifruti"],
+    copyFramework: "problem-solution",
+    assetSlots: ["software_mockup", "product_gallery", "logo"],
+  },
 };
 
 function inferFunnelStage(goal: StudioTemplateGoal): StudioTemplateManifest["funnelStage"] {
