@@ -224,7 +224,7 @@ function AdminMasterModulosPage() {
         data: {
           storeId,
           moduleId,
-          enabled: nextActive,
+          active: nextActive,
         },
       });
       toast.success(

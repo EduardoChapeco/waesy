@@ -72,6 +72,7 @@ import {
   RefreshCw,
   Layers,
   ShieldCheck,
+  ShieldAlert,
   Bot,
   Star,
   Flame,
@@ -543,10 +544,34 @@ function WorkspaceAtendimentoPage() {
   };
 
   const [supervisorRequestsModalOpen, setSupervisorRequestsModalOpen] = useState(false);
+  const [requestDeletionModalOpen, setRequestDeletionModalOpen] = useState(false);
+  const [deletionReason, setDeletionReason] = useState("");
+  const [isRequestingDeletion, setIsRequestingDeletion] = useState(false);
   const [pendingDeletionRequests, setPendingDeletionRequests] = useState<any[]>([]);
   const [isLoadingDeletionRequests, setIsLoadingDeletionRequests] = useState(false);
   const [isReviewingRequest, setIsReviewingRequest] = useState<string | null>(null);
   const [isGeneratingAiCopilot, setIsGeneratingAiCopilot] = useState(false);
+
+  const handleRequestDeletion = async () => {
+    if (!activeThread?.id || !deletionReason.trim()) return;
+    setIsRequestingDeletion(true);
+    try {
+      await requestChatContactDeletion({
+        data: {
+          threadId: activeThread.id,
+          storeId: store?.id,
+          reason: deletionReason.trim(),
+        },
+      });
+      toast.success("Solicitação de exclusão encaminhada ao supervisor com sucesso.");
+      setRequestDeletionModalOpen(false);
+      setDeletionReason("");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao solicitar exclusão.");
+    } finally {
+      setIsRequestingDeletion(false);
+    }
+  };
 
   const loadPendingDeletionRequests = async () => {
     if (!store?.id || !isSupervisor) return;
@@ -4967,6 +4992,57 @@ function WorkspaceAtendimentoPage() {
               className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
             >
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Solicitar Exclusão ao Supervisor */}
+      <Dialog open={requestDeletionModalOpen} onOpenChange={setRequestDeletionModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <ShieldAlert className="size-5 text-warning-strong" />
+              <span>Solicitar Exclusão de Contato</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Como colaborador, a exclusão definitiva exige validação de um supervisor ou administrador. Informe o motivo abaixo para análise.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-foreground">
+              Motivo da Solicitação
+            </label>
+            <Textarea
+              value={deletionReason}
+              onChange={(e) => setDeletionReason(e.target.value)}
+              placeholder="Ex: Número incorreto, lead descartável ou spam."
+              className="text-xs min-h-20"
+            />
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setRequestDeletionModalOpen(false);
+                setDeletionReason("");
+              }}
+              disabled={isRequestingDeletion}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleRequestDeletion}
+              disabled={isRequestingDeletion || !deletionReason.trim()}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isRequestingDeletion && <Loader2 className="size-4 animate-spin" />}
+              Encaminhar Solicitação
             </Button>
           </DialogFooter>
         </DialogContent>
