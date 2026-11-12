@@ -834,6 +834,7 @@ function WorkspaceAtendimentoPage() {
     threadsRef.current = threads;
   }, [threads]);
 
+  const [messages, setMessages] = useState<any[]>([]);
   const messagesRef = useRef(messages);
   useEffect(() => {
     messagesRef.current = messages;
@@ -890,7 +891,6 @@ function WorkspaceAtendimentoPage() {
       setActiveThreadId((searchParams as any).threadId);
     }
   }, [(searchParams as any)?.search, (searchParams as any)?.threadId]);
-  const [messages, setMessages] = useState<any[]>([]);
   const promiseDetection = useMemo(() => {
     return detectStaffFollowUpPromise(messages);
   }, [messages]);
