@@ -7,6 +7,78 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import { getAllActiveKeysForProvider } from "@/services/api-orchestrator.functions";
+
+export interface StaffOutboxDispatchInput {
+  message?: string | null;
+  message_type?: string | null;
+  attachments?: string[] | null;
+  payload?: Record<string, unknown> | null;
+}
+
+/** Normaliza payload de saida WhatsApp preservando midia, PTT e metadados reais. */
+export function buildOutboxDispatchSpecFromStaffMessage(
+  input: StaffOutboxDispatchInput,
+  messageId: string,
+): { messageType: string; payload: Record<string, unknown> } {
+  const firstAttachment =
+    Array.isArray(input.attachments) && input.attachments.length > 0
+      ? String(input.attachments[0] || "").trim()
+      : "";
+  const rawType = String(input.message_type || "text").trim() || "text";
+  const text = typeof input.message === "string" ? input.message : "";
+  const extraPayload = input.payload && typeof input.payload === "object" ? input.payload : {};
+  const mediaUrlFromPayload =
+    typeof extraPayload.media_url === "string" ? extraPayload.media_url.trim() : "";
+  const resolvedMediaUrl = firstAttachment || mediaUrlFromPayload;
+
+  if (rawType === "audio" && resolvedMediaUrl) {
+    return {
+      messageType: "audio",
+      payload: {
+        media_url: resolvedMediaUrl,
+        voice_note: true,
+        encoding: true,
+        mime_type:
+          typeof extraPayload.mime_type === "string" && extraPayload.mime_type.trim()
+            ? extraPayload.mime_type.trim()
+            : "audio/ogg; codecs=opus",
+        chat_message_id: messageId,
+      },
+    };
+  }
+
+  if (
+    (rawType === "image" ||
+      rawType === "image_attachment" ||
+      rawType === "video" ||
+      rawType === "document" ||
+      rawType === "sticker") &&
+    resolvedMediaUrl
+  ) {
+    const normalizedType = rawType === "image_attachment" ? "image" : rawType;
+    return {
+      messageType: normalizedType,
+      payload: {
+        media_url: resolvedMediaUrl,
+        caption:
+          text || (typeof extraPayload.caption === "string" ? extraPayload.caption : undefined),
+        text: text || undefined,
+        file_name: typeof extraPayload.file_name === "string" ? extraPayload.file_name : undefined,
+        mime_type: typeof extraPayload.mime_type === "string" ? extraPayload.mime_type : undefined,
+        chat_message_id: messageId,
+      },
+    };
+  }
+
+  return {
+    messageType: "text",
+    payload: {
+      text,
+      chat_message_id: messageId,
+    },
+  };
+}
 
 // ============================================================
 // Schemas
@@ -652,6 +724,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
        }
 
        if (channelInstanceId) {
+         const dispatchSpec = buildOutboxDispatchSpecFromStaffMessage(input, msg.id);
          await db.from("whatsapp_outbox").upsert(
            {
              store_id: thread.store_id,
@@ -660,8 +733,8 @@ export const sendChatMessage = createServerFn({ method: "POST" })
              provider: providerName,
              idempotency_key: `chat_msg:${msg.id}`,
              recipient_phone: cleanPhone,
-             message_type: "text",
-             payload: { text: input.message, chat_message_id: msg.id },
+             message_type: dispatchSpec.messageType,
+             payload: dispatchSpec.payload,
              status: "pending",
            },
            { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
@@ -3265,8 +3338,20 @@ export const generateSmartContextualAiReply = createServerFn({ method: "POST" })
 
     // 6. Geração da resposta (direta, humana, sem enrolação)
     let suggestedReply = "";
-    const openaiKey = process.env.OPENAI_API_KEY?.trim() || "";
-    const groqKey = process.env.GROQ_API_KEY?.trim() || "";
+    let poolGroqKey = "";
+    let poolOpenAiKey = "";
+    try {
+      const [groqPool, openAiPool] = await Promise.all([
+        getAllActiveKeysForProvider("groq", identity.id, effectiveStoreId),
+        getAllActiveKeysForProvider("openai", identity.id, effectiveStoreId),
+      ]);
+      poolGroqKey = groqPool[0]?.rawKey?.trim() || "";
+      poolOpenAiKey = openAiPool[0]?.rawKey?.trim() || "";
+    } catch (poolErr) {
+      console.warn("[chat.functions] Falha ao consultar pool/BYOK na sugestão contextual:", poolErr);
+    }
+    const openaiKey = poolOpenAiKey || process.env.OPENAI_API_KEY?.trim() || "";
+    const groqKey = poolGroqKey || process.env.GROQ_API_KEY?.trim() || "";
 
     const systemPrompt = `Você é um consultor humano e ágil de atendimento da loja ${storeName}.
 Diretrizes inegociáveis:

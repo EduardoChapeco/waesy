@@ -699,17 +699,28 @@ function WorkspaceAtendimentoPage() {
   };
 
   const togglePlaySmartAudio = () => {
-    if (!aiAudioElementRef.current && aiAudioPreviewUrl) {
-      aiAudioElementRef.current = new Audio(aiAudioPreviewUrl);
-      aiAudioElementRef.current.onended = () => setIsPlayingSmartAudio(false);
+    if (!aiAudioPreviewUrl) return;
+    const current = aiAudioElementRef.current;
+    if (!current || current.dataset.audioSrc !== aiAudioPreviewUrl) {
+      if (current) {
+        current.pause();
+      }
+      const nextAudio = new Audio(aiAudioPreviewUrl);
+      nextAudio.dataset.audioSrc = aiAudioPreviewUrl;
+      nextAudio.onended = () => setIsPlayingSmartAudio(false);
+      aiAudioElementRef.current = nextAudio;
+      setIsPlayingSmartAudio(false);
+      nextAudio.play().then(() => {
+        setIsPlayingSmartAudio(true);
+      }).catch(() => setIsPlayingSmartAudio(false));
+      return;
     }
-    if (!aiAudioElementRef.current) return;
 
     if (isPlayingSmartAudio) {
-      aiAudioElementRef.current.pause();
+      current.pause();
       setIsPlayingSmartAudio(false);
     } else {
-      aiAudioElementRef.current.play().then(() => {
+      current.play().then(() => {
         setIsPlayingSmartAudio(true);
       }).catch(() => setIsPlayingSmartAudio(false));
     }

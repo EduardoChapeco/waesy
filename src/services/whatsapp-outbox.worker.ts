@@ -196,7 +196,26 @@ async function finalizeFailure(db: ReturnType<typeof getServerClient>, row: Clai
       console.warn("[whatsapp-worker] falha ao atualizar status de erro na chat_messages:", errorText(chatMsgUpdateErr));
     }
   }
-  if (deadLetter) await refreshCampaignProgress(db, row.id);
+  if (deadLetter) {
+    await refreshCampaignProgress(db, row.id);
+    const schedId =
+      typeof row.payload?.scheduled_message_id === "string"
+        ? row.payload.scheduled_message_id
+        : typeof (row as Record<string, unknown>).idempotency_key === "string" &&
+            String((row as Record<string, unknown>).idempotency_key).startsWith("scheduled_msg:")
+          ? String((row as Record<string, unknown>).idempotency_key).slice("scheduled_msg:".length)
+          : null;
+    if (schedId) {
+      await db
+        .from("whatsapp_scheduled_messages")
+        .update({
+          status: "failed",
+          error_message: data.errorMessage.slice(0, 500),
+          updated_at: nowIso,
+        })
+        .eq("id", schedId);
+    }
+  }
   await recordAttempt(db, row, workerId, {
     outcome: deadLetter ? "dead_letter" : data.retryable ? "retryable_failure" : "permanent_failure",
     httpStatus: data.httpStatus,
@@ -311,6 +330,23 @@ async function processClaimedRow(db: ReturnType<typeof getServerClient>, row: Cl
         });
       }
     }
+    const schedId =
+      typeof row.payload?.scheduled_message_id === "string"
+        ? row.payload.scheduled_message_id
+        : typeof (row as Record<string, unknown>).idempotency_key === "string" &&
+            String((row as Record<string, unknown>).idempotency_key).startsWith("scheduled_msg:")
+          ? String((row as Record<string, unknown>).idempotency_key).slice("scheduled_msg:".length)
+          : null;
+    if (schedId) {
+      await db
+        .from("whatsapp_scheduled_messages")
+        .update({
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", schedId);
+    }
     await recordAttempt(db, row, workerId, { outcome: "accepted", externalMessageId: result.externalMessageId, httpStatus: result.httpStatus, durationMs: Date.now() - startedAt, metadata: { channel_instance_id: instance.id } });
     return "accepted";
   } catch (error) {
@@ -345,22 +381,77 @@ export async function runWhatsAppOutboxWorker(options?: {
     const nowIso = new Date().toISOString();
     const { data: dueScheduled } = await db
       .from("whatsapp_scheduled_messages")
-      .select("id, store_id, thread_id, recipient_phone, message_text")
+      .select("id, store_id, thread_id, channel_instance_id, recipient_phone, message_text")
       .eq("status", "scheduled")
       .lte("scheduled_for", nowIso)
       .limit(20);
 
     if (dueScheduled && dueScheduled.length > 0) {
       for (const item of dueScheduled) {
+        let targetInstanceId: string | null = item.channel_instance_id || null;
+        let targetProvider: string | null = null;
+
+        if (!targetInstanceId && item.thread_id) {
+          const { data: th } = await db
+            .from("chat_threads")
+            .select("channel_instance_id")
+            .eq("id", item.thread_id)
+            .maybeSingle();
+          if (th?.channel_instance_id) targetInstanceId = th.channel_instance_id;
+        }
+
+        if (targetInstanceId) {
+          const { data: inst } = await db
+            .from("whatsapp_channel_instances")
+            .select("id, provider, is_active")
+            .eq("id", targetInstanceId)
+            .eq("store_id", item.store_id)
+            .maybeSingle();
+          if (inst?.is_active) {
+            targetProvider = inst.provider;
+          } else {
+            targetInstanceId = null;
+          }
+        }
+
+        if (!targetInstanceId) {
+          const { data: defInst } = await db
+            .from("whatsapp_channel_instances")
+            .select("id, provider")
+            .eq("store_id", item.store_id)
+            .eq("is_active", true)
+            .order("is_default", { ascending: false })
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (defInst) {
+            targetInstanceId = defInst.id;
+            targetProvider = defInst.provider;
+          }
+        }
+
+        if (!targetInstanceId || !targetProvider) {
+          await db
+            .from("whatsapp_scheduled_messages")
+            .update({
+              status: "failed",
+              error_message: "Nenhuma instância WhatsApp ativa disponível para disparo agendado.",
+              updated_at: nowIso,
+            })
+            .eq("id", item.id);
+          continue;
+        }
+
         const { error: upsertErr } = await db.from("whatsapp_outbox").upsert(
           {
             store_id: item.store_id,
             thread_id: item.thread_id,
-            provider: "evolution_api",
+            channel_instance_id: targetInstanceId,
+            provider: targetProvider,
             idempotency_key: `scheduled_msg:${item.id}`,
             recipient_phone: item.recipient_phone,
             message_type: "text",
-            payload: { text: item.message_text },
+            payload: { text: item.message_text, scheduled_message_id: item.id },
             status: "pending",
           },
           { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
@@ -368,7 +459,7 @@ export async function runWhatsAppOutboxWorker(options?: {
         if (!upsertErr) {
           await db
             .from("whatsapp_scheduled_messages")
-            .update({ status: "sent", sent_at: nowIso, updated_at: nowIso })
+            .update({ status: "processing", updated_at: nowIso })
             .eq("id", item.id);
         }
       }

@@ -10,6 +10,7 @@ import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server
 import { encryptSecret, decryptSecret, maskSecret, cleanApiKey } from "@/lib/crypto-vault.server";
 import {
   getActiveSecretForProvider,
+  getBatchActiveSecretsForProviders,
   internalTestSecretKeyConnection,
 } from "./secret-vault.functions";
 import { enrichOrInsertMinedProduct } from "./mining/mined-product-enricher";
@@ -574,49 +575,163 @@ export async function getAllActiveKeysForProvider(
     console.warn(`[api-orchestrator] Falha ao ler chaves do pool para ${provider}:`, err);
   }
 
-  // 3. Fallbacks de variáveis de ambiente locais (suporta chave única, numeradas _1.._10 e lista _KEYS separada por vírgula)
-  if (typeof process !== "undefined" && process.env) {
-    const prefix = provider.toUpperCase();
-    const envCandidates: string[] = [];
+  appendEnvKeysForProvider(provider, keys);
+  return keys;
+}
 
-    const baseEnv = process.env[`${prefix}_API_KEY`]?.trim();
-    if (baseEnv) envCandidates.push(baseEnv);
+function appendEnvKeysForProvider(
+  provider: string,
+  targetKeys: Array<{ id: string; rawKey: string }>,
+): void {
+  if (typeof process === "undefined" || !process.env) return;
 
-    const multiListEnv = process.env[`${prefix}_API_KEYS`]?.trim();
-    if (multiListEnv) {
-      for (const part of multiListEnv.split(/[,;\r\n]+/)) {
-        if (part.trim()) envCandidates.push(part.trim());
-      }
+  const prefix = provider.toUpperCase();
+  const envCandidates: string[] = [];
+
+  const baseEnv = process.env[`${prefix}_API_KEY`]?.trim();
+  if (baseEnv) envCandidates.push(baseEnv);
+
+  const multiListEnv = process.env[`${prefix}_API_KEYS`]?.trim();
+  if (multiListEnv) {
+    for (const part of multiListEnv.split(/[,;\r\n]+/)) {
+      if (part.trim()) envCandidates.push(part.trim());
     }
-
-    for (let idx = 1; idx <= 10; idx++) {
-      const numbered = process.env[`${prefix}_API_KEY_${idx}`]?.trim();
-      if (numbered) envCandidates.push(numbered);
-    }
-
-    if (provider === "gemini") {
-      const alt =
-        process.env.GOOGLE_API_KEY ||
-        process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-        process.env.VITE_GEMINI_API_KEY;
-      if (alt?.trim()) envCandidates.push(alt.trim());
-    } else if (provider === "firecrawl") {
-      const alt = process.env.VITE_FIRECRAWL_API_KEY;
-      if (alt?.trim()) envCandidates.push(alt.trim());
-    } else if (provider === "steel") {
-      const alt = process.env.VITE_STEEL_API_KEY;
-      if (alt?.trim()) envCandidates.push(alt.trim());
-    }
-
-    envCandidates.forEach((rawKey, i) => {
-      const envId = `env-${provider}-${i + 1}`;
-      if (rawKey && !isKeyInMemoryCooldown(envId) && !keys.some((k) => k.rawKey === rawKey)) {
-        keys.push({ id: envId, rawKey });
-      }
-    });
   }
 
-  return keys;
+  for (let idx = 1; idx <= 10; idx++) {
+    const numbered = process.env[`${prefix}_API_KEY_${idx}`]?.trim();
+    if (numbered) envCandidates.push(numbered);
+  }
+
+  if (provider === "gemini") {
+    const alt =
+      process.env.GOOGLE_API_KEY ||
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+      process.env.VITE_GEMINI_API_KEY;
+    if (alt?.trim()) envCandidates.push(alt.trim());
+  } else if (provider === "firecrawl") {
+    const alt = process.env.VITE_FIRECRAWL_API_KEY;
+    if (alt?.trim()) envCandidates.push(alt.trim());
+  } else if (provider === "steel") {
+    const alt = process.env.VITE_STEEL_API_KEY;
+    if (alt?.trim()) envCandidates.push(alt.trim());
+  }
+
+  envCandidates.forEach((rawKey, i) => {
+    const envId = `env-${provider}-${i + 1}`;
+    if (rawKey && !isKeyInMemoryCooldown(envId) && !targetKeys.some((k) => k.rawKey === rawKey)) {
+      targetKeys.push({ id: envId, rawKey });
+    }
+  });
+}
+
+/**
+ * Carrega chaves ativas para múltiplos provedores em lote (máximo 1 consulta no pool global + cofre em lote)
+ * evitando multiplicação de subrequests por invocação no Cloudflare Worker.
+ */
+export async function getBatchActiveKeysForProviders(
+  providers: Array<ApiProvider | string>,
+  ownerId?: string,
+  storeId?: string,
+): Promise<Record<string, Array<{ id: string; rawKey: string }>>> {
+  const uniqueProviders = Array.from(
+    new Set(providers.map((p) => String(p || "").trim()).filter(Boolean)),
+  );
+  const result: Record<string, Array<{ id: string; rawKey: string }>> = {};
+  for (const p of uniqueProviders) result[p] = [];
+  if (uniqueProviders.length === 0) return result;
+
+  // 1. BYOK em lote para todos os provedores solicitados
+  if (ownerId || storeId) {
+    try {
+      const byokMap = await getBatchActiveSecretsForProviders(
+        uniqueProviders,
+        ownerId,
+        storeId,
+      ).catch(() => ({}) as Record<string, string | null>);
+      for (const provider of uniqueProviders) {
+        const rawSecret = byokMap[provider];
+        if (rawSecret) {
+          const byokKeyId = `byok-${provider}-${storeId || ownerId || "user"}`;
+          if (!isKeyInMemoryCooldown(byokKeyId)) {
+            result[provider].push({ id: byokKeyId, rawKey: rawSecret });
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[api-orchestrator] batch byok lookup error:", err);
+    }
+  }
+
+  // 2. Consulta única consolidada em api_key_pools (.in)
+  try {
+    const supabase = getServerClient();
+    const nowIso = new Date().toISOString();
+    let poolQuery: any = supabase
+      .from("api_key_pools")
+      .select(
+        "id, provider, encrypted_key, priority, daily_request_count, last_used_at, quarantine_until",
+      );
+
+    if (typeof poolQuery?.in === "function") {
+      poolQuery = poolQuery
+        .in("provider", uniqueProviders)
+        .eq("is_active", true)
+        .or(`quarantine_until.is.null,quarantine_until.lte.${nowIso}`)
+        .order("priority", { ascending: true })
+        .order("daily_request_count", { ascending: true })
+        .order("last_used_at", { ascending: true, nullsFirst: true })
+        .limit(100);
+
+      const { data: poolRows } = await poolQuery;
+      if (Array.isArray(poolRows) && poolRows.length > 0) {
+        const grouped = new Map<string, Array<{ id: string; rawKey: string }>>();
+        for (const row of poolRows) {
+          const providerName = String(row?.provider || "");
+          if (!providerName || !row?.id || !row?.encrypted_key) continue;
+          if (isKeyInMemoryCooldown(row.id)) continue;
+          try {
+            const rawKey = decryptSecret(row.encrypted_key).trim();
+            if (!rawKey) continue;
+            const list = grouped.get(providerName) || [];
+            if (!list.some((k) => k.rawKey === rawKey)) {
+              list.push({ id: row.id, rawKey });
+              grouped.set(providerName, list);
+            }
+          } catch {
+            // Segredo inválido ignorado defensivamente
+          }
+        }
+
+        for (const [providerName, decodedPool] of grouped.entries()) {
+          const bucket = result[providerName] || [];
+          const ordered =
+            decodedPool.length > 1
+              ? (() => {
+                  const cursor = (providerRoundRobinCursor.get(providerName) || 0) % decodedPool.length;
+                  providerRoundRobinCursor.set(providerName, cursor + 1);
+                  return [...decodedPool.slice(cursor), ...decodedPool.slice(0, cursor)];
+                })()
+              : decodedPool;
+          for (const item of ordered) {
+            if (!bucket.some((k) => k.rawKey === item.rawKey)) {
+              bucket.push(item);
+            }
+          }
+          result[providerName] = bucket;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[api-orchestrator] batch api_key_pools error:", err);
+  }
+
+  // 3. Env fallbacks sem subrequests externos
+  for (const provider of uniqueProviders) {
+    appendEnvKeysForProvider(provider, result[provider]);
+  }
+
+  return result;
 }
 
 /**

@@ -652,6 +652,7 @@ const GROUP_SETTINGS: NavGroup = {
   items: [
     { path: "/workspace/configuracoes", label: "Geral", icon: Settings },
     { path: "/workspace/configuracoes/loja", label: "Perfil da Loja", icon: Store },
+    { path: "/workspace/configuracoes/planos", label: "Plano e Módulos", icon: Layers },
     { path: "/workspace/design-system", label: "Design System", icon: Palette },
     { path: "/workspace/lojas", label: "Minhas Lojas", icon: Building2 },
     { path: "/workspace/configuracoes/conformidade", label: "Marketplace Oficial", icon: ShieldCheck },
@@ -1180,6 +1181,7 @@ export function resolveWorkspaceNavigation(
       "/workspace/financeiro/saques",
       "/workspace/financeiro/configuracao",
       "/workspace/configuracoes/integracoes",
+      "/workspace/configuracoes/planos",
       "/workspace/configuracoes/ai",
       "/workspace/configuracoes/inteligencia-artificial",
       "/workspace/configuracoes/sessoes",

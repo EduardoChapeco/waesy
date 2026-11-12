@@ -54,7 +54,7 @@ export const listIntegrationSettings = createServerFn({ method: "GET" }).handler
 
   const { data: credentials, error } = await supabase
     .from("integration_credentials")
-    .select("id, provider, is_active, updated_at")
+    .select("id, provider, is_active, public_metadata, updated_at")
     .eq("store_id", identity.store_id)
     .order("provider", { ascending: true });
 
@@ -182,6 +182,29 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin"]);
 
+    if (!isActive && Object.keys(tokenPayload).length === 0) {
+      const { data: updated, error: toggleErr } = await supabase
+        .from("integration_credentials")
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .eq("store_id", identity.store_id)
+        .eq("provider", provider)
+        .select("id")
+        .maybeSingle();
+
+      if (toggleErr) throw new Error("Erro ao desativar integração: " + toggleErr.message);
+      if (updated?.id) {
+        await logAuditAction(
+          identity,
+          "UPDATED_INTEGRATION_CREDENTIAL",
+          "integration_credentials",
+          updated.id,
+          { provider, isActive: false },
+        );
+        return { status: "success", recordId: updated.id };
+      }
+      return { status: "success", recordId: null };
+    }
+
     if (isActive) {
       const hasKeys = Object.keys(tokenPayload).length > 0;
       const allValid = Object.values(tokenPayload).every(
@@ -200,6 +223,14 @@ export const saveIntegrationCredential = createServerFn({ method: "POST" })
       google_analytics: ["measurement_id"],
       google_ads: ["conversion_id", "customer_id", "account_name"],
       tiktok_pixel: ["pixel_id"],
+      asaas: ["environment", "webhook_url"],
+      mercadopago: ["public_key", "environment"],
+      stripe: ["publishable_key", "environment"],
+      pagar_me: ["public_key", "environment"],
+      paypal: ["environment"],
+      melhor_envio: ["environment", "postal_code_origin"],
+      bling_erp: ["environment"],
+      tiny_erp: ["environment"],
     };
     const providerPublicKeys = publicKeysByProvider[provider] || [];
     const publicMetadata =
@@ -411,8 +442,8 @@ export const getPublicMapConfig = createServerFn({ method: "GET" }).handler(asyn
 export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      phoneNumberId: z.string().min(5, "Phone Number ID é obrigatório"),
-      accessToken: z.string().min(10, "Access Token é obrigatório"),
+      phoneNumberId: z.string().optional().default(""),
+      accessToken: z.string().optional().default(""),
       recipientPhone: z.string().optional(),
     }),
   )
@@ -420,12 +451,27 @@ export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin"]);
 
+    let phoneNumberId = data.phoneNumberId.trim();
+    let accessToken = data.accessToken.trim();
+    if ((!phoneNumberId || !accessToken) && identity.store_id) {
+      const saved = await getActiveIntegrationPayload(identity.store_id, "whatsapp_cloud_api");
+      phoneNumberId = phoneNumberId || saved?.phone_number_id || "";
+      accessToken = accessToken || saved?.access_token || "";
+    }
+
+    if (phoneNumberId.length < 5 || accessToken.length < 10) {
+      return {
+        success: false,
+        message: "Phone Number ID e Access Token são obrigatórios para testar o WhatsApp Cloud.",
+      };
+    }
+
     try {
       // 1. Validação da conta e número na Meta Graph API
-      const metaUrl = `https://graph.facebook.com/v20.0/${data.phoneNumberId}?fields=id,verified_name,display_phone_number,quality_rating`;
+      const metaUrl = `https://graph.facebook.com/v20.0/${phoneNumberId}?fields=id,verified_name,display_phone_number,quality_rating`;
       const verifyRes = await fetch(metaUrl, {
         headers: {
-          Authorization: `Bearer ${data.accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         signal: AbortSignal.timeout(10000),
@@ -446,11 +492,11 @@ export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
       let messageSent = false;
       if (data.recipientPhone) {
         const cleanPhone = data.recipientPhone.replace(/\D/g, "");
-        const sendUrl = `https://graph.facebook.com/v20.0/${data.phoneNumberId}/messages`;
+        const sendUrl = `https://graph.facebook.com/v20.0/${phoneNumberId}/messages`;
         const sendRes = await fetch(sendUrl, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${data.accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -491,7 +537,7 @@ export const testWhatsAppCloudConnection = createServerFn({ method: "POST" })
 export const testMelhorEnvioConnection = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      apiToken: z.string().min(10, "Token de API do Melhor Envio é obrigatório"),
+      apiToken: z.string().optional().default(""),
       environment: z.enum(["sandbox", "production"]).default("production"),
     }),
   )
@@ -499,8 +545,25 @@ export const testMelhorEnvioConnection = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin"]);
 
+    let apiToken = data.apiToken.trim();
+    let environment = data.environment;
+    if (!apiToken && identity.store_id) {
+      const saved = await getActiveIntegrationPayload(identity.store_id, "melhor_envio");
+      apiToken = saved?.api_token || saved?.access_token || "";
+      if (saved?.environment === "sandbox" || saved?.environment === "production") {
+        environment = saved.environment;
+      }
+    }
+
+    if (apiToken.length < 10) {
+      return {
+        success: false,
+        message: "Token de API do Melhor Envio é obrigatório para realizar o teste.",
+      };
+    }
+
     const baseUrl =
-      data.environment === "sandbox"
+      environment === "sandbox"
         ? "https://sandbox.melhorenvio.com.br/api/v2/me"
         : "https://melhorenvio.com.br/api/v2/me";
 
@@ -508,7 +571,7 @@ export const testMelhorEnvioConnection = createServerFn({ method: "POST" })
       const res = await fetch(baseUrl, {
         headers: {
           Accept: "application/json",
-          Authorization: `Bearer ${data.apiToken.replace(/^Bearer\s+/i, "")}`,
+          Authorization: `Bearer ${apiToken.replace(/^Bearer\s+/i, "")}`,
           "User-Agent": "Waesy Platform (contato@waesy.com)",
         },
         signal: AbortSignal.timeout(10000),
@@ -546,18 +609,34 @@ export const testErpConnection = createServerFn({ method: "POST" })
   .validator(
     z.object({
       provider: z.enum(["bling", "tiny"]),
-      apiKey: z.string().min(5, "Chave de API / Token é obrigatório"),
+      apiKey: z.string().optional().default(""),
     }),
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin"]);
 
+    let apiKey = data.apiKey.trim();
+    if (!apiKey && identity.store_id) {
+      const providerKey = data.provider === "bling" ? "bling_erp" : "tiny_erp";
+      const saved =
+        (await getActiveIntegrationPayload(identity.store_id, providerKey)) ||
+        (await getActiveIntegrationPayload(identity.store_id, data.provider));
+      apiKey = saved?.api_key || saved?.access_token || "";
+    }
+
+    if (apiKey.length < 5) {
+      return {
+        success: false,
+        message: "Chave de API / Token do ERP é obrigatória para realizar o teste.",
+      };
+    }
+
     try {
       if (data.provider === "bling") {
         const res = await fetch("https://api.bling.com.br/v3/situacoes/modulos", {
           headers: {
-            Authorization: `Bearer ${data.apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             Accept: "application/json",
           },
           signal: AbortSignal.timeout(10000),
@@ -581,7 +660,7 @@ export const testErpConnection = createServerFn({ method: "POST" })
         const res = await fetch("https://api.tiny.com.br/api2/info.php", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ token: data.apiKey, formato: "json" }),
+          body: new URLSearchParams({ token: apiKey, formato: "json" }),
           signal: AbortSignal.timeout(10000),
         });
 
@@ -767,7 +846,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
   .validator(
     z.object({
       provider: z.enum(["asaas", "mercadopago", "stripe", "pagar_me", "paypal"]),
-      apiKey: z.string().min(5, "Chave de API / Token do Gateway é obrigatório"),
+      apiKey: z.string().optional().default(""),
       secretKey: z.string().optional(),
       environment: z.enum(["sandbox", "production", "live"]).default("production"),
     }),
@@ -776,17 +855,36 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin"]);
 
+    let apiKey = data.apiKey.trim();
+    let secretKey = data.secretKey?.trim() || "";
+    let environment = data.environment;
+    if ((!apiKey || (data.provider === "paypal" && !secretKey)) && identity.store_id) {
+      const saved = await getActiveIntegrationPayload(identity.store_id, data.provider);
+      apiKey = apiKey || saved?.api_key || saved?.access_token || saved?.secret_key || saved?.client_id || "";
+      secretKey = secretKey || saved?.client_secret || "";
+      if (saved?.environment === "sandbox" || saved?.environment === "production" || saved?.environment === "live") {
+        environment = saved.environment;
+      }
+    }
+
+    if (apiKey.length < 5) {
+      return {
+        success: false,
+        message: "Chave de API / Token do Gateway é obrigatória para realizar o teste.",
+      };
+    }
+
     try {
       if (data.provider === "asaas") {
         const baseUrl =
-          data.environment === "sandbox"
+          environment === "sandbox"
             ? "https://sandbox.asaas.com/api/v3/myAccount"
             : "https://api.asaas.com/v3/myAccount";
 
         const res = await fetch(baseUrl, {
           method: "GET",
           headers: {
-            access_token: data.apiKey.trim(),
+            access_token: apiKey,
             "Content-Type": "application/json",
             "User-Agent": "Waesy Platform (contato@waesy.com)",
           },
@@ -798,7 +896,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
           const errMsg = errData?.errors?.[0]?.description || `HTTP ${res.status}`;
           return {
             success: false,
-            message: `Falha na autenticação do Asaas (${data.environment}): ${errMsg}`,
+            message: `Falha na autenticação do Asaas (${environment}): ${errMsg}`,
           };
         }
 
@@ -810,7 +908,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
             name: account.name || account.tradingName,
             email: account.email,
             cpfCnpj: account.cpfCnpj,
-            environment: data.environment,
+            environment,
           },
         };
       }
@@ -819,7 +917,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
         const res = await fetch("https://api.mercadopago.com/users/me", {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${data.apiKey.trim()}`,
+            Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
           signal: AbortSignal.timeout(10000),
@@ -849,7 +947,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
         const res = await fetch("https://api.stripe.com/v1/account", {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${data.apiKey.trim()}`,
+            Authorization: `Bearer ${apiKey}`,
           },
           signal: AbortSignal.timeout(10000),
         });
@@ -876,7 +974,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
 
       if (data.provider === "pagar_me") {
         // Pagar.me v5 utiliza Basic Auth com a Secret Key como usuário e senha em branco
-        const basicAuth = Buffer.from(`${data.apiKey.trim()}:`).toString("base64");
+        const basicAuth = Buffer.from(`${apiKey}:`).toString("base64");
         const res = await fetch("https://api.pagar.me/core/v5/orders?page=1&size=1", {
           method: "GET",
           headers: {
@@ -886,10 +984,13 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
           signal: AbortSignal.timeout(10000),
         });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401 || res.status === 403 || !res.ok) {
           return {
             success: false,
-            message: "Chave de API do Pagar.me inválida ou não autorizada.",
+            message:
+              res.status === 401 || res.status === 403
+                ? "Chave de API do Pagar.me inválida ou não autorizada."
+                : `Pagar.me retornou status HTTP ${res.status} ao validar credencial.`,
           };
         }
 
@@ -904,13 +1005,13 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
       }
 
       if (data.provider === "paypal") {
-        const isSandbox = data.environment === "sandbox";
+        const isSandbox = environment === "sandbox";
         const tokenUrl = isSandbox
           ? "https://api-m.sandbox.paypal.com/v1/oauth2/token"
           : "https://api-m.paypal.com/v1/oauth2/token";
 
-        const clientId = data.apiKey.trim();
-        const clientSecret = data.secretKey?.trim() || "";
+        const clientId = apiKey;
+        const clientSecret = secretKey;
 
         // If clientSecret is provided, do client_credentials OAuth flow
         if (clientSecret) {
@@ -929,7 +1030,7 @@ export const testPaymentGatewayConnection = createServerFn({ method: "POST" })
             const errData = await res.json().catch(() => ({}));
             return {
               success: false,
-              message: `PayPal rejeitou as credenciais (${data.environment}): ${errData?.error_description || errData?.error || `HTTP ${res.status}`}`,
+              message: `PayPal rejeitou as credenciais (${environment}): ${errData?.error_description || errData?.error || `HTTP ${res.status}`}`,
             };
           }
 

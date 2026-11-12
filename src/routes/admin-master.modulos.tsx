@@ -23,6 +23,9 @@ import {
   ShieldAlert,
   Search as SearchIcon,
   Store as StoreIcon,
+  Receipt,
+  Users,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +33,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { adminListPlatformModules, adminTogglePlatformModule, adminUpdatePlatformModule, type PlatformModuleDTO } from "@/services/modules.functions";
 import {
@@ -39,14 +49,18 @@ import {
   type ExtensionRequestItemDTO,
   type ExtensionPackageType,
 } from "@/services/extensions-distributor.functions";
-import { getPlatformStoresList } from "@/services/master.functions";
+import { createPlatformInvoice, getPlatformStoresList } from "@/services/master.functions";
 import { ExtensionWebStoreModal } from "@/components/extensions/ExtensionWebStoreModal";
-import { toggleStoreModuleAddon } from "@/services/store-modules.functions";
+import { toggleStoreModuleAddon, updateStorePlanTier } from "@/services/store-modules.functions";
 import {
   COMMERCIAL_MODULE_CATALOG,
   STORE_PLANS,
+  calculateStoreMonthlyPlanTotalCents,
+  isStorePlanExempt,
   type CommercialModuleId,
+  type StorePlanTier,
 } from "@/lib/architecture/module-plan-governance";
+import { formatMoney, parseMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/admin-master/modulos")({
   head: () => ({ meta: [{ title: "Governança Dinâmica de Módulos | Admin Master" }] }),
@@ -100,6 +114,12 @@ function AdminMasterModulosPage() {
 
   const [categoryTab, setCategoryTab] = useState<"all" | "store_operation" | "public_discovery" | "ai_intelligence" | "browser_extensions" | "store_plans">("all");
   const [togglingStoreModule, setTogglingStoreModule] = useState<string | null>(null);
+  const [changingStorePlanId, setChangingStorePlanId] = useState<string | null>(null);
+  const [invoiceDialogStore, setInvoiceDialogStore] = useState<any | null>(null);
+  const [invoiceDescription, setInvoiceDescription] = useState("");
+  const [invoiceAmountReais, setInvoiceAmountReais] = useState("");
+  const [invoiceDueDate, setInvoiceDueDate] = useState("");
+  const [isIssuingInvoice, setIsIssuingInvoice] = useState(false);
   const [search, setSearch] = useState("");
   const [downloadingType, setDownloadingType] = useState<string | null>(null);
 
@@ -256,16 +276,70 @@ function AdminMasterModulosPage() {
   };
 
   const isExcelenciaTourRecord = (store: any) => {
-    const slug = String(store?.slug || "").toLowerCase().trim();
-    const name = String(store?.name || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-    return (
-      slug === "excelencia-tour-smo" ||
-      slug === "excelencia-tour" ||
-      name.includes("excelencia tour")
-    );
+    return isStorePlanExempt(store);
+  };
+
+  const handleChangeStorePlan = async (storeId: string, newTier: StorePlanTier) => {
+    setChangingStorePlanId(storeId);
+    try {
+      await updateStorePlanTier({ data: { storeId, planTier: newTier } });
+      setPlatformStores((prev) =>
+        prev.map((s) =>
+          s.id === storeId
+            ? {
+                ...s,
+                plan_tier: newTier,
+                settings: { ...(s.settings || {}), plan_tier: newTier },
+              }
+            : s
+        )
+      );
+      toast.success(`Plano atualizado para ${STORE_PLANS[newTier].name}.`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao atualizar plano da loja.");
+    } finally {
+      setChangingStorePlanId(null);
+    }
+  };
+
+  const openInvoiceDialogForStore = (store: any) => {
+    const monthlyCents = calculateStoreMonthlyPlanTotalCents(store);
+    const tier = String(store.plan_tier || store.settings?.plan_tier || "free").toLowerCase() as StorePlanTier;
+    const planLabel = STORE_PLANS[tier]?.name || "Free";
+    const due = new Date();
+    due.setDate(due.getDate() + 7);
+    setInvoiceDialogStore(store);
+    setInvoiceDescription(`Assinatura Waesy ${planLabel} - ${store.name}`);
+    setInvoiceAmountReais(((monthlyCents > 0 ? monthlyCents : 9900) / 100).toFixed(2).replace(".", ","));
+    setInvoiceDueDate(due.toISOString().slice(0, 10));
+  };
+
+  const handleIssueStoreInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!invoiceDialogStore) return;
+    const amountCents = parseMoney(invoiceAmountReais);
+    if (!invoiceDescription.trim() || amountCents <= 0 || !invoiceDueDate) {
+      toast.error("Preencha descrição, valor positivo e data de vencimento.");
+      return;
+    }
+    setIsIssuingInvoice(true);
+    try {
+      await createPlatformInvoice({
+        data: {
+          storeId: invoiceDialogStore.id,
+          description: invoiceDescription.trim(),
+          amountCents,
+          dueDate: new Date(`${invoiceDueDate}T23:59:59`).toISOString(),
+          notes: "Emitida pelo painel Governança de Módulos e Planos (Admin Master)",
+        },
+      });
+      toast.success(`Fatura emitida para ${invoiceDialogStore.name}.`);
+      setInvoiceDialogStore(null);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao emitir fatura.");
+    } finally {
+      setIsIssuingInvoice(false);
+    }
   };
 
   const isStoreExtensionAuthorized = (store: any, type: ExtensionPackageType) => {
@@ -1275,27 +1349,26 @@ function AdminMasterModulosPage() {
                       <th className="p-3 text-center">Studio Turismo</th>
                       <th className="p-3 text-center">Food Delivery</th>
                       <th className="p-3 text-center">Booster Ads</th>
+                      <th className="p-3 text-center">Limites (Equipe / WA)</th>
+                      <th className="p-3 text-right">Faturamento</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
                     {filteredPlatformStores.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="p-6 text-center text-xs text-muted-foreground">
+                        <td colSpan={10} className="p-6 text-center text-xs text-muted-foreground">
                           Nenhuma loja encontrada com o termo pesquisado.
                         </td>
                       </tr>
                     ) : (
                       (showAllStores ? filteredPlatformStores : filteredPlatformStores.slice(0, 15)).map((store) => {
                         const activeModules: string[] = store.settings?.active_modules || [];
-                        const planTier = (store.plan_tier || store.settings?.plan_tier || "free").toLowerCase();
+                        const planTier = (store.plan_tier || store.settings?.plan_tier || "free").toLowerCase() as StorePlanTier;
+                        const resolvedPlan = STORE_PLANS[planTier] || STORE_PLANS.free;
                         const isExempt = isExcelenciaTourRecord(store);
-
-                        const checkModuleActive = (modId: CommercialModuleId) => {
-                          if (isExempt) return true;
-                          const plan = STORE_PLANS[planTier as keyof typeof STORE_PLANS];
-                          const includedInPlan = plan ? plan.includedModules.includes(modId) : false;
-                          return includedInPlan || activeModules.includes(modId);
-                        };
+                        const staffCount = Number(store.staff_count || 0);
+                        const waCount = Number(store.whatsapp_instances_count || 0);
+                        const monthlyTotalCents = calculateStoreMonthlyPlanTotalCents(store);
 
                         const commercialModules: { id: CommercialModuleId; label: string }[] = [
                           { id: "module_omnichannel_whatsapp", label: "WhatsApp" },
@@ -1313,12 +1386,32 @@ function AdminMasterModulosPage() {
                               <div className="text-2xs font-mono text-muted-foreground">/{store.slug}</div>
                             </td>
                             <td className="p-3 text-center">
-                              <Badge variant={isExempt ? "default" : planTier === "enterprise" ? "default" : "secondary"} className="text-3xs uppercase font-mono">
-                                {isExempt ? "Enterprise (SSOT)" : planTier}
-                              </Badge>
+                              {isExempt ? (
+                                <Badge variant="secondary" className="text-3xs uppercase font-mono">
+                                  Enterprise (SSOT)
+                                </Badge>
+                              ) : (
+                                <Select
+                                  value={resolvedPlan.tier}
+                                  disabled={changingStorePlanId === store.id}
+                                  onValueChange={(val) => handleChangeStorePlan(store.id, val as StorePlanTier)}
+                                >
+                                  <SelectTrigger className="h-8 w-32 mx-auto text-2xs font-mono">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {Object.values(STORE_PLANS).map((planOption) => (
+                                      <SelectItem key={planOption.tier} value={planOption.tier} className="text-xs">
+                                        {planOption.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
                             </td>
                             {commercialModules.map((cm) => {
-                              const isActive = checkModuleActive(cm.id);
+                              const includedInPlan = resolvedPlan.includedModules.includes(cm.id);
+                              const isAddonSubscribed = activeModules.includes(cm.id);
                               const isToggling = togglingStoreModule === `${store.id}_${cm.id}`;
 
                               return (
@@ -1327,32 +1420,65 @@ function AdminMasterModulosPage() {
                                     <Badge variant="secondary" className="text-3xs font-semibold">
                                       Nativo
                                     </Badge>
+                                  ) : includedInPlan ? (
+                                    <Badge variant="secondary" className="text-3xs font-semibold bg-primary/10 text-primary border-primary/20">
+                                      Incluso
+                                    </Badge>
                                   ) : (
                                     <Button
                                       type="button"
-                                      variant={isActive ? "outline" : "ghost"}
+                                      variant={isAddonSubscribed ? "outline" : "ghost"}
                                       size="sm"
                                       disabled={isToggling}
-                                      onClick={() => handleToggleStoreModule(store.id, cm.id, isActive)}
+                                      onClick={() => handleToggleStoreModule(store.id, cm.id, isAddonSubscribed)}
                                       className={`h-8 px-2 text-2xs font-semibold focus-visible:ring-2 focus-visible:ring-ring ${
-                                        isActive
+                                        isAddonSubscribed
                                           ? "border-success/50 text-success bg-success/10"
                                           : "text-muted-foreground hover:text-foreground"
                                       }`}
                                     >
                                       {isToggling ? (
                                         <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
-                                      ) : isActive ? (
+                                      ) : isAddonSubscribed ? (
                                         <Check className="size-3 mr-1" />
                                       ) : (
                                         <X className="size-3 mr-1" />
                                       )}
-                                      <span>{isActive ? "Ativo" : "Inativo"}</span>
+                                      <span>{isAddonSubscribed ? "Add-on" : "Inativo"}</span>
                                     </Button>
                                   )}
                                 </td>
                               );
                             })}
+                            <td className="p-3 text-center">
+                              <div className="flex flex-col items-center gap-1 text-3xs font-mono text-muted-foreground">
+                                <span className="inline-flex items-center gap-1">
+                                  <Users className="size-3" />
+                                  {staffCount}/{isExempt || resolvedPlan.maxStaffUsers >= 999 ? "Ilim." : resolvedPlan.maxStaffUsers}
+                                </span>
+                                <span className="inline-flex items-center gap-1">
+                                  <Smartphone className="size-3" />
+                                  {waCount}/{isExempt || resolvedPlan.maxWhatsAppInstances >= 999 ? "Ilim." : resolvedPlan.maxWhatsAppInstances}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="text-2xs font-mono font-bold text-foreground">
+                                  {formatMoney(monthlyTotalCents)}/mês
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openInvoiceDialogForStore(store)}
+                                  className="h-8 px-2 text-2xs font-semibold gap-1 focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  <Receipt className="size-3" />
+                                  <span>Emitir Fatura</span>
+                                </Button>
+                              </div>
+                            </td>
                           </tr>
                         );
                       })
@@ -1445,6 +1571,71 @@ function AdminMasterModulosPage() {
                 >
                   {isSaving && <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />}
                   <span>Salvar Alterações</span>
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Modal Emissão de Fatura por Loja ──────────────────────── */}
+      <Dialog open={!!invoiceDialogStore} onOpenChange={(open) => !open && setInvoiceDialogStore(null)}>
+        <DialogContent className="sm:max-w-md sm:rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Receipt className="size-4 text-primary" />
+              <span>Emitir Fatura da Plataforma</span>
+            </DialogTitle>
+          </DialogHeader>
+          {invoiceDialogStore && (
+            <form onSubmit={handleIssueStoreInvoice} className="space-y-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Descrição da Cobrança</Label>
+                <Input
+                  value={invoiceDescription}
+                  onChange={(e) => setInvoiceDescription(e.target.value)}
+                  className="h-11 min-h-11 text-sm"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Valor (R$)</Label>
+                  <Input
+                    value={invoiceAmountReais}
+                    onChange={(e) => setInvoiceAmountReais(e.target.value)}
+                    placeholder="0,00"
+                    className="h-11 min-h-11 text-sm font-mono"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Vencimento</Label>
+                  <Input
+                    type="date"
+                    value={invoiceDueDate}
+                    onChange={(e) => setInvoiceDueDate(e.target.value)}
+                    className="h-11 min-h-11 text-sm font-mono"
+                    required
+                  />
+                </div>
+              </div>
+              <DialogFooter className="pt-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setInvoiceDialogStore(null)}
+                  className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isIssuingInvoice}
+                  className="h-11 min-h-11 px-4 text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {isIssuingInvoice && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />}
+                  <span>Confirmar Emissão</span>
                 </Button>
               </DialogFooter>
             </form>

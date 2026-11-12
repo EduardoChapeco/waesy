@@ -72,6 +72,15 @@ function getCandidateMasterKeys(): Buffer[] {
 }
 
 function getMasterKey(): Buffer {
+  const explicitVaultKey = (
+    getEnvVar("VAULT_MASTER_KEY") ||
+    (typeof process !== "undefined" ? process.env?.VAULT_MASTER_KEY : undefined)
+  )?.trim();
+  if (explicitVaultKey && explicitVaultKey.length < 32) {
+    throw new Error(
+      "[crypto-vault] VAULT_MASTER_KEY configurada com menos de 32 caracteres; operação bloqueada em fail-closed.",
+    );
+  }
   return getCandidateMasterKeys()[0];
 }
 

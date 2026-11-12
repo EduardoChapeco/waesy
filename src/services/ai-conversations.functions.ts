@@ -48,6 +48,7 @@ import {
   buildTravelItineraryPayload,
   detectBuilderDocType,
 } from "./builder-copilot-bridge";
+import { retrieveRelevantProjectKnowledgeContext } from "./copilot-projects.functions";
 
 // ============================================================
 // Schemas de Validação
@@ -58,6 +59,8 @@ export const createAiThreadSchema = z.object({
   title: z.string().min(2, "Título deve ter no mínimo 2 caracteres"),
   storeId: z.string().uuid().optional(),
   recipientProfileId: z.string().uuid().optional(),
+  folderId: z.string().uuid().nullish(),
+  projectId: z.string().uuid().nullish(),
   metadata: z.record(z.any()).default({}),
   workingMemory: z.record(z.any()).default({}),
 });
@@ -186,6 +189,8 @@ export interface AiConversationThreadDTO {
   customer_id?: string | null;
   recipient_profile_id?: string | null;
   assigned_to_profile_id?: string | null;
+  folder_id?: string | null;
+  project_id?: string | null;
   status: string;
   is_pinned: boolean;
   metadata: Record<string, any>;
@@ -554,6 +559,9 @@ export interface AiCopilotContext {
   threadId?: string;
   userId?: string;
   storeId?: string;
+  folderId?: string | null;
+  projectId?: string | null;
+  projectKnowledgeContext?: string;
   userLat?: number;
   userLng?: number;
   city?: string;
@@ -1079,13 +1087,26 @@ export async function executeAiCopilotPipeline(
     // Executa o Gateway de IA Soberano se houver modelo ativo no pool (com Prompt Sandboxing)
     let gatewayResponse: any = null;
     try {
-      const longTermMemory = context.userId
-        ? await assembleLongTermContext({
-            profileId: context.userId,
-            threadId: context.threadId,
-            currentPrompt: userPrompt,
-          }).catch(() => ({ formattedContext: "", factsCount: 0, memoryChunksCount: 0 }))
-        : { formattedContext: "", factsCount: 0, memoryChunksCount: 0 };
+      const [longTermMemory, projectKnowledgeBlock] = await Promise.all([
+        context.userId
+          ? assembleLongTermContext({
+              profileId: context.userId,
+              threadId: context.threadId,
+              currentPrompt: userPrompt,
+            }).catch(() => ({ formattedContext: "", factsCount: 0, memoryChunksCount: 0 }))
+          : Promise.resolve({ formattedContext: "", factsCount: 0, memoryChunksCount: 0 }),
+        context.projectKnowledgeContext
+          ? Promise.resolve(context.projectKnowledgeContext)
+          : context.projectId
+            ? retrieveRelevantProjectKnowledgeContext({
+                projectId: context.projectId,
+                query: userPrompt,
+                userId: context.userId,
+              })
+                .then((res) => res.formattedContext)
+                .catch(() => "")
+            : Promise.resolve(""),
+      ]);
 
       const internalSearchContext = platformSearch
         ? `
@@ -1095,6 +1116,10 @@ ${JSON.stringify({ query: platformSearch.query, cards: platformSearch.cards, una
 </GROUNDED_DATA>
 Se houver itens no CONTEXTO SOBERANO acima, mencione-os de forma clara, consultiva e cordial, destacando diferenciais reais. Se for turismo/evento (ex: Oktoberfest, Urubici, Blumenau), estruture roteiro com precisão geográfica.
 `
+        : "";
+
+      const projectKnowledgeGuidance = projectKnowledgeBlock
+        ? "\n- Base de Conhecimento do Projeto (<PROJECT_KNOWLEDGE_BASE>): Toda vez que o bloco estiver presente, baseie sua resposta prioritariamente nos documentos, diretrizes, tarifas e regras anexadas ao projeto."
         : "";
 
       const systemPrompt = `${persona.systemDirective}
@@ -1109,7 +1134,7 @@ ESTRUTURA CONSULTIVA OBRIGATÓRIA EM 4 BLOCOS:
 DIRETRIZES DE COMUNICAÇÃO:
 - Grounding Estrito & Zero Dados Fictícios: Responda baseando-se ESTRITAMENTE nos dados verificados fornecidos em <GROUNDED_DATA>. Nunca invente nomes, preços, telefones ou empresas inexistentes.
 - Transparência Honesta: Se não encontrar registros oficiais ativos, responda cordialmente: "Consultei nossa base oficial de registros e não localizei nenhuma opção ativa para este termo no momento. Posso pesquisar em uma categoria próxima ou cidade vizinha para você?"
-- Erradique 100% dos jargões de engenharia: Proibido mencionar "LLM", "prompt", "token", "payload", "crawler", "scraper", "BACEN EMV", "schema", "endpoint" ou "processamento de modelo". Fale como um consultor humano sênior e atencioso.
+- Erradique 100% dos jargões de engenharia: Proibido mencionar "LLM", "prompt", "token", "payload", "crawler", "scraper", "BACEN EMV", "schema", "endpoint" ou "processamento de modelo". Fale como um consultor humano sênior e atencioso.${projectKnowledgeGuidance}
 
 Ferramentas disponíveis:
 1. 'search_places' / 'interactive_map': busca estabelecimentos locais e exibe mapa interativo com rotas e contatos
@@ -1129,7 +1154,7 @@ Responda SEMPRE em formato JSON com os campos:
   "message": "Mensagem acolhedora, consultiva, didática e humana para o usuário seguindo os 4 blocos",
   "step_label": "Título amigável da ação",
   "step_detail": "Detalhe amigável para o usuário"
-}${internalSearchContext}${longTermMemory.formattedContext ? `\n${longTermMemory.formattedContext}` : ""}`;
+}${internalSearchContext}${projectKnowledgeBlock ? `\n${projectKnowledgeBlock}` : ""}${longTermMemory.formattedContext ? `\n${longTermMemory.formattedContext}` : ""}`;
 
       // 🛡️ Prompt Sandboxing: Isola dados não-confiáveis externos em <user_untrusted_data>
       const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
@@ -2673,17 +2698,37 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
         return [];
       }
 
-      // 1. Tentar ler prioritariamente do domínio canônico isolado ai_threads
-      const { data: aiThreads, error: aiError } = await db
-        .from("ai_threads")
-        .select(`
+      // 1. Tentar ler prioritariamente do domínio canônico isolado ai_threads (com fallback caso migration de pastas/projetos ainda não tenha sido aplicada)
+      const selectWithHierarchy = `
+          id, domain_type, title, workspace_id, user_id,
+          folder_id, project_id,
+          status, pinned, metadata, working_memory, created_at, updated_at,
+          last_message_snippet, last_message_at
+        `;
+      const selectBase = `
           id, domain_type, title, workspace_id, user_id,
           status, pinned, metadata, working_memory, created_at, updated_at,
           last_message_snippet, last_message_at
-        `)
+        `;
+
+      let aiThreadsRes: { data: any[] | null; error: any } = await db
+        .from("ai_threads")
+        .select(selectWithHierarchy)
         .eq("user_id", identity.id)
         .order("pinned", { ascending: false })
         .order("updated_at", { ascending: false });
+
+      if (aiThreadsRes.error && /folder_id|project_id|42703/i.test(aiThreadsRes.error.message || "")) {
+        aiThreadsRes = await db
+          .from("ai_threads")
+          .select(selectBase)
+          .eq("user_id", identity.id)
+          .order("pinned", { ascending: false })
+          .order("updated_at", { ascending: false });
+      }
+
+      const aiThreads = aiThreadsRes.data;
+      const aiError = aiThreadsRes.error;
 
       if (!aiError && aiThreads) {
         return aiThreads.map((t: any) => ({
@@ -2692,6 +2737,8 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
           title: t.title || "Conversa Copilot",
           store_id: t.workspace_id,
           customer_id: t.user_id,
+          folder_id: t.folder_id ?? t.metadata?.folder_id ?? null,
+          project_id: t.project_id ?? t.metadata?.project_id ?? null,
           status: t.status || "open",
           is_pinned: Boolean(t.pinned),
           metadata: t.metadata || {},
@@ -2734,6 +2781,8 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
         customer_id: t.customer_id,
         recipient_profile_id: t.recipient_profile_id,
         assigned_to_profile_id: t.assigned_to_profile_id,
+        folder_id: t.folder_id ?? t.metadata?.folder_id ?? null,
+        project_id: t.project_id ?? t.metadata?.project_id ?? null,
         status: t.status || "open",
         is_pinned: Boolean(t.is_pinned),
         metadata: t.metadata || {},
@@ -2772,28 +2821,57 @@ export const createAiConversationThread = createServerFn({ method: "POST" })
     }
 
     const domainType = resolvedStoreId ? "workspace" : "personal";
+    const mergedMetadata = {
+      ...(data.metadata || {}),
+      ...(data.folderId ? { folder_id: data.folderId } : {}),
+      ...(data.projectId ? { project_id: data.projectId } : {}),
+    };
 
-    // Cria prioritariamente em ai_threads
-    const { data: newAiThread, error: aiError } = await db
+    // Cria prioritariamente em ai_threads (com retry seguro sem colunas caso schema ainda esteja na versão anterior)
+    let aiInsertRes = await db
       .from("ai_threads")
       .insert({
         user_id: identity.id,
         workspace_id: resolvedStoreId,
         domain_type: domainType,
         title: data.title,
-        metadata: data.metadata,
+        metadata: mergedMetadata,
         working_memory: data.workingMemory,
+        ...(data.folderId ? { folder_id: data.folderId } : {}),
+        ...(data.projectId ? { project_id: data.projectId } : {}),
         status: "open",
         pinned: false,
       })
       .select("id, domain_type, title, created_at, updated_at")
       .single();
 
+    if (aiInsertRes.error && /folder_id|project_id|42703/i.test(aiInsertRes.error.message || "")) {
+      aiInsertRes = await db
+        .from("ai_threads")
+        .insert({
+          user_id: identity.id,
+          workspace_id: resolvedStoreId,
+          domain_type: domainType,
+          title: data.title,
+          metadata: mergedMetadata,
+          working_memory: data.workingMemory,
+          status: "open",
+          pinned: false,
+        })
+        .select("id, domain_type, title, created_at, updated_at")
+        .single();
+    }
+
+    const { data: newAiThread, error: aiError } = aiInsertRes;
+
     if (!aiError && newAiThread) {
       return {
         id: newAiThread.id,
         thread_type: data.type || "ai_assistant",
         subject: newAiThread.title,
+        folder_id: data.folderId || null,
+        project_id: data.projectId || null,
+        metadata: mergedMetadata,
         created_at: newAiThread.created_at,
         updated_at: newAiThread.updated_at,
       };
@@ -2808,7 +2886,7 @@ export const createAiConversationThread = createServerFn({ method: "POST" })
         recipient_profile_id: data.recipientProfileId || null,
         thread_type: data.type || "ai_assistant",
         subject: data.title,
-        metadata: data.metadata,
+        metadata: mergedMetadata,
         working_memory: data.workingMemory,
         status: "open",
         is_pinned: false,
@@ -2873,6 +2951,8 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
           id: aiThread.id,
           type: (aiThread.domain_type === "workspace" ? "project" : "ai_assistant") as any,
           title: aiThread.title || "Conversa",
+          folder_id: (aiThread as any).folder_id ?? aiThread.metadata?.folder_id ?? null,
+          project_id: (aiThread as any).project_id ?? aiThread.metadata?.project_id ?? null,
           is_pinned: Boolean(aiThread.pinned),
           working_memory: aiThread.working_memory || {},
           metadata: aiThread.metadata || {},
@@ -2975,15 +3055,26 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     }
 
     // 1. Obter thread para contexto e memória de trabalho (Canônico ai_threads com fallback)
-    const { data: aiThread } = await db
+    let aiThreadRes = await db
       .from("ai_threads")
-      .select("id, user_id, workspace_id, working_memory, title, domain_type")
+      .select("id, user_id, workspace_id, folder_id, project_id, metadata, working_memory, title, domain_type")
       .eq("id", data.threadId)
       .maybeSingle();
+
+    if (aiThreadRes.error && /folder_id|project_id|42703/i.test(aiThreadRes.error.message || "")) {
+      aiThreadRes = await db
+        .from("ai_threads")
+        .select("id, user_id, workspace_id, metadata, working_memory, title, domain_type")
+        .eq("id", data.threadId)
+        .maybeSingle();
+    }
+    const aiThread = aiThreadRes.data as any;
 
     const isAiThread = Boolean(aiThread);
     let resolvedWorkingMemory: Record<string, any> = {};
     let resolvedStoreId: string | null = null;
+    let resolvedFolderId: string | null = null;
+    let resolvedProjectId: string | null = null;
     let userMsg: { id: string; created_at: string } | null = null;
 
     if (aiThread) {
@@ -2996,6 +3087,8 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
       }
       resolvedWorkingMemory = aiThread.working_memory || {};
       resolvedStoreId = aiThread.workspace_id || null;
+      resolvedFolderId = aiThread.folder_id ?? aiThread.metadata?.folder_id ?? null;
+      resolvedProjectId = aiThread.project_id ?? aiThread.metadata?.project_id ?? null;
 
       // Idempotência e persistência em ai_messages
       if (data.clientMessageId) {
@@ -3247,6 +3340,8 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
           threadId: data.threadId,
           userId: identity.id,
           storeId: resolvedStoreId || undefined,
+          folderId: resolvedFolderId,
+          projectId: resolvedProjectId,
           userLat: data.userLat,
           userLng: data.userLng,
           city: normalizeActiveCity(data.city) ?? resolveActiveCity(),

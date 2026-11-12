@@ -19,13 +19,23 @@ import {
   toggleAiThreadArchived,
   uploadCopilotMultimodalAttachment,
 } from "@/services/ai-conversations.functions";
+import {
+  listUserDurableAiTasks,
+  cancelDurableAiTask,
+} from "@/services/ai-tasks-durability.functions";
 import { uploadComposerAttachments } from "@/lib/copilot-attachments";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
 import { getUserSession } from "@/services/auth.functions";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { ManusComputerDrawer } from "@/components/chat/manus-computer-drawer";
-import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
-import { CopilotBackgroundTasksDrawer } from "@/components/chat/copilot-background-tasks-drawer";
+import { ManusComputerDrawer, type ManusComputerStep } from "@/components/chat/manus-computer-drawer";
+import {
+  ManusTaskTelemetrySheet,
+  computeCopilotSessionTelemetry,
+} from "@/components/chat/manus-task-telemetry-sheet";
+import {
+  CopilotBackgroundTasksDrawer,
+  type BackgroundTaskItem,
+} from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Monitor, Info, Layers, Globe2, Share2 } from "lucide-react";
@@ -52,12 +62,13 @@ export const Route = createFileRoute("/_store/copilot")({
   loader: async () => {
     try {
       let threadLoadError = false;
-      const [session, threads] = await Promise.all([
+      const [session, threads, initialTasks] = await Promise.all([
         getUserSession().catch(() => null),
         listAiConversationThreads().catch(() => {
           threadLoadError = true;
           return [];
         }),
+        listUserDurableAiTasks({ data: { status: "all", limit: 30 } }).catch(() => []),
       ]);
 
       let resolvedThreads = threads || [];
@@ -86,23 +97,47 @@ export const Route = createFileRoute("/_store/copilot")({
       return {
         session,
         initialThreads: resolvedThreads,
+        initialTasks: (initialTasks || []) as BackgroundTaskItem[],
         initialLoadError: threadLoadError && Boolean(effectiveUserId),
       };
     } catch {
-      return { session: null, initialThreads: [], initialLoadError: false };
+      return { session: null, initialThreads: [], initialTasks: [], initialLoadError: false };
     }
   },
   component: CopilotPage,
 });
 
 function CopilotPage() {
-  const { session, initialThreads, initialLoadError } = Route.useLoaderData();
+  const { session, initialThreads, initialTasks, initialLoadError } = Route.useLoaderData();
   const effectiveUserId = session?.id || session?.user?.id || null;
   const navigate = useNavigate();
   const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
   const [isComputerOpen, setIsComputerOpen] = useState(false);
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [isBackgroundTasksOpen, setIsBackgroundTasksOpen] = useState(false);
+  const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskItem[]>(initialTasks || []);
+
+  const refreshBackgroundTasks = async () => {
+    if (!effectiveUserId) return;
+    try {
+      const next = await listUserDurableAiTasks({ data: { status: "all", limit: 30 } });
+      setBackgroundTasks((next || []) as BackgroundTaskItem[]);
+    } catch {
+      toast.error("Não foi possível atualizar os processos em segundo plano.");
+    }
+  };
+
+  const handleCancelBackgroundTask = async (taskId: string) => {
+    try {
+      await cancelDurableAiTask({ data: { taskId, reason: "Cancelado no Copilot" } });
+      setBackgroundTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: "cancelled" } : t)),
+      );
+      toast.success("Processo cancelado.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao cancelar processo.");
+    }
+  };
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
@@ -512,14 +547,54 @@ function CopilotPage() {
     }
   };
 
+  const runningBackgroundCount = React.useMemo(
+    () =>
+      backgroundTasks.filter((t) =>
+        ["queued", "planning", "running", "waiting_user", "validating"].includes(t.status),
+      ).length,
+    [backgroundTasks],
+  );
+
+  const computerSteps = React.useMemo<ManusComputerStep[]>(() => {
+    const derived: ManusComputerStep[] = [];
+    let idx = 1;
+    for (const msg of messages) {
+      for (const step of msg.activitySteps || []) {
+        const isBrowser = step.type === "search";
+        const isEditor = step.type === "planner" || Boolean(msg.artifact);
+        derived.push({
+          id: step.id || `store-step-${idx}`,
+          index: idx++,
+          title: step.label,
+          tool: isBrowser ? "browser" : isEditor ? "editor" : "bash",
+          target: step.role || "waesy-copilot-engine",
+          timestamp: step.startedAt
+            ? new Date(step.startedAt).toLocaleTimeString("pt-BR")
+            : "Agora",
+          terminalOutput: step.detail,
+        });
+      }
+    }
+    return derived;
+  }, [messages]);
+
+  const sessionTelemetry = React.useMemo(
+    () =>
+      computeCopilotSessionTelemetry({
+        messages,
+        backgroundTasks,
+      }),
+    [messages, backgroundTasks],
+  );
+
   return (
     <div className="h-full flex-1 w-full flex flex-col min-h-0 overflow-hidden bg-background">
-      {/* Barra Superior Manus 2.0 Lite (Storefront) */}
+      {/* Barra Superior Copilot */}
       <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border/60 bg-card/60 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <Badge variant="outline" className="font-mono text-2xs font-bold gap-1 border-primary/40 text-primary bg-primary/5">
             <Globe2 className="size-3" />
-            <span>Waesy 2.0 Lite</span>
+            <span>Waesy Copilot</span>
           </Badge>
           <span className="text-xs font-semibold text-muted-foreground truncate hidden sm:inline">
             Concierge Urbano · Mobilidade · Aéreo · Catálogo Local
@@ -527,18 +602,20 @@ function CopilotPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsComputerOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 border-primary/30 text-foreground hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Monitor className="size-4 text-primary" />
-            <span className="hidden sm:inline">Computador do Waesy</span>
-            <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-none text-3xs font-mono px-2 py-0">
-              LIVE
-            </Badge>
-          </Button>
+          {computerSteps.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsComputerOpen(true)}
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 border-primary/30 text-foreground hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Monitor className="size-4 text-primary" />
+              <span className="hidden sm:inline">Computador do Waesy</span>
+              <span className="rounded bg-muted px-2 py-0 font-mono text-xs">
+                {computerSteps.length}
+              </span>
+            </Button>
+          )}
 
           <Button
             type="button"
@@ -549,6 +626,11 @@ function CopilotPage() {
           >
             <Layers className="size-4 text-muted-foreground" />
             <span className="hidden md:inline">Processos</span>
+            {runningBackgroundCount > 0 && (
+              <span className="rounded bg-muted px-2 py-0 font-mono text-xs">
+                {runningBackgroundCount}
+              </span>
+            )}
           </Button>
 
           <Button
@@ -596,6 +678,9 @@ function CopilotPage() {
           onTogglePinThread={handleTogglePinThread}
           onToggleArchiveThread={handleToggleArchiveThread}
           onStructuredAction={handleStructuredAction}
+          backgroundTasks={backgroundTasks}
+          onCancelBackgroundTask={handleCancelBackgroundTask}
+          onRefreshBackgroundTasks={refreshBackgroundTasks}
           isSending={isSending}
           isStreaming={isSending}
           currentUserProfileId={effectiveUserId || undefined}
@@ -606,17 +691,22 @@ function CopilotPage() {
       <ManusComputerDrawer
         open={isComputerOpen}
         onOpenChange={setIsComputerOpen}
-        taskTitle={threads.find((t) => t.id === activeThreadId)?.title || "Sessão Ativa do Concierge"}
+        taskTitle={threads.find((t) => t.id === activeThreadId)?.title || "Sessão Ativa"}
+        steps={computerSteps}
       />
 
       <ManusTaskTelemetrySheet
         open={isTelemetryOpen}
         onOpenChange={setIsTelemetryOpen}
+        {...sessionTelemetry}
       />
 
       <CopilotBackgroundTasksDrawer
         open={isBackgroundTasksOpen}
         onOpenChange={setIsBackgroundTasksOpen}
+        tasks={backgroundTasks}
+        onCancelTask={handleCancelBackgroundTask}
+        onRefresh={refreshBackgroundTasks}
       />
     </div>
   );

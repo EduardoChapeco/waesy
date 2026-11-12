@@ -84,7 +84,7 @@ export function CopilotBackgroundTasksDrawer({
         <SheetContent
           side="right"
           className={cn(
-            "w-full sm:max-w-md p-0 flex flex-col bg-card border-border/60",
+            "w-full sm:max-w-md p-0 pt-safe-modal pb-safe flex flex-col bg-card border-border/60",
             className
           )}
         >
@@ -187,7 +187,7 @@ export function CopilotBackgroundTasksDrawer({
                             className={cn(
                               "size-2 rounded-full shrink-0",
                               isRunning
-                                ? "bg-primary animate-pulse motion-reduce:animate-none"
+                                ? "bg-primary"
                                 : task.status === "completed"
                                 ? "bg-emerald-500"
                                 : "bg-rose-500"
@@ -244,7 +244,11 @@ export function CopilotBackgroundTasksDrawer({
                         </Button>
                       ) : (
                         <span className="text-2xs text-muted-foreground">
-                          Concluído com sucesso
+                          {task.status === "failed"
+                            ? "Execução falhou"
+                            : task.status === "cancelled"
+                              ? "Cancelado"
+                              : "Concluído com sucesso"}
                         </span>
                       )}
 
@@ -285,7 +289,7 @@ export function CopilotBackgroundTasksDrawer({
                     Computador do Agente
                   </h3>
                   <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-2xs gap-1">
-                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
+                    <span className="size-1.5 rounded-full bg-emerald-500" />
                     <span>Ao Vivo</span>
                   </Badge>
                 </div>

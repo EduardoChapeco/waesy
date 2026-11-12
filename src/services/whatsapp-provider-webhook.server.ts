@@ -632,6 +632,56 @@ async function persistRevokedMessage(
   return { externalMessageId, revoked: true, preservedMessagesCount: messages?.length || 0 };
 }
 
+export function verifyUnofficialWebhookAuth(params: {
+  provider: UnofficialWhatsAppProvider;
+  rawBody: string;
+  headers: Headers;
+  secret: string | null;
+  masterApiKey: string | null;
+  allowUnsigned?: boolean;
+}): boolean {
+  const receivedApiKey = firstString(
+    params.headers.get("apikey"),
+    params.headers.get("x-api-key"),
+    params.headers.get("authorization")?.replace(/^Bearer\s+/i, ""),
+  );
+
+  if (
+    receivedApiKey &&
+    ((params.secret && receivedApiKey === params.secret) ||
+      (params.masterApiKey && receivedApiKey === params.masterApiKey))
+  ) {
+    return true;
+  }
+
+  if (
+    params.secret &&
+    (params.headers.has("x-waesy-signature") || params.headers.has("x-webhook-signature"))
+  ) {
+    const verification = verifyWebhookSignature(params.rawBody, params.headers, params.secret, {
+      signatureHeader: params.headers.has("x-waesy-signature")
+        ? "x-waesy-signature"
+        : "x-webhook-signature",
+      timestampHeader: params.headers.has("x-waesy-timestamp")
+        ? "x-waesy-timestamp"
+        : "x-webhook-timestamp",
+    });
+    return verification.ok;
+  }
+
+  // Fail-closed whenever a secret or masterApiKey exists; only permit unsigned webhooks if explicitly configured or local dev
+  if (
+    params.provider === "evolution_api" &&
+    !params.secret &&
+    !params.masterApiKey &&
+    (params.allowUnsigned === true || process.env.NODE_ENV !== "production")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 export async function handleUnofficialWhatsAppWebhook(request: Request, provider: UnofficialWhatsAppProvider, instanceKey: string) {
   const rawBody = await request.text();
   if (new TextEncoder().encode(rawBody).byteLength > 1_048_576) return json({ error: "Webhook payload too large" }, 413);
@@ -650,28 +700,16 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   const secrets = secretConfig(instance.secret_payload_encrypted);
   const secret = firstString(secrets.webhook_secret, secrets.webhookSecret, secrets.secret, secrets.api_key);
   const masterApiKey = process.env.EVOLUTION_API_KEY?.trim() || null;
-  const receivedApiKey = firstString(
-    request.headers.get("apikey"),
-    request.headers.get("x-api-key"),
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, ""),
-  );
+  const allowUnsigned = Boolean((instance.public_config as Record<string, unknown> | null)?.allow_unsigned_webhook);
 
-  let isVerified = false;
-  if (receivedApiKey && ((secret && receivedApiKey === secret) || (masterApiKey && receivedApiKey === masterApiKey))) {
-    isVerified = true;
-  } else if (secret && (request.headers.has("x-waesy-signature") || request.headers.has("x-webhook-signature"))) {
-    const verification = verifyWebhookSignature(rawBody, request.headers, secret, {
-      signatureHeader: request.headers.has("x-waesy-signature") ? "x-waesy-signature" : "x-webhook-signature",
-      timestampHeader: request.headers.has("x-waesy-timestamp") ? "x-waesy-timestamp" : "x-webhook-timestamp",
-    });
-    isVerified = verification.ok;
-  } else if (provider === "evolution_api" && !secret && !masterApiKey) {
-    // Webhook direto da Evolution API interna quando nenhum segredo explícito foi provisionado
-    isVerified = true;
-  } else if (provider === "evolution_api" && !receivedApiKey && !request.headers.has("x-waesy-signature")) {
-    // Compatibilidade com Evolution API v2 que envia webhook sem header apikey customizado
-    isVerified = true;
-  }
+  const isVerified = verifyUnofficialWebhookAuth({
+    provider,
+    rawBody,
+    headers: request.headers,
+    secret,
+    masterApiKey,
+    allowUnsigned,
+  });
 
   if (!isVerified) return json({ error: "Invalid webhook signature or api key" }, 401);
   const name = eventName(body);

@@ -4,6 +4,11 @@ import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { cleanDocument, validateCnpjMod11, validateCpfMod11 } from "@/lib/document-validator";
+import {
+  STAFF_MEMBER_ROLES,
+  assertStoreStaffSeatAvailable,
+  checkStoreStaffSeatLimit,
+} from "@/lib/architecture/module-plan-governance";
 
 const contractorDocumentSchema = z
  .string()
@@ -30,7 +35,7 @@ export async function _listTeamMembers() {
  .from("workspace_members")
  .select("profile_id, role, created_at, profiles(id, full_name, avatar_url)")
  .eq("store_id", identity.store_id)
- .in("role", ["owner", "admin", "manager", "seller", "finance", "content"])
+ .in("role", [...STAFF_MEMBER_ROLES])
  .order("created_at", { ascending: true });
 
  const profiles =
@@ -158,42 +163,78 @@ export async function _inviteTeamMember(input: {
  }
 
  let targetUserId: string | null = null;
+ const normalizedEmail = input.email.toLowerCase().trim();
 
- // 1. Tenta criar usuário novo
- const { data: authData, error: authError } = await db.auth.admin.createUser({
- email: input.email.toLowerCase().trim(),
- password: "Waesy" + Math.random().toString(36).slice(-8) + "!",
- email_confirm: true,
- user_metadata: {
- full_name: input.fullName,
- },
- });
+ const [{ data: storeRow }, { data: currentMembers }] = await Promise.all([
+  db
+   .from("stores")
+   .select("id, name, slug, is_platform_root, plan_tier, settings")
+   .eq("id", identity.store_id)
+   .single(),
+  db
+   .from("workspace_members")
+   .select("profile_id")
+   .eq("store_id", identity.store_id)
+   .in("role", [...STAFF_MEMBER_ROLES]),
+ ]);
 
- if (authError) {
- if (
- authError.message?.toLowerCase().includes("already") ||
- authError.message?.toLowerCase().includes("registered") ||
- authError.message?.toLowerCase().includes("exists")
- ) {
- // Localiza usuário já existente pelo e-mail
- const { data: listData } = await db.auth.admin.listUsers();
- const existingUser = listData?.users?.find(
- (u) => u.email?.toLowerCase() === input.email.toLowerCase().trim(),
- );
- if (existingUser?.id) {
- targetUserId = existingUser.id;
- } else {
- throw new Error(`Erro ao localizar usuário existente: ${authError.message}`);
- }
- } else {
- throw new Error(`Erro ao registrar usuário: ${authError.message}`);
- }
- } else if (authData?.user?.id) {
- targetUserId = authData.user.id;
+ const activeMemberIds = new Set((currentMembers || []).map((m: any) => m.profile_id).filter(Boolean));
+ if (storeRow) {
+  const seatStatus = checkStoreStaffSeatLimit(storeRow, activeMemberIds.size);
+  if (!seatStatus.allowed) {
+   const { data: listData } = await db.auth.admin.listUsers();
+   const existingUser = listData?.users?.find((u) => u.email?.toLowerCase() === normalizedEmail);
+   if (existingUser?.id && activeMemberIds.has(existingUser.id)) {
+    targetUserId = existingUser.id;
+   } else {
+    assertStoreStaffSeatAvailable(storeRow, activeMemberIds.size);
+   }
+  }
  }
 
  if (!targetUserId) {
- throw new Error("Não foi possível identificar o usuário para vincular à equipe.");
+  // 1. Tenta criar usuário novo
+  const { data: authData, error: authError } = await db.auth.admin.createUser({
+   email: normalizedEmail,
+   password: "Waesy" + Math.random().toString(36).slice(-8) + "!",
+   email_confirm: true,
+   user_metadata: {
+    full_name: input.fullName,
+   },
+  });
+
+  if (authError) {
+   if (
+    authError.message?.toLowerCase().includes("already") ||
+    authError.message?.toLowerCase().includes("registered") ||
+    authError.message?.toLowerCase().includes("exists")
+   ) {
+    // Localiza usuário já existente pelo e-mail
+    const { data: listData } = await db.auth.admin.listUsers();
+    const existingUser = listData?.users?.find(
+     (u) => u.email?.toLowerCase() === normalizedEmail,
+    );
+    if (existingUser?.id) {
+     targetUserId = existingUser.id;
+    } else {
+     throw new Error(`Erro ao localizar usuário existente: ${authError.message}`);
+    }
+   } else {
+    throw new Error(`Erro ao registrar usuário: ${authError.message}`);
+   }
+  } else if (authData?.user?.id) {
+   targetUserId = authData.user.id;
+  }
+ }
+
+ if (!targetUserId) {
+  throw new Error("Não foi possível identificar o usuário para vincular à equipe.");
+ }
+
+ if (storeRow) {
+  assertStoreStaffSeatAvailable(storeRow, activeMemberIds.size, {
+   isExistingStoreMember: activeMemberIds.has(targetUserId),
+  });
  }
 
  // 2. Garante perfil preenchido

@@ -320,7 +320,7 @@ async function searchTable(
 }
 
 export function shouldSearchPlatform(prompt: string): boolean {
-  return SEARCH_TERMS.test(prompt);
+  return SEARCH_TERMS.test(prompt) || NEWS_TERMS.test(prompt) || TRAVEL_TERMS.test(prompt);
 }
 
 export async function searchPlatformForCopilot(

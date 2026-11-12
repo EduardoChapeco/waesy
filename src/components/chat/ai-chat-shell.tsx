@@ -2,6 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   Search,
   Pin,
+  Folder,
+  FolderPlus,
   FolderKanban,
   MessageSquare,
   Plus,
@@ -18,7 +20,6 @@ import {
   Copy,
   CornerDownLeft,
   X,
-  ShieldCheck,
   Layers,
   Printer,
   Table as TableIcon,
@@ -47,10 +48,22 @@ import { CopilotMessageRenderer } from "./copilot-message-renderer";
 import { CopilotArtifactPanel } from "./copilot-artifact-panel";
 import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
 import { CopilotSkillsCenter } from "./copilot-skills-center";
-import { CopilotBackgroundTasksDrawer } from "./copilot-background-tasks-drawer";
+import {
+  CopilotBackgroundTasksDrawer,
+  type BackgroundTaskItem,
+} from "./copilot-background-tasks-drawer";
 import { CopilotScheduledTasksView } from "./copilot-scheduled-tasks-view";
 import { CopilotConnectorsCenter } from "./copilot-connectors-center";
 import { CopilotAnalyticsDashboard } from "./copilot-analytics-dashboard";
+import {
+  CopilotProjectKnowledgePanel,
+  type CopilotProjectKnowledgePanelProps,
+} from "./copilot-project-knowledge-panel";
+import type {
+  CopilotFolderDTO,
+  CopilotProjectDTO,
+  CopilotProjectFileDTO,
+} from "@/services/copilot-projects.functions";
 
 export type ThreadType = "store" | "direct_p2p" | "support" | "project" | "ai_assistant";
 
@@ -65,6 +78,8 @@ export interface ChatThreadItem {
   unreadCount?: number;
   isPinned?: boolean;
   isArchived?: boolean;
+  folderId?: string | null;
+  projectId?: string | null;
   metadata?: Record<string, any>;
   workingMemory?: Record<string, any>;
 }
@@ -99,11 +114,38 @@ export interface AIChatShellProps {
   onSendMessage: (text: string, attachments?: string[], replyToId?: string) => Promise<void> | void;
   onRetryMessage?: (messageId: string) => void;
   onCancelActiveRun?: () => void;
-  onCreateThread?: (type: ThreadType, title: string) => void;
+  onCreateThread?: (
+    type: ThreadType,
+    title: string,
+    options?: { folderId?: string | null; projectId?: string | null },
+  ) => void;
   onDeleteThread?: (threadId: string) => void;
   onTogglePinThread?: (threadId: string) => void;
   onToggleArchiveThread?: (threadId: string) => void;
   onStructuredAction?: (action: AIChatAction) => void | Promise<void>;
+  folders?: CopilotFolderDTO[];
+  projects?: CopilotProjectDTO[];
+  selectedFolderId?: string | null;
+  selectedProjectId?: string | null;
+  onSelectFolder?: (folderId: string | null) => void;
+  onSelectProject?: (projectId: string | null) => void;
+  onCreateFolder?: (name: string) => Promise<void> | void;
+  onCreateProject?: (payload: {
+    title: string;
+    folderId?: string | null;
+  }) => Promise<void> | void;
+  onAssignThreadHierarchy?: (
+    threadId: string,
+    hierarchy: { folderId?: string | null; projectId?: string | null },
+  ) => Promise<void> | void;
+  projectFiles?: CopilotProjectFileDTO[];
+  isLoadingProjectFiles?: boolean;
+  onUploadProjectFile?: CopilotProjectKnowledgePanelProps["onUploadFile"];
+  onDeleteProjectFile?: CopilotProjectKnowledgePanelProps["onDeleteFile"];
+  onUpdateProjectInstructions?: CopilotProjectKnowledgePanelProps["onUpdateInstructions"];
+  backgroundTasks?: BackgroundTaskItem[];
+  onCancelBackgroundTask?: (taskId: string) => void;
+  onRefreshBackgroundTasks?: () => void;
   isSending?: boolean;
   isStreaming?: boolean;
   currentUserProfileId?: string;
@@ -192,6 +234,23 @@ export function AIChatShell({
   onTogglePinThread,
   onToggleArchiveThread,
   onStructuredAction,
+  folders = [],
+  projects = [],
+  selectedFolderId,
+  selectedProjectId,
+  onSelectFolder,
+  onSelectProject,
+  onCreateFolder,
+  onCreateProject,
+  onAssignThreadHierarchy,
+  projectFiles = [],
+  isLoadingProjectFiles = false,
+  onUploadProjectFile,
+  onDeleteProjectFile,
+  onUpdateProjectInstructions,
+  backgroundTasks = [],
+  onCancelBackgroundTask,
+  onRefreshBackgroundTasks,
   isSending = false,
   isStreaming = false,
   currentUserProfileId,
@@ -211,7 +270,26 @@ export function AIChatShell({
   const [showMobileChat, setShowMobileChat] = useState<boolean>(Boolean(activeThreadId));
   const [showContextPanel, setShowContextPanel] = useState<boolean>(false);
   const [activeArtifact, setActiveArtifact] = useState<ChatArtifactData | null>(null);
+  const [internalFolderId, setInternalFolderId] = useState<string | null>(null);
+  const [internalProjectId, setInternalProjectId] = useState<string | null>(null);
+  const [creationMode, setCreationMode] = useState<"folder" | "project" | null>(null);
+  const [creationDraft, setCreationDraft] = useState("");
   const { isCompact } = useWindowSizeClass();
+
+  const activeFolderFilter =
+    selectedFolderId !== undefined ? selectedFolderId : internalFolderId;
+  const activeProjectFilter =
+    selectedProjectId !== undefined ? selectedProjectId : internalProjectId;
+
+  const handleFolderSelect = (folderId: string | null) => {
+    if (onSelectFolder) onSelectFolder(folderId);
+    else setInternalFolderId(folderId);
+  };
+
+  const handleProjectSelect = (projectId: string | null) => {
+    if (onSelectProject) onSelectProject(projectId);
+    else setInternalProjectId(projectId);
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -233,15 +311,49 @@ export function AIChatShell({
     return threads.find((t) => t.id === activeThreadId) || null;
   }, [threads, activeThreadId]);
 
-  // Filtragem e busca de threads
+  const activeThreadProjectId =
+    activeThread?.projectId ??
+    (activeThread?.metadata?.project_id as string | undefined) ??
+    null;
+
+  const activeProject = useMemo(() => {
+    const targetId = activeThreadProjectId || activeProjectFilter;
+    if (!targetId) return null;
+    return projects.find((p) => p.id === targetId) || null;
+  }, [projects, activeThreadProjectId, activeProjectFilter]);
+
+  const visibleProjects = useMemo(() => {
+    if (!activeFolderFilter) return projects;
+    return projects.filter((p) => p.folder_id === activeFolderFilter);
+  }, [projects, activeFolderFilter]);
+
+  // Filtragem e busca de threads (respeita Pasta / Projeto selecionados)
   const filteredThreads = useMemo(() => {
     return threads.filter((t) => {
+      const threadFolderId = t.folderId ?? t.metadata?.folder_id ?? null;
+      const threadProjectId = t.projectId ?? t.metadata?.project_id ?? null;
+
+      if (activeFolderFilter) {
+        const projectMatchesFolder = projects.some(
+          (p) => p.id === threadProjectId && p.folder_id === activeFolderFilter,
+        );
+        if (threadFolderId !== activeFolderFilter && !projectMatchesFolder) {
+          return false;
+        }
+      }
+
+      if (activeProjectFilter && threadProjectId !== activeProjectFilter) {
+        return false;
+      }
+
       if (filterTab === "archived") {
         if (Boolean(t.isArchived) === false) return false;
       } else {
         if (Boolean(t.isArchived) === true) return false;
-        if (filterTab === "projects" && t.type !== "project" && t.type !== "ai_assistant") return false;
-        if (filterTab === "direct" && (t.type === "project" || t.type === "ai_assistant")) return false;
+        if (filterTab === "projects" && t.type !== "project" && !threadProjectId) return false;
+        if (filterTab === "direct" && (t.type === "project" || Boolean(threadProjectId))) {
+          return false;
+        }
       }
 
       if (searchQuery.trim().length > 0) {
@@ -254,7 +366,7 @@ export function AIChatShell({
 
       return true;
     });
-  }, [threads, filterTab, searchQuery]);
+  }, [threads, projects, activeFolderFilter, activeProjectFilter, filterTab, searchQuery]);
 
   // Agrupamento de threads fixadas vs normais
   const pinnedThreads = useMemo(() => filteredThreads.filter((t) => Boolean(t.isPinned)), [filteredThreads]);
@@ -321,35 +433,195 @@ export function AIChatShell({
         {/* Cabeçalho da Lista de Conversas */}
         <div className="p-3 border-b border-border/40 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <h1 className="text-base font-bold text-foreground tracking-tight">
+            <h1 className="text-base font-bold text-foreground tracking-tight truncate">
               Conversas & Projetos
             </h1>
 
-            {onCreateThread && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onCreateThread("project", "Novo Projeto")} /* focus-visible:ring-2 */
-                className="h-11 min-h-11 px-3 text-xs font-semibold rounded-md gap-2 border-border/60 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                title="Criar novo projeto ou thread"
-              >
-                <Plus className="size-4" />
-                <span>Novo</span>
-              </Button>
-            )}
+            <div className="flex items-center gap-1 shrink-0">
+              {onCreateFolder && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setCreationMode((prev) => (prev === "folder" ? null : "folder"));
+                    setCreationDraft("");
+                  }}
+                  className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  title="Nova Pasta"
+                  aria-label="Nova Pasta"
+                >
+                  <FolderPlus className="size-4" />
+                </Button>
+              )}
+              {onCreateProject && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setCreationMode((prev) => (prev === "project" ? null : "project"));
+                    setCreationDraft("");
+                  }}
+                  className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  title="Novo Projeto com Base de Conhecimento"
+                  aria-label="Novo Projeto"
+                >
+                  <FolderKanban className="size-4" />
+                </Button>
+              )}
+              {onCreateThread && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    onCreateThread(
+                      activeProjectFilter ? "project" : "ai_assistant",
+                      activeProjectFilter ? "Conversa do Projeto" : "Nova Conversa",
+                      {
+                        folderId: activeFolderFilter,
+                        projectId: activeProjectFilter,
+                      },
+                    )
+                  }
+                  className="h-11 min-h-11 px-3 text-xs font-semibold rounded-md gap-2 border-border/60 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  title="Criar nova conversa"
+                >
+                  <Plus className="size-4" />
+                  <span>Nova</span>
+                </Button>
+              )}
+            </div>
           </div>
+
+          {creationMode && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const clean = creationDraft.trim();
+                if (clean.length < 2) return;
+                if (creationMode === "folder" && onCreateFolder) {
+                  await onCreateFolder(clean);
+                } else if (creationMode === "project" && onCreateProject) {
+                  await onCreateProject({
+                    title: clean,
+                    folderId: activeFolderFilter,
+                  });
+                }
+                setCreationDraft("");
+                setCreationMode(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Input
+                value={creationDraft}
+                onChange={(e) => setCreationDraft(e.target.value)}
+                placeholder={
+                  creationMode === "folder"
+                    ? "Nome da pasta (ex: Turismo)..."
+                    : "Nome do projeto (ex: Atendimento SAC)..."
+                }
+                className="h-11 min-h-11 text-xs flex-1"
+              />
+              <Button type="submit" size="sm" className="h-11 min-h-11 px-3 text-xs font-semibold">
+                Criar
+              </Button>
+            </form>
+          )}
 
           {/* Campo de Busca Rápida */}
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar conversas..."
-              className="h-9 pl-9 pr-3 rounded-md bg-muted/50 border-border/40 text-xs placeholder:text-muted-foreground"
+              placeholder="Buscar conversas e projetos..."
+              className="h-11 min-h-11 pl-9 pr-3 rounded-md bg-muted/50 border-border/40 text-xs placeholder:text-muted-foreground"
             />
           </div>
+
+          {/* Trilho de Pastas */}
+          {folders.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 py-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  handleFolderSelect(null);
+                  handleProjectSelect(null);
+                }}
+                className={cn(
+                  "h-11 min-h-11 px-3 rounded-md text-xs font-medium whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  !activeFolderFilter
+                    ? "bg-muted text-foreground font-semibold"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Folder className="size-3.5 mr-1" />
+                <span>Todas Pastas</span>
+              </Button>
+              {folders.map((folder) => (
+                <Button
+                  key={folder.id}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const nextFolder = activeFolderFilter === folder.id ? null : folder.id;
+                    handleFolderSelect(nextFolder);
+                    handleProjectSelect(null);
+                  }}
+                  className={cn(
+                    "h-11 min-h-11 px-3 rounded-md text-xs font-medium whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    activeFolderFilter === folder.id
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <Folder className="size-3.5 mr-1" />
+                  <span>{folder.name}</span>
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {/* Lista compacta de Projetos da pasta selecionada */}
+          {visibleProjects.length > 0 && (
+            <div className="space-y-1 pt-1">
+              <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                Projetos ({visibleProjects.length})
+              </span>
+              <div className="flex flex-wrap items-center gap-2 pb-1">
+                {visibleProjects.map((proj) => (
+                  <Button
+                    key={proj.id}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      handleProjectSelect(activeProjectFilter === proj.id ? null : proj.id)
+                    }
+                    className={cn(
+                      "h-11 min-h-11 px-3 rounded-md text-xs font-medium whitespace-nowrap gap-2 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      activeProjectFilter === proj.id
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border/50 text-foreground hover:bg-muted/50",
+                    )}
+                  >
+                    <FolderKanban className="size-3.5" />
+                    <span className="max-w-36 truncate">{proj.title}</span>
+                    {typeof proj.file_count === "number" && proj.file_count > 0 && (
+                      <span className="text-2xs opacity-80 font-mono">
+                        ({proj.file_count})
+                      </span>
+                    )}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Abas de Filtro: Todas, Diretas, Projetos, Arquivadas */}
           <div className="flex items-center gap-1 flex-wrap py-1">
@@ -635,16 +907,9 @@ export function AIChatShell({
               role="log"
               aria-live="polite"
               aria-label="Histórico de mensagens da conversa"
-              className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 pb-20 space-y-3 no-scrollbar overscroll-contain"
+              className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 pt-4 pb-24 no-scrollbar overscroll-contain"
             >
-              {/* Indicador Minimalista de Conexão Segura */}
-              <div className="flex justify-center my-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/30 text-2xs text-muted-foreground select-none">
-                  <ShieldCheck className="size-3 text-muted-foreground shrink-0" />
-                  <span>Ambiente Seguro</span>
-                </div>
-              </div>
-
+              <div className="mx-auto w-full max-w-3xl space-y-4">
               {messagesWithSeparators.map((item, idx) => {
                 if (item.type === "separator") {
                   return (
@@ -789,6 +1054,7 @@ export function AIChatShell({
                   </div>
                 );
               })}
+              </div>
 
               <div ref={messagesEndRef} />
             </div>
@@ -826,14 +1092,62 @@ export function AIChatShell({
             onClose={() => setActiveArtifact(null)}
           />
         ) : activeThread ? (
-          /* Contexto & Memória Padrão */
+          /* Contexto, Base de Conhecimento do Projeto & Memória */
           <>
             <div className="flex items-center justify-between border-b border-border/40 pb-2">
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                 <Brain className="size-4 text-primary" />
-                <span>Contexto & Memória</span>
+                <span>Contexto & Conhecimento</span>
               </h3>
             </div>
+
+            {/* Vínculo Hierárquico da Conversa (Pasta / Projeto) */}
+            {onAssignThreadHierarchy && (projects.length > 0 || folders.length > 0) && activeThread.id !== "00000000-0000-0000-0000-000000000001" && (
+              <div className="space-y-2 pb-3 border-b border-border/40">
+                <label
+                  htmlFor="copilot-thread-project-select"
+                  className="text-2xs font-semibold text-muted-foreground uppercase block"
+                >
+                  Projeto Vinculado
+                </label>
+                <select
+                  id="copilot-thread-project-select"
+                  value={activeThreadProjectId || ""}
+                  onChange={(e) => {
+                    const nextProjId = e.target.value || null;
+                    const targetProj = projects.find((p) => p.id === nextProjId);
+                    onAssignThreadHierarchy(activeThread.id, {
+                      projectId: nextProjId,
+                      folderId:
+                        targetProj?.folder_id ??
+                        activeThread.folderId ??
+                        (activeThread.metadata?.folder_id as string | undefined) ??
+                        null,
+                    });
+                  }}
+                  className="h-11 min-h-11 w-full rounded-md border border-border/60 bg-background px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                >
+                  <option value="">Conversa avulsa (sem projeto)</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Base de Conhecimento RAG do Projeto Ativo */}
+            {activeProject && onUploadProjectFile && onDeleteProjectFile && (
+              <CopilotProjectKnowledgePanel
+                project={activeProject}
+                files={projectFiles}
+                isLoadingFiles={isLoadingProjectFiles}
+                onUploadFile={onUploadProjectFile}
+                onDeleteFile={onDeleteProjectFile}
+                onUpdateInstructions={onUpdateProjectInstructions}
+              />
+            )}
 
             {/* Dados do Projeto ou Thread */}
             <div className="space-y-2">
@@ -917,6 +1231,15 @@ export function AIChatShell({
               </div>
             </div>
           </>
+        ) : activeProject && onUploadProjectFile && onDeleteProjectFile ? (
+          <CopilotProjectKnowledgePanel
+            project={activeProject}
+            files={projectFiles}
+            isLoadingFiles={isLoadingProjectFiles}
+            onUploadFile={onUploadProjectFile}
+            onDeleteFile={onDeleteProjectFile}
+            onUpdateInstructions={onUpdateProjectInstructions}
+          />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-muted-foreground space-y-2">
             <Brain className="size-8 text-muted-foreground/30 mx-auto" />
@@ -933,7 +1256,7 @@ export function AIChatShell({
           if (!open) setActiveArtifact(null);
         }}
       >
-        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl">
+        <SheetContent side="bottom" className="h-5/6 p-4 pt-safe-modal pb-safe overflow-y-auto bg-card border-border rounded-t-xl">
           {activeArtifact && (
             <ArtifactViewerContent
               artifact={activeArtifact}
@@ -950,15 +1273,26 @@ export function AIChatShell({
           setShowContextPanel(open);
         }}
       >
-        <SheetContent side="bottom" className="h-5/6 p-4 overflow-y-auto bg-card border-border rounded-t-xl no-scrollbar">
+        <SheetContent side="bottom" className="h-5/6 p-4 pt-safe-modal pb-safe overflow-y-auto bg-card border-border rounded-t-xl no-scrollbar">
           {activeThread && (
             <div className="space-y-4 pb-safe pb-4">
               <div className="flex items-center justify-between border-b border-border/40 pb-2">
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                   <Brain className="size-4 text-primary" />
-                  <span>Contexto & Memória</span>
+                  <span>Contexto & Conhecimento</span>
                 </h3>
               </div>
+
+              {activeProject && onUploadProjectFile && onDeleteProjectFile && (
+                <CopilotProjectKnowledgePanel
+                  project={activeProject}
+                  files={projectFiles}
+                  isLoadingFiles={isLoadingProjectFiles}
+                  onUploadFile={onUploadProjectFile}
+                  onDeleteFile={onDeleteProjectFile}
+                  onUpdateInstructions={onUpdateProjectInstructions}
+                />
+              )}
 
               {/* Dados do Projeto ou Thread */}
               <div className="space-y-2">
@@ -1048,7 +1382,13 @@ export function AIChatShell({
         </SheetContent>
       </Sheet>
       {/* ── GAVETA DE TAREFAS EM SEGUNDO PLANO E LIVE SANDBOX ── */}
-      <CopilotBackgroundTasksDrawer open={tasksDrawerOpen} onOpenChange={setTasksDrawerOpen} />
+      <CopilotBackgroundTasksDrawer
+        open={tasksDrawerOpen}
+        onOpenChange={setTasksDrawerOpen}
+        tasks={backgroundTasks}
+        onCancelTask={onCancelBackgroundTask}
+        onRefresh={onRefreshBackgroundTasks}
+      />
     </div>
   );
 }

@@ -289,6 +289,138 @@ export async function getActiveSecretForProvider(
 }
 
 /**
+ * Resolve segredos BYOK em lote para múltiplos provedores em no máximo 4 queries,
+ * eliminando rajadas N+1 de subrequests no Cloudflare Worker.
+ */
+export async function getBatchActiveSecretsForProviders(
+  providers: string[],
+  ownerId?: string,
+  storeId?: string,
+): Promise<Record<string, string | null>> {
+  const uniqueProviders = Array.from(
+    new Set(providers.map((p) => String(p || "").trim()).filter(Boolean)),
+  );
+  const result: Record<string, string | null> = {};
+  for (const p of uniqueProviders) result[p] = null;
+  if (uniqueProviders.length === 0 || (!ownerId && !storeId)) return result;
+
+  try {
+    const supabase = getServerClient();
+
+    if (ownerId) {
+      try {
+        let query: any = supabase
+          .from("secret_vault")
+          .select("provider, encrypted_secret, created_at");
+        if (typeof query?.in === "function") {
+          query = query.in("provider", uniqueProviders);
+          if (typeof query?.eq === "function") query = query.eq("is_active", true);
+          if (typeof query?.eq === "function") query = query.eq("owner_id", ownerId);
+          if (typeof query?.order === "function") {
+            query = query.order("created_at", { ascending: false });
+          }
+
+          const { data: rows, error } = await query;
+          if (!error && Array.isArray(rows)) {
+            for (const row of rows) {
+              const p = String(row?.provider || "");
+              if (!p || result[p] || !row?.encrypted_secret) continue;
+              try {
+                const decrypted = decryptSecret(row.encrypted_secret).trim();
+                if (decrypted.length > 0) result[p] = decrypted;
+              } catch {
+                // Ignora segredo corrompido
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignora falhas em mocks de testes unitários
+      }
+    }
+
+    const remainingProviders = uniqueProviders.filter((p) => !result[p]);
+    if (remainingProviders.length === 0) return result;
+
+    let targetStoreId = storeId;
+    if (!targetStoreId && ownerId) {
+      try {
+        let memQuery: any = supabase.from("workspace_members").select("store_id");
+        if (typeof memQuery?.eq === "function") memQuery = memQuery.eq("profile_id", ownerId);
+        if (typeof memQuery?.limit === "function") memQuery = memQuery.limit(1);
+        const { data: member } =
+          typeof memQuery?.maybeSingle === "function"
+            ? await memQuery.maybeSingle()
+            : { data: null };
+        if (member?.store_id) targetStoreId = member.store_id;
+      } catch {
+        // Ignora erro de membro
+      }
+    }
+
+    if (targetStoreId) {
+      try {
+        let tQuery: any = supabase.from("tenant_ai_providers").select("provider, api_key");
+        if (typeof tQuery?.eq === "function") tQuery = tQuery.eq("store_id", targetStoreId);
+        if (typeof tQuery?.in === "function") {
+          tQuery = tQuery.in("provider", remainingProviders);
+          if (typeof tQuery?.eq === "function") tQuery = tQuery.eq("is_active", true);
+          const { data: tenantRows, error: tenantErr } = await tQuery;
+          if (!tenantErr && Array.isArray(tenantRows)) {
+            for (const row of tenantRows) {
+              const p = String(row?.provider || "");
+              const key = typeof row?.api_key === "string" ? row.api_key.trim() : "";
+              if (p && !result[p] && key.length > 5) result[p] = key;
+            }
+          }
+        }
+      } catch {
+        // Ignora erro defensivo
+      }
+
+      const stillMissing = uniqueProviders.filter((p) => !result[p]);
+      if (stillMissing.length > 0) {
+        try {
+          let credQuery: any = supabase
+            .from("integration_credentials")
+            .select("provider, token_payload");
+          if (typeof credQuery?.eq === "function") credQuery = credQuery.eq("store_id", targetStoreId);
+          if (typeof credQuery?.in === "function") {
+            credQuery = credQuery.in("provider", stillMissing);
+            if (typeof credQuery?.eq === "function") credQuery = credQuery.eq("is_active", true);
+            const { data: credRows, error: credErr } = await credQuery;
+            if (!credErr && Array.isArray(credRows)) {
+              for (const row of credRows) {
+                const p = String(row?.provider || "");
+                if (!p || result[p] || !row?.token_payload) continue;
+                const payload = row.token_payload as Record<string, any>;
+                const extractedKey =
+                  payload?.api_key ||
+                  payload?.secret_key ||
+                  payload?.apiKey ||
+                  payload?.secretKey ||
+                  payload?.token ||
+                  payload?.access_token;
+                if (typeof extractedKey === "string" && extractedKey.trim().length > 5) {
+                  result[p] = extractedKey.trim();
+                }
+              }
+            }
+          }
+        } catch {
+          // Ignora erro defensivo
+        }
+      }
+    }
+
+    return result;
+  } catch (err) {
+    console.warn("[secret-vault] Falha ao recuperar segredos em lote:", err);
+    return result;
+  }
+}
+
+/**
  * Validação Ativa de Conexão com Provedores de IA e Scraping no Cofre (Função Pura).
  */
 export async function internalTestSecretKeyConnection(

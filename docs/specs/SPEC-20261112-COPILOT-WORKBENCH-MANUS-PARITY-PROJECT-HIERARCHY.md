@@ -59,6 +59,11 @@ A experiência do Waesy Copilot em `/workspace/copilot` apresentava quatro defic
 | `src/services/copilot-internal-search.ts` | Otimização estrita de `shouldSearchPlatform` e limite de 4 tabelas | Implementado |
 | `src/routes/workspace.copilot.tsx` | Purga de mocks estáticos e badges hardcoded de segundo plano | Implementado |
 | `src/components/chat/manus-computer-drawer.tsx` | Remoção de `DEFAULT_STEPS` e introdução de empty state honesto | Implementado |
-| `supabase/migrations/20270401000000_copilot_folders_projects_knowledge_base.sql` | Estrutura relacional de Pastas, Projetos e Arquivos de Contexto | Próximo passo |
-| `src/services/copilot-projects.functions.ts` | Server functions de gestão de Pastas, Projetos e RAG de arquivos | Próximo passo |
-| `src/components/chat/copilot-project-knowledge-panel.tsx` | Painel de upload e indexação de arquivos de contexto | Próximo passo |
+| `supabase/migrations/20270401000000_copilot_folders_projects_knowledge_base.sql` | Estrutura relacional de Pastas, Projetos e Arquivos de Contexto | Implementado |
+| `src/services/copilot-projects.functions.ts` | Server functions de gestão de Pastas, Projetos e RAG de arquivos | Implementado |
+| `src/components/chat/copilot-project-knowledge-panel.tsx` | Painel de upload e indexação de arquivos de contexto | Implementado |
+| `src/services/api-orchestrator.functions.ts` | Carregamento em lote (`getBatchActiveKeysForProviders`) sem N+1 subrequests | Implementado |
+| `src/services/ai-core-gateway.functions.ts` | Teto `MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS = 8` no loop de cascata | Implementado |
+| `src/services/ai-conversations.functions.ts` | Injeção de `<PROJECT_KNOWLEDGE_BASE>` + vínculo `folder_id`/`project_id` em threads | Implementado |
+| `src/components/chat/manus-task-telemetry-sheet.tsx` | Remoção de métricas sintéticas e cálculo real via `computeCopilotSessionTelemetry` | Implementado |
+| `src/components/chat/ai-chat-shell.tsx` | Árvore Pastas ➔ Projetos ➔ Conversas + painel RAG e tasks reais | Implementado |

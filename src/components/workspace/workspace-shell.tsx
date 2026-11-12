@@ -233,6 +233,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       "/workspace/financeiro/saques",
       "/workspace/financeiro/configuracao",
       "/workspace/configuracoes/integracoes",
+      "/workspace/configuracoes/planos",
       "/workspace/configuracoes/ai",
       "/workspace/configuracoes/inteligencia-artificial",
       "/workspace/configuracoes/sessoes",

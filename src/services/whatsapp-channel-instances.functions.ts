@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
+import { assertStoreWhatsAppInstanceAvailable } from "@/lib/architecture/module-plan-governance";
 
 const ProviderSchema = z.enum(["meta_cloud_api", "evolution_api", "wasender_api", "render_bridge", "custom_webhook"]);
 const ModeSchema = z.enum(["official", "unofficial"]);
@@ -92,6 +93,18 @@ async function saveInstance(input: z.infer<typeof SaveSchema>, mode: "workspace"
   if (input.connectionMode === "unofficial" && input.provider === "meta_cloud_api") throw new Error("Meta Cloud API não pode ser marcada como não oficial.");
 
   const db = getServerClient();
+  if (mode === "workspace") {
+    const [{ data: storeRow }, { data: existingInstances }] = await Promise.all([
+      db.from("stores").select("id, name, slug, is_platform_root, plan_tier, settings").eq("id", storeId).single(),
+      db.from("whatsapp_channel_instances").select("id, instance_key").eq("store_id", storeId),
+    ]);
+    const existingList = existingInstances || [];
+    const isUpdatingExistingInstance = Boolean(
+      (input.id && existingList.some((row: any) => row.id === input.id)) ||
+        existingList.some((row: any) => row.instance_key === input.instanceKey)
+    );
+    assertStoreWhatsAppInstanceAvailable(storeRow, existingList.length, { isUpdatingExistingInstance });
+  }
   const secretPayloadEncrypted = Object.keys(input.secretPayload).length > 0 ? encryptSecret(JSON.stringify(input.secretPayload)) : undefined;
 
   const targetIsDefault = Boolean(input.isDefault && input.isActive);

@@ -23,6 +23,29 @@ export const getStoreInvoices = createServerFn({ method: "GET" })
     return invoices || [];
   });
 
+export function buildPlatformInvoiceInsertRow(data: {
+  storeId: string;
+  periodStart: string;
+  periodEnd: string;
+  platformFeeCents: number;
+  description?: string;
+  notes?: string | null;
+}) {
+  const dueDate = new Date(data.periodEnd);
+  dueDate.setDate(dueDate.getDate() + 10);
+
+  return {
+    store_id: data.storeId,
+    description:
+      data.description?.trim() ||
+      `Fatura da Plataforma (${data.periodStart} a ${data.periodEnd})`,
+    amount_cents: data.platformFeeCents,
+    status: "pending" as const,
+    due_date: dueDate.toISOString(),
+    notes: data.notes ?? null,
+  };
+}
+
 export const createInvoice = createServerFn({ method: "POST" })
   .validator(
     z.object({
@@ -30,6 +53,8 @@ export const createInvoice = createServerFn({ method: "POST" })
       periodStart: z.string(),
       periodEnd: z.string(),
       platformFeeCents: z.number().int().min(0),
+      description: z.string().max(240).optional(),
+      notes: z.string().max(1000).optional().nullable(),
     }),
   )
   .handler(async ({ data }) => {
@@ -37,21 +62,11 @@ export const createInvoice = createServerFn({ method: "POST" })
     assertStoreAccess(identity, ["owner", "admin"], data.storeId);
 
     const supabase = getServerClient();
-
-    // Calcula o vencimento (10 dias após o fim do período)
-    const dueDate = new Date(data.periodEnd);
-    dueDate.setDate(dueDate.getDate() + 10);
+    const row = buildPlatformInvoiceInsertRow(data);
 
     const { data: invoice, error } = await supabase
       .from("platform_invoices")
-      .insert({
-        store_id: data.storeId,
-        period_start: data.periodStart,
-        period_end: data.periodEnd,
-        status: "pending",
-        platform_fee_cents: data.platformFeeCents,
-        due_date: dueDate.toISOString(),
-      })
+      .insert(row)
       .select()
       .single();
 

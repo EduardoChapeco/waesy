@@ -72,7 +72,10 @@ interface IntegrationCardProps {
   existingSetting?: any;
   onSave: (provider: string, formData: Record<string, string>, isActive: boolean) => Promise<void>;
   onDelete?: (provider: string) => Promise<void>;
-  onTestConnection?: (formData: Record<string, string>) => Promise<{ success: boolean; message: string; details?: any }>;
+  onTestConnection?: (
+    formData: Record<string, string>,
+    hasSavedCredentials: boolean,
+  ) => Promise<{ success: boolean; message: string; details?: any }>;
 }
 
 function IntegrationCard({
@@ -87,17 +90,25 @@ function IntegrationCard({
   onTestConnection,
 }: IntegrationCardProps) {
   const [isActive, setIsActive] = useState(existingSetting?.is_active ?? false);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<Record<string, string>>(() => {
+    const meta = existingSetting?.public_metadata;
+    if (!meta || typeof meta !== "object") return {};
+    return Object.fromEntries(
+      Object.entries(meta)
+        .filter(([_, v]) => v !== null && v !== undefined)
+        .map(([k, v]) => [k, String(v)]),
+    );
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setIsSaving(true);
     try {
       await onSave(provider, formData, isActive);
-      toast.success(`${title} configurado com sucesso!`);
+      toast.success(isActive ? `${title} configurado com sucesso!` : `${title} desativado com sucesso.`);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Erro ao salvar credenciais.");
     } finally {
@@ -110,7 +121,7 @@ function IntegrationCard({
     setIsTesting(true);
     setTestResult(null);
     try {
-      const res = await onTestConnection(formData);
+      const res = await onTestConnection(formData, Boolean(existingSetting?.is_active));
       setTestResult(res);
       if (res.success) {
         toast.success(res.message);
@@ -139,7 +150,7 @@ function IntegrationCard({
                 <CardTitle className="text-base flex items-center gap-2">
                   {title}
                   {existingSetting?.is_active ? (
-                    <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-600">
+                    <Badge variant="outline" className="text-xs border-success/40 bg-success/10 text-success">
                       Ativo
                     </Badge>
                   ) : (
@@ -154,6 +165,22 @@ function IntegrationCard({
             <Switch checked={isActive} onCheckedChange={(checked) => setIsActive(checked)} />
           </div>
         </CardHeader>
+
+        {!isActive && existingSetting?.is_active && (
+          <CardFooter className="flex items-center justify-between pt-3 pb-3 border-t border-border/50 gap-2">
+            <span className="text-xs text-muted-foreground">Desativação pendente de salvamento.</span>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSaving}
+              onClick={() => handleSave()}
+              className="h-9 px-3 text-xs rounded-lg font-bold min-h-11 sm:min-h-0 focus-visible:ring-2"
+            >
+              <Save className="size-3.5 mr-2" />
+              {isSaving ? "Salvando..." : "Confirmar Desativação"}
+            </Button>
+          </CardFooter>
+        )}
 
         {isActive && (
           <form onSubmit={handleSave}>
@@ -321,7 +348,7 @@ function SecretVaultCard({
                 <CardTitle className="text-base flex items-center gap-2">
                   {title}
                   {existingSecret ? (
-                    <Badge variant="outline" className="text-xs bg-primary hover:bg-primary">
+                    <Badge variant="default" className="text-xs">
                       BYOK Ativo
                     </Badge>
                   ) : (
@@ -674,10 +701,10 @@ function UnifiedIntegrationsHubPage() {
   };
 
   // Handlers de Teste Ativo de Conexão
-  const handleTestWhatsApp = async (data: Record<string, string>) => {
-    const phoneNumberId = data.phone_number_id;
-    const accessToken = data.access_token;
-    if (!phoneNumberId || !accessToken) {
+  const handleTestWhatsApp = async (data: Record<string, string>, hasSaved: boolean) => {
+    const phoneNumberId = data.phone_number_id || "";
+    const accessToken = data.access_token || "";
+    if ((!phoneNumberId || !accessToken) && !hasSaved) {
       return { success: false, message: "Preencha o Phone Number ID e o Access Token para realizar o teste de conexão." };
     }
     return await testWhatsAppCloudConnection({
@@ -688,9 +715,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestMelhorEnvio = async (data: Record<string, string>) => {
-    const apiToken = data.api_token;
-    if (!apiToken) {
+  const handleTestMelhorEnvio = async (data: Record<string, string>, hasSaved: boolean) => {
+    const apiToken = data.api_token || "";
+    if (!apiToken && !hasSaved) {
       return { success: false, message: "Preencha o Token de Acesso (API Token) para realizar o teste de conexão." };
     }
     return await testMelhorEnvioConnection({
@@ -701,9 +728,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestBling = async (data: Record<string, string>) => {
-    const apiKey = data.api_key;
-    if (!apiKey) {
+  const handleTestBling = async (data: Record<string, string>, hasSaved: boolean) => {
+    const apiKey = data.api_key || "";
+    if (!apiKey && !hasSaved) {
       return { success: false, message: "Preencha a Chave de API / Token OAuth do Bling v3 para testar." };
     }
     return await testErpConnection({
@@ -714,9 +741,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestTiny = async (data: Record<string, string>) => {
-    const apiKey = data.api_key;
-    if (!apiKey) {
+  const handleTestTiny = async (data: Record<string, string>, hasSaved: boolean) => {
+    const apiKey = data.api_key || "";
+    if (!apiKey && !hasSaved) {
       return { success: false, message: "Preencha o Token de API do Tiny ERP para testar." };
     }
     return await testErpConnection({
@@ -727,9 +754,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestAsaas = async (data: Record<string, string>) => {
-    const apiKey = data.api_key;
-    if (!apiKey) {
+  const handleTestAsaas = async (data: Record<string, string>, hasSaved: boolean) => {
+    const apiKey = data.api_key || "";
+    if (!apiKey && !hasSaved) {
       return { success: false, message: "Preencha a Chave de API (Access Token) do Asaas para testar." };
     }
     return await testPaymentGatewayConnection({
@@ -741,9 +768,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestMercadoPago = async (data: Record<string, string>) => {
-    const apiKey = data.access_token;
-    if (!apiKey) {
+  const handleTestMercadoPago = async (data: Record<string, string>, hasSaved: boolean) => {
+    const apiKey = data.access_token || "";
+    if (!apiKey && !hasSaved) {
       return { success: false, message: "Preencha o Access Token de Produção do Mercado Pago para testar." };
     }
     return await testPaymentGatewayConnection({
@@ -754,9 +781,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestStripe = async (data: Record<string, string>) => {
-    const apiKey = data.secret_key;
-    if (!apiKey) {
+  const handleTestStripe = async (data: Record<string, string>, hasSaved: boolean) => {
+    const apiKey = data.secret_key || "";
+    if (!apiKey && !hasSaved) {
       return { success: false, message: "Preencha a Secret Key (sk_...) da Stripe para testar." };
     }
     return await testPaymentGatewayConnection({
@@ -767,9 +794,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestPagarMe = async (data: Record<string, string>) => {
-    const apiKey = data.api_key;
-    if (!apiKey) {
+  const handleTestPagarMe = async (data: Record<string, string>, hasSaved: boolean) => {
+    const apiKey = data.api_key || "";
+    if (!apiKey && !hasSaved) {
       return { success: false, message: "Preencha a Chave de API do Pagar.me v5 para testar." };
     }
     return await testPaymentGatewayConnection({
@@ -780,9 +807,9 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
-  const handleTestPayPal = async (data: Record<string, string>) => {
-    const clientId = data.client_id;
-    if (!clientId) {
+  const handleTestPayPal = async (data: Record<string, string>, hasSaved: boolean) => {
+    const clientId = data.client_id || "";
+    if (!clientId && !hasSaved) {
       return { success: false, message: "Preencha o Client ID do PayPal para testar." };
     }
     return await testPaymentGatewayConnection({
@@ -813,7 +840,7 @@ function UnifiedIntegrationsHubPage() {
 
       {/* TABS NAVEGAÇÃO DO HUB */}
       <Tabs defaultValue="payments_gateways" className="w-full space-y-6">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-2 gap-2 bg-muted/60 rounded-lg border border-border/70">
+        <TabsList className="flex flex-wrap items-center h-auto p-2 gap-2 bg-muted/60 rounded-lg border border-border/70">
           <TabsTrigger value="payments_gateways" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <CreditCard className="size-3.5 text-emerald-500" />
             Pagamentos
