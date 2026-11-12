@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -205,27 +205,45 @@ export function useProductEditor(
 
   const formValues = form.watch();
 
-  useEffect(() => {
-    if (variantsMatrix.length > 0) {
-      const sum = variantsMatrix.reduce((acc, v) => acc + (Number(v.stock) || 0), 0);
-      form.setValue("stock", sum);
+  // Cálculo reativo de menor preço, maior preço e estoque físico total da matriz 2D (DEC-433)
+  const matrixStats = useMemo(() => {
+    if (!variantsMatrix || variantsMatrix.length === 0) {
+      return { minPrice: null, maxPrice: null, totalStock: null, hasRange: false };
+    }
+    const basePrice = Number(formValues.price_cents || 0);
+    let minP = Infinity;
+    let maxP = -Infinity;
+    let totalStock = 0;
 
-      // Sincroniza o menor preço da matriz se existirem preços de exceção cadastrados
-      const hasExplicitOverrides = variantsMatrix.some(
-        (v) => v.price_override_cents != null && Number(v.price_override_cents) > 0
-      );
-      if (hasExplicitOverrides) {
-        const matrixPricing = calculateMatrixPricingAndStock(
-          Number(form.getValues("price_cents") || 0),
-          sum,
-          variantsMatrix
-        );
-        if (matrixPricing.hasVariants && matrixPricing.minPriceCents > 0) {
-          form.setValue("price_cents", matrixPricing.minPriceCents);
-        }
+    for (const v of variantsMatrix) {
+      const effectivePrice =
+        v.price_override_cents != null && Number(v.price_override_cents) > 0
+          ? Number(v.price_override_cents)
+          : basePrice;
+      if (effectivePrice > 0 && effectivePrice < minP) minP = effectivePrice;
+      if (effectivePrice > maxP) maxP = effectivePrice;
+      totalStock += Number(v.stock || 0);
+    }
+
+    const resolvedMin = minP === Infinity ? basePrice : minP;
+    const resolvedMax = maxP === -Infinity ? basePrice : maxP;
+
+    return {
+      minPrice: resolvedMin,
+      maxPrice: resolvedMax,
+      totalStock,
+      hasRange: resolvedMin !== resolvedMax && resolvedMin > 0 && resolvedMax > 0,
+    };
+  }, [variantsMatrix, formValues.price_cents]);
+
+  // Sincroniza estoque pai automaticamente com a soma da matriz de variantes (Governança física estrita)
+  useEffect(() => {
+    if (variantsMatrix.length > 0 && matrixStats.totalStock !== null) {
+      if (form.getValues("stock") !== matrixStats.totalStock) {
+        form.setValue("stock", matrixStats.totalStock);
       }
     }
-  }, [variantsMatrix, form]);
+  }, [variantsMatrix.length, matrixStats.totalStock, form]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -245,8 +263,7 @@ export function useProductEditor(
         data: {
           name: quickCategoryName.trim(),
           slug,
-          store_id: getEffectiveStoreId(),
-        },
+                  },
       });
       setCategoriesList((prev) => [...prev, newCat]);
       form.setValue("category_id", newCat.id);
@@ -271,8 +288,7 @@ export function useProductEditor(
       const res = await createStoreBrand({
         data: {
           name: clean,
-          store_id: getEffectiveStoreId(),
-        },
+                  },
       });
       const createdName = res?.name || clean;
       setBrandsList((prev) =>
@@ -391,10 +407,14 @@ export function useProductEditor(
         webmcp_ai_discoverable: data.webmcp_ai_discoverable ?? true,
       };
 
+      const effectiveEntryPriceCents =
+        variantsMatrix.length > 0 && matrixStats.minPrice !== null && matrixStats.minPrice > 0
+          ? Math.min(Number(data.price_cents || 0), matrixStats.minPrice) || matrixStats.minPrice
+          : Number(data.price_cents || 0);
+
       await createProduct({
         data: {
-          store_id: getEffectiveStoreId(),
-          title: data.title.trim(),
+                    title: data.title.trim(),
           slug: generatedSlug,
           description: data.description || null,
           short_description: data.short_description || null,
@@ -403,7 +423,7 @@ export function useProductEditor(
           status: data.status || "published",
           brand: data.brand || null,
           ean: foodSpecs.barcodeEan?.trim() || data.ean || null,
-          price_cents: effectiveMinPrice,
+          price_cents: effectiveEntryPriceCents,
           compare_at_cents: data.compare_at_cents > 0 ? data.compare_at_cents : null,
           cost_cents: data.cost_cents > 0 ? data.cost_cents : null,
           type_id: data.type_id || null,
@@ -415,6 +435,7 @@ export function useProductEditor(
           preparation_time_days: data.preparation_time_days ? Number(data.preparation_time_days) : null,
           preparation_time_minutes: foodSpecs.preparationTimeMinutes ? Number(foodSpecs.preparationTimeMinutes) : null,
           show_stock_publicly: data.show_stock_publicly ?? false,
+          is_published_to_marketplace: (data as any).is_published_to_marketplace !== false,
           media_urls: effectiveMediaUrls,
           category_ids: data.category_id ? [data.category_id] : [],
           option_group_ids: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,
@@ -423,6 +444,7 @@ export function useProductEditor(
             template_style: isGroceryMode ? "conveniencia" : isTravelPackageMode ? "editorial" : "standard",
             ...(isTravelPackageMode ? { travel: travelData } : {}),
             bill_of_materials: bomItems,
+            is_published_to_marketplace: (data as any).is_published_to_marketplace !== false,
             food_specs: foodSpecs,
             fiscal: fiscalData,
             commercial_rules: commercialRules,
@@ -499,10 +521,14 @@ export function useProductEditor(
         webmcp_ai_discoverable: data.webmcp_ai_discoverable ?? true,
       };
 
+      const effectiveDraftEntryPriceCents =
+        variantsMatrix.length > 0 && matrixStats.minPrice !== null && matrixStats.minPrice > 0
+          ? Math.min(Number(data.price_cents || 0), matrixStats.minPrice) || matrixStats.minPrice
+          : Number(data.price_cents || 0);
+
       await createProduct({
         data: {
-          store_id: getEffectiveStoreId(),
-          title: data.title.trim(),
+                    title: data.title.trim(),
           slug: generatedSlug,
           description: data.description || null,
           short_description: data.short_description || null,
@@ -511,7 +537,7 @@ export function useProductEditor(
           status: "draft",
           brand: data.brand || null,
           ean: foodSpecs.barcodeEan?.trim() || (data as any).ean || null,
-          price_cents: effectiveMinPrice,
+          price_cents: effectiveDraftEntryPriceCents,
           compare_at_cents: data.compare_at_cents && data.compare_at_cents > 0 ? data.compare_at_cents : null,
           cost_cents: data.cost_cents && data.cost_cents > 0 ? data.cost_cents : null,
           type_id: data.type_id || null,
@@ -523,6 +549,7 @@ export function useProductEditor(
           preparation_time_days: data.preparation_time_days ? Number(data.preparation_time_days) : null,
           preparation_time_minutes: foodSpecs.preparationTimeMinutes ? Number(foodSpecs.preparationTimeMinutes) : null,
           show_stock_publicly: data.show_stock_publicly ?? false,
+          is_published_to_marketplace: (data as any).is_published_to_marketplace !== false,
           media_urls: effectiveMediaUrls,
           category_ids: data.category_id ? [data.category_id] : [],
           option_group_ids: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,
@@ -531,6 +558,7 @@ export function useProductEditor(
             template_style: isGroceryMode ? "conveniencia" : isTravelPackageMode ? "editorial" : "standard",
             ...(isTravelPackageMode ? { travel: travelData } : {}),
             bill_of_materials: bomItems,
+            is_published_to_marketplace: (data as any).is_published_to_marketplace !== false,
             food_specs: foodSpecs,
             fiscal: fiscalData,
             commercial_rules: commercialRules,
@@ -632,6 +660,7 @@ export function useProductEditor(
     handleImportProduct,
     variantsMatrix,
     setVariantsMatrix,
+    matrixStats,
     isMasterCatalogOpen,
     setIsMasterCatalogOpen,
     fiscalData,

@@ -11,43 +11,47 @@ export const getIdentity = createServerFn({ method: "GET" }).handler(async () =>
 export const setTenantContext = createServerFn({ method: "POST" })
   .validator(z.object({ store_id: z.string().uuid().nullable() }))
   .handler(async ({ data: { store_id } }) => {
+    let setCookie: any;
+    let resHeaders: Headers | undefined;
+    try {
+      const core: any = await import("@tanstack/start-server-core");
+      setCookie = core?.setCookie;
+      if (typeof core?.getResponseHeaders === "function") {
+        resHeaders = core.getResponseHeaders() as unknown as Headers;
+      }
+    } catch {
+      resHeaders = undefined;
+    }
     const identity = await getServerIdentity();
     const adminDb = getServerClient();
-    const { setCookie } = await import("@tanstack/start-server-core");
+    const isProd = process.env.NODE_ENV === "production";
 
-    if (store_id === null) {
+    const writeContextCookie = (name: string, value: string, maxAge: number) => {
       try {
-        setCookie("waesy_active_context", "civil", {
+        setCookie(name, value, {
           path: "/",
-          maxAge: 60 * 60 * 24 * 365,
+          maxAge,
           httpOnly: false,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-        });
-        setCookie("waesy_active_tenant", "", {
-          path: "/",
-          maxAge: 0,
-          httpOnly: false,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-        });
-        setCookie("waesy_store_id", "", {
-          path: "/",
-          maxAge: 0,
-          httpOnly: false,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-        });
-        setCookie("waesy_active_creator", "", {
-          path: "/",
-          maxAge: 0,
-          httpOnly: false,
-          secure: process.env.NODE_ENV === "production",
+          secure: isProd,
           sameSite: "lax",
         });
       } catch {
-        // Ignorado se header já foi enviado
+        try {
+          resHeaders?.append(
+            "Set-Cookie",
+            `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${isProd ? "; Secure" : ""}`,
+          );
+        } catch {
+          // Ignorado se header já foi enviado
+        }
       }
+    };
+
+    if (store_id === null) {
+      writeContextCookie("waesy_active_context", "civil", 60 * 60 * 24 * 365);
+      writeContextCookie("waesy_active_tenant", "", 0);
+      writeContextCookie("waesy_store_id", "", 0);
+      writeContextCookie("waesy_active_creator", "", 0);
       try {
         await clearIdentityCache();
       } catch (err) { console.warn("[identity] caught notice:", err); }
@@ -92,39 +96,11 @@ export const setTenantContext = createServerFn({ method: "POST" })
       }
     }
 
-    // 3. Persiste o cookie do tenant ativo e contexto de loja atomicamente
-    try {
-      setCookie("waesy_active_context", "store", {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30,
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
-      setCookie("waesy_active_tenant", store_id, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30,
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
-      setCookie("waesy_store_id", store_id, {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30,
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
-      setCookie("waesy_active_creator", "", {
-        path: "/",
-        maxAge: 0,
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
-    } catch {
-      // Ignorado
-    }
+    // 4. Persiste o cookie do tenant ativo e contexto de loja atomicamente
+    writeContextCookie("waesy_active_context", "store", 60 * 60 * 24 * 30);
+    writeContextCookie("waesy_active_tenant", store_id, 60 * 60 * 24 * 30);
+    writeContextCookie("waesy_store_id", store_id, 60 * 60 * 24 * 30);
+    writeContextCookie("waesy_active_creator", "", 0);
 
     try {
       await clearIdentityCache();
@@ -154,6 +130,17 @@ export type CreateStoreInput = z.infer<typeof createStoreSchema>;
 export const createStore = createServerFn({ method: "POST" })
   .validator(createStoreSchema)
   .handler(async ({ data }) => {
+    let setCookie: any;
+    let resHeaders: Headers | undefined;
+    try {
+      const core: any = await import("@tanstack/start-server-core");
+      setCookie = core?.setCookie;
+      if (typeof core?.getResponseHeaders === "function") {
+        resHeaders = core.getResponseHeaders() as unknown as Headers;
+      }
+    } catch {
+      resHeaders = undefined;
+    }
     let identity: any = null;
     try {
       identity = await getServerIdentity();
@@ -164,7 +151,7 @@ export const createStore = createServerFn({ method: "POST" })
     let userId = identity?.id || null;
     if (!userId) {
       try {
-        const ssrClient = await getSSRClient();
+        const ssrClient = await getSSRClient(resHeaders);
         const { data: authData } = await ssrClient.auth.getUser();
         userId = authData?.user?.id || null;
       } catch {
@@ -277,23 +264,31 @@ export const createStore = createServerFn({ method: "POST" })
     }
 
     // 6. Atualizar cookies de sessão para o novo tenant ativo
-    try {
-      const { setCookie } = await import("@tanstack/start-server-core");
-      const isProd = process.env.NODE_ENV === "production";
-      const cookieOpts = {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 365,
-        httpOnly: false,
-        secure: isProd,
-        sameSite: "lax" as const,
-      };
-      setCookie("waesy_active_context", "store", cookieOpts);
-      setCookie("waesy_active_tenant", store.id, cookieOpts);
-      setCookie("waesy_store_id", store.id, cookieOpts);
-      setCookie("waesy_active_creator", "", { path: "/", maxAge: 0, sameSite: "lax", secure: isProd });
-    } catch (cookieErr) {
-      console.warn("[createStore] Aviso ao definir cookies:", cookieErr);
-    }
+    const isProd = process.env.NODE_ENV === "production";
+    const writeStoreCookie = (name: string, value: string, maxAge: number) => {
+      try {
+        setCookie(name, value, {
+          path: "/",
+          maxAge,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax" as const,
+        });
+      } catch {
+        try {
+          resHeaders?.append(
+            "Set-Cookie",
+            `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${isProd ? "; Secure" : ""}`,
+          );
+        } catch (cookieErr) {
+          console.warn("[createStore] Aviso ao definir cookies:", cookieErr);
+        }
+      }
+    };
+    writeStoreCookie("waesy_active_context", "store", 60 * 60 * 24 * 365);
+    writeStoreCookie("waesy_active_tenant", store.id, 60 * 60 * 24 * 365);
+    writeStoreCookie("waesy_store_id", store.id, 60 * 60 * 24 * 365);
+    writeStoreCookie("waesy_active_creator", "", 0);
 
     // 7. Invalidar cache de identidade
     try {

@@ -111,6 +111,37 @@ async function deferCircuitOpen(db: ReturnType<typeof getServerClient>, row: Cla
   await recordAttempt(db, row, workerId, { outcome: "skipped", errorCode: "CIRCUIT_OPEN", errorMessage: `Provider temporariamente bloqueado (${permit.circuit_state})`, durationMs, metadata: { circuit_state: permit.circuit_state, retry_after_seconds: permit.retry_after_seconds } });
 }
 
+async function resolveTargetChatMessageId(db: ReturnType<typeof getServerClient>, row: ClaimedOutbox): Promise<string | null> {
+  if (!row.thread_id) return null;
+  if (typeof row.payload?.chat_message_id === "string" && row.payload.chat_message_id.trim()) {
+    return row.payload.chat_message_id.trim();
+  }
+  const rawIdem = typeof (row as Record<string, unknown>).idempotency_key === "string"
+    ? String((row as Record<string, unknown>).idempotency_key)
+    : null;
+  if (rawIdem && rawIdem.startsWith("chat_msg:")) {
+    return rawIdem.slice("chat_msg:".length);
+  }
+  const { data: outboxMeta } = await db
+    .from("whatsapp_outbox")
+    .select("idempotency_key")
+    .eq("id", row.id)
+    .maybeSingle();
+  if (outboxMeta?.idempotency_key && outboxMeta.idempotency_key.startsWith("chat_msg:")) {
+    return outboxMeta.idempotency_key.slice("chat_msg:".length);
+  }
+  const { data: fallbackMsg } = await db
+    .from("chat_messages")
+    .select("id")
+    .eq("thread_id", row.thread_id)
+    .eq("is_staff_reply", true)
+    .is("external_message_id", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return fallbackMsg?.id || null;
+}
+
 async function finalizeFailure(db: ReturnType<typeof getServerClient>, row: ClaimedOutbox, workerId: string, data: {
   retryable: boolean;
   errorCode: string;
@@ -120,6 +151,7 @@ async function finalizeFailure(db: ReturnType<typeof getServerClient>, row: Clai
 }) {
   const deadLetter = !data.retryable || row.attempts >= row.max_attempts;
   const nextAttemptAt = new Date(Date.now() + backoffSeconds(row.attempts) * 1000).toISOString();
+  const nowIso = new Date().toISOString();
   await db.from("whatsapp_outbox").update({
     status: deadLetter ? "dead_letter" : "failed",
     next_attempt_at: nextAttemptAt,
@@ -127,14 +159,43 @@ async function finalizeFailure(db: ReturnType<typeof getServerClient>, row: Clai
     locked_at: null,
     last_error_code: data.errorCode,
     last_error_message: data.errorMessage,
-    updated_at: new Date().toISOString(),
+    updated_at: nowIso,
   }).eq("id", row.id).eq("locked_by", workerId);
   await db.from("whatsapp_campaign_recipients").update({
     status: "failed",
     error_code: data.errorCode,
     error_message: data.errorMessage,
-    updated_at: new Date().toISOString(),
+    updated_at: nowIso,
   }).eq("outbox_id", row.id);
+  if (row.thread_id) {
+    try {
+      const targetMsgId = await resolveTargetChatMessageId(db, row);
+      if (targetMsgId) {
+        const { data: existingMsg } = await db.from("chat_messages").select("id, payload, external_message_id").eq("id", targetMsgId).maybeSingle();
+        if (existingMsg && !existingMsg.external_message_id) {
+          const currentPayload = (existingMsg.payload && typeof existingMsg.payload === "object" ? existingMsg.payload : {}) as Record<string, unknown>;
+          await db.from("chat_messages").update({
+            delivery_status: "failed",
+            failed_at: nowIso,
+            error_code: data.errorCode,
+            error_message: data.errorMessage,
+            payload: {
+              ...currentPayload,
+              delivery_state: deadLetter ? "dead_letter" : data.retryable ? "retry_scheduled" : "permanent_failure",
+              outbox_id: row.id,
+              attempts: row.attempts,
+              max_attempts: row.max_attempts,
+              next_attempt_at: deadLetter ? null : nextAttemptAt,
+              last_error_code: data.errorCode,
+              last_error_message: data.errorMessage,
+            },
+          }).eq("id", existingMsg.id);
+        }
+      }
+    } catch (chatMsgUpdateErr) {
+      console.warn("[whatsapp-worker] falha ao atualizar status de erro na chat_messages:", errorText(chatMsgUpdateErr));
+    }
+  }
   if (deadLetter) await refreshCampaignProgress(db, row.id);
   await recordAttempt(db, row, workerId, {
     outcome: deadLetter ? "dead_letter" : data.retryable ? "retryable_failure" : "permanent_failure",
@@ -160,6 +221,32 @@ async function resolveInstance(db: ReturnType<typeof getServerClient>, row: Clai
 async function processClaimedRow(db: ReturnType<typeof getServerClient>, row: ClaimedOutbox, workerId: string): Promise<"accepted" | "retryable_failure" | "permanent_failure" | "dead_letter" | "skipped"> {
   const startedAt = Date.now();
   try {
+    const targetChatMsgId = await resolveTargetChatMessageId(db, row);
+    if (row.attempts > 1 && targetChatMsgId) {
+      const { data: alreadyReconciled } = await db
+        .from("chat_messages")
+        .select("id, external_message_id")
+        .eq("id", targetChatMsgId)
+        .maybeSingle();
+      if (alreadyReconciled?.external_message_id) {
+        await db.from("whatsapp_outbox").update({
+          status: "accepted",
+          external_message_id: alreadyReconciled.external_message_id,
+          locked_by: null,
+          locked_at: null,
+          last_error_code: null,
+          last_error_message: null,
+          updated_at: new Date().toISOString(),
+        }).eq("id", row.id);
+        await recordAttempt(db, row, workerId, {
+          outcome: "accepted",
+          externalMessageId: alreadyReconciled.external_message_id,
+          durationMs: Date.now() - startedAt,
+          metadata: { reconciled_before_retry: true },
+        });
+        return "accepted";
+      }
+    }
     const instance = await resolveInstance(db, row);
     const permit = await acquireCircuitPermit(db, instance.id, workerId);
     if (!permit.allowed) {
@@ -168,13 +255,61 @@ async function processClaimedRow(db: ReturnType<typeof getServerClient>, row: Cl
     }
     const result = await sendWithWhatsAppAdapter(instance, { recipientPhone: row.recipient_phone, messageType: row.message_type, payload: row.payload });
     await recordCircuitResult(db, instance.id, workerId, true);
-    await db.from("whatsapp_outbox").update({ status: "accepted", channel_instance_id: instance.id, external_message_id: result.externalMessageId, locked_by: null, locked_at: null, last_error_code: null, last_error_message: null, updated_at: new Date().toISOString() }).eq("id", row.id).eq("locked_by", workerId);
-    await db.from("whatsapp_campaign_recipients").update({ status: "accepted", external_message_id: result.externalMessageId, error_code: null, error_message: null, updated_at: new Date().toISOString() }).eq("outbox_id", row.id);
+    const nowIso = new Date().toISOString();
+    await db.from("whatsapp_outbox").update({ status: "accepted", channel_instance_id: instance.id, external_message_id: result.externalMessageId, locked_by: null, locked_at: null, last_error_code: null, last_error_message: null, updated_at: nowIso }).eq("id", row.id).eq("locked_by", workerId);
+    await db.from("whatsapp_campaign_recipients").update({ status: "accepted", external_message_id: result.externalMessageId, error_code: null, error_message: null, updated_at: nowIso }).eq("outbox_id", row.id);
     await refreshCampaignProgress(db, row.id);
-    await db.from("whatsapp_delivery_events").upsert({ store_id: row.store_id, phone_number_id: instance.phone_number_id || instance.instance_key, external_message_id: result.externalMessageId, delivery_status: "accepted", recipient_phone: row.recipient_phone, payload: result.response, occurred_at: new Date().toISOString() }, { onConflict: "store_id,external_message_id,delivery_status" });
+    await db.from("whatsapp_delivery_events").upsert({ store_id: row.store_id, phone_number_id: instance.phone_number_id || instance.instance_key, external_message_id: result.externalMessageId, delivery_status: "accepted", recipient_phone: row.recipient_phone, payload: result.response, occurred_at: nowIso }, { onConflict: "store_id,external_message_id,delivery_status" });
     if (row.thread_id) {
       const text = typeof row.payload.text === "string" ? row.payload.text : `[${row.message_type}]`;
-      await db.from("chat_messages").insert({ thread_id: row.thread_id, message: await encryptConversationMessageForThread(row.store_id, row.thread_id, text), message_type: row.message_type, is_staff_reply: true, channel: "whatsapp", is_encrypted: true, encryption_version: 2, encrypted_at: new Date().toISOString(), external_message_id: result.externalMessageId, delivery_status: "accepted", sent_at: new Date().toISOString(), payload: { channel: "whatsapp", provider: row.provider, instance_id: instance.id, to: row.recipient_phone, message_id: result.externalMessageId } });
+      if (targetChatMsgId) {
+        const { data: existingRow } = await db.from("chat_messages").select("id, payload").eq("id", targetChatMsgId).maybeSingle();
+        const existingPayload = (existingRow?.payload && typeof existingRow.payload === "object" ? existingRow.payload : {}) as Record<string, unknown>;
+        await db
+          .from("chat_messages")
+          .update({
+            external_message_id: result.externalMessageId,
+            provider: row.provider,
+            delivery_status: "accepted",
+            sent_at: nowIso,
+            failed_at: null,
+            error_code: null,
+            error_message: null,
+            payload: {
+              ...existingPayload,
+              origin: existingPayload.origin || "waesy_panel",
+              delivery_state: "accepted",
+              outbox_id: row.id,
+              instance_id: instance.id,
+              message_id: result.externalMessageId,
+            },
+          })
+          .eq("id", targetChatMsgId);
+      } else {
+        await db.from("chat_messages").insert({
+          thread_id: row.thread_id,
+          message: text,
+          message_type: row.message_type,
+          is_staff_reply: true,
+          channel: "whatsapp",
+          is_encrypted: false,
+          encryption_version: 1,
+          provider: row.provider,
+          external_message_id: result.externalMessageId,
+          delivery_status: "accepted",
+          sent_at: nowIso,
+          payload: {
+            channel: "whatsapp",
+            origin: "waesy_panel",
+            delivery_state: "accepted",
+            outbox_id: row.id,
+            provider: row.provider,
+            instance_id: instance.id,
+            to: row.recipient_phone,
+            message_id: result.externalMessageId,
+          },
+        });
+      }
     }
     await recordAttempt(db, row, workerId, { outcome: "accepted", externalMessageId: result.externalMessageId, httpStatus: result.httpStatus, durationMs: Date.now() - startedAt, metadata: { channel_instance_id: instance.id } });
     return "accepted";
@@ -204,6 +339,44 @@ export async function runWhatsAppOutboxWorker(options?: {
   const db = getServerClient();
   const runStartedAt = new Date().toISOString();
   await touchWorkerHeartbeat(db, workerId, { status: "running", lastRunAt: runStartedAt });
+
+  // Promove mensagens agendadas com prazo atingido para a fila ativa de outbox
+  try {
+    const nowIso = new Date().toISOString();
+    const { data: dueScheduled } = await db
+      .from("whatsapp_scheduled_messages")
+      .select("id, store_id, thread_id, recipient_phone, message_text")
+      .eq("status", "scheduled")
+      .lte("scheduled_for", nowIso)
+      .limit(20);
+
+    if (dueScheduled && dueScheduled.length > 0) {
+      for (const item of dueScheduled) {
+        const { error: upsertErr } = await db.from("whatsapp_outbox").upsert(
+          {
+            store_id: item.store_id,
+            thread_id: item.thread_id,
+            provider: "evolution_api",
+            idempotency_key: `scheduled_msg:${item.id}`,
+            recipient_phone: item.recipient_phone,
+            message_type: "text",
+            payload: { text: item.message_text },
+            status: "pending",
+          },
+          { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
+        );
+        if (!upsertErr) {
+          await db
+            .from("whatsapp_scheduled_messages")
+            .update({ status: "sent", sent_at: nowIso, updated_at: nowIso })
+            .eq("id", item.id);
+        }
+      }
+    }
+  } catch (schedErr) {
+    console.warn("[whatsapp-worker] promocoes de agendadas ignoradas:", schedErr);
+  }
+
   const { data: claimed, error } = await db.rpc("claim_whatsapp_outbox", {
     p_worker_id: workerId,
     p_batch_size: Math.min(100, Math.max(1, options?.batchSize || 25)),

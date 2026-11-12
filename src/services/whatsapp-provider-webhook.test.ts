@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { normalizeUnofficialDelivery, normalizeUnofficialIncomingMessage } from "./whatsapp-provider-webhook.server";
+import {
+  extractRevokedMessageIds,
+  normalizeUnofficialDelivery,
+  normalizeUnofficialIncomingMessage,
+} from "./whatsapp-provider-webhook.server";
 
 describe("WhatsApp unofficial webhook normalizers", () => {
   it("normaliza mensagem Evolution messages.upsert sem tratar envio próprio como inbound", () => {
@@ -24,5 +28,38 @@ describe("WhatsApp unofficial webhook normalizers", () => {
     const body = { event: "messages.update", timestamp: 1747775431467 };
     expect(normalizeUnofficialDelivery("wasender_api", body, { key: { id: "was-out-1", remoteJid: "5511999999999@s.whatsapp.net" }, update: { status: 3 } })).toMatchObject({ externalMessageId: "was-out-1", deliveryStatus: "delivered" });
     expect(normalizeUnofficialDelivery("wasender_api", body, { key: { id: "was-out-1" }, update: { status: 4 } })).toMatchObject({ externalMessageId: "was-out-1", deliveryStatus: "read" });
+  });
+
+  it("extrai identificadores de mensagens revogadas em payload Evolution messages.delete", () => {
+    const body = {
+      event: "messages.delete",
+      data: {
+        keys: [
+          { id: "del-msg-1", remoteJid: "5511999999999@s.whatsapp.net", fromMe: false },
+          { id: "del-msg-2", remoteJid: "5511999999999@s.whatsapp.net", fromMe: false },
+        ],
+      },
+    };
+    expect(extractRevokedMessageIds(body)).toEqual(["del-msg-1", "del-msg-2"]);
+  });
+
+  it("extrai ID de mensagem revogada de protocolo Baileys em messages.upsert", () => {
+    const body = {
+      event: "messages.upsert",
+      data: {
+        messages: [
+          {
+            key: { id: "protocol-carrier-id", remoteJid: "5511999999999@s.whatsapp.net", fromMe: false },
+            message: {
+              protocolMessage: {
+                key: { id: "client-revoked-msg-99", remoteJid: "5511999999999@s.whatsapp.net" },
+                type: 0,
+              },
+            },
+          },
+        ],
+      },
+    };
+    expect(extractRevokedMessageIds(body)).toEqual(["client-revoked-msg-99"]);
   });
 });

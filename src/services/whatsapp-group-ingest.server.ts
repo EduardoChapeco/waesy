@@ -3,6 +3,8 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 
 export const INGEST_FEATURE_KEY = "whatsapp_group_ingest";
+export const INFOTRAVEL_INGEST_FEATURE_KEY = "infotravel_sync";
+export type IngestFeatureKey = "whatsapp_group_ingest" | "infotravel_sync";
 export const MAX_ITEMS = 500;
 
 export const IngestPayloadSchema = z
@@ -68,7 +70,27 @@ export function isExcelenciaTourStore(store?: {
  * Revalida o feature grant com auto-healing para Excelência Tour SMO.
  * Falhas não revelam qual etapa falhou além de 401/403.
  */
-export async function authenticateIngest(request: Request): Promise<IngestAuth> {
+function storeHasExtensionAuthorization(
+  settings: Record<string, any> | null | undefined,
+  featureKey: string,
+): boolean {
+  const authorized = Array.isArray(settings?.authorized_extensions)
+    ? (settings!.authorized_extensions as string[])
+    : [];
+  if (authorized.includes("*")) return true;
+  if (featureKey === INGEST_FEATURE_KEY) {
+    return authorized.includes("whatsapp_extension");
+  }
+  if (featureKey === INFOTRAVEL_INGEST_FEATURE_KEY) {
+    return authorized.includes("infotravel_extension") || authorized.includes("infotravel_miner");
+  }
+  return false;
+}
+
+export async function authenticateIngest(
+  request: Request,
+  requiredFeatureKey: IngestFeatureKey = INGEST_FEATURE_KEY,
+): Promise<IngestAuth> {
   const header = request.headers.get("authorization") || "";
   const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
   if (token.length < 32) return { ok: false, status: 401, error: "Unauthorized" };
@@ -88,7 +110,7 @@ export async function authenticateIngest(request: Request): Promise<IngestAuth> 
     .from("workspace_feature_grants")
     .select("enabled")
     .eq("store_id", row.store_id)
-    .eq("feature_key", INGEST_FEATURE_KEY)
+    .eq("feature_key", requiredFeatureKey)
     .maybeSingle();
 
   if (!grant?.enabled) {
@@ -98,10 +120,12 @@ export async function authenticateIngest(request: Request): Promise<IngestAuth> 
       const storeQuery = supabase.from("stores");
       if (typeof storeQuery?.select === "function") {
         const { data: store } = await storeQuery
-          .select("id, name, slug, city")
+          .select("id, name, slug, city, settings")
           .eq("id", row.store_id)
           .maybeSingle();
-        isExcelencia = isExcelenciaTourStore(store);
+        isExcelencia =
+          isExcelenciaTourStore(store) ||
+          storeHasExtensionAuthorization(store?.settings as Record<string, any>, requiredFeatureKey);
       }
     } catch {
       isExcelencia = false;
@@ -114,7 +138,7 @@ export async function authenticateIngest(request: Request): Promise<IngestAuth> 
           .upsert(
             {
               store_id: row.store_id,
-              feature_key: INGEST_FEATURE_KEY,
+              feature_key: requiredFeatureKey,
               enabled: true,
               granted_at: new Date().toISOString(),
             },
@@ -135,5 +159,79 @@ export async function authenticateIngest(request: Request): Promise<IngestAuth> 
     .eq("id", row.id);
 
   return { ok: true, storeId: row.store_id, tokenId: row.id };
+}
+
+/**
+ * Verifica um Bearer token no /whoami e retorna os escopos habilitados para a loja.
+ */
+export async function resolveIngestTokenIdentity(request: Request): Promise<
+  | {
+      ok: true;
+      storeId: string;
+      tokenId: string;
+      store: { id: string; name: string | null; slug: string | null };
+      scopes: IngestFeatureKey[];
+    }
+  | { ok: false; status: 401 | 403; error: string }
+> {
+  const header = request.headers.get("authorization") || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
+  if (token.length < 32) return { ok: false, status: 401, error: "Unauthorized" };
+
+  const supabase = getServerClient();
+  const { data: row } = await supabase
+    .from("ingest_tokens")
+    .select("id, store_id, expires_at, revoked_at")
+    .eq("token_hash", hashToken(token))
+    .maybeSingle();
+
+  if (!row || row.revoked_at || (row.expires_at && new Date(row.expires_at) < new Date())) {
+    return { ok: false, status: 401, error: "Unauthorized" };
+  }
+
+  const [{ data: store }, { data: grants }] = await Promise.all([
+    supabase
+      .from("stores")
+      .select("id, name, slug, city, settings")
+      .eq("id", row.store_id)
+      .maybeSingle(),
+    supabase
+      .from("workspace_feature_grants")
+      .select("feature_key, enabled")
+      .eq("store_id", row.store_id)
+      .eq("enabled", true),
+  ]);
+
+  const scopesSet = new Set<IngestFeatureKey>();
+  for (const g of grants || []) {
+    if (g.feature_key === INGEST_FEATURE_KEY || g.feature_key === INFOTRAVEL_INGEST_FEATURE_KEY) {
+      scopesSet.add(g.feature_key as IngestFeatureKey);
+    }
+  }
+
+  const isExcelencia = isExcelenciaTourStore(store);
+  const settings = (store?.settings || {}) as Record<string, any>;
+  if (isExcelencia || storeHasExtensionAuthorization(settings, INGEST_FEATURE_KEY)) {
+    scopesSet.add(INGEST_FEATURE_KEY);
+  }
+  if (isExcelencia || storeHasExtensionAuthorization(settings, INFOTRAVEL_INGEST_FEATURE_KEY)) {
+    scopesSet.add(INFOTRAVEL_INGEST_FEATURE_KEY);
+  }
+
+  if (scopesSet.size === 0) {
+    return { ok: false, status: 403, error: "Feature not enabled" };
+  }
+
+  return {
+    ok: true,
+    storeId: row.store_id,
+    tokenId: row.id,
+    store: {
+      id: store?.id || row.store_id,
+      name: store?.name ?? null,
+      slug: store?.slug ?? null,
+    },
+    scopes: Array.from(scopesSet),
+  };
 }
 

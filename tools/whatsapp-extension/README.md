@@ -1,48 +1,38 @@
-# 📱 Waesy Ingest • Extensão WhatsApp Web (Grupos & Contatos)
+# Waesy Ingest — Extensão WhatsApp Web (Grupos e Contatos)
 
-Extensão oficial para Google Chrome do ecossistema Waesy, desenvolvida exclusivamente para a agência **Excelência Tour São Miguel do Oeste**.
-
----
-
-## ⚡ O que esta extensão faz?
-
-1. **Lê grupos do WhatsApp Web:** Detecta automaticamente o grupo ou conversa aberta.
-2. **Extrai participantes:** Varre os números de telefone e nomes de membros do grupo diretamente no navegador.
-3. **Higieniza telefones:** Formata automaticamente para padrão internacional brasileiro (+55 DDD NNNNN-NNNN).
-4. **Sincronização Idempotente com o Waesy CRM:** Envia os contatos como oportunidades comerciais pré-CRM sem rebaixar clientes já cadastrados e sem duplicar registros.
+Extensão oficial para Google Chrome e Microsoft Edge do ecossistema Waesy para extração virtualizada de participantes de grupos do WhatsApp Web e ingestão idempotente no Waesy CRM.
 
 ---
 
-## 📦 Como Instalar no Google Chrome
+## O que esta extensão faz
 
-1. Abra o Google Chrome e digite na barra de endereços: `chrome://extensions`
-2. No canto superior direito, **ative o "Modo do desenvolvedor"**.
-3. Clique em **"Carregar sem compactação"**.
-4. Selecione a pasta descompactada da extensão:
-   `tools/whatsapp-extension`
-5. Fixe o ícone do Waesy Ingest na barra de ferramentas do seu navegador.
+1. **Detecta a conversa aberta:** Identifica o grupo ou conversa ativa no WhatsApp Web.
+2. **Varredura com rolagem automática:** Percorre o painel lateral de participantes e o modal "Ver todos", incluindo listas virtualizadas por rolagem e atributos JID (`@c.us` / `@s.whatsapp.net`).
+3. **Higienização de telefones:** Normaliza números brasileiros com DDI `+55`.
+4. **Sincronização em lotes idempotentes:** Divide lotes grandes em blocos de até 500 contatos com relatório exato (`created`, `merged`, `skipped_customer`, `skipped_opted_out`).
 
 ---
 
-## 🔑 Como Conectar com seu Workspace Waesy
+## Como Instalar no Google Chrome ou Edge
 
-1. No Waesy Workspace da agência, acesse:
-   **Turismo > Oportunidades > Extensão WhatsApp**
-2. Clique em **Gerar Novo Token**.
-3. Copie o token de ingestão gerado (`wae_...`).
-4. Abra a extensão no navegador, vá na aba **"Conexão Waesy"**:
-   - Cole a URL do Servidor (ex: `https://waesy.com.br`)
-   - Cole o seu Token de Ingestão
-   - Clique em **Validar Credencial** e em seguida **Salvar**.
+1. Abra `chrome://extensions` (Chrome) ou `edge://extensions` (Edge).
+2. Ative a chave **Modo do desenvolvedor**.
+3. Clique em **Carregar sem compactação** (*Load unpacked*).
+4. Selecione a pasta `tools/whatsapp-extension`.
+5. Fixe o ícone **Waesy Ingest** na barra de ferramentas.
 
 ---
 
-## 🚀 Como Capturar e Enviar Contatos
+## Como Conectar com seu Workspace Waesy
 
-1. Abra o **WhatsApp Web** (`https://web.whatsapp.com`).
-2. Abra o grupo desejado. (Dica: clique no nome do grupo no topo para abrir os dados do grupo na lateral).
-3. Abra a extensão Waesy Ingest:
-   - Clique em **"Escanear Participantes do Grupo"**.
-   - Visualize a lista de contatos encontrados.
-   - Clique em **"Enviar ao Waesy CRM (Oportunidades)"**.
-4. Pronto! Os contatos estarão disponíveis instantaneamente no painel de Oportunidades e Leads do Turismo.
+1. No Waesy Workspace, acesse **Turismo > Oportunidades > Extensão WhatsApp**.
+2. Clique em **Gerar Novo Token** e copie o token (`wae_...`).
+3. Na extensão, abra a aba **Conexão Waesy**, informe o servidor (`https://waesy.com.br`), cole o token e clique em **Validar Credencial** e **Salvar**.
+
+---
+
+## Como Capturar e Enviar Contatos
+
+1. Abra o **WhatsApp Web** (`https://web.whatsapp.com`) e selecione o grupo desejado.
+2. Clique no nome do grupo para abrir o painel de participantes (ou em "Ver todos os participantes").
+3. Abra a extensão **Waesy Ingest**, clique em **Escanear Participantes do Grupo** e depois em **Enviar ao Waesy CRM (Oportunidades)**.

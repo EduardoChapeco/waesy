@@ -66,7 +66,7 @@ export interface ChatQuickComposerModalsProps {
   storeId?: string;
   storeName?: string;
   storeSlug?: string;
-  activeModalOverride?: "form" | "event" | "sticker" | "spreadsheet" | null;
+  activeModalOverride?: "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | null;
   onClearModalOverride?: () => void;
 }
 
@@ -76,11 +76,11 @@ const DEFAULT_SPREADSHEET_PRESETS = [
     title: "Relatório Comercial & Pedidos",
     headers: ["ID", "Cliente", "Categoria", "Status", "Valor (R$)", "Data"],
     rows: [
-      ["PED-9041", "AgroSul Cooperativa", "Atacado", "Confirmado", 2480, "2026-10-28"],
-      ["PED-9042", "Mercado Central", "Reposição", "Em Rota", 1390, "2026-10-28"],
-      ["PED-9043", "Padaria São Miguel", "Insumos", "Entregue", 860, "2026-10-29"],
-      ["PED-9044", "Restaurante Sabor", "Bebidas", "Confirmado", 1920, "2026-10-29"],
-      ["PED-9045", "Farmácia Vida", "Conveniência", "Preparando", 540, "2026-10-29"],
+      ["ITEM-01", "Serviço / Produto Principal", "Comercial", "Ativo", 0, "Atual"],
+      ["ITEM-02", "Atendimento Complementar", "Operacional", "Ativo", 0, "Atual"],
+      ["ITEM-03", "Taxa / Entrega", "Logística", "Ativo", 0, "Atual"],
+      ["ITEM-04", "Garantia / Suporte", "Pós-Venda", "Ativo", 0, "Atual"],
+      ["ITEM-05", "Condição Especial", "Comercial", "Ativo", 0, "Atual"],
     ],
     summary: { total_pedidos: 5, receita_acumulada: 7190 },
   },
@@ -118,7 +118,7 @@ export function ChatQuickComposerModals({
   onClearModalOverride,
 }: ChatQuickComposerModalsProps) {
   const [activeModal, setActiveModal] = useState<
-    "form" | "event" | "sticker" | "spreadsheet" | null
+    "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | null
   >(null);
 
   const currentModal = activeModalOverride || activeModal;
@@ -150,6 +150,40 @@ export function ChatQuickComposerModals({
 
   // Estado Modal 4: Planilha
   const [selectedPresetIdx, setSelectedPresetIdx] = useState(0);
+  const [txTitle, setTxTitle] = useState("");
+  const [txAmount, setTxAmount] = useState("");
+  const [txDueDate, setTxDueDate] = useState("");
+  const [txCodeOrLink, setTxCodeOrLink] = useState("");
+  const [txNotes, setTxNotes] = useState("");
+
+  const handleDispatchTransactional = async (kind: "invoice" | "boleto" | "contract" | "quote") => {
+    const cleanTitle = txTitle.trim() || (kind === "invoice" ? "Fatura / Cobrança PIX" : kind === "boleto" ? "Boleto Bancário / 2ª Via" : kind === "contract" ? "Contrato para Assinatura Digital" : "Orçamento Comercial");
+    const cleanAmount = txAmount.trim() || "A confirmar";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.app";
+    const generatedLink = txCodeOrLink.trim() || (kind === "contract" ? `${origin}/turismo` : `${origin}/checkout`);
+    const labelMap = { invoice: "COBRANÇA PIX / FATURA", boleto: "BOLETO / 2ª VIA", contract: "CONTRATO DIGITAL", quote: "ORÇAMENTO / PROPOSTA" };
+    await onDispatchMessage({
+      message: `[${labelMap[kind]}] ${cleanTitle} • Valor: R$ ${cleanAmount}${txDueDate ? ` • Vencimento: ${txDueDate}` : ""} • Acesse: ${generatedLink}${txNotes ? `\n${txNotes}` : ""}`,
+      message_type: "structured_blocks",
+      payload: {
+        text: `${cleanTitle} — Valor: R$ ${cleanAmount}`,
+        blocks: [
+          {
+            type: "summary_card",
+            data: {
+              title: cleanTitle,
+              subtitle: `Valor: R$ ${cleanAmount}${txDueDate ? ` • Venc.: ${txDueDate}` : ""} • Link: ${generatedLink}`,
+              badge: labelMap[kind],
+              action_url: generatedLink,
+            },
+          },
+        ],
+      },
+    });
+    toast.success(`${cleanTitle} enviado na conversa!`);
+    setTxTitle(""); setTxAmount(""); setTxDueDate(""); setTxCodeOrLink(""); setTxNotes("");
+    closeAllModals();
+  };
 
   const handleAddFormField = () => {
     setFormFields((prev) => [
@@ -348,6 +382,22 @@ export function ChatQuickComposerModals({
           </SheetHeader>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
+            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("invoice"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              <div className="size-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center"><QrCode className="size-5" /></div>
+              <span className="text-xs font-semibold text-foreground text-center">Cobrança PIX</span>
+            </button>
+            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("boleto"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              <div className="size-12 rounded-2xl bg-foreground text-background flex items-center justify-center"><CreditCard className="size-5" /></div>
+              <span className="text-xs font-semibold text-foreground text-center">Boleto / Fatura</span>
+            </button>
+            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("contract"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              <div className="size-12 rounded-2xl bg-muted text-foreground flex items-center justify-center"><Shield className="size-5" /></div>
+              <span className="text-xs font-semibold text-foreground text-center">Contrato</span>
+            </button>
+            <button type="button" onClick={() => { onTrayOpenChange(false); setActiveModal("quote"); }} className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              <div className="size-12 rounded-2xl bg-muted text-foreground flex items-center justify-center"><ShoppingCart className="size-5" /></div>
+              <span className="text-xs font-semibold text-foreground text-center">Orçamento</span>
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -789,7 +839,7 @@ export function ChatQuickComposerModals({
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-foreground truncate">{st.label}</p>
-                    <p className="text-2xs text-muted-foreground truncate">{st.sub}</p>
+                    <p className="text-xs text-muted-foreground truncate">{st.sub}</p>
                   </div>
                 </button>
               );
@@ -799,6 +849,48 @@ export function ChatQuickComposerModals({
       </Dialog>
 
       {/* MODAL 4: PREVIEW INTERATIVO DE PLANILHA / DOCUMENTO */}
+      <Dialog open={currentModal === "invoice" || currentModal === "boleto" || currentModal === "contract" || currentModal === "quote"} onOpenChange={(open) => !open && closeAllModals()}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/50">
+            <DialogTitle className="text-base font-bold text-foreground">
+              {currentModal === "invoice" ? "Enviar Cobrança PIX / Fatura" : currentModal === "boleto" ? "Enviar Boleto / 2ª Via" : currentModal === "contract" ? "Enviar Contrato p/ Assinatura" : "Enviar Orçamento Comercial"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground block">Título / Referência</label>
+              <Input value={txTitle} onChange={(e) => setTxTitle(e.target.value)} placeholder={currentModal === "contract" ? "Ex: Contrato de Prestação de Serviços" : "Ex: Fatura Mensal ou Pedido 104"} className="h-11 text-xs" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground block">Valor (R$)</label>
+                <Input value={txAmount} onChange={(e) => setTxAmount(e.target.value)} placeholder="Ex: 290,00" className="h-11 text-xs font-mono" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground block">Vencimento / Validade</label>
+                <Input value={txDueDate} onChange={(e) => setTxDueDate(e.target.value)} placeholder="Ex: 15/11/2026" className="h-11 text-xs" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground block">
+                {currentModal === "boleto" ? "Linha Digitável ou Link do Boleto" : currentModal === "contract" ? "Link Público de Assinatura Digital" : "Chave PIX Copia e Cola ou Link de Pagamento"}
+              </label>
+              <Input value={txCodeOrLink} onChange={(e) => setTxCodeOrLink(e.target.value)} placeholder="Cole aqui o link, linha digitável ou chave PIX..." className="h-11 text-xs font-mono" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground block">Condições / Observações</label>
+              <Textarea value={txNotes} onChange={(e) => setTxNotes(e.target.value)} placeholder="Instruções opcionais para o cliente..." rows={2} className="text-xs resize-none" />
+            </div>
+          </div>
+          <div className="p-4 border-t border-border/50 flex items-center justify-end gap-2 bg-muted/20">
+            <Button type="button" variant="outline" onClick={closeAllModals} className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer">Cancelar</Button>
+            <Button type="button" onClick={() => currentModal && (currentModal === "invoice" || currentModal === "boleto" || currentModal === "contract" || currentModal === "quote") && handleDispatchTransactional(currentModal)} className="h-11 min-h-11 px-5 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer">
+              <Send className="size-3.5" />
+              <span>Disparar no Chat</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={currentModal === "spreadsheet"}
         onOpenChange={(open) => !open && closeAllModals()}
@@ -1011,7 +1103,7 @@ export function InChatStoreCartBanner({
               <span className="text-xs font-bold text-foreground truncate">
                 Sacola no Chat
               </span>
-              <Badge variant="secondary" className="text-2xs font-mono">
+              <Badge variant="secondary" className="text-xs font-mono">
                 {totalCount} {totalCount === 1 ? "item" : "itens"}
               </Badge>
             </div>

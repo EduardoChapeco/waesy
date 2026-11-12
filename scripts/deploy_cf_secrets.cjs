@@ -3,20 +3,23 @@ const fs = require("fs");
 const path = require("path");
 
 const envPath = path.resolve(__dirname, "../.env.secrets");
-if (!fs.existsSync(envPath)) {
-  console.error("Arquivo .env.secrets não encontrado.");
-  process.exit(1);
-}
-
-const sec = fs.readFileSync(envPath, "utf8");
+const rootEnvPath = path.resolve(__dirname, "../.env");
 const vars = {};
 
-sec.split("\n").forEach((l) => {
-  const m = l.trim().match(/^([^=]+)=(.*)$/);
-  if (m && !m[1].startsWith("#")) {
-    vars[m[1].trim()] = m[2].trim().replace(/^['"]|['"]$/g, "");
+function loadEnvFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    const raw = fs.readFileSync(filePath, "utf8");
+    raw.split("\n").forEach((l) => {
+      const m = l.trim().match(/^([^=]+)=(.*)$/);
+      if (m && !m[1].startsWith("#")) {
+        vars[m[1].trim()] = m[2].trim().replace(/^['"]|['"]$/g, "");
+      }
+    });
   }
-});
+}
+
+loadEnvFile(rootEnvPath);
+loadEnvFile(envPath);
 
 const projectName = process.argv[2] || process.env.CF_PAGES_PROJECT || "usewaesy";
 
@@ -32,12 +35,17 @@ const secretsToPush = [
   "SUPABASE_ANON_KEY",
   "VITE_SITE_URL",
   "JWT_SECRET",
+  "VAULT_MASTER_KEY",
+  "EVOLUTION_API_URL",
+  "EVOLUTION_API_KEY",
 ];
 
 // Assegura que SUPABASE_URL e SUPABASE_ANON_KEY existam no payload
 vars["SUPABASE_URL"] = vars["VITE_SUPABASE_URL"] || "https://jfuebqmltksyznovhlwa.supabase.co";
 vars["SUPABASE_ANON_KEY"] = vars["VITE_SUPABASE_ANON_KEY"];
 vars["VITE_SITE_URL"] = vars["VITE_SITE_URL"] || "https://usewaesy.pages.dev";
+vars["EVOLUTION_API_URL"] = vars["EVOLUTION_API_URL"] || "https://feb-genre-kathy-indicator.trycloudflare.com";
+vars["EVOLUTION_API_KEY"] = vars["EVOLUTION_API_KEY"] || "WaesyApiKey_Master_2026_WhatsApp";
 
 if (!vars["JWT_SECRET"]) {
   const secretsJsonPath = path.resolve(__dirname, "../.secrets.json");

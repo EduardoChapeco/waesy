@@ -41,6 +41,12 @@ import {
 } from "@/services/extensions-distributor.functions";
 import { getPlatformStoresList } from "@/services/master.functions";
 import { ExtensionWebStoreModal } from "@/components/extensions/ExtensionWebStoreModal";
+import { toggleStoreModuleAddon } from "@/services/store-modules.functions";
+import {
+  COMMERCIAL_MODULE_CATALOG,
+  STORE_PLANS,
+  type CommercialModuleId,
+} from "@/lib/architecture/module-plan-governance";
 
 export const Route = createFileRoute("/admin-master/modulos")({
   head: () => ({ meta: [{ title: "Governança Dinâmica de Módulos | Admin Master" }] }),
@@ -78,6 +84,7 @@ function AdminMasterModulosPage() {
   const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
   const [togglingStoreExtension, setTogglingStoreExtension] = useState<string | null>(null);
   const [storeSearch, setStoreSearch] = useState("");
+  const [showAllStores, setShowAllStores] = useState(false);
   const [storeModalType, setStoreModalType] = useState<ExtensionPackageType | null>(null);
 
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
@@ -91,7 +98,8 @@ function AdminMasterModulosPage() {
   const [editOrderIndex, setEditOrderIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [categoryTab, setCategoryTab] = useState<"all" | "store_operation" | "public_discovery" | "ai_intelligence" | "browser_extensions">("all");
+  const [categoryTab, setCategoryTab] = useState<"all" | "store_operation" | "public_discovery" | "ai_intelligence" | "browser_extensions" | "store_plans">("all");
+  const [togglingStoreModule, setTogglingStoreModule] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [downloadingType, setDownloadingType] = useState<string | null>(null);
 
@@ -203,8 +211,65 @@ function AdminMasterModulosPage() {
     }
   };
 
+  const handleToggleStoreModule = async (
+    storeId: string,
+    moduleId: CommercialModuleId,
+    currentlyActive: boolean
+  ) => {
+    const nextActive = !currentlyActive;
+    const key = `${storeId}_${moduleId}`;
+    setTogglingStoreModule(key);
+    try {
+      await toggleStoreModuleAddon({
+        data: {
+          storeId,
+          moduleId,
+          active: nextActive,
+        },
+      });
+      toast.success(
+        nextActive
+          ? "Módulo adicional ativado com sucesso para a loja."
+          : "Módulo adicional desativado para a loja."
+      );
+      setPlatformStores((prev) =>
+        prev.map((s) => {
+          if (s.id !== storeId) return s;
+          const current: string[] = s.settings?.active_modules || [];
+          const updated = nextActive
+            ? Array.from(new Set([...current, moduleId]))
+            : current.filter((m) => m !== moduleId);
+          return {
+            ...s,
+            settings: {
+              ...(s.settings || {}),
+              active_modules: updated,
+            },
+          };
+        })
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alterar módulo da loja.");
+    } finally {
+      setTogglingStoreModule(null);
+    }
+  };
+
+  const isExcelenciaTourRecord = (store: any) => {
+    const slug = String(store?.slug || "").toLowerCase().trim();
+    const name = String(store?.name || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    return (
+      slug === "excelencia-tour-smo" ||
+      slug === "excelencia-tour" ||
+      name.includes("excelencia tour")
+    );
+  };
+
   const isStoreExtensionAuthorized = (store: any, type: ExtensionPackageType) => {
-    if (store.slug === "excelencia-tour-smo" || store.name?.toLowerCase().includes("excelência tour")) {
+    if (isExcelenciaTourRecord(store)) {
       return true;
     }
     const authorized: string[] = store.settings?.authorized_extensions || [];
@@ -212,7 +277,7 @@ function AdminMasterModulosPage() {
   };
 
   const isStoreExempt = (store: any) => {
-    return store.slug === "excelencia-tour-smo" || store.name?.toLowerCase().includes("excelência tour");
+    return isExcelenciaTourRecord(store);
   };
 
   const formatRequestDate = (isoString?: string | null) => {
@@ -476,6 +541,17 @@ function AdminMasterModulosPage() {
             } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             Extensões & Conectores ({3}{pendingRequestsCount > 0 ? ` • ${pendingRequestsCount} pendente${pendingRequestsCount > 1 ? "s" : ""}` : ""})
+          </button>
+          <button
+            type="button"
+            onClick={() => setCategoryTab("store_plans")}
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+              categoryTab === "store_plans"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground bg-muted/40"
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+          >
+            Planos & Verticais
           </button>
         </div>
 
@@ -844,7 +920,7 @@ function AdminMasterModulosPage() {
                         </td>
                       </tr>
                     ) : (
-                      filteredPlatformStores.slice(0, 15).map((store) => {
+                      (showAllStores ? filteredPlatformStores : filteredPlatformStores.slice(0, 15)).map((store) => {
                         const isExempt = isStoreExempt(store);
                         const authInfotravel = isStoreExtensionAuthorized(store, "infotravel_extension");
                         const authWhatsapp = isStoreExtensionAuthorized(store, "whatsapp_extension");
@@ -960,17 +1036,27 @@ function AdminMasterModulosPage() {
                 </table>
               </div>
               {filteredPlatformStores.length > 15 && (
-                <div className="p-2 text-center bg-muted/20 text-3xs text-muted-foreground border-t border-border/40">
-                  Mostrando 15 de {filteredPlatformStores.length} lojas. Use a busca acima para filtrar.
+                <div className="p-2 flex items-center justify-center gap-3 bg-muted/20 text-3xs text-muted-foreground border-t border-border/40">
+                  <span>
+                    Mostrando {showAllStores ? filteredPlatformStores.length : 15} de {filteredPlatformStores.length} lojas.
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllStores((prev) => !prev)}
+                    className="h-8 px-2 text-2xs font-semibold text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {showAllStores ? "Recolher lista" : "Ver todas"}
+                  </Button>
                 </div>
               )}
             </div>
           </div>
         </div>
       )}
-
       {/* ─── Grid de Módulos ────────────────────────────────────────── */}
-      {categoryTab !== "browser_extensions" && (
+      {categoryTab !== "browser_extensions" && categoryTab !== "store_plans" && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredModules.map((module) => {
           const isToggling = togglingKey === module.module_key;
@@ -1049,6 +1135,234 @@ function AdminMasterModulosPage() {
           );
         })}
       </div>
+      )}
+
+      {/* ─── Visão de Planos & Verticais ────────────────────────────── */}
+      {categoryTab === "store_plans" && (
+        <div className="space-y-8">
+          {/* Header descritivo dos sistemas verticais */}
+          <div className="space-y-2 border-b border-border/80 pb-4">
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+              <Layers className="size-5 text-primary" />
+              <span>Sistemas Verticais & Planos Comerciais</span>
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Estrutura modular de comercialização Waesy: sistemas especializados comercializados de forma independente ou em conjunto no Waesy Pro.
+            </p>
+          </div>
+
+          {/* Cards dos 6 Sistemas Verticais */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-2xs font-bold">Turismo & Viagens</Badge>
+                <span className="text-xs font-mono font-bold text-primary">R$ 249/mês</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Roteiros dinâmicos, propostas em PDF, GDS Infotravel, central WhatsApp com Copilot IA e notas de voz.
+              </p>
+              <div className="text-3xs font-mono text-muted-foreground space-y-1 border-t border-border/40 pt-2">
+                <div>Rotas: /workspace/turismo/*, /workspace/atendimento</div>
+                <div>Módulos: module_tourism_studio, omnichannel, voice</div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-2xs font-bold">Gastronomia & Delivery</Badge>
+                <span className="text-xs font-mono font-bold text-primary">R$ 99/mês + R$ 0,99</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                PDV touch, KDS de cozinha, impressão térmica, despachador de entregas Waesy Go e cardápio interativo.
+              </p>
+              <div className="text-3xs font-mono text-muted-foreground space-y-1 border-t border-border/40 pt-2">
+                <div>Rotas: /workspace/pdv, /workspace/pdv/cozinha</div>
+                <div>Módulos: module_food_delivery, omnichannel, mobilidade</div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-2xs font-bold">Varejo & Comércio</Badge>
+                <span className="text-xs font-mono font-bold text-primary">R$ 149/mês</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Catálogo WMS com grade, controle de estoque em lote, emissão de pedidos e conciliação de pagamentos Pix.
+              </p>
+              <div className="text-3xs font-mono text-muted-foreground space-y-1 border-t border-border/40 pt-2">
+                <div>Rotas: /workspace/catalogo, /workspace/estoque</div>
+                <div>Módulos: WMS, module_financial_erp, omnichannel</div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-2xs font-bold">Especialistas & Agenda</Badge>
+                <span className="text-xs font-mono font-bold text-primary">R$ 89/mês</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Agenda multiprofissional com slots inteligentes, ficha de cliente 360°, confirmação WhatsApp e lembretes.
+              </p>
+              <div className="text-3xs font-mono text-muted-foreground space-y-1 border-t border-border/40 pt-2">
+                <div>Rotas: /workspace/agendamentos, /workspace/clientes</div>
+                <div>Módulos: Agenda 360°, module_omnichannel_whatsapp</div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-2xs font-bold">Atendimento Omnichannel</Badge>
+                <span className="text-xs font-mono font-bold text-primary">R$ 99 a R$ 199/mês</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Modo dedicado standalone / full-screen com setores, notas internas, IA anti-esquecimento e estúdio de voz PTT.
+              </p>
+              <div className="text-3xs font-mono text-muted-foreground space-y-1 border-t border-border/40 pt-2">
+                <div>Rotas: /workspace/atendimento?view=standalone</div>
+                <div>Módulos: module_omnichannel_whatsapp, voice_copilot</div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="default" className="text-2xs font-bold">Waesy Pro (All-in-One)</Badge>
+                <span className="text-xs font-mono font-bold text-primary">R$ 599/mês</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Acesso irrestrito a todos os módulos, multi-loja, domínio próprio e suporte prioritário 24/7.
+              </p>
+              <div className="text-3xs font-mono text-muted-foreground space-y-1 border-t border-border/40 pt-2">
+                <div>Rotas: Shell completo multi-vertical</div>
+                <div>Módulos: Todos os 6 módulos comerciais ativos</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabela de Lojas & Ativação de Add-ons */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/80 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Building2 className="size-5 text-foreground" />
+                  <h3 className="text-base font-bold text-foreground">
+                    Gestão de Módulos & Add-ons por Loja
+                  </h3>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ative ou desative módulos comerciais avulsos com persistência e governança multi-tenant imediata.
+                </p>
+              </div>
+              <div className="w-full sm:w-64">
+                <Input
+                  placeholder="Filtrar por nome ou slug..."
+                  value={storeSearch}
+                  onChange={(e) => setStoreSearch(e.target.value)}
+                  className="h-9 text-xs rounded-lg bg-card"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/80 bg-card overflow-hidden">
+              <div className="overflow-x-auto table-scroll-area">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-muted/40 text-muted-foreground uppercase text-3xs font-semibold tracking-wider border-b border-border/60">
+                    <tr>
+                      <th className="p-3">Loja / Empresa</th>
+                      <th className="p-3 text-center">Plano</th>
+                      <th className="p-3 text-center">WhatsApp Hub</th>
+                      <th className="p-3 text-center">Copilot IA Voz</th>
+                      <th className="p-3 text-center">ERP Financeiro</th>
+                      <th className="p-3 text-center">Studio Turismo</th>
+                      <th className="p-3 text-center">Food Delivery</th>
+                      <th className="p-3 text-center">Booster Ads</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {filteredPlatformStores.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-6 text-center text-xs text-muted-foreground">
+                          Nenhuma loja encontrada com o termo pesquisado.
+                        </td>
+                      </tr>
+                    ) : (
+                      (showAllStores ? filteredPlatformStores : filteredPlatformStores.slice(0, 15)).map((store) => {
+                        const activeModules: string[] = store.settings?.active_modules || [];
+                        const planTier = (store.plan_tier || store.settings?.plan_tier || "free").toLowerCase();
+                        const isExempt = isExcelenciaTourRecord(store);
+
+                        const checkModuleActive = (modId: CommercialModuleId) => {
+                          if (isExempt) return true;
+                          const plan = STORE_PLANS[planTier as keyof typeof STORE_PLANS];
+                          const includedInPlan = plan ? plan.includedModules.includes(modId) : false;
+                          return includedInPlan || activeModules.includes(modId);
+                        };
+
+                        const commercialModules: { id: CommercialModuleId; label: string }[] = [
+                          { id: "module_omnichannel_whatsapp", label: "WhatsApp" },
+                          { id: "module_ai_copilot_voice", label: "IA Voz" },
+                          { id: "module_financial_erp", label: "Financeiro" },
+                          { id: "module_tourism_studio", label: "Turismo" },
+                          { id: "module_food_delivery", label: "Delivery" },
+                          { id: "module_ads_booster", label: "Ads" },
+                        ];
+
+                        return (
+                          <tr key={store.id} className="hover:bg-muted/30 transition-colors">
+                            <td className="p-3">
+                              <div className="font-semibold text-foreground">{store.name}</div>
+                              <div className="text-2xs font-mono text-muted-foreground">/{store.slug}</div>
+                            </td>
+                            <td className="p-3 text-center">
+                              <Badge variant={isExempt ? "default" : planTier === "enterprise" ? "default" : "secondary"} className="text-3xs uppercase font-mono">
+                                {isExempt ? "Enterprise (SSOT)" : planTier}
+                              </Badge>
+                            </td>
+                            {commercialModules.map((cm) => {
+                              const isActive = checkModuleActive(cm.id);
+                              const isToggling = togglingStoreModule === `${store.id}_${cm.id}`;
+
+                              return (
+                                <td key={cm.id} className="p-3 text-center">
+                                  {isExempt ? (
+                                    <Badge variant="secondary" className="text-3xs font-semibold">
+                                      Nativo
+                                    </Badge>
+                                  ) : (
+                                    <Button
+                                      type="button"
+                                      variant={isActive ? "outline" : "ghost"}
+                                      size="sm"
+                                      disabled={isToggling}
+                                      onClick={() => handleToggleStoreModule(store.id, cm.id, isActive)}
+                                      className={`h-8 px-2 text-2xs font-semibold focus-visible:ring-2 focus-visible:ring-ring ${
+                                        isActive
+                                          ? "border-success/50 text-success bg-success/10"
+                                          : "text-muted-foreground hover:text-foreground"
+                                      }`}
+                                    >
+                                      {isToggling ? (
+                                        <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
+                                      ) : isActive ? (
+                                        <Check className="size-3 mr-1" />
+                                      ) : (
+                                        <X className="size-3 mr-1" />
+                                      )}
+                                      <span>{isActive ? "Ativo" : "Inativo"}</span>
+                                    </Button>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ─── Modal de Edição de Módulo ────────────────────────────────────────── */}

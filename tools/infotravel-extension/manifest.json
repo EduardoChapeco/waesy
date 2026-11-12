@@ -1,13 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Waesy Sync • Extensão de Operadoras (Infotravel)",
-  "version": "2.1.0",
-  "description": "Sincronizador inteligente e bilateral de cotações, reservas, passageiros e comissões para a agência Excelência Tour e ecossistema Waesy.",
+  "version": "2.2.0",
+  "description": "Sincronizador inteligente e bilateral de cotações, reservas, passageiros e comissões para qualquer portal Infotravel e ecossistema Waesy.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "permissions": [
     "storage",
     "downloads",
     "activeTab",
-    "alarms"
+    "alarms",
+    "scripting"
   ],
   "host_permissions": [
     "*://*.orinter.com.br/*",
@@ -15,9 +21,21 @@
     "*://*.frt.com.br/*",
     "*://*.schultz.com.br/*",
     "*://*.infotravel.com.br/*",
+    "*://*.newage.tur.br/*",
+    "*://*.personalbrasil.com.br/*",
+    "*://*.visualturismo.com.br/*",
+    "*://*.trendoperadora.com.br/*",
+    "*://*.ancoradouro.com.br/*",
+    "*://*/*infotravel*",
     "*://waesy.com.br/*",
+    "*://*.waesy.com.br/*",
     "*://*.pages.dev/*",
-    "*://localhost:*/*"
+    "*://localhost:*/*",
+    "*://127.0.0.1:*/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -33,9 +51,16 @@
         "*://*.incomumviagens.com.br/*",
         "*://*.frt.com.br/*",
         "*://*.schultz.com.br/*",
-        "*://*.infotravel.com.br/*"
+        "*://*.infotravel.com.br/*",
+        "*://*.newage.tur.br/*",
+        "*://*.personalbrasil.com.br/*",
+        "*://*.visualturismo.com.br/*",
+        "*://*.trendoperadora.com.br/*",
+        "*://*.ancoradouro.com.br/*",
+        "*://*/*infotravel*"
       ],
       "js": ["content.js"],
+      "all_frames": true,
       "run_at": "document_idle"
     }
   ]

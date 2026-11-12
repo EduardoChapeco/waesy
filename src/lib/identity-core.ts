@@ -93,6 +93,8 @@ export function assertStoreAccess(
   if (identity.role === "platform_admin" || identity.role === "master") {
     if (targetStoreId) {
       (identity as any).store_id = targetStoreId;
+    } else if (!identity.store_id && identity.memberships?.[0]?.store_id) {
+      (identity as any).store_id = identity.memberships[0].store_id;
     }
     return; // Global admins have access
   }

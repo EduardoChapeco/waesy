@@ -102,7 +102,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "generic",
     label: "Comércio & Serviços Gerais",
     description: "Operação canônica multi-segmento com catálogo unificado, vendas diretas e gestão de carteira.",
-    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "simlab"],
     nomenclature: {
       itemSingular: "Produto / Serviço",
       itemPlural: "Produtos & Serviços",
@@ -272,7 +272,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "retail",
     label: "Varejo & Lojas",
     description: "Controle de estoque grade/tamanho/cor, PDV de balcão, expedição e entregas urbanas.",
-    activeModules: ["catalog", "orders", "kds", "inventory", "financial", "crm", "proposals", "quotes", "contracts", "tasks", "support", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "inventory", "financial", "crm", "proposals", "quotes", "contracts", "tasks", "support", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Produto",
       itemPlural: "Produtos",
@@ -326,7 +326,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "services",
     label: "Serviços & Consultoria",
     description: "Prestação de serviços, orçamentos, contratos de honorários, agendamento de horas e SLA de execução.",
-    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "simlab"],
     nomenclature: {
       itemSingular: "Serviço / Pacote",
       itemPlural: "Serviços Oferecidos",
@@ -382,7 +382,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "real_estate",
     label: "Imóveis & Locação",
     description: "Gestão imobiliária, captações, visitas agendadas, vistorias e contratos de locação ou venda.",
-    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "simlab"],
     nomenclature: {
       itemSingular: "Imóvel",
       itemPlural: "Imóveis & Terrenos",
@@ -437,7 +437,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "healthcare",
     label: "Saúde & Estética",
     description: "Atendimento clínico, agendamento de consultas, prontuários simplificados e consentimento LGPD.",
-    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "simlab"],
     nomenclature: {
       itemSingular: "Procedimento / Consulta",
       itemPlural: "Procedimentos Médicos",
@@ -489,7 +489,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "automotive",
     label: "Automotivo & Mecânica",
     description: "Check-in veicular por placa/chassi, ordens de serviço, mão de obra + peças e termos de garantia.",
-    activeModules: ["catalog", "orders", "kds", "inventory", "financial", "crm", "proposals", "quotes", "contracts", "tasks", "support", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "inventory", "financial", "crm", "proposals", "quotes", "contracts", "tasks", "support", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Serviço / Peça",
       itemPlural: "Peças & Serviços",
@@ -543,7 +543,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "events",
     label: "Eventos & Cerimonial",
     description: "Planejamento de eventos, fornecedores, checklist com timeline regressiva e controle de convidados.",
-    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "support", "inventory", "marketing", "affiliates", "simlab"],
     nomenclature: {
       itemSingular: "Pacote / Espaço",
       itemPlural: "Serviços de Evento",
@@ -597,7 +597,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "creator",
     label: "Criadores & Mídia Local",
     description: "Publicidade nativa, campanhas patrocinadas, mídia kit, link bio e monetização por afiliação.",
-    activeModules: ["catalog", "orders", "kds", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "inventory", "marketing", "affiliates", "support", "simlab"],
+    activeModules: ["catalog", "orders", "crm", "proposals", "quotes", "contracts", "financial", "tasks", "inventory", "marketing", "affiliates", "support", "simlab"],
     nomenclature: {
       itemSingular: "Formato / Publi",
       itemPlural: "Formatos Publicitários",

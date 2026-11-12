@@ -11,6 +11,8 @@ import {
   Globe,
   Building2,
   Copy,
+  AlertTriangle,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -51,6 +53,7 @@ export function WhatsAppQrConnectModal({
   isPlatformMaster = false,
 }: WhatsAppQrConnectModalProps) {
   const [selectedMode, setSelectedMode] = useState<"qr_baileys" | "meta_official">("qr_baileys");
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(
     instances[0]?.id || null,
   );
@@ -62,6 +65,9 @@ export function WhatsAppQrConnectModal({
   );
   const [department, setDepartment] = useState(
     String(instances[0]?.public_config?.department || "Atendimento Geral"),
+  );
+  const [autoImportHistory, setAutoImportHistory] = useState(
+    Boolean((instances[0]?.public_config as any)?.auto_import_history),
   );
   const [isGlobalMaster, setIsGlobalMaster] = useState(
     Boolean(instances[0]?.public_config?.is_global_master),
@@ -77,6 +83,13 @@ export function WhatsAppQrConnectModal({
   const [connectionStatus, setConnectionStatus] = useState<string>(
     instances[0]?.status || "disconnected",
   );
+  const [lastErrorMessage, setLastErrorMessage] = useState<string | null>(
+    instances[0]?.last_error_message || (instances[0]?.public_config?.last_error_message as string) || null,
+  );
+  const [qrGeneratedAt, setQrGeneratedAt] = useState<string | null>(
+    (instances[0]?.public_config?.last_qr_generated_at as string) || null,
+  );
+  const [qrExpired, setQrExpired] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -87,10 +100,12 @@ export function WhatsAppQrConnectModal({
   const [metaAccessToken, setMetaAccessToken] = useState("");
   const [metaVerifyToken, setMetaVerifyToken] = useState("");
 
-  const activeInstance = (instances || []).find((item) => item.id === selectedInstanceId) || instances?.[0] || null;
+  const activeInstance = !isCreatingNew
+    ? ((instances || []).find((item) => item.id === selectedInstanceId) || instances?.[0] || null)
+    : null;
 
   useEffect(() => {
-    if (activeInstance) {
+    if (!isCreatingNew && activeInstance) {
       setSelectedInstanceId(activeInstance.id);
       setDisplayName(activeInstance.display_name);
       setInstanceKey(activeInstance.instance_key);
@@ -98,9 +113,31 @@ export function WhatsAppQrConnectModal({
       setQrBase64((activeInstance.public_config?.qr_code_url as string) || null);
       setPairingCode((activeInstance.public_config?.pairing_code as string) || null);
       setConnectionStatus(activeInstance.status);
+      setLastErrorMessage(activeInstance.last_error_message || (activeInstance.public_config?.last_error_message as string) || null);
+      setQrGeneratedAt((activeInstance.public_config?.last_qr_generated_at as string) || null);
+      setQrExpired(false);
       setIsGlobalMaster(Boolean(activeInstance.public_config?.is_global_master));
+      setAutoImportHistory(Boolean((activeInstance.public_config as any)?.auto_import_history));
     }
-  }, [activeInstance?.id]);
+  }, [activeInstance?.id, isCreatingNew]);
+
+  // Verifica expiração do QR Code (60s sem leitura)
+  useEffect(() => {
+    if (!open || !qrBase64 || connectionStatus === "connected") {
+      setQrExpired(false);
+      return;
+    }
+    const checkExpiration = () => {
+      if (!qrGeneratedAt) return;
+      const elapsedMs = Date.now() - new Date(qrGeneratedAt).getTime();
+      if (Number.isFinite(elapsedMs) && elapsedMs > 60_000) {
+        setQrExpired(true);
+      }
+    };
+    checkExpiration();
+    const timer = setInterval(checkExpiration, 5000);
+    return () => clearInterval(timer);
+  }, [open, qrBase64, qrGeneratedAt, connectionStatus]);
 
   // Polling automático de 5s enquanto aguarda leitura do QR Code
   useEffect(() => {
@@ -113,8 +150,23 @@ export function WhatsAppQrConnectModal({
         if (result?.state === "connected") {
           setConnectionStatus("connected");
           setQrBase64(null);
+          setQrExpired(false);
+          setLastErrorMessage(null);
           toast.success("Aparelho WhatsApp conectado e sincronizado!");
           onInstancesUpdated();
+        } else if (result) {
+          setConnectionStatus(result.state);
+          if (result.qrCodeBase64) {
+            setQrBase64(result.qrCodeBase64);
+            setQrGeneratedAt(new Date().toISOString());
+            setQrExpired(false);
+          }
+          if (result.pairingCode) {
+            setPairingCode(result.pairingCode);
+          }
+          if (result.errorMessage) {
+            setLastErrorMessage(result.errorMessage);
+          }
         }
       } catch {
         // Silencioso durante polling
@@ -129,31 +181,42 @@ export function WhatsAppQrConnectModal({
       return;
     }
     setIsGenerating(true);
+    setLastErrorMessage(null);
+    setQrExpired(false);
     try {
       const result = await connectWhatsAppQrCodeInstance({
         data: {
-          id: selectedInstanceId || undefined,
+          id: isCreatingNew ? undefined : selectedInstanceId || undefined,
           displayName: displayName.trim() || "WhatsApp Principal",
           instanceKey: instanceKey.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_") || "principal",
           department: department.trim() || "Geral",
           isGlobalMaster: isPlatformMaster && isGlobalMaster,
+          autoImportHistory,
         },
       });
+      setIsCreatingNew(false);
       setSelectedInstanceId(result.instance.id);
       setQrBase64(result.qrCodeBase64);
       setPairingCode(result.pairingCode);
       setConnectionStatus(result.instance.status);
+      setQrGeneratedAt(new Date().toISOString());
+      setLastErrorMessage(result.errorMessage || null);
       onInstancesUpdated();
 
       if (result.connectionState === "connected") {
         toast.success("Este número já está conectado e ativo na VPS!");
+      } else if (result.connectionState === "error" || result.errorMessage) {
+        toast.error(result.errorMessage || "Servidor WhatsApp indisponível no momento.");
       } else if (result.qrCodeBase64) {
         toast.success("QR Code gerado ao vivo! Aponte a câmera do WhatsApp.");
       } else {
-        toast.info("Instância registrada. Clique em atualizar status em alguns segundos.");
+        toast.info("Instância registrada. Sincronizando QR Code com o gateway...");
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao gerar QR Code na VPS.");
+      const msg = err instanceof Error ? err.message : "Erro ao gerar QR Code na VPS.";
+      setLastErrorMessage(msg);
+      setConnectionStatus("error");
+      toast.error(msg);
     } finally {
       setIsGenerating(false);
     }
@@ -169,13 +232,26 @@ export function WhatsAppQrConnectModal({
       setConnectionStatus(result.state);
       if (result.state === "connected") {
         setQrBase64(null);
+        setQrExpired(false);
+        setLastErrorMessage(null);
         toast.success("WhatsApp conectado e operante!");
       } else {
+        if (result.qrCodeBase64) {
+          setQrBase64(result.qrCodeBase64);
+          setQrGeneratedAt(new Date().toISOString());
+          setQrExpired(false);
+        }
+        if (result.pairingCode) {
+          setPairingCode(result.pairingCode);
+        }
+        setLastErrorMessage(result.errorMessage || null);
         toast.info(`Estado atual da instância: ${result.state}`);
       }
       onInstancesUpdated();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Não foi possível sincronizar status.");
+      const msg = err instanceof Error ? err.message : "Não foi possível sincronizar status.";
+      setLastErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsSyncing(false);
     }
@@ -188,6 +264,8 @@ export function WhatsAppQrConnectModal({
       await disconnectWhatsAppInstance({ data: { id: selectedInstanceId } });
       setConnectionStatus("disconnected");
       setQrBase64(null);
+      setQrExpired(false);
+      setLastErrorMessage(null);
       toast.success("Sessão do WhatsApp desconectada com segurança.");
       onInstancesUpdated();
     } catch (err) {
@@ -198,12 +276,15 @@ export function WhatsAppQrConnectModal({
   };
 
   const handleStartNewNumber = () => {
+    setIsCreatingNew(true);
     setSelectedInstanceId(null);
     setDisplayName(`WhatsApp Setor ${(instances?.length || 0) + 1}`);
     setInstanceKey(`setor_${(instances?.length || 0) + 1}`);
-    setDepartment("Vendas & Comercial");
+    setDepartment("Comercial");
     setQrBase64(null);
     setPairingCode(null);
+    setQrExpired(false);
+    setLastErrorMessage(null);
     setConnectionStatus("disconnected");
   };
 
@@ -245,7 +326,7 @@ export function WhatsAppQrConnectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-screen overflow-y-auto pt-safe-modal">
+      <DialogContent size="xl" className="sm:max-w-4xl w-full p-6 space-y-5 rounded-2xl border-border/80">
         <DialogHeader>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -267,10 +348,16 @@ export function WhatsAppQrConnectModal({
                 "text-xs px-3 py-1 font-semibold",
                 connectionStatus === "connected"
                   ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                  : "bg-warning/15 text-warning-strong border-warning/30",
+                  : connectionStatus === "error"
+                    ? "bg-destructive/15 text-destructive border-destructive/30"
+                    : "bg-warning/15 text-warning-strong border-warning/30",
               )}
             >
-              {connectionStatus === "connected" ? "Aparelho Conectado" : "Aguardando Pareamento"}
+              {connectionStatus === "connected"
+                ? "Aparelho Conectado"
+                : connectionStatus === "error"
+                  ? "Falha de Conexão"
+                  : "Aguardando Pareamento"}
             </Badge>
           </div>
         </DialogHeader>
@@ -281,10 +368,13 @@ export function WhatsAppQrConnectModal({
             <button
               key={inst.id}
               type="button"
-              onClick={() => setSelectedInstanceId(inst.id)}
+              onClick={() => {
+                setIsCreatingNew(false);
+                setSelectedInstanceId(inst.id);
+              }}
               className={cn(
                 "h-11 min-h-11 px-3 rounded-lg border text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                selectedInstanceId === inst.id
+                !isCreatingNew && (selectedInstanceId === inst.id || (!selectedInstanceId && instances[0]?.id === inst.id))
                   ? "border-primary bg-primary/10 text-foreground"
                   : "border-border bg-card text-muted-foreground hover:text-foreground",
               )}
@@ -292,17 +382,27 @@ export function WhatsAppQrConnectModal({
               <span
                 className={cn(
                   "size-2 rounded-full",
-                  inst.status === "connected" ? "bg-emerald-500" : "bg-warning",
+                  inst.status === "connected" ? "bg-emerald-500" : inst.status === "error" ? "bg-destructive" : "bg-warning",
                 )}
               />
               <span>{inst.display_name}</span>
-              <Badge variant="secondary" className="text-2xs">
+              <Badge variant="secondary" className="text-xs">
                 {String(inst.public_config?.department || inst.instance_key)}
               </Badge>
             </button>
           ))}
 
-          {canManageConnection && (
+          {isCreatingNew && (
+            <Badge
+              variant="outline"
+              className="h-11 min-h-11 px-3 text-xs border-primary bg-primary/10 text-primary font-bold flex items-center gap-2"
+            >
+              <Plus className="size-3.5" />
+              Novo Número (Configurando...)
+            </Badge>
+          )}
+
+          {canManageConnection && !isCreatingNew && (
             <Button
               type="button"
               variant="outline"
@@ -332,9 +432,9 @@ export function WhatsAppQrConnectModal({
                 <QrCode className="size-4 text-primary" />
                 Conexão via QR Code (Multi-Atendente)
               </span>
-              <Badge variant="outline" className="text-2xs">VPS Waesy</Badge>
+              <Badge variant="outline" className="text-xs">VPS Waesy</Badge>
             </div>
-            <p className="text-2xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Escaneie o código com o WhatsApp ou WhatsApp Business. Sem taxas por mensagem.
             </p>
           </button>
@@ -354,9 +454,9 @@ export function WhatsAppQrConnectModal({
                 <ShieldCheck className="size-4 text-emerald-600" />
                 WhatsApp Cloud API (Meta Oficial)
               </span>
-              <Badge variant="outline" className="text-2xs">Graph API</Badge>
+              <Badge variant="outline" className="text-xs">Graph API</Badge>
             </div>
-            <p className="text-2xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Conexão oficial via WABA ID e Token Meta para disparos de templates aprovados.
             </p>
           </button>
@@ -371,144 +471,216 @@ export function WhatsAppQrConnectModal({
             </p>
           </div>
         ) : selectedMode === "qr_baileys" ? (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-2">
-            {/* Coluna Esquerda: Dados do Número e Setor */}
-            <div className="md:col-span-6 space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold">Nome de Identificação do Aparelho</Label>
-                <Input
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Ex.: WhatsApp Recepção / Vendas"
-                  className="h-11 text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Chave do Canal</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1 items-stretch">
+            {/* Coluna Esquerda: Dados do Número, Setor e Ações da Conexão */}
+            <div className="space-y-4 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-foreground">Nome de Identificação do Aparelho</Label>
                   <Input
-                    value={instanceKey}
-                    onChange={(e) =>
-                      setInstanceKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "_"))
-                    }
-                    placeholder="vendas_01"
-                    className="h-11 text-xs font-mono"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Ex.: WhatsApp Comercial / Vendas"
+                    className="h-11 min-h-11 text-xs"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Setor Padrão</Label>
-                  <Input
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="Vendas, Suporte, Mobilidade..."
-                    className="h-11 text-xs"
-                  />
-                </div>
-              </div>
 
-              {isPlatformMaster && (
-                <label className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5 cursor-pointer">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Chave do Canal</Label>
+                    <Input
+                      value={instanceKey}
+                      onChange={(e) =>
+                        setInstanceKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "_"))
+                      }
+                      placeholder="vendas_01"
+                      className="h-11 min-h-11 text-xs font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-foreground">Setor Padrão</Label>
+                    <Input
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      placeholder="Vendas, Suporte..."
+                      className="h-11 min-h-11 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {isPlatformMaster && (
+                  <label className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isGlobalMaster}
+                      onChange={(e) => setIsGlobalMaster(e.target.checked)}
+                      className="size-4 accent-primary"
+                    />
+                    <div className="text-xs">
+                      <span className="font-bold flex items-center gap-1">
+                        <Globe className="size-3.5 text-primary" />
+                        Número Global Oficial Waesy
+                      </span>
+                      <span className="text-xs text-muted-foreground block">
+                        Ativa auto-verificação de perfil civil, chamada Waesy Go e cotações aéreas.
+                      </span>
+                    </div>
+                  </label>
+                )}
+
+                <label className="flex items-start gap-3 p-3 rounded-lg border border-border/70 bg-muted/20 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={isGlobalMaster}
-                    onChange={(e) => setIsGlobalMaster(e.target.checked)}
-                    className="size-4 accent-primary"
+                    checked={autoImportHistory}
+                    onChange={(e) => setAutoImportHistory(e.target.checked)}
+                    className="size-4 accent-primary mt-1 cursor-pointer shrink-0"
                   />
-                  <div className="text-xs">
-                    <span className="font-bold flex items-center gap-1">
-                      <Globe className="size-3.5 text-primary" />
-                      Número Global Oficial Waesy
+                  <div className="text-xs space-y-1">
+                    <span className="font-semibold block text-foreground">
+                      Importar conversas anteriores do aparelho
                     </span>
-                    <span className="text-2xs text-muted-foreground block">
-                      Ativa auto-verificação de perfil civil, chamada de corrida/frete Waesy Go e cotações aéreas via WhatsApp.
+                    <span className="text-muted-foreground block text-xs leading-relaxed">
+                      Sincroniza contatos, fotos e conversas existentes no aparelho para o atendimento.
                     </span>
                   </div>
                 </label>
-              )}
-
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/60 space-y-2">
-                <p className="text-xs font-bold text-foreground">Como escanear:</p>
-                <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Clique em <strong>Gerar QR Code Ao Vivo</strong> abaixo.</li>
-                  <li>No celular, abra o WhatsApp &gt; <strong>Aparelhos conectados</strong>.</li>
-                  <li>Toque em <strong>Conectar um aparelho</strong> e aponte para a tela.</li>
-                </ol>
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Button
-                  type="button"
-                  onClick={handleGenerateQrCode}
-                  disabled={isGenerating}
-                  className="h-11 min-h-11 flex-1 text-xs font-bold gap-2"
-                >
-                  <QrCode className="size-4" />
-                  {isGenerating ? "Gerando na VPS..." : "Gerar QR Code Ao Vivo"}
-                </Button>
+              {/* Bloco de Ações do Aparelho */}
+              <div className="pt-2">
+                {connectionStatus === "connected" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleManualSync}
+                      disabled={isSyncing}
+                      className="h-11 min-h-11 text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <RefreshCw className={cn("size-4", isSyncing && "animate-spin motion-reduce:animate-none")} />
+                      Sincronizar Status
+                    </Button>
 
-                {selectedInstanceId && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleManualSync}
-                    disabled={isSyncing}
-                    className="h-11 min-h-11 text-xs gap-2"
-                  >
-                    <RefreshCw className={cn("size-4", isSyncing && "animate-spin motion-reduce:animate-none")} />
-                    Sincronizar
-                  </Button>
-                )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleDisconnect}
+                      disabled={isDisconnecting}
+                      className="h-11 min-h-11 text-xs font-medium text-destructive hover:bg-destructive/10 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive"
+                    >
+                      <PowerOff className="size-4" />
+                      Desconectar
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      onClick={handleGenerateQrCode}
+                      disabled={isGenerating}
+                      className="w-full h-11 min-h-11 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <QrCode className="size-4" />
+                      {isGenerating ? "Gerando na VPS..." : qrBase64 ? "Atualizar QR Code" : "Gerar QR Code Ao Vivo"}
+                    </Button>
 
-                {selectedInstanceId && connectionStatus === "connected" && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleDisconnect}
-                    disabled={isDisconnecting}
-                    className="h-11 min-h-11 text-xs text-destructive gap-2"
-                  >
-                    <PowerOff className="size-4" />
-                    Desconectar
-                  </Button>
+                    {!isCreatingNew && selectedInstanceId && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleManualSync}
+                        disabled={isSyncing}
+                        className="w-full h-11 min-h-11 text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <RefreshCw className={cn("size-4", isSyncing && "animate-spin motion-reduce:animate-none")} />
+                        Sincronizar Status
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Coluna Direita: Visor do QR Code em Tempo Real */}
-            <div className="md:col-span-6 flex flex-col items-center justify-center p-6 rounded-lg border-2 border-dashed border-border bg-muted/10 space-y-3">
+            {/* Coluna Direita: Visor do QR Code e Status em Tempo Real */}
+            <div className="flex flex-col items-center justify-center p-5 rounded-xl border border-border/80 bg-muted/15 space-y-4 text-center">
               {isGenerating ? (
                 <div className="flex flex-col items-center text-center space-y-3 py-10">
-                  <div className="size-16 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                    <RefreshCw className="size-8 animate-spin motion-reduce:animate-none" />
+                  <div className="size-14 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <RefreshCw className="size-7 animate-spin motion-reduce:animate-none" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-foreground">Conectando à VPS Oracle...</h4>
+                    <h4 className="text-sm font-bold text-foreground">Conectando ao Gateway...</h4>
                     <p className="text-xs text-muted-foreground max-w-xs">
-                      Iniciando sessão Baileys em 147.15.61.45:8080 e requisitando handshake seguro em tempo real.
+                      Iniciando sessão Baileys na VPS e requisitando handshake seguro em tempo real.
                     </p>
                   </div>
                 </div>
               ) : connectionStatus === "connected" ? (
-                <div className="flex flex-col items-center text-center space-y-3 py-6">
-                  <div className="size-16 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
-                    <CheckCircle2 className="size-10" />
+                <div className="flex flex-col items-center text-center space-y-4 py-4 w-full">
+                  <div className="size-14 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle2 className="size-8" />
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-bold text-foreground">WhatsApp Conectado e Ativo</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {activeInstance?.display_phone_number || "Sessão autenticada na VPS Oracle Cloud"}
+                    <p className="text-xs font-mono font-semibold text-foreground">
+                      {activeInstance?.display_phone_number || "Sessão ativa na VPS"}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-2xs gap-1">
-                    <Radio className="size-3 text-emerald-500" />
-                    Recebendo e enviando mensagens em tempo real
+                  <Badge variant="outline" className="text-xs gap-2 py-1 px-3 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
+                    <Radio className="size-3 text-emerald-500 animate-pulse" />
+                    Online • Recebendo e enviando mensagens
                   </Badge>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-xs pt-1">
+                    Este aparelho está sincronizado com a central de atendimento e pronto para múltiplos atendentes.
+                  </p>
+                </div>
+              ) : connectionStatus === "error" && lastErrorMessage && !qrBase64 ? (
+                <div className="flex flex-col items-center text-center space-y-3 py-6">
+                  <div className="size-14 rounded-full bg-destructive/15 text-destructive flex items-center justify-center">
+                    <AlertTriangle className="size-7" />
+                  </div>
+                  <div className="space-y-1 max-w-xs">
+                    <h4 className="text-sm font-bold text-foreground">Falha de Comunicação com Gateway</h4>
+                    <p className="text-xs text-muted-foreground break-words">
+                      {lastErrorMessage}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGenerateQrCode}
+                    disabled={isGenerating}
+                    className="h-11 min-h-11 text-xs gap-2"
+                  >
+                    <RefreshCw className="size-4" />
+                    Tentar Gerar Novamente
+                  </Button>
+                </div>
+              ) : qrBase64 && qrExpired ? (
+                <div className="flex flex-col items-center text-center space-y-3 py-6">
+                  <div className="size-14 rounded-full bg-warning/15 text-warning-strong flex items-center justify-center">
+                    <Clock className="size-7" />
+                  </div>
+                  <div className="space-y-1 max-w-xs">
+                    <h4 className="text-sm font-bold text-foreground">QR Code Expirado</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Por segurança, o código de pareamento expira após 60 segundos sem leitura.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleGenerateQrCode}
+                    disabled={isGenerating}
+                    className="h-11 min-h-11 text-xs font-bold gap-2"
+                  >
+                    <RefreshCw className="size-4" />
+                    Gerar Novo QR Code
+                  </Button>
                 </div>
               ) : qrBase64 ? (
-                <>
+                <div className="flex flex-col items-center space-y-3 w-full">
                   {/* design-lint-ignore DL-18 reason:"Fundo branco obrigatório para leitura óptica de QR Code por câmeras de smartphone" expiry:"2027-10-30" */}
-                  <div className="size-56 bg-white p-3 rounded-lg border border-border flex items-center justify-center">
+                  <div className="size-52 bg-white p-3 rounded-xl border border-border flex items-center justify-center shadow-xs">
                     <img
                       src={qrBase64.startsWith("data:") ? qrBase64 : `data:image/png;base64,${qrBase64}`}
                       alt="QR Code WhatsApp Waesy"
@@ -516,12 +688,12 @@ export function WhatsAppQrConnectModal({
                     />
                   </div>
                   {pairingCode && (
-                    <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-card border border-border/80 w-full max-w-xs">
+                    <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-card border border-border/80 w-full max-w-xs">
                       <div className="text-left min-w-0">
-                        <span className="text-3xs uppercase tracking-wider text-muted-foreground block font-bold">Código de Pareamento</span>
-                      <span className="font-mono text-sm font-bold tracking-widest text-foreground block">
-                        {pairingCode}
-                      </span>
+                        <span className="text-xs uppercase tracking-wider text-muted-foreground block font-bold">Código de Pareamento</span>
+                        <span className="font-mono text-sm font-bold tracking-widest text-foreground block">
+                          {pairingCode}
+                        </span>
                       </div>
                       <Button
                         type="button"
@@ -538,16 +710,34 @@ export function WhatsAppQrConnectModal({
                       </Button>
                     </div>
                   )}
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium text-center">
-                    Aguardando leitura pelo celular (atualização automática)...
-                  </p>
-                </>
+                  <div className="w-full text-left bg-card border border-border/70 rounded-lg p-3 space-y-1 text-xs">
+                    <span className="font-bold text-foreground block">Como escanear:</span>
+                    <ol className="text-muted-foreground space-y-1 list-decimal list-inside text-xs">
+                      <li>No celular, abra o <strong>WhatsApp</strong>.</li>
+                      <li>Toque em <strong>Aparelhos conectados &gt; Conectar um aparelho</strong>.</li>
+                      <li>Aponte a câmera para o QR Code acima.</li>
+                    </ol>
+                  </div>
+                </div>
               ) : (
                 <div className="flex flex-col items-center text-center space-y-3 py-8">
-                  <QrCode className="size-24 text-muted-foreground/40" />
-                  <p className="text-xs text-muted-foreground max-w-xs">
-                    Clique em <strong>Gerar QR Code Ao Vivo</strong> para requisitar um código instantâneo ao servidor WhatsApp.
-                  </p>
+                  <div className="size-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground/50">
+                    <QrCode className="size-8" />
+                  </div>
+                  <div className="space-y-1 max-w-xs">
+                    <h4 className="text-sm font-bold text-foreground">Aguardando Pareamento</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Clique em <strong>Gerar QR Code Ao Vivo</strong> para emitir o código de conexão para o seu celular.
+                    </p>
+                  </div>
+                  <div className="w-full text-left bg-card border border-border/70 rounded-lg p-3 space-y-1 text-xs mt-2">
+                    <span className="font-bold text-foreground block">Como escanear:</span>
+                    <ol className="text-muted-foreground space-y-1 list-decimal list-inside text-xs">
+                      <li>No celular, abra o <strong>WhatsApp</strong>.</li>
+                      <li>Toque em <strong>Aparelhos conectados &gt; Conectar um aparelho</strong>.</li>
+                      <li>Aponte a câmera para o QR Code.</li>
+                    </ol>
+                  </div>
                 </div>
               )}
             </div>

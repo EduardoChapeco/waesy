@@ -44,6 +44,7 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [isDownloadingExtension, setIsDownloadingExtension] = useState(false);
   const [isWebStoreOpen, setIsWebStoreOpen] = useState(false);
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
 
   const handleDownloadExtension = async () => {
     setIsDownloadingExtension(true);
@@ -128,6 +129,7 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
         <DialogHeader>
@@ -280,10 +282,10 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
                 </h5>
                 <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
                   <li>
-                    Clique no botão acima para baixar o arquivo <strong>waesy-ingest-whatsapp-v2.1.zip</strong> e extraia o conteúdo em uma pasta de sua preferência.
+                    Clique no botão acima para baixar o arquivo <strong>waesy-ingest-whatsapp-v2.2.zip</strong> e extraia o conteúdo em uma pasta de sua preferência (ou use <code className="bg-muted px-2 py-1 rounded">tools/whatsapp-extension</code>).
                   </li>
                   <li>
-                    No Google Chrome, acesse <code className="bg-muted px-2 py-1 rounded">chrome://extensions</code>, habilite o <strong>Modo do desenvolvedor</strong> e clique em <strong>Carregar sem compactação</strong> selecionando a pasta descompactada.
+                    No Google Chrome ou Edge, acesse <code className="bg-muted px-2 py-1 rounded">chrome://extensions</code>, habilite o <strong>Modo do desenvolvedor</strong> e clique em <strong>Carregar sem compactação</strong> selecionando a pasta da extensão.
                   </li>
                   <li>
                     Abra a extensão, clique na aba <strong>Conexão Waesy</strong> e cole a <strong>URL do Servidor</strong> e o <strong>Token de Ingestão</strong> gerado acima.
@@ -312,22 +314,45 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
-                {status.hasActiveToken && (
+              <div className="flex flex-wrap items-center gap-2">
+                {status.hasActiveToken && !confirmRevoke && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     disabled={revokeMutation.isPending}
-                    onClick={() => {
-                      if (confirm("Deseja revogar todos os tokens de extensão deste workspace? A extensão deixará de sincronizar até que um novo token seja configurado.")) {
-                        revokeMutation.mutate();
-                      }
-                    }}
+                    onClick={() => setConfirmRevoke(true)}
                     className="h-11 min-h-11 px-3 text-xs text-destructive hover:bg-destructive/10 border-destructive/30 focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Revogar Tokens
                   </Button>
+                )}
+
+                {status.hasActiveToken && confirmRevoke && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      disabled={revokeMutation.isPending}
+                      onClick={() => {
+                        setConfirmRevoke(false);
+                        revokeMutation.mutate();
+                      }}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {revokeMutation.isPending ? "Revogando..." : "Confirmar Revogação"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmRevoke(false)}
+                      className="h-11 min-h-11 px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
                 )}
 
                 <Button
@@ -357,14 +382,14 @@ export function WhatsAppGroupIngestModal({ isOpen, onClose }: WhatsAppGroupInges
           </Button>
         </DialogFooter>
       </DialogContent>
-
-      <ExtensionWebStoreModal
-        isOpen={isWebStoreOpen}
-        onClose={() => setIsWebStoreOpen(false)}
-        extensionType="whatsapp_extension"
-        onDownloadDirect={handleDownloadExtension}
-      />
     </Dialog>
+    <ExtensionWebStoreModal
+      isOpen={isWebStoreOpen}
+      onClose={() => setIsWebStoreOpen(false)}
+      extensionType="whatsapp_extension"
+      onDownloadDirect={handleDownloadExtension}
+    />
+    </>
   );
 }
 

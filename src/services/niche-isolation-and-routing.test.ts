@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { getNicheTranslation } from "@/lib/niche-dictionary";
-import { getSidebarConfig } from "@/lib/workspace-navigation";
+import { getSidebarConfig, getMasterSidebarPillars } from "@/lib/workspace-navigation";
+import {
+  linkProductRecipeSchema,
+  recordSupplyPurchaseSchema,
+  deductSuppliesForServiceAppointmentSchema,
+} from "@/services/gastronomy-supplies.functions";
 
 describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => {
   describe("1. Dicionário Universal de Nichos (I18n Niche Translation)", () => {
@@ -39,9 +44,9 @@ describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => 
       expect(t("items")).toBe("Pratos & Itens");
       expect(t("catalog")).toBe("Cardápio");
       expect(t("order")).toBe("Comanda / Pedido");
-      expect(t("orders")).toBe("Pedidos da Cozinha");
+      expect(t("orders")).toBe("Histórico de Pedidos");
       expect(t("stock")).toBe("Insumos & Despensa");
-      expect(t("kds")).toBe("Gestor de Pedidos (KDS)");
+      expect(t("kds")).toBe("Gestor de Pedidos");
     });
 
     it("traduz termos perfeitamente para Advocacia & Jurídico (legal)", () => {
@@ -151,6 +156,72 @@ describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => 
       expect(allPaths).toContain("/workspace/relatorios/gastronomia");
       expect(allPaths).toContain("/workspace/simulacao");
       expect(allPaths).toContain("/workspace/licitacoes");
+    });
+
+    it("isola os 11 Pilares Mestre (getMasterSidebarPillars) contra vazamento gastronômico em Turismo, Varejo, Serviços e Locação", () => {
+      const gastroExclusivePaths = [
+        "/workspace/pedidos/gestor",
+        "/workspace/pdv/comandas",
+        "/workspace/pdv/cozinha",
+        "/workspace/pedidos/tempo-preparo",
+        "/workspace/reservas",
+        "/workspace/relatorios/gastronomia",
+        "/workspace/conteudo/receitas",
+      ];
+
+      for (const nonFoodNiche of ["tourism", "retail", "services", "rental", "real_estate", "legal"]) {
+        const groups = getSidebarConfig(nonFoodNiche);
+        const pillars = getMasterSidebarPillars(groups, nonFoodNiche);
+        const allPillarPaths = pillars.flatMap((p) => p.items.map((i) => i.path));
+
+        for (const gastroPath of gastroExclusivePaths) {
+          expect(allPillarPaths).not.toContain(gastroPath);
+        }
+      }
+
+      const tourismPillars = getMasterSidebarPillars(getSidebarConfig("tourism"), "tourism");
+      const tourismPaths = tourismPillars.flatMap((p) => p.items.map((i) => i.path));
+      expect(tourismPaths).not.toContain("/workspace/pedidos/frota");
+      expect(tourismPaths).not.toContain("/workspace/pedidos/entregadores");
+      expect(tourismPaths).toContain("/workspace/turismo/vouchers");
+      expect(tourismPaths).toContain("/workspace/turismo/embarques");
+      expect(tourismPillars.find((p) => p.id === "comercial")?.label).toBe("Comercial & Cotação");
+      expect(tourismPillars.find((p) => p.id === "catalogo")?.label).toBe("Catálogo & Tarifários");
+      expect(tourismPillars.find((p) => p.id === "logistica")?.label).toBe("Operações & Embarques");
+
+      const gastroPillars = getMasterSidebarPillars(getSidebarConfig("gastronomy"), "gastronomy");
+      const gastroPaths = gastroPillars.flatMap((p) => p.items.map((i) => i.path));
+      expect(gastroPaths).toContain("/workspace/pedidos");
+      expect(gastroPaths).toContain("/workspace/pdv/cozinha");
+      expect(gastroPaths).toContain("/workspace/pdv/comandas");
+    });
+
+    it("valida schemas de Ficha Técnica Recursiva (Sabores/Modificadores, Fator de Conversão e Serviços Compostos)", () => {
+      const modifierLink = linkProductRecipeSchema.parse({
+        productId: "11111111-1111-4111-8111-111111111111",
+        modifierId: "22222222-2222-4222-8222-222222222222",
+        recipeId: "33333333-3333-4333-8333-333333333333",
+        modifierOptionLabel: "Sabor: Chilli Mexicano",
+        isPrimaryGargalo: true,
+        quantity: 1,
+      });
+      expect(modifierLink.modifierId).toBe("22222222-2222-4222-8222-222222222222");
+      expect(modifierLink.isPrimaryGargalo).toBe(true);
+
+      const purchaseWithConversion = recordSupplyPurchaseSchema.parse({
+        supplyId: "11111111-1111-4111-8111-111111111111",
+        quantity: 2,
+        conversionFactor: 12,
+        totalCostCents: 14400,
+      });
+      expect(purchaseWithConversion.conversionFactor).toBe(12);
+
+      const serviceDeduction = deductSuppliesForServiceAppointmentSchema.parse({
+        appointmentId: "44444444-4444-4444-8444-444444444444",
+        bookingServiceId: "55555555-5555-4555-8555-555555555555",
+        serviceTitle: "Mechas & Descoloração",
+      });
+      expect(serviceDeduction.bookingServiceId).toBe("55555555-5555-4555-8555-555555555555");
     });
   });
 });

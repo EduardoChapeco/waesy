@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
+import { getServerClient } from '@/lib/supabase';
 import { matchQuoteWithDemand, calculateTariffTemperature } from '@/lib/travel-opportunity-matcher';
 
 export const TravelQuoteCapturePayloadSchema = z.object({
@@ -43,6 +43,7 @@ export type TravelQuoteCapturePayload = z.infer<typeof TravelQuoteCapturePayload
  * grava no ledger de preços e executa o radar de oportunidades sob demanda.
  */
 export async function ingestTravelQuoteCapture(payloadRaw: TravelQuoteCapturePayload) {
+  const supabase = getServerClient();
   const payload = TravelQuoteCapturePayloadSchema.parse(payloadRaw);
   const {
     storeId,
@@ -179,6 +180,7 @@ async function evaluateRadarForCapture(captureData: {
   childrenCount?: number;
   sourcePage: string;
 }) {
+  const supabase = getServerClient();
   // 1. Buscar demandas ativas da agência em travel_client_demands
   const { data: demands } = await supabase
     .from('travel_client_demands')
@@ -348,7 +350,8 @@ async function evaluateRadarForCapture(captureData: {
         .from('travel_opportunities')
         .insert({
           store_id: captureData.storeId,
-          demand_id: lead.id,
+          demand_id: null,
+          lead_id: lead.id,
           capture_id: captureData.captureId,
           match_score: match.matchScore,
           match_reasons: match.reasons,
@@ -377,6 +380,7 @@ async function evaluateRadarForCapture(captureData: {
  * Lista oportunidades do radar para a agência com filtros
  */
 export async function listTravelOpportunities(storeId: string, options: { status?: string } = {}) {
+  const supabase = getServerClient();
   let query = supabase
     .from('travel_opportunities')
     .select(`

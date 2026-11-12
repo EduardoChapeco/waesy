@@ -17,6 +17,9 @@ export interface IbgeMarketIntelligenceDTO {
   gdpThousandBrl: number;
   gdpFormatted: string;
   perCapitaGdpEstimatedBrl: number;
+  demographicDensityHabKm2?: number;
+  vehicleFleetEstimate?: number;
+  schoolingRatePct?: number;
   source: string;
   insight: string;
 }
@@ -34,6 +37,10 @@ const FALLBACK_CITIES: Record<string, { id: number; pop: number; gdp: number; st
   "porto alegre": { id: 4314902, pop: 1332570, gdp: 81560000, state: "RS" },
   curitiba: { id: 4106902, pop: 1773733, gdp: 98000000, state: "PR" },
   florianopolis: { id: 4205407, pop: 537211, gdp: 23550000, state: "SC" },
+  pinhalzinho: { id: 4212908, pop: 21972, gdp: 1280000, state: "SC" },
+  maravilha: { id: 4210506, pop: 28251, gdp: 1540000, state: "SC" },
+  lages: { id: 4209300, pop: 164981, gdp: 6120000, state: "SC" },
+  "sao paulo": { id: 3550308, pop: 11451999, gdp: 828980000, state: "SP" },
 };
 
 /**

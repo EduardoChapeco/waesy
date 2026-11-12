@@ -27,8 +27,14 @@ export const Route = createFileRoute("/api/auth/confirm")({
  const type = url.searchParams.get("type") as "signup" | "recovery" | "email" | null;
  const next = normalizeInternalReturnPath(url.searchParams.get("next"), "/");
 
- // Extract guest session token from headers BEFORE async bounds
+ // Extract guest session token and response headers BEFORE async bounds
  const guestSessionToken = readCookieFromRequest(request, "waesy_guest_session");
+ let capturedResHeaders: Headers | null = null;
+ try {
+   capturedResHeaders = (getResponseHeaders() as unknown as Headers) || null;
+ } catch {
+   capturedResHeaders = null;
+ }
 
  if (!token_hash || !type) {
  return new Response(null, {
@@ -37,7 +43,7 @@ export const Route = createFileRoute("/api/auth/confirm")({
  }) as any;
  }
 
- const supabase = await getSSRClient();
+ const supabase = await getSSRClient(capturedResHeaders);
  const { error } = await supabase.auth.verifyOtp({
  token_hash,
  type,
@@ -50,6 +56,11 @@ export const Route = createFileRoute("/api/auth/confirm")({
  headers: { Location: `/entrar?error=${encodeURIComponent(error.message)}` },
  }) as any;
  }
+
+ try {
+   const { clearIdentityCache } = await import("@/lib/server-access");
+   clearIdentityCache();
+ } catch {}
 
  // Success — get the newly created session and merge guest cart
  const { data: sessionData } = await supabase.auth.getSession();
@@ -69,7 +80,7 @@ export const Route = createFileRoute("/api/auth/confirm")({
  const headers = new Headers();
  headers.set("Location", next);
  try {
-   const resHeaders = getResponseHeaders();
+   const resHeaders = capturedResHeaders || getResponseHeaders();
    if (resHeaders) {
      const setCookies =
        typeof (resHeaders as any).getSetCookie === "function"

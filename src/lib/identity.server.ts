@@ -12,6 +12,10 @@ import { getServerClient } from "@/lib/supabase";
 import { type ServerIdentity, STAFF_ROLES } from "@/lib/identity-core";
 import { getEvent } from "vinxi/http";
 import { getRequestHeader } from "@tanstack/start-server-core";
+import {
+  inspectCanonicalSessionFromCookies,
+  parseRawCookieStringPreservingDuplicates,
+} from "@/lib/auth-cookie-sanitizer";
 
 export type { ServerIdentity };
 export { assertStoreAccess, STAFF_ROLES } from "@/lib/identity-core";
@@ -88,6 +92,13 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
   }
 
   const ssrClient = getSSRClient();
+  const cookieSessionMeta = capturedCookie
+    ? inspectCanonicalSessionFromCookies(parseRawCookieStringPreservingDuplicates(capturedCookie))
+    : null;
+  const hasAnyAuthCookie =
+    Boolean(cookieSessionMeta?.refreshToken) ||
+    capturedCookie.includes("waesy-auth-token") ||
+    capturedCookie.includes("-auth-token");
 
   const resolutionPromise = (async (): Promise<ServerIdentity> => {
     let user: any = null;
@@ -95,13 +106,18 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       const authRes = await ssrClient.auth.getUser();
       user = authRes?.data?.user || null;
 
-      // Se getUser retornou null (ex: token de acesso de 1h expirou), tenta refresh automático
-      if (!user) {
+      // Se getUser retornou null (ex: token de acesso de 1h expirou ou storage foi limpo por _removeSession),
+      // tenta refresh automático passando explicitamente o refresh_token extraído do cookie canônico.
+      if (!user && hasAnyAuthCookie) {
         try {
-          const refreshRes = await ssrClient.auth.refreshSession();
+          const refreshRes = cookieSessionMeta?.refreshToken
+            ? await ssrClient.auth.refreshSession({
+                refresh_token: cookieSessionMeta.refreshToken,
+              })
+            : await ssrClient.auth.refreshSession();
           if (refreshRes?.data?.user) {
             user = refreshRes.data.user;
-          } else {
+          } else if (typeof ssrClient.auth.getSession === "function") {
             const sessionRes = await ssrClient.auth.getSession();
             if (sessionRes?.data?.session?.user) {
               user = sessionRes.data.session.user;
@@ -203,6 +219,26 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       }
       if (wmRes?.error) {
         console.warn("[identity.server] Erro ao buscar workspace_members:", wmRes.error.message);
+      }
+
+      // Fallback defensivo de vínculo (DEC-446): se workspace_members não retornou linhas
+      // mas o profile possui store_id associado, inclui como vínculo canônico de lojista.
+      if ((!memberRows || memberRows.length === 0) && (userProfile as any)?.store_id) {
+        memberRows = [{ store_id: (userProfile as any).store_id, role: userProfileRole || "owner" }];
+      }
+
+      // Fallback secundário: verifica se o usuário é proprietário direto cadastrado na tabela stores
+      if (!memberRows || memberRows.length === 0) {
+        try {
+          const { data: ownedStores } = await serverClient
+            .from("stores")
+            .select("id")
+            .eq("owner_id", user.id)
+            .limit(5);
+          if (ownedStores && ownedStores.length > 0) {
+            memberRows = ownedStores.map((s: any) => ({ store_id: s.id, role: "owner" }));
+          }
+        } catch {}
       }
     } catch (err) {
       console.warn("[identity.server] Erro ao buscar perfil ou workspace_members:", err);

@@ -213,6 +213,20 @@ function StepByStepAuthPage() {
  refresh_token: (res as any).session.refresh_token,
  });
  sanitizeBrowserAuthCookies();
+ try {
+   localStorage.setItem("waesy_auth_backup", JSON.stringify({
+     access_token: (res as any).session.access_token,
+     refresh_token: (res as any).session.refresh_token,
+     user: (res as any).user,
+     store_id: (res as any).store_id,
+     savedAt: Date.now(),
+   }));
+ } catch {}
+ const targetStoreId = (res as any).store_id || null;
+ if (targetStoreId) {
+   const { setClientContextCookies } = await import("@/lib/context-auth");
+   setClientContextCookies({ context: "store", storeId: targetStoreId });
+ }
  } catch (clientErr) {
  console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
  }
@@ -290,12 +304,29 @@ function StepByStepAuthPage() {
  refresh_token: (res as any).session.refresh_token,
  });
  sanitizeBrowserAuthCookies();
+ try {
+   localStorage.setItem("waesy_auth_backup", JSON.stringify({
+     access_token: (res as any).session.access_token,
+     refresh_token: (res as any).session.refresh_token,
+     user: (res as any).user,
+     store_id: (res as any).store_id,
+     savedAt: Date.now(),
+   }));
+ } catch {}
+ const targetStoreId = (res as any).store_id || null;
+ if (targetStoreId) {
+   const { setClientContextCookies } = await import("@/lib/context-auth");
+   setClientContextCookies({ context: "store", storeId: targetStoreId });
+ }
  } catch (clientErr) {
  console.warn("[auth] Falha ao sincronizar sessão no cliente:", clientErr);
  }
  }
  toast.success("Sessão iniciada.");
- const destination = returnUrl && returnUrl !== "/entrar" ? returnUrl : "/";
+ const hasStore = Boolean((res as any).store_id);
+ const isMaster = (res as any).role === "platform_admin" || (res as any).role === "master";
+ const fallbackDest = (res as any).destination || (hasStore ? "/workspace" : isMaster ? "/admin-master" : "/");
+ const destination = returnUrl && returnUrl !== "/entrar" && returnUrl !== "/" ? returnUrl : fallbackDest;
  await router.invalidate();
  navigate({ to: destination as any, replace: true });
  return;
@@ -360,6 +391,20 @@ function StepByStepAuthPage() {
  if (!result.success) {
  toast.error(result.message || "Não foi possível concluir seu cadastro.");
  return;
+ }
+
+ if ((result as any).session?.access_token && (result as any).session?.refresh_token) {
+ try {
+ const { getBrowserClient, sanitizeBrowserAuthCookies } = await import("@/lib/supabase");
+ sanitizeBrowserAuthCookies();
+ await getBrowserClient().auth.setSession({
+ access_token: (result as any).session.access_token,
+ refresh_token: (result as any).session.refresh_token,
+ });
+ sanitizeBrowserAuthCookies();
+ } catch (clientErr) {
+ console.warn("[auth] Falha ao sincronizar sessão pós-cadastro no cliente:", clientErr);
+ }
  }
 
  toast.success("Conta criada com sucesso.");

@@ -173,6 +173,16 @@ export const dispatchDocumentViaStoreWhatsApp = createServerFn({ method: "POST" 
       };
     }
 
+    // Disparo imediato do worker para despacho sem delay
+    try {
+      const { runWhatsAppOutboxWorker } = await import("./whatsapp-outbox.worker");
+      runWhatsAppOutboxWorker({ batchSize: 5 }).catch((wErr) => {
+        console.warn("[whatsapp-messaging] Disparo imediato do outbox falhou:", wErr);
+      });
+    } catch {
+      // Processamento ocorrera no ciclo seguinte
+    }
+
     return {
       dispatched: true,
       queued: true,

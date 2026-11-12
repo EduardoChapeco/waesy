@@ -21,6 +21,7 @@ export const CANONICAL_BUILDER_BLOCK_IDS = [
   "infinite_marquee_ribbon",
   "interactive_comparison_slider",
   "interactive_lead_quiz_flow",
+  "software_feature_tabs",
   "news_promethee_portal",
   "news_promethee_header",
   "news_promethee_nav",
@@ -368,6 +369,32 @@ export const LeadQuizBlockDataSchema = z.object({
   successMessage: z.string().default("Diagnóstico enviado com sucesso! Nossa equipe entrará em contato."),
 });
 export type LeadQuizBlockData = z.infer<typeof LeadQuizBlockDataSchema>;
+
+// Software Feature Tabs / Module Showcase Block (SaaS & Vertical Systems)
+export const SoftwareFeatureTabItemSchema = z.object({
+  id: z.string(),
+  tabLabel: z.string().min(1),
+  tabIconName: z.string().optional(),
+  title: z.string().min(1),
+  description: z.string().default(""),
+  badge: z.string().optional(),
+  benefits: z.array(z.string()).default([]),
+  previewImageUrl: z.string().optional(),
+  previewImageAlt: z.string().optional(),
+  ctaLabel: z.string().optional(),
+  ctaHref: z.string().optional(),
+  statNumber: z.string().optional(),
+  statLabel: z.string().optional(),
+});
+export type SoftwareFeatureTabItem = z.infer<typeof SoftwareFeatureTabItemSchema>;
+
+export const SoftwareFeatureShowcaseBlockDataSchema = z.object({
+  title: z.string().default("Tudo que seu negócio precisa em uma única plataforma"),
+  subtitle: z.string().optional(),
+  badgeText: z.string().optional(),
+  tabs: z.array(SoftwareFeatureTabItemSchema).min(1),
+});
+export type SoftwareFeatureShowcaseBlockData = z.infer<typeof SoftwareFeatureShowcaseBlockDataSchema>;
 
 // Prométhée Editorial News Portal Block
 export const PrometheeNewsArticleItemSchema = z.object({

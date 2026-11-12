@@ -41,7 +41,7 @@ export interface ExtensionWebStoreModalProps {
   onClose: () => void;
   extensionType: ExtensionPackageType;
   storeName?: string | null;
-  onDownloadDirect?: (type: ExtensionPackageType) => void;
+  onDownloadDirect?: (type: ExtensionPackageType) => void | Promise<void>;
 }
 
 const EXTENSION_CATALOG: Record<
@@ -61,165 +61,165 @@ const EXTENSION_CATALOG: Record<
   }
 > = {
   infotravel_extension: {
-    name: "Waesy Sync — Infotravel Radar & Quotes",
-    version: "v2.1.0",
-    tagline: "Sincronização bidirecional em tempo real de cotações aéreas e hoteleiras entre o Infotravel e o Workspace Waesy.",
-    category: "Turismo & Produtividade",
+    name: "Waesy Sync — Operadoras Infotravel",
+    version: "v2.2.0",
+    tagline: "Extração em 2º plano de reservas, passageiros, faturas e cotações em qualquer portal Infotravel (Orinter, FRT, Incomum, Schultz).",
+    category: "Turismo & Operadoras",
     description:
-      "A extensão Waesy Sync para Infotravel elimina a digitação manual de pacotes e cotações. Ela intercepta pesquisas nos portais de consolidadoras parceiras, estruturando automaticamente trechos aéreos, tarifas, comissões e hotéis diretamente no funil comercial do CRM Turis.",
+      "A extensão Waesy Sync conecta qualquer portal Infotravel diretamente ao seu Waesy CRM. Extrai reservas e passageiros com isolamento de aba ativa, captura orçamentos passivos para o Radar e sincroniza com autenticação Bearer wae_... ou exportação CSV/JSON.",
     badgeText: "Exclusivo Agências Credenciadas",
-    filename: "waesy-sync-infotravel-v2.1.zip",
+    filename: "waesy-sync-infotravel-v2.2.zip",
     features: [
       {
-        title: "Captura Automática de Tarifas",
-        desc: "Lê trechos, classes tarifárias, franquias de bagagem e valores net/brutos com 1 clique.",
+        title: "Qualquer Portal Infotravel",
+        desc: "Compatível nativamente com Orinter, FRT, Incomum, Schultz e qualquer subdomínio white-label via botão Ativar neste Portal.",
         icon: Sparkles,
       },
       {
-        title: "Radar de Oportunidades",
-        desc: "Calcula a margem da agência em tempo real e sugere acréscimo de markup ou taxa de emissão.",
-        icon: Layers,
-      },
-      {
-        title: "Integração Direta com CRM",
-        desc: "Envia o pacote diretamente para a proposta comercial do cliente em `_store.proposta`.",
+        title: "Sincronização em Nuvem & CRM",
+        desc: "Envia reservas, clientes, CPFs, datas de embarque e composição financeira direto para /api/v1/ingest/infotravel-reservations.",
         icon: Globe,
       },
       {
-        title: "Exportação Multiformato",
-        desc: "Gera relatórios em formato CSV no padrão brasileiro e arquivos JSON para conferência financeira.",
+        title: "Radar de Cotações Passivo",
+        desc: "Observa buscas aéreas, hotéis e carrinho Monte Seu Pacote para gerar oportunidades automáticas no pipeline.",
+        icon: Layers,
+      },
+      {
+        title: "Exportação CSV BR & JSON",
+        desc: "Gera CSV com ponto-e-vírgula, UTF-8 BOM para Excel brasileiro e espelhamento opcional via coletor local (porta 3333).",
         icon: FileText,
       },
     ],
     permissions: [
       {
-        host: "*.infotravel.com.br/*",
-        why: "Acesso estrito à tela de resultados de buscas de voos e hotéis para leitura de tarifas.",
+        host: "*://*.orinter.com.br/*, *://*.incomumviagens.com.br/*, *://*.frt.com.br/*, *://*.schultz.com.br/*, *://*/*infotravel*",
+        why: "Leitura do DOM nas telas de Pesquisa de Reservas e Cotações Infotravel, mais ativação sob demanda em domínios customizados.",
       },
       {
-        host: "Domínio Waesy / API BFF",
-        why: "Envio autenticado via Bearer token das cotações selecionadas para o servidor.",
+        host: "API BFF Waesy (Bearer Token wae_...)",
+        why: "Envio autenticado de cotações e reservas exclusivamente para a loja vinculada ao token.",
       },
     ],
     requirements: [
-      "Navegadores Chromium (Google Chrome 100+, Microsoft Edge, Brave, Opera)",
-      "Acesso operacional ativo ao portal Infotravel da consolidadora",
-      "Credenciais de operador ou agente no Workspace Waesy Turismo",
+      "Navegadores Chromium (Google Chrome 100+, Microsoft Edge, Brave)",
+      "Sessão ativa em qualquer portal Infotravel (Orinter, FRT, Incomum, Schultz ou white-label)",
+      "Token wae_... gerado no painel Turismo > Operadoras Infotravel",
     ],
     steps: [
-      "Faça o download do arquivo ZIP homologado através do botão abaixo.",
-      "Descompacte o arquivo em uma pasta permanente no seu computador.",
-      "Abra o Chrome e digite 'chrome://extensions' na barra de endereços.",
-      "Ative a chave 'Modo do desenvolvedor' no canto superior direito.",
+      "Faça o download do arquivo ZIP através do botão abaixo (ou use a pasta tools/infotravel-extension).",
+      "Descompacte em uma pasta permanente no computador.",
+      "Abra 'chrome://extensions' (ou 'edge://extensions') e ative o 'Modo do desenvolvedor'.",
       "Clique em 'Carregar sem compactação' e selecione a pasta extraída.",
+      "Na aba Conexão Waesy da extensão, informe o servidor e cole seu Token wae_... para sincronizar com o CRM.",
     ],
   },
   whatsapp_extension: {
     name: "Waesy Ingest — WhatsApp Web Leads",
-    version: "v2.1.0",
-    tagline: "Captura, sanitização telefônica e ingestão instantânea de contatos e grupos do WhatsApp Web para o CRM Waesy.",
+    version: "v2.2.0",
+    tagline: "Captura com rolagem virtualizada, sanitização E.164 e envio em lotes idempotentes de grupos do WhatsApp Web.",
     category: "Comunicação & Vendas",
     description:
-      "Desenvolvida para operadores comerciais e gestores de viagens em grupo, esta extensão extrai com segurança os participantes de grupos e conversas abertas no WhatsApp Web, aplicando validação telefônica internacional (+55 DDD) e cadastrando leads automaticamente no pipeline comercial.",
+      "Extrai participantes de grupos e conversas do WhatsApp Web incluindo listas longas virtualizadas no painel de membros e modal 'Ver todos', normalizando telefones brasileiros (+55) sem rebaixar clientes já cadastrados.",
     badgeText: "Governança Zero-Trust",
-    filename: "waesy-ingest-whatsapp-v2.1.zip",
+    filename: "waesy-ingest-whatsapp-v2.2.zip",
     features: [
       {
-        title: "Extração Segura em 1 Clique",
-        desc: "Lê nome e telefone de participantes de grupos públicos ou de viagens sem necessidade de cadastro manual.",
+        title: "Varredura com Auto-Scroll",
+        desc: "Percorre automaticamente listas virtualizadas de participantes, atributos JID (@c.us) e subtítulos de grupos grandes.",
         icon: Sparkles,
       },
       {
         title: "Sanitização E.164 Brasil",
-        desc: "Higieniza prefixos, remove pontuações e valida o 9º dígito em números de todas as regiões brasileiras.",
+        desc: "Normaliza DDD + DDI +55 e preserva os nomes identificados no grupo ou painel de membros.",
         icon: ShieldCheck,
       },
       {
-        title: "Anti-Duplicidade Ativa",
-        desc: "Verifica no CRM se o cliente já existe, associando histórico sem poluir o banco de contatos.",
+        title: "Lotes Idempotentes & CRM",
+        desc: "Fatia listas grandes em lotes de até 500 contatos com contadores exatos de novos, mesclados e opt-out.",
         icon: Layers,
       },
       {
         title: "Modo Simulação (Dry-Run)",
-        desc: "Permite revisar a lista de contatos capturados antes de efetivar o envio definitivo para o banco.",
+        desc: "Valida e audita todos os contatos com o servidor antes de efetivar a gravação na fila comercial.",
         icon: FileText,
       },
     ],
     permissions: [
       {
         host: "https://web.whatsapp.com/*",
-        why: "Acesso à interface do WhatsApp Web para listar participantes do grupo selecionado.",
+        why: "Leitura controlada do painel de participantes e conversas ativas no WhatsApp Web.",
       },
       {
-        host: "Domínio Waesy / Ingest API",
-        why: "Transmissão criptografada ponta a ponta dos contatos para `/api/v1/ingest/whatsapp-contacts`.",
+        host: "API BFF Waesy (/api/v1/ingest/whatsapp-contacts)",
+        why: "Transmissão autenticada via Bearer Token wae_... para o workspace da agência.",
       },
     ],
     requirements: [
-      "Navegadores Chromium (Google Chrome 100+, Edge, Brave Browser)",
-      "Sessão ativa no WhatsApp Web oficial no mesmo navegador",
-      "Permissão de operador no módulo comercial do Workspace",
+      "Navegadores Chromium (Google Chrome 100+, Microsoft Edge, Brave)",
+      "Sessão ativa no WhatsApp Web oficial (https://web.whatsapp.com)",
+      "Token wae_... gerado em Turismo > Oportunidades > Extensão WhatsApp",
     ],
     steps: [
-      "Baixe o arquivo ZIP da extensão disponibilizado após autorização.",
-      "Extraia a pasta em um diretório local seguro.",
-      "Acesse 'chrome://extensions' no seu navegador.",
-      "Ative o 'Modo do desenvolvedor' no topo da página.",
-      "Clique em 'Carregar sem compactação' e aponte para a pasta descompactada.",
+      "Baixe o ZIP ou utilize a pasta local tools/whatsapp-extension.",
+      "Extraia em uma pasta permanente caso use o pacote ZIP.",
+      "Acesse 'chrome://extensions' e ative o 'Modo do desenvolvedor'.",
+      "Clique em 'Carregar sem compactação' e selecione a pasta.",
+      "Configure URL e Token wae_... na aba Conexão Waesy e escaneie o grupo aberto.",
     ],
   },
   infotravel_miner: {
-    name: "Waesy Miner — Extratores & Scripts Locais",
-    version: "v1.4.0",
-    tagline: "Scripts de console e automações Node/Python para extração massiva de disponibilidades e tarifas em lote.",
+    name: "Waesy Miner — Extrator Autônomo & Coletor Local",
+    version: "v2.2.0",
+    tagline: "Automação Playwright local (miner.mjs) e servidor gravador HTTP (coletor.mjs na porta 3333) para grandes volumes em CSV/JSON.",
     category: "Automação & Dados",
     description:
-      "Pacote de ferramentas para desenvolvedores e operadores avançados que realizam cotações de grande volume ou auditoria de malha aérea. Contém scripts prontos para mineração programada de rotas e integração com o banco de dados Waesy.",
+      "Pacote local em Node.js + Playwright para extração massiva paginada com sessão persistente (.chrome-session) e servidor HTTP local (porta 3333) para espelhamento em disco dos dados capturados pela extensão Chrome.",
     badgeText: "Ferramenta Avançada",
     filename: "waesy-miner-infotravel-scripts.zip",
     features: [
       {
-        title: "Varredura de Rotas em Lote",
-        desc: "Pesquisa múltiplos pares de origem e destino sequencialmente para encontrar melhores tarifas.",
+        title: "Extração Paginada Playwright",
+        desc: "O script miner.mjs navega automaticamente pelas páginas de reservas com jitter randômico anti-bloqueio e retomada via progresso.json.",
         icon: Sparkles,
       },
       {
-        title: "Scripts Node.js e Python",
-        desc: "Código aberto e limpo, sem dependências proprietárias pesadas, pronto para execução em linha de comando.",
+        title: "Coletor Local Porta 3333",
+        desc: "O coletor.mjs recebe os envios da extensão Chrome em tempo real e grava no arquivo CSV canônico e JSON local.",
         icon: Laptop,
       },
       {
-        title: "Compatível com Puppeteer",
-        desc: "Automatiza a navegação sem cabeça para geração de relatórios diários de flutuação de preços.",
+        title: "Launchers .bat em 1 Clique",
+        desc: "Inclui iniciar_coletor_local.bat, iniciar_teste_piloto.bat e iniciar_extracao_completa.bat para operação rápida no Windows.",
         icon: Layers,
       },
       {
-        title: "Schemas Zod Integrados",
-        desc: "Validação rigorosa de cada objeto minerado antes do upload para a base de dados.",
+        title: "Envio Opcional ao CRM",
+        desc: "Suporta argumentos --url, --server e --token para enviar reservas diretamente para /api/v1/ingest/infotravel-reservations.",
         icon: ShieldCheck,
       },
     ],
     permissions: [
       {
-        host: "Ambiente Local / Terminal",
-        why: "Execução na máquina do operador via Node.js ou Python com chave de API local.",
+        host: "Ambiente Local (127.0.0.1:3333)",
+        why: "Gravação de arquivos CSV/JSON na pasta output/ pelo servidor coletor.mjs.",
       },
       {
-        host: "API de Ingestão Waesy",
-        why: "Upload dos lotes minerados para o módulo de turismo da agência.",
+        host: "API de Ingestão Waesy (opcional)",
+        why: "Envio opcional autenticado com --token=wae_... para o pipeline de reservas do workspace.",
       },
     ],
     requirements: [
-      "Node.js 18+ ou Python 3.10+ instalado na máquina local",
-      "Terminal de comando (PowerShell, Bash ou Zsh)",
-      "Token de API gerado nas configurações da loja",
+      "Node.js 18+ instalado no computador",
+      "Google Chrome, Microsoft Edge ou Chromium gerenciado pelo Playwright",
+      "Acesso ativo ao portal Infotravel da operadora",
     ],
     steps: [
-      "Baixe o arquivo ZIP contendo os scripts e schemas.",
-      "Descompacte no diretório de sua preferência.",
-      "Abra o terminal na pasta e execute 'npm install' ou 'pip install -r requirements.txt'.",
-      "Configure o arquivo .env local com seu token e URL da API Waesy.",
-      "Execute o script de teste para validar a conexão.",
+      "Baixe e extraia o arquivo ZIP em uma pasta permanente (ex: C:\\waesy-miner).",
+      "Execute 'npm install' na pasta (ou dê dois cliques em iniciar_teste_piloto.bat).",
+      "Para espelhar a extensão Chrome no disco, execute iniciar_coletor_local.bat.",
+      "Para mineração em lote, execute iniciar_teste_piloto.bat ou iniciar_extracao_completa.bat e faça login no portal.",
+      "Importe o CSV gerado em output/ na tela Turismo > Operadoras Infotravel.",
     ],
   },
 };
@@ -271,7 +271,12 @@ export function ExtensionWebStoreModal({
 
   const handleDownload = async () => {
     if (onDownloadDirect) {
-      onDownloadDirect(extensionType);
+      setIsDownloading(true);
+      try {
+        await onDownloadDirect(extensionType);
+      } finally {
+        setIsDownloading(false);
+      }
       return;
     }
 

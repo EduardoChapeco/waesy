@@ -1,13 +1,15 @@
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TransferChatThreadModal } from "@/components/chat/TransferChatThreadModal";
 import { QuickAnswersManagerModal } from "@/components/chat/QuickAnswersManagerModal";
 import { ScheduleWhatsAppMessageModal } from "@/components/chat/ScheduleWhatsAppMessageModal";
 import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
 import { WhatsAppTeamSectorsDrawer } from "@/components/chat/whatsapp-team-sectors-drawer";
-import { listStoreQuickAnswers } from "@/services/chat-operations.functions";
+import { WhatsAppVoiceStudioModal } from "@/components/chat/WhatsAppVoiceStudioModal";
+import { transcribeWhatsAppAudioMessage } from "@/services/whatsapp-voice-ai.functions";
+import { listStoreQuickAnswers, interpolateTemplateVariables } from "@/services/chat-operations.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import {
   listChatThreads,
@@ -17,6 +19,18 @@ import {
   updateTicketStatus,
   archiveChatThread,
   saveStoreSupportSettings,
+  clearChatThreadMessagesLocal,
+  deleteChatThreadLocal,
+  deleteChatContactPermanently,
+  requestChatContactDeletion,
+  reviewChatContactDeletionRequest,
+  listChatContactDeletionRequests,
+  generateTourismAiCopilotReply,
+  generateSmartContextualAiReply,
+  detectStaffFollowUpPromise,
+  toggleChatThreadStaffVisibility,
+  resetStoreChatHistoryLocal,
+  getWhatsAppMediaBase64,
 } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import {
@@ -28,6 +42,8 @@ import {
 } from "@/services/intranet.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getRealtimeChannel } from "@/services/realtime-channel";
+import { getClientActiveTenant } from "@/lib/context-auth";
+import { getBrowserClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +72,7 @@ import {
   RefreshCw,
   Layers,
   ShieldCheck,
+  ShieldAlert,
   Bot,
   Star,
   Flame,
@@ -77,7 +94,29 @@ import {
   CalendarClock,
   ArrowRightLeft,
   Zap,
+  MoreVertical,
+  Eraser,
+  Trash2,
+  Ban,
+  PowerOff,
+  Download,
+  Image as ImageIcon,
+  Film,
+  Volume2,
+  Eye,
+  Mic,
+  Play,
+  Pause,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -88,7 +127,9 @@ import { StructuredMessageView } from "@/components/chat/structured-message-view
 import { playMessageChime } from "@/lib/audio-chimes";
 import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.functions";
 import {
-  listWorkspaceWhatsAppInstances,
+  listWorkspaceWhatsAppInstances, normalizeWhatsAppQrDataUri,
+  syncWhatsAppChatsFromEvolution,
+  disconnectWhatsAppInstance,
   type WhatsAppChannelInstanceDTO,
 } from "@/services/whatsapp-channel-instances.functions";
 import { Link } from "@tanstack/react-router";
@@ -110,7 +151,64 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Circle,
+  AlertCircle,
 } from "lucide-react";
+
+function MessageDeliveryStatusIcon({
+  status,
+  deliveryState,
+  errorMessage,
+}: {
+  status?: string | null;
+  deliveryState?: string | null;
+  errorMessage?: string | null;
+}) {
+  if (status === "read") {
+    return (
+      <span title="Lida pelo destinatário" className="inline-flex items-center">
+        <CheckCheck className="size-3.5 text-sky-500 dark:text-sky-400 inline" aria-label="Lida" />
+      </span>
+    );
+  }
+  if (status === "delivered") {
+    return (
+      <span title="Entregue no aparelho" className="inline-flex items-center">
+        <CheckCheck className="size-3.5 text-muted-foreground inline" aria-label="Entregue" />
+      </span>
+    );
+  }
+  if (status === "failed") {
+    const label =
+      deliveryState === "dead_letter"
+        ? "Falha permanente (Dead-Letter)"
+        : deliveryState === "retry_scheduled"
+          ? "Falha (Retentativa agendada)"
+          : "Falha no envio";
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-destructive font-semibold"
+        title={errorMessage || label}
+        aria-label={label}
+      >
+        <AlertCircle className="size-3.5 inline shrink-0" />
+        <span>{label}</span>
+      </span>
+    );
+  }
+  if (status === "sent" || status === "accepted") {
+    return (
+      <span title="Enviada ao gateway" className="inline-flex items-center">
+        <Check className="size-3 text-muted-foreground inline" aria-label="Enviada" />
+      </span>
+    );
+  }
+  return (
+    <span title="Aguardando confirmação do gateway" className="inline-flex items-center">
+      <Clock className="size-3 text-muted-foreground/70 inline" aria-label="Pendente" />
+    </span>
+  );
+}
 import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
 import {
   ChatQuickComposerModals,
@@ -119,27 +217,39 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
+export type AtendimentoSearch = {
+  threadId?: string;
+  search?: string;
+  storeId?: string;
+};
+
 export const Route = createFileRoute("/workspace/atendimento/")({
   head: () => ({ meta: [{ title: "Atendimento Omnichannel & WhatsApp" }] }),
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): AtendimentoSearch => ({
     threadId: typeof search.threadId === "string" ? search.threadId : undefined,
     search: typeof search.search === "string" ? search.search : undefined,
+    storeId: typeof search.storeId === "string" ? search.storeId : undefined,
   }),
-  loader: async () => {
+  loaderDeps: ({ search }) => ({ storeId: search.storeId }),
+  loader: async ({ deps }) => {
     try {
-      const [res, store, sdrData, instances, quickReplies] = await Promise.all([
-        listChatThreads().catch(() => null),
-        getStoreSettings().catch(() => null),
+      const store = await getStoreSettings({ data: { store_id: deps?.storeId } }).catch(() => null);
+      const storeId = store?.id || deps?.storeId || undefined;
+      const [res, sdrData, instances, quickReplies, intranetChannels] = await Promise.all([
+        listChatThreads({ data: { store_id: storeId } }).catch(() => null),
         listSdrChatSessions().catch(() => ({
           sessions: [],
           metrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         })),
-        listWorkspaceWhatsAppInstances().catch(() => []),
+        listWorkspaceWhatsAppInstances({ data: { store_id: storeId } }).catch(() => []),
         listChatQuickReplies().catch(() => [] as QuickReplyItem[]),
+        listIntranetChannels({ data: { store_id: storeId } }).catch(() => []),
       ]);
       return {
         ...(res || {
@@ -151,6 +261,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         sdrMetrics: sdrData?.metrics || { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         whatsappInstances: (instances || []) as WhatsAppChannelInstanceDTO[],
         quickReplies: (quickReplies || []) as QuickReplyItem[],
+        intranetChannels: (intranetChannels || []) as any[],
       };
     } catch (e) {
       console.warn("[workspace.atendimento] Fallback de segurança no loader:", e);
@@ -162,6 +273,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         sdrMetrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
         whatsappInstances: [] as WhatsAppChannelInstanceDTO[],
         quickReplies: [] as QuickReplyItem[],
+        intranetChannels: [],
       };
     }
   },
@@ -187,6 +299,7 @@ function WorkspaceAtendimentoPage() {
     sdrMetrics: initialSdrMetrics,
     whatsappInstances: initialInstances,
     quickReplies: initialQuickReplies,
+    intranetChannels: initialIntranetChannels,
   } = (Route.useLoaderData?.() as any) || {};
 
   const searchParams = Route.useSearch?.() || {};
@@ -236,188 +349,16 @@ function WorkspaceAtendimentoPage() {
     "form" | "event" | "sticker" | "spreadsheet" | null
   >(null);
 
-  const [intranetChannels, setIntranetChannels] = useState<
-    Array<{
-      id: string;
-      title: string;
-      department: "Executivo" | "Comercial" | "Marketing" | "Operações" | "Financeiro" | "Suporte";
-      scope: "public" | "private";
-      creator: string;
-      updatedAt: string;
-      membersCount: number;
-      milestones: Array<{ id: string; label: string; time: string; done: boolean; detail: string }>;
-      spreadsheet?: {
-        title: string;
-        rowsCount: number;
-        colsCount: number;
-        headers: string[];
-        colTypes: string[];
-        rows: (string | number)[][];
-      };
-      messages: Array<{
-        id: string;
-        author: string;
-        role: string;
-        time: string;
-        text: string;
-        payload?: any;
-      }>;
-    }>
-  >([
-    {
-      id: "ch-exec-q3",
-      title: "Análise de Pedidos & Desempenho Regional",
-      department: "Executivo",
-      scope: "private",
-      creator: "Diretoria",
-      updatedAt: "14:20",
-      membersCount: 6,
-      milestones: [
-        {
-          id: "ms-1",
-          label: "Consolidação das tabelas de pedidos, itens e avaliações da operação",
-          time: "14:12",
-          done: true,
-          detail: "3 tabelas cruzadas • 100% reconciliado",
-        },
-        {
-          id: "ms-2",
-          label: "Cálculo da participação de receita por linha de produtos e entregas",
-          time: "14:15",
-          done: true,
-          detail: "Margem líquida auditada por centro de custo",
-        },
-        {
-          id: "ms-3",
-          label: "Publicação da planilha interativa para revisão dos gestores",
-          time: "14:18",
-          done: true,
-          detail: "Arquivo CSV liberado para download e filtro",
-        },
-      ],
-      spreadsheet: {
-        title: "Desempenho_Categorias_Regional.csv",
-        rowsCount: 6,
-        colsCount: 5,
-        headers: ["Categoria", "Pedidos", "Receita (R$)", "Ticket Médio", "Participação (%)"],
-        colTypes: ["abc", "123", "123", "123", "123"],
-        rows: [
-          ["Cama, Mesa & Banho", 142, 28400, 200, "24.5%"],
-          ["Beleza & Saúde", 198, 23760, 120, "20.5%"],
-          ["Esporte & Lazer", 115, 19550, 170, "16.9%"],
-          ["Informática & Acessórios", 84, 18480, 220, "15.9%"],
-          ["Utilidades Domésticas", 160, 14400, 90, "12.4%"],
-          ["Alimentos & Bebidas", 210, 11340, 54, "9.8%"],
-        ],
-      },
-      messages: [
-        {
-          id: "im-1",
-          author: "Carlos Mendes",
-          role: "Diretor de Operações",
-          time: "14:10",
-          text: "Equipe, precisamos consolidar os indicadores das categorias campeãs de venda e logística da semana para o fechamento mensal.",
-        },
-        {
-          id: "im-2",
-          author: "Helena Costa",
-          role: "Líder Comercial",
-          time: "14:20",
-          text: "Planilha consolidada anexada na Linha do Tempo acima! Já separei também o formulário secreto de votação de metas para os coordenadores.",
-        },
-      ],
-    },
-    {
-      id: "ch-com-metas",
-      title: "Campanha Relâmpago & Vitrines da Semana",
-      department: "Comercial",
-      scope: "public",
-      creator: "Helena Costa",
-      updatedAt: "11:45",
-      membersCount: 12,
-      milestones: [
-        {
-          id: "ms-c1",
-          label: "Seleção de ofertas âncora com estoque validado",
-          time: "10:30",
-          done: true,
-          detail: "18 SKUs aprovados",
-        },
-        {
-          id: "ms-c2",
-          label: "Ativação de disparo segmentado e cupons no chat",
-          time: "11:40",
-          done: true,
-          detail: "Conversão inicial de 14.2%",
-        },
-      ],
-      messages: [
-        {
-          id: "im-c1",
-          author: "Helena Costa",
-          role: "Líder Comercial",
-          time: "11:45",
-          text: "Lembrem de utilizar o envio de carrinho direto no chat para fechar pedidos em 1 clique com código de retirada.",
-        },
-      ],
-    },
-    {
-      id: "ch-ops-frota",
-      title: "Torre de Controle Logística & MotoLink",
-      department: "Operações",
-      scope: "public",
-      creator: "Roberto Alves",
-      updatedAt: "09:30",
-      membersCount: 9,
-      milestones: [
-        {
-          id: "ms-o1",
-          label: "Conferência de códigos de entrega (Pickup Code) no balcão",
-          time: "09:00",
-          done: true,
-          detail: "Zero divergências no turno da manhã",
-        },
-      ],
-      messages: [
-        {
-          id: "im-o1",
-          author: "Roberto Alves",
-          role: "Coord. Logística",
-          time: "09:30",
-          text: "Todos os pedidos despachados já exibem o mini-mapa ao vivo e código de 4 dígitos para o cliente.",
-        },
-      ],
-    },
-    {
-      id: "ch-fin-dre",
-      title: "Conciliação PIX & Repasses Semanais",
-      department: "Financeiro",
-      scope: "private",
-      creator: "Fernanda Lima",
-      updatedAt: "Ontem",
-      membersCount: 4,
-      milestones: [
-        {
-          id: "ms-f1",
-          label: "Fechamento de liquidação instantânea PIX no chat",
-          time: "Ontem",
-          done: true,
-          detail: "100% conciliado com extrato bancário",
-        },
-      ],
-      messages: [
-        {
-          id: "im-f1",
-          author: "Fernanda Lima",
-          role: "Controller",
-          time: "Ontem",
-          text: "Relatório de conciliação validado sem pendências.",
-        },
-      ],
-    },
-  ]);
+  const [intranetChannels, setIntranetChannels] = useState<any[]>(initialIntranetChannels || []);
+  const [activeIntranetChannelId, setActiveIntranetChannelId] = useState<string>(
+    initialIntranetChannels?.[0]?.id || ""
+  );
 
-  const [activeIntranetChannelId, setActiveIntranetChannelId] = useState<string>("ch-exec-q3");
+  useEffect(() => {
+    if ((!activeIntranetChannelId || !intranetChannels.some((c: any) => c.id === activeIntranetChannelId)) && intranetChannels.length > 0) {
+      setActiveIntranetChannelId(intranetChannels[0].id);
+    }
+  }, [intranetChannels, activeIntranetChannelId]);
 
   const { data: storeSalesSpreadsheet } = useQuery({
     queryKey: ["store-intranet-sales-spreadsheet", store?.id],
@@ -441,25 +382,398 @@ function WorkspaceAtendimentoPage() {
   // Status de presença do atendente
   const [agentPresence, setAgentPresence] = useState<"online" | "busy" | "away">("online");
 
-  // Filtro de status da lista (all: ativas | open: novas | archived: arquivadas)
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "waiting" | "archived">("all");
+  // Filtro de status da lista (all: ativas | direct: individuais | groups: grupos | open: novas | waiting: aguardando | archived: arquivadas)
+  const [statusFilter, setStatusFilter] = useState<"all" | "direct" | "groups" | "open" | "waiting" | "archived">("all");
   const [deptFilter, setDeptFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState((searchParams as any).search || "");
 
   // Instâncias de WhatsApp
   const [whatsappInstances, setWhatsappInstances] = useState<WhatsAppChannelInstanceDTO[]>(initialInstances || []);
   const [isRefreshingWhatsApp, setIsRefreshingWhatsApp] = useState(false);
+  const [isSyncingWhatsApp, setIsSyncingWhatsApp] = useState(false);
+
+  const handleSyncWhatsApp = async () => {
+    setIsSyncingWhatsApp(true);
+    try {
+      const res = await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id } });
+      const threadsRes = await listChatThreads({ data: { store_id: store?.id } });
+      if (threadsRes?.threads) {
+        setThreads(threadsRes.threads);
+      }
+      toast.success(
+        res?.importedCount
+          ? `${res.importedCount} conversas sincronizadas do WhatsApp!`
+          : "Sincronização concluída. Todas as conversas estão atualizadas."
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao sincronizar conversas do WhatsApp.");
+    } finally {
+      setIsSyncingWhatsApp(false);
+    }
+  };
 
   const handleRefreshWhatsAppStatus = async () => {
     setIsRefreshingWhatsApp(true);
     try {
-      const instances = await listWorkspaceWhatsAppInstances();
+      const [instances, syncRes] = await Promise.all([
+        listWorkspaceWhatsAppInstances({ data: { store_id: store?.id } }),
+        syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id } }).catch((e) => {
+          console.warn("[whatsapp] Falha no sync automático:", e);
+          return null;
+        }),
+      ]);
       setWhatsappInstances(instances);
-      toast.success("Status da conexão WhatsApp atualizado.");
+      const threadsRes = await listChatThreads({ data: { store_id: store?.id } }).catch(() => null);
+      if (threadsRes?.threads) {
+        setThreads(threadsRes.threads);
+      }
+      toast.success(
+        syncRes?.importedCount
+          ? `Status atualizado! ${syncRes.importedCount} conversas sincronizadas.`
+          : "Status da conexão WhatsApp atualizado."
+      );
     } catch (error: any) {
       toast.error(error?.message || "Não foi possível atualizar a conexão WhatsApp.");
     } finally {
       setIsRefreshingWhatsApp(false);
+    }
+  };
+
+  // Estados para Desconexão Completa do WhatsApp
+  const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
+  const [selectedDisconnectInstanceId, setSelectedDisconnectInstanceId] = useState<string | null>(null);
+  const [deepDisconnect, setDeepDisconnect] = useState(false);
+  const [isDisconnectingWhatsApp, setIsDisconnectingWhatsApp] = useState(false);
+
+  const handleDisconnectWhatsApp = async () => {
+    const inst = (selectedDisconnectInstanceId ? whatsappInstances.find((i) => i.id === selectedDisconnectInstanceId) : null) || whatsappInstances.find((i) => i.status === "connected") || whatsappInstances[0];
+    const instId = inst?.id;
+    if (!instId || !store?.id) {
+      toast.error("Nenhuma instância ativa do WhatsApp selecionada.");
+      return;
+    }
+    setIsDisconnectingWhatsApp(true);
+    try {
+      await disconnectWhatsAppInstance({
+        data: {
+          id: instId,
+          storeId: store.id,
+          deepDisconnect,
+        },
+      });
+      const instances = await listWorkspaceWhatsAppInstances({ data: { store_id: store.id } }).catch(() => []);
+      setWhatsappInstances(instances);
+      setDisconnectModalOpen(false);
+      setSelectedDisconnectInstanceId(null);
+      toast.success(deepDisconnect ? "WhatsApp desconectado e credenciais removidas." : "WhatsApp desconectado com sucesso.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao desconectar instância.");
+    } finally {
+      setIsDisconnectingWhatsApp(false);
+    }
+  };
+
+  // Estados para Limpar e Excluir Conversas Localmente (Sem afetar o WhatsApp do cliente)
+  const [clearMessagesModalOpen, setClearMessagesModalOpen] = useState(false);
+  const [isClearingMessages, setIsClearingMessages] = useState(false);
+
+  const handleClearThreadMessages = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    setIsClearingMessages(true);
+    try {
+      await clearChatThreadMessagesLocal({
+        data: { threadId: activeThread.id, storeId: store.id },
+      });
+      setMessages([]);
+      setClearMessagesModalOpen(false);
+      const threadsRes = await listChatThreads({ data: { store_id: store.id } }).catch(() => null);
+      if (threadsRes?.threads) setThreads(threadsRes.threads);
+      toast.success("Mensagens apagadas estritamente no sistema local.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao limpar mensagens.");
+    } finally {
+      setIsClearingMessages(false);
+    }
+  };
+
+  const [deleteThreadModalOpen, setDeleteThreadModalOpen] = useState(false);
+  const [isDeletingThread, setIsDeletingThread] = useState(false);
+
+  const handleDeleteThread = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    setIsDeletingThread(true);
+    try {
+      await deleteChatThreadLocal({
+        data: { threadId: activeThread.id, storeId: store.id },
+      });
+      setMessages([]);
+      setDeleteThreadModalOpen(false);
+      const remainingThreads = threads.filter((t) => t.id !== activeThread.id);
+      setThreads(remainingThreads);
+      setActiveThreadId(remainingThreads.length > 0 ? remainingThreads[0].id : null);
+      toast.success("Conversa excluída do sistema local.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir conversa.");
+    } finally {
+      setIsDeletingThread(false);
+    }
+  };
+
+  const [deleteContactModalOpen, setDeleteContactModalOpen] = useState(false);
+  const [isDeletingContact, setIsDeletingContact] = useState(false);
+  const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
+
+  const handleDeleteContactPermanently = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    setIsDeletingContact(true);
+    try {
+      await deleteChatContactPermanently({
+        data: { threadId: activeThread.id, storeId: store.id, deleteFromCrm: true },
+      });
+      setMessages([]);
+      setDeleteContactModalOpen(false);
+      const remainingThreads = threads.filter((t) => t.id !== activeThread.id);
+      setThreads(remainingThreads);
+      setActiveThreadId(remainingThreads.length > 0 ? remainingThreads[0].id : null);
+      toast.success("Contato e histórico excluídos definitivamente do sistema.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir contato permanentemente.");
+    } finally {
+      setIsDeletingContact(false);
+    }
+  };
+
+  const [supervisorRequestsModalOpen, setSupervisorRequestsModalOpen] = useState(false);
+  const [requestDeletionModalOpen, setRequestDeletionModalOpen] = useState(false);
+  const [requestDeletionReason, setRequestDeletionReason] = useState("");
+  const [isSubmittingDeletionRequest, setIsSubmittingDeletionRequest] = useState(false);
+  const [pendingDeletionRequests, setPendingDeletionRequests] = useState<any[]>([]);
+  const [isLoadingDeletionRequests, setIsLoadingDeletionRequests] = useState(false);
+  const [isReviewingRequest, setIsReviewingRequest] = useState<string | null>(null);
+  const [isGeneratingAiCopilot, setIsGeneratingAiCopilot] = useState(false);
+
+  const handleRequestContactDeletion = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    if (!requestDeletionReason.trim()) {
+      toast.error("Informe a justificativa para a solicitação.");
+      return;
+    }
+    setIsSubmittingDeletionRequest(true);
+    try {
+      await requestChatContactDeletion({
+        data: {
+          threadId: activeThread.id,
+          storeId: store.id,
+          reason: requestDeletionReason.trim(),
+        },
+      });
+      toast.success("Solicitação enviada ao supervisor com sucesso.");
+      setRequestDeletionModalOpen(false);
+      setRequestDeletionReason("");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao enviar solicitação.");
+    } finally {
+      setIsSubmittingDeletionRequest(false);
+    }
+  };
+
+  const loadPendingDeletionRequests = async () => {
+    if (!store?.id || !isSupervisor) return;
+    setIsLoadingDeletionRequests(true);
+    try {
+      const res = await listChatContactDeletionRequests({
+        data: { storeId: store.id, status: "pending" },
+      });
+      setPendingDeletionRequests(res?.requests || []);
+    } catch {
+      // noop defensivo
+    } finally {
+      setIsLoadingDeletionRequests(false);
+    }
+  };
+
+  const handleReviewDeletionRequest = async (requestId: string, approved: boolean) => {
+    setIsReviewingRequest(requestId);
+    try {
+      await reviewChatContactDeletionRequest({
+        data: { requestId, approved, deleteFromCrm: true },
+      });
+      toast.success(approved ? "Exclusão autorizada e executada com sucesso." : "Solicitação de exclusão recusada.");
+      setPendingDeletionRequests((prev) => prev.filter((r) => r.id !== requestId));
+      if (approved) {
+        reloadThreads();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao processar solicitação.");
+    } finally {
+      setIsReviewingRequest(null);
+    }
+  };
+
+  const handleGenerateTourismCopilot = async (customQuery?: string) => {
+    if (!activeThread?.id) return;
+    setIsGeneratingAiCopilot(true);
+    try {
+      const res = await generateTourismAiCopilotReply({
+        data: {
+          threadId: activeThread.id,
+          storeId: store?.id,
+          query: customQuery || text || undefined,
+        },
+      });
+      if (res?.suggestedReply) {
+        setText(res.suggestedReply);
+        toast.success("Sugestão IA carregada com pacotes reais e regras da ANAC!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao consultar IA de turismo.");
+    } finally {
+      setIsGeneratingAiCopilot(false);
+    }
+  };
+
+  const [aiAudioPreviewUrl, setAiAudioPreviewUrl] = useState<string | null>(null);
+  const [isGeneratingSmartReply, setIsGeneratingSmartReply] = useState(false);
+  const [isGeneratingSmartAudio, setIsGeneratingSmartAudio] = useState(false);
+  const [isPlayingSmartAudio, setIsPlayingSmartAudio] = useState(false);
+  const aiAudioElementRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleGenerateSmartReply = async (isAudio = false, customInstruction?: string) => {
+    if (!activeThread?.id) return;
+    if (isAudio) setIsGeneratingSmartAudio(true);
+    else setIsGeneratingSmartReply(true);
+
+    try {
+      const res = await generateSmartContextualAiReply({
+        data: {
+          threadId: activeThread.id,
+          storeId: store?.id,
+          customInstruction: customInstruction || text.trim() || undefined,
+          generateAudioPreview: isAudio,
+        },
+      });
+
+      if (res?.suggestedReply) {
+        setText(res.suggestedReply);
+        if (res.audioPreviewUrl) {
+          setAiAudioPreviewUrl(res.audioPreviewUrl);
+          toast.success("Áudio sintetizado com sucesso! Ouça antes de enviar ao cliente.");
+        } else {
+          toast.success("Resposta gerada pela IA com base no histórico do cliente!");
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao gerar resposta com IA.");
+    } finally {
+      setIsGeneratingSmartReply(false);
+      setIsGeneratingSmartAudio(false);
+    }
+  };
+
+  const handleSendAiAudio = async () => {
+    if (!aiAudioPreviewUrl || !activeThread?.id || isSending) return;
+    setIsSending(true);
+    try {
+      await sendChatMessage({
+        data: {
+          threadId: activeThread.id,
+          message: "[Áudio]",
+          message_type: "audio",
+          attachments: [aiAudioPreviewUrl],
+          is_internal: false,
+          payload: {
+            is_ptt: true,
+            channel: "whatsapp",
+            origin: "waesy_ai_voice",
+          },
+        },
+      });
+      setAiAudioPreviewUrl(null);
+      setText("");
+      toast.success("Nota de voz enviada no WhatsApp!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao enviar áudio.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const togglePlaySmartAudio = () => {
+    if (!aiAudioElementRef.current && aiAudioPreviewUrl) {
+      aiAudioElementRef.current = new Audio(aiAudioPreviewUrl);
+      aiAudioElementRef.current.onended = () => setIsPlayingSmartAudio(false);
+    }
+    if (!aiAudioElementRef.current) return;
+
+    if (isPlayingSmartAudio) {
+      aiAudioElementRef.current.pause();
+      setIsPlayingSmartAudio(false);
+    } else {
+      aiAudioElementRef.current.play().then(() => {
+        setIsPlayingSmartAudio(true);
+      }).catch(() => setIsPlayingSmartAudio(false));
+    }
+  };
+
+  const handleToggleThreadStaffVisibility = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    const isCurrentlyHidden = Boolean(activeThread.metadata?.hidden_from_staff);
+    const nextHiddenState = !isCurrentlyHidden;
+    setIsTogglingVisibility(true);
+    try {
+      await toggleChatThreadStaffVisibility({
+        data: { threadId: activeThread.id, storeId: store.id, hiddenFromStaff: nextHiddenState },
+      });
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === activeThread.id
+            ? {
+                ...t,
+                metadata: {
+                  ...(t.metadata || {}),
+                  hidden_from_staff: nextHiddenState,
+                },
+              }
+            : t,
+        ),
+      );
+      toast.success(
+        nextHiddenState
+          ? "Conversa marcada como confidencial (oculta para atendentes comuns)."
+          : "Conversa visível para a equipe do setor.",
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alternar visibilidade da conversa.");
+    } finally {
+      setIsTogglingVisibility(false);
+    }
+  };
+
+  const [resetHistoryModalOpen, setResetHistoryModalOpen] = useState(false);
+  const [resetConfirmationCode, setResetConfirmationCode] = useState("");
+  const [isResettingHistory, setIsResettingHistory] = useState(false);
+
+  const handleResetStoreHistory = async () => {
+    if (!store?.id) return;
+    if (resetConfirmationCode.trim() !== "RESETAR") {
+      toast.error("Digite RESETAR para confirmar a exclusão do histórico local.");
+      return;
+    }
+    setIsResettingHistory(true);
+    try {
+      const res = await resetStoreChatHistoryLocal({
+        data: { storeId: store.id, confirmationCode: "RESETAR" },
+      });
+      setThreads([]);
+      setMessages([]);
+      setActiveThreadId(null);
+      setResetHistoryModalOpen(false);
+      setResetConfirmationCode("");
+      toast.success(`Histórico local resetado! ${res.deletedThreadsCount} conversas removidas do sistema.`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao resetar histórico da loja.");
+    } finally {
+      setIsResettingHistory(false);
     }
   };
 
@@ -473,9 +787,101 @@ function WorkspaceAtendimentoPage() {
 
   // Estados de Conversas
   const [threads, setThreads] = useState<any[]>(initialThreads || []);
-  const [activeThreadId, setActiveThreadId] = useState<string | null>(
-    (searchParams as any).threadId || (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null,
-  );
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(() => {
+    if ((searchParams as any)?.threadId) return (searchParams as any).threadId;
+    if (typeof window !== "undefined" && window.innerWidth < 768) return null;
+    return (initialThreads && initialThreads.length > 0 ? initialThreads[0]?.id : null) || null;
+  });
+
+  useEffect(() => {
+    if (initialThreads) {
+      setThreads(initialThreads);
+    }
+  }, [initialThreads]);
+
+  useEffect(() => {
+    if (!activeThreadId && threads.length > 0 && typeof window !== "undefined" && window.innerWidth >= 768) {
+      setActiveThreadId(threads[0].id);
+    }
+  }, [threads, activeThreadId]);
+
+  // Client-side fallback defensivo para sincronizar threads com o tenant ativo do workspace
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const activeTenant = getClientActiveTenant();
+    const effectiveStore = store?.id || activeTenant;
+    if (effectiveStore && threads.length === 0) {
+      listChatThreads({ data: { store_id: effectiveStore } }).then((res) => {
+        if (res?.threads && res.threads.length > 0) {
+          setThreads(res.threads);
+        }
+      }).catch(() => {});
+    }
+  }, [store?.id, threads.length]);
+
+  const activeThreadIdRef = useRef<string | null>(activeThreadId);
+  useEffect(() => {
+    activeThreadIdRef.current = activeThreadId;
+  }, [activeThreadId]);
+
+  const statusFilterRef = useRef(statusFilter);
+  useEffect(() => {
+    statusFilterRef.current = statusFilter;
+  }, [statusFilter]);
+
+  const threadsRef = useRef(threads);
+  useEffect(() => {
+    threadsRef.current = threads;
+  }, [threads]);
+
+  const [messages, setMessages] = useState<any[]>([]);
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Revalidação em background da lista de conversas
+  const reloadThreads = useCallback(async () => {
+    const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+    const effectiveStoreId = store?.id || activeTenant;
+    if (!effectiveStoreId) return;
+    try {
+      const sf = statusFilterRef.current;
+      const res = await listChatThreads({
+        data: {
+          store_id: effectiveStoreId,
+          status: (sf === "waiting" ? "open" : sf) as any,
+        },
+      });
+      if (res?.threads) {
+        if (res.threads.length === 0 && threadsRef.current.length > 0 && (sf === "all" || sf === "direct" || sf === "open")) {
+          console.warn("[atendimento] listChatThreads retornou 0 threads inesperadamente; mantendo lista ativa em cache.");
+          return;
+        }
+        setThreads(res.threads);
+      }
+    } catch (e) {
+      console.warn("[atendimento] Erro ao recarregar threads:", e);
+    }
+  }, [store?.id]);
+
+  // Revalidação em background das mensagens da conversa ativa
+  const reloadActiveMessages = useCallback(async (targetThreadId?: string) => {
+    const tId = targetThreadId || activeThreadIdRef.current;
+    if (!tId) return;
+    try {
+      const res: any = await getChatMessages({ data: { threadId: tId } });
+      if (res?.messages && activeThreadIdRef.current === tId) {
+        if (res.messages.length === 0 && messagesRef.current.length > 0) {
+          console.warn("[atendimento] getChatMessages retornou 0 mensagens inesperadamente; mantendo mensagens ativas em cache.");
+          return;
+        }
+        setMessages(res.messages);
+      }
+    } catch (e) {
+      console.warn("[atendimento] Erro ao recarregar mensagens:", e);
+    }
+  }, []);
 
   useEffect(() => {
     if ((searchParams as any)?.search) {
@@ -485,23 +891,25 @@ function WorkspaceAtendimentoPage() {
       setActiveThreadId((searchParams as any).threadId);
     }
   }, [(searchParams as any)?.search, (searchParams as any)?.threadId]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const promiseDetection = useMemo(() => {
+    return detectStaffFollowUpPromise(messages);
+  }, [messages]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [text, setText] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [fetchingMediaMap, setFetchingMediaMap] = useState<Record<string, boolean>>({});
+  const [voiceStudioModalOpen, setVoiceStudioModalOpen] = useState(false);
+  const [transcribingAudioMap, setTranscribingAudioMap] = useState<Record<string, boolean>>({});
   const [isSending, setIsSending] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [showCustomer360, setShowCustomer360] = useState(true);
+  const [mobileCustomer360Open, setMobileCustomer360Open] = useState(false);
   const [isWhisperMode, setIsWhisperMode] = useState(false);
   const [aiAutoReplyPerThread, setAiAutoReplyPerThread] = useState<Record<string, boolean>>({});
   const [assignedAgentPerThread, setAssignedAgentPerThread] = useState<Record<string, string>>({});
-  const [quickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || [
-    { id: "qr_ola", shortcut: "ola", title: "Saudação de Boas-Vindas", content: "Olá {{nome}}! Seja bem-vindo ao atendimento oficial da {{loja}}. Como podemos ajudar?", category: "geral" },
-    { id: "qr_pix", shortcut: "pix", title: "Chave PIX", content: "Nossa chave PIX oficial é gerada diretamente no seu pedido com confirmação automática em segundos!", category: "financeiro" },
-    { id: "qr_horarios", shortcut: "horarios", title: "Horários de Expediente", content: "Atendemos de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", category: "suporte" },
-    { id: "qr_rastreio", shortcut: "rastreio", title: "Rastreio do Pedido", content: "Seu pedido está em trânsito e você pode acompanhar pelo link de rastreio oficial.", category: "logistica" },
-    { id: "qr_cardapio", shortcut: "cardapio", title: "Cardápio e Catálogo", content: "Confira todos os itens do nosso cardápio atualizado no link da vitrine!", category: "vendas" }
-  ]);
+  const [baseQuickReplies] = useState<QuickReplyItem[]>(initialQuickReplies || []);
 
+  const quickReplies = useMemo<QuickReplyItem[]>(() => { const byShortcut = new Map<string, QuickReplyItem>(); for (const item of baseQuickReplies) byShortcut.set(String(item.shortcut || "").toLowerCase(), item); for (const m of storeMacros as any[]) { const sc = String(m.shortcut || "").toLowerCase(); if (sc) byShortcut.set(sc, { id: m.id, shortcut: sc, title: m.title || sc, content: m.message || m.content || "", category: m.category || "geral" }); } return Array.from(byShortcut.values()); }, [baseQuickReplies, storeMacros]);
   // Ticket Resolver Modal state
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
@@ -512,15 +920,10 @@ function WorkspaceAtendimentoPage() {
   // Estados de Horários de Atendimento & Ausência (Persistidos)
   const initialSupportSettings = (store?.settings as any)?.support_settings || {};
   const [supportSchedules, setSupportSchedules] = useState<Array<{ day: string; hours: string; active: boolean }>>(
-    initialSupportSettings.support_schedules || [
-      { day: "Segunda a Sexta", hours: "08:00 às 18:00", active: true },
-      { day: "Sábado", hours: "08:00 às 12:00", active: true },
-      { day: "Domingo e Feriados", hours: "Fechado", active: false },
-    ],
+    initialSupportSettings.support_schedules || [],
   );
   const [awayMessage, setAwayMessage] = useState<string>(
-    initialSupportSettings.away_message ||
-      "Olá! Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h. Deixe sua mensagem que responderemos assim que nossa equipe iniciar o expediente!",
+    initialSupportSettings.away_message || "",
   );
   const [autoReplyEnabled, setAutoReplyEnabled] = useState<boolean>(
     initialSupportSettings.auto_reply_enabled ?? true,
@@ -545,11 +948,88 @@ function WorkspaceAtendimentoPage() {
     }
   };
 
+  const handleFetchMedia = async (msg: any) => {
+    const extId = msg.external_message_id || msg.payload?.external_message_id || msg.payload?.id;
+    if (!activeThread?.id || !extId) {
+      toast.error("Identificador de mensagem não disponível");
+      return;
+    }
+    setFetchingMediaMap((prev) => ({ ...prev, [msg.id]: true }));
+    try {
+      const res = await getWhatsAppMediaBase64({
+        data: {
+          threadId: activeThread.id,
+          messageId: msg.id,
+          externalMessageId: extId,
+        },
+      });
+      if (res?.base64) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id
+              ? {
+                  ...m,
+                  attachments: [res.base64],
+                  payload: {
+                    ...(m.payload || {}),
+                    media: {
+                      ...(m.payload?.media || {}),
+                      type: m.message_type || "sticker",
+                      url: res.base64,
+                      mimetype: res.mimetype,
+                    },
+                  },
+                }
+              : m,
+          ),
+        );
+        toast.success("Mídia carregada!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao baixar mídia do WhatsApp");
+    } finally {
+      setFetchingMediaMap((prev) => ({ ...prev, [msg.id]: false }));
+    }
+  };
+
+  const handleTranscribeAudio = async (msg: any) => {
+    if (!activeThread?.id || !msg.id) return;
+    setTranscribingAudioMap((prev) => ({ ...prev, [msg.id]: true }));
+    try {
+      const res = await transcribeWhatsAppAudioMessage({
+        data: {
+          threadId: activeThread.id,
+          messageId: msg.id,
+        },
+      });
+      if (res?.transcript) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id
+              ? {
+                  ...m,
+                  payload: {
+                    ...(m.payload || {}),
+                    transcript: res.transcript,
+                  },
+                }
+              : m,
+          ),
+        );
+        toast.success("Áudio transcrito com sucesso!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao transcrever áudio.");
+    } finally {
+      setTranscribingAudioMap((prev) => ({ ...prev, [msg.id]: false }));
+    }
+  };
+
   const activeThread = threads.find((t) => t.id === activeThreadId);
 
   // Recarregar threads ao alternar statusFilter (para suportar 'archived' via backend)
   useEffect(() => {
-    listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } })
+    listChatThreads({ data: { store_id: store?.id, status: (statusFilter === "waiting" ? "open" : statusFilter) as any } })
       .then((res) => {
         if (res?.threads) {
           setThreads(res.threads);
@@ -561,15 +1041,19 @@ function WorkspaceAtendimentoPage() {
       .catch(() => {});
   }, [statusFilter]);
 
-  // Cálculo da Janela de 24h WhatsApp Meta Cloud API
+  // Cálculo de Disponibilidade e Janela WhatsApp (Meta Cloud API exige template após 24h; canais Web/Evolution operam 24/7)
   const isWhatsAppWindowOpen = useMemo(() => {
+    const defaultInstance = whatsappInstances.find((i) => i.is_default) || whatsappInstances[0];
+    const isUnofficial = defaultInstance?.connection_mode === "unofficial" || defaultInstance?.provider === "evolution_api" || !defaultInstance;
+    if (isUnofficial) return true;
+
     if (!messages || messages.length === 0) return true;
     const customerMsgs = messages.filter((m) => !m.is_staff_reply && m.created_at);
     if (customerMsgs.length === 0) return true;
     const lastCustomerMsg = customerMsgs[customerMsgs.length - 1];
     const diffHours = (Date.now() - new Date(lastCustomerMsg.created_at).getTime()) / (1000 * 60 * 60);
     return diffHours <= 24;
-  }, [messages]);
+  }, [messages, whatsappInstances]);
 
   // Carregamento de Mensagens
   useEffect(() => {
@@ -598,11 +1082,24 @@ function WorkspaceAtendimentoPage() {
     }
   }, [messages, loadingMessages]);
 
-  // Realtime
+  // Subscrição Unificada Supabase Realtime (Zero Duplicidade, Reconexão Resiliente e Catch-Up Automático)
   useEffect(() => {
-    if (!store?.id) return;
-    const rt = getRealtimeChannel(`store-chat-${store.id}`);
+    const activeTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
+    const effectiveStoreId = store?.id || activeTenant;
+    if (!effectiveStoreId) return;
+    const rt = getRealtimeChannel(`store-chat-${effectiveStoreId}`);
     if (!rt.channel) return;
+
+    let hadDisconnection = false;
+    const runCatchUp = () => {
+      reloadThreads();
+      if (activeThreadIdRef.current) {
+        reloadActiveMessages(activeThreadIdRef.current);
+      }
+      listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
+        .then((list) => setWhatsappInstances(list))
+        .catch(() => {});
+    };
 
     rt.channel
       .on(
@@ -610,46 +1107,126 @@ function WorkspaceAtendimentoPage() {
         { event: "INSERT", schema: "public", table: "chat_messages" },
         (payload: any) => {
           const newMsg = payload.new as any;
-          if (newMsg.thread_id === activeThreadId) {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev;
-              return [...prev, newMsg];
-            });
+          if (!newMsg) return;
+
+          const currentActive = activeThreadIdRef.current;
+          const isCurrentActive = newMsg.thread_id === currentActive;
+          const isInternalMsg = Boolean(
+            newMsg.payload?.is_whisper ||
+            newMsg.payload?.is_internal ||
+            newMsg.message_type === "internal_note" ||
+            (newMsg.message_type === "system_event" && newMsg.payload?.is_whisper)
+          );
+
+          if (isCurrentActive) {
+            if (newMsg.is_encrypted || (typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
+              reloadActiveMessages(newMsg.thread_id);
+            } else {
+              setMessages((prev) => {
+                if (prev.some((m) => m.id === newMsg.id || (newMsg.external_message_id && m.external_message_id === newMsg.external_message_id))) {
+                  return prev.map((m) => (m.id === newMsg.id ? { ...m, ...newMsg } : m));
+                }
+                return [...prev, newMsg];
+              });
+            }
+
             if (!newMsg.is_staff_reply) {
               playMessageChime();
             }
+          } else if (!newMsg.is_staff_reply) {
+            playMessageChime();
           }
-          // Atualiza o snippet na lista de threads
-          setThreads((prev) =>
-            prev.map((t) => {
-              if (t.id === newMsg.thread_id) {
-                return {
-                  ...t,
-                  last_message: newMsg.message,
-                  is_last_reply_staff: newMsg.is_staff_reply,
-                  updated_at: newMsg.created_at,
-                };
+
+          const exists = threadsRef.current.some((t) => t.id === newMsg.thread_id);
+          if (exists) {
+            setThreads((prev) => {
+              const target = prev.find((t) => t.id === newMsg.thread_id);
+              if (!target) return prev;
+              if (isInternalMsg) {
+                return [
+                  {
+                    ...target,
+                    updated_at: newMsg.created_at || new Date().toISOString(),
+                  },
+                  ...prev.filter((t) => t.id !== newMsg.thread_id),
+                ];
               }
-              return t;
-            }),
-          );
+              const cleanPreview = (typeof newMsg.message === "string" && !newMsg.message.startsWith("waesy-msg:"))
+                ? newMsg.message
+                : (newMsg.message_type === "image" ? "[Imagem]"
+                  : newMsg.message_type === "video" ? "[Vídeo]"
+                  : newMsg.message_type === "audio" ? "[Áudio]"
+                  : newMsg.message_type === "document" ? "[Documento]"
+                  : newMsg.message_type === "sticker" ? "[Figurinha]"
+                  : (target.last_message || "Nova mensagem"));
+              const updated = {
+                ...target,
+                last_message: cleanPreview,
+                is_last_reply_staff: newMsg.is_staff_reply,
+                updated_at: newMsg.created_at || new Date().toISOString(),
+              };
+              return [updated, ...prev.filter((t) => t.id !== newMsg.thread_id)];
+            });
+            if (newMsg.is_encrypted || (typeof newMsg.message === "string" && newMsg.message.startsWith("waesy-msg:"))) {
+              reloadThreads();
+            }
+          } else {
+            reloadThreads();
+          }
         },
       )
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_threads" },
+        { event: "UPDATE", schema: "public", table: "chat_messages" },
+        (payload: any) => {
+          const updatedMsg = payload.new as any;
+          if (!updatedMsg) return;
+
+          if (updatedMsg.thread_id === activeThreadIdRef.current) {
+            setMessages((prev) =>
+              prev.map((m) => {
+                if (m.id !== updatedMsg.id) return m;
+                const mergedPayload = { ...(m.payload || {}), ...(updatedMsg.payload || {}) };
+                return {
+                  ...m,
+                  delivery_status: updatedMsg.delivery_status ?? m.delivery_status,
+                  external_message_id: updatedMsg.external_message_id ?? m.external_message_id,
+                  sent_at: updatedMsg.sent_at ?? m.sent_at,
+                  delivered_at: updatedMsg.delivered_at ?? m.delivered_at,
+                  read_at: updatedMsg.read_at ?? m.read_at,
+                  failed_at: updatedMsg.failed_at ?? m.failed_at,
+                  error_code: updatedMsg.error_code ?? m.error_code,
+                  error_message: updatedMsg.error_message ?? m.error_message,
+                  is_revoked_by_sender: Boolean(mergedPayload.is_revoked_by_sender || m.is_revoked_by_sender),
+                  revoked_at: (mergedPayload.revoked_at as string) || m.revoked_at || null,
+                  payload: mergedPayload,
+                };
+              })
+            );
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_threads", filter: `store_id=eq.${effectiveStoreId}` },
         (payload: any) => {
           const newThread = payload.new as any;
-          // Ignora threads de IA/Copilot
-          if (newThread.thread_type === "ai_assistant" || newThread.thread_type === "copilot") {
+          if (newThread?.thread_type === "ai_assistant" || newThread?.thread_type === "copilot") {
             return;
           }
-          if (newThread?.store_id === store?.id) {
-            listChatThreads({ data: { status: (statusFilter === "waiting" ? "open" : statusFilter) as any } }).then((res) => {
-              if (res?.threads) setThreads(res.threads);
-            });
-            playMessageChime();
+          reloadThreads();
+          if (newThread?.id && newThread.id === activeThreadIdRef.current) {
+            reloadActiveMessages(newThread.id);
           }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "whatsapp_channel_instances", filter: `store_id=eq.${effectiveStoreId}` },
+        () => {
+          listWorkspaceWhatsAppInstances({ data: { store_id: effectiveStoreId } })
+            .then((list) => setWhatsappInstances(list))
+            .catch(() => {});
         },
       )
       .on(
@@ -657,11 +1234,11 @@ function WorkspaceAtendimentoPage() {
         { event: "INSERT", schema: "public", table: "intranet_messages" },
         (payload: any) => {
           const newMsg = payload.new as any;
-          if (newMsg && newMsg.store_id === store?.id) {
+          if (newMsg && newMsg.store_id === effectiveStoreId) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === newMsg.channel_id) {
-                  const exists = c.messages.some((m) => m.id === newMsg.id);
+                  const exists = c.messages.some((m: any) => m.id === newMsg.id);
                   if (exists) return c;
                   return {
                     ...c,
@@ -688,13 +1265,13 @@ function WorkspaceAtendimentoPage() {
         { event: "*", schema: "public", table: "intranet_milestones" },
         (payload: any) => {
           const updated = payload.new as any;
-          if (updated && updated.store_id === store?.id) {
+          if (updated && updated.store_id === effectiveStoreId) {
             setIntranetChannels((prev) =>
               prev.map((c) => {
                 if (c.id === updated.channel_id) {
                   return {
                     ...c,
-                    milestones: c.milestones.map((m) =>
+                    milestones: c.milestones.map((m: any) =>
                       m.id === updated.id ? { ...m, done: updated.done, label: updated.label, detail: updated.detail } : m
                     ),
                   };
@@ -705,12 +1282,72 @@ function WorkspaceAtendimentoPage() {
           }
         },
       )
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          hadDisconnection = true;
+        } else if (status === "SUBSCRIBED" && hadDisconnection) {
+          hadDisconnection = false;
+          runCatchUp();
+        }
+      });
+
+    let authSubscription: { unsubscribe: () => void } | null = null;
+    try {
+      const supabase = getBrowserClient();
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        if ((event === "TOKEN_REFRESHED" || event === "SIGNED_IN") && session?.access_token) {
+          try {
+            supabase.realtime.setAuth(session.access_token);
+          } catch {
+            // noop
+          }
+          runCatchUp();
+        }
+      });
+      authSubscription = data?.subscription || null;
+    } catch {
+      // noop
+    }
 
     return () => {
+      authSubscription?.unsubscribe();
       rt.unsubscribe();
     };
-  }, [store?.id, activeThreadId, statusFilter]);
+  }, [store?.id, reloadThreads, reloadActiveMessages]);
+
+  // Listener de Visibilidade, Retomada de Foco e Reconexão de Rede (Zero Lag Mobile/Background)
+  useEffect(() => {
+    const handleRevalidation = () => {
+      if (document.visibilityState === "visible") {
+        reloadThreads();
+        if (activeThreadIdRef.current) {
+          reloadActiveMessages(activeThreadIdRef.current);
+        }
+      }
+    };
+    window.addEventListener("visibilitychange", handleRevalidation);
+    window.addEventListener("focus", handleRevalidation);
+    window.addEventListener("online", handleRevalidation);
+    return () => {
+      window.removeEventListener("visibilitychange", handleRevalidation);
+      window.removeEventListener("focus", handleRevalidation);
+      window.removeEventListener("online", handleRevalidation);
+    };
+  }, [reloadThreads, reloadActiveMessages]);
+
+  // Polling Leve de Segurança a Cada 15s (Tolerância a Wi-Fi Instável)
+  useEffect(() => {
+    if (!store?.id) return;
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        reloadThreads();
+        if (activeThreadIdRef.current) {
+          reloadActiveMessages(activeThreadIdRef.current);
+        }
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [store?.id, reloadThreads, reloadActiveMessages]);
 
   // Enviar Mensagem
   const handleSend = async (e?: React.FormEvent) => {
@@ -738,23 +1375,35 @@ function WorkspaceAtendimentoPage() {
         },
       });
 
-      setMessages((prev) => [...prev, sent]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === sent.id)) {
+          return prev.map((m) => (m.id === sent.id ? { ...m, ...sent } : m));
+        }
+        return [...prev, sent];
+      });
       setText("");
       setIsWhisperMode(false);
 
-      setThreads((prev) =>
-        prev.map((t) => {
-          if (t.id === activeThreadId) {
-            return {
-              ...t,
-              last_message: isWhisperMode ? `[Nota Interna]: ${text.trim()}` : text.trim(),
-              is_last_reply_staff: true,
-              updated_at: new Date().toISOString(),
-            };
-          }
-          return t;
-        }),
-      );
+      if ((sent as any)?.delivery_status === "failed") {
+        toast.error(
+          (sent as any)?.error_message ||
+            "Mensagem salva no histórico, mas o envio pelo WhatsApp falhou. Verifique a conexão da instância.",
+        );
+      }
+
+      setThreads((prev) => {
+        const target = prev.find((t) => t.id === activeThreadId);
+        if (!target) return prev;
+        const updatedTarget = {
+          ...target,
+          ...(isWhisperMode ? {} : {
+            last_message: text.trim(),
+            is_last_reply_staff: true,
+          }),
+          updated_at: new Date().toISOString(),
+        };
+        return [updatedTarget, ...prev.filter((t) => t.id !== activeThreadId)];
+      });
     } catch (err: any) {
       toast.error(err.message || "Erro ao despachar mensagem.");
     } finally {
@@ -830,11 +1479,14 @@ function WorkspaceAtendimentoPage() {
   // Filtros de busca de threads
   const filteredThreads = useMemo(() => {
     return threads.filter((t) => {
-      // Filtro de 4 Abas Estilo WhatsApp Web / Whaticket
+      // Filtros de Abas: Todas, Individuais, Grupos, Abertas, Aguardando, Arquivadas
+      const isGrp = Boolean(t.is_group || t.is_channel || t.thread_type === "group" || t.thread_type === "channel");
+      if (statusFilter === "direct" && isGrp) return false;
+      if (statusFilter === "groups" && !isGrp) return false;
       if (statusFilter === "open" && t.status !== "open") return false;
       if (statusFilter === "archived" && t.status !== "archived") return false;
       if (statusFilter === "waiting" && (t.status === "archived" || t.is_last_reply_staff)) return false;
-      if (statusFilter === "all" && t.status === "archived") return false;
+      if ((statusFilter === "all" || statusFilter === "direct" || statusFilter === "groups") && t.status === "archived") return false;
       const matchDept = deptFilter === "all" || t.department === deptFilter;
       const matchSearch =
         !searchTerm.trim() ||
@@ -843,7 +1495,7 @@ function WorkspaceAtendimentoPage() {
         (t.last_message || "").toLowerCase().includes(searchTerm.toLowerCase());
       return matchDept && matchSearch;
     });
-  }, [threads, deptFilter, searchTerm]);
+  }, [threads, statusFilter, deptFilter, searchTerm]);
 
   // Filtros SDR
   const filteredSdrSessions = useMemo(() => {
@@ -874,22 +1526,22 @@ function WorkspaceAtendimentoPage() {
         <div className="flex items-center justify-between gap-3 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
-              Atendimento Omnichannel
+              Atendimento
             </h1>
-            <span className="hidden sm:inline-block text-xs text-muted-foreground">
+            <span className="hidden sm:inline-block text-xs text-muted-foreground font-medium">
               • {store?.name || "Workspace"}
             </span>
           </div>
 
           {/* Status de Presença do Atendente */}
-          <div className="flex items-center gap-2 shrink-0 bg-muted/60 p-1 rounded-lg border border-border/60">
+          <div className="flex items-center gap-1 shrink-0 bg-muted/40 p-1 rounded-lg border border-border/60">
             <button
               type="button"
               onClick={() => setAgentPresence("online")}
               className={cn(
-                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "px-3 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "online"
-                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
+                  ? "bg-background text-foreground shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -900,9 +1552,9 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("busy")}
               className={cn(
-                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "px-3 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "busy"
-                  ? "bg-warning/15 text-warning-strong  font-bold"
+                  ? "bg-background text-foreground shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -913,13 +1565,13 @@ function WorkspaceAtendimentoPage() {
               type="button"
               onClick={() => setAgentPresence("away")}
               className={cn(
-                "px-3 py-2 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                "px-3 h-11 min-h-11 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                 agentPresence === "away"
-                  ? "bg-muted text-muted-foreground font-bold"
+                  ? "bg-background text-foreground shadow-xs font-bold"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className="size-2 rounded-full bg-muted-foreground/50" />
+              <span className="size-2 rounded-full bg-muted-foreground/60" />
               <span>Pausa</span>
             </button>
           </div>
@@ -934,7 +1586,7 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "live"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
@@ -954,7 +1606,7 @@ function WorkspaceAtendimentoPage() {
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "intranet"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
@@ -965,19 +1617,19 @@ function WorkspaceAtendimentoPage() {
             </Badge>
           </button>
 
-          {/* Aba 2: Leads SDR / IA */}
+          {/* Aba 3: Leads SDR */}
           <button
             type="button"
             onClick={() => setActiveHubTab("sdr")}
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "sdr"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
             <Bot className="size-4" />
-            <span>Leads SDR / IA</span>
+            <span>Oportunidades</span>
             {sdrMetrics?.total > 0 && (
               <Badge variant="secondary" className="text-xs h-4 px-2 font-mono">
                 {sdrMetrics.total}
@@ -985,49 +1637,75 @@ function WorkspaceAtendimentoPage() {
             )}
           </button>
 
-          {/* Aba 3: Telemetria & Filas */}
+          {/* Aba 4: Desempenho & Filas */}
           <button
             type="button"
             onClick={() => setActiveHubTab("metrics")}
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "metrics"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
             <Activity className="size-4" />
-            <span>Telemetria & Filas</span>
+            <span>Desempenho & Filas</span>
           </button>
 
-          {/* Aba 4: Conexão WhatsApp Web */}
+          {/* Aba 5: Conexão WhatsApp */}
           <button
             type="button"
             onClick={() => setActiveHubTab("whatsapp")}
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "whatsapp"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
             <Smartphone className="size-4" />
-            <span>Conexão WhatsApp</span>
+            <span>WhatsApp</span>
           </button>
 
-          {/* Aba 5: Horários & Setores */}
+          {/* Aba 6: Horários & Turnos */}
           <button
             type="button"
             onClick={() => setActiveHubTab("hours")}
             className={cn(
               "px-4 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "hours"
-                ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                ? "bg-primary text-primary-foreground font-bold"
                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50",
             )}
           >
             <Clock className="size-4" />
-            <span>Horários & Setores</span>
+            <span>Horários</span>
+          </button>
+          <button type="button" onClick={() => setTeamSectorsDrawerOpen(true)} className="px-4 h-11 min-h-11 rounded-lg text-xs font-bold flex items-center gap-2 bg-foreground text-background cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary">
+            <Sliders className="size-4" />
+            <span>Setores</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                const isStandalone = new URLSearchParams(window.location.search).get("view") === "standalone";
+                const url = new URL(window.location.href);
+                if (isStandalone) {
+                  url.searchParams.delete("view");
+                  url.searchParams.delete("fullscreen");
+                  window.location.href = url.toString();
+                } else {
+                  url.searchParams.set("view", "standalone");
+                  window.open(url.toString(), "_blank");
+                }
+              }
+            }}
+            className="px-3 h-11 min-h-11 rounded-lg text-xs font-semibold flex items-center gap-2 bg-muted/40 text-muted-foreground hover:text-foreground border border-border/50 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            title="Alternar Modo Sistema Dedicado (Tela Cheia sem Menus)"
+          >
+            <Maximize2 className="size-4" />
+            <span className="hidden sm:inline">Modo Fullscreen</span>
           </button>
         </div>
       </header>
@@ -1046,21 +1724,36 @@ function WorkspaceAtendimentoPage() {
           >
             {/* Busca & Chips de Status */}
             <div className="p-3 border-b border-border/80 space-y-2 bg-card">
-              <div className="relative">
-                <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar conversa ou telefone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/40"
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar conversa ou telefone..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/40"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleSyncWhatsApp}
+                  disabled={isSyncingWhatsApp}
+                  title="Sincronizar conversas do WhatsApp"
+                  className="size-11 min-w-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <RefreshCw className={cn("size-4", isSyncingWhatsApp && "animate-spin text-primary")} />
+                </Button>
               </div>
 
               
-              {/* Chips Rápidos de 4 Abas: Todas / Abertas / Aguardando / Arquivadas (WhatsApp Web / Whaticket) */}
+              {/* Chips Rápidos de Abas: Todas / Individuais / Grupos / Abertas / Aguardando / Arquivadas */}
               <div className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar py-1">
                 {[
                   { id: "all", label: "Todas" },
+                  { id: "direct", label: "Individuais" },
+                  { id: "groups", label: "Grupos" },
                   { id: "open", label: "Abertas" },
                   { id: "waiting", label: "Aguardando" },
                   { id: "archived", label: "Arquivadas" },
@@ -1082,7 +1775,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="ml-auto">
                   <Select value={deptFilter} onValueChange={setDeptFilter}>
-                    <SelectTrigger className="h-8 text-xs rounded-lg border-border/60">
+                    <SelectTrigger className="h-11 min-h-11 px-3 text-xs rounded-lg border-border/60 bg-muted/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary">
                       <SelectValue placeholder="Setor" />
                     </SelectTrigger>
                     <SelectContent className="rounded-lg">
@@ -1101,7 +1794,7 @@ function WorkspaceAtendimentoPage() {
             {/* Lista de Threads de Conversas */}
             <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-border/40">
               {filteredThreads.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground text-xs space-y-2">
+                <div className="p-8 text-center text-muted-foreground text-xs space-y-3">
                   <MessageSquare className="size-8 mx-auto opacity-40" />
                   <p className="font-semibold text-foreground">Nenhuma conversa encontrada</p>
                   <p className="text-xs">
@@ -1109,11 +1802,26 @@ function WorkspaceAtendimentoPage() {
                       ? "Não há conversas arquivadas no momento."
                       : "Mensagens recebidas de clientes ou WhatsApp aparecerão aqui."}
                   </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSyncWhatsApp}
+                    disabled={isSyncingWhatsApp}
+                    className="h-11 min-h-11 text-xs gap-2 mt-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <RefreshCw className={cn("size-3.5", isSyncingWhatsApp && "animate-spin text-primary")} />
+                    <span>{isSyncingWhatsApp ? "Sincronizando..." : "Sincronizar conversas do WhatsApp"}</span>
+                  </Button>
                 </div>
               ) : (
                 filteredThreads.map((t) => {
                   const isActive = t.id === activeThreadId;
                   const isWhatsApp = t.channel === "whatsapp" || t.context_type === "whatsapp";
+                  const isGrp = Boolean(t.is_group || t.thread_type === "group");
+                  const isChan = Boolean(t.is_channel || t.thread_type === "channel");
+                  const avatarSrc = t.avatar_url || t.customer?.avatar_url;
+
                   return (
                     <button
                       key={t.id}
@@ -1125,16 +1833,24 @@ function WorkspaceAtendimentoPage() {
                           : "hover:bg-muted/40",
                       )}
                     >
-                      {/* Avatar com foto real ou iniciais */}
-                      {t.customer?.avatar_url ? (
+                      {/* Avatar com foto real do WhatsApp ou ícone de grupo/iniciais */}
+                      {avatarSrc ? (
                         <img
-                          src={t.customer.avatar_url}
-                          alt={t.customer?.full_name || "Cliente"}
+                          src={avatarSrc}
+                          alt={t.customer?.full_name || "Conversa"}
                           className="size-10 rounded-full object-cover shrink-0 border border-border/60"
                           onError={(e) => {
                             (e.currentTarget as HTMLElement).style.display = "none";
                           }}
                         />
+                      ) : isGrp ? (
+                        <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                          <Users className="size-5" />
+                        </div>
+                      ) : isChan ? (
+                        <div className="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                          <Radio className="size-5" />
+                        </div>
                       ) : (
                         <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
                           {(t.customer?.full_name || "C")[0].toUpperCase()}
@@ -1143,9 +1859,13 @@ function WorkspaceAtendimentoPage() {
 
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center justify-between gap-1">
-                          <span className="font-bold text-xs text-foreground truncate">
-                            {t.customer?.full_name || "Cliente"}
-                          </span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            {isGrp && <Users className="size-3.5 text-primary shrink-0" />}
+                            {isChan && <Radio className="size-3.5 text-emerald-600 shrink-0" />}
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {t.customer?.full_name || "Cliente"}
+                            </span>
+                          </div>
                           <span className="text-xs text-muted-foreground shrink-0 font-mono">
                             {formatRelativeTime(t.updated_at)}
                           </span>
@@ -1153,12 +1873,30 @@ function WorkspaceAtendimentoPage() {
 
                         <p className="text-xs text-muted-foreground line-clamp-1 leading-snug">
                           {t.is_last_reply_staff ? "Você: " : ""}
-                          {t.last_message || "Sem mensagens"}
+                          {String(t.last_message || "").startsWith("waesy-msg:")
+                            ? "[Mensagem]"
+                            : (t.last_message || "Sem mensagens")}
                         </p>
 
-                        <div className="flex items-center gap-2 pt-1">
-                          {/* Badge de Canal: WhatsApp verde ou Chat Web */}
-                          {isWhatsApp ? (
+                        <div className="flex items-center gap-2 pt-1 flex-wrap">
+                          {/* Badge de Canal / Tipo */}
+                          {isGrp ? (
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-2 py-0 h-4 bg-primary/10 text-primary border-primary/30 gap-1 font-semibold"
+                            >
+                              <Users className="size-3" />
+                              <span>Grupo WhatsApp</span>
+                            </Badge>
+                          ) : isChan ? (
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-2 py-0 h-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1 font-semibold"
+                            >
+                              <Radio className="size-3" />
+                              <span>Canal</span>
+                            </Badge>
+                          ) : isWhatsApp ? (
                             <Badge
                               variant="outline"
                               className="text-xs px-2 py-0 h-4 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1 font-semibold"
@@ -1204,7 +1942,7 @@ function WorkspaceAtendimentoPage() {
             >
               {/* Header da Conversa Ativa */}
               <div className="p-3 sm:p-4 bg-card border-b border-border/80 flex items-center justify-between gap-3 shrink-0">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3">
                   <Button
                     type="button"
                     variant="ghost"
@@ -1216,35 +1954,57 @@ function WorkspaceAtendimentoPage() {
                     <ArrowLeft className="size-5" />
                   </Button>
 
-                  {/* Avatar do cliente */}
-                  {activeThread.customer?.avatar_url ? (
+                  {/* Avatar do cliente ou grupo com foto real do WhatsApp */}
+                  {activeThread.avatar_url || activeThread.customer?.avatar_url ? (
                     <img
-                      src={activeThread.customer.avatar_url}
-                      alt={activeThread.customer?.full_name || "Cliente"}
+                      src={activeThread.avatar_url || activeThread.customer?.avatar_url}
+                      alt={activeThread.customer?.full_name || "Conversa"}
                       className="size-10 rounded-full object-cover shrink-0 border border-border/60"
                       onError={(e) => {
                         (e.currentTarget as HTMLElement).style.display = "none";
                       }}
                     />
+                  ) : activeThread.is_group || activeThread.thread_type === "group" ? (
+                    <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                      <Users className="size-5" />
+                    </div>
+                  ) : activeThread.is_channel || activeThread.thread_type === "channel" ? (
+                    <div className="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                      <Radio className="size-5" />
+                    </div>
                   ) : (
                     <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0 border border-primary/20">
                       {(activeThread.customer?.full_name || "C")[0].toUpperCase()}
                     </div>
                   )}
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-sm text-foreground truncate">
-                        {activeThread.customer?.full_name || "Cliente"}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                      <h3 className="font-bold text-sm sm:text-base text-foreground truncate min-w-0">
+                        {activeThread.customer?.full_name || "Conversa"}
                       </h3>
-                      {activeThread.channel === "whatsapp" && (
-                        <span className="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                          (WhatsApp)
+                      {activeThread.is_group || activeThread.thread_type === "group" ? (
+                        <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary shrink-0 border border-primary/20">
+                          <Users className="size-3 text-primary" />
+                          <span>Grupo WhatsApp</span>
+                        </span>
+                      ) : activeThread.is_channel || activeThread.thread_type === "channel" ? (
+                        <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0 border border-emerald-500/20">
+                          <Radio className="size-3 text-emerald-600" />
+                          <span>Canal</span>
+                        </span>
+                      ) : activeThread.channel === "whatsapp" && (
+                        <span className="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0 border border-emerald-500/20">
+                          <span
+                            className={cn("size-2 rounded-full shrink-0", isWhatsAppWindowOpen ? "bg-emerald-500" : "bg-muted-foreground")}
+                            title={isWhatsAppWindowOpen ? "Canal WhatsApp Ativo" : "Janela Meta Cloud Expirada (Exige Template)"}
+                          />
+                          <span>WhatsApp</span>
                         </span>
                       )}
                     </div>
                     
-                    <p className="text-xs text-muted-foreground truncate font-mono">
+                    <p className="text-xs text-muted-foreground truncate font-mono select-all">
                       {activeThread.customer?.phone || activeThread.customer?.email || "Atendimento Direto"}
                     </p>
                     {/* Tags Semânticas Coloridas (Whaticket / CRM Parity) */}
@@ -1264,80 +2024,7 @@ function WorkspaceAtendimentoPage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Sinalizador Janela 24h WhatsApp */}
-                  <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-md border text-xs font-mono font-semibold shrink-0 bg-muted/40 border-border/60">
-                    <Clock className="size-3 text-primary shrink-0" />
-                    <span
-                      className={cn(
-                        "text-xs",
-                        isWhatsAppWindowOpen
-                          ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {isWhatsAppWindowOpen ? "Janela 24h Aberta" : "Janela Expirada"}
-                    </span>
-                  </div>
-
-                  {/* Dossiê no CRM */}
-                  {activeThread.customer?.id && (
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Abrir dossiê no CRM"
-                    >
-                      <Link to="/workspace/clientes/$id" params={{ id: activeThread.customer.id }}>
-                        <Building2 className="size-4 text-primary" />
-                        <span className="hidden xl:inline">CRM</span>
-                      </Link>
-                    </Button>
-                  )}
-
-                  {/* Chamados de Suporte & SAC */}
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                    title="Abrir central de chamados e suporte"
-                  >
-                    <Link to="/workspace/suporte">
-                      <HelpCircle className="size-4 text-sky-500" />
-                      <span className="hidden xl:inline">Chamados</span>
-                    </Link>
-                  </Button>
-
-                  {/* Transferir Atendimento (Whaticket Hand-off) */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setTransferModalOpen(true)}
-                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                    title="Transferir para outro setor ou atendente com nota de contexto"
-                  >
-                    <ArrowRightLeft className="size-4 text-primary" />
-                    <span className="hidden sm:inline">Transferir</span>
-                  </Button>
-
-                  {/* Agendar Mensagem de Follow-up WhatsApp */}
-                  {activeThread.channel === "whatsapp" && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setScheduleModalOpen(true)}
-                      className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Agendar envio de mensagem futura"
-                    >
-                      <CalendarClock className="size-4 text-warning-strong" />
-                      <span className="hidden sm:inline">Agendar</span>
-                    </Button>
-                  )}
-
-                  {/* Ação de Arquivar / Desarquivar */}
+                  {/* Ação: Encerrar / Reabrir Atendimento */}
                   <Button
                     type="button"
                     variant="outline"
@@ -1346,51 +2033,174 @@ function WorkspaceAtendimentoPage() {
                     onClick={() =>
                       activeThread?.id && handleArchiveThread(activeThread.id, activeThread.status !== "archived")
                     }
-                    className="h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                    title={activeThread.status === "archived" ? "Desarquivar conversa" : "Arquivar conversa"}
+                    className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+                    title={activeThread.status === "archived" ? "Reabrir conversa" : "Encerrar atendimento"}
                   >
                     {activeThread.status === "archived" ? (
                       <>
-                        <ArchiveRestore className="size-4" />
-                        <span className="hidden sm:inline">Desarquivar</span>
+                        <ArchiveRestore className="size-4 shrink-0" />
+                        <span className="hidden xl:inline">Reabrir</span>
                       </>
                     ) : (
                       <>
-                        <Archive className="size-4" />
-                        <span className="hidden sm:inline">Arquivar</span>
+                        <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                        <span className="hidden xl:inline">Encerrar</span>
                       </>
                     )}
                   </Button>
 
-                  {/* Toggle Linha do Tempo na Conversa */}
+                  {/* Toggle Ficha do Cliente (Perfil 360) */}
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowLiveTimeline((prev) => !prev)}
+                    onClick={() => {
+                      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                        setMobileCustomer360Open((prev) => !prev);
+                      } else {
+                        setShowCustomer360((prev) => !prev);
+                      }
+                    }}
                     className={cn(
-                      "h-11 min-h-11 text-xs font-semibold rounded-lg px-3 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
-                      showLiveTimeline ? "bg-primary/15 text-primary border-primary/40 font-bold" : "",
+                      "h-11 min-h-11 text-xs font-semibold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
+                      showCustomer360 ? "bg-muted font-bold" : "",
                     )}
-                    title="Exibir Linha do Tempo de eventos, pedidos e planilhas do cliente"
+                    title="Exibir dados e ficha do cliente"
+                    aria-label="Ficha do Cliente"
                   >
-                    <GitBranch className="size-4 text-primary" />
-                    <span className="hidden sm:inline">Linha do Tempo</span>
+                    <UserCheck className="size-4 mr-0 xl:mr-1 shrink-0" />
+                    <span className="hidden xl:inline">Ficha</span>
                   </Button>
 
-                  {/* Toggle Perfil 360 */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCustomer360(!showCustomer360)}
-                    className={cn(
-                      "h-11 text-xs font-bold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
-                      showCustomer360 ? "bg-muted" : "",
-                    )}
-                  >
-                    <UserCheck className="size-4 mr-1" />
-                    <span className="hidden sm:inline">Perfil 360º</span>
-                  </Button>
+                  {/* Menu Dropdown de Ações Operacionais */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-11 min-w-11 min-h-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+                        title="Mais Ações de Atendimento"
+                        aria-label="Mais Ações de Atendimento"
+                      >
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-border shadow-overlay">
+                      <DropdownMenuItem
+                        onClick={() => setTransferModalOpen(true)}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                      >
+                        <ArrowRightLeft className="size-4 text-primary shrink-0" />
+                        <span>Transferir Atendimento</span>
+                      </DropdownMenuItem>
+
+                      {activeThread.channel === "whatsapp" && (
+                        <DropdownMenuItem
+                          onClick={() => setScheduleModalOpen(true)}
+                          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                        >
+                          <CalendarClock className="size-4 text-warning-strong shrink-0" />
+                          <span>Agendar Mensagem</span>
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuItem
+                        onClick={() => setShowLiveTimeline((prev) => !prev)}
+                        className="2xl:hidden h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                      >
+                        <GitBranch className="size-4 text-primary shrink-0" />
+                        <span>{showLiveTimeline ? "Ocultar Linha do Tempo" : "Linha do Tempo"}</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator className="my-1 border-border/60" />
+
+                      {activeThread.customer?.id && (
+                        <DropdownMenuItem asChild className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2">
+                          <Link to="/workspace/clientes/$id" params={{ id: activeThread.customer.id }}>
+                            <Building2 className="size-4 text-primary shrink-0" />
+                            <span>Abrir Dossiê no CRM</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuItem asChild className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2">
+                        <Link to="/workspace/suporte">
+                          <HelpCircle className="size-4 text-sky-500 shrink-0" />
+                          <span>Central de Chamados SAC</span>
+                        </Link>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator className="my-1 border-border/60" />
+
+                      <DropdownMenuItem
+                        onClick={() => setClearMessagesModalOpen(true)}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-warning-strong hover:bg-warning/10"
+                      >
+                        <Eraser className="size-4 shrink-0" />
+                        <span>Limpar mensagens (no sistema)</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => setDeleteThreadModalOpen(true)}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="size-4 shrink-0" />
+                        <span>Excluir conversa (no sistema)</span>
+                      </DropdownMenuItem>
+
+                      {isSupervisor ? (
+                        <>
+                          <DropdownMenuSeparator className="my-1 border-border/60" />
+                          <DropdownMenuItem
+                            onClick={handleToggleThreadStaffVisibility}
+                            disabled={isTogglingVisibility}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                          >
+                            {activeThread?.metadata?.hidden_from_staff ? (
+                              <>
+                                <Eye className="size-4 shrink-0 text-primary" />
+                                <span>Tornar visível para equipe</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="size-4 shrink-0 text-muted-foreground" />
+                                <span>Ocultar da equipe (Confidencial)</span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() => setDeleteContactModalOpen(true)}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="size-4 shrink-0" />
+                            <span>Excluir contato & dados (Definitivo)</span>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuSeparator className="my-1 border-border/60" />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              loadPendingDeletionRequests();
+                              setSupervisorRequestsModalOpen(true);
+                            }}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-primary hover:bg-primary/10"
+                          >
+                            <ShieldCheck className="size-4 shrink-0" />
+                            <span>Solicitações de exclusão da equipe</span>
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <DropdownMenuItem
+                          onClick={() => setRequestDeletionModalOpen(true)}
+                          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-warning-strong hover:bg-warning/10"
+                        >
+                          <ShieldAlert className="size-4 shrink-0" />
+                          <span>Solicitar exclusão ao supervisor</span>
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -1463,7 +2273,7 @@ function WorkspaceAtendimentoPage() {
                           {messages.length} mensagens sincronizadas e auditadas na conversa
                         </p>
                         <p className="text-muted-foreground">
-                          Janela 24h: {isWhatsAppWindowOpen ? "Ativa para resposta livre" : "Exige template"}
+                          {isWhatsAppWindowOpen ? "Canal ativo para envio direto de mensagens" : "Janela Meta Cloud expirada (exige template aprovado)"}
                         </p>
                       </div>
                       <span className="font-mono text-muted-foreground shrink-0">
@@ -1471,6 +2281,28 @@ function WorkspaceAtendimentoPage() {
                       </span>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Alerta de Promessa Pendente / Anti-Esquecimento */}
+              {promiseDetection.hasPendingPromise && (
+                <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 flex items-center justify-between text-xs shrink-0 transition-colors">
+                  <div className="flex items-center gap-2 text-warning-strong min-w-0">
+                    <Clock className="size-4 shrink-0 text-warning-strong" />
+                    <span className="truncate">
+                      Promessa pendente: <strong>&ldquo;{promiseDetection.promiseSnippet}&rdquo;</strong> (há {promiseDetection.elapsedMinutes} min)
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isGeneratingSmartReply}
+                    onClick={() => handleGenerateSmartReply(false, "Cumprir a promessa pendente feita ao cliente de forma objetiva e acolhedora.")}
+                    className="h-11 min-h-11 px-3 text-xs font-semibold text-warning-strong hover:bg-warning/20 border-warning/40 shrink-0 ml-2 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                  >
+                    {isGeneratingSmartReply ? "Gerando..." : "Cumprir com IA"}
+                  </Button>
                 </div>
               )}
 
@@ -1514,7 +2346,7 @@ function WorkspaceAtendimentoPage() {
                             <div className="flex items-center justify-between text-xs font-bold">
                               <span className="flex items-center gap-2 text-warning-strong ">
                                 <Lock className="size-4 shrink-0" />
-                                <span>Nota Interna da Equipe (Whisper)</span>
+                                <span>Nota Interna da Equipe</span>
                               </span>
                               <span className="font-mono text-xs opacity-75">{formatDate(msg.created_at)}</span>
                             </div>
@@ -1572,15 +2404,101 @@ function WorkspaceAtendimentoPage() {
                             />
                           </div>
                           <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1">
-                            {isStaff ? "Equipe / Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
+                            {isStaff
+                              ? msg.payload?.origin === "whatsapp_device"
+                                ? "Celular WhatsApp"
+                                : "Equipe / Você"
+                              : activeThread.customer?.full_name || "Cliente"} •{" "}
                             {formatDate(msg.created_at)}
-                            {isStaff && <CheckCheck className="size-3 text-primary inline" />}
+                            {isStaff && (
+                              <MessageDeliveryStatusIcon
+                                status={msg.delivery_status}
+                                deliveryState={msg.payload?.delivery_state}
+                                errorMessage={msg.error_message || msg.payload?.last_error_message}
+                              />
+                            )}
                           </span>
                         </div>
                       );
                     }
 
-                    // Balão Normal estilo WhatsApp Web
+                    // Balão Normal e Mídias estilo WhatsApp Web
+                    const mediaInfo = msg.payload?.media || null;
+                    const mediaType =
+                      msg.message_type === "sticker" || mediaInfo?.type === "sticker"
+                        ? "sticker"
+                        : msg.message_type === "image" || mediaInfo?.type === "image"
+                        ? "image"
+                        : msg.message_type === "video" || mediaInfo?.type === "video"
+                        ? "video"
+                        : msg.message_type === "audio" || mediaInfo?.type === "audio"
+                        ? "audio"
+                        : msg.message_type === "document" || mediaInfo?.type === "document"
+                        ? "document"
+                        : null;
+
+                    const mediaUrl =
+                      Array.isArray(msg.attachments) && msg.attachments.length > 0 && typeof msg.attachments[0] === "string"
+                        ? msg.attachments[0]
+                        : mediaInfo?.url || mediaInfo?.base64 || null;
+
+                    const isSticker = mediaType === "sticker";
+
+                    if (isSticker) {
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col ${isStaff ? "items-end" : "items-start"} my-1`}
+                        >
+                          {Boolean(msg.is_revoked_by_sender || msg.payload?.is_revoked_by_sender) ? (
+                            <div className="p-2 rounded-lg bg-muted text-muted-foreground text-xs italic flex items-center gap-2">
+                              <Ban className="size-3.5 shrink-0" />
+                              <span>Figurinha apagada pelo remetente</span>
+                            </div>
+                          ) : mediaUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setLightboxUrl(mediaUrl)}
+                              className="group relative cursor-pointer p-1 rounded-lg transition-transform hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
+                              title="Clique para ampliar a figurinha"
+                            >
+                              <img
+                                src={mediaUrl}
+                                alt="Figurinha WhatsApp"
+                                className="size-32 sm:size-36 object-contain"
+                              />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleFetchMedia(msg)}
+                              disabled={fetchingMediaMap[msg.id]}
+                              className="h-11 min-h-11 px-3 rounded-lg border border-border/80 bg-card text-foreground text-xs font-medium flex items-center gap-2 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
+                            >
+                              <Sparkles className="size-4 text-warning-strong shrink-0" />
+                              <span>{fetchingMediaMap[msg.id] ? "Baixando figurinha..." : "Carregar figurinha"}</span>
+                            </button>
+                          )}
+                          <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
+                            {isStaff ? (Boolean(msg.payload?.origin === "whatsapp_device") ? "Celular WhatsApp" : "Você") : activeThread?.customer?.full_name || "Cliente"} •{" "}
+                            {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                            {isStaff && (
+                              <MessageDeliveryStatusIcon
+                                status={msg.delivery_status}
+                                deliveryState={msg.payload?.delivery_state}
+                                errorMessage={msg.error_message || msg.payload?.last_error_message || null}
+                              />
+                            )}
+                          </span>
+                        </div>
+                      );
+                    }
+                    const isRevoked = Boolean(msg.is_revoked_by_sender || msg.payload?.is_revoked_by_sender);
+                    const isFromDevice = Boolean(msg.payload?.origin === "whatsapp_device");
+                    const msgErrorText = msg.error_message || msg.payload?.last_error_message || null;
                     return (
                       <div
                         key={msg.id}
@@ -1590,19 +2508,186 @@ function WorkspaceAtendimentoPage() {
                           className={cn(
                             "max-w-md sm:max-w-md rounded-lg p-3 text-xs leading-relaxed shadow-xs",
                             isStaff
-                              ? "bg-primary text-primary-foreground font-medium rounded-tr-xs"
+                              ? msg.delivery_status === "failed"
+                                ? "bg-destructive/15 border border-destructive/50 text-foreground font-medium rounded-tr-xs"
+                                : "bg-primary text-primary-foreground font-medium rounded-tr-xs"
                               : "bg-card border border-border/80 text-foreground rounded-tl-xs",
                           )}
                         >
-                          <p className="whitespace-pre-wrap break-words">{msg.message}</p>
+                          {isRevoked && (
+                            <div className="flex items-center gap-1 text-xs font-semibold mb-1 pb-1 border-b border-border/40 opacity-80">
+                              <Ban className="size-3.5 shrink-0" />
+                              <span>Apagada no WhatsApp pelo remetente</span>
+                            </div>
+                          )}
+                          {/* Foto / Imagem */}
+                          {mediaType === "image" && (
+                            <div className="mb-2">
+                              {mediaUrl ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setLightboxUrl(mediaUrl)}
+                                  className="relative overflow-hidden rounded-md group cursor-pointer block border border-border/60 focus-visible:ring-2 focus-visible:ring-primary"
+                                  title="Clique para ampliar a imagem"
+                                >
+                                  <img
+                                    src={mediaUrl}
+                                    alt={mediaInfo?.caption || "Foto WhatsApp"}
+                                    className="max-h-60 max-w-full rounded-md object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Eye className="size-6 text-foreground" />
+                                  </div>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md bg-background/20 hover:bg-background/30 text-xs font-medium flex items-center gap-2 cursor-pointer border border-border/40 focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  <ImageIcon className="size-4 shrink-0" />
+                                  <span>{fetchingMediaMap[msg.id] ? "Baixando foto..." : "Carregar foto"}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Vídeo */}
+                          {mediaType === "video" && (
+                            <div className="mb-2">
+                              {mediaUrl ? (
+                                <video
+                                  src={mediaUrl}
+                                  controls
+                                  className="max-w-xs sm:max-w-sm rounded-md border border-border/60"
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md bg-background/20 hover:bg-background/30 text-xs font-medium flex items-center gap-2 cursor-pointer border border-border/40 focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  <Film className="size-4 shrink-0" />
+                                  <span>{fetchingMediaMap[msg.id] ? "Baixando vídeo..." : "Carregar vídeo"}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Áudio */}
+                          {mediaType === "audio" && (
+                            <div className="my-2 space-y-1">
+                              {mediaUrl ? (
+                                <>
+                                  <audio src={mediaUrl} controls className="w-64 max-w-full h-11" />
+                                  {msg.payload?.transcript ? (
+                                    <div className="mt-1 p-2 rounded bg-background/30 border border-border/40 text-xs">
+                                      <span className="font-semibold block opacity-80 text-xs uppercase tracking-wide">
+                                        Transcrição (IA):
+                                      </span>
+                                      <p className="italic mt-1 whitespace-pre-wrap">{msg.payload.transcript}</p>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTranscribeAudio(msg)}
+                                      disabled={transcribingAudioMap[msg.id]}
+                                      className="mt-1 h-11 min-h-11 px-3 rounded text-xs font-medium flex items-center gap-2 text-muted-foreground hover:text-foreground bg-background/20 hover:bg-background/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                                    >
+                                      <FileText className="size-4 shrink-0" />
+                                      <span>{transcribingAudioMap[msg.id] ? "Transcrevendo..." : "Transcrever com IA"}</span>
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md bg-background/20 hover:bg-background/30 text-xs font-medium flex items-center gap-2 cursor-pointer border border-border/40 focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  <Volume2 className="size-4 shrink-0" />
+                                  <span>{fetchingMediaMap[msg.id] ? "Baixando áudio..." : "Ouvir áudio"}</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Documento */}
+                          {mediaType === "document" && (
+                            <div className="mb-2 p-2 rounded-md bg-background/20 border border-border/40 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <FileText className="size-5 shrink-0 opacity-80" />
+                                <div className="min-w-0">
+                                  <p className="font-semibold truncate text-xs">{mediaInfo?.fileName || "Documento"}</p>
+                                  <p className="text-2xs opacity-75 truncate">{mediaInfo?.mimetype || "Arquivo"}</p>
+                                </div>
+                              </div>
+                              {mediaUrl ? (
+                                <a
+                                  href={mediaUrl}
+                                  download={mediaInfo?.fileName || "documento"}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-md hover:bg-background/30 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+                                  title="Baixar arquivo"
+                                >
+                                  <Download className="size-4" />
+                                </a>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFetchMedia(msg)}
+                                  disabled={fetchingMediaMap[msg.id]}
+                                  className="h-11 min-h-11 px-3 rounded-md text-xs font-medium flex items-center gap-2 bg-background/30 hover:bg-background/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                  {fetchingMediaMap[msg.id] ? "Baixando..." : "Baixar"}
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Texto da mensagem */}
+                          {Boolean(
+                            msg.message &&
+                              !(
+                                ["[Imagem]", "[Vídeo]", "[Áudio]", "[Documento]", "[Figurinha]"].includes(msg.message) &&
+                                mediaUrl
+                              ),
+                          ) && (
+                            <p className={cn("whitespace-pre-wrap break-words", isRevoked && "italic")}>
+                              {String(msg.message).startsWith("waesy-msg:")
+                                ? (msg.message_type === "image" ? "[Imagem]"
+                                  : msg.message_type === "video" ? "[Vídeo]"
+                                  : msg.message_type === "audio" ? "[Áudio]"
+                                  : msg.message_type === "document" ? "[Documento]"
+                                  : msg.message_type === "sticker" ? "[Figurinha]"
+                                  : "[Mensagem recebida]")
+                                : msg.message}
+                            </p>
+                          )}
+                          {isStaff && msg.delivery_status === "failed" && msgErrorText && (
+                            <div className="mt-2 pt-2 border-t border-destructive/30 text-destructive text-xs flex items-center gap-1">
+                              <AlertTriangle className="size-3.5 shrink-0" />
+                              <span>{String(msgErrorText)}</span>
+                            </div>
+                          )}
                         </div>
                         <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
-                          {isStaff ? "Você" : activeThread.customer?.full_name || "Cliente"} •{" "}
+                          {isStaff ? (isFromDevice ? "Celular WhatsApp" : "Você") : activeThread.customer?.full_name || "Cliente"} •{" "}
                           {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
-                          {isStaff && <CheckCheck className="size-3 text-primary inline" />}
+                          {isStaff && (
+                            <MessageDeliveryStatusIcon
+                              status={msg.delivery_status}
+                              deliveryState={msg.payload?.delivery_state}
+                              errorMessage={msgErrorText}
+                            />
+                          )}
                         </span>
                       </div>
                     );
@@ -1619,6 +2704,7 @@ function WorkspaceAtendimentoPage() {
                     searchTerm={text}
                     quickReplies={quickReplies}
                     customerName={activeThread.customer?.full_name}
+                    customerPhone={activeThread.customer?.phone}
                     storeName={store?.name}
                     onSelectReply={(expanded) => {
                       setText(expanded);
@@ -1627,7 +2713,7 @@ function WorkspaceAtendimentoPage() {
                   />
                 )}
 
-                {/* Seletor de Modo: Responder ao Cliente vs Nota Interna da Equipe (Padrão TrackChat / WhatsOmni) */}
+                {/* Seletor de Modo: Responder ao Cliente vs Nota Interna da Equipe */}
                 <div className="flex items-center justify-between gap-2 pb-1">
                   <div className="inline-flex items-center rounded-lg bg-muted/60 p-1 border border-border/60">
                     <button
@@ -1636,7 +2722,7 @@ function WorkspaceAtendimentoPage() {
                       className={cn(
                         "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                         !isWhisperMode
-                          ? "bg-background text-foreground shadow-2xs font-bold"
+                          ? "bg-background text-foreground font-bold shadow-2xs"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -1649,7 +2735,7 @@ function WorkspaceAtendimentoPage() {
                       className={cn(
                         "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                         isWhisperMode
-                          ? "bg-warning/20 text-warning-strong  shadow-2xs font-bold"
+                          ? "bg-warning/20 text-warning-strong font-bold"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
@@ -1657,74 +2743,169 @@ function WorkspaceAtendimentoPage() {
                       <span>Nota Interna (Equipe)</span>
                     </button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setTeamSectorsDrawerOpen(true)}
-                    className="h-11 min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground gap-2"
-                  >
-                    <Layers className="size-3.5 text-primary" />
-                    <span className="hidden sm:inline">Setores & Filas</span>
-                  </Button>
                 </div>
 
-                {/* Banner Modo Nota Interna (Whisper) com Design Âmbar Whaticket/Chatwoot */}
+                {/* Banner Modo Nota Interna (Whisper) */}
                 {isWhisperMode && (
-                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong  text-xs font-semibold animate-in fade-in">
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong text-xs font-medium animate-in fade-in">
                     <div className="flex items-center gap-2">
-                      <Lock className="size-4 shrink-0 text-warning-strong " />
-                      <span>Nota Interna Privada: Visível apenas para a equipe (NÃO é enviada ao WhatsApp).</span>
+                      <Lock className="size-3.5 shrink-0 text-warning-strong" />
+                      <span>Nota interna privada: visível apenas para a equipe (não enviada ao WhatsApp).</span>
                     </div>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsWhisperMode(false)}
-                      className="h-11 min-h-11 px-3 text-xs text-warning-strong  hover:bg-warning/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="h-11 min-h-11 px-3 text-xs text-warning-strong hover:bg-warning/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      Voltar ao Chat
+                      Cancelar
                     </Button>
                   </div>
                 )}
 
-                {/* Trilho de Respostas Rápidas / Macros */}
+                {/* Trilho de Respostas Rápidas / Macros Compacto */}
                 <div
                   role="tablist"
                   aria-label="Atalhos Rápidos"
-                  className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar"
+                  className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar py-1"
                 >
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => setQuickAnswersModalOpen(true)}
-                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-warning/30 text-warning-strong hover:bg-warning/10 cursor-pointer"
-                    title="Gerenciar respostas rápidas personalizadas"
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-border/70 text-foreground hover:bg-muted cursor-pointer"
+                    title="Gerenciar respostas rápidas e atalhos comerciais"
                   >
-                    <Zap className="size-3.5" />
-                    <span>Macros</span>
+                    <Zap className="size-3 text-warning-strong" />
+                    <span>Atalhos</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateSmartReply(false)}
+                    disabled={isGeneratingSmartReply}
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 shrink-0 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    title="Escrever resposta humana e direta com IA lendo o perfil 360 do cliente"
+                  >
+                    <Sparkles className="size-3.5 text-primary" />
+                    <span>{isGeneratingSmartReply ? "Escrevendo..." : "Escrever com IA"}</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateSmartReply(true)}
+                    disabled={isGeneratingSmartAudio}
+                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 shrink-0 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    title="Gerar áudio com IA e ouvir antes de enviar ao cliente"
+                  >
+                    <Volume2 className="size-3.5 text-primary" />
+                    <span>{isGeneratingSmartAudio ? "Sintetizando..." : "Gerar Áudio IA"}</span>
                   </Button>
 
                   {(storeMacros.length > 0
                     ? storeMacros.map((m: any) => ({ cmd: m.shortcut, text: m.message, label: m.title }))
-                    : [
-                        { cmd: "ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa empresa. Como podemos te ajudar?", label: "Saudação" },
-                        { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido. O comprovante é validado automaticamente!", label: "Chave PIX" },
-                        { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
-                        { cmd: "rastreio", text: "Seu pedido está em processamento logístico e você pode acompanhar pelo link de rastreio acima.", label: "Rastreio" },
-                      ]
+                    : semantics.nicheId === "tourism"
+                      ? [
+                          { cmd: "ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa agência. Como podemos te ajudar a planejar sua próxima viagem?", label: "Saudação" },
+                          { cmd: "roteiro", text: "Temos roteiros completos e pacotes disponíveis com saídas programadas. Gostaria de receber a programação detalhada?", label: "Roteiros" },
+                          { cmd: "cotacao", text: "Para preparar sua cotação personalizada, por favor nos informe a data desejada, quantidade de passageiros e acomodação.", label: "Cotação" },
+                          { cmd: "embarque", text: "As informações de ponto de embarque, horários e documentação necessária constam no seu comprovante de reserva.", label: "Embarque" },
+                          { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente na sua reserva. O comprovante é validado automaticamente!", label: "Chave PIX" },
+                          { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                        ]
+                      : semantics.nicheId === "gastronomy"
+                        ? [
+                            { cmd: "ola", text: "Olá! Seja muito bem-vindo ao nosso atendimento. Como podemos te atender hoje?", label: "Saudação" },
+                            { cmd: "cardapio", text: "Acesse nosso cardápio digital completo pelo link acima para conferir os pratos e montar seu pedido!", label: "Cardápio" },
+                            { cmd: "pedido", text: "Seu pedido foi recebido e já está em preparação na nossa cozinha!", label: "Status Pedido" },
+                            { cmd: "pix", text: "Nossa chave PIX oficial é gerada diretamente no seu pedido para confirmação automática.", label: "Chave PIX" },
+                            { cmd: "horarios", text: "Nosso horário de funcionamento é de Terça a Domingo das 18h às 23h30.", label: "Horários" },
+                          ]
+                        : semantics.nicheId === "retail"
+                          ? [
+                              { cmd: "ola", text: "Olá! Seja muito bem-vindo ao atendimento da nossa loja. Em que posso te ajudar hoje?", label: "Saudação" },
+                              { cmd: "catalogo", text: "Acesse nosso catálogo completo com lançamentos e disponibilidade em tempo real no link acima!", label: "Catálogo" },
+                              { cmd: "rastreio", text: "Seu pedido está em separação/transporte e você pode acompanhar pelo link de rastreio acima.", label: "Rastreio" },
+                              { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido.", label: "Chave PIX" },
+                              { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                            ]
+                          : [
+                              { cmd: "ola", text: "Olá! Seja muito bem-vindo ao nosso atendimento. Como podemos te ajudar?", label: "Saudação" },
+                              { cmd: "servicos", text: "Conheça nossos serviços e procedimentos disponíveis com atendimento personalizado.", label: "Serviços" },
+                              { cmd: "agendamento", text: "Para agendar seu horário, por favor informe a data de preferência e o procedimento desejado.", label: "Agendamento" },
+                              { cmd: "pix", text: "Nossa chave PIX oficial é gerada e confirmada diretamente no seu pedido/comanda.", label: "Chave PIX" },
+                              { cmd: "horarios", text: "Nosso horário de atendimento é de Segunda a Sexta das 08h às 18h e Sábados das 08h às 12h.", label: "Horários" },
+                            ]
                   ).map((macro: any) => (
                     <button
                       key={macro.cmd}
                       type="button"
-                      onClick={() => setText(macro.text)}
-                      className="h-11 min-h-11 px-3 py-2 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      onClick={() => setText(interpolateTemplateVariables(macro.text, { customerName: activeThread.customer?.full_name, customerPhone: activeThread.customer?.phone, storeName: store?.name }))}
+                      className="h-11 min-h-11 px-3 rounded-md text-xs font-mono font-medium bg-muted/50 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     >
                       /{macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
                     </button>
                   ))}
                 </div>
+
+                {/* Mini Player de Preview de Áudio IA (Ouvir antes de enviar) */}
+                {aiAudioPreviewUrl && (
+                  <div className="p-3 rounded-lg bg-card border border-primary/40 shadow-xs flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        onClick={togglePlaySmartAudio}
+                        className="size-11 min-h-11 rounded-full shrink-0 border-primary/50 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        title={isPlayingSmartAudio ? "Pausar áudio" : "Ouvir áudio antes de enviar"}
+                      >
+                        {isPlayingSmartAudio ? <Pause className="size-4" /> : <Play className="size-4" />}
+                      </Button>
+                      <div className="min-w-0">
+                        <span className="text-xs font-semibold text-foreground flex items-center gap-1">
+                          <Volume2 className="size-3.5 text-primary shrink-0" />
+                          <span>Prévia de Áudio IA (Ouvir antes de enviar)</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground block truncate">
+                          {isPlayingSmartAudio ? "Reproduzindo áudio..." : "Clique no play para escutar antes de despachar"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (aiAudioElementRef.current) aiAudioElementRef.current.pause();
+                          setIsPlayingSmartAudio(false);
+                          setAiAudioPreviewUrl(null);
+                        }}
+                        className="h-11 min-h-11 px-2 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
+                        title="Descartar áudio"
+                      >
+                        <Trash2 className="size-4 shrink-0" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={isSending}
+                        onClick={handleSendAiAudio}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Send className="size-3.5 shrink-0" />
+                        <span>{isSending ? "Enviando..." : "Enviar Áudio"}</span>
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <form onSubmit={handleSend} className="space-y-2">
                   <div className="flex items-end gap-2">
@@ -1735,10 +2916,23 @@ function WorkspaceAtendimentoPage() {
                       size="icon"
                       onClick={() => setLiveComposerTrayOpen(true)}
                       className="size-11 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                      title="Abrir ferramentas rápidas: Formulário, Evento, Planilha, Sticker"
+                      title="Abrir ferramentas rápidas: Formulário, Evento, Planilha, Proposta"
                       aria-label="Abrir ferramentas rápidas"
                     >
                       <Plus className="size-4" />
+                    </Button>
+
+                    {/* Botão Estúdio de Voz IA (Personas, Sotaques e Ambientes Acústicos) */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setVoiceStudioModalOpen(true)}
+                      className="size-11 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary text-primary hover:text-primary hover:bg-primary/10"
+                      title="Estúdio de Voz IA (Personas, Sotaques e Ambientes Acústicos)"
+                      aria-label="Estúdio de Voz IA"
+                    >
+                      <Mic className="size-4" />
                     </Button>
 
                     <div className="flex-1 relative">
@@ -1754,7 +2948,7 @@ function WorkspaceAtendimentoPage() {
                         placeholder={
                           isWhisperMode
                             ? "Escreva uma nota interna (visível apenas para sua equipe)..."
-                            : "Digite sua mensagem ou use / para macros (Enter para enviar)..."
+                            : "Digite sua mensagem ou use / para atalhos rápidos (Enter para enviar)..."
                         }
                         className={cn(
                           "min-h-11 max-h-32 text-xs rounded-lg resize-none p-3",
@@ -1766,37 +2960,20 @@ function WorkspaceAtendimentoPage() {
                       />
                     </div>
 
-                    {/* Botão Modo Sussurro */}
-                    <Button
-                      type="button"
-                      variant={isWhisperMode ? "default" : "outline"}
-                      size="icon"
-                      onClick={() => setIsWhisperMode(!isWhisperMode)}
-                      className={cn(
-                        "size-11 rounded-lg shrink-0 cursor-pointer",
-                        isWhisperMode ? "bg-warning hover:bg-warning-strong text-warning-strong" : "",
-                      )}
-                      title={
-                        isWhisperMode
-                          ? "Desativar modo sussurro (voltar para resposta pública)"
-                          : "Ativar modo sussurro (nota interna invisível ao cliente)"
-                      }
-                    >
-                      <Lock className="size-4" />
-                    </Button>
-
-                    {/* Botão Enviar */}
+                    {/* Botão Enviar Responsivo */}
                     <Button
                       type="submit"
                       disabled={isSending || !text.trim()}
-                      className="h-11 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer"
+                      className="size-11 sm:w-auto sm:px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center"
+                      title="Enviar mensagem"
+                      aria-label="Enviar mensagem"
                     >
                       {isSending ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
                         <>
-                          <span>Enviar</span>
-                          <Send className="size-4" />
+                          <span className="hidden sm:inline">Enviar</span>
+                          <Send className="size-4 shrink-0" />
                         </>
                       )}
                     </Button>
@@ -1821,7 +2998,11 @@ function WorkspaceAtendimentoPage() {
             <div className="hidden lg:block w-80 xl:w-96 border-l border-border/80 bg-background overflow-y-auto no-scrollbar shrink-0 p-4">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-4">
                 <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
-                  Perfil 360º do Cliente
+                  {activeThread?.is_group || activeThread?.thread_type === "group"
+                    ? "Dossiê do Grupo WhatsApp"
+                    : activeThread?.is_channel || activeThread?.thread_type === "channel"
+                    ? "Dossiê do Canal"
+                    : "Perfil 360º do Cliente"}
                 </span>
                 <Button
                   type="button"
@@ -1840,7 +3021,7 @@ function WorkspaceAtendimentoPage() {
                     <div className="flex items-center gap-2">
                       <Bot className="size-4 text-primary" />
                       <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        AI Assistant Control
+                        IA Automática
                       </span>
                     </div>
                     <Switch
@@ -1865,7 +3046,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Setor / Fila (Assigned Team Router)
+                    Setor / Fila
                   </Label>
                   <select
                     value={activeThread?.department || "geral"}
@@ -1882,7 +3063,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Atendente Responsável (Assigned To)
+                    Atendente Responsável
                   </Label>
                   <select
                     value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
@@ -1892,11 +3073,12 @@ function WorkspaceAtendimentoPage() {
                         ...prev,
                         ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
+                      if (activeThread?.id) assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
                       toast.success("Atendente atribuído à conversa!");
                     }}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <option value="">Fila Automática (Round-Robin)</option>
+                    <option value="">Distribuição Automática</option>
                     {(teamMembers || []).map((m: any) => (
                       <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
                         {m.full_name || m.name || m.email || "Atendente"}
@@ -1911,16 +3093,28 @@ function WorkspaceAtendimentoPage() {
                 threadId={activeThread?.id}
                 guestName={activeThread?.customer?.full_name}
                 guestPhone={activeThread?.customer?.phone}
+                niche={semantics.nicheId}
+                storeName={store?.name}
+                isGroup={Boolean(activeThread?.is_group || activeThread?.thread_type === "group")}
+                isChannel={Boolean(activeThread?.is_channel || activeThread?.thread_type === "channel")}
+                avatarUrl={activeThread?.avatar_url || activeThread?.customer?.avatar_url}
+                onQuickSendMessage={(msgText) => setText(msgText)}
+                onOpenTransfer={() => setTransferModalOpen(true)}
+                onOpenSchedule={() => setScheduleModalOpen(true)}
               />
             </div>
           )}
 
           {/* Drawer Sheet Mobile/Tablet do Perfil 360 */}
-          <Sheet open={Boolean(activeThread && showCustomer360)} onOpenChange={setShowCustomer360}>
+          <Sheet open={Boolean(activeThread && mobileCustomer360Open)} onOpenChange={setMobileCustomer360Open}>
             <SheetContent side="right" className="lg:hidden w-full sm:max-w-md p-0 overflow-y-auto">
               <SheetHeader className="p-4 border-b border-border/60">
                 <SheetTitle className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
-                  Perfil 360º do Cliente
+                  {activeThread?.is_group || activeThread?.thread_type === "group"
+                    ? "Dossiê do Grupo WhatsApp"
+                    : activeThread?.is_channel || activeThread?.thread_type === "channel"
+                    ? "Dossiê do Canal"
+                    : "Perfil 360º do Cliente"}
                 </SheetTitle>
               </SheetHeader>
               {activeThread?.id && (
@@ -1932,7 +3126,7 @@ function WorkspaceAtendimentoPage() {
                     <div className="flex items-center gap-2">
                       <Bot className="size-4 text-primary" />
                       <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        AI Assistant Control
+                        IA Automática
                       </span>
                     </div>
                     <Switch
@@ -1957,7 +3151,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Setor / Fila (Assigned Team Router)
+                    Setor / Fila
                   </Label>
                   <select
                     value={activeThread?.department || "geral"}
@@ -1974,7 +3168,7 @@ function WorkspaceAtendimentoPage() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Atendente Responsável (Assigned To)
+                    Atendente Responsável
                   </Label>
                   <select
                     value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
@@ -1984,11 +3178,12 @@ function WorkspaceAtendimentoPage() {
                         ...prev,
                         ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
+                      if (activeThread?.id) assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
                       toast.success("Atendente atribuído à conversa!");
                     }}
                     className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    <option value="">Fila Automática (Round-Robin)</option>
+                    <option value="">Distribuição Automática</option>
                     {(teamMembers || []).map((m: any) => (
                       <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
                         {m.full_name || m.name || m.email || "Atendente"}
@@ -2003,6 +3198,14 @@ function WorkspaceAtendimentoPage() {
                   threadId={activeThread?.id}
                   guestName={activeThread?.customer?.full_name}
                   guestPhone={activeThread?.customer?.phone}
+                  niche={semantics.nicheId}
+                  storeName={store?.name}
+                  isGroup={Boolean(activeThread?.is_group || activeThread?.thread_type === "group")}
+                  isChannel={Boolean(activeThread?.is_channel || activeThread?.thread_type === "channel")}
+                  avatarUrl={activeThread?.avatar_url || activeThread?.customer?.avatar_url}
+                  onQuickSendMessage={(msgText) => { setText(msgText); setMobileCustomer360Open(false); }}
+                  onOpenTransfer={() => { setMobileCustomer360Open(false); setTransferModalOpen(true); }}
+                  onOpenSchedule={() => { setMobileCustomer360Open(false); setScheduleModalOpen(true); }}
                 />
               </div>
               )}
@@ -2076,121 +3279,142 @@ function WorkspaceAtendimentoPage() {
                   className="h-11 px-3 rounded-md bg-muted/50 border border-border/60 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <option value="all">Criador: Todos</option>
-                  <option value="Diretoria">Diretoria</option>
-                  <option value="Helena Costa">Helena Costa</option>
-                  <option value="Roberto Alves">Roberto Alves</option>
-                  <option value="Fernanda Lima">Fernanda Lima</option>
+                  {Array.from(new Set(intranetChannels.map((c) => c.creator).filter(Boolean))).map((creator) => (
+                    <option key={creator} value={creator}>
+                      {creator}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            {/* Grupos Colapsáveis por Departamento */}
+            {/* Grupos Colapsáveis por Departamento ou Estado Vazio */}
             <div className="flex-1 overflow-y-auto no-scrollbar p-2 space-y-2">
-              {(
-                [
-                  "Executivo",
-                  "Comercial",
-                  "Marketing",
-                  "Operações",
-                  "Financeiro",
-                  "Suporte",
-                ] as const
-              ).map((dept) => {
-                const deptChannels = intranetChannels.filter((c) => {
-                  if (c.department !== dept) return false;
-                  if (intranetScopeFilter !== "all" && c.scope !== intranetScopeFilter) return false;
-                  if (intranetCreatorFilter !== "all" && c.creator !== intranetCreatorFilter)
-                    return false;
-                  if (
-                    intranetSearch.trim() &&
-                    !c.title.toLowerCase().includes(intranetSearch.toLowerCase()) &&
-                    !c.creator.toLowerCase().includes(intranetSearch.toLowerCase())
-                  ) {
-                    return false;
-                  }
-                  return true;
-                });
+              {intranetChannels.length === 0 ? (
+                <div className="py-8 px-4 text-center text-xs text-muted-foreground space-y-3">
+                  <Hash className="size-8 text-muted-foreground/40 mx-auto" />
+                  <p className="font-semibold text-foreground">Nenhum canal cadastrado</p>
+                  <p className="text-2xs text-muted-foreground">
+                    Crie canais temáticos por departamento para organizar a comunicação interna da equipe.
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setNewChannelModalOpen(true)}
+                    className="h-11 min-h-11 w-full gap-2 text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>Criar Primeiro Canal</span>
+                  </Button>
+                </div>
+              ) : (
+                (
+                  [
+                    "Executivo",
+                    "Comercial",
+                    "Marketing",
+                    "Operações",
+                    "Financeiro",
+                    "Suporte",
+                  ] as const
+                ).map((dept) => {
+                  const deptChannels = intranetChannels.filter((c) => {
+                    if (c.department !== dept) return false;
+                    if (intranetScopeFilter !== "all" && c.scope !== intranetScopeFilter) return false;
+                    if (intranetCreatorFilter !== "all" && c.creator !== intranetCreatorFilter)
+                      return false;
+                    if (
+                      intranetSearch.trim() &&
+                      !c.title.toLowerCase().includes(intranetSearch.toLowerCase()) &&
+                      !c.creator.toLowerCase().includes(intranetSearch.toLowerCase())
+                    ) {
+                      return false;
+                    }
+                    return true;
+                  });
 
-                const isCollapsed = Boolean(collapsedDepts[dept]);
+                  const isCollapsed = Boolean(collapsedDepts[dept]);
 
-                return (
-                  <div key={dept} className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCollapsedDepts((prev) => ({ ...prev, [dept]: !prev[dept] }))
-                      }
-                      className="w-full h-11 min-h-11 px-2 rounded-md flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <span className="flex items-center gap-2">
-                        {isCollapsed ? (
-                          <ChevronRight className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )}
-                        <span>{dept}</span>
-                      </span>
-                      <Badge variant="outline" className="text-2xs font-mono">
-                        {deptChannels.length}
-                      </Badge>
-                    </button>
+                  return (
+                    <div key={dept} className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedDepts((prev) => ({ ...prev, [dept]: !prev[dept] }))
+                        }
+                        className="w-full h-11 min-h-11 px-2 rounded-md flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <span className="flex items-center gap-2">
+                          {isCollapsed ? (
+                            <ChevronRight className="size-3.5" />
+                          ) : (
+                            <ChevronDown className="size-3.5" />
+                          )}
+                          <span>{dept}</span>
+                        </span>
+                        <Badge variant="outline" className="text-2xs font-mono">
+                          {deptChannels.length}
+                        </Badge>
+                      </button>
 
-                    {!isCollapsed &&
-                      deptChannels.map((ch) => {
-                        const isSelected = ch.id === activeIntranetChannel?.id;
-                        return (
-                          <button
-                            key={ch.id}
-                            type="button"
-                            onClick={() => setActiveIntranetChannelId(ch.id)}
-                            className={cn(
-                              "w-full p-3 rounded-lg text-left transition-colors cursor-pointer border space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                              isSelected
-                                ? "bg-primary/10 border-primary/40 text-foreground"
-                                : "bg-card border-border/50 hover:bg-muted/40 text-foreground",
-                            )}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <span className="text-xs font-bold leading-snug line-clamp-1">
-                                {ch.title}
-                              </span>
-                              <span className="text-2xs font-mono text-muted-foreground shrink-0">
-                                {ch.updatedAt}
-                              </span>
-                            </div>
+                      {!isCollapsed &&
+                        deptChannels.map((ch) => {
+                          const isSelected = ch.id === activeIntranetChannel?.id;
+                          return (
+                            <button
+                              key={ch.id}
+                              type="button"
+                              onClick={() => setActiveIntranetChannelId(ch.id)}
+                              className={cn(
+                                "w-full p-3 rounded-lg text-left transition-colors cursor-pointer border space-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                isSelected
+                                  ? "bg-primary/10 border-primary/40 text-foreground"
+                                  : "bg-card border-border/50 hover:bg-muted/40 text-foreground",
+                              )}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="text-xs font-bold leading-snug line-clamp-1">
+                                  {ch.title}
+                                </span>
+                                <span className="text-2xs font-mono text-muted-foreground shrink-0">
+                                  {ch.updatedAt}
+                                </span>
+                              </div>
 
-                            <div className="flex items-center flex-wrap gap-2 text-2xs">
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "text-2xs gap-1",
-                                  ch.scope === "private"
-                                    ? "bg-warning/10 text-warning-strong  border-warning/30"
-                                    : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-                                )}
-                              >
-                                {ch.scope === "private" ? (
-                                  <Lock className="size-2.5" />
-                                ) : (
-                                  <Hash className="size-2.5" />
-                                )}
-                                <span>{ch.scope === "private" ? "Privado" : "Público"}</span>
-                              </Badge>
+                              <div className="flex items-center flex-wrap gap-2 text-2xs">
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "text-2xs gap-1",
+                                    ch.scope === "private"
+                                      ? "bg-warning/10 text-warning-strong  border-warning/30"
+                                      : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+                                  )}
+                                >
+                                  {ch.scope === "private" ? (
+                                    <Lock className="size-2.5" />
+                                  ) : (
+                                    <Hash className="size-2.5" />
+                                  )}
+                                  <span>{ch.scope === "private" ? "Privado" : "Público"}</span>
+                                </Badge>
 
-                              <Badge variant="secondary" className="text-2xs">
-                                {ch.department}
-                              </Badge>
+                                <Badge variant="secondary" className="text-2xs">
+                                  {ch.department}
+                                </Badge>
 
-                              <span className="text-muted-foreground ml-auto truncate">
-                                por {ch.creator}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                  </div>
-                );
-              })}
+                                <span className="text-muted-foreground ml-auto truncate">
+                                  por {ch.creator}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </aside>
 
@@ -2264,20 +3488,51 @@ function WorkspaceAtendimentoPage() {
                     </Badge>
                   </div>
 
-                  <div className="relative pl-7 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-500/40">
-                    {activeIntranetChannel.milestones.map((ms) => (
-                      <div key={ms.id} className="relative flex items-start justify-between gap-3 text-xs">
-                        <span className=" -left-7 top-0.5 size-5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                          <Check className="size-3" />
+                  <div className="relative pl-7 space-y-3 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-500/40">
+                    {activeIntranetChannel.milestones.map((ms: any) => (
+                      <button
+                        key={ms.id}
+                        type="button"
+                        onClick={() => {
+                          const nextDone = !ms.done;
+                          toggleIntranetMilestone({ data: { milestoneId: ms.id, done: nextDone } }).catch((err) =>
+                            console.warn("[intranet] Erro ao alternar marco:", err),
+                          );
+                          setIntranetChannels((prev) =>
+                            prev.map((ch) =>
+                              ch.id === activeIntranetChannel.id
+                                ? {
+                                    ...ch,
+                                    milestones: ch.milestones.map((m: any) =>
+                                      m.id === ms.id ? { ...m, done: nextDone } : m,
+                                    ),
+                                  }
+                                : ch,
+                            ),
+                          );
+                        }}
+                        className="w-full relative flex items-start justify-between gap-3 text-xs text-left p-1 rounded-md hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <span
+                          className={cn(
+                            "size-5 rounded-full border flex items-center justify-center shrink-0 mt-1 transition-colors",
+                            ms.done
+                              ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40"
+                              : "bg-muted text-muted-foreground border-border/80",
+                          )}
+                        >
+                          {ms.done ? <Check className="size-3" /> : <Circle className="size-2 text-muted-foreground" />}
                         </span>
                         <div className="min-w-0 flex-1 space-y-1">
-                          <p className="font-semibold text-foreground">{ms.label}</p>
-                          <p className="text-muted-foreground">{ms.detail}</p>
+                          <p className={cn("font-semibold text-foreground", ms.done && "line-through text-muted-foreground")}>
+                            {ms.label}
+                          </p>
+                          {ms.detail && <p className="text-2xs text-muted-foreground">{ms.detail}</p>}
                         </div>
                         <span className="font-mono text-2xs text-muted-foreground shrink-0">
                           {ms.time}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
 
@@ -2315,7 +3570,7 @@ function WorkspaceAtendimentoPage() {
 
                 {/* Mensagens e Cards Estruturados dos Colaboradores */}
                 <div className="space-y-3">
-                  {activeIntranetChannel.messages.map((m) => (
+                  {activeIntranetChannel.messages.map((m: any) => (
                     <div
                       key={m.id}
                       className="rounded-xl border border-border/70 bg-card p-4 space-y-2"
@@ -2401,7 +3656,7 @@ function WorkspaceAtendimentoPage() {
                     if (!intranetComposerText.trim()) return;
                     const txt = intranetComposerText.trim();
                     setIntranetComposerText("");
-                    if (activeIntranetChannel?.id && !activeIntranetChannel.id.startsWith("ch-")) {
+                    if (activeIntranetChannel?.id) {
                       sendIntranetMessage({
                         data: {
                           channelId: activeIntranetChannel.id,
@@ -2460,6 +3715,24 @@ function WorkspaceAtendimentoPage() {
               </div>
             </div>
           )}
+
+          {!activeIntranetChannel && (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
+              <Hash className="size-10 mb-3 opacity-30 text-muted-foreground" />
+              <p className="text-sm font-semibold text-foreground">Nenhum canal selecionado</p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                Crie ou selecione um canal na barra lateral para colaborar com a equipe e acompanhar marcos operacionais.
+              </p>
+              <Button
+                type="button"
+                onClick={() => setNewChannelModalOpen(true)}
+                className="mt-4 h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+              >
+                <Plus className="size-4" />
+                <span>Criar Canal</span>
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -2471,12 +3744,12 @@ function WorkspaceAtendimentoPage() {
           {/* Barra de Filtros SDR */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70 shadow-2xs">
             <div className="relative flex-1 max-w-md">
-              <Search className="size-4 absolute left-3 top-3 text-muted-foreground" />
+              <Search className="size-4 absolute left-3 top-3.5 text-muted-foreground" />
               <Input
                 placeholder="Buscar por anúncio ou resumo da IA..."
                 value={sdrSearchTerm}
                 onChange={(e) => setSdrSearchTerm(e.target.value)}
-                className="pl-8 h-9 rounded-lg text-xs bg-muted/40"
+                className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/40 focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
 
@@ -2513,9 +3786,9 @@ function WorkspaceAtendimentoPage() {
                   <Bot className="size-6" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-bold text-foreground">Nenhuma conversa com SDR encontrada</p>
+                  <p className="text-sm font-bold text-foreground">Nenhuma oportunidade qualificada encontrada</p>
                   <p className="text-xs text-muted-foreground max-w-sm">
-                    As mensagens e intenções de compra de clientes com a IA aparecerão aqui.
+                    As mensagens e intenções de compra captadas pelo atendimento aparecerão aqui.
                   </p>
                 </div>
               </div>
@@ -2646,11 +3919,11 @@ function WorkspaceAtendimentoPage() {
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
               <span className="text-xs text-muted-foreground font-semibold">Tempo Médio 1ª Resposta</span>
               <p className="text-2xl font-bold font-mono text-foreground">
-                {metrics?.sla_first_response_min || 3.5} min
+                {metrics?.sla_first_response_min ? `${metrics.sla_first_response_min} min` : "—"}
               </p>
             </div>
             <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
-              <span className="text-xs text-muted-foreground font-semibold">Satisfação (CSAT)</span>
+              <span className="text-xs text-muted-foreground font-semibold">Avaliação dos Clientes</span>
               {Number(metrics?.avg_rating || 0) > 0 ? (
                 <p className="text-2xl font-bold font-mono text-warning-strong flex items-center gap-1">
                   <Star className="size-5 fill-warning" />
@@ -2669,141 +3942,196 @@ function WorkspaceAtendimentoPage() {
       {/* ======================================================== */}
       {activeHubTab === "whatsapp" && (
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-muted/10">
-          <div className="space-y-1">
-            <h2 className="text-base font-bold text-foreground">
-              Instâncias & Conexão WhatsApp Web
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Conecte o número de WhatsApp da sua empresa para enviar e receber mensagens diretamente no Waesy.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="text-base font-bold text-foreground">
+                Canais WhatsApp
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Gerencie aparelhos conectados, setores de atendimento e rotas de entrada.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                onClick={() => setQrConnectModalOpen(true)}
+                className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <QrCode className="size-4" />
+                Conectar Novo Aparelho
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setTeamSectorsDrawerOpen(true)}
+                className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Layers className="size-4" />
+                Setores & Permissões
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleRefreshWhatsAppStatus}
+                disabled={isRefreshingWhatsApp}
+                className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <RefreshCw className={cn("size-4", isRefreshingWhatsApp && "animate-spin motion-reduce:animate-none")} />
+                Atualizar
+              </Button>
+            </div>
           </div>
 
-          {/* Cards de Instâncias Conectadas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Card de Conexão Ativa / QR Code */}
-            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-5 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="size-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
-                    <Smartphone className="size-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-foreground">WhatsApp Business</h3>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {whatsappInstances[0]?.display_phone_number || "Conectar Aparelho"}
-                    </p>
-                  </div>
+          <div className="space-y-4">
+            {whatsappInstances.length === 0 ? (
+              <div className="bg-card p-10 rounded-xl border border-border/80 text-center space-y-4 max-w-xl mx-auto shadow-xs">
+                <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                  <Smartphone className="size-8" />
                 </div>
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-xs px-2 py-1 font-bold",
-                    whatsappInstances.some((i) => i.is_active && i.status === "connected")
-                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                      : "bg-warning/15 text-warning-strong  border-warning/30",
-                  )}
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-foreground">Nenhum WhatsApp Conectado</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
+                    Conecte o WhatsApp corporativo da sua loja para iniciar atendimentos com múltiplos operadores e respostas automatizadas.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => setQrConnectModalOpen(true)}
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
                 >
-                  {whatsappInstances.some((i) => i.is_active && i.status === "connected")
-                    ? "Conectado"
-                    : "Aguardando Leitura"}
-                </Badge>
+                  <QrCode className="size-4" />
+                  Conectar Aparelho via QR Code
+                </Button>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {whatsappInstances.map((inst) => {
+                  const isConnected = inst.is_active && inst.status === "connected";
+                  const qrUrl = inst.public_config?.qr_code_url ? normalizeWhatsAppQrDataUri(inst.public_config.qr_code_url) || String(inst.public_config.qr_code_url) : null;
+                  return (
+                    <div
+                      key={inst.id}
+                      className={cn(
+                        "bg-card p-5 rounded-xl border space-y-4 shadow-xs flex flex-col justify-between transition-colors",
+                        isConnected ? "border-emerald-500/40" : "border-border/80"
+                      )}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={cn(
+                              "size-10 rounded-lg flex items-center justify-center shrink-0 border",
+                              isConnected ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30" : "bg-muted text-muted-foreground border-border/60"
+                            )}>
+                              <Smartphone className="size-5" />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-sm text-foreground truncate">
+                                {inst.display_name}
+                              </h3>
+                              <p className="text-xs text-muted-foreground font-mono truncate">
+                                {inst.display_phone_number || "Aguardando pareamento"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {inst.is_default && (
+                              <Badge variant="secondary" className="text-xs font-semibold">
+                                Padrão
+                              </Badge>
+                            )}
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs px-2 py-1 font-bold",
+                                isConnected
+                                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                                  : inst.status === "error"
+                                  ? "bg-destructive/15 text-destructive border-destructive/30"
+                                  : "bg-warning/15 text-warning-strong border-warning/30"
+                              )}
+                            >
+                              {isConnected ? "Conectado" : inst.status === "error" ? "Falha" : "Aguardando"}
+                            </Badge>
+                          </div>
+                        </div>
 
-              {/* Instruções de Conexão WhatsApp Web */}
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Como conectar seu WhatsApp Web no Waesy:
-                </h4>
-                <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
-                  <li>Abra o aplicativo do WhatsApp no celular da sua empresa.</li>
-                  <li>Toque no menu de 3 pontinhos (Android) ou Configurações (iPhone).</li>
-                  <li>Selecione <strong>Aparelhos conectados</strong> e depois <strong>Conectar um aparelho</strong>.</li>
-                  <li>Aponte a câmera do celular para o QR Code abaixo para sincronizar.</li>
-                </ol>
+                        <div className="bg-muted/30 rounded-lg p-2 space-y-1 text-xs">
+                          <div className="flex items-center justify-between text-muted-foreground">
+                            <span>Setor:</span>
+                            <span className="font-semibold text-foreground">{String(inst.public_config?.department || "Geral")}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-muted-foreground">
+                            <span>Tipo:</span>
+                            <span className="font-medium text-foreground">{inst.provider === "meta_cloud_api" ? "Meta Cloud Oficial" : "QR Code (VPS)"}</span>
+                          </div>
+                        </div>
+
+                        {!isConnected && qrUrl && (
+                          /* design-lint-ignore DL-18 reason:"Fundo branco obrigatório para leitura óptica de QR Code por câmeras de smartphone" expiry:"2027-10-30" */
+                          <div className="size-36 mx-auto bg-white p-2 rounded-lg border border-border flex items-center justify-center shadow-2xs">
+                            <img
+                              src={qrUrl}
+                              alt="QR Code"
+                              className="size-full object-contain"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-border/60 flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setQrConnectModalOpen(true)}
+                          className="h-11 min-h-11 flex-1 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <QrCode className="size-4" />
+                          {isConnected ? "Gerenciar" : "Parear"}
+                        </Button>
+
+                        {isConnected && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedDisconnectInstanceId(inst.id);
+                              setDisconnectModalOpen(true);
+                            }}
+                            className="h-11 min-h-11 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 border-destructive/40 gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive shrink-0"
+                          >
+                            <PowerOff className="size-4" />
+                            Desconectar
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
+            )}
 
-              {/* Área do QR Code */}
-              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border/80 rounded-lg bg-muted/10 space-y-3">
-                <div className="size-48 bg-card p-3 rounded-lg border border-border shadow-xs flex items-center justify-center">
-                  {whatsappInstances[0]?.public_config?.qr_code_url ? (
-                    <img
-                      src={String(whatsappInstances[0].public_config.qr_code_url)}
-                      alt="QR Code de conexão do WhatsApp"
-                      className="size-full object-contain"
-                    />
-                  ) : (
-                    <QrCode className="size-40 text-neutral-900" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  {whatsappInstances[0]?.public_config?.qr_code_url
-                    ? "Use este QR Code para conectar o aparelho."
-                    : "O provedor ainda não disponibilizou um QR Code persistido para esta instância."}
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setQrConnectModalOpen(true)}
-                    className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <QrCode className="size-4" />
-                    Gerar QR Code / Novo Número
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setTeamSectorsDrawerOpen(true)}
-                    className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <Layers className="size-4" />
-                    Setores & Permissões
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleRefreshWhatsAppStatus}
-                    disabled={isRefreshingWhatsApp}
-                    className="h-11 min-h-11 rounded-lg text-xs gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <RefreshCw className={cn("size-4", isRefreshingWhatsApp && "animate-spin motion-reduce:animate-none")} />
-                    Atualizar status
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Configurações do Canal */}
-            <div className="bg-card p-6 rounded-lg border border-border/80 space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-foreground">Diretrizes de Operação do Canal</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                O ecossistema Waesy opera em conformidade com as regras de mensageria da Meta Cloud API e WhatsApp Web:
-              </p>
-
-              <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
-                  <span className="font-bold text-foreground block">Janela de Conversação de 24 Horas</span>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Respostas da equipe após 24h sem nova mensagem do cliente exigem envio de modelo de mensagem aprovado.
+            {/* Card de Gestão e Higienização Local do SAC */}
+            <div className="bg-card p-6 rounded-xl border border-border/80 space-y-4 shadow-xs mt-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-sm text-foreground">Higienização do Sistema Local</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Ferramentas para apagar ou resetar conversas estritamente no banco do Waesy, sem deletar nada no WhatsApp dos clientes.
                   </p>
                 </div>
-
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
-                  <span className="font-bold text-foreground block">Roteamento Inteligente por Setor</span>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Clientes podem selecionar departamento pelo menu inicial ou ser transferidos entre atendentes.
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-1">
-                  <span className="font-bold text-foreground block">Histórico Unificado & Zero Deleção Física</span>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Todas as conversas arquivadas permanecem preservadas para auditoria, histórico de pedidos e SAC.
-                  </p>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setResetHistoryModalOpen(true)}
+                  className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer border-destructive/40 text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive shrink-0"
+                >
+                  <Trash2 className="size-4" />
+                  Resetar Histórico Local
+                </Button>
               </div>
             </div>
           </div>
@@ -2832,48 +4160,71 @@ function WorkspaceAtendimentoPage() {
                 <span className="text-xs text-muted-foreground font-mono">Sincronizado</span>
               </div>
               <div className="space-y-3 text-xs">
-                {supportSchedules.map((item, idx) => (
-                  <div
-                    key={item.day}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 gap-3"
-                  >
-                    <div className="flex-1">
-                      <span className="font-bold text-foreground block">{item.day}</span>
-                      <Input
-                        value={item.hours}
-                        onChange={(e) => {
-                          const updated = [...supportSchedules];
-                          updated[idx] = { ...updated[idx], hours: e.target.value };
-                          setSupportSchedules(updated);
-                        }}
-                        className="h-8 text-xs bg-background mt-1"
-                        placeholder="Ex: 08:00 às 18:00 ou Fechado"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 pt-4">
-                      <Switch
-                        id={`schedule-switch-${idx}`}
-                        checked={item.active}
-                        onCheckedChange={(checked) => {
-                          const updated = [...supportSchedules];
-                          updated[idx] = { ...updated[idx], active: checked };
-                          setSupportSchedules(updated);
-                        }}
-                      />
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-xs font-semibold select-none",
-                          item.active
-                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                            : "bg-muted text-muted-foreground border-border/50",
-                        )}
-                      >
-                        {item.active ? "Ativo" : "Fechado"}
-                      </Badge>
-                    </div>
+                {supportSchedules.length === 0 ? (
+                  <div className="p-6 text-center rounded-lg border border-dashed border-border/80 space-y-3">
+                    <Clock className="size-8 text-muted-foreground/40 mx-auto" />
+                    <p className="text-xs text-muted-foreground font-medium">Nenhum turno de atendimento configurado.</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setSupportSchedules([
+                          { day: "Segunda a Sexta", hours: "08:00 às 18:00", active: true },
+                          { day: "Sábado", hours: "08:00 às 12:00", active: true },
+                          { day: "Domingo e Feriados", hours: "Fechado", active: false },
+                        ])
+                      }
+                      className="h-11 min-h-11 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary mx-auto"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Configurar Horários Padrão</span>
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  supportSchedules.map((item, idx) => (
+                    <div
+                      key={item.day}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 gap-3"
+                    >
+                      <div className="flex-1">
+                        <span className="font-bold text-foreground block">{item.day}</span>
+                        <Input
+                          value={item.hours}
+                          onChange={(e) => {
+                            const updated = [...supportSchedules];
+                            updated[idx] = { ...updated[idx], hours: e.target.value };
+                            setSupportSchedules(updated);
+                          }}
+                          className="h-11 min-h-11 px-3 text-xs bg-background mt-1 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-primary"
+                          placeholder="Ex: 08:00 às 18:00 ou Fechado"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 pt-4">
+                        <Switch
+                          id={`schedule-switch-${idx}`}
+                          checked={item.active}
+                          onCheckedChange={(checked) => {
+                            const updated = [...supportSchedules];
+                            updated[idx] = { ...updated[idx], active: checked };
+                            setSupportSchedules(updated);
+                          }}
+                        />
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-xs font-semibold select-none",
+                            item.active
+                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                              : "bg-muted text-muted-foreground border-border/50",
+                          )}
+                        >
+                          {item.active ? "Ativo" : "Fechado"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               <Button
@@ -3022,7 +4373,7 @@ function WorkspaceAtendimentoPage() {
                       )}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1 opacity-75 text-xs font-semibold">
-                        <span>{isAssistant ? "Assistente SDR (IA)" : "Cliente / Comprador"}</span>
+                        <span>{isAssistant ? "Atendimento Virtual" : "Cliente"}</span>
                         {msg.at && (
                           <span>
                             {new Date(msg.at).toLocaleTimeString("pt-BR", {
@@ -3143,7 +4494,7 @@ function WorkspaceAtendimentoPage() {
           departmentLabels={{ geral: "Geral", vendas: "Vendas", suporte: "Suporte", financeiro: "Financeiro" }}
           teamMembers={teamMembers}
           onSuccess={() => {
-            listChatThreads().then((res) => {
+            listChatThreads({ data: { store_id: store?.id } }).then((res) => {
               if (res?.threads) setThreads(res.threads);
             }).catch(() => {});
           }}
@@ -3152,6 +4503,10 @@ function WorkspaceAtendimentoPage() {
       <QuickAnswersManagerModal
         isOpen={quickAnswersModalOpen}
         onClose={() => setQuickAnswersModalOpen(false)}
+        customerName={activeThread?.customer?.full_name}
+        customerPhone={activeThread?.customer?.phone}
+        storeName={store?.name}
+        onSelectAnswer={(msg) => setText(msg)}
       />
       {activeThread?.id && (
         <ScheduleWhatsAppMessageModal
@@ -3209,17 +4564,15 @@ function WorkspaceAtendimentoPage() {
         storeName={store?.name || "Intranet"}
         onDispatchMessage={(data: StructuredDispatchPayload) => {
           if (!activeIntranetChannel?.id) return;
-          if (activeIntranetChannel.id && !activeIntranetChannel.id.startsWith("ch-")) {
-            sendIntranetMessage({
-              data: {
-                channelId: activeIntranetChannel.id,
-                content: data.message,
-                authorRole: "Gestão",
-                artifactType: (data as any).type || data.message_type,
-                artifactPayload: data.payload,
-              },
-            }).catch((err) => console.warn("[intranet] Erro ao persistir mensagem estruturada:", err));
-          }
+          sendIntranetMessage({
+            data: {
+              channelId: activeIntranetChannel.id,
+              content: data.message,
+              authorRole: "Gestão",
+              artifactType: (data as any).type || data.message_type,
+              artifactPayload: data.payload,
+            },
+          }).catch((err) => console.warn("[intranet] Erro ao persistir mensagem estruturada:", err));
           setIntranetChannels((prev) =>
             prev.map((ch) =>
               ch.id === activeIntranetChannel?.id
@@ -3305,58 +4658,407 @@ function WorkspaceAtendimentoPage() {
             </Button>
             <Button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 if (!newChannelTitle.trim()) {
                   toast.error("Informe o título do canal.");
                   return;
                 }
-                const newId = `ch-${Date.now()}`;
-                if (store?.id) {
-                  createIntranetChannel({
+                try {
+                  const created = await createIntranetChannel({
                     data: {
-                      storeId: store.id,
+                      storeId: store?.id,
+                      store_id: store?.id,
                       title: newChannelTitle.trim(),
                       department: newChannelDept,
                       scope: newChannelScope,
                     },
-                  }).then((created) => {
-                    if (created?.id) {
-                      setActiveIntranetChannelId(created.id);
-                    }
-                  }).catch((err) => console.warn("[intranet] Erro ao criar canal:", err));
+                  });
+                  if (created?.id) {
+                    const newChan = {
+                      ...created,
+                      creator: created.creator_name || "Você",
+                      updatedAt: "Agora",
+                      membersCount: 1,
+                      milestones: [
+                        {
+                          id: `ms-${Date.now()}`,
+                          label: "Canal corporativo estruturado criado",
+                          time: "Agora",
+                          done: true,
+                          detail: `Escopo ${newChannelScope === "private" ? "Privado" : "Público"} • Setor ${newChannelDept}`,
+                        },
+                      ],
+                      messages: [],
+                    };
+                    setIntranetChannels((prev) => [newChan, ...prev]);
+                    setActiveIntranetChannelId(created.id);
+                    setNewChannelTitle("");
+                    setNewChannelModalOpen(false);
+                    toast.success("Canal criado na Intranet!");
+                  }
+                } catch (err: any) {
+                  console.warn("[intranet] Erro ao criar canal:", err);
+                  toast.error("Falha ao criar canal no banco de dados.");
                 }
-                setIntranetChannels((prev) => [
-                  {
-                    id: newId,
-                    title: newChannelTitle.trim(),
-                    department: newChannelDept as any,
-                    scope: newChannelScope,
-                    creator: "Você",
-                    updatedAt: "Agora",
-                    membersCount: 1,
-                    milestones: [
-                      {
-                        id: `ms-${Date.now()}`,
-                        label: "Canal corporativo estruturado criado",
-                        time: "Agora",
-                        done: true,
-                        detail: `Escopo ${newChannelScope === "private" ? "Privado" : "Público"} • Setor ${newChannelDept}`,
-                      },
-                    ],
-                    messages: [],
-                  },
-                  ...prev,
-                ]);
-                setActiveIntranetChannelId(newId);
-                setNewChannelTitle("");
-                setNewChannelModalOpen(false);
-                toast.success("Canal criado na Intranet!");
               }}
               className="h-11 min-h-11 px-5 text-xs font-bold cursor-pointer"
             >
               Criar Canal
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Desconectar WhatsApp */}
+      <Dialog open={disconnectModalOpen} onOpenChange={setDisconnectModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <PowerOff className="size-5 text-destructive" />
+              <span>Desconectar WhatsApp</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Deseja desconectar o aparelho {selectedDisconnectInstanceId ? `"${whatsappInstances.find((i) => i.id === selectedDisconnectInstanceId)?.display_name || "WhatsApp"}"` : "WhatsApp"} vinculado? A sessão será despareada no aparelho e na VPS.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label htmlFor="deep-disconnect-toggle" className="text-xs font-semibold text-foreground cursor-pointer">
+                  Limpeza total da sessão
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Remove completamente os dados e arquivos da sessão na VPS.
+                </p>
+              </div>
+              <Switch
+                id="deep-disconnect-toggle"
+                checked={deepDisconnect}
+                onCheckedChange={setDeepDisconnect}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDisconnectModalOpen(false)}
+              disabled={isDisconnectingWhatsApp}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDisconnectWhatsApp}
+              disabled={isDisconnectingWhatsApp}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isDisconnectingWhatsApp && <Loader2 className="size-4 animate-spin" />}
+              Confirmar Desconexão
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Limpar Mensagens no Sistema Local */}
+      <Dialog open={clearMessagesModalOpen} onOpenChange={setClearMessagesModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Eraser className="size-5 text-warning-strong" />
+              <span>Limpar Mensagens (No Sistema)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Esta ação apagará todas as mensagens desta conversa armazenadas no banco de dados do Waesy. As mensagens permanecerão intactas no WhatsApp do cliente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning-strong">
+            As mensagens serão removidas do histórico da sua equipe. O cliente continuará vendo as mensagens no WhatsApp dele.
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setClearMessagesModalOpen(false)}
+              disabled={isClearingMessages}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleClearThreadMessages}
+              disabled={isClearingMessages}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isClearingMessages && <Loader2 className="size-4 animate-spin" />}
+              Limpar Mensagens Locais
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Excluir Conversa no Sistema Local */}
+      <Dialog open={deleteThreadModalOpen} onOpenChange={setDeleteThreadModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Trash2 className="size-5 text-destructive" />
+              <span>Excluir Conversa (No Sistema)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Esta conversa e todo o seu histórico serão removidos do painel da sua loja. O contato do cliente e as mensagens no WhatsApp dele NÃO sofrerão nenhuma alteração.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteThreadModalOpen(false)}
+              disabled={isDeletingThread}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteThread}
+              disabled={isDeletingThread}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isDeletingThread && <Loader2 className="size-4 animate-spin" />}
+              Excluir Conversa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Excluir Contato e Histórico Definitivamente */}
+      <Dialog open={deleteContactModalOpen} onOpenChange={setDeleteContactModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Trash2 className="size-5 text-destructive" />
+              <span>Excluir Contato & Dados (Definitivo)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Esta ação expurga o contato e todo o histórico de conversas do sistema e do CRM da loja. Ideal para números de marketing descartáveis ou inválidos. Ação restrita a administradores.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteContactModalOpen(false)}
+              disabled={isDeletingContact}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteContactPermanently}
+              disabled={isDeletingContact}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isDeletingContact && <Loader2 className="size-4 animate-spin" />}
+              Confirmar Exclusão Definitiva
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Resetar Histórico Completo Local */}
+      <Dialog open={resetHistoryModalOpen} onOpenChange={setResetHistoryModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Trash2 className="size-5 text-destructive" />
+              <span>Resetar Histórico Local da Loja</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Exclui todas as conversas e mensagens arquivadas no banco do Waesy para esta loja. Nenhuma mensagem ou chat será apagado no WhatsApp dos clientes ou na VPS.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <p className="text-xs text-foreground font-semibold">
+              Para confirmar, digite <span className="font-mono text-destructive font-bold">RESETAR</span> no campo abaixo:
+            </p>
+            <Input
+              value={resetConfirmationCode}
+              onChange={(e) => setResetConfirmationCode(e.target.value)}
+              placeholder="RESETAR"
+              className="h-11 min-h-11 font-mono uppercase text-xs"
+            />
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setResetHistoryModalOpen(false);
+                setResetConfirmationCode("");
+              }}
+              disabled={isResettingHistory}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleResetStoreHistory}
+              disabled={isResettingHistory || resetConfirmationCode.trim() !== "RESETAR"}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isResettingHistory && <Loader2 className="size-4 animate-spin" />}
+              Confirmar Reset Local
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Supervisão: Auditoria de Solicitações de Exclusão da Equipe */}
+      <Dialog open={supervisorRequestsModalOpen} onOpenChange={setSupervisorRequestsModalOpen}>
+        <DialogContent className="sm:max-w-xl p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <ShieldCheck className="size-5 text-primary" />
+              <span>Solicitações de Exclusão de Contatos</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Solicitações encaminhadas pelos colaboradores da equipe. Avalie a justificativa antes de autorizar a exclusão permanente do contato e histórico.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {isLoadingDeletionRequests ? (
+              <div className="p-8 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
+                <Loader2 className="size-5 animate-spin text-primary" />
+                <span>Carregando solicitações pendentes...</span>
+              </div>
+            ) : pendingDeletionRequests.length === 0 ? (
+              <div className="p-6 text-center text-xs text-muted-foreground rounded-lg border border-border/60 bg-muted/20">
+                <span>Nenhuma solicitação pendente de exclusão no momento.</span>
+              </div>
+            ) : (
+              pendingDeletionRequests.map((req) => (
+                <div key={req.id} className="p-3 rounded-lg border border-border/70 bg-card space-y-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-foreground truncate">
+                      {req.thread?.guest_name || req.thread?.entity_id || "Contato"}
+                    </span>
+                    <span className="text-2xs text-muted-foreground font-mono">
+                      {new Date(req.created_at).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground bg-muted/30 p-2 rounded text-xs italic">
+                    "{req.reason}"
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-2xs text-muted-foreground">
+                      Solicitado por: <strong className="text-foreground">{req.requester?.full_name || "Colaborador"}</strong>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={Boolean(isReviewingRequest)}
+                        onClick={() => handleReviewDeletionRequest(req.id, false)}
+                        className="h-11 min-h-11 px-3 text-xs font-semibold cursor-pointer text-muted-foreground hover:text-foreground"
+                      >
+                        Recusar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        disabled={Boolean(isReviewingRequest)}
+                        onClick={() => handleReviewDeletionRequest(req.id, true)}
+                        className="h-11 min-h-11 px-3 text-xs font-bold gap-1 cursor-pointer"
+                      >
+                        {isReviewingRequest === req.id && <Loader2 className="size-3.5 animate-spin" />}
+                        Aprovar Exclusão
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSupervisorRequestsModalOpen(false)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Colaborador: Solicitar Exclusão de Contato ao Supervisor */}
+      <Dialog open={requestDeletionModalOpen} onOpenChange={setRequestDeletionModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <ShieldAlert className="size-5 text-warning-strong" />
+              <span>Solicitar Exclusão ao Supervisor</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Como medida de segurança, a exclusão definitiva de contatos e históricos exige autorização de um supervisor. Informe o motivo abaixo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-foreground">
+              Justificativa da exclusão <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              value={requestDeletionReason}
+              onChange={(e) => setRequestDeletionReason(e.target.value)}
+              placeholder="Ex: Contato inválido/trocado, spam repetitivo, ou solicitação expressa do cliente."
+              rows={3}
+              className="text-xs resize-none"
+            />
+          </div>
+
+          <DialogFooter className="flex flex-row items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRequestDeletionModalOpen(false)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isSubmittingDeletionRequest || !requestDeletionReason.trim()}
+              onClick={handleRequestContactDeletion}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isSubmittingDeletionRequest && <Loader2 className="size-4 animate-spin" />}
+              Enviar Solicitação
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -3375,12 +5077,47 @@ function WorkspaceAtendimentoPage() {
         onOpenChange={setTeamSectorsDrawerOpen}
         companyId={store?.id || ""}
         instanceId={whatsappInstances[0]?.id}
+        initialConfig={(store?.settings as any)?.whatsapp_governance}
+        availableInstances={(whatsappInstances || []).map((inst: any) => ({ id: String(inst.id), displayName: String(inst.display_name || inst.instance_key || "WhatsApp"), phone: inst.display_phone_number || null }))}
         availableAgents={(teamMembers || []).map((m: any) => ({
           id: String(m.id || m.user_id),
           name: String(m.full_name || m.name || m.email || "Atendente"),
           role: String(m.role || "operator"),
         }))}
       />
+
+      {/* Estúdio de Voz IA (Personas, Sotaques Regionais, Ambientes Acústicos e PTT) */}
+      <WhatsAppVoiceStudioModal
+        open={voiceStudioModalOpen}
+        onOpenChange={setVoiceStudioModalOpen}
+        threadId={activeThread?.id || ""}
+        storeId={store?.id}
+        initialText={text}
+        onVoiceSent={() => {
+          setText("");
+          if (activeThreadId) {
+            getChatMessages({ data: { threadId: activeThreadId } })
+              .then((res: any) => setMessages(res?.messages || []))
+              .catch(() => {});
+          }
+        }}
+      />
+
+      {/* Lightbox para Mídia / Imagens / Figurinhas Expandidas */}
+      <Dialog open={Boolean(lightboxUrl)} onOpenChange={() => setLightboxUrl(null)}>
+        <DialogContent className="sm:max-w-3xl p-2 bg-background border-border/80 flex flex-col items-center justify-center">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Visualização de Mídia</DialogTitle>
+          </DialogHeader>
+          {lightboxUrl && (
+            <img
+              src={lightboxUrl}
+              alt="Mídia expandida"
+              className="max-h-full max-w-full object-contain rounded-md"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

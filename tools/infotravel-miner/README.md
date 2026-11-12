@@ -1,61 +1,39 @@
-# 🚀 Extrator Autônomo de Clientes Infotravel / Orinter
+# Extrator Autônomo Infotravel — Waesy Sync
 
-Sistema automatizado de mineração e extração cadastral de reservas, titulares, passageiros e dados financeiros a partir da plataforma Infotravel.
+Sistema Playwright local para mineração cadastral de reservas, titulares, passageiros e dados financeiros em qualquer portal Infotravel (**Orinter, FRT, Incomum Viagens, Schultz e portais parceiros**), além do servidor gravador `coletor.mjs` para espelhamento em tempo real com a extensão Chrome/Edge.
 
 ---
 
-## 📁 Estrutura de Arquivos no seu Computador
+## Estrutura de Arquivos
 
 ```
 tools/infotravel-miner/
-├── miner.mjs                       # Script principal Playwright com jitter humano (1s a 6s)
-├── coletor.mjs                     # Servidor HTTP local (porta 3333) para integração com extensão
+├── miner.mjs                       # Script Playwright com jitter humano e envio opcional ao CRM
+├── coletor.mjs                     # Servidor HTTP local (porta 3333) para espelho com a extensão
+├── iniciar_coletor_local.bat       # Sobe coletor.mjs na porta 3333
 ├── iniciar_teste_piloto.bat        # Executa teste piloto com 10 reservas
-├── iniciar_extracao_completa.bat   # Executa extração COMPLETA das 2.000+ reservas
-├── abrir_pasta_dos_arquivos.bat    # Abre imediatamente a pasta com os CSVs no Windows Explorer
-└── output/                         # Diretório onde os arquivos são salvos
-    ├── clientes_excelencia_tour_oficial.csv  # CSV pronto para o Excel (separador ; e UTF-8 BOM)
-    ├── clientes_excelencia_tour_oficial.json # Estrutura JSON com passageiros e financeiro
-    └── progresso.json                        # Memória de onde parou (não repete reservas)
+├── iniciar_extracao_completa.bat   # Executa extração completa de reservas
+└── output/                         # Diretório de saída local (ignorado no empacotamento)
+    ├── clientes_excelencia_tour_oficial.csv
+    ├── clientes_excelencia_tour_oficial.json
+    ├── erros_mineracao.json
+    └── progresso.json
 ```
 
 ---
 
-## ⚡ Como Rodar no seu Computador (Passo a Passo Simples)
+## Como Rodar
 
-1. Para ver onde estão os arquivos gerados a qualquer momento, dê dois cliques em:  
-   👉 **`abrir_pasta_dos_arquivos.bat`** (Abre a pasta `output` diretamente na sua tela).
-2. Para testar 10 reservas com intervalo seguro e humano:  
-   👉 **`iniciar_teste_piloto.bat`**
-3. Para extrair todas as 2.000+ reservas com intervalo randômico de 1 a 6 segundos:  
-   👉 **`iniciar_extracao_completa.bat`**
-   - O Google Chrome real abrirá na sua tela.
-   - Faça seu login normal (com usuário, senha e 2FA se houver).
-   - Vá na busca de reservas e clique em Pesquisar.
-   - Pressione **[ENTER]** na janela preta do terminal.
-   - O robô irá varrer as páginas, coletar todos os passageiros e valores e salvar diretamente no seu disco!
-   - Ao terminar, a pasta com o CSV abrirá automaticamente na sua tela.
+1. Instale as dependências na primeira vez (`npm install` nesta pasta ou `iniciar_teste_piloto.bat`).
+2. Para integrar com a extensão em tempo real no disco, execute **`iniciar_coletor_local.bat`** (endpoint `http://127.0.0.1:3333/api/status`).
+3. Para mineração autônoma via Playwright:
+   - Execute **`iniciar_teste_piloto.bat`** (10 reservas) ou **`iniciar_extracao_completa.bat`**.
+   - Opcionalmente passe parâmetros no terminal:
+     `node miner.mjs --all --url=https://online.orinter.com.br/infotravel --server=https://waesy.com.br --token=wae_...`
+   - Faça login no portal, abra **Buscar reservas > Pesquisar** e pressione **ENTER** no terminal.
 
 ---
 
-## 📊 Colunas Gravadas no Arquivo CSV (Padrão Excel Brasil)
+## Colunas Canônicas do CSV (Padrão Excel Brasil)
 
-- **ID Reserva** (Código único do Infotravel)
-- **Status Reserva** (Confirmada, Em Viagem, etc.)
-- **Data Criação**
-- **Contato Principal / Titular**
-- **Email Contato**
-- **Telefone Contato**
-- **Nome Completo do Passageiro** (ADT/CHD/INF)
-- **CPF Passageiro**
-- **Data Nascimento**
-- **Idade**
-- **Tipo de Passageiro**
-- **Titular? (SIM/NÃO)**
-- **Hotel / Destino da Viagem**
-- **Valor Total Venda (R$)**
-- **Taxas Inclusas (R$)**
-- **Impostos Inclusos (R$)**
-- **Forma de Pagamento**
-- **Parcelamento**
-- **Comissão Agência (R$)**
+`ID Reserva`, `Status Reserva`, `Data Criacao`, `Check-in`, `Check-out`, `Operadora`, `Contato Titular`, `Email Contato`, `Telefone Contato`, `Nome Passageiro`, `CPF Passageiro`, `Data Nascimento`, `Idade`, `Tipo (ADT/CHD/INF)`, `E Titular?`, `Hotel / Destino`, `Acomodacao`, `Localizador`, `Valor Total Venda (R$)`, `Taxas Inclusas (R$)`, `Impostos Inclusos (R$)`, `Forma de Pagamento`, `Status Pagamento`, `Score Confianca`, `Banco Emissor`, `Parcelamento`, `Comissao Agencia (R$)`.

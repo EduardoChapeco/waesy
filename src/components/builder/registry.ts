@@ -17,6 +17,7 @@ import { InteractiveQuoteCalculator } from "./blocks/InteractiveQuoteCalculator"
 import { InfiniteMarqueeRibbon } from "./blocks/InfiniteMarqueeRibbon";
 import { InteractiveComparisonSlider } from "./blocks/InteractiveComparisonSlider";
 import { InteractiveLeadQuizFlow } from "./blocks/InteractiveLeadQuizFlow";
+import { SoftwareFeatureShowcase } from "./blocks/SoftwareFeatureShowcase";
 import { PrometheeNewsPortalBlock } from "./blocks/PrometheeNewsPortalBlock";
 import { PrometheeNewsHeaderBlock } from "./blocks/PrometheeNewsHeaderBlock";
 import { PrometheeNewsNavBlock } from "./blocks/PrometheeNewsNavBlock";
@@ -139,6 +140,7 @@ import type {
   InfiniteMarqueeBlockData,
   ComparisonSliderBlockData,
   LeadQuizBlockData,
+  SoftwareFeatureShowcaseBlockData,
   PrometheeNewsPortalBlockData,
   PrometheeNewsHeaderBlockData,
   PrometheeNewsNavBlockData,
@@ -1661,6 +1663,56 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
     } as LeadQuizBlockData,
   },
 
+  {
+    id: "software_feature_tabs",
+    name: "Módulos do Sistema (Abas)",
+    category: "services",
+    description: "Apresentação interativa dos recursos e módulos do software com abas selecionáveis, checklist de benefícios e mockup visual.",
+    capabilities: ["responsive", "cms", "motion"],
+    component: SoftwareFeatureShowcase as any,
+    defaultProps: {
+      title: "Recursos completos pensados para a sua rotina",
+      subtitle: "Descubra como nossa plataforma simplifica sua operação e acelera suas vendas em cada etapa.",
+      badgeText: "TECNOLOGIA DE PONTA",
+      tabs: [
+        {
+          id: "mod-1",
+          tabLabel: "Operação Central",
+          tabIconName: "Laptop",
+          title: "Controle total da sua operação em tempo real",
+          description: "Painel intuitivo com indicadores ao vivo, sincronização instantânea e comandos rápidos para sua equipe.",
+          badge: "Mais Usado",
+          benefits: [
+            "Painel de controle unificado e responsivo",
+            "Sincronização em tempo real sem conflitos",
+            "Relatórios analíticos de desempenho",
+          ],
+          ctaLabel: "Conhecer este Módulo",
+          ctaHref: "#contato",
+          statNumber: "99.98%",
+          statLabel: "Disponibilidade contínua",
+        },
+        {
+          id: "mod-2",
+          tabLabel: "Vendas & Clientes",
+          tabIconName: "Users",
+          title: "Fidelização e atração contínua de clientes",
+          description: "Ferramentas inteligentes de CRM, histórico de compras, campanhas automáticas e canais diretos de contato.",
+          badge: "Crescimento",
+          benefits: [
+            "Cadastro unificado com histórico completo",
+            "Automações de lembretes e mensagens",
+            "Gestão de fidelidade e recorrência",
+          ],
+          ctaLabel: "Ver Demonstração",
+          ctaHref: "#contato",
+          statNumber: "+35%",
+          statLabel: "Aumento médio em retenção",
+        },
+      ],
+    } as SoftwareFeatureShowcaseBlockData,
+  },
+
   // ── 12. VITRINE & APP WAESY (PARIDADE 100% BIDIRECIONAL MOBILE / DESKTOP) ──
   {
     id: "vitrine_metamorphic_banner",
@@ -2210,6 +2262,7 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   portal_carnes_bills: "services",
   office_contract_viewer: "services",
   interactive_quote_calculator: "services",
+  software_feature_tabs: "services",
 
   // Turismo
   tourism_quote_hero: "tourism",

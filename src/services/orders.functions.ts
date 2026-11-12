@@ -13,6 +13,7 @@ import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { ORDER_STATUS_VALUES } from "@/lib/order-constants";
 import { syncCommissionOnOrderStatusChange } from "@/services/affiliate-ledger.functions";
+import { deductSuppliesForOrder } from "@/services/gastronomy-supplies.functions";
 
 // ── Schemas de Validação Zod ──────────────────────────────────────────────
 
@@ -321,6 +322,16 @@ export const updateOrderStatusFn = createServerFn({ method: "POST" })
         });
       } catch (syncErr) {
         console.warn("[orders.functions] Falha silenciosa ao sincronizar comissão de afiliados:", syncErr);
+      }
+      if (true) {
+
+      if (["paid", "processing", "ready", "shipped", "delivered"].includes(data.status)) {
+        try {
+          await deductSuppliesForOrder({ data: { orderId: data.orderId } });
+        } catch (supplyErr) {
+          console.warn("[orders.functions] Falha defensiva na dedução de insumos:", supplyErr);
+        }
+      }
       }
     }
 

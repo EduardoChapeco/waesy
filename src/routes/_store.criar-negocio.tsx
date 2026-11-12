@@ -22,7 +22,8 @@ import { provisionBusiness } from "@/services/onboarding.functions";
 import { lookupCnpj } from "@/services/public-apis.functions";
 import { formatCnpj, formatCpf, formatCep, cleanDocument, validateCnpjMod11 } from "@/lib/document-validator";
 import { uploadStoreMedia } from "@/services/storage.functions";
-import { getUserSession } from "@/services/auth.functions";
+import { getUserSession, syncSessionToCookies } from "@/services/auth.functions";
+import { getBrowserClient } from "@/lib/supabase";
 import { getPublicLogisticsPresentation } from "@/services/master.functions";
 import { NeighborhoodsManager, type NeighborhoodItem } from "@/components/commerce/neighborhoods-manager";
 import { CHAPECO_NEIGHBORHOODS } from "@/lib/constants/cities";
@@ -49,6 +50,24 @@ export const Route = createFileRoute("/_store/criar-negocio")({
  session = null;
  }
 
+ if (!session?.user && typeof window !== "undefined") {
+   try {
+     const supabase = getBrowserClient();
+     const { data } = await supabase.auth.getSession();
+     if (data?.session?.access_token && data?.session?.refresh_token) {
+       await syncSessionToCookies({
+         data: {
+           access_token: data.session.access_token,
+           refresh_token: data.session.refresh_token,
+         },
+       }).catch(() => null);
+       session = await getUserSession().catch(() => null);
+     }
+   } catch {
+     // Fallback silencioso
+   }
+ }
+
  if (!session?.user) {
  throw redirect({
  to: "/entrar",
@@ -64,6 +83,24 @@ export const Route = createFileRoute("/_store/criar-negocio")({
  session = await getUserSession();
  } catch {
  session = null;
+ }
+
+ if (!session?.user && typeof window !== "undefined") {
+   try {
+     const supabase = getBrowserClient();
+     const { data } = await supabase.auth.getSession();
+     if (data?.session?.access_token && data?.session?.refresh_token) {
+       await syncSessionToCookies({
+         data: {
+           access_token: data.session.access_token,
+           refresh_token: data.session.refresh_token,
+         },
+       }).catch(() => null);
+       session = await getUserSession().catch(() => null);
+     }
+   } catch {
+     // Fallback silencioso
+   }
  }
 
  if (!session?.user) {

@@ -24,6 +24,8 @@ import {
   getLegacyCookieDomainsToPurge,
   parseRawCookieStringPreservingDuplicates,
   resolveCanonicalAuthCookies,
+  resolveCanonicalCookieDomain,
+  resolveOrphanAuthCookiesToExpire,
 } from "./auth-cookie-sanitizer";
 
 // ---------------------------------------------------------------------------
@@ -128,32 +130,17 @@ export function sanitizeBrowserAuthCookies(): void {
 
     const hostname = window.location.hostname.toLowerCase();
     const isSecure = window.location.protocol === "https:";
-    const legacyDomains = getLegacyCookieDomainsToPurge(hostname);
+    const canonicalDomain = resolveCanonicalCookieDomain(hostname);
 
-    // 1. Expira variantes com atributo Domain explícito se houver duplicatas legadas detectadas
+    // 1. Se houver duplicatas legadas (host-only vs domain), expira a variante host-only (sem domain)
+    // para preservar exclusivamente o cookie canônico compartilhado do domínio (.waesy.com.br)
     const hasDuplicates = rawEntries.some(
       (e) =>
         AUTH_COOKIE_CHUNK_NAMES.includes(e.name as any) &&
         rawEntries.filter((x) => x.name === e.name).length > 1,
     );
-    if (hasDuplicates) {
-      for (const domain of legacyDomains) {
-        for (const name of AUTH_COOKIE_CHUNK_NAMES) {
-          document.cookie = serializeCookieHeader(name, "", {
-            path: "/",
-            maxAge: 0,
-            domain,
-            sameSite: "lax",
-            secure: isSecure,
-          });
-        }
-      }
-    }
-
-    // 2. Expira no escopo host-only APENAS chunks órfãos que comprovadamente existem no browser
-    // e NÃO pertencem à sessão vencedora (sem churn desnecessário).
-    for (const name of AUTH_COOKIE_CHUNK_NAMES) {
-      if (!winningNames.has(name) && currentAuthCookieMap.has(name)) {
+    if (hasDuplicates && canonicalDomain) {
+      for (const name of AUTH_COOKIE_CHUNK_NAMES) {
         document.cookie = serializeCookieHeader(name, "", {
           path: "/",
           maxAge: 0,
@@ -163,7 +150,28 @@ export function sanitizeBrowserAuthCookies(): void {
       }
     }
 
-    // 3. Regrava os cookies vencedores no escopo host-only APENAS se o valor diferir ou se houve limpeza
+    // 2. Expira APENAS chunks órfãos comprovados que existem no browser e não pertencem à sessão vencedora
+    for (const name of AUTH_COOKIE_CHUNK_NAMES) {
+      if (!winningNames.has(name) && currentAuthCookieMap.has(name)) {
+        if (canonicalDomain) {
+          document.cookie = serializeCookieHeader(name, "", {
+            path: "/",
+            maxAge: 0,
+            domain: canonicalDomain,
+            sameSite: "lax",
+            secure: isSecure,
+          });
+        }
+        document.cookie = serializeCookieHeader(name, "", {
+          path: "/",
+          maxAge: 0,
+          sameSite: "lax",
+          secure: isSecure,
+        });
+      }
+    }
+
+    // 3. Regrava os cookies vencedores com o escopo canônico
     for (const win of winningAuthCookies) {
       if (hasDuplicates || currentAuthCookieMap.get(win.name) !== win.value) {
         document.cookie = serializeCookieHeader(win.name, win.value, {
@@ -171,6 +179,7 @@ export function sanitizeBrowserAuthCookies(): void {
           maxAge: 60 * 60 * 24 * 365,
           sameSite: "lax",
           secure: isSecure,
+          ...(canonicalDomain ? { domain: canonicalDomain } : {}),
         });
       }
     }
@@ -195,6 +204,9 @@ export function getBrowserClient(): SupabaseClient {
     sanitizeBrowserAuthCookies();
   }
 
+  const isBrowser = typeof window !== "undefined";
+  const clientDomain = isBrowser ? resolveCanonicalCookieDomain(window.location.hostname) : undefined;
+
   _browserClient = createBrowserClient(
     env.data.VITE_SUPABASE_URL,
     env.data.VITE_SUPABASE_ANON_KEY,
@@ -214,6 +226,7 @@ export function getBrowserClient(): SupabaseClient {
           typeof window !== "undefined" &&
           window.location.protocol === "https:",
         path: "/",
+        ...(clientDomain ? { domain: clientDomain } : {}),
       },
       cookies: {
         getAll() {
@@ -224,58 +237,62 @@ export function getBrowserClient(): SupabaseClient {
         setAll(cookiesToSet) {
           if (typeof document === "undefined" || typeof window === "undefined") return;
           const isSecure = window.location.protocol === "https:";
+          const activeDomain = resolveCanonicalCookieDomain(window.location.hostname) || clientDomain;
           const legacyDomains = getLegacyCookieDomainsToPurge(window.location.hostname);
-          const namesBeingSetWithValue = new Set<string>();
+          const rawEntries = parseRawCookieStringPreservingDuplicates(document.cookie || "");
 
           cookiesToSet.forEach(({ name, value, options }) => {
             const isDeleting = !value || options?.maxAge === 0;
-            if (!isDeleting) {
-              namesBeingSetWithValue.add(name);
-            }
 
-            // Expira variantes legadas com Domain explícito
-            for (const domain of legacyDomains) {
-              document.cookie = serializeCookieHeader(name, "", {
-                path: "/",
-                maxAge: 0,
-                domain,
-                sameSite: "lax",
-                secure: isSecure,
-              });
-            }
-
-            const cleanOptions = { ...options };
-            delete cleanOptions.domain;
-
-            document.cookie = serializeCookieHeader(name, isDeleting ? "" : value, {
-              ...cleanOptions,
-              maxAge: isDeleting ? 0 : (options?.maxAge ?? 60 * 60 * 24 * 365),
-              sameSite: options?.sameSite === "none" ? "none" : "lax",
-              secure: isSecure,
-              path: "/",
-            });
-          });
-
-          if (namesBeingSetWithValue.size > 0) {
-            for (const candidateName of AUTH_COOKIE_CHUNK_NAMES) {
-              if (!namesBeingSetWithValue.has(candidateName)) {
-                for (const domain of legacyDomains) {
-                  document.cookie = serializeCookieHeader(candidateName, "", {
-                    path: "/",
-                    maxAge: 0,
-                    domain,
-                    sameSite: "lax",
-                    secure: isSecure,
-                  });
-                }
-                document.cookie = serializeCookieHeader(candidateName, "", {
+            // Expira variantes legadas apenas durante logout/remoção (isDeleting)
+            if (isDeleting) {
+              if (activeDomain) {
+                document.cookie = serializeCookieHeader(name, "", {
                   path: "/",
                   maxAge: 0,
                   sameSite: "lax",
                   secure: isSecure,
                 });
               }
+              for (const domain of legacyDomains) {
+                document.cookie = serializeCookieHeader(name, "", {
+                  path: "/",
+                  maxAge: 0,
+                  domain,
+                  sameSite: "lax",
+                  secure: isSecure,
+                });
+              }
             }
+
+            // Grava o cookie canônico
+            document.cookie = serializeCookieHeader(name, isDeleting ? "" : value, {
+              ...options,
+              maxAge: isDeleting ? 0 : (options?.maxAge ?? 60 * 60 * 24 * 365),
+              sameSite: options?.sameSite === "none" ? "none" : "lax",
+              secure: isSecure,
+              path: "/",
+              ...(activeDomain ? { domain: activeDomain } : {}),
+            });
+          });
+
+          const orphanNames = resolveOrphanAuthCookiesToExpire(rawEntries, cookiesToSet);
+          for (const orphanName of orphanNames) {
+            if (activeDomain) {
+              document.cookie = serializeCookieHeader(orphanName, "", {
+                path: "/",
+                maxAge: 0,
+                domain: activeDomain,
+                sameSite: "lax",
+                secure: isSecure,
+              });
+            }
+            document.cookie = serializeCookieHeader(orphanName, "", {
+              path: "/",
+              maxAge: 0,
+              sameSite: "lax",
+              secure: isSecure,
+            });
           }
         },
       },

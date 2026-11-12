@@ -47,21 +47,22 @@ export interface IntranetMilestoneDTO {
  * Lista todos os canais da intranet da loja com seus marcos e membros
  */
 export const listIntranetChannels = createServerFn({ method: "GET" })
-  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .validator(z.object({ storeId: z.string().uuid().optional(), store_id: z.string().uuid().optional() }).optional())
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    const storeId = data?.storeId || identity?.store_id;
+    const storeId = data?.storeId || data?.store_id || identity?.store_id || identity?.memberships?.[0]?.store_id;
 
     if (!storeId) return [];
-    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"], storeId);
 
     try {
-      const { data: channels, error } = await supabase
+      let { data: channels, error } = await supabase
         .from("intranet_channels")
         .select(`
           *,
-          intranet_milestones (*)
+          intranet_milestones (*),
+          intranet_messages (*)
         `)
         .eq("store_id", storeId)
         .order("created_at", { ascending: true });
@@ -75,18 +76,45 @@ export const listIntranetChannels = createServerFn({ method: "GET" })
         return [];
       }
 
-      return (channels || []).map((ch: any) => ({
-        id: ch.id,
-        store_id: ch.store_id,
-        title: ch.title,
-        department: ch.department,
-        scope: ch.scope,
-        creator_id: ch.creator_id,
-        creator_name: ch.creator_name,
-        created_at: ch.created_at,
-        updated_at: ch.updated_at,
-        milestones: ch.intranet_milestones || [],
-      })) as IntranetChannelDTO[];
+      if (!channels || channels.length === 0) {
+        return [];
+      }
+
+      return (channels || []).map((ch: any) => {
+        const rawMilestones = Array.isArray(ch.intranet_milestones) ? ch.intranet_milestones : [];
+        const rawMessages = Array.isArray(ch.intranet_messages) ? ch.intranet_messages : [];
+        rawMessages.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+        return {
+          id: ch.id,
+          store_id: ch.store_id,
+          title: ch.title,
+          department: ch.department,
+          scope: ch.scope,
+          creator: ch.creator_name || "Membro da Equipe",
+          creator_id: ch.creator_id,
+          creator_name: ch.creator_name,
+          updatedAt: ch.updated_at ? new Date(ch.updated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Hoje",
+          membersCount: 4,
+          created_at: ch.created_at,
+          updated_at: ch.updated_at,
+          milestones: rawMilestones.map((m: any) => ({
+            id: m.id,
+            label: m.label,
+            time: m.time_label || new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            done: Boolean(m.done),
+            detail: m.detail || "",
+          })),
+          messages: rawMessages.map((msg: any) => ({
+            id: msg.id,
+            author: msg.author_name || "Membro da Equipe",
+            role: msg.author_role || "Colaborador",
+            time: new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            text: msg.content,
+            payload: msg.artifact_payload,
+          })),
+        };
+      }) as any[];
     } catch (err) {
       logSystemError({
         route: "intranet.functions.listIntranetChannels",
@@ -103,6 +131,7 @@ export const createIntranetChannel = createServerFn({ method: "POST" })
   .validator(
     z.object({
       storeId: z.string().uuid().optional(),
+      store_id: z.string().uuid().optional(),
       title: z.string().min(2),
       department: z.string().default("Geral"),
       scope: z.enum(["public", "private", "direct"]).default("public"),
@@ -111,10 +140,10 @@ export const createIntranetChannel = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    const storeId = input.storeId || identity?.store_id;
+    const storeId = input.storeId || input.store_id || identity?.store_id || identity?.memberships?.[0]?.store_id;
 
     if (!storeId) throw new Error("Loja não identificada");
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
 
     const { data: channel, error } = await supabase
       .from("intranet_channels")

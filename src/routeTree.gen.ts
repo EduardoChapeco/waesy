@@ -157,6 +157,7 @@ import { Route as StoreAgendarIdRouteImport } from './routes/_store.agendar.$id'
 import { Route as StoreBioSlugRouteImport } from './routes/_store.bio.$slug'
 import { Route as StoreCSlugRouteImport } from './routes/_store.c.$slug'
 import { Route as StoreCategoriaSlugRouteImport } from './routes/_store.categoria.$slug'
+import { Route as StoreChamadoTicketIdRouteImport } from './routes/_store.chamado.$ticketId'
 import { Route as StoreClassificadosIndexRouteImport } from './routes/_store.classificados.index'
 import { Route as StoreClassificadosIdRouteImport } from './routes/_store.classificados.$id'
 import { Route as StoreColecaoSlugRouteImport } from './routes/_store.colecao.$slug'
@@ -372,9 +373,11 @@ import { Route as WorkspacePedidosIdRouteImport } from './routes/workspace.pedid
 import { Route as WorkspacePedidosExpedicaoRouteImport } from './routes/workspace.pedidos.expedicao'
 import { Route as WorkspacePedidosFrotaRouteImport } from './routes/workspace.pedidos.frota'
 import { Route as WorkspacePedidosGestorRouteImport } from './routes/workspace.pedidos.gestor'
+import { Route as WorkspacePedidosTempoPreparoRouteImport } from './routes/workspace.pedidos.tempo-preparo'
 import { Route as WorkspacePedidosTrocasRouteImport } from './routes/workspace.pedidos.trocas'
 import { Route as WorkspaceRelatoriosGastronomiaRouteImport } from './routes/workspace.relatorios.gastronomia'
 import { Route as WorkspaceRelatoriosMetasRouteImport } from './routes/workspace.relatorios.metas'
+import { Route as WorkspaceRhComplianceRouteImport } from './routes/workspace.rh.compliance'
 import { Route as WorkspaceRhFolhaRouteImport } from './routes/workspace.rh.folha'
 import { Route as WorkspaceRhPontoRouteImport } from './routes/workspace.rh.ponto'
 import { Route as WorkspaceSimlabFocusGroupRouteImport } from './routes/workspace.simlab.focus-group'
@@ -415,6 +418,7 @@ import { Route as ApiAuthLinkedinCallbackRouteImport } from './routes/api.auth.l
 import { Route as ApiAuthMarketplaceCallbackRouteImport } from './routes/api.auth.marketplace.callback'
 import { Route as ApiV1ExtensionsDownloadRouteImport } from './routes/api.v1.extensions.download'
 import { Route as ApiV1IngestInfotravelQuotesRouteImport } from './routes/api.v1.ingest.infotravel-quotes'
+import { Route as ApiV1IngestInfotravelReservationsRouteImport } from './routes/api.v1.ingest.infotravel-reservations'
 import { Route as ApiV1IngestWhatsappContactsRouteImport } from './routes/api.v1.ingest.whatsapp-contacts'
 import { Route as ApiV1IngestWhoamiRouteImport } from './routes/api.v1.ingest.whoami'
 import { Route as ApiV1PublicDiscoveryRouteImport } from './routes/api.v1.public.discovery'
@@ -1200,6 +1204,11 @@ const StoreCSlugRoute = StoreCSlugRouteImport.update({
 const StoreCategoriaSlugRoute = StoreCategoriaSlugRouteImport.update({
   id: '/categoria/$slug',
   path: '/categoria/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreChamadoTicketIdRoute = StoreChamadoTicketIdRouteImport.update({
+  id: '/chamado/$ticketId',
+  path: '/chamado/$ticketId',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreClassificadosIndexRoute = StoreClassificadosIndexRouteImport.update({
@@ -2350,6 +2359,12 @@ const WorkspacePedidosGestorRoute = WorkspacePedidosGestorRouteImport.update({
   path: '/pedidos/gestor',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspacePedidosTempoPreparoRoute =
+  WorkspacePedidosTempoPreparoRouteImport.update({
+    id: '/pedidos/tempo-preparo',
+    path: '/pedidos/tempo-preparo',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspacePedidosTrocasRoute = WorkspacePedidosTrocasRouteImport.update({
   id: '/pedidos/trocas',
   path: '/pedidos/trocas',
@@ -2367,6 +2382,11 @@ const WorkspaceRelatoriosMetasRoute =
     path: '/metas',
     getParentRoute: () => WorkspaceRelatoriosRoute,
   } as any)
+const WorkspaceRhComplianceRoute = WorkspaceRhComplianceRouteImport.update({
+  id: '/rh/compliance',
+  path: '/rh/compliance',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceRhFolhaRoute = WorkspaceRhFolhaRouteImport.update({
   id: '/rh/folha',
   path: '/rh/folha',
@@ -2587,6 +2607,12 @@ const ApiV1IngestInfotravelQuotesRoute =
   ApiV1IngestInfotravelQuotesRouteImport.update({
     id: '/api/v1/ingest/infotravel-quotes',
     path: '/api/v1/ingest/infotravel-quotes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1IngestInfotravelReservationsRoute =
+  ApiV1IngestInfotravelReservationsRouteImport.update({
+    id: '/api/v1/ingest/infotravel-reservations',
+    path: '/api/v1/ingest/infotravel-reservations',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiV1IngestWhatsappContactsRoute =
@@ -2991,6 +3017,7 @@ export interface FileRoutesByFullPath {
   '/bio/$slug': typeof StoreBioSlugRoute
   '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
+  '/chamado/$ticketId': typeof StoreChamadoTicketIdRoute
   '/classificados/$id': typeof StoreClassificadosIdRoute
   '/colecao/$slug': typeof StoreColecaoSlugRoute
   '/concurso/$id': typeof StoreConcursoIdRoute
@@ -3170,9 +3197,11 @@ export interface FileRoutesByFullPath {
   '/workspace/pedidos/expedicao': typeof WorkspacePedidosExpedicaoRoute
   '/workspace/pedidos/frota': typeof WorkspacePedidosFrotaRoute
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
+  '/workspace/pedidos/tempo-preparo': typeof WorkspacePedidosTempoPreparoRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
+  '/workspace/rh/compliance': typeof WorkspaceRhComplianceRoute
   '/workspace/rh/folha': typeof WorkspaceRhFolhaRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
@@ -3247,6 +3276,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/api/v1/extensions/download': typeof ApiV1ExtensionsDownloadRoute
   '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/infotravel-reservations': typeof ApiV1IngestInfotravelReservationsRoute
   '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
   '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
@@ -3433,6 +3463,7 @@ export interface FileRoutesByTo {
   '/bio/$slug': typeof StoreBioSlugRoute
   '/c/$slug': typeof StoreCSlugRoute
   '/categoria/$slug': typeof StoreCategoriaSlugRoute
+  '/chamado/$ticketId': typeof StoreChamadoTicketIdRoute
   '/classificados/$id': typeof StoreClassificadosIdRoute
   '/colecao/$slug': typeof StoreColecaoSlugRoute
   '/concurso/$id': typeof StoreConcursoIdRoute
@@ -3611,9 +3642,11 @@ export interface FileRoutesByTo {
   '/workspace/pedidos/expedicao': typeof WorkspacePedidosExpedicaoRoute
   '/workspace/pedidos/frota': typeof WorkspacePedidosFrotaRoute
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
+  '/workspace/pedidos/tempo-preparo': typeof WorkspacePedidosTempoPreparoRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
+  '/workspace/rh/compliance': typeof WorkspaceRhComplianceRoute
   '/workspace/rh/folha': typeof WorkspaceRhFolhaRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
@@ -3688,6 +3721,7 @@ export interface FileRoutesByTo {
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/api/v1/extensions/download': typeof ApiV1ExtensionsDownloadRoute
   '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/infotravel-reservations': typeof ApiV1IngestInfotravelReservationsRoute
   '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
   '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
@@ -3884,6 +3918,7 @@ export interface FileRoutesById {
   '/_store/bio/$slug': typeof StoreBioSlugRoute
   '/_store/c/$slug': typeof StoreCSlugRoute
   '/_store/categoria/$slug': typeof StoreCategoriaSlugRoute
+  '/_store/chamado/$ticketId': typeof StoreChamadoTicketIdRoute
   '/_store/classificados/$id': typeof StoreClassificadosIdRoute
   '/_store/colecao/$slug': typeof StoreColecaoSlugRoute
   '/_store/concurso/$id': typeof StoreConcursoIdRoute
@@ -4063,9 +4098,11 @@ export interface FileRoutesById {
   '/workspace/pedidos/expedicao': typeof WorkspacePedidosExpedicaoRoute
   '/workspace/pedidos/frota': typeof WorkspacePedidosFrotaRoute
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
+  '/workspace/pedidos/tempo-preparo': typeof WorkspacePedidosTempoPreparoRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
   '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
+  '/workspace/rh/compliance': typeof WorkspaceRhComplianceRoute
   '/workspace/rh/folha': typeof WorkspaceRhFolhaRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
@@ -4140,6 +4177,7 @@ export interface FileRoutesById {
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/api/v1/extensions/download': typeof ApiV1ExtensionsDownloadRoute
   '/api/v1/ingest/infotravel-quotes': typeof ApiV1IngestInfotravelQuotesRoute
+  '/api/v1/ingest/infotravel-reservations': typeof ApiV1IngestInfotravelReservationsRoute
   '/api/v1/ingest/whatsapp-contacts': typeof ApiV1IngestWhatsappContactsRoute
   '/api/v1/ingest/whoami': typeof ApiV1IngestWhoamiRoute
   '/api/v1/public/discovery': typeof ApiV1PublicDiscoveryRoute
@@ -4336,6 +4374,7 @@ export interface FileRouteTypes {
     | '/bio/$slug'
     | '/c/$slug'
     | '/categoria/$slug'
+    | '/chamado/$ticketId'
     | '/classificados/$id'
     | '/colecao/$slug'
     | '/concurso/$id'
@@ -4515,9 +4554,11 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/expedicao'
     | '/workspace/pedidos/frota'
     | '/workspace/pedidos/gestor'
+    | '/workspace/pedidos/tempo-preparo'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
+    | '/workspace/rh/compliance'
     | '/workspace/rh/folha'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
@@ -4592,6 +4633,7 @@ export interface FileRouteTypes {
     | '/api/auth/marketplace/callback'
     | '/api/v1/extensions/download'
     | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/infotravel-reservations'
     | '/api/v1/ingest/whatsapp-contacts'
     | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
@@ -4778,6 +4820,7 @@ export interface FileRouteTypes {
     | '/bio/$slug'
     | '/c/$slug'
     | '/categoria/$slug'
+    | '/chamado/$ticketId'
     | '/classificados/$id'
     | '/colecao/$slug'
     | '/concurso/$id'
@@ -4956,9 +4999,11 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/expedicao'
     | '/workspace/pedidos/frota'
     | '/workspace/pedidos/gestor'
+    | '/workspace/pedidos/tempo-preparo'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
+    | '/workspace/rh/compliance'
     | '/workspace/rh/folha'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
@@ -5033,6 +5078,7 @@ export interface FileRouteTypes {
     | '/api/auth/marketplace/callback'
     | '/api/v1/extensions/download'
     | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/infotravel-reservations'
     | '/api/v1/ingest/whatsapp-contacts'
     | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
@@ -5228,6 +5274,7 @@ export interface FileRouteTypes {
     | '/_store/bio/$slug'
     | '/_store/c/$slug'
     | '/_store/categoria/$slug'
+    | '/_store/chamado/$ticketId'
     | '/_store/classificados/$id'
     | '/_store/colecao/$slug'
     | '/_store/concurso/$id'
@@ -5407,9 +5454,11 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/expedicao'
     | '/workspace/pedidos/frota'
     | '/workspace/pedidos/gestor'
+    | '/workspace/pedidos/tempo-preparo'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
     | '/workspace/relatorios/metas'
+    | '/workspace/rh/compliance'
     | '/workspace/rh/folha'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
@@ -5484,6 +5533,7 @@ export interface FileRouteTypes {
     | '/api/auth/marketplace/callback'
     | '/api/v1/extensions/download'
     | '/api/v1/ingest/infotravel-quotes'
+    | '/api/v1/ingest/infotravel-reservations'
     | '/api/v1/ingest/whatsapp-contacts'
     | '/api/v1/ingest/whoami'
     | '/api/v1/public/discovery'
@@ -5586,6 +5636,7 @@ export interface RootRouteChildren {
   ApiAuthMarketplaceCallbackRoute: typeof ApiAuthMarketplaceCallbackRoute
   ApiV1ExtensionsDownloadRoute: typeof ApiV1ExtensionsDownloadRoute
   ApiV1IngestInfotravelQuotesRoute: typeof ApiV1IngestInfotravelQuotesRoute
+  ApiV1IngestInfotravelReservationsRoute: typeof ApiV1IngestInfotravelReservationsRoute
   ApiV1IngestWhatsappContactsRoute: typeof ApiV1IngestWhatsappContactsRoute
   ApiV1IngestWhoamiRoute: typeof ApiV1IngestWhoamiRoute
   ApiV1PublicDiscoveryRoute: typeof ApiV1PublicDiscoveryRoute
@@ -6629,6 +6680,13 @@ declare module '@tanstack/react-router' {
       path: '/categoria/$slug'
       fullPath: '/categoria/$slug'
       preLoaderRoute: typeof StoreCategoriaSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/chamado/$ticketId': {
+      id: '/_store/chamado/$ticketId'
+      path: '/chamado/$ticketId'
+      fullPath: '/chamado/$ticketId'
+      preLoaderRoute: typeof StoreChamadoTicketIdRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/classificados/': {
@@ -8136,6 +8194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacePedidosGestorRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/pedidos/tempo-preparo': {
+      id: '/workspace/pedidos/tempo-preparo'
+      path: '/pedidos/tempo-preparo'
+      fullPath: '/workspace/pedidos/tempo-preparo'
+      preLoaderRoute: typeof WorkspacePedidosTempoPreparoRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/pedidos/trocas': {
       id: '/workspace/pedidos/trocas'
       path: '/pedidos/trocas'
@@ -8156,6 +8221,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/workspace/relatorios/metas'
       preLoaderRoute: typeof WorkspaceRelatoriosMetasRouteImport
       parentRoute: typeof WorkspaceRelatoriosRoute
+    }
+    '/workspace/rh/compliance': {
+      id: '/workspace/rh/compliance'
+      path: '/rh/compliance'
+      fullPath: '/workspace/rh/compliance'
+      preLoaderRoute: typeof WorkspaceRhComplianceRouteImport
+      parentRoute: typeof WorkspaceRoute
     }
     '/workspace/rh/folha': {
       id: '/workspace/rh/folha'
@@ -8435,6 +8507,13 @@ declare module '@tanstack/react-router' {
       path: '/api/v1/ingest/infotravel-quotes'
       fullPath: '/api/v1/ingest/infotravel-quotes'
       preLoaderRoute: typeof ApiV1IngestInfotravelQuotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/ingest/infotravel-reservations': {
+      id: '/api/v1/ingest/infotravel-reservations'
+      path: '/api/v1/ingest/infotravel-reservations'
+      fullPath: '/api/v1/ingest/infotravel-reservations'
+      preLoaderRoute: typeof ApiV1IngestInfotravelReservationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/v1/ingest/whatsapp-contacts': {
@@ -9005,6 +9084,7 @@ interface StoreRouteChildren {
   StoreBioSlugRoute: typeof StoreBioSlugRoute
   StoreCSlugRoute: typeof StoreCSlugRoute
   StoreCategoriaSlugRoute: typeof StoreCategoriaSlugRoute
+  StoreChamadoTicketIdRoute: typeof StoreChamadoTicketIdRoute
   StoreClassificadosIdRoute: typeof StoreClassificadosIdRoute
   StoreColecaoSlugRoute: typeof StoreColecaoSlugRoute
   StoreConcursoIdRoute: typeof StoreConcursoIdRoute
@@ -9114,6 +9194,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreBioSlugRoute: StoreBioSlugRoute,
   StoreCSlugRoute: StoreCSlugRoute,
   StoreCategoriaSlugRoute: StoreCategoriaSlugRoute,
+  StoreChamadoTicketIdRoute: StoreChamadoTicketIdRoute,
   StoreClassificadosIdRoute: StoreClassificadosIdRoute,
   StoreColecaoSlugRoute: StoreColecaoSlugRoute,
   StoreConcursoIdRoute: StoreConcursoIdRoute,
@@ -9446,7 +9527,9 @@ interface WorkspaceRouteChildren {
   WorkspacePedidosExpedicaoRoute: typeof WorkspacePedidosExpedicaoRoute
   WorkspacePedidosFrotaRoute: typeof WorkspacePedidosFrotaRoute
   WorkspacePedidosGestorRoute: typeof WorkspacePedidosGestorRoute
+  WorkspacePedidosTempoPreparoRoute: typeof WorkspacePedidosTempoPreparoRoute
   WorkspacePedidosTrocasRoute: typeof WorkspacePedidosTrocasRoute
+  WorkspaceRhComplianceRoute: typeof WorkspaceRhComplianceRoute
   WorkspaceRhFolhaRoute: typeof WorkspaceRhFolhaRoute
   WorkspaceRhPontoRoute: typeof WorkspaceRhPontoRoute
   WorkspaceSimlabFocusGroupRoute: typeof WorkspaceSimlabFocusGroupRoute
@@ -9633,7 +9716,9 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspacePedidosExpedicaoRoute: WorkspacePedidosExpedicaoRoute,
   WorkspacePedidosFrotaRoute: WorkspacePedidosFrotaRoute,
   WorkspacePedidosGestorRoute: WorkspacePedidosGestorRoute,
+  WorkspacePedidosTempoPreparoRoute: WorkspacePedidosTempoPreparoRoute,
   WorkspacePedidosTrocasRoute: WorkspacePedidosTrocasRoute,
+  WorkspaceRhComplianceRoute: WorkspaceRhComplianceRoute,
   WorkspaceRhFolhaRoute: WorkspaceRhFolhaRoute,
   WorkspaceRhPontoRoute: WorkspaceRhPontoRoute,
   WorkspaceSimlabFocusGroupRoute: WorkspaceSimlabFocusGroupRoute,
@@ -9784,6 +9869,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthMarketplaceCallbackRoute: ApiAuthMarketplaceCallbackRoute,
   ApiV1ExtensionsDownloadRoute: ApiV1ExtensionsDownloadRoute,
   ApiV1IngestInfotravelQuotesRoute: ApiV1IngestInfotravelQuotesRoute,
+  ApiV1IngestInfotravelReservationsRoute:
+    ApiV1IngestInfotravelReservationsRoute,
   ApiV1IngestWhatsappContactsRoute: ApiV1IngestWhatsappContactsRoute,
   ApiV1IngestWhoamiRoute: ApiV1IngestWhoamiRoute,
   ApiV1PublicDiscoveryRoute: ApiV1PublicDiscoveryRoute,

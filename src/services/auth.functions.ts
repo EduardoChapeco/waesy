@@ -132,13 +132,27 @@ export const syncSessionToCookies = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data: { access_token, refresh_token } }) => {
+    let resHeaders: Headers | undefined;
     try {
-      const ssrClient = await getSSRClient();
+      resHeaders = getResponseHeaders() as unknown as Headers;
+    } catch {
+      resHeaders = undefined;
+    }
+    try {
+      const ssrClient = await getSSRClient(resHeaders);
       await ssrClient.auth.setSession({ access_token, refresh_token });
-      return { success: true };
+      const { clearIdentityCache } = await import("@/lib/server-access");
+      clearIdentityCache();
+      const identity = await getServerIdentity().catch(() => null);
+      return {
+        success: true,
+        user_id: identity?.id || null,
+        store_id: identity?.store_id || null,
+        memberships: identity?.memberships || [],
+      };
     } catch (e: any) {
       console.warn("[auth] Falha ao sincronizar cookies de sessão:", e?.message);
-      return { success: false };
+      return { success: false, user_id: null, store_id: null, memberships: [] };
     }
   });
 
@@ -212,6 +226,8 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  }
  const ip = request ? getClientIp(request) : "unknown";
  let matchedProfileId: string | null = null;
+ const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
+ const supabase = await getSSRClient(resHeaders);
 
  try {
  // --- Rate limit check (before touching Supabase) ---
@@ -266,11 +282,6 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  }
  }
 
- // Extract guest session manually before async context drops
- const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
-
- // Use captured resHeaders to ensure Set-Cookie is persisted even if unctx drops after await
- const supabase = await getSSRClient(resHeaders);
  const { data, error } = await supabase.auth.signInWithPassword({
  email: targetEmail,
  password,
@@ -332,46 +343,105 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  ]);
  }
 
-    // Zero-Trust Civil Initialization: Login sempre inicia com Identidade Civil Pessoal limpa
-    const isProd = process.env.NODE_ENV === "production";
-    const contextCookies = [
-      { name: "waesy_active_context", value: "civil", maxAge: 60 * 60 * 24 * 365 },
-      { name: "waesy_active_tenant", value: "", maxAge: 0 },
-      { name: "waesy_store_id", value: "", maxAge: 0 },
-      { name: "waesy_active_creator", value: "", maxAge: 0 },
-    ];
+    // Inicialização Inteligente de Contexto no Login (DEC-446):
+    // Se o usuário possui empresa/loja vinculada, ativa automaticamente o contexto 'store'
+    // e seu tenant primário, garantindo que o redirecionamento ao Workspace não caia em laço civil.
+    let targetStoreId: string | null = null;
     try {
       const { setCookie } = await import("@tanstack/start-server-core");
-      for (const c of contextCookies) {
-        try {
-          setCookie(c.name, c.value, {
-            path: "/",
-            maxAge: c.maxAge,
-            httpOnly: false,
-            secure: isProd,
-            sameSite: "lax",
-          });
-        } catch {
-          resHeaders?.append(
-            "Set-Cookie",
-            serializeCookieHeader(c.name, c.value, {
-              path: "/",
-              maxAge: c.maxAge,
-              httpOnly: false,
-              secure: isProd,
-              sameSite: "lax",
-            }),
-          );
-        }
+      const isProd = process.env.NODE_ENV === "production";
+      const adminDb = getServerClient();
+
+      if (data.user?.id) {
+        const wmRes = await adminDb
+          .from("workspace_members")
+          .select("store_id")
+          .or(`profile_id.eq.${data.user.id},user_id.eq.${data.user.id}`)
+          .limit(1)
+          .maybeSingle();
+        targetStoreId = wmRes?.data?.store_id || null;
       }
+
+      if (targetStoreId) {
+        setCookie("waesy_active_context", "store", {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_active_tenant", targetStoreId, {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_store_id", targetStoreId, {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+      } else {
+        setCookie("waesy_active_context", "civil", {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_active_tenant", "", {
+          path: "/",
+          maxAge: 0,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+        setCookie("waesy_store_id", "", {
+          path: "/",
+          maxAge: 0,
+          httpOnly: false,
+          secure: isProd,
+          sameSite: "lax",
+        });
+      }
+
+      setCookie("waesy_active_creator", "", {
+        path: "/",
+        maxAge: 0,
+        httpOnly: false,
+        secure: isProd,
+        sameSite: "lax",
+      });
       const { clearIdentityCache } = await import("@/lib/server-access");
       clearIdentityCache();
     } catch (cookieErr) {
       console.warn("[auth:signInWithPassword] Erro ao sanitizar cookies:", cookieErr);
     }
 
+    const MASTER_EMAILS = [
+      "contato@usewaesy.com",
+      "admin@usewaesy.com",
+      "meuwaesy@gmail.com",
+      "meuwider@gmail.com",
+      "excelenciatour.smo@gmail.com",
+      "admin@jah.com",
+    ];
+    const userEmail = (data.user?.email || "").toLowerCase();
+    const isMaster = Boolean(
+      data.user?.user_metadata?.is_admin_master ||
+      data.user?.user_metadata?.is_superadmin ||
+      MASTER_EMAILS.includes(userEmail)
+    );
+    const defaultDestination = targetStoreId ? "/workspace" : isMaster ? "/admin-master" : "/";
+
     return {
       status: "success" as const,
+      destination: redirectTo || defaultDestination,
+      hasStore: Boolean(targetStoreId),
+      isMaster,
       session: data.session
         ? {
             access_token: data.session.access_token,
@@ -385,6 +455,8 @@ export const signInWithPassword = createServerFn({ method: "POST" })
             email: data.user.email,
           }
         : null,
+      store_id: targetStoreId,
+      role: targetStoreId ? "owner" : ((data.user?.app_metadata?.role as any) || "customer"),
     };
   } catch (e: unknown) {
  logSystemError({ route: "auth.functions.signInWithPassword", error: e, payload: { email, identifier } });
@@ -430,12 +502,20 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  .validator(RegisterSchema)
  .handler(async ({ data: { email, password, fullName, cpf, phone, redirectTo, isConsentLgpd, deviceFingerprint, clientLocation } }) => {
  let request: Request | null = null;
+ let resHeaders: Headers | undefined;
  try {
  request = getRequest();
  } catch {
  request = null;
  }
+ try {
+ resHeaders = getResponseHeaders() as unknown as Headers;
+ } catch {
+ resHeaders = undefined;
+ }
  const ip = request ? getClientIp(request) : "unknown";
+ const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
+ const supabase = await getSSRClient(resHeaders);
 
  try {
  // --- Rate limit check (Anti-Bot / Anti-DDoS) ---
@@ -483,11 +563,6 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  );
  }
  }
-
- // Extract guest session manually before async context drops
- const guestSessionToken = request ? readCookieFromRequest(request, "waesy_guest_session") : null;
-
- const supabase = await getSSRClient();
 
  // 1. Verifica se o e-mail já existe
  const { data: existingUserList } = await adminDb.auth.admin.listUsers({ perPage: 1000 }).catch(() => ({ data: { users: [] } }));
@@ -591,9 +666,62 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  }
  }
 
+ // Zero-Trust Civil Initialization: Cadastro sempre inicia com Identidade Civil Pessoal limpa
+ try {
+   const isProd = process.env.NODE_ENV === "production";
+   const contextCookies = [
+     { name: "waesy_active_context", value: "civil", maxAge: 60 * 60 * 24 * 365 },
+     { name: "waesy_active_tenant", value: "", maxAge: 0 },
+     { name: "waesy_store_id", value: "", maxAge: 0 },
+     { name: "waesy_active_creator", value: "", maxAge: 0 },
+   ];
+   const { setCookie } = await import("@tanstack/start-server-core");
+   for (const c of contextCookies) {
+     try {
+       setCookie(c.name, c.value, {
+         path: "/",
+         maxAge: c.maxAge,
+         httpOnly: false,
+         secure: isProd,
+         sameSite: "lax",
+       });
+     } catch {
+       resHeaders?.append(
+         "Set-Cookie",
+         serializeCookieHeader(c.name, c.value, {
+           path: "/",
+           maxAge: c.maxAge,
+           httpOnly: false,
+           secure: isProd,
+           sameSite: "lax",
+         }),
+       );
+     }
+   }
+   const { clearIdentityCache } = await import("@/lib/server-access");
+   clearIdentityCache();
+ } catch (cookieErr) {
+   console.warn("[auth:signUpWithPassword] Erro ao sanitizar cookies:", cookieErr);
+ }
+
  return {
  success: true,
  sessionActive: !!signInData?.session,
+ session: signInData?.session
+   ? {
+       access_token: signInData.session.access_token,
+       refresh_token: signInData.session.refresh_token,
+       expires_at: signInData.session.expires_at,
+     }
+   : null,
+ user: signInData?.user
+   ? {
+       id: signInData.user.id,
+       email: signInData.user.email,
+     }
+   : createdUserId
+     ? { id: createdUserId, email }
+     : null,
  };
  } catch (e: unknown) {
  const message = e instanceof Error ? e.message : "Erro desconhecido";
@@ -612,32 +740,30 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
    let resHeaders: Headers | undefined;
    try { request = getRequest(); } catch (err) { console.warn("[auth:signOut] getRequest error:", err); }
    try { resHeaders = getResponseHeaders() as unknown as Headers; } catch { resHeaders = undefined; }
+   const supabase = await getSSRClient(resHeaders);
    let userId: string | null = null;
    try {
     const identity = await getServerIdentity();
     userId = identity.id || null;
    } catch (err) { console.warn("[auth:signOut] getServerIdentity error:", err); }
 
-   const supabase = await getSSRClient(resHeaders);
  const { error } = await supabase.auth.signOut();
 
  if (error) {
  throw new Error(error.message);
  }
 
-  const guestClearCookie = `waesy_guest_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${
-  getEnvVar("VITE_SITE_URL")?.includes("localhost") ? "" : "; Secure"
-  }`;
-  try {
-    setResponseHeader("Set-Cookie", guestClearCookie);
-  } catch {
-    resHeaders?.append("Set-Cookie", guestClearCookie);
-  }
-
-  // Purga atômica de todos os cookies de contexto e tenant corporativo
+  // Purga atômica de todos os cookies de contexto, guest_session e tenant corporativo
+  // NUNCA usar setResponseHeader("Set-Cookie", ...), pois headers.set() apaga os Set-Cookie do signOut!
   try {
     const { setCookie } = await import("@tanstack/start-server-core");
     const isProd = process.env.NODE_ENV === "production";
+    const guestPurgeOpts = { path: "/", maxAge: 0, httpOnly: true, secure: isProd, sameSite: "lax" as const };
+    try {
+      setCookie("waesy_guest_session", "", guestPurgeOpts);
+    } catch {
+      resHeaders?.append("Set-Cookie", serializeCookieHeader("waesy_guest_session", "", guestPurgeOpts));
+    }
     const purgeOpts = { path: "/", maxAge: 0, httpOnly: false, secure: isProd, sameSite: "lax" as const };
     for (const cName of ["waesy_active_context", "waesy_active_tenant", "waesy_store_id", "waesy_active_creator"]) {
       try {

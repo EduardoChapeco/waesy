@@ -499,7 +499,7 @@
     --destructive: oklch(0.65 0.20 25);
     --destructive-foreground: oklch(0.10 0 0);
 
-    --success: oklch(0.68 0.18 145);
+    --success: oklch(0.62 0.11 150);
     --success-foreground: oklch(0.10 0 0);
 
     --warning: oklch(0.78 0.16 75);
@@ -571,7 +571,7 @@
   --destructive: oklch(0.65 0.20 25);
   --destructive-foreground: oklch(0.10 0 0);
 
-  --success: oklch(0.68 0.18 145);
+  --success: oklch(0.62 0.11 150);
   --success-foreground: oklch(0.10 0 0);
 
   --warning: oklch(0.78 0.16 75);

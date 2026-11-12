@@ -15,6 +15,7 @@ import { ADMIN_SIDEBAR_NAV, ADMIN_BOTTOM_NAV, getRoute, hasRoleAccess } from "@/
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { signOut } from "@/services/auth.functions";
+import { getBrowserClient } from "@/lib/supabase";
 
 // ---------------------------------------------------------------------------
 // Icon registry
@@ -300,6 +301,9 @@ export function AdminShell({
 
  const handleLogout = async () => {
  try {
+ if (typeof window !== "undefined") {
+   await getBrowserClient().auth.signOut().catch(() => {});
+ }
  const res = await signOut();
 
  // LIMPEZA ATÔMICA DE CACHES (Evita vazamento de PII multi-tenant)

@@ -26,7 +26,7 @@ import { ManusComputerDrawer, type ManusComputerStep } from "@/components/chat/m
 import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
 import { CopilotBackgroundTasksDrawer } from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
-import { Monitor, Info, CheckCircle2, Clock } from "lucide-react";
+import { Monitor, Info, CheckCircle2, Clock, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -539,10 +539,33 @@ function WorkspaceCopilotPage() {
             variant="ghost"
             size="icon"
             onClick={() => setTelemetrySheetOpen(true)}
-            className="size-11 focus-visible:ring-2"
+            className="size-11 min-h-11 focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Informações da tarefa"
           >
             <Info className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                const isStandalone = new URLSearchParams(window.location.search).get("view") === "standalone";
+                const url = new URL(window.location.href);
+                if (isStandalone) {
+                  url.searchParams.delete("view");
+                  window.location.href = url.toString();
+                } else {
+                  url.searchParams.set("view", "standalone");
+                  window.open(url.toString(), "_blank");
+                }
+              }
+            }}
+            className="size-11 min-h-11 focus-visible:ring-2 focus-visible:ring-primary"
+            title="Abrir Copilot em Janela Própria Dedicada (Modo Full Page)"
+            aria-label="Abrir Copilot em tela cheia"
+          >
+            <Maximize2 className="size-4" />
           </Button>
         </div>
       </div>

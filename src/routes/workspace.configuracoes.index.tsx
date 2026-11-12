@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Users, Search, Sparkles } from 'lucide-react';
+import { Search, Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Bike, Users } from 'lucide-react';
 import { getStoreSettings, saveStoreSettings, getWorkingHours, saveWorkingHours, getPolicies, savePolicies } from "@/services/store.functions";
 import { lookupCnpj, lookupCep } from "@/services/public-apis.functions";
 import { listManualPaymentMethods, saveManualPaymentMethod, deleteManualPaymentMethod } from "@/services/payment.functions";
@@ -25,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { MultiBrandEcosystemGovernanceCard } from "@/components/workspace/multi-brand-ecosystem-governance-card";
 
 export const Route = createFileRoute("/workspace/configuracoes/")({
  head: () => ({ meta: [{ title: "Configurações | Workspace Waesy" }] }),
@@ -1054,6 +1055,10 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
  </Card>
 
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
+  <MultiBrandEcosystemGovernanceCard storeId={store?.id} onUpdated={() => router.invalidate()} />
+ </Card>
+
  {/* ── Gerenciador de Módulos Habilitados ── */}
  <Card className="p-6 rounded-lg border-border bg-card space-y-5">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
@@ -1477,7 +1482,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA: Entrega, Tempo de Preparo & Bairros */}
  <TabsContent value="entrega" className="space-y-6">
- <Card className="p-6 rounded-lg border-border bg-card space-y-6">
+ <div className="space-y-6">
  <DeliveryTimeAndRadiusMatrix
  value={deliveryConfig}
  onChange={setDeliveryConfig}
@@ -1502,6 +1507,76 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
  }
  />
+ </div>
+
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
+ <div>
+ <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <Bike className="size-4 text-primary" />
+ <span>Gestão de Entregadores & Despacho</span>
+ </h3>
+ <p className="text-xs text-muted-foreground mt-1">
+ Controle motoboys da sua frota própria e integre chamados sob demanda via Waesy Go.
+ </p>
+ </div>
+ <div className="flex items-center gap-2 flex-wrap">
+ <Button
+ asChild
+ variant="outline"
+ size="sm"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ <Link to="/workspace/pedidos/entregadores">
+ <Users className="size-3.5" />
+ <span>Ver Entregadores</span>
+ </Link>
+ </Button>
+ <Button
+ asChild
+ variant="outline"
+ size="sm"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ <Link to="/workspace/pedidos/entregadores/novo">
+ <Plus className="size-3.5" />
+ <span>Novo Entregador</span>
+ </Link>
+ </Button>
+ <Button
+ asChild
+ size="sm"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ >
+ <Link to="/workspace/pedidos/gestor">
+ <Truck className="size-3.5" />
+ <span>Painel de Despacho (KDS)</span>
+ </Link>
+ </Button>
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+ <div className="p-4 rounded-lg border border-border/80 bg-muted/20 space-y-2">
+ <div className="flex items-center justify-between">
+ <span className="text-xs font-bold text-foreground">Frota Própria (Interna)</span>
+ <Badge variant="outline" className="text-xs py-0">Controle Total</Badge>
+ </div>
+ <p className="text-xs text-muted-foreground leading-relaxed">
+ Motoboys fixos da sua loja. Você gerencia diárias, vales-combustível e acertos de taxas diretamente pelo painel financeiro.
+ </p>
+ </div>
+
+ <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-2">
+ <div className="flex items-center justify-between">
+ <span className="text-xs font-bold text-foreground">Waesy Go / MotoLink</span>
+ <Badge variant="secondary" className="text-xs py-0 bg-primary/20 text-primary">R$ 0,99 taxa fixa</Badge>
+ </div>
+ <p className="text-xs text-muted-foreground leading-relaxed">
+ Rede descentralizada de entregadores parceiros com despacho autônomo sob demanda. Zero comissão abusiva, 100% repassado ao condutor.
+ </p>
+ </div>
+ </div>
  </Card>
  </TabsContent>
 

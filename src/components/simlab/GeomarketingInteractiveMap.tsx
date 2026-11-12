@@ -77,7 +77,7 @@ export function GeomarketingInteractiveMap({
         }
 
         const isDark = document.documentElement.classList.contains("dark");
-        const style = getCanonicalMapStyle(isDark, "carto_voyager");
+        const style = getCanonicalMapStyle(isDark, "osm_standard");
 
         const map = new maplibregl.Map({
           container: mapContainerRef.current,
@@ -273,7 +273,7 @@ export function GeomarketingInteractiveMap({
         const el = document.createElement("button");
         el.type = "button";
         el.className =
-          "size-11 rounded-lg bg-emerald-600 text-primary-foreground border-2 border-background flex items-center justify-center font-bold text-xs cursor-pointer transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500";
+          "size-11 rounded-lg bg-secondary text-secondary-foreground border-2 border-background flex items-center justify-center font-bold text-xs cursor-pointer transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
         el.title = `${anc.name} (Âncora de Fluxo)`;
         el.innerHTML = `<span>A${idx + 1}</span>`;
         el.onclick = (e) => {
@@ -344,20 +344,56 @@ export function GeomarketingInteractiveMap({
             }
             className="h-11 px-3 rounded-lg text-xs font-semibold gap-2"
           >
-            <Building2 className="size-4 text-emerald-600 dark:text-emerald-400" />
+            <Building2 className="size-4 text-primary" />
             <span>Âncoras de Fluxo ({anchors.length})</span>
           </Button>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Crosshair className="size-4 text-primary shrink-0" />
-          <span>Clique em qualquer esquina do mapa para simular outro ponto</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (mapInstanceRef.current) {
+                  mapInstanceRef.current.flyTo({ center: [centerLon, centerLat], zoom: 14.5, duration: 500 });
+                }
+              }}
+              className="h-11 px-3 rounded-lg text-xs font-semibold gap-2"
+            >
+              <Crosshair className="size-4 text-primary shrink-0" />
+              <span>Centralizar</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (typeof navigator !== "undefined" && navigator.geolocation && onSelectRef.current) {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      onSelectRef.current?.(
+                        Number(pos.coords.latitude.toFixed(6)),
+                        Number(pos.coords.longitude.toFixed(6)),
+                      );
+                    },
+                    () => undefined,
+                    { enableHighAccuracy: true, timeout: 6000 },
+                  );
+                }
+              }}
+              className="h-11 px-3 rounded-lg text-xs font-semibold gap-2"
+            >
+              <Navigation className="size-4 text-primary shrink-0" />
+              <span>Usar Minha Localização GPS</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Container do Mapa Interativo */}
       <div className="relative w-full h-96 sm:h-112 rounded-lg overflow-hidden border border-border/70 bg-muted/30">
-        <div ref={mapContainerRef} className="w-full h-full" />
+        <div ref={mapContainerRef} className="w-full h-full dark:[&_.maplibregl-canvas]:brightness-75 dark:[&_.maplibregl-canvas]:invert dark:[&_.maplibregl-canvas]:contrast-125 dark:[&_.maplibregl-canvas]:hue-rotate-180" />
 
         {(!isMapLoaded || isSimulating) && (
           <div className="absolute inset-0 bg-background/75 backdrop-blur-xs flex flex-col items-center justify-center gap-3 z-20">
@@ -378,15 +414,15 @@ export function GeomarketingInteractiveMap({
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <span className="size-2.5 rounded-full bg-emerald-500" />
+              <span className="size-2.5 rounded-full bg-primary" />
               500m (5m pé)
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="size-2.5 rounded-full bg-blue-500" />
+              <span className="size-2.5 rounded-full bg-foreground" />
               1km (10m pé)
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="size-2.5 rounded-full bg-indigo-500" />
+              <span className="size-2.5 rounded-full bg-muted-foreground" />
               2km (Veículo)
             </span>
           </div>

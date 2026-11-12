@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, Building2, Phone, Mail, MapPin, Check, ChevronRight, ChevronLeft, Calendar, CreditCard, Tag, ShieldCheck, Loader2, FileText, DollarSign } from "lucide-react";
+import { User, Building2, Phone, Mail, MapPin, Check, ChevronRight, ChevronLeft, Calendar, CreditCard, Tag, ShieldCheck, Loader2, FileText, DollarSign, HeartPulse, AlertTriangle, Users } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { createCustomer } from "@/services/crm.functions";
 import { formatMoney } from "@/lib/money";
 
-const STEPS = ["Perfil", "Contato", "Endereço & Segmento", "Revisão"];
+const STEPS = ["Perfil", "Contato", "Endereço", "Saúde & Segmento", "Revisão"];
 
 const CANAIS_AQUISICAO = [
  { value: "direct", label: "Direto / Balcão" },
@@ -74,6 +74,16 @@ export function NewClientWizard({
  const [tags, setTags] = useState<string[]>([]);
  const [tagInput, setTagInput] = useState("");
  const [notes, setNotes] = useState("");
+
+ // Belasis / Paridade Clínica, Saúde & Estética
+ const [gender, setGender] = useState<string>("uninformed");
+ const [occupation, setOccupation] = useState("");
+ const [referralSource, setReferralSource] = useState("");
+ const [emergencyContactName, setEmergencyContactName] = useState("");
+ const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
+ const [allergies, setAllergies] = useState("");
+ const [healthNotes, setHealthNotes] = useState("");
+ const [lgpdAccepted, setLgpdAccepted] = useState(true);
 
  // Helpers de Formatação
  const formatCpfCnpj = (val: string) => {
@@ -191,6 +201,14 @@ export function NewClientWizard({
  assignedTo: assignedTo === "none" ? null : assignedTo,
  tags,
  notes: notes.trim() || null,
+ gender: gender === "uninformed" ? null : gender,
+ occupation: occupation.trim() || null,
+ referralSource: referralSource.trim() || null,
+ emergencyContactName: emergencyContactName.trim() || null,
+ emergencyContactPhone: emergencyContactPhone.trim() || null,
+ lgpdAccepted,
+ allergies: allergies.trim() || null,
+ healthNotes: healthNotes.trim() || null,
  },
  });
 
@@ -346,6 +364,34 @@ export function NewClientWizard({
  className="h-10 rounded-lg text-xs bg-background"
  />
  </div>
+
+ {kind === "individual" && (
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">Gênero / Identidade</Label>
+ <Select value={gender} onValueChange={setGender}>
+ <SelectTrigger className="h-10 rounded-lg text-xs bg-background">
+ <SelectValue placeholder="Selecione..." />
+ </SelectTrigger>
+ <SelectContent>
+ <SelectItem value="female">Feminino</SelectItem>
+ <SelectItem value="male">Masculino</SelectItem>
+ <SelectItem value="non_binary">Não-binário / Outro</SelectItem>
+ <SelectItem value="uninformed">Prefere não informar</SelectItem>
+ </SelectContent>
+ </Select>
+ </div>
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">Profissão / Ocupação</Label>
+ <Input
+ value={occupation}
+ onChange={(e) => setOccupation(e.target.value)}
+ placeholder="Ex: Arquiteta, Advogado, Autônomo..."
+ className="h-10 rounded-lg text-xs bg-background"
+ />
+ </div>
+ </div>
+ )}
  </div>
  </div>
  )}
@@ -406,14 +452,50 @@ export function NewClientWizard({
  O consultor responsável receberá notificações prioritárias sobre este cliente.
  </span>
  </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+ <HeartPulse className="size-3.5 text-primary" />
+ Contato de Emergência (Nome)
+ </Label>
+ <Input
+ value={emergencyContactName}
+ onChange={(e) => setEmergencyContactName(e.target.value)}
+ placeholder="Ex: Cônjuge, Mãe ou Irmão"
+ className="h-10 rounded-lg text-xs bg-background"
+ />
+ </div>
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">Telefone de Emergência</Label>
+ <Input
+ value={emergencyContactPhone}
+ onChange={(e) => setEmergencyContactPhone(formatPhone(e.target.value))}
+ placeholder="(49) 99999-9999"
+ className="h-10 rounded-lg text-xs bg-background font-mono"
+ />
+ </div>
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+ <Users className="size-3.5 text-primary" />
+ Indicado Por (Referral / Member-Get-Member)
+ </Label>
+ <Input
+ value={referralSource}
+ onChange={(e) => setReferralSource(e.target.value)}
+ placeholder="Ex: Indicado pelo cliente João Silva ou Campanha"
+ className="h-10 rounded-lg text-xs bg-background"
+ />
+ </div>
  </div>
  </div>
  )}
 
- {/* PASSO 2: ENDEREÇO & CLASSIFICAÇÃO */}
+ {/* PASSO 2: ENDEREÇO & CRÉDITO */}
  {step === 2 && (
  <div className="space-y-5 animate-in fade-in duration-200">
- {/* Endereço */}
  <div className="space-y-3">
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-2">
@@ -471,9 +553,8 @@ export function NewClientWizard({
  </div>
  </div>
 
- {/* Classificação & Segmento */}
  <div className="space-y-3 pt-2 border-t border-border">
- <div className="grid grid-cols-2 gap-3">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-2">
  <Label className="text-xs font-semibold text-foreground">Canal de Origem / Aquisição</Label>
  <Select value={channel} onValueChange={setChannel}>
@@ -503,9 +584,47 @@ export function NewClientWizard({
  />
  </div>
  </div>
+ </div>
+ </div>
+ )}
 
- {/* Tags */}
+ {/* PASSO 3: SAÚDE, ANAMNESE & SEGMENTO (PADRÃO BELASIS) */}
+ {step === 3 && (
+ <div className="space-y-5 animate-in fade-in duration-200">
+ <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-1">
+ <div className="flex items-center gap-2 text-xs font-bold text-primary">
+ <HeartPulse className="size-4" />
+ <span>Anamnese & Alertas de Atendimento (Paridade Belasis)</span>
+ </div>
+ <p className="text-xs text-muted-foreground">
+ Cadastre restrições clínicas, alergias e observações para alertar a equipe nos atendimentos.
+ </p>
+ </div>
+
  <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
+ <AlertTriangle className="size-3.5 text-warning" />
+ Alergias & Restrições Clínicas / Químicas
+ </Label>
+ <Input
+ value={allergies}
+ onChange={(e) => setAllergies(e.target.value)}
+ placeholder="Ex: Alergia a amônia, esmaltes, látex, frutos do mar, iodo..."
+ className="h-10 rounded-lg text-xs bg-background"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-semibold text-foreground">Histórico Clínico & Cuidados Especiais</Label>
+ <Textarea
+ value={healthNotes}
+ onChange={(e) => setHealthNotes(e.target.value)}
+ placeholder="Ex: Gestante (2º trimestre), hipertensa, pele com sensibilidade, histórico de queloide..."
+ className="h-20 rounded-lg text-xs bg-background resize-none"
+ />
+ </div>
+
+ <div className="space-y-2 pt-2 border-t border-border">
  <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
  <Tag className="size-3 text-primary" />
  Tags de Segmentação
@@ -537,19 +656,19 @@ export function NewClientWizard({
  <div className="flex flex-wrap gap-2 pt-1">
  {tags.map((t) => (
  <Badge
-    key={t}
-    variant="secondary"
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        handleRemoveTag(t);
-      }
-    }}
-    className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-    onClick={() => handleRemoveTag(t)}
-  >
+ key={t}
+ variant="secondary"
+ role="button"
+ tabIndex={0}
+ onKeyDown={(e) => {
+ if (e.key === "Enter" || e.key === " ") {
+ e.preventDefault();
+ handleRemoveTag(t);
+ }
+ }}
+ className="text-xs font-semibold px-3 py-1 rounded-lg gap-2 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ onClick={() => handleRemoveTag(t)}
+ >
  <span>{t}</span>
  <span className="text-xs opacity-60">×</span>
  </Badge>
@@ -557,7 +676,6 @@ export function NewClientWizard({
  </div>
  )}
 
- {/* Sugestões de Tags */}
  <div className="flex flex-wrap gap-1 pt-1">
  {SUGGESTED_TAGS.filter((t) => !tags.includes(t)).map((st) => (
  <button
@@ -572,22 +690,36 @@ export function NewClientWizard({
  </div>
  </div>
 
- {/* Observações */}
  <div className="space-y-2 pt-1">
- <Label className="text-xs font-semibold text-foreground">Observações Internas</Label>
+ <Label className="text-xs font-semibold text-foreground">Observações Internas da Agência / Salão</Label>
  <Textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
- placeholder="Preferências de assento, restrições alimentares, perfil de compra..."
+ placeholder="Preferências de horário, bebidas favoritas, tom de voz, particularidades..."
  className="h-20 rounded-lg text-xs bg-background resize-none"
  />
  </div>
+
+ <label className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card cursor-pointer hover:bg-muted/30 transition-colors">
+ <input
+ type="checkbox"
+ checked={lgpdAccepted}
+ onChange={(e) => setLgpdAccepted(e.target.checked)}
+ className="size-4 mt-1 rounded text-primary focus:ring-primary"
+ />
+ <div className="text-xs">
+ <span className="font-semibold text-foreground">Consentimento LGPD & Notificações Automatizadas</span>
+ <p className="text-muted-foreground">
+ Cliente expressa concordância para recebimento de lembretes de agendamento, orçamentos e avisos transacionais via WhatsApp/E-mail.
+ </p>
  </div>
+ </label>
  </div>
  )}
 
- {/* PASSO 3: REVISÃO & CONFIRMAÇÃO */}
- {step === 3 && (
+ {/* PASSO 4: REVISÃO & CONFIRMAÇÃO */}
+ {step === 4 && (
+
  <div className="space-y-4 animate-in fade-in duration-200">
  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
  <div className="flex items-center gap-3">
@@ -642,6 +774,17 @@ export function NewClientWizard({
  </Badge>
  ))}
  </div>
+ </div>
+ )}
+
+ {(allergies || healthNotes) && (
+ <div className="p-3 rounded-lg border border-warning/30 bg-warning/10 text-xs space-y-1">
+ <div className="flex items-center gap-2 font-bold text-warning-strong">
+ <AlertTriangle className="size-3.5" />
+ <span>Alertas Clínicos & Anamnese (Belasis)</span>
+ </div>
+ {allergies && <p className="text-foreground font-medium">Alergias: {allergies}</p>}
+ {healthNotes && <p className="text-muted-foreground">{healthNotes}</p>}
  </div>
  )}
  </div>

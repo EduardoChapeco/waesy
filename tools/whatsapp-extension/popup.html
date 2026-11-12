@@ -317,6 +317,34 @@
     .log-line.error { color: #f85149; }
     .log-line.info { color: #58a6ff; }
 
+    .inline-banner {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      border: 1px solid rgba(88, 166, 255, 0.35);
+      background: rgba(88, 166, 255, 0.12);
+      color: #cfe5ff;
+    }
+    .inline-banner.show { display: block; }
+    .inline-banner.success {
+      border-color: rgba(63, 185, 80, 0.4);
+      background: rgba(63, 185, 80, 0.12);
+      color: #b7f5be;
+    }
+    .inline-banner.warn {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.12);
+      color: #fde68a;
+    }
+    .inline-banner.error {
+      border-color: rgba(248, 81, 73, 0.4);
+      background: rgba(248, 81, 73, 0.12);
+      color: #fecaca;
+    }
+
     .footer {
       border-top: 1px solid rgba(255, 255, 255, 0.06);
       padding-top: 10px;
@@ -336,7 +364,7 @@
       <div class="brand-icon">W</div>
       <div>
         <div class="brand-title">Waesy Ingest</div>
-        <div class="brand-subtitle">Excelência Tour • WhatsApp Web & Grupos</div>
+        <div class="brand-subtitle">WhatsApp Web • Grupos & Contatos</div>
       </div>
     </div>
     <div id="statusBadge" class="status-badge offline">
@@ -344,6 +372,8 @@
       <span id="statusText">Aguardando WhatsApp</span>
     </div>
   </div>
+
+  <div id="inlineBanner" class="inline-banner" role="status" aria-live="polite"></div>
 
   <!-- Abas -->
   <div class="nav-tabs" role="tablist">
@@ -425,8 +455,8 @@
   </div>
 
   <div class="footer">
-    <span>Waesy Ingest v2.1.0 • Manifest V3</span>
-    <span>Excelência Tour SMO</span>
+    <span>Waesy Ingest v2.2.0 • Manifest V3</span>
+    <span>WhatsApp Web CRM</span>
   </div>
 
   <script src="popup.js"></script>

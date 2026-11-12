@@ -13,8 +13,98 @@ const JSON_FILE = path.join(OUTPUT_DIR, 'clientes_excelencia_tour_oficial.json')
 const PROGRESS_FILE = path.join(OUTPUT_DIR, 'progresso.json');
 const USER_DATA_DIR = path.join(__dirname, '.chrome-session');
 
+const ERRORS_FILE = path.join(OUTPUT_DIR, 'erros_mineracao.json');
+
 // Garantir diretórios locais
 fs.mkdirSync(PRINTS_DIR, { recursive: true });
+
+function resolveBrowserExecutablePath() {
+  const candidates = [
+    process.env.CHROME_EXECUTABLE_PATH,
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return undefined;
+}
+
+function recordExtractionError(resId, message) {
+  try {
+    let errors = [];
+    if (fs.existsSync(ERRORS_FILE)) {
+      errors = JSON.parse(fs.readFileSync(ERRORS_FILE, 'utf-8'));
+      if (!Array.isArray(errors)) errors = [];
+    }
+    errors.push({ resId, message, at: new Date().toISOString() });
+    fs.writeFileSync(ERRORS_FILE, JSON.stringify(errors.slice(-500), null, 2), 'utf-8');
+  } catch {
+    // Nao bloqueia fluxo principal
+  }
+}
+
+async function pushReservationToCloud(serverUrl, token, detail) {
+  if (!serverUrl || !token) return;
+  try {
+    const res = await fetch(`${serverUrl.replace(/\/+$/, '')}/api/v1/ingest/infotravel-reservations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        operator: detail.operatorSlug || 'orinter',
+        sourceLabel: 'infotravel-miner',
+        items: [
+          {
+            externalReservationCode: String(detail.id),
+            status: detail.status || 'Confirmada',
+            createdAtRaw: detail.criacao || '',
+            checkIn: detail.checkIn || '',
+            checkOut: detail.checkOut || '',
+            operatorSlug: detail.operatorSlug || 'orinter',
+            holderName: detail.contato || 'Titular',
+            holderEmail: detail.email || '',
+            holderPhone: detail.telefone || '',
+            destino: detail.hotel || 'Destino não informado',
+            hotel: detail.hotel || '',
+            acomodacao: detail.acomodacao || 'Standard',
+            localizador: detail.localizador || '',
+            valorTotalRaw: detail.valorTotal || '0,00',
+            taxasRaw: detail.taxas || '0,00',
+            impostosRaw: detail.impostos || '0,00',
+            comissaoRaw: detail.comissao || '0,00',
+            formaPagamento: detail.formaPagto || 'Faturado',
+            statusPagamento: detail.statusPagto || 'Aprovado',
+            scoreConfianca: detail.scoreConfianca || 80,
+            bancoEmissor: detail.bancoEmissor || 'Operadora Direto',
+            parcelamento: detail.parcelamento || '1x',
+            passengers: (detail.passengers || []).map((p) => ({
+              nome: p.name,
+              cpf: p.cpf || '',
+              nascimento: p.birthDate || '',
+              idade: p.age || '',
+              tipo: p.type || 'ADT',
+              titular: Boolean(p.titular),
+            })),
+          },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      recordExtractionError(detail.id, `Cloud sync HTTP ${res.status}: ${errText.slice(0, 180)}`);
+    } else {
+      console.log(`   [Nuvem] Reserva ${detail.id} sincronizada com Waesy CRM.`);
+    }
+  } catch (err) {
+    recordExtractionError(detail.id, `Cloud sync falhou: ${err.message}`);
+  }
+}
 
 function askQuestion(query) {
   const rl = readline.createInterface({
@@ -40,14 +130,17 @@ function getHumanRandomDelay() {
   return delays[idx] + Math.floor(Math.random() * 400);
 }
 
-// Inicializa CSV com BOM UTF-8 (\uFEFF) para abrir formatado no Excel
+// Inicializa CSV com BOM UTF-8 (\uFEFF) alinhado ao schema canonico
 function initFiles() {
   if (!fs.existsSync(CSV_FILE)) {
     const headers = [
       'ID Reserva',
       'Status Reserva',
       'Data Criacao',
-      'Contato Principal',
+      'Check-in',
+      'Check-out',
+      'Operadora',
+      'Contato Titular',
       'Email Contato',
       'Telefone Contato',
       'Nome Passageiro',
@@ -57,16 +150,17 @@ function initFiles() {
       'Tipo (ADT/CHD/INF)',
       'E Titular?',
       'Hotel / Destino',
-      'Acomodacao / Quarto',
+      'Acomodacao',
+      'Localizador',
       'Valor Total Venda (R$)',
       'Taxas Inclusas (R$)',
       'Impostos Inclusos (R$)',
       'Forma de Pagamento',
-      'Status Pagamento Operadora',
-      'Score Confianca Operadora (0-100)',
-      'Banco Emissor / Faturamento',
+      'Status Pagamento',
+      'Score Confianca',
+      'Banco Emissor',
       'Parcelamento',
-      'Comissao Agencia (R$)'
+      'Comissao Agencia (R$)',
     ];
     fs.writeFileSync(CSV_FILE, '\uFEFF' + headers.join(';') + '\n', 'utf-8');
   }
@@ -148,20 +242,24 @@ async function run() {
   let maxItems = 10;
   const limitArg = args.find((a) => a.startsWith('--limit='));
   const allArg = args.includes('--all');
+  const urlArg = args.find((a) => a.startsWith('--url='))?.split('=')[1] || 'https://online.orinter.com.br/infotravel/admin/main.xhtml#';
+  const serverArg = args.find((a) => a.startsWith('--server='))?.split('=')[1] || process.env.WAESY_SERVER_URL || '';
+  const tokenArg = args.find((a) => a.startsWith('--token='))?.split('=')[1] || process.env.WAESY_INGEST_TOKEN || '';
 
   if (allArg) {
     maxItems = Infinity;
-    console.log('⚡ Modo selecionado: EXTRAÇÃO TOTAL (todas as mais de 2.000 reservas)');
+    console.log('Modo selecionado: EXTRACAO TOTAL');
   } else if (limitArg) {
     maxItems = parseInt(limitArg.split('=')[1], 10) || 10;
-    console.log(`⚡ Modo selecionado: PILOTO (${maxItems} reservas)`);
+    console.log(`Modo selecionado: PILOTO (${maxItems} reservas)`);
   } else {
-    console.log(`⚡ Modo padrão: PILOTO (${maxItems} reservas).`);
+    console.log(`Modo padrao: PILOTO (${maxItems} reservas).`);
   }
 
-  console.log('\n🌐 Abrindo Google Chrome com sessão persistente...');
+  const executablePath = resolveBrowserExecutablePath();
+  console.log(`\nAbrindo navegador (${executablePath || 'Playwright Chromium'}) com sessao persistente...`);
   const browser = await chromium.launchPersistentContext(USER_DATA_DIR, {
-    executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    ...(executablePath ? { executablePath } : {}),
     headless: false,
     viewport: null,
     args: ['--start-maximized'],
@@ -169,8 +267,8 @@ async function run() {
 
   const page = browser.pages()[0] || (await browser.newPage());
 
-  console.log('📍 Navegando para o Infotravel Orinter...');
-  await page.goto('https://online.orinter.com.br/infotravel/admin/main.xhtml#', {
+  console.log(`Navegando para ${urlArg}...`);
+  await page.goto(urlArg, {
     waitUntil: 'domcontentloaded',
   });
 
@@ -261,9 +359,26 @@ async function run() {
         const delayLoad = getHumanRandomDelay();
         await page.waitForTimeout(delayLoad);
 
-        // Extrai dados detalhados da reserva
+        // Extrai dados detalhados da reserva com escopo isolado na aba/dialogo ativo
         const detail = await page.evaluate((targetId) => {
-          const bodyText = document.body.innerText || '';
+          const host = window.location.hostname.toLowerCase();
+          let operatorSlug = 'infotravel';
+          if (host.includes('orinter')) operatorSlug = 'orinter';
+          else if (host.includes('incomum')) operatorSlug = 'incomum';
+          else if (host.includes('frt')) operatorSlug = 'frt';
+          else if (host.includes('schultz')) operatorSlug = 'schultz';
+
+          const isVisible = (el) => {
+            if (!el) return false;
+            const st = window.getComputedStyle(el);
+            return st.display !== 'none' && st.visibility !== 'hidden' && el.offsetParent !== null;
+          };
+
+          const dialog = Array.from(document.querySelectorAll('.ui-dialog')).reverse().find(isVisible);
+          const tabPanels = Array.from(document.querySelectorAll('.ui-tabs-panel')).filter(isVisible);
+          const matchingPanel = tabPanels.find((p) => (p.innerText || '').includes(String(targetId))) || tabPanels[tabPanels.length - 1];
+          const rootEl = dialog || matchingPanel || document.body;
+          const bodyText = (rootEl && rootEl.innerText) || document.body.innerText || '';
 
           const getVal = (regex) => {
             const m = bodyText.match(regex);
@@ -271,20 +386,22 @@ async function run() {
           };
 
           const status = getVal(/Status[:\s]+([^\n\r]+)/i) || getVal(/Tipo\/Status[:\s]+([^\n\r]+)/i) || 'Confirmada';
-          const criacao = getVal(/Criação[:\s]+([^\n\r]+)/i);
+          const criacao = getVal(/Cria[cç][aã]o[:\s]+([^\n\r]+)/i);
+          const checkIn = getVal(/Check-?in[:\s]+(\d{2}\/\d{2}\/\d{4})/i) || getVal(/Embarque[:\s]+(\d{2}\/\d{2}\/\d{4})/i);
+          const checkOut = getVal(/Check-?out[:\s]+(\d{2}\/\d{2}\/\d{4})/i) || getVal(/Desembarque[:\s]+(\d{2}\/\d{2}\/\d{4})/i);
+          const localizador = getVal(/Localizador[:\s]+([A-Z0-9-]{4,20})/i);
           const valorTotal = getVal(/Total da compra[:\s]*R\$\s*([0-9.,]+)/i) || getVal(/Total[:\s]*R\$\s*([0-9.,]+)/i) || '0,00';
           const taxas = getVal(/Taxas[:\s]*R\$\s*([0-9.,]+)/i) || '0,00';
           const impostos = getVal(/Impostos[:\s]*R\$\s*([0-9.,]+)/i) || '0,00';
-          const comissao = getVal(/Comissão[:\s]*R\$\s*([0-9.,]+)/i) || getVal(/Comissão Agência[:\s]*R\$\s*([0-9.,]+)/i) || '0,00';
+          const comissao = getVal(/Comiss[aã]o(?:\s+Ag[eê]ncia)?[:\s]*R\$\s*([0-9.,]+)/i) || '0,00';
           const contato = getVal(/Contato[:\s]+([^\n\r]+)/i);
           const email = getVal(/Email[:\s]+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
-          const telefone = getVal(/Telefone[:\s]+([0-9()\s-]+)/i);
+          const telefone = getVal(/Telefone[:\s]+([0-9()\s+-]+)/i);
           const hotel = getVal(/Hotel[:\s]+([^\n\r]+)/i) || getVal(/Destino[:\s]+([^\n\r]+)/i) || getVal(/Tipo:\s*([^\n\r]+)/i);
           const formaPagto = getVal(/Forma de Pagamento[:\s]+([^\n\r]+)/i) || 'Faturado / Operadora';
           const parcelamento = getVal(/Parcelamento[:\s]+([^\n\r]+)/i) || '1x';
-          const acomodacao = getVal(/Acomodação[:\s]+([^\n\r]+)/i) || getVal(/Apartamento[:\s]+([^\n\r]+)/i) || getVal(/Quarto[:\s]+([^\n\r]+)/i) || 'Standard';
+          const acomodacao = getVal(/Acomoda[cç][aã]o[:\s]+([^\n\r]+)/i) || getVal(/Apartamento[:\s]+([^\n\r]+)/i) || getVal(/Quarto[:\s]+([^\n\r]+)/i) || 'Standard';
 
-          // Análise de Pagamento, Boletos e Crédito da Operadora
           let statusPagto = 'Aprovado';
           if (/negad|recusad|cancelad/i.test(bodyText)) {
             statusPagto = 'Negado';
@@ -301,18 +418,16 @@ async function run() {
           else if (/banco do brasil|bb/i.test(bodyText)) bancoEmissor = 'Banco do Brasil';
           else if (/caixa/i.test(bodyText)) bancoEmissor = 'Caixa Econômica';
 
-          // Cálculo do Score de Confiança da Operadora (Credit Confidence Scoring)
           let scoreConfianca = 75;
           const isBoleto = /boleto|faturad/i.test(formaPagto) || /boleto/i.test(bodyText);
           if (isBoleto && statusPagto !== 'Negado') {
-            scoreConfianca = 95; // Operadora concedeu crédito faturado = alta confiança
+            scoreConfianca = 95;
           } else if (statusPagto === 'Negado') {
-            scoreConfianca = 20; // Alerta de risco
+            scoreConfianca = 20;
           } else if (/cart[aã]o/i.test(formaPagto)) {
             scoreConfianca = 80;
           }
 
-          // Passageiros
           const passengers = [];
           const paxRegex = /([A-ZÀ-Ú\s]{4,40})\s+(ADT|CHD|INF)\s+(\d{2}\/\d{2}\/\d{4})/g;
           let match;
@@ -320,7 +435,6 @@ async function run() {
             const name = match[1].trim();
             const type = match[2];
             const birthDate = match[3];
-
             const substring = bodyText.substring(match.index, match.index + 200);
             const cpfMatch = substring.match(/CPF[:\s]*(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{11})/i);
             const cpf = cpfMatch ? cpfMatch[1].replace(/[^\d]/g, '') : '';
@@ -330,7 +444,7 @@ async function run() {
               type,
               birthDate,
               cpf,
-              titular: passengers.length === 0
+              titular: passengers.length === 0,
             });
           }
 
@@ -340,14 +454,18 @@ async function run() {
               type: 'ADT',
               birthDate: '',
               cpf: '',
-              titular: true
+              titular: true,
             });
           }
 
           return {
             id: targetId,
+            operatorSlug,
             status,
             criacao,
+            checkIn,
+            checkOut,
+            localizador,
             valorTotal,
             taxas,
             impostos,
@@ -362,58 +480,61 @@ async function run() {
             scoreConfianca,
             bancoEmissor,
             parcelamento,
-            passengers
+            passengers,
           };
         }, resId);
 
-        console.log(`   📄 Status: ${detail.status} | Total: R$ ${detail.valorTotal} | Comissão: R$ ${detail.comissao}`);
-        console.log(`   💳 Pagamento: ${detail.formaPagto} (${detail.statusPagto}) | Score Confiança: ${detail.scoreConfianca}/100`);
-        console.log(`   👤 Contato: ${detail.contato || 'N/D'} | Tel: ${detail.telefone || 'N/D'} | Email: ${detail.email || 'N/D'}`);
-        console.log(`   👥 Passageiros encontrados: ${detail.passengers.length}`);
-        detail.passengers.forEach((p, idx) => {
-          console.log(`      ${idx + 1}. ${p.name} (${p.type}) - Nasc: ${p.birthDate || 'N/D'} - CPF: ${p.cpf || 'N/D'}`);
-        });
+        console.log(`   Status: ${detail.status} (${detail.operatorSlug}) | Total: R$ ${detail.valorTotal} | Comissao: R$ ${detail.comissao}`);
+        console.log(`   Pagamento: ${detail.formaPagto} (${detail.statusPagto}) | Score: ${detail.scoreConfianca}/100`);
+        console.log(`   Contato: ${detail.contato || 'N/D'} | Tel: ${detail.telefone || 'N/D'} | Email: ${detail.email || 'N/D'}`);
+        console.log(`   Passageiros encontrados: ${detail.passengers.length}`);
 
-        // Monta e grava linhas do CSV imediatamente
-        const csvRows = [];
-        detail.passengers.forEach((p) => {
-          csvRows.push([
-            resId,
-            detail.status,
-            detail.criacao,
-            detail.contato,
-            detail.email,
-            detail.telefone,
-            p.name,
-            p.cpf,
-            p.birthDate,
-            p.age || '',
-            p.type,
-            p.titular ? 'SIM' : 'NAO',
-            detail.hotel,
-            detail.acomodacao,
-            detail.valorTotal,
-            detail.taxas,
-            detail.impostos,
-            detail.formaPagto,
-            detail.statusPagto,
-            detail.scoreConfianca,
-            detail.bancoEmissor,
-            detail.parcelamento,
-            detail.comissao
-          ]);
-        });
+        const paxList = detail.passengers.length > 0
+          ? detail.passengers
+          : [{ name: detail.contato || 'Titular', cpf: '', birthDate: '', age: '', type: 'ADT', titular: true }];
+
+        const csvRows = paxList.map((p) => [
+          resId,
+          detail.status,
+          detail.criacao,
+          detail.checkIn,
+          detail.checkOut,
+          detail.operatorSlug,
+          detail.contato,
+          detail.email,
+          detail.telefone,
+          p.name,
+          p.cpf,
+          p.birthDate,
+          p.age || '',
+          p.type,
+          p.titular ? 'SIM' : 'NAO',
+          detail.hotel,
+          detail.acomodacao,
+          detail.localizador,
+          detail.valorTotal,
+          detail.taxas,
+          detail.impostos,
+          detail.formaPagto,
+          detail.statusPagto,
+          detail.scoreConfianca,
+          detail.bancoEmissor,
+          detail.parcelamento,
+          detail.comissao,
+        ]);
 
         appendToCsv(csvRows);
         appendToJson(detail);
+        if (serverArg && tokenArg) {
+          await pushReservationToCloud(serverArg, tokenArg, detail);
+        }
 
         processedSet.add(resId);
         saveProgress({ processedIds: Array.from(processedSet) });
         processedCount++;
 
-        console.log(`💾 [Gravado com Sucesso] Total gravado no CSV: ${processedSet.size} reservas`);
+        console.log(`[Gravado com Sucesso] Total gravado: ${processedSet.size} reservas`);
 
-        // Fecha a aba ou clica em Voltar
         await page.evaluate((targetId) => {
           const tabs = Array.from(document.querySelectorAll('.ui-tabs-nav li, .nav-tabs li, [role="tab"]'));
           for (const tab of tabs) {
@@ -438,12 +559,12 @@ async function run() {
           }
         }, resId);
 
-        // Jitter randômico humano antes da próxima reserva (1.5s a 5.8s)
         const delayNext = getHumanRandomDelay();
-        console.log(`⏳ Aguardando ritmo seguro humano (${(delayNext / 1000).toFixed(1)}s)...`);
+        console.log(`Aguardando ritmo humano (${(delayNext / 1000).toFixed(1)}s)...`);
         await page.waitForTimeout(delayNext);
       } catch (err) {
-        console.error(`❌ Erro ao processar reserva ${resId}:`, err.message);
+        console.error(`Erro ao processar reserva ${resId}:`, err.message);
+        recordExtractionError(resId, err.message);
       }
     }
 

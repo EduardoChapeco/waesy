@@ -107,7 +107,51 @@ export function NicheOperationalGuard({
  ];
  }
 
- // Default: Varejo / Comércio Geral
+ // Default: Varejo / Comércio Geral / Locação
+ if (semantics.nicheId === "rental" || semantics.nicheId === "real_estate") {
+ return [
+ {
+ title: "Acervo & Disponibilidade",
+ desc: "Itens para locação, espaços, calendário e tabelas de diária",
+ path: "/workspace/catalogo/produtos",
+ icon: Layers,
+ },
+ {
+ title: "Agenda de Reservas & Retiradas",
+ desc: "Controle de retiradas, devoluções e disponibilidade por período",
+ path: "/workspace/agenda",
+ icon: Calendar,
+ },
+ {
+ title: "Contratos & Cauções",
+ desc: "Emissão de contratos de locação, termos de vistoria e garantias",
+ path: "/workspace/orcamentos",
+ icon: ClipboardList,
+ },
+ ];
+ }
+ if (semantics.nicheId === "gastronomy") {
+ return [
+ {
+ title: "Gestor de Pedidos & Cozinha",
+ desc: "Acompanhamento de pedidos em preparo, KDS e despacho",
+ path: "/workspace/pedidos/gestor",
+ icon: ClipboardList,
+ },
+ {
+ title: "Mesas & Comandas",
+ desc: "Atendimento presencial de salão, comandas e fechamento de conta",
+ path: "/workspace/pdv/comandas",
+ icon: Store,
+ },
+ {
+ title: "Cardápio Digital",
+ desc: "Pratos, bebidas, complementos e ficha técnica de insumos",
+ path: "/workspace/catalogo/produtos",
+ icon: ShoppingBag,
+ },
+ ];
+ }
  return [
  {
  title: "Frente de Caixa (PDV Direto)",
@@ -116,9 +160,9 @@ export function NicheOperationalGuard({
  icon: Store,
  },
  {
- title: "Gestor de Pedidos (Kanban)",
+ title: "Separação & Expedição (WMS)",
  desc: "Separação, conferência de produtos e expedição de compras",
- path: "/workspace/pedidos/gestor",
+ path: "/workspace/pedidos/expedicao",
  icon: ClipboardList,
  },
  {
@@ -148,12 +192,12 @@ export function NicheOperationalGuard({
  </h2>
  <p className="text-xs text-muted-foreground leading-relaxed">
  {toolDescription} Sua empresa (<strong>{store?.name || "sua conta"}</strong>) está
- operando no segmento de <strong>{semantics.name}</strong>.
+ operando no segmento de <strong>{semantics.name}</strong>.{effectiveNiches.includes("gastronomy") ? " Este módulo é exclusivo para Gastronomia e Salão." : ""}
  </p>
  </div>
 
  <div className="space-y-3 pt-2">
- <span className="text-xs font-bold text-foreground block">
+ <span className="text-xs font-bold text-foreground block">{suggestions[0] && (<span className="block pb-3"><Button asChild size="sm" className="h-11 min-h-11 px-4 text-xs font-semibold"><Link to={suggestions[0].path as any}>{semantics.nicheId === "tourism" ? "Ir para Vendas & Vouchers de Turismo" : `Ir para ${suggestions[0].title}`}<ChevronRight className="size-4 ml-1" /></Link></Button></span>)}
  Ferramentas recomendadas para o seu negócio:
  </span>
 

@@ -277,6 +277,25 @@ export async function internalLookupCnpj(cnpj: string): Promise<CnpjCompanyDTO> 
     } catch {
       // Degradação graciosa em caso de indisponibilidade de geocodificação
     }
+    if (!geo && street) {
+      geo = await forwardGeocodeInternal(street, neighborhood, city, state).catch(() => null);
+    }
+    if (!geo && zipCode.length === 8) {
+      const cepRes = await fetch(`https://brasilapi.com.br/api/cep/v2/${zipCode}`, {
+        headers: { Accept: "application/json" },
+      }).catch(() => null);
+      if (cepRes?.ok) {
+        const cepData = await cepRes.json().catch(() => null);
+        const rawLat = parseFloat(cepData?.location?.coordinates?.latitude);
+        const rawLng = parseFloat(cepData?.location?.coordinates?.longitude);
+        if (!isNaN(rawLat) && !isNaN(rawLng)) {
+          geo = { lat: Number(rawLat.toFixed(6)), lng: Number(rawLng.toFixed(6)) };
+        }
+      }
+    }
+    if (!geo && city) {
+      geo = await forwardGeocodeInternal("", neighborhood, city, state).catch(() => null);
+    }
   }
 
   return {

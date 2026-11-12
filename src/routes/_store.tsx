@@ -3,8 +3,9 @@ import { getNavigationMenus, getPublicStoreSettings } from "@/services/cms.funct
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { getCart, getGlobalCarts } from "@/services/cart.functions";
 import { getActiveGlobalPopups } from "@/services/builder.functions";
-import { getUserSession } from "@/services/auth.functions";
-import { useEffect } from "react";
+import { getUserSession, syncSessionToCookies } from "@/services/auth.functions";
+import { getBrowserClient } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/shell/app-shell";
 import { GlobalPopupRenderer } from "@/components/commerce/global-popup-renderer";
@@ -122,18 +123,80 @@ function StoreRouteError({ error }: { error: unknown }) {
 function StoreLayout() {
  const { store, brand, carts, globalCarts, popups, session } = ((Route.useLoaderData?.() as any) || {});
  const { initCart } = useCartContext();
+ const [activeSession, setActiveSession] = useState<any>(session || null);
+
+ useEffect(() => {
+   setActiveSession(session || null);
+ }, [session]);
+
+ useEffect(() => {
+   if (typeof window === "undefined") return;
+   let mounted = true;
+   const supabase = getBrowserClient();
+
+   const hydrateClientSession = async () => {
+     try {
+       const { data } = await supabase.auth.getSession();
+       if (!mounted) return;
+       if (data?.session?.access_token && data?.session?.refresh_token) {
+         if (!session?.id && !session?.user?.id) {
+           await syncSessionToCookies({
+             data: {
+               access_token: data.session.access_token,
+               refresh_token: data.session.refresh_token,
+             },
+           }).catch(() => null);
+           const refreshed = await getUserSession().catch(() => null);
+           if (mounted && refreshed) {
+             setActiveSession({ ...refreshed, store_id: null });
+           }
+         }
+       } else if (session?.id || session?.user?.id) {
+         // Se o browser client não possui sessão ativa nem cookie válido, revalida
+         const refreshed = await getUserSession().catch(() => null);
+         if (mounted) {
+           setActiveSession(refreshed ? { ...refreshed, store_id: null } : null);
+         }
+       }
+     } catch {
+       // Ignorado em falha transitória
+     }
+   };
+
+   hydrateClientSession();
+
+   const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, authSession) => {
+     if (!mounted) return;
+     if (event === "SIGNED_OUT") {
+       setActiveSession(null);
+     } else if (
+       (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") &&
+       authSession?.access_token
+     ) {
+       const refreshed = await getUserSession().catch(() => null);
+       if (mounted && refreshed) {
+         setActiveSession({ ...refreshed, store_id: null });
+       }
+     }
+   });
+
+   return () => {
+     mounted = false;
+     subscription.unsubscribe();
+   };
+ }, [session]);
 
  useEffect(() => {
  initCart(carts, globalCarts);
  }, [carts, globalCarts, initCart]);
 
   // Zero-Trust Civil Root na Vitrine Pública (DEC-206):
-  // Garante que o usuário que navega no marketplace/vitrine pública opere sempre em sua Identidade Civil,
-  // sem purgar o tenant corporativo caso esteja com o /workspace aberto em outra aba.
+  // A vitrine pública opera sob identidade civil pessoal na camada SSR.
+  // Preserva o contexto de store no cookie caso o lojista esteja alternando entre vitrine e workspace.
   useEffect(() => {
     if (typeof window !== "undefined") {
       const activeCtx = getClientActiveContext();
-      if (activeCtx === "store") {
+      if (!activeCtx) {
         window.document.cookie =
           "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
       }
@@ -228,7 +291,7 @@ function StoreLayout() {
   // A rota / agora é sempre a Vitrine canônica dentro do AppShell.
 
   return (
-    <AppShell session={session} brandSettings={brandSettings}>
+    <AppShell session={activeSession} brandSettings={brandSettings}>
       <StoreAnalyticsInjector storeSettings={storeData?.settings} />
       <script
         type="application/ld+json"

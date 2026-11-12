@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import { encryptSecret } from "@/lib/crypto-vault.server";
+import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 
 const ProviderSchema = z.enum(["meta_cloud_api", "evolution_api", "wasender_api", "render_bridge", "custom_webhook"]);
 const ModeSchema = z.enum(["official", "unofficial"]);
@@ -44,13 +44,17 @@ async function audit(instanceId: string | null, storeId: string, actorId: string
   await getServerClient().from("whatsapp_channel_audit_events").insert({ instance_id: instanceId, store_id: storeId, actor_id: actorId, action, severity, metadata });
 }
 
-export const listWorkspaceWhatsAppInstances = createServerFn({ method: "GET" }).handler(async () => {
-  const identity = await getServerIdentity();
-  assertStoreAccess(identity, ["owner", "admin", "manager"]);
-  const { data, error } = await getServerClient().from("whatsapp_channel_instances").select(PublicFields).eq("store_id", identity.store_id).order("created_at", { ascending: false });
-  if (error) throw new Error(`Falha ao listar instâncias WhatsApp: ${error.message}`);
-  return (data || []) as WhatsAppChannelInstanceDTO[];
-});
+export const listWorkspaceWhatsAppInstances = createServerFn({ method: "GET" })
+  .validator((input?: { store_id?: string; storeId?: string }) => input)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const targetStoreId = data?.store_id || data?.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!targetStoreId) return [] as WhatsAppChannelInstanceDTO[];
+    assertStoreAccess(identity, ["owner", "admin", "manager"], targetStoreId);
+    const { data: list, error } = await getServerClient().from("whatsapp_channel_instances").select(PublicFields).eq("store_id", targetStoreId).order("created_at", { ascending: false });
+    if (error) throw new Error(`Falha ao listar instâncias WhatsApp: ${error.message}`);
+    return (list || []) as WhatsAppChannelInstanceDTO[];
+  });
 
 export const listMasterWhatsAppInstances = createServerFn({ method: "GET" }).handler(async () => {
   await requireMaster();
@@ -89,6 +93,20 @@ async function saveInstance(input: z.infer<typeof SaveSchema>, mode: "workspace"
 
   const db = getServerClient();
   const secretPayloadEncrypted = Object.keys(input.secretPayload).length > 0 ? encryptSecret(JSON.stringify(input.secretPayload)) : undefined;
+
+  const targetIsDefault = Boolean(input.isDefault && input.isActive);
+  if (targetIsDefault) {
+    let demoteQuery = db
+      .from("whatsapp_channel_instances")
+      .update({ is_default: false, updated_at: new Date().toISOString() })
+      .eq("store_id", storeId)
+      .eq("is_default", true);
+    if (input.id) {
+      demoteQuery = demoteQuery.neq("id", input.id);
+    }
+    await demoteQuery;
+  }
+
   const row = {
     ...(input.id ? { id: input.id } : {}),
     store_id: storeId,
@@ -98,7 +116,7 @@ async function saveInstance(input: z.infer<typeof SaveSchema>, mode: "workspace"
     instance_key: input.instanceKey,
     status: input.isActive ? "pending" : "disabled",
     is_active: input.isActive,
-    is_default: input.isDefault && input.isActive,
+    is_default: targetIsDefault,
     phone_number_id: input.phoneNumberId || null,
     business_account_id: input.businessAccountId || null,
     display_phone_number: input.displayPhoneNumber || null,
@@ -129,7 +147,21 @@ async function toggleInstance(input: z.infer<typeof ToggleSchema>, mode: "worksp
   if (!storeId) throw new Error("Loja autenticada obrigatória para alterar instâncias.");
   if (mode === "workspace") assertStoreAccess(identity, ["owner", "admin", "manager"]);
   const db = getServerClient();
-  const { data, error } = await db.from("whatsapp_channel_instances").update({ is_active: input.active, status: input.active ? "pending" : "disabled", updated_at: new Date().toISOString() }).eq("id", input.id).eq("store_id", storeId).select(PublicFields).single();
+  const updatePayload: Record<string, unknown> = {
+    is_active: input.active,
+    status: input.active ? "pending" : "disabled",
+    updated_at: new Date().toISOString(),
+  };
+  if (!input.active) {
+    updatePayload.is_default = false;
+  }
+  const { data, error } = await db
+    .from("whatsapp_channel_instances")
+    .update(updatePayload)
+    .eq("id", input.id)
+    .eq("store_id", storeId)
+    .select(PublicFields)
+    .single();
   if (error) throw new Error(`Falha ao alterar status da instância: ${error.message}`);
   await audit(String(input.id), storeId, actorId, input.active ? "instance.enabled" : "instance.disabled", input.active ? "info" : "warning");
   return data as WhatsAppChannelInstanceDTO;
@@ -156,92 +188,412 @@ export const listWhatsAppChannelAudit = createServerFn({ method: "GET" }).valida
 
 // ─── Integração Direta Evolution API server-side e QR Code ao vivo ───
 
-const EVOLUTION_BASE_URL = process.env.EVOLUTION_API_URL?.trim() || "http://147.15.61.45:8080";
 const DEFAULT_WEBHOOK_ORIGIN = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
 
-function requireEvolutionBaseUrl(): string {
-  const url = process.env.EVOLUTION_API_URL?.trim() || EVOLUTION_BASE_URL || "http://147.15.61.45:8080";
-  return url.replace(/\/$/, "");
+async function resolveEvolutionGatewayConfig(
+  db: ReturnType<typeof getServerClient>,
+  storeId: string,
+  instance?: { id?: string; public_config?: Record<string, unknown> | null; secret_payload_encrypted?: string | null } | null,
+): Promise<{ baseUrl: string; apiKey: string }> {
+  let baseUrl = "";
+  let apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+
+  const cfgUrl = typeof instance?.public_config?.base_url === "string" ? instance.public_config.base_url.trim() : "";
+  if (cfgUrl && !cfgUrl.includes("147.15.61.45")) {
+    baseUrl = cfgUrl.replace(/\/$/, "");
+  }
+  const envUrl = process.env.EVOLUTION_API_URL?.trim() || "";
+  if (!baseUrl && envUrl && !envUrl.includes("147.15.61.45")) {
+    baseUrl = envUrl.replace(/\/$/, "");
+  }
+
+  if (instance?.secret_payload_encrypted) {
+    try {
+      const parsed = JSON.parse(decryptSecret(instance.secret_payload_encrypted)) as Record<string, unknown>;
+      if (!apiKey && typeof parsed.api_key === "string" && parsed.api_key.trim()) apiKey = parsed.api_key.trim();
+      if (!baseUrl && typeof parsed.base_url === "string" && !parsed.base_url.includes("147.15.61.45")) {
+        baseUrl = parsed.base_url.trim().replace(/\/$/, "");
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!baseUrl || !apiKey) {
+    const { data: rows } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, store_id, public_config, secret_payload_encrypted")
+      .eq("provider", "evolution_api")
+      .not("secret_payload_encrypted", "is", null)
+      .order("is_active", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(5);
+
+    for (const row of rows || []) {
+      const rCfg = (row.public_config && typeof row.public_config === "object" ? row.public_config : {}) as Record<string, unknown>;
+      if (!baseUrl && typeof rCfg.base_url === "string" && rCfg.base_url.trim() && !rCfg.base_url.includes("147.15.61.45")) {
+        baseUrl = rCfg.base_url.trim().replace(/\/$/, "");
+      }
+      if (row.secret_payload_encrypted) {
+        try {
+          const parsed = JSON.parse(decryptSecret(row.secret_payload_encrypted)) as Record<string, unknown>;
+          if (!apiKey && typeof parsed.api_key === "string" && parsed.api_key.trim()) apiKey = parsed.api_key.trim();
+          if (!baseUrl && typeof parsed.base_url === "string" && !parsed.base_url.includes("147.15.61.45")) {
+            baseUrl = parsed.base_url.trim().replace(/\/$/, "");
+          }
+        } catch {
+          // ignore
+        }
+      }
+      if (baseUrl && apiKey) break;
+    }
+  }
+
+  if (!baseUrl) {
+    throw new Error("EVOLUTION_API_URL não configurada ou aponta para IP legado sem túnel HTTPS.");
+  }
+  if (!apiKey) {
+    throw new Error("EVOLUTION_API_KEY não configurada no ambiente do servidor.");
+  }
+  return { baseUrl, apiKey };
 }
 
-function requireEvolutionMasterKey(): string {
-  const key = process.env.EVOLUTION_API_KEY?.trim();
-  if (key) return key;
-  return "WaesyApiKey_Master_2026_WhatsApp";
+export type WhatsAppDiagnosticSessionState =
+  | "connected"
+  | "connecting"
+  | "disconnected"
+  | "session_revoked"
+  | "gateway_unreachable"
+  | "tunnel_unavailable"
+  | "unknown"
+  | "temporary_send_failure";
 
+export type WhatsAppSessionHealthEvaluation = {
+  diagnosticState: WhatsAppDiagnosticSessionState;
+  dbStatus: "connected" | "pending" | "disconnected" | "revoked" | "degraded";
+  isHealthy: boolean;
+  reason: string;
+};
+
+export function classifyWhatsAppSessionHealth(input: {
+  connectionStateStatus?: string | null;
+  connectionStateHttpStatus?: number | null;
+  fetchInstancesRecord?: Record<string, unknown> | null;
+  lastWebhookState?: string | null;
+  lastWebhookAt?: string | null;
+  lastConnectedAt?: string | null;
+  lastSendFailureCode?: string | null;
+  lastSendFailureAt?: string | null;
+  hasQrCode?: boolean;
+  networkError?: string | null;
+}): WhatsAppSessionHealthEvaluation {
+  const httpStatus = input.connectionStateHttpStatus ?? null;
+  const netErr = String(input.networkError || "").toLowerCase();
+
+  if (
+    httpStatus === 502 ||
+    httpStatus === 503 ||
+    httpStatus === 504 ||
+    httpStatus === 530 ||
+    netErr.includes("cloudflare") ||
+    netErr.includes("1033") ||
+    netErr.includes("tunnel")
+  ) {
+    return {
+      diagnosticState: "tunnel_unavailable",
+      dbStatus: "degraded",
+      isHealthy: false,
+      reason: `Túnel com a VPS indisponível (${httpStatus ? `HTTP ${httpStatus}` : input.networkError}).`,
+    };
+  }
+
+  if (httpStatus === null && netErr) {
+    return {
+      diagnosticState: "gateway_unreachable",
+      dbStatus: "degraded",
+      isHealthy: false,
+      reason: `Gateway Evolution inacessível: ${input.networkError}`,
+    };
+  }
+
+  const liveState = String(input.connectionStateStatus || "").toLowerCase();
+  const fetchRec = input.fetchInstancesRecord || null;
+  const fetchStatus = String(fetchRec?.connectionStatus || fetchRec?.state || "").toLowerCase();
+  const disconnectCode = Number(fetchRec?.disconnectionReasonCode ?? 0);
+  const disconnectAtMs = fetchRec?.disconnectionAt ? new Date(String(fetchRec.disconnectionAt)).getTime() : 0;
+  const updatedAtMs = fetchRec?.updatedAt ? new Date(String(fetchRec.updatedAt)).getTime() : 0;
+  const lastConnectedMs = input.lastConnectedAt ? new Date(input.lastConnectedAt).getTime() : 0;
+  const lastWebhookMs = input.lastWebhookAt ? new Date(input.lastWebhookAt).getTime() : 0;
+
+  // Avalia se disconnectionReasonCode = 401 é revogação atual ou histórico já superado por reconexão posterior
+  const reconnectedAfterDisconnect =
+    disconnectAtMs > 0 &&
+    ((lastConnectedMs > disconnectAtMs) ||
+      (input.lastWebhookState === "open" && lastWebhookMs > disconnectAtMs) ||
+      (updatedAtMs > disconnectAtMs + 5000 && (liveState === "open" || fetchStatus === "open")));
+
+  if (disconnectCode === 401 && !reconnectedAfterDisconnect && (fetchStatus === "close" || liveState === "close")) {
+    return {
+      diagnosticState: "session_revoked",
+      dbStatus: "revoked",
+      isHealthy: false,
+      reason: "Sessão desconectada ou revogada pelo aparelho celular (código 401). Reconecte via QR Code.",
+    };
+  }
+
+  // Divergência entre /instance/connectionState ("open") e /instance/fetchInstances ("close"): evita falso "connected" (estado zombie)
+  if (liveState === "open" && fetchStatus === "close" && !reconnectedAfterDisconnect) {
+    if (disconnectCode === 401) {
+      return {
+        diagnosticState: "session_revoked",
+        dbStatus: "revoked",
+        isHealthy: false,
+        reason: "Estado divergente: connectionState reportou open, mas fetchInstances indica sessão revogada (401).",
+      };
+    }
+    return {
+      diagnosticState: "disconnected",
+      dbStatus: "disconnected",
+      isHealthy: false,
+      reason: "Estado divergente: connectionState reportou open, mas a instância encontra-se fechada no catálogo do gateway.",
+    };
+  }
+
+  if (liveState === "open") {
+    const failureMs = input.lastSendFailureAt ? new Date(input.lastSendFailureAt).getTime() : 0;
+    const isRecentSendFailure =
+      input.lastSendFailureCode === "TEMPORARY_SEND_FAILURE" &&
+      failureMs > 0 &&
+      Date.now() - failureMs < 2 * 60 * 1000 &&
+      failureMs > lastWebhookMs;
+    if (isRecentSendFailure) {
+      return {
+        diagnosticState: "temporary_send_failure",
+        dbStatus: "degraded",
+        isHealthy: false,
+        reason: "Sessão reportada como aberta, mas houve falha transitória recente de envio.",
+      };
+    }
+    return {
+      diagnosticState: "connected",
+      dbStatus: "connected",
+      isHealthy: true,
+      reason: "Sessão conectada e validada em múltiplos sinais.",
+    };
+  }
+
+  if (liveState === "connecting" || input.hasQrCode) {
+    return {
+      diagnosticState: "connecting",
+      dbStatus: "pending",
+      isHealthy: false,
+      reason: "Aguardando leitura do QR Code ou negociação da sessão.",
+    };
+  }
+
+  if (liveState === "close" || fetchStatus === "close") {
+    return {
+      diagnosticState: "disconnected",
+      dbStatus: "disconnected",
+      isHealthy: false,
+      reason: "Sessão desconectada.",
+    };
+  }
+
+  return {
+    diagnosticState: "unknown",
+    dbStatus: "degraded",
+    isHealthy: false,
+    reason: "Estado da sessão não pôde ser determinado com segurança.",
+  };
 }
 
-const ConnectQrSchema = z.object({
+export function normalizeWhatsAppQrDataUri(rawQr: unknown): string | null {
+  if (typeof rawQr !== "string") return null;
+  const trimmed = rawQr.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("data:image/")) return trimmed;
+  if (trimmed.startsWith("<svg")) {
+    return `data:image/svg+xml;utf8,${encodeURIComponent(trimmed)}`;
+  }
+  return `data:image/png;base64,${trimmed}`;
+}
+
+export function extractEvolutionQrPayload(payload: Record<string, any> | null | undefined): {
+  qrCodeBase64: string | null;
+  pairingCode: string | null;
+} {
+  if (!payload || typeof payload !== "object") {
+    return { qrCodeBase64: null, pairingCode: null };
+  }
+  const rawQr =
+    payload?.base64 ||
+    payload?.qrcode?.base64 ||
+    payload?.data?.base64 ||
+    payload?.data?.qrcode?.base64 ||
+    payload?.qr ||
+    null;
+  const rawPairing =
+    payload?.pairingCode ||
+    payload?.qrcode?.pairingCode ||
+    payload?.data?.pairingCode ||
+    payload?.data?.qrcode?.pairingCode ||
+    null;
+  return {
+    qrCodeBase64: normalizeWhatsAppQrDataUri(rawQr),
+    pairingCode: typeof rawPairing === "string" && rawPairing.trim() ? rawPairing.trim() : null,
+  };
+}
+
+export const ConnectQrSchema = z.object({
   id: z.string().uuid().optional(),
   storeId: z.string().uuid().optional(),
   displayName: z.string().trim().min(2).max(100).default("WhatsApp Principal"),
   instanceKey: z.string().trim().min(2).max(80).regex(/^[a-z0-9][a-z0-9_-]*$/).optional(),
   department: z.string().trim().max(60).optional(),
   isGlobalMaster: z.boolean().default(false),
+  autoImportHistory: z.boolean().default(false),
 });
 
 export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
   .validator(ConnectQrSchema)
   .handler(async ({ data }) => {
+    const {
+      id: instanceId,
+      storeId: inputStoreId,
+      displayName,
+      instanceKey,
+      department,
+      isGlobalMaster,
+      autoImportHistory,
+    } = data;
+
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória para conectar WhatsApp.");
 
     const isMaster = identity.role === "platform_admin";
-    if (data.isGlobalMaster && !isMaster) {
+    if (isGlobalMaster && !isMaster) {
       throw new Error("Apenas o Admin Master pode configurar o Número Global da plataforma.");
     }
     if (!isMaster) {
       assertStoreAccess(identity, ["owner", "admin", "manager"]);
     }
 
-    const storeId = data.storeId || identity.store_id;
-    if (!storeId) throw new Error(" Contexto de loja obrigatório para criar instância WhatsApp.");
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Contexto de loja obrigatório para criar instância WhatsApp.");
 
     const db = getServerClient();
     let existing: WhatsAppChannelInstanceDTO | null = null;
-    if (data.id) {
+    if (instanceId) {
       const { data: found } = await db
         .from("whatsapp_channel_instances")
         .select(PublicFields)
-        .eq("id", data.id)
+        .eq("id", instanceId)
         .eq("store_id", storeId)
         .maybeSingle();
       existing = (found as WhatsAppChannelInstanceDTO | null) || null;
     }
 
     const shortStore = storeId.replace(/-/g, "").slice(0, 8);
-    const cleanKey = (data.instanceKey || existing?.instance_key || `wa_${shortStore}`).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
-    const externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
+    const cleanKey = (instanceKey || existing?.instance_key || `wa_${shortStore}`).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+    let externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
     const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(cleanKey)}`;
 
     let qrBase64: string | null = null;
     let pairingCode: string | null = null;
-    let connectionState = "connecting";
-    const baseUrl = requireEvolutionBaseUrl();
+    let connectionState: "connected" | "connecting" | "error" = "connecting";
+    let gatewayErrorCode: string | null = null;
+    let gatewayErrorMessage: string | null = null;
+    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, existing as any);
+
+    const fetchInstanceConnectQr = async (): Promise<{ qrCodeBase64: string | null; pairingCode: string | null }> => {
+      const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
+        method: "GET",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!connectRes.ok) return { qrCodeBase64: null, pairingCode: null };
+      const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
+      return extractEvolutionQrPayload(connectJson);
+    };
 
     // 1. Verificar se a instância já existe na Evolution API
     try {
       const stateRes = await fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
         method: "GET",
-        headers: { apikey: requireEvolutionMasterKey() },
+        headers: { apikey: apiKey },
         signal: AbortSignal.timeout(8000),
       });
 
       if (stateRes.ok) {
         const stateJson = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
-        const rawState = String(stateJson?.instance?.state || "").toLowerCase();
+        let rawState = String(stateJson?.instance?.state || stateJson?.state || "").toLowerCase();
+        
+        // Verificação profunda anti-zombie: se o socket foi desconectado pelo WhatsApp (código 403/erro), força re-emissão de QR
         if (rawState === "open") {
-          connectionState = "connected";
-        } else {
-          const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
+          const infoRes = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
             method: "GET",
-            headers: { apikey: requireEvolutionMasterKey() },
-            signal: AbortSignal.timeout(10000),
-          });
-          if (connectRes.ok) {
-            const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
-            qrBase64 = connectJson?.base64 || connectJson?.qrcode?.base64 || null;
-            pairingCode = connectJson?.pairingCode || connectJson?.qrcode?.pairingCode || null;
+            headers: { apikey: apiKey },
+            signal: AbortSignal.timeout(6000),
+          }).catch(() => null);
+          const infoList = infoRes && infoRes.ok ? await infoRes.json().catch(() => []) : [];
+          const first = Array.isArray(infoList) ? infoList[0] : infoList;
+          if (first?.disconnectionReasonCode || first?.disconnectionAt) {
+            rawState = "close";
+            // Cria um identificador limpo para escapar do socket travado na VPS
+            externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
+          } else {
+            connectionState = "connected";
+          }
+        }
+
+        if (rawState !== "open") {
+          const firstConnect = await fetchInstanceConnectQr();
+          qrBase64 = firstConnect.qrCodeBase64;
+          pairingCode = firstConnect.pairingCode;
+
+          // Se a instância existente travou sem emitir QR Code ou se foi gerado um novo externalName, cria a nova instância
+          if (!qrBase64) {
+            const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
+              method: "POST",
+              headers: { apikey: apiKey, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                instanceName: externalName,
+                qrcode: true,
+                integration: "WHATSAPP-BAILEYS",
+                webhook: {
+                  url: webhookUrl,
+                  byEvents: false,
+                  base64: true,
+                  events: [
+                    "QRCODE_UPDATED",
+                    "CONNECTION_UPDATE",
+                    "MESSAGES_UPSERT",
+                    "MESSAGES_UPDATE",
+                    "SEND_MESSAGE",
+                  ],
+                },
+              }),
+              signal: AbortSignal.timeout(12000),
+            }).catch(() => null);
+
+            if (freshCreateRes && freshCreateRes.ok) {
+              const freshJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
+              const freshExtracted = extractEvolutionQrPayload(freshJson);
+              qrBase64 = freshExtracted.qrCodeBase64;
+              pairingCode = freshExtracted.pairingCode;
+            }
+
+            if (!qrBase64) {
+              await fetch(`${baseUrl}/instance/restart/${encodeURIComponent(externalName)}`, {
+                method: "PUT",
+                headers: { apikey: apiKey },
+                signal: AbortSignal.timeout(6000),
+              }).catch(() => null);
+              const retryConnect = await fetchInstanceConnectQr();
+              qrBase64 = retryConnect.qrCodeBase64;
+              pairingCode = retryConnect.pairingCode || pairingCode;
+            }
           }
         }
       } else {
@@ -249,7 +601,7 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
         const createRes = await fetch(`${baseUrl}/instance/create`, {
           method: "POST",
           headers: {
-            apikey: requireEvolutionMasterKey(),
+            apikey: apiKey,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -273,14 +625,54 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
         });
 
         const createJson = (await createRes.json().catch(() => ({}))) as Record<string, any>;
-        if (!createRes.ok) {
+        if (createRes.ok) {
+          const extracted = extractEvolutionQrPayload(createJson);
+          qrBase64 = extracted.qrCodeBase64;
+          pairingCode = extracted.pairingCode;
+        } else if (createRes.status === 403 || createRes.status === 400 || createRes.status === 409) {
+          // Caso a instância já exista na Evolution API mas não respondeu ao connectionState inicial
+          const fallbackConnect = await fetchInstanceConnectQr();
+          qrBase64 = fallbackConnect.qrCodeBase64;
+          pairingCode = fallbackConnect.pairingCode;
+          if (!qrBase64) {
+            // Se o nome está em uso por uma sessão zumbi inacessível, cria com sufixo fresco
+            externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
+            const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
+              method: "POST",
+              headers: { apikey: apiKey, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                instanceName: externalName,
+                qrcode: true,
+                integration: "WHATSAPP-BAILEYS",
+                webhook: { url: webhookUrl, byEvents: false, base64: true, events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"] }
+              }),
+              signal: AbortSignal.timeout(12000),
+            });
+            const freshCreateJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
+            const freshExtracted = extractEvolutionQrPayload(freshCreateJson);
+            qrBase64 = freshExtracted.qrCodeBase64;
+            pairingCode = freshExtracted.pairingCode;
+            if (!qrBase64) {
+              const followUp = await fetchInstanceConnectQr();
+              qrBase64 = followUp.qrCodeBase64;
+              pairingCode = followUp.pairingCode;
+            }
+          }
+        } else {
           throw new Error(createJson?.response?.message?.[0] || createJson?.message || `Evolution API HTTP ${createRes.status}`);
         }
-        qrBase64 = createJson?.qrcode?.base64 || createJson?.base64 || null;
-        pairingCode = createJson?.qrcode?.pairingCode || null;
+
+        // Evolution API v2 frequentemente inicializa o socket de forma assíncrona após /instance/create
+        if (!qrBase64) {
+          const followUpConnect = await fetchInstanceConnectQr();
+          qrBase64 = followUpConnect.qrCodeBase64;
+          pairingCode = followUpConnect.pairingCode || pairingCode;
+        }
       }
     } catch (err) {
-      throw new Error(`Falha ao comunicar com servidor WhatsApp (${baseUrl}): ${err instanceof Error ? err.message : "Erro de rede"}`);
+      connectionState = "error";
+      gatewayErrorCode = "GATEWAY_QR_ERROR";
+      gatewayErrorMessage = `Falha ao comunicar com servidor WhatsApp (${baseUrl}): ${err instanceof Error ? err.message : "Erro de rede"}`;
     }
 
     const updatedPublicConfig = {
@@ -288,107 +680,195 @@ export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
       base_url: baseUrl,
       qr_code_url: qrBase64,
       pairing_code: pairingCode,
-      department: data.department || existing?.public_config?.department || "Geral",
-      is_global_master: data.isGlobalMaster || Boolean(existing?.public_config?.is_global_master),
+      department: department || existing?.public_config?.department || "Geral",
+      is_global_master: isGlobalMaster || Boolean(existing?.public_config?.is_global_master),
+      auto_import_history: autoImportHistory ?? (existing?.public_config as any)?.auto_import_history ?? false,
       last_qr_generated_at: new Date().toISOString(),
+      last_error_message: gatewayErrorMessage,
     };
 
     const secretEncrypted = encryptSecret(
       JSON.stringify({
-        api_key: requireEvolutionMasterKey(),
+        api_key: apiKey,
         base_url: baseUrl,
       }),
     );
 
     const isConnected = connectionState === "connected";
+    const mappedDbStatus = isConnected ? "connected" : connectionState === "error" ? "error" : "pending";
+
+    // Busca se já existe uma instância ativa e padrão nesta loja
+    const { data: existingDefault } = await db
+      .from("whatsapp_channel_instances")
+      .select("id")
+      .eq("store_id", storeId)
+      .eq("is_default", true)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    // Se a instância atual já for a padrão ou não houver nenhuma outra instância padrão ativa, assume default
+    const isThisAlreadyDefault = Boolean(existing?.id && existing.is_default && existingDefault?.id === existing.id);
+    const hasOtherActiveDefault = Boolean(existingDefault && existingDefault.id !== existing?.id);
+    const shouldBeDefault = isThisAlreadyDefault || !hasOtherActiveDefault;
+
+    // Se deve ser padrão, despromove qualquer outra instância default prévia da mesma loja para blindar contra race condition
+    if (shouldBeDefault) {
+      let demoteDefaultQuery = db
+        .from("whatsapp_channel_instances")
+        .update({ is_default: false, updated_at: new Date().toISOString() })
+        .eq("store_id", storeId)
+        .eq("is_default", true);
+      if (existing?.id) {
+        demoteDefaultQuery = demoteDefaultQuery.neq("id", existing.id);
+      }
+      await demoteDefaultQuery;
+    }
+
     const upsertPayload = {
       ...(existing?.id ? { id: existing.id } : {}),
       store_id: storeId,
-      display_name: data.displayName || existing?.display_name || "WhatsApp Principal",
+      display_name: displayName || existing?.display_name || "WhatsApp Principal",
       provider: "evolution_api" as const,
       connection_mode: "unofficial" as const,
       instance_key: cleanKey,
       external_instance_id: externalName,
       webhook_url: webhookUrl,
-      status: isConnected ? "connected" : "pending",
+      status: mappedDbStatus,
       is_active: true,
-      is_default: existing?.is_default ?? true,
+      is_default: shouldBeDefault,
       public_config: updatedPublicConfig,
       secret_payload_encrypted: secretEncrypted,
+      last_error_code: gatewayErrorCode,
+      last_error_message: gatewayErrorMessage,
       last_health_check_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       created_by: identity.id,
     };
 
-    const { data: saved, error } = await db
+    let saved: WhatsAppChannelInstanceDTO | null = null;
+    const { data: initialSaved, error: initialError } = await db
       .from("whatsapp_channel_instances")
       .upsert(upsertPayload, { onConflict: "store_id,instance_key" })
       .select(PublicFields)
       .single();
 
-    if (error) throw new Error(`Erro ao persistir instância QR Code: ${error.message}`);
+    if (initialError) {
+      // Blindagem contra duplicate key na unique constraint uq_whatsapp_default_instance_per_store
+      if (
+        initialError.message.includes("uq_whatsapp_default_instance_per_store") ||
+        (initialError as any).code === "23505"
+      ) {
+        const retryPayload = { ...upsertPayload, is_default: false };
+        const { data: retrySaved, error: retryError } = await db
+          .from("whatsapp_channel_instances")
+          .upsert(retryPayload, { onConflict: "store_id,instance_key" })
+          .select(PublicFields)
+          .single();
 
-    await audit(String(saved.id), storeId, identity.id, "instance.qr_requested", "info", {
-      external_instance_id: externalName,
-      connection_state: connectionState,
-      is_global_master: data.isGlobalMaster,
-    });
+        if (retryError) {
+          throw new Error(`Erro ao persistir instância QR Code: ${retryError.message}`);
+        }
+        saved = retrySaved as WhatsAppChannelInstanceDTO;
+      } else {
+        throw new Error(`Erro ao persistir instância QR Code: ${initialError.message}`);
+      }
+    } else {
+      saved = initialSaved as WhatsAppChannelInstanceDTO;
+    }
+
+    if (!saved) {
+      throw new Error("Erro desconhecido ao registrar instância WhatsApp.");
+    }
+
+    await audit(
+      String(saved.id),
+      storeId,
+      identity.id,
+      connectionState === "error" ? "instance.qr_error" : "instance.qr_requested",
+      connectionState === "error" ? "error" : "info",
+      {
+        external_instance_id: externalName,
+        connection_state: connectionState,
+        is_global_master: isGlobalMaster,
+        error_message: gatewayErrorMessage,
+      },
+    );
 
     return {
       instance: saved as WhatsAppChannelInstanceDTO,
       qrCodeBase64: qrBase64,
       pairingCode,
       connectionState,
+      errorMessage: gatewayErrorMessage,
     };
   });
 
 export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
   .handler(async ({ data }) => {
+    const { id: instanceId, storeId: inputStoreId } = data;
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
-    const storeId = data.storeId || identity.store_id;
+    const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
     const { data: instance, error } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
-      .eq("id", data.id)
+      .eq("id", instanceId)
       .eq("store_id", storeId)
       .single();
 
     if (error || !instance) throw new Error("Instância WhatsApp não encontrada.");
     if (instance.provider !== "evolution_api") {
-      return { instance: instance as WhatsAppChannelInstanceDTO, state: instance.status };
+      return {
+        instance: instance as WhatsAppChannelInstanceDTO,
+        state: instance.status,
+        qrCodeBase64: normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url),
+        pairingCode: ((instance.public_config as any)?.pairing_code as string) || null,
+        errorMessage: instance.last_error_message || null,
+      };
     }
 
     const externalName = instance.external_instance_id || instance.instance_key;
-    const baseUrl = String((instance.public_config as any)?.base_url || requireEvolutionBaseUrl()).replace(/\/$/, "");
+    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
 
-    let liveState = "close";
+    let liveState: string | null = null;
+    let stateHttpStatus: number | null = null;
+    let fetchRecord: Record<string, unknown> | null = null;
     let connectedPhone: string | null = instance.display_phone_number;
+    let qrCodeBase64: string | null = normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url);
+    let pairingCode: string | null = ((instance.public_config as any)?.pairing_code as string) || null;
+    let syncErrorMessage: string | null = null;
 
     try {
-      const stateRes = await fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
-        method: "GET",
-        headers: { apikey: requireEvolutionMasterKey() },
-        signal: AbortSignal.timeout(6000),
-      });
+      const [stateRes, infoRes] = await Promise.all([
+        fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
+          method: "GET",
+          headers: { apikey: apiKey },
+          signal: AbortSignal.timeout(6000),
+        }),
+        fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
+          method: "GET",
+          headers: { apikey: apiKey },
+          signal: AbortSignal.timeout(6000),
+        }).catch(() => null),
+      ]);
+
+      stateHttpStatus = stateRes.status;
       if (stateRes.ok) {
         const json = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
-        liveState = String(json?.instance?.state || "close").toLowerCase();
+        liveState = String(json?.instance?.state || json?.state || "close").toLowerCase();
+      } else {
+        syncErrorMessage = `Gateway HTTP ${stateRes.status}`;
       }
 
-      if (liveState === "open") {
-        const infoRes = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
-          method: "GET",
-          headers: { apikey: requireEvolutionMasterKey() },
-          signal: AbortSignal.timeout(6000),
-        });
-        if (infoRes.ok) {
-          const infoList = await infoRes.json().catch(() => []);
-          const first = Array.isArray(infoList) ? infoList[0] : infoList;
+      if (infoRes && infoRes.ok) {
+        const infoList = await infoRes.json().catch(() => []);
+        const first = (Array.isArray(infoList) ? infoList[0] : infoList) as Record<string, any> | undefined;
+        if (first && typeof first === "object") {
+          fetchRecord = first;
           const ownerJid = String(first?.ownerJid || first?.instance?.owner || "");
           if (ownerJid) {
             const digits = ownerJid.replace(/@.*$/, "").replace(/\D/g, "");
@@ -396,15 +876,55 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
           }
         }
       }
-    } catch {
-      // Mantém estado anterior em caso de oscilação momentânea
+
+      if (liveState === "open") {
+        qrCodeBase64 = null;
+        pairingCode = null;
+      } else if (stateRes.ok) {
+        // Busca QR Code atualizado enquanto aguarda leitura
+        const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
+          method: "GET",
+          headers: { apikey: apiKey },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (connectRes.ok) {
+          const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
+          const extracted = extractEvolutionQrPayload(connectJson);
+          if (extracted.qrCodeBase64) qrCodeBase64 = extracted.qrCodeBase64;
+          if (extracted.pairingCode) pairingCode = extracted.pairingCode;
+        }
+      }
+    } catch (err) {
+      syncErrorMessage = err instanceof Error ? err.message : "Oscilação de rede ao consultar gateway WhatsApp";
     }
 
-    const mappedStatus = liveState === "open" ? "connected" : liveState === "connecting" ? "pending" : "disconnected";
+    const currentPub = ((instance.public_config as Record<string, unknown>) || {});
+    const health = classifyWhatsAppSessionHealth({
+      connectionStateStatus: liveState,
+      connectionStateHttpStatus: stateHttpStatus,
+      fetchInstancesRecord: fetchRecord,
+      lastWebhookState: typeof currentPub.last_webhook_state === "string" ? currentPub.last_webhook_state : null,
+      lastWebhookAt: typeof currentPub.last_webhook_at === "string" ? currentPub.last_webhook_at : null,
+      lastConnectedAt: typeof currentPub.last_connected_at === "string" ? currentPub.last_connected_at : null,
+      lastSendFailureCode: instance.last_error_code,
+      lastSendFailureAt: typeof currentPub.last_send_failure_at === "string" ? currentPub.last_send_failure_at : null,
+      hasQrCode: Boolean(qrCodeBase64),
+      networkError: syncErrorMessage,
+    });
+
+    const mappedStatus = health.dbStatus;
+    const nowIso = new Date().toISOString();
+
     const nextPublicConfig = {
-      ...(instance.public_config || {}),
-      ...(mappedStatus === "connected" ? { qr_code_url: null } : {}),
-      last_synced_state: liveState,
+      ...currentPub,
+      qr_code_url: mappedStatus === "connected" ? null : qrCodeBase64,
+      pairing_code: mappedStatus === "connected" ? null : pairingCode,
+      last_synced_state: liveState || "unknown",
+      diagnostic_state: health.diagnosticState,
+      diagnostic_reason: health.reason,
+      ...(mappedStatus === "connected" ? { last_connected_at: nowIso, session_revoked: false } : {}),
+      ...(health.diagnosticState === "session_revoked" ? { session_revoked: true } : {}),
+      ...(mappedStatus !== "connected" && qrCodeBase64 ? { last_qr_generated_at: nowIso } : {}),
     };
 
     const { data: updated } = await db
@@ -414,8 +934,10 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
         is_active: mappedStatus === "connected" || instance.is_active,
         display_phone_number: connectedPhone,
         public_config: nextPublicConfig,
-        last_health_check_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        last_error_code: mappedStatus === "connected" ? null : health.diagnosticState.toUpperCase(),
+        last_error_message: mappedStatus === "connected" ? null : syncErrorMessage || health.reason,
+        last_health_check_at: nowIso,
+        updated_at: nowIso,
       })
       .eq("id", instance.id)
       .select(PublicFields)
@@ -424,25 +946,40 @@ export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
     return {
       instance: (updated || instance) as WhatsAppChannelInstanceDTO,
       state: mappedStatus,
+      diagnosticState: health.diagnosticState,
+      qrCodeBase64: mappedStatus === "connected" ? null : qrCodeBase64,
+      pairingCode: mappedStatus === "connected" ? null : pairingCode,
+      errorMessage: mappedStatus === "connected" ? null : syncErrorMessage || health.reason || null,
     };
   });
 
+export const disconnectWhatsAppInstanceSchema = z.object({
+  id: z.string().uuid().optional(),
+  instanceId: z.string().uuid().optional(),
+  storeId: z.string().uuid().optional(),
+  store_id: z.string().uuid().optional(),
+  deepDisconnect: z.boolean().optional(),
+});
+
 export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
+  .validator(disconnectWhatsAppInstanceSchema)
   .handler(async ({ data }) => {
+    const instanceId = data.id || data.instanceId;
+    if (!instanceId) throw new Error("ID da instância obrigatório.");
+    const inputStoreId = data.storeId || data.store_id;
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Autenticação obrigatória.");
-    if (identity.role !== "platform_admin") {
-      assertStoreAccess(identity, ["owner", "admin", "manager"]);
-    }
-    const storeId = data.storeId || identity.store_id;
+    const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
+    if (identity.role !== "platform_admin") {
+      assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+    }
 
     const db = getServerClient();
     const { data: instance } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
-      .eq("id", data.id)
+      .eq("id", instanceId)
       .eq("store_id", storeId)
       .single();
 
@@ -450,20 +987,38 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
 
     if (instance.provider === "evolution_api") {
       const externalName = instance.external_instance_id || instance.instance_key;
-      const baseUrl = String((instance.public_config as any)?.base_url || requireEvolutionBaseUrl()).replace(/\/$/, "");
+      const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
+      // 1. Desconecta a sessão atual no WhatsApp Web
       await fetch(`${baseUrl}/instance/logout/${encodeURIComponent(externalName)}`, {
         method: "DELETE",
-        headers: { apikey: requireEvolutionMasterKey() },
+        headers: { apikey: apiKey },
         signal: AbortSignal.timeout(6000),
       }).catch(() => null);
+
+      // 2. Se solicitada desconexão profunda, remove a instância na Evolution API
+      if (data.deepDisconnect) {
+        await fetch(`${baseUrl}/instance/delete/${encodeURIComponent(externalName)}`, {
+          method: "DELETE",
+          headers: { apikey: apiKey },
+          signal: AbortSignal.timeout(6000),
+        }).catch(() => null);
+      }
     }
 
+    const currentConfig = (instance.public_config && typeof instance.public_config === "object" ? instance.public_config : {}) as Record<string, unknown>;
     const { data: updated, error } = await db
       .from("whatsapp_channel_instances")
       .update({
         status: "disconnected",
         is_active: false,
-        public_config: { ...(instance.public_config || {}), qr_code_url: null },
+        is_default: false,
+        display_phone_number: data.deepDisconnect ? null : instance.display_phone_number,
+        public_config: {
+          ...currentConfig,
+          qr_code_url: null,
+          pairing_code: null,
+          last_webhook_state: "close",
+        },
         updated_at: new Date().toISOString(),
       })
       .eq("id", instance.id)
@@ -471,6 +1026,28 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
       .single();
 
     if (error) throw new Error(`Falha ao desconectar instância: ${error.message}`);
+
+    // Se a instância desconectada era a padrão da loja, promove outra instância conectada e ativa (se houver)
+    if (instance.is_default) {
+      const { data: nextActive } = await db
+        .from("whatsapp_channel_instances")
+        .select("id")
+        .eq("store_id", storeId)
+        .eq("is_active", true)
+        .eq("status", "connected")
+        .neq("id", instance.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (nextActive?.id) {
+        await db
+          .from("whatsapp_channel_instances")
+          .update({ is_default: true, updated_at: new Date().toISOString() })
+          .eq("id", nextActive.id);
+      }
+    }
+
     await audit(String(instance.id), storeId, identity.id, "instance.disconnected", "warning");
     return updated as WhatsAppChannelInstanceDTO;
   });
@@ -486,13 +1063,13 @@ export const WhatsAppDepartmentSchema = z.object({
   assignedAgentIds: z.array(z.string()).default([]),
   roundRobinEnabled: z.boolean().default(true),
   aiSdrEnabled: z.boolean().default(true),
-  slaMinutes: z.number().min(1).max(1440).default(15),
+  slaMinutes: z.number().min(1).max(1440).default(15), scheduleStart: z.string().default("08:00"), scheduleEnd: z.string().default("18:00"), scheduleDays: z.string().default("Seg a Sex"), awayMessage: z.string().optional(), whatsappInstanceId: z.string().optional(), aiTriageStages: z.array(z.object({ id: z.string(), title: z.string(), instruction: z.string(), handoffToHuman: z.boolean().default(false) })).optional(),
 });
 
 export type WhatsAppDepartmentDTO = z.infer<typeof WhatsAppDepartmentSchema>;
 
 export const WhatsAppGovernanceConfigSchema = z.object({
-  instanceId: z.string().uuid(),
+  instanceId: z.string().uuid().optional(), agentPermissions: z.array(z.object({ agentId: z.string(), name: z.string().optional(), whatsappInstanceId: z.string().optional(), onlyAssignedOrSector: z.boolean().default(false), canTransfer: z.boolean().default(true), canCloseTicket: z.boolean().default(true), canManageQr: z.boolean().default(false) })).optional(),
   departments: z.array(WhatsAppDepartmentSchema),
   permissions: z.object({
     onlyManagersCanViewQr: z.boolean().default(true),
@@ -518,6 +1095,10 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
+    const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
+    const currentSettings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    await db.from("stores").update({ settings: { ...currentSettings, whatsapp_governance: { departments: data.departments, permissions: data.permissions, agentPermissions: data.agentPermissions || [], updated_at: new Date().toISOString() } } }).eq("id", storeId);
+    if (!data.instanceId) return { id: storeId, store_id: storeId, public_config: { departments: data.departments, governance_permissions: data.permissions, agent_permissions: data.agentPermissions || [] } } as unknown as WhatsAppChannelInstanceDTO;
     const { data: current } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
@@ -531,6 +1112,7 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
       ...(current.public_config || {}),
       departments: data.departments,
       governance_permissions: data.permissions,
+      agent_permissions: data.agentPermissions || [],
       updated_governance_at: new Date().toISOString(),
     };
 
@@ -549,4 +1131,275 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
       departments_count: data.departments.length,
     });
     return saved as WhatsAppChannelInstanceDTO;
+  });
+
+export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
+  .validator(z.object({ instanceId: z.string().uuid().optional(), storeId: z.string().uuid().optional(), store_id: z.string().uuid().optional(), forceImport: z.boolean().optional() }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação obrigatória.");
+    const targetStoreId = data?.storeId || data?.store_id || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!targetStoreId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "support", "agent", "sales"], targetStoreId);
+    const storeId = (identity as any).store_id || targetStoreId;
+
+    const db = getServerClient();
+    let query = db
+      .from("whatsapp_channel_instances")
+      .select("id, store_id, provider, instance_key, external_instance_id, public_config, display_phone_number")
+      .eq("store_id", storeId)
+      .eq("provider", "evolution_api")
+      .eq("is_active", true);
+
+    if (data?.instanceId) {
+      query = query.eq("id", data.instanceId);
+    } else {
+      query = query.order("is_default", { ascending: false }).limit(1);
+    }
+
+    const { data: instance, error } = await query.maybeSingle();
+    if (error || !instance) throw new Error("Nenhuma instância ativa do WhatsApp encontrada.");
+
+    // Se a instância não tem permissão para importar histórico e não foi forçado pelo usuário
+    const shouldImportHistory = Boolean(data?.forceImport || (instance.public_config as any)?.auto_import_history);
+    if (!shouldImportHistory) {
+      return { importedCount: 0, totalFound: 0, skipped: true, message: "Importação de histórico desativada para esta instância." };
+    }
+
+    const externalName = instance.external_instance_id || instance.instance_key;
+    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
+
+    // 1. Garantir webhook ativo na Evolution API
+    const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(instance.instance_key)}`;
+    await fetch(`${baseUrl}/webhook/set/${encodeURIComponent(externalName)}`, {
+      method: "POST",
+      headers: { apikey: apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        webhook: {
+          enabled: true,
+          url: webhookUrl,
+          byEvents: false,
+          base64: true,
+          events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"],
+        },
+      }),
+      signal: AbortSignal.timeout(6000),
+    }).catch(() => null);
+
+    // 2. Buscar conversas recentes e contatos com foto na Evolution API em paralelo
+    const [chatsRes, contactsRes] = await Promise.all([
+      fetch(`${baseUrl}/chat/findChats/${encodeURIComponent(externalName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(15000),
+      }).catch(() => null),
+      fetch(`${baseUrl}/chat/findContacts/${encodeURIComponent(externalName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(15000),
+      }).catch(() => null),
+    ]);
+
+    if (!chatsRes || !chatsRes.ok) {
+      throw new Error(`Falha ao consultar conversas no gateway WhatsApp: HTTP ${chatsRes?.status || "Falha de Rede"}`);
+    }
+
+    const rawChats = (await chatsRes.json().catch(() => [])) as Array<Record<string, any>>;
+    if (!Array.isArray(rawChats)) return { importedCount: 0, totalFound: 0 };
+
+    // Mapeamento enriquecido de contatos e fotos de perfil reais
+    const contactMap = new Map<string, { pushName?: string; profilePicUrl?: string; isGroup?: boolean }>();
+    if (contactsRes && contactsRes.ok) {
+      const rawContacts = (await contactsRes.json().catch(() => [])) as Array<Record<string, any>>;
+      if (Array.isArray(rawContacts)) {
+        for (const c of rawContacts) {
+          const rJid = String(c.remoteJid || c.id || "");
+          if (rJid) {
+            const pic = c.profilePicUrl || null;
+            const pName = c.pushName || c.name || null;
+            contactMap.set(rJid, { pushName: pName, profilePicUrl: pic, isGroup: Boolean(c.isGroup || rJid.includes("@g.us")) });
+            const cleanDigits = rJid.replace(/@.*$/, "").replace(/\D/g, "");
+            if (cleanDigits) {
+              contactMap.set(cleanDigits, { pushName: pName, profilePicUrl: pic, isGroup: Boolean(c.isGroup || rJid.includes("@g.us")) });
+            }
+          }
+        }
+      }
+    }
+
+    let importedCount = 0;
+    const validChats = rawChats
+      .filter((c) => {
+        const jid = String(c.remoteJid || "");
+        return jid && !jid.startsWith("0@") && !jid.includes("@broadcast");
+      })
+      .slice(0, 50);
+
+    for (const chat of validChats) {
+      try {
+        const remoteJid = String(chat.remoteJid || "");
+        const remoteJidAlt = String(chat.lastMessage?.key?.remoteJidAlt || chat.remoteJidAlt || "");
+        const rawPhoneSource = (remoteJid.endsWith("@lid") && remoteJidAlt) ? remoteJidAlt : remoteJid;
+        const digits = rawPhoneSource.replace(/@.*$/, "").replace(/\D/g, "");
+        if (digits.length < 8) continue;
+        const phone = `+${digits}`;
+
+        const contactInfo = contactMap.get(remoteJid) || contactMap.get(digits) || null;
+        const isGroup = remoteJid.includes("@g.us") || Boolean(contactInfo?.isGroup);
+        const isChannel = remoteJid.includes("@newsletter");
+        const isLastFromMe = Boolean(chat.lastMessage?.key?.fromMe);
+        const safeCandidate = (...candidates: unknown[]): string | null => {
+          for (const cand of candidates) {
+            if (typeof cand !== "string") continue;
+            const trimmed = cand.trim();
+            if (!trimmed) continue;
+            const lower = trimmed.toLowerCase();
+            if (lower === "você" || lower === "voce" || lower === "you" || lower === "eu") continue;
+            return trimmed;
+          }
+          return null;
+        };
+        const cleanName =
+          safeCandidate(
+            chat.name,
+            contactInfo?.pushName,
+            chat.pushName,
+            isLastFromMe ? null : chat.lastMessage?.pushName,
+          ) || (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : phone);
+        const avatarUrl = contactInfo?.profilePicUrl || chat.profilePictureUrl || null;
+
+        const lastMsgObj = chat.lastMessage?.message || {};
+        const text = String(
+          lastMsgObj.conversation ||
+          lastMsgObj.extendedTextMessage?.text ||
+          lastMsgObj.imageMessage?.caption ||
+          lastMsgObj.videoMessage?.caption ||
+          lastMsgObj.documentMessage?.caption ||
+          (lastMsgObj.imageMessage ? "[Imagem]" : lastMsgObj.audioMessage ? "[Áudio]" : lastMsgObj.documentMessage ? "[Documento]" : "[Mensagem WhatsApp]")
+        ).trim();
+
+        const timestampSeconds = Number(chat.lastMessage?.messageTimestamp || Date.now() / 1000);
+        const occurredAt = new Date(timestampSeconds < 2_000_000_000 ? timestampSeconds * 1000 : timestampSeconds).toISOString();
+
+        const { resolveWhatsAppIdentity } = await import("./whatsapp-automation-runtime.server");
+        const identityRecord = await resolveWhatsAppIdentity({
+          storeId,
+          instanceId: instance.id,
+          provider: "evolution_api",
+          externalUserId: remoteJid,
+          phone,
+          displayName: cleanName !== phone ? cleanName : null,
+        });
+
+        if (!identityRecord?.id) continue;
+
+        let thread = null;
+        const { data: foundThread } = await db
+          .from("chat_threads")
+          .select("id, metadata, guest_name")
+          .eq("store_id", storeId)
+          .or(`entity_id.eq.${phone},entity_id.eq.${digits}`)
+          .limit(1)
+          .maybeSingle();
+
+        const existingMeta = (foundThread?.metadata && typeof foundThread.metadata === "object" ? foundThread.metadata : {}) as Record<string, any>;
+        const enrichedMeta = {
+          ...existingMeta,
+          is_group: isGroup,
+          is_channel: isChannel,
+          avatar_url: avatarUrl || existingMeta.avatar_url || null,
+          whatsapp_jid: remoteJid,
+          push_name: cleanName,
+        };
+
+        if (foundThread) {
+          thread = foundThread;
+          const preservedName = safeCandidate(cleanName !== phone ? cleanName : null, foundThread.guest_name) || phone;
+          await db
+            .from("chat_threads")
+            .update({
+              guest_name: preservedName,
+              thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
+              metadata: enrichedMeta,
+              last_message_text: text.slice(0, 200),
+              last_message_at: occurredAt,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", thread.id);
+        } else {
+          const syntheticEmail = `${digits}@whatsapp.waesy`;
+          const { data: newThread, error: newThErr } = await db
+            .from("chat_threads")
+            .insert({
+              store_id: storeId,
+              channel_instance_id: instance.id,
+              channel_identity_id: identityRecord.id,
+              guest_name: cleanName,
+              guest_email: syntheticEmail,
+              status: "open",
+              subject: isGroup ? `Grupo: ${cleanName}` : isChannel ? `Canal: ${cleanName}` : `WhatsApp ${phone}`,
+              context_type: "whatsapp",
+              entity_id: phone,
+              department: "geral",
+              priority: "normal",
+              thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
+              metadata: enrichedMeta,
+              ...(isLastFromMe ? {} : { last_customer_message_at: occurredAt }),
+              last_message_text: text.slice(0, 200),
+              last_message_at: occurredAt,
+              created_at: occurredAt,
+              updated_at: occurredAt,
+            })
+            .select("id")
+            .single();
+
+          if (newThErr) continue;
+          thread = newThread;
+        }
+
+        if (thread?.id && text && chat.lastMessage?.key?.id) {
+          const fromMe = Boolean(chat.lastMessage?.key?.fromMe);
+          const externalId = String(chat.lastMessage.key.id);
+          const { data: existingMsg } = await db
+            .from("chat_messages")
+            .select("id")
+            .eq("thread_id", thread.id)
+            .eq("external_message_id", externalId)
+            .maybeSingle();
+
+          if (!existingMsg) {
+            await db.from("chat_messages").insert({
+              thread_id: thread.id,
+              channel_identity_id: identityRecord.id,
+              channel: "whatsapp",
+              message: text,
+              message_type: "text",
+              is_staff_reply: fromMe,
+              provider: "evolution_api",
+              external_message_id: externalId,
+              delivery_status: fromMe ? "sent" : "delivered",
+              sent_at: occurredAt,
+              ...(fromMe ? {} : { delivered_at: occurredAt }),
+              payload: {
+                from_me: fromMe,
+                origin: fromMe ? "whatsapp_device_sync" : "whatsapp_customer_sync",
+              },
+              created_at: occurredAt,
+            });
+          }
+        }
+
+        importedCount++;
+      } catch (chatItemErr) {
+        console.warn("[whatsapp-sync] Erro ao sincronizar conversa individual:", chatItemErr);
+      }
+    }
+
+    return {
+      importedCount,
+      totalFound: rawChats.length,
+      connectedPhone: instance.display_phone_number,
+    };
   });

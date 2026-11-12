@@ -265,7 +265,7 @@ export function CustomerDrawer360(props: CustomerDrawer360Props) {
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <span className="text-xs text-muted-foreground">Faturamento (LTV)</span>
+                  <span className="text-xs text-muted-foreground">Total em Compras</span>
                   <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">
                     {formatMoney(customer.total_spent_cents || 0)}
                   </p>

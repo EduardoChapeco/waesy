@@ -59,8 +59,7 @@ function NewCategoryPage() {
           status: values.status,
           parent_id: values.parent_id === "none" ? null : values.parent_id,
           cover_url: coverUrl || undefined,
-          store_id: clientTenant || undefined,
-        },
+                  },
       });
 
  if (res) {

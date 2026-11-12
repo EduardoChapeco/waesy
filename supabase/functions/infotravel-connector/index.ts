@@ -54,7 +54,7 @@ async function assertAgencyAccess(db: ReturnType<typeof createClient>, userId: s
   const { data: membership, error } = await db
     .from("workspace_members")
     .select("role")
-    .eq("profile_id", userId)
+    .or(`profile_id.eq.${userId},user_id.eq.${userId}`)
     .eq("store_id", agencyId)
     .maybeSingle();
   if (error) throw new ConnectorError("AUTHORIZATION_LOOKUP_FAILED", "Não foi possível verificar o vínculo da agência.", 500);

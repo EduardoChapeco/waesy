@@ -1,7 +1,7 @@
-// Waesy Ingest • WhatsApp Web Popup Controller
+// Waesy Ingest • WhatsApp Web Popup Controller v2.2.0
 document.addEventListener("DOMContentLoaded", async () => {
   const statusBadge = document.getElementById("statusBadge");
-  const statusText = document.getElementById("statusText");
+  const inlineBanner = document.getElementById("inlineBanner");
   const activeGroupName = document.getElementById("activeGroupName");
   const groupBadge = document.getElementById("groupBadge");
   const scanGroupBtn = document.getElementById("scanGroupBtn");
@@ -40,6 +40,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  function showBanner(text, level = "info") {
+    if (!inlineBanner) return;
+    inlineBanner.className = `inline-banner show ${level}`;
+    inlineBanner.textContent = text;
+  }
+
   function appendLog(text, type = "info") {
     if (!logBox) return;
     const line = document.createElement("div");
@@ -50,14 +56,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     logBox.scrollTop = logBox.scrollHeight;
   }
 
-  // 2. Carrega Configurações
+  // 2. Carrega Configurações e último escaneamento salvo
   async function loadConfig() {
-    const data = await chrome.storage.local.get(["waesyServerUrl", "waesyToken"]);
+    const data = await chrome.storage.local.get([
+      "waesyServerUrl",
+      "waesyToken",
+      "lastExtractedContacts",
+      "lastGroup",
+    ]);
     if (data.waesyServerUrl && serverUrlInput) {
       serverUrlInput.value = data.waesyServerUrl;
     }
     if (data.waesyToken && tokenInput) {
       tokenInput.value = data.waesyToken;
+    }
+    if (Array.isArray(data.lastExtractedContacts) && data.lastExtractedContacts.length > 0) {
+      extractedContacts = data.lastExtractedContacts;
+      if (data.lastGroup?.name) {
+        currentGroup = data.lastGroup;
+        if (activeGroupName) activeGroupName.textContent = currentGroup.name;
+      }
+      if (contactsCountBadge) contactsCountBadge.textContent = `${extractedContacts.length} contatos`;
+      if (sendToWaesyBtn) sendToWaesyBtn.disabled = false;
+      renderContactsList(extractedContacts);
     }
   }
 
@@ -74,8 +95,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         waesyToken: token,
       });
 
-      appendLog("Configurações salvas no armazenamento seguro.", "success");
-      alert("Credenciais salvas com sucesso!");
+      appendLog("Configurações salvas no armazenamento local.", "success");
+      showBanner("Credenciais salvas com sucesso.", "success");
     });
   }
 
@@ -88,6 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!token) {
         testConnResult.textContent = "Informe o Token de Ingestão primeiro.";
         testConnResult.style.color = "#f85149";
+        showBanner("Informe o Token wae_... antes de validar.", "warn");
         return;
       }
 
@@ -103,20 +125,25 @@ document.addEventListener("DOMContentLoaded", async () => {
           },
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          testConnResult.textContent = `✓ Conectado: ${data.store?.name || "Excelência Tour SMO"}`;
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.entitlement) {
+          const storeLabel = data.storeInfo?.name || data.store || "Loja Autenticada";
+          testConnResult.textContent = `Conectado: ${storeLabel}`;
           testConnResult.style.color = "#3fb950";
-          appendLog(`Token validado com sucesso para a loja "${data.store?.name || "Excelência Tour"}"`, "success");
+          appendLog(`Token validado com sucesso para "${storeLabel}"`, "success");
+          showBanner(`Conectado à loja ${storeLabel}.`, "success");
         } else {
-          testConnResult.textContent = `Erro ${res.status}: Token inválido ou não autorizado.`;
+          const errMsg = data.error || `Token inválido ou não autorizado (HTTP ${res.status})`;
+          testConnResult.textContent = `Erro ${res.status}: ${errMsg}`;
           testConnResult.style.color = "#f85149";
-          appendLog(`Falha de autenticação (HTTP ${res.status})`, "error");
+          appendLog(`Falha de autenticação (HTTP ${res.status}): ${errMsg}`, "error");
+          showBanner(errMsg, "error");
         }
-      } catch (err) {
+      } catch {
         testConnResult.textContent = "Falha ao conectar com o servidor.";
         testConnResult.style.color = "#f85149";
         appendLog(`Erro de rede ao conectar com ${serverUrl}`, "error");
+        showBanner("Erro de rede ao validar token no servidor.", "error");
       }
     });
   }
@@ -132,8 +159,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     appendLog("Aba do WhatsApp Web ativa e pronta para leitura.", "success");
 
-    // Consulta conversa ativa
     chrome.tabs.sendMessage(activeTab.id, { action: "GET_CHAT_INFO" }, (response) => {
+      if (chrome.runtime.lastError) return;
       if (response && response.chatName) {
         currentGroup = {
           key: response.chatKey || "grupo_wa",
@@ -155,40 +182,52 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 6. Escanear Participantes do Grupo
   if (scanGroupBtn) {
     scanGroupBtn.addEventListener("click", () => {
-      if (!isWhatsApp) {
-        alert("Por favor, abra o WhatsApp Web na aba ativa para escanear contatos.");
+      if (!isWhatsApp || !activeTab?.id) {
+        showBanner("Abra a aba do WhatsApp Web (web.whatsapp.com) para escanear contatos.", "warn");
         return;
       }
 
       scanGroupBtn.disabled = true;
-      scanGroupBtn.textContent = "Escaneando Participantes...";
-      appendLog("Iniciando varredura de contatos no DOM do WhatsApp Web...", "info");
+      scanGroupBtn.textContent = "Rolando e Escaneando Participantes...";
+      appendLog("Iniciando varredura com auto-scroll no WhatsApp Web...", "info");
 
-      chrome.tabs.sendMessage(activeTab.id, { action: "EXTRACT_GROUP_CONTACTS" }, (response) => {
+      chrome.tabs.sendMessage(activeTab.id, { action: "EXTRACT_GROUP_CONTACTS" }, async (response) => {
         scanGroupBtn.disabled = false;
         scanGroupBtn.textContent = "Escanear Participantes do Grupo";
 
         if (chrome.runtime.lastError) {
-          appendLog("Falha ao comunicar com o WhatsApp Web: " + chrome.runtime.lastError.message, "error");
-          alert("Não foi possível ler a página. Certifique-se de que o WhatsApp Web está aberto.");
+          const msg = "Falha ao ler a página: " + chrome.runtime.lastError.message + ". Recarregue o WhatsApp Web.";
+          appendLog(msg, "error");
+          showBanner(msg, "error");
           return;
         }
 
         if (!response || !response.contacts || response.contacts.length === 0) {
-          appendLog("Nenhum contato detectado. Abra os dados do grupo no painel lateral direito para escanear a lista completa de membros.", "warn");
-          alert("Nenhum participante encontrado. Dica: Clique no cabeçalho do grupo para abrir o painel com a lista de membros e tente novamente!");
+          const tip =
+            "Nenhum participante encontrado. Clique no nome do grupo no topo para abrir a lista de membros e tente novamente.";
+          appendLog(tip, "warn");
+          showBanner(tip, "warn");
           return;
         }
 
         extractedContacts = response.contacts;
-        currentGroup.name = response.groupName || currentGroup.name;
-        if (activeGroupName) activeGroupName.textContent = currentGroup.name;
+        currentGroup = {
+          key: response.groupKey || currentGroup.key,
+          name: response.groupName || currentGroup.name,
+        };
+        await chrome.storage.local.set({
+          lastExtractedContacts: extractedContacts,
+          lastGroup: currentGroup,
+        });
 
+        if (activeGroupName) activeGroupName.textContent = currentGroup.name;
         if (contactsCountBadge) contactsCountBadge.textContent = `${extractedContacts.length} contatos`;
         if (sendToWaesyBtn) sendToWaesyBtn.disabled = false;
 
         renderContactsList(extractedContacts);
-        appendLog(`Sucesso: ${extractedContacts.length} participantes extraídos do grupo "${currentGroup.name}"!`, "success");
+        const okMsg = `${extractedContacts.length} participantes extraídos de "${currentGroup.name}".`;
+        appendLog(okMsg, "success");
+        showBanner(okMsg, "success");
       });
     });
   }
@@ -235,7 +274,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return phone;
   }
 
-  // 7. Enviar contatos ao Waesy CRM
+  // 7. Enviar contatos ao Waesy CRM (fatiado em lotes de até 500)
   if (sendToWaesyBtn) {
     sendToWaesyBtn.addEventListener("click", async () => {
       const data = await chrome.storage.local.get(["waesyServerUrl", "waesyToken"]);
@@ -243,59 +282,80 @@ document.addEventListener("DOMContentLoaded", async () => {
       const token = data.waesyToken;
 
       if (!token) {
-        alert("Configure o Token de Ingestão na aba 'Conexão Waesy' antes de enviar.");
+        showBanner("Configure o Token de Ingestão na aba 'Conexão Waesy' antes de enviar.", "warn");
         return;
       }
 
       if (extractedContacts.length === 0) {
-        alert("Escaneie os participantes do grupo primeiro.");
+        showBanner("Escaneie os participantes do grupo primeiro.", "warn");
         return;
       }
 
       const isDryRun = Boolean(dryRunCheckbox?.checked);
       sendToWaesyBtn.disabled = true;
-      sendToWaesyBtn.textContent = "Transmitindo...";
-      appendLog(`Enviando lote de ${extractedContacts.length} contatos para ${serverUrl}...`, "info");
+      sendToWaesyBtn.textContent = "Transmitindo lotes...";
+      appendLog(`Enviando ${extractedContacts.length} contatos para ${serverUrl}...`, "info");
+
+      const CHUNK_SIZE = 500;
+      const itemsAll = extractedContacts.map((c) => ({
+        phone: c.phone,
+        name: c.name || "",
+        group_key: currentGroup.key || "grupo_wa",
+        group_name: currentGroup.name || "WhatsApp Grupo",
+      }));
+
+      const totals = {
+        created: 0,
+        merged: 0,
+        skipped_customer: 0,
+        skipped_opted_out: 0,
+        invalid: 0,
+        duplicate_in_batch: 0,
+        replayed: 0,
+      };
 
       try {
-        const idempotencyKey = `wae_wa_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-        const items = extractedContacts.map((c) => ({
-          phone: c.phone,
-          name: c.name || "",
-          group_key: currentGroup.key || "grupo_wa",
-          group_name: currentGroup.name || "WhatsApp Grupo",
-        }));
+        for (let i = 0; i < itemsAll.length; i += CHUNK_SIZE) {
+          const slice = itemsAll.slice(i, i + CHUNK_SIZE);
+          const batchIndex = Math.floor(i / CHUNK_SIZE) + 1;
+          const idempotencyKey = `wae_wa_${Date.now()}_${batchIndex}_${Math.random().toString(36).substring(2, 8)}`;
 
-        const res = await fetch(`${serverUrl}/api/v1/ingest/whatsapp-contacts`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            idempotency_key: idempotencyKey,
-            dry_run: isDryRun,
-            items,
-          }),
-        });
+          const res = await fetch(`${serverUrl}/api/v1/ingest/whatsapp-contacts`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              idempotency_key: idempotencyKey,
+              dry_run: isDryRun,
+              items: slice,
+            }),
+          });
 
-        if (res.ok) {
-          const result = await res.json();
-          appendLog(
-            `Sucesso! Ingestão concluída: ${result.inserted_leads ?? result.items_received ?? items.length} contatos processados (${isDryRun ? "Simulação" : "Gravados no CRM"})`,
-            "success"
-          );
-          alert(
-            `Sucesso! ${items.length} contatos foram processados e sincronizados com a Excelência Tour no Waesy CRM!`
-          );
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          appendLog(`Falha na ingestão (${res.status}): ${errData.error || "Erro desconhecido"}`, "error");
-          alert(`Erro ${res.status}: ${errData.error || "Falha ao enviar contatos."}`);
+          const result = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const errMsg = `Erro HTTP ${res.status}: ${result.error || "Falha ao enviar contatos."}`;
+            appendLog(errMsg, "error");
+            showBanner(errMsg, "error");
+            return;
+          }
+
+          totals.created += Number(result.created || 0);
+          totals.merged += Number(result.merged || 0);
+          totals.skipped_customer += Number(result.skipped_customer || 0);
+          totals.skipped_opted_out += Number(result.skipped_opted_out || 0);
+          totals.invalid += Number(result.invalid || 0);
+          totals.duplicate_in_batch += Number(result.duplicate_in_batch || 0);
+          totals.replayed += result.replayed ? 1 : 0;
         }
+
+        const summary = `${isDryRun ? "[Dry-Run] " : ""}Concluído (${itemsAll.length} enviados): +${totals.created} novos, ${totals.merged} atualizados, ${totals.skipped_customer} já clientes, ${totals.skipped_opted_out} opt-out, ${totals.invalid} inválidos.`;
+        appendLog(summary, "success");
+        showBanner(summary, "success");
       } catch (err) {
         appendLog(`Erro de rede ao transmitir contatos: ${err.message}`, "error");
-        alert("Erro de conexão com o servidor Waesy.");
+        showBanner("Erro de conexão com o servidor Waesy.", "error");
       } finally {
         sendToWaesyBtn.disabled = false;
         sendToWaesyBtn.textContent = "Enviar ao Waesy CRM (Oportunidades)";

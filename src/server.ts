@@ -3,6 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError, recordCorrelatedError } from "./lib/error-capture";
 import { errorRegistry } from "./lib/telemetry/error-correlator";
 import { renderErrorPage } from "./lib/error-page";
+import { resolveBrandContextFromHost } from "./lib/multi-brand-engine";
 import {
   buildAgentApiHeaders,
   buildStructuredApiErrorResponse,
@@ -73,11 +74,35 @@ export default {
       try {
         const url = new URL(request.url);
         const host = (request.headers.get("host") || url.host || "").toLowerCase();
-        const isPainelSubdomain = host.startsWith("painel.") || host.startsWith("painel-");
-        if (isPainelSubdomain && (url.pathname === "/" || url.pathname === "")) {
+        const isPainelSubdomain =
+          host.startsWith("painel.") ||
+          host.startsWith("painel-") ||
+          host.startsWith("studio.") ||
+          host.startsWith("erp.");
+        const brandContext = resolveBrandContextFromHost(host);
+        const enrichedHeaders = new Headers(request.headers);
+        enrichedHeaders.set("x-waesy-brand-id", brandContext.id);
+        enrichedHeaders.set("x-waesy-brand-name", brandContext.brandName);
+        enrichedHeaders.set("x-waesy-primary-niche", brandContext.primaryNiche);
+
+        if ((isPainelSubdomain || brandContext.isStandaloneSaas) && (url.pathname === "/" || url.pathname === "")) {
           const rewrittenUrl = new URL(request.url);
-          rewrittenUrl.pathname = "/painel";
-          effectiveRequest = new Request(rewrittenUrl.toString(), request);
+          if (brandContext.id === "waesy_copilot") {
+            rewrittenUrl.pathname = "/workspace/copilot";
+          } else {
+            rewrittenUrl.pathname = "/painel";
+          }
+          effectiveRequest = new Request(rewrittenUrl.toString(), {
+            method: request.method,
+            headers: enrichedHeaders,
+            body: request.body,
+          });
+        } else if (brandContext.id !== "waesy") {
+          effectiveRequest = new Request(request.url, {
+            method: request.method,
+            headers: enrichedHeaders,
+            body: request.body,
+          });
         }
       } catch {
         effectiveRequest = request;

@@ -3,7 +3,16 @@ import { join } from "node:path";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireStaff } from "@/lib/server-access";
 import { createZipArchive, type ZipFileEntry } from "@/lib/zip-packager";
+import { EMBEDDED_EXTENSION_BUNDLES } from "@/generated/extensions-bundle.server";
 import { isExcelenciaTourStore } from "@/services/whatsapp-group-ingest.server";
+
+export class ExtensionForbiddenError extends Error {
+  readonly status = 403;
+  constructor(message: string) {
+    super(message);
+    this.name = "ExtensionForbiddenError";
+  }
+}
 
 export type ExtensionPackageType =
   | "infotravel_extension"
@@ -97,14 +106,15 @@ export async function assertExtensionDownloadAuthorized(
   let isApprovedByTable = false;
   if (!isAdminMaster && !isExcelenciaTour && !isWhitelistedBySettings && packageType) {
     try {
-      const { data: req } = await supabase
+      const { data: req, error: reqErr } = await supabase
         .from("extension_access_requests")
         .select("id, status")
         .eq("store_id", staff.store_id)
         .eq("extension_type", packageType)
         .eq("status", "approved")
         .limit(1)
-        .maybeSingle();
+      .maybeSingle();
+      if (reqErr) throw reqErr;
 
       if (req?.status === "approved") {
         isApprovedByTable = true;
@@ -117,7 +127,7 @@ export async function assertExtensionDownloadAuthorized(
   const isAuthorized = isAdminMaster || isExcelenciaTour || isWhitelistedBySettings || isApprovedByTable;
 
   if (!isAuthorized) {
-    throw new Error(
+    throw new ExtensionForbiddenError(
       "Acesso restrito. Para baixar e utilizar esta extensão, solicite a autorização de uso na Vitrine Waesy Store."
     );
   }
@@ -180,7 +190,7 @@ export async function getExtensionAccessStatus(
   // Busca solicitação na tabela
   let pendingRequest: any = null;
   try {
-    const { data: req } = await supabase
+    const { data: req, error: reqErr } = await supabase
       .from("extension_access_requests")
       .select("id, created_at, justification, status, review_notes")
       .eq("store_id", staff.store_id)
@@ -188,6 +198,7 @@ export async function getExtensionAccessStatus(
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+    if (reqErr) throw reqErr;
 
     if (req) {
       pendingRequest = {
@@ -294,7 +305,10 @@ export async function submitExtensionAccessRequest(input: {
   };
 
   try {
-    await supabase.from("extension_access_requests").insert(payload);
+    const { error: insertErr } = await supabase.from("extension_access_requests").insert(payload);
+    if (insertErr) {
+      console.warn("[extensions-distributor] Inserção em tabela falhou, gravando em store.settings:", insertErr.message);
+    }
   } catch (err) {
     console.warn("[extensions-distributor] Inserção em tabela falhou, gravando em store.settings:", err);
   }
@@ -306,7 +320,6 @@ export async function submitExtensionAccessRequest(input: {
       .select("settings")
       .eq("id", staff.store_id)
       .maybeSingle();
-
     const settings = (store?.settings || {}) as Record<string, any>;
     const existingRequests = Array.isArray(settings.extension_access_requests)
       ? settings.extension_access_requests.filter((r: any) => r.extension_type !== input.extensionType)
@@ -429,6 +442,46 @@ export async function adminListExtensionRequests(): Promise<ExtensionRequestItem
 /**
  * Avalia (aprova ou rejeita) uma solicitação de acesso à extensão.
  */
+async function syncExtensionFeatureGrantsForStore(
+  supabase: ReturnType<typeof getServerClient>,
+  storeId: string,
+  authorizedExtensions: string[],
+  actorId?: string | null,
+) {
+  const hasWhatsapp =
+    authorizedExtensions.includes("*") || authorizedExtensions.includes("whatsapp_extension");
+  const hasInfotravel =
+    authorizedExtensions.includes("*") ||
+    authorizedExtensions.includes("infotravel_extension") ||
+    authorizedExtensions.includes("infotravel_miner");
+
+  const now = new Date().toISOString();
+  const grants = [
+    {
+      store_id: storeId,
+      feature_key: "whatsapp_group_ingest",
+      enabled: hasWhatsapp,
+      granted_at: now,
+      granted_by: actorId || null,
+    },
+    {
+      store_id: storeId,
+      feature_key: "infotravel_sync",
+      enabled: hasInfotravel,
+      granted_at: now,
+      granted_by: actorId || null,
+    },
+  ];
+
+  try {
+    await supabase
+      .from("workspace_feature_grants")
+      .upsert(grants, { onConflict: "store_id,feature_key" });
+  } catch (err) {
+    console.warn("[extensions-distributor] Falha ao sincronizar workspace_feature_grants:", err);
+  }
+}
+
 export async function adminReviewExtensionRequest(input: {
   requestId: string;
   storeId: string;
@@ -474,7 +527,6 @@ export async function adminReviewExtensionRequest(input: {
       .select("settings")
       .eq("id", input.storeId)
       .maybeSingle();
-
     const settings = (store?.settings || {}) as Record<string, any>;
     let authorizedList: string[] = Array.isArray(settings.authorized_extensions)
       ? [...settings.authorized_extensions]
@@ -507,6 +559,8 @@ export async function adminReviewExtensionRequest(input: {
         },
       })
       .eq("id", input.storeId);
+
+    await syncExtensionFeatureGrantsForStore(supabase, input.storeId, authorizedList, identity.id);
   } catch (err) {
     console.error("[extensions-distributor] Falha ao atualizar store.settings:", err);
   }
@@ -564,6 +618,8 @@ export async function adminToggleStoreExtensionAuth(input: {
     })
     .eq("id", input.storeId);
 
+  await syncExtensionFeatureGrantsForStore(supabase, input.storeId, authorizedList, identity.id);
+
   return { success: true, authorizedExtensions: authorizedList };
 }
 
@@ -583,6 +639,8 @@ function readDirectoryEntries(baseDir: string, currentDir = ""): ZipFileEntry[] 
       item === "node_modules" ||
       item === ".git" ||
       item === ".chrome-session" ||
+      item === "output" ||
+      item.endsWith(".log") ||
       item === "dist" ||
       item === ".DS_Store" ||
       item === "Thumbs.db"
@@ -623,10 +681,10 @@ export async function buildExtensionZip(type: ExtensionPackageType): Promise<{
 
   if (type === "infotravel_extension") {
     targetDir = join(process.cwd(), "tools", "infotravel-extension");
-    filename = "waesy-sync-infotravel-v2.1.zip";
+    filename = "waesy-sync-infotravel-v2.2.zip";
   } else if (type === "whatsapp_extension") {
     targetDir = join(process.cwd(), "tools", "whatsapp-extension");
-    filename = "waesy-ingest-whatsapp-v2.1.zip";
+    filename = "waesy-ingest-whatsapp-v2.2.zip";
   } else if (type === "infotravel_miner") {
     targetDir = join(process.cwd(), "tools", "infotravel-miner");
     filename = "waesy-miner-infotravel-scripts.zip";
@@ -634,11 +692,17 @@ export async function buildExtensionZip(type: ExtensionPackageType): Promise<{
     throw new Error(`Tipo de extensão desconhecido: ${type}`);
   }
 
-  // Tenta ler do disco
-  let entries = readDirectoryEntries(targetDir);
+  const embedded = EMBEDDED_EXTENSION_BUNDLES[type];
+  let entries: ZipFileEntry[] = Array.isArray(embedded) && embedded.length > 0
+    ? embedded.map((entry) => ({
+        path: entry.path,
+        content: Buffer.from(entry.base64, "base64"),
+        isExecutable: entry.isExecutable,
+      }))
+    : readDirectoryEntries(targetDir);
 
   if (entries.length === 0) {
-    throw new Error(`Diretório de extensão não encontrado ou vazio: ${targetDir}`);
+    throw new Error(`Diretório ou bundle de extensão não encontrado ou vazio: ${type}`);
   }
 
   const buffer = createZipArchive(entries);
