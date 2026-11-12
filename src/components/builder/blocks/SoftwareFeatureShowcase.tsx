@@ -117,7 +117,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
                   <TabIcon className={`size-4 ${isActive ? "text-primary" : "opacity-70"}`} />
                   <span>{tab.tabLabel}</span>
                   {tab.badge && (
-                    <span className="text-2xs uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    <span className="text-2xs uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
                       {tab.badge}
                     </span>
                   )}
@@ -154,8 +154,8 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
               <ul className="space-y-3 w-full mb-8">
                 {activeTab.benefits.map((benefit, index) => (
                   <li key={index} className="flex items-start gap-3 text-sm text-foreground">
-                    <span className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 border border-primary/20">
-                      <Check className="size-3.5 stroke-[2.5]" />
+                    <span className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1 border border-primary/20">
+                      <Check className="size-3.5 stroke-2" />
                     </span>
                     <span className="leading-snug">{benefit}</span>
                   </li>
@@ -185,7 +185,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
             <div className="relative rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs">
               {/* Barra de Janela Estilo App Nativo Desktop */}
               <div className="flex items-center justify-between px-4 py-3 bg-muted/40 border-b border-border/60">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span className="size-3 rounded-full bg-muted-foreground/30" />
                   <span className="size-3 rounded-full bg-muted-foreground/30" />
                   <span className="size-3 rounded-full bg-muted-foreground/30" />
@@ -216,7 +216,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
                           <div className="text-xs text-muted-foreground">Módulo Ativo e Sincronizado</div>
                         </div>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-2xs font-bold border border-emerald-500/20">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-2xs font-bold border border-emerald-500/20">
                         <span className="size-1.5 rounded-full bg-emerald-500" />
                         Operando 100%
                       </span>
@@ -229,14 +229,14 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
                         <div className="text-lg font-black text-foreground">
                           {activeTab.statNumber || "+42%"}
                         </div>
-                        <div className="text-2xs text-muted-foreground mt-0.5">
+                        <div className="text-2xs text-muted-foreground mt-1">
                           {activeTab.statLabel || "No fluxo diário"}
                         </div>
                       </div>
                       <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
                         <div className="text-2xs text-muted-foreground uppercase font-semibold">Segurança</div>
                         <div className="text-lg font-black text-foreground">100% Zero-Trust</div>
-                        <div className="text-2xs text-muted-foreground mt-0.5">Auditado e em nuvem</div>
+                        <div className="text-2xs text-muted-foreground mt-1">Auditado e em nuvem</div>
                       </div>
                     </div>
 
@@ -250,7 +250,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
 
               {/* Stat Flutuante Inferior */}
               {activeTab.statNumber && (
-                <div className="px-6 py-3.5 bg-muted/30 border-t border-border/60 flex items-center justify-between">
+                <div className="px-6 py-3 bg-muted/30 border-t border-border/60 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-medium">
                     {activeTab.statLabel || "Resultado médio comprovado por clientes"}
                   </span>
