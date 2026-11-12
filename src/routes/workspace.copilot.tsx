@@ -521,19 +521,20 @@ function WorkspaceCopilotPage() {
           >
             <Clock className="size-4 text-emerald-600" />
             <span className="hidden sm:inline">Segundo Plano</span>
-            <span className="rounded bg-muted px-2 py-0 font-mono text-xs">2</span>
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setComputerDrawerOpen(true)}
-            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
-          >
-            <Monitor className="size-4 text-primary" />
-            <span>Computador do Waesy</span>
-            <span className="rounded bg-muted px-2 py-0 font-mono text-xs">3/3</span>
-          </Button>
+          {computerSteps && computerSteps.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setComputerDrawerOpen(true)}
+              className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
+            >
+              <Monitor className="size-4 text-primary" />
+              <span>Computador do Waesy</span>
+              <span className="rounded bg-muted px-2 py-0 font-mono text-xs">{computerSteps.length}</span>
+            </Button>
+          )}
           <Button
             type="button"
             variant="ghost"
@@ -599,28 +600,7 @@ function WorkspaceCopilotPage() {
       <CopilotBackgroundTasksDrawer
         open={backgroundTasksOpen}
         onOpenChange={setBackgroundTasksOpen}
-        tasks={[
-          {
-            id: "bg-1",
-            task_type: "playwright_browser_agent",
-            title: "Monitoramento de concorrentes locais & catálogo via Navegador Cloud",
-            status: "completed",
-            progress_percent: 100,
-            current_step: "Planilha comparativa gerada",
-            cost_wz: 12,
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: "bg-2",
-            task_type: "whatsapp_sdr_sync",
-            title: "Sincronização de filas WhatsApp Omnichannel & qualificação IA SDR",
-            status: "completed",
-            progress_percent: 100,
-            current_step: "3 canais ativos sincronizados na VPS 147.15.61.45",
-            cost_wz: 8,
-            created_at: new Date().toISOString(),
-          },
-        ]}
+        tasks={[]}
       />
       <span className="hidden"
       />

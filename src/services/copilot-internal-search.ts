@@ -320,7 +320,7 @@ async function searchTable(
 }
 
 export function shouldSearchPlatform(prompt: string): boolean {
-  return SEARCH_TERMS.test(prompt) || prompt.trim().split(/\s+/).length >= 3;
+  return SEARCH_TERMS.test(prompt);
 }
 
 export async function searchPlatformForCopilot(
@@ -339,13 +339,15 @@ export async function searchPlatformForCopilot(
     : uniqueKinds(prompt);
   const tableByKind: Record<InternalSearchKind, string[]> = {
     product: ["products"],
-    store: ["directory_listings", "stores"],
+    store: ["stores"],
     event: ["events"],
-    classified: ["classifieds", "jobs"],
-    travel: ["destinations", "tourism_trips", "global_hotels"],
+    classified: ["classifieds"],
+    travel: ["destinations", "tourism_trips"],
     news: ["news_articles"],
   };
-  const searches = await Promise.all(kinds.flatMap((kind) => tableByKind[kind].map(async (table) => ({ kind, table, result: await searchTable(db, table, combinedQuery, kind) }))));
+  const selectedTables = kinds.flatMap((kind) => (tableByKind[kind] || []).map((table) => ({ kind, table })));
+  const cappedTables = selectedTables.slice(0, 4);
+  const searches = await Promise.all(cappedTables.map(async ({ kind, table }) => ({ kind, table, result: await searchTable(db, table, combinedQuery, kind) })));
   const cards = searches.flatMap(({ result }) => result.cards);
   const deduped = [...new Map(cards.map((card) => [card.id, card])).values()].slice(0, 12);
 
