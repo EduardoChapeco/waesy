@@ -214,3 +214,176 @@ export async function toolHandoffToHuman(input: HandoffInput): Promise<{ success
     message: `Atendimento transferido para a fila ${input.targetDepartment} com nota de contexto.`,
   };
 }
+
+export interface PackageLookupInput {
+  storeId: string;
+  query?: string;
+  destination?: string;
+  limit?: number;
+}
+
+export interface PackageItemResult {
+  packageId: string;
+  title: string;
+  destination: string;
+  priceCents: number;
+  priceDisplay: string;
+  installmentTerms: string;
+  datesDescription?: string;
+  itinerarySummary?: string;
+  includedItems?: string[];
+  status: string;
+}
+
+/**
+ * 5. Tool: Consultar Pacotes Turísticos, Roteiros & Viagens
+ */
+export async function toolLookupTourismPackages(input: PackageLookupInput): Promise<PackageItemResult[]> {
+  const db = getServerClient();
+  const q = (input.query || input.destination || "").trim().toLowerCase();
+
+  // 1. Busca em tourism_trips (viagens e pacotes próprios da agência)
+  let tripsQuery = db
+    .from("tourism_trips")
+    .select("id, title, destination_city, total_cents, travel_start_date, travel_end_date, status, metadata")
+    .eq("store_id", input.storeId)
+    .neq("status", "cancelled")
+    .order("created_at", { ascending: false })
+    .limit(input.limit || 5);
+
+  if (q) {
+    tripsQuery = tripsQuery.or(`title.ilike.%${q}%,destination_city.ilike.%${q}%`);
+  }
+
+  const { data: trips } = await tripsQuery;
+
+  if (trips && trips.length > 0) {
+    return trips.map((t: any) => {
+      const priceCents = Number(t.total_cents || 0);
+      const meta = (t.metadata && typeof t.metadata === "object" ? t.metadata : {}) as Record<string, any>;
+      const maxInstallments = Number(meta.max_installments || 10);
+      const installmentVal = priceCents > 0 ? formatMoney(Math.round(priceCents / maxInstallments)) : "";
+      const installmentTerms = priceCents > 0
+        ? `Até ${maxInstallments}x de ${installmentVal} sem juros ou entrada + saldo facilitado no PIX/Boleto`
+        : "Condições sob consulta com a equipe";
+
+      return {
+        packageId: t.id,
+        title: t.title || "Pacote Turístico Especial",
+        destination: t.destination_city || "Destino Nacional/Internacional",
+        priceCents,
+        priceDisplay: formatMoney(priceCents),
+        installmentTerms,
+        datesDescription: t.travel_start_date
+          ? `Saída: ${new Date(t.travel_start_date).toLocaleDateString("pt-BR")}${t.travel_end_date ? ` até ${new Date(t.travel_end_date).toLocaleDateString("pt-BR")}` : ""}`
+          : "Datas flexíveis",
+        itinerarySummary: meta.itinerary_summary || meta.description || "Roteiro completo com passeios inclusos",
+        includedItems: Array.isArray(meta.included_items) ? meta.included_items : ["Hospedagem", "Transfer", "Seguro viagem"],
+        status: t.status || "active",
+      };
+    });
+  }
+
+  // 2. Fallback para tourism_experiences (passeios, tours e vivências)
+  const { data: experiences } = await db
+    .from("tourism_experiences")
+    .select("id, title, destination, price_cents, duration_hours, included_items, status")
+    .eq("store_id", input.storeId)
+    .eq("status", "active")
+    .ilike("title", `%${q}%`)
+    .limit(input.limit || 5);
+
+  return (experiences || []).map((exp: any) => {
+    const priceCents = Number(exp.price_cents || 0);
+    return {
+      packageId: exp.id,
+      title: exp.title,
+      destination: exp.destination || "Região Local",
+      priceCents,
+      priceDisplay: formatMoney(priceCents),
+      installmentTerms: priceCents > 0 ? "Pagamento à vista com desconto via PIX ou em até 6x no cartão" : "Sob consulta",
+      datesDescription: exp.duration_hours ? `Duração: ${exp.duration_hours} horas` : "Passeio regular",
+      itinerarySummary: "Experiência turística guiada com guias credenciados",
+      includedItems: Array.isArray(exp.included_items) ? exp.included_items : ["Ingresso", "Guia turístico"],
+      status: exp.status || "active",
+    };
+  });
+}
+
+export interface AviationPolicyResult {
+  regulation: string;
+  authority: string;
+  policies: Array<{
+    topic: string;
+    rules: string[];
+    importantNotice: string;
+  }>;
+}
+
+/**
+ * 6. Tool: Base Normativa de Aviação Civil (Resolução 400 da ANAC & Regras de Cias Aéreas)
+ */
+export function toolGetTourismAviationPolicies(): AviationPolicyResult {
+  return {
+    regulation: "Resolução nº 400/2016 e Código de Defesa do Consumidor (CDC)",
+    authority: "Agência Nacional de Aviação Civil (ANAC)",
+    policies: [
+      {
+        topic: "Franquia de Bagagem (Mão e Despachada)",
+        rules: [
+          "Bagagem de mão: Todo passageiro tem direito garantido a levar gratuitamente 1 mala de mão de até 10 kg na cabine (dimensões padrão recomendadas: 55 x 35 x 25 cm).",
+          "Item pessoal: É permitido levar 1 item pessoal adicional gratuito (como bolsa, pasta de notebook ou mochila pequena) que caiba sob o assento à frente.",
+          "Bagagem despachada: As franquias despachadas (geralmente 23 kg para voos nacionais ou 23 kg/32 kg internacionais) dependem da classe tarifária adquirida (Promo, Light, Plus ou Max).",
+          "Comprar bagagem com antecedência pelo sistema da agência ou da companhia aérea é até 50% mais barato do que pagar no balcão do aeroporto.",
+        ],
+        importantNotice: "Líquidos em voos internacionais devem estar em frascos de até 100 ml acondicionados em embalagem plástica transparente selada.",
+      },
+      {
+        topic: "Direito de Arrependimento e Cancelamento sem Multa (24 horas)",
+        rules: [
+          "O passageiro pode desistir da compra da passagem aérea em até 24 horas a contar do recebimento do comprovante de emissão, sem qualquer custo ou penalidade.",
+          "Requisito legal ANAC: A compra precisa ter sido efetuada com antecedência mínima de 7 (sete) dias em relação à data do voo.",
+          "O reembolso das passagens canceladas dentro desta regra de 24h é integral, inclusive a taxa de embarque.",
+        ],
+        importantNotice: "Após o prazo de 24 horas, aplicam-se as regras tarifárias do bilhete emitido (multas de cancelamento ou retenção de crédito).",
+      },
+      {
+        topic: "Alterações de Horário e Malha Aérea pela Companhia",
+        rules: [
+          "A companhia aérea deve informar o passageiro sobre alterações de horário ou itinerário com pelo menos 72 horas de antecedência do voo original.",
+          "Alteração superior a 30 minutos em voos domésticos ou superior a 1 hora em voos internacionais dá ao passageiro o direito de escolher entre:",
+          "1. Reacomodação gratuita no voo mais conveniente da mesma empresa ou de terceiros.",
+          "2. Reembolso integral de todos os trechos não voados, sem qualquer taxa ou retenção.",
+        ],
+        importantNotice: "Caso a companhia não avise com 72h de antecedência e o passageiro compareça ao aeroporto, tem direito à assistência material imediata.",
+      },
+      {
+        topic: "Atrasos de Voo e Assistência Material Escalonada",
+        rules: [
+          "Atraso a partir de 1 hora: Direito a facilidades de comunicação (acesso a internet, chamadas telefônicas).",
+          "Atraso a partir de 2 horas: Direito a alimentação adequada (lanches, refeições ou vouchers fornecidos pela cia).",
+          "Atraso a partir de 4 horas: Direito a serviço de hospedagem (em caso de pernoite), traslado de ida e volta ao hotel, além da opção de reacomodação em outro voo ou reembolso integral.",
+        ],
+        importantNotice: "A assistência material é devida mesmo em casos de condições meteorológicas adversas ou manutenção não programada da aeronave.",
+      },
+      {
+        topic: "Proteção contra Cancelamento Automático por No-Show na Ida",
+        rules: [
+          "Se o passageiro não comparecer ao trecho de ida (no-show), a companhia aérea NÃO PODE cancelar automaticamente o trecho de volta.",
+          "Requisito obrigatório: O passageiro deve notificar formalmente a companhia aérea ou a agência antes do horário programado do voo de ida informando que utilizará o trecho de volta.",
+          "Esta proteção está consolidada pela jurisprudência pacificada do Superior Tribunal de Justiça (STJ) e normas de proteção ao consumidor.",
+        ],
+        importantNotice: "Sempre oriente o cliente a registrar o aviso de não comparecimento do voo de ida nos canais da companhia para blindar seu retorno.",
+      },
+      {
+        topic: "Regras de Parcelamento e Condições Comerciais do Pacote",
+        rules: [
+          "Pacotes com voo + hotel podem ser parcelados em até 10x sem juros no cartão de crédito emitido no Brasil.",
+          "Opção de boleto parcelado ou carnê sujeito a análise prévia de crédito com quitação antes da data do embarque.",
+          "Seguro viagem internacional é obrigatório em diversos destinos (ex: Tratado de Schengen na Europa exige cobertura mínima de 30 mil euros para despesas médicas).",
+        ],
+        importantNotice: "Passaportes para viagens internacionais devem possuir validade mínima de 6 meses a contar da data prevista de retorno.",
+      },
+    ],
+  };
+}

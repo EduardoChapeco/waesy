@@ -1,5 +1,19 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-489: Governança Estrita de Contatos WhatsApp, Exclusão Soberana por Admins, Isolamento por Setores e IA Conectada a Pacotes & Regras ANAC
+- **Data:** 2026-11-12
+- **Contexto:**
+  1. Empresas de marketing com alto volume de contatos no WhatsApp necessitam de opção de exclusão definitiva de contatos e históricos locais no painel, para não manter números descartáveis acumulados.
+  2. Atendentes e operadores devem ter acesso estritamente restrito às suas atribuições e setores (`whatsapp_governance`), sem visualizar conversas de departamentos aos quais não pertencem nem conversas marcadas como confidenciais/ocultadas da equipe (`hidden_from_staff`).
+  3. A IA de atendimento (Copilot e Sandbox) carecia de enriquecimento contextual com a base normativa e de conhecimento da loja: busca em pacotes turísticos/roteiros (`tourism_trips`, `tourism_experiences`) com condições de parcelamento e inclusões, além da base legal de aviação civil (Resolução 400 da ANAC sobre bagagem de 10kg/23kg, arrependimento de compra em 24h, assistência material de 1h/2h/4h e proteção contra cancelamento da volta por no-show na ida).
+- **Decisão:**
+  1. **Exclusão Soberana & Ocultação de Contatos (`chat.functions.ts`):** Criação das server functions `deleteChatContactPermanently` e `toggleChatThreadStaffVisibility`, exclusivas para administradores (`owner`, `admin`, `platform_admin`), expurgando histórico de mensagens, chaves, threads e inativando o registro no CRM (`customers_crm` e `leads_crm`).
+  2. **Isolamento Estrito de Setores (`listChatThreads`):** Restrição automática para operadores (`!isSupervisor`) baseada em `whatsapp_governance.departments`, filtrando apenas setores atribuídos ao atendente e bloqueando 100% de threads confidenciais (`hidden_from_staff`).
+  3. **Ferramentas de IA para Pacotes & Normas ANAC (`whatsapp-ai-agent-tools.server.ts` e `whatsapp-automation-runtime.server.ts`):** Criação de `toolLookupTourismPackages` e `toolGetTourismAviationPolicies`, integradas no pipeline inbound com enriquecimento contextual de pacotes, parcelamentos e regras da ANAC.
+  4. **Interface SAC do Atendimento (`workspace.atendimento.index.tsx`):** Inclusão de ações no menu de contexto ("Excluir Contato & Dados", "Ocultar da Equipe"), modal com confirmação segura e zero violações no Design Lint (0 P0, 0 novas violações).
+- **Fundamentação:** AGENTS.md Regras B.1, B.4, B.5, B.6, B.7, B.8, B.9, B.11, SPEC-WHATSAPP-GOVERNANCE-CONTACT-PURGE-AI-KNOWLEDGE.md e Apple HIG.
+- **Consequências:** Governança completa sobre contatos descartáveis, isolamento por setor garantido e IA de atendimento qualificada com dados de pacotes e regulamentação da aviação civil.
+
 ## DEC-488: Suporte Completo a Rich Media no Atendimento SAC WhatsApp, Normalização de Figurinhas (Anti-{mensagem}), Lightbox Acessível e Cache Sob Demanda
 - **Data:** 2026-11-11
 - **Contexto:**

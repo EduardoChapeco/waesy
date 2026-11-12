@@ -8,7 +8,10 @@ import {
 import {
   sendStaffMessageSchema,
   sendCustomerMessageSchema,
+  deleteChatContactPermanentlySchema,
+  toggleChatThreadStaffVisibilitySchema,
 } from "@/services/chat.functions";
+import { toolGetTourismAviationPolicies } from "@/services/whatsapp-ai-agent-tools.server";
 
 describe("WhatsApp Rich Media & Realtime Synchronization E2E", () => {
   describe("unwrapBaileysMessage", () => {
@@ -209,6 +212,51 @@ describe("WhatsApp Rich Media & Realtime Synchronization E2E", () => {
       };
       const parsed = sendStaffMessageSchema.safeParse(invalid);
       expect(parsed.success).toBe(false);
+    });
+  });
+
+  describe("Admin Contact Purge & Staff Isolation Schemas", () => {
+    it("validates deleteChatContactPermanentlySchema", () => {
+      const payload = {
+        threadId: "a0000000-0000-0000-0000-000000000001",
+        storeId: "b0000000-0000-0000-0000-000000000001",
+        deleteFromCrm: true,
+      };
+      const parsed = deleteChatContactPermanentlySchema.safeParse(payload);
+      expect(parsed.success).toBe(true);
+    });
+
+    it("validates toggleChatThreadStaffVisibilitySchema", () => {
+      const payload = {
+        threadId: "a0000000-0000-0000-0000-000000000001",
+        hiddenFromStaff: true,
+      };
+      const parsed = toggleChatThreadStaffVisibilitySchema.safeParse(payload);
+      expect(parsed.success).toBe(true);
+    });
+  });
+
+  describe("Tourism & Aviation Policy AI Tools", () => {
+    it("returns ANAC Resolution 400 aviation policies with baggage, 24h cancellation, delay and no-show rules", () => {
+      const aviation = toolGetTourismAviationPolicies();
+      expect(aviation.authority).toContain("ANAC");
+      expect(aviation.policies.length).toBeGreaterThanOrEqual(5);
+
+      const baggagePolicy = aviation.policies.find((p) => p.topic.includes("Bagagem"));
+      expect(baggagePolicy).toBeDefined();
+      expect(baggagePolicy?.rules[0]).toContain("10 kg");
+
+      const cancellationPolicy = aviation.policies.find((p) => p.topic.includes("Arrependimento"));
+      expect(cancellationPolicy).toBeDefined();
+      expect(cancellationPolicy?.rules[0]).toContain("24 horas");
+
+      const delayPolicy = aviation.policies.find((p) => p.topic.includes("Atrasos"));
+      expect(delayPolicy).toBeDefined();
+      expect(delayPolicy?.rules.some((r) => r.includes("hospedagem"))).toBe(true);
+
+      const noShowPolicy = aviation.policies.find((p) => p.topic.includes("No-Show"));
+      expect(noShowPolicy).toBeDefined();
+      expect(noShowPolicy?.rules[0]).toContain("NÃO PODE cancelar automaticamente o trecho de volta");
     });
   });
 });

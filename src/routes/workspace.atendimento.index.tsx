@@ -19,6 +19,8 @@ import {
   saveStoreSupportSettings,
   clearChatThreadMessagesLocal,
   deleteChatThreadLocal,
+  deleteChatContactPermanently,
+  toggleChatThreadStaffVisibility,
   resetStoreChatHistoryLocal,
   getWhatsAppMediaBase64,
 } from "@/services/chat.functions";
@@ -500,6 +502,64 @@ function WorkspaceAtendimentoPage() {
       toast.error(err?.message || "Erro ao excluir conversa.");
     } finally {
       setIsDeletingThread(false);
+    }
+  };
+
+  const [deleteContactModalOpen, setDeleteContactModalOpen] = useState(false);
+  const [isDeletingContact, setIsDeletingContact] = useState(false);
+  const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
+
+  const handleDeleteContactPermanently = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    setIsDeletingContact(true);
+    try {
+      await deleteChatContactPermanently({
+        data: { threadId: activeThread.id, storeId: store.id, deleteFromCrm: true },
+      });
+      setMessages([]);
+      setDeleteContactModalOpen(false);
+      const remainingThreads = threads.filter((t) => t.id !== activeThread.id);
+      setThreads(remainingThreads);
+      setActiveThreadId(remainingThreads.length > 0 ? remainingThreads[0].id : null);
+      toast.success("Contato e histórico excluídos definitivamente do sistema.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir contato permanentemente.");
+    } finally {
+      setIsDeletingContact(false);
+    }
+  };
+
+  const handleToggleThreadStaffVisibility = async () => {
+    if (!activeThread?.id || !store?.id) return;
+    const isCurrentlyHidden = Boolean(activeThread.metadata?.hidden_from_staff);
+    const nextHiddenState = !isCurrentlyHidden;
+    setIsTogglingVisibility(true);
+    try {
+      await toggleChatThreadStaffVisibility({
+        data: { threadId: activeThread.id, storeId: store.id, hiddenFromStaff: nextHiddenState },
+      });
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === activeThread.id
+            ? {
+                ...t,
+                metadata: {
+                  ...(t.metadata || {}),
+                  hidden_from_staff: nextHiddenState,
+                },
+              }
+            : t,
+        ),
+      );
+      toast.success(
+        nextHiddenState
+          ? "Conversa marcada como confidencial (oculta para atendentes comuns)."
+          : "Conversa visível para a equipe do setor.",
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao alternar visibilidade da conversa.");
+    } finally {
+      setIsTogglingVisibility(false);
     }
   };
 
@@ -1805,6 +1865,37 @@ function WorkspaceAtendimentoPage() {
                         <Trash2 className="size-4 shrink-0" />
                         <span>Excluir conversa (no sistema)</span>
                       </DropdownMenuItem>
+
+                      {isSupervisor && (
+                        <>
+                          <DropdownMenuSeparator className="my-1 border-border/60" />
+                          <DropdownMenuItem
+                            onClick={handleToggleThreadStaffVisibility}
+                            disabled={isTogglingVisibility}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2"
+                          >
+                            {activeThread?.metadata?.hidden_from_staff ? (
+                              <>
+                                <Eye className="size-4 shrink-0 text-primary" />
+                                <span>Tornar visível para equipe</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="size-4 shrink-0 text-muted-foreground" />
+                                <span>Ocultar da equipe (Confidencial)</span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() => setDeleteContactModalOpen(true)}
+                            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold cursor-pointer flex items-center gap-2 text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="size-4 shrink-0" />
+                            <span>Excluir contato & dados (Definitivo)</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -4302,6 +4393,43 @@ function WorkspaceAtendimentoPage() {
             >
               {isDeletingThread && <Loader2 className="size-4 animate-spin" />}
               Excluir Conversa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Excluir Contato e Histórico Definitivamente */}
+      <Dialog open={deleteContactModalOpen} onOpenChange={setDeleteContactModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4 border-border/80 rounded-xl">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Trash2 className="size-5 text-destructive" />
+              <span>Excluir Contato & Dados (Definitivo)</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Esta ação expurga o contato e todo o histórico de conversas do sistema e do CRM da loja. Ideal para números de marketing descartáveis ou inválidos. Ação restrita a administradores.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteContactModalOpen(false)}
+              disabled={isDeletingContact}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteContactPermanently}
+              disabled={isDeletingContact}
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isDeletingContact && <Loader2 className="size-4 animate-spin" />}
+              Confirmar Exclusão Definitiva
             </Button>
           </DialogFooter>
         </DialogContent>

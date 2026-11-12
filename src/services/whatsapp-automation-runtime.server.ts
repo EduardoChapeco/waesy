@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { encryptConversationMessage } from "@/lib/conversation-crypto.server";
+import { toolLookupTourismPackages, toolGetTourismAviationPolicies } from "@/services/whatsapp-ai-agent-tools.server";
 
 function normalizePhone(value: string) { const digits = value.replace(/\D/g, ""); return digits.length >= 7 ? `+${digits}` : null; }
 function phoneHash(value: string) { return createHash("sha256").update(value).digest("hex"); }
@@ -464,12 +465,47 @@ export async function evaluateControlledAiInboundRuntime(input: {
 
   const customerName = String(thread?.guest_name || input.payload?.pushName || "Cliente").trim();
   const storeName = String(store?.name || "Nossa Equipe").trim();
-  const suggestedReply =
-    intent === "quote_request"
-      ? `Olá, ${customerName}! Aqui é o assistente da ${storeName}. Identifiquei seu interesse em cotação/roteiro${opportunitiesCount > 0 ? ` (já localizei seu histórico comercial conosco)` : ""}. Qual destino e período você planeja para prepararmos sua proposta?`
-      : intent === "financial_query"
-      ? `Olá, ${customerName}! Recebi sua solicitação sobre pagamento/fatura na ${storeName}. Já estou verificando os detalhes financeiros do seu cadastro.`
-      : `Olá, ${customerName}! Bem-vindo(a) à ${storeName}. Como posso ajudar você hoje?`;
+
+  const textLower = String(input.text || "").toLowerCase();
+  const mentionsTourism = /(pacote|roteiro|viagem|passeio|destino|voo|aéreo|aereo|hotel|anac|bagagem|cancelamento|parcelamento|cia a[ée]rea)/i.test(textLower);
+
+  let packageInfoText = "";
+  if (mentionsTourism) {
+    const packages = await toolLookupTourismPackages({ storeId: input.storeId, query: input.text, limit: 2 }).catch(() => []);
+    if (packages && packages.length > 0) {
+      const p = packages[0];
+      packageInfoText = `\n\n[PACOTE DISPONÍVEL] *${p.title}* (${p.destination})\n- Valor: ${p.priceDisplay}\n- Condições: ${p.installmentTerms}\n- Datas: ${p.datesDescription || "Consulte saídas"}\n- Itens inclusos: ${(p.includedItems || []).slice(0, 3).join(", ")}`;
+    }
+  }
+
+  let aviationInfoText = "";
+  if (/(anac|bagagem|mala|cancelamento|arrependimento|no-show|no show|atraso)/i.test(textLower)) {
+    const aviation = toolGetTourismAviationPolicies();
+    if (/(bagagem|mala)/i.test(textLower)) {
+      const bag = aviation.policies.find((p) => p.topic.includes("Bagagem"));
+      if (bag) aviationInfoText = `\n\n[Regras de Bagagem - ANAC Res. 400]:\n- ${bag.rules[0]}\n- ${bag.rules[1]}\n- ${bag.rules[2]}`;
+    } else if (/(cancelamento|arrependimento|desist)/i.test(textLower)) {
+      const cancel = aviation.policies.find((p) => p.topic.includes("Arrependimento"));
+      if (cancel) aviationInfoText = `\n\n[Política de Cancelamento e Arrependimento]:\n- ${cancel.rules[0]}\n- ${cancel.rules[1]}`;
+    } else if (/(no-show|no show)/i.test(textLower)) {
+      const noshow = aviation.policies.find((p) => p.topic.includes("No-Show"));
+      if (noshow) aviationInfoText = `\n\n[Regra de No-Show na Ida - ANAC e STJ]:\n- ${noshow.rules[0]}\n- ${noshow.rules[1]}`;
+    } else if (/(atraso)/i.test(textLower)) {
+      const delay = aviation.policies.find((p) => p.topic.includes("Atrasos"));
+      if (delay) aviationInfoText = `\n\n[Assistência Material por Atraso - ANAC]:\n- ${delay.rules[0]}\n- ${delay.rules[1]}\n- ${delay.rules[2]}`;
+    }
+  }
+
+  let suggestedReply = "";
+  if (packageInfoText || aviationInfoText) {
+    suggestedReply = `Olá, ${customerName}! Aqui é o assistente virtual da ${storeName}.${packageInfoText}${aviationInfoText}\n\nPosso detalhar o roteiro completo ou conectar você com um dos nossos consultores para finalizar sua reserva?`;
+  } else if (intent === "quote_request") {
+    suggestedReply = `Olá, ${customerName}! Aqui é o assistente da ${storeName}. Identifiquei seu interesse em cotação/roteiro${opportunitiesCount > 0 ? ` (já localizei seu histórico comercial conosco)` : ""}. Qual destino e período você planeja para prepararmos sua proposta?`;
+  } else if (intent === "financial_query") {
+    suggestedReply = `Olá, ${customerName}! Recebi sua solicitação sobre pagamento/fatura na ${storeName}. Já estou verificando os detalhes financeiros do seu cadastro.`;
+  } else {
+    suggestedReply = `Olá, ${customerName}! Bem-vindo(a) à ${storeName}. Como posso ajudar você hoje?`;
+  }
 
   const crmContextSummary = { opportunitiesCount, activeStage, quotesCount };
 

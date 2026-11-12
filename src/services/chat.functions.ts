@@ -137,12 +137,31 @@ export const listChatThreads = createServerFn({ method: "GET" })
  query = query.eq("department", data.department);
  }
 
- // Se não for supervisor/gerente, visualiza apenas seu departamento ou atribuídos a ele
- if (!isSupervisor) {
- query = query.or(
- `assigned_to_profile_id.eq.${identity.id},department.eq.geral,department.eq.${identity.role}`,
- );
- }
+  // Se não for supervisor/gerente, visualiza apenas seus setores atribuídos na governança ou atribuídos a ele
+  if (!isSupervisor) {
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", effectiveStoreId)
+      .maybeSingle();
+
+    const governance = (storeRow?.settings as any)?.whatsapp_governance || {};
+    const depts = Array.isArray(governance.departments) ? governance.departments : [];
+    const assignedDepts = depts
+      .filter((d: any) => Array.isArray(d.assignedAgentIds) && d.assignedAgentIds.includes(identity.id))
+      .map((d: any) => d.slug || d.id || d.name)
+      .filter(Boolean);
+
+    const allowedClauses = [`assigned_to_profile_id.eq.${identity.id}`];
+    for (const d of assignedDepts) {
+      allowedClauses.push(`department.eq.${d}`);
+    }
+    if (assignedDepts.length === 0) {
+      allowedClauses.push("department.eq.geral", "department.is.null");
+    }
+
+    query = query.or(allowedClauses.join(","));
+  }
 
  const { data: rawThreads, error } = await query;
  if (error) {
@@ -157,6 +176,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
     if (t.thread_type === 'ai_assistant' || t.thread_type === 'copilot' || t.thread_type === 'project') return false;
     if (t.context_type === 'ai_assistant' || t.context_type === 'copilot' || t.context_type === 'project') return false;
     if (t.metadata?.is_copilot || t.metadata?.is_civil || t.metadata?.agent_mode) return false;
+    if (!isSupervisor && t.metadata?.hidden_from_staff === true) return false;
     return true;
   });
 
@@ -2713,6 +2733,105 @@ export const deleteChatThreadLocal = createServerFn({ method: "POST" })
     if (error) throw new Error(`Falha ao excluir conversa do sistema: ${error.message}`);
 
     return { success: true, threadId, message: "Conversa excluída do sistema local." };
+  });
+
+export const deleteChatContactPermanentlySchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  deleteFromCrm: z.boolean().default(true),
+});
+
+export const deleteChatContactPermanently = createServerFn({ method: "POST" })
+  .validator(deleteChatContactPermanentlySchema)
+  .handler(async ({ data: { threadId, storeId: inputStoreId, deleteFromCrm } }) => {
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, ["owner", "admin", "platform_admin"], storeId);
+
+    const db = getServerClient();
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, customer_id, guest_name, entity_id, metadata")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .single();
+
+    if (!thread) throw new Error("Conversa ou contato não localizado.");
+
+    // 1. Limpa histórico de mensagens e chaves criptográficas
+    await db.from("chat_messages").delete().eq("thread_id", threadId);
+    await db.from("chat_conversation_keys").delete().eq("thread_id", threadId);
+
+    // 2. Remove da fila de outbox pendente (se houver)
+    await db.from("whatsapp_outbox").delete().eq("thread_id", threadId).eq("store_id", storeId);
+
+    // 3. Exclui a thread principal
+    const { error: threadErr } = await db.from("chat_threads").delete().eq("id", threadId).eq("store_id", storeId);
+    if (threadErr) throw new Error(`Falha ao excluir conversa: ${threadErr.message}`);
+
+    // 4. Se solicitado, expurga/inativa o contato no CRM para empresas de marketing
+    if (deleteFromCrm && thread.customer_id) {
+      const nowIso = new Date().toISOString();
+      await db.from("customers_crm").update({ deleted_at: nowIso }).eq("id", thread.customer_id).eq("store_id", storeId);
+      await db.from("leads_crm").update({ deleted_at: nowIso }).eq("customer_id", thread.customer_id).eq("store_id", storeId);
+    }
+
+    return {
+      success: true,
+      threadId,
+      message: "Contato e histórico de conversa excluídos definitivamente do sistema.",
+    };
+  });
+
+export const toggleChatThreadStaffVisibilitySchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  hiddenFromStaff: z.boolean(),
+});
+
+export const toggleChatThreadStaffVisibility = createServerFn({ method: "POST" })
+  .validator(toggleChatThreadStaffVisibilitySchema)
+  .handler(async ({ data: { threadId, storeId: inputStoreId, hiddenFromStaff } }) => {
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, ["owner", "admin", "platform_admin", "manager"], storeId);
+
+    const db = getServerClient();
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, metadata")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .single();
+
+    if (!thread) throw new Error("Conversa não encontrada.");
+
+    const curMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+    const updatedMeta = {
+      ...curMeta,
+      hidden_from_staff: hiddenFromStaff,
+      hidden_from_staff_updated_at: new Date().toISOString(),
+      hidden_from_staff_by_profile_id: identity.id,
+    };
+
+    const { error } = await db
+      .from("chat_threads")
+      .update({ metadata: updatedMeta, updated_at: new Date().toISOString() })
+      .eq("id", threadId)
+      .eq("store_id", storeId);
+
+    if (error) throw new Error(`Falha ao atualizar visibilidade: ${error.message}`);
+
+    return {
+      success: true,
+      threadId,
+      hiddenFromStaff,
+      message: hiddenFromStaff
+        ? "Conversa ocultada de funcionários comuns (modo confidencial)."
+        : "Conversa visível para a equipe do setor.",
+    };
   });
 
 export const resetStoreChatHistorySchema = z.object({
