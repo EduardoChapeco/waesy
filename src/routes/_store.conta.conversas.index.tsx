@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Archive,
+  ArrowLeft,
   Bell,
   BellOff,
   Briefcase,
@@ -127,6 +128,7 @@ function CustomerConversationsIndexPage() {
   });
 
   const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [isDockCollapsed, setIsDockCollapsed] = useState(false);
@@ -428,11 +430,23 @@ function CustomerConversationsIndexPage() {
     }
   };
 
+  const activeDesktopThreadId = selectedThreadId || filtered[0]?.id || null;
+
   return (
-    <div className="relative w-full max-w-5xl mx-auto min-h-screen flex flex-col space-y-3 pb-32 px-0 sm:px-4 md:px-0">
-      {/* ── Header Minimalista Padronizado (Hambúrguer SuperApp + LocationMasterPill + Busca/Notificações) ── */}
-      <header className="flex items-center justify-between gap-2 border-b border-border/40 px-3 sm:px-0 py-2 sticky top-0 z-20 bg-background/95 backdrop-blur-md">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+    <div className="relative h-dvh w-full overflow-hidden flex bg-background">
+      {/* ── Coluna Esquerda: Lista de Conversas (100% Mobile / Sidebar no Desktop) ── */}
+      <div className="w-full lg:w-96 h-full flex flex-col overflow-y-auto no-scrollbar space-y-3 pb-24 lg:pb-6 px-0 lg:border-r lg:border-border/60 shrink-0">
+      {/* ── Header Minimalista Padronizado (Voltar + Hambúrguer SuperApp + LocationMasterPill + Busca/Notificações) ── */}
+      <header className="flex items-center justify-between gap-2 border-b border-border/40 px-3 py-2 sticky top-0 z-20 bg-background/95 backdrop-blur-md">
+        <div className="flex items-center gap-1 min-w-0 flex-1">
+          <Link
+            to="/"
+            aria-label="Voltar ao Início"
+            title="Voltar ao Início"
+            className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+          >
+            <ArrowLeft className="size-5" />
+          </Link>
           {/* Botão Hambúrguer Delicado/Minimalista (Abre SuperApp Drawer) */}
           <button
             type="button"
@@ -574,12 +588,16 @@ function CustomerConversationsIndexPage() {
             <ChatListItem
               key={item.id}
               item={item}
-              onOpen={(id) =>
-                navigate({
-                  to: "/conta/conversas/$id",
-                  params: { id },
-                })
-              }
+              onOpen={(id) => {
+                if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+                  setSelectedThreadId(id);
+                } else {
+                  navigate({
+                    to: "/conta/conversas/$id",
+                    params: { id },
+                  });
+                }
+              }}
               onArchive={handleArchiveThread}
               onDelete={handleDeleteThread}
               onLongPress={(target) => setContextMenuTarget(target)}
@@ -587,6 +605,27 @@ function CustomerConversationsIndexPage() {
           ))}
         </div>
       )}
+
+      </div>
+
+      {/* ── Coluna Direita (Desktop Full Page Split-Pane): Sala de Conversa Ativa ── */}
+      <div className="hidden lg:flex flex-1 h-full min-w-0 flex-col bg-background overflow-hidden">
+        {activeDesktopThreadId ? (
+          <CustomerChatRoom
+            key={activeDesktopThreadId}
+            threadId={activeDesktopThreadId}
+            showBackButton={false}
+          />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
+            <MessageCircle className="size-14 text-muted-foreground/25 mb-3" />
+            <p className="text-sm font-semibold text-foreground">Central de Conversas Waesy</p>
+            <p className="text-xs text-muted-foreground max-w-xs mt-1">
+              Selecione uma conversa ao lado ou inicie um novo atendimento com lojas e membros.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* ── FASE 1: Floating Action Button (FAB) — w-14 h-14 Redondo Acima da Bottom Navigation Bar ── */}
       <button

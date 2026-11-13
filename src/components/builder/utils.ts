@@ -89,9 +89,19 @@ export function getSectionStyle(styling?: OmniBlockStyling, isMobile = false): {
   const style: React.CSSProperties = {};
   if (styling.backgroundColor && !styling.backgroundColor.startsWith("bg-")) {
     style.backgroundColor = styling.backgroundColor;
+    if (styling.backgroundColor !== "var(--background)") {
+      (style as Record<string, string>)["--background"] = styling.backgroundColor;
+      (style as Record<string, string>)["--color-background"] = styling.backgroundColor;
+    }
   }
   if (styling.textColor && !styling.textColor.startsWith("text-")) {
     style.color = styling.textColor;
+    if (styling.textColor !== "var(--foreground)") {
+      (style as Record<string, string>)["--foreground"] = styling.textColor;
+      (style as Record<string, string>)["--color-foreground"] = styling.textColor;
+      (style as Record<string, string>)["--muted-foreground"] = `color-mix(in srgb, ${styling.textColor} 72%, transparent)`;
+      (style as Record<string, string>)["--color-muted-foreground"] = `color-mix(in srgb, ${styling.textColor} 72%, transparent)`;
+    }
   }
   if (typeof styling.animationDelayMs === "number" && styling.animationDelayMs > 0) {
     style.animationDelay = `${styling.animationDelayMs}ms`;

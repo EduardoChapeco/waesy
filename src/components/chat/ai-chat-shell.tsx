@@ -149,6 +149,7 @@ export interface AIChatShellProps {
   isSending?: boolean;
   isStreaming?: boolean;
   currentUserProfileId?: string;
+  mode?: "workspace" | "concierge";
   className?: string;
   mobileTitle?: string;
   mobileSubtitle?: string;
@@ -254,6 +255,7 @@ export function AIChatShell({
   isSending = false,
   isStreaming = false,
   currentUserProfileId,
+  mode = "workspace",
   className,
   mobileTitle,
   mobileSubtitle,
@@ -269,6 +271,7 @@ export function AIChatShell({
   const [replyTo, setReplyTo] = useState<QuotedMessage | null>(null);
   const [showMobileChat, setShowMobileChat] = useState<boolean>(Boolean(activeThreadId));
   const [showContextPanel, setShowContextPanel] = useState<boolean>(false);
+  const [showDesktopContextPanel, setShowDesktopContextPanel] = useState<boolean>(false);
   const [activeArtifact, setActiveArtifact] = useState<ChatArtifactData | null>(null);
   const [internalFolderId, setInternalFolderId] = useState<string | null>(null);
   const [internalProjectId, setInternalProjectId] = useState<string | null>(null);
@@ -321,6 +324,12 @@ export function AIChatShell({
     if (!targetId) return null;
     return projects.find((p) => p.id === targetId) || null;
   }, [projects, activeThreadProjectId, activeProjectFilter]);
+
+  useEffect(() => {
+    if (activeArtifact || activeProject) {
+      setShowDesktopContextPanel(true);
+    }
+  }, [activeArtifact, activeProject]);
 
   const visibleProjects = useMemo(() => {
     if (!activeFolderFilter) return projects;
@@ -623,12 +632,12 @@ export function AIChatShell({
             </div>
           )}
 
-          {/* Abas de Filtro: Todas, Diretas, Projetos, Arquivadas */}
+          {/* Abas de Filtro: Todas, Diretas, Projetos (apenas Workspace), Arquivadas */}
           <div className="flex items-center gap-1 flex-wrap py-1">
             {[
               { id: "all", label: "Todas" },
               { id: "direct", label: "Diretas" },
-              { id: "projects", label: "Projetos" },
+              ...(mode === "workspace" ? [{ id: "projects", label: "Projetos" }] : []),
               { id: "archived", label: "Arquivadas" },
             ].map((tab) => (
               <Button
@@ -756,60 +765,69 @@ export function AIChatShell({
               <span>Tarefas</span>
             </Button>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode("schedule")}
-              className={cn(
-                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                viewMode === "schedule"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <Calendar className="size-4" />
-              <span>Agendamentos</span>
-            </Button>
+            {mode === "workspace" && (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode("schedule")}
+                  className={cn(
+                    "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    viewMode === "schedule"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <Calendar className="size-4" />
+                  <span>Agendamentos</span>
+                </Button>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode("connectors")}
-              className={cn(
-                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                viewMode === "connectors"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <Link2 className="size-4" />
-              <span>Conectores</span>
-            </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode("connectors")}
+                  className={cn(
+                    "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    viewMode === "connectors"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <Link2 className="size-4" />
+                  <span>Conectores</span>
+                </Button>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode("analytics")}
-              className={cn(
-                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                viewMode === "analytics"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <TrendingUp className="size-4" />
-              <span>Métricas</span>
-            </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode("analytics")}
+                  className={cn(
+                    "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    viewMode === "analytics"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <TrendingUp className="size-4" />
+                  <span>Métricas</span>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
         {/* Conteúdo Renderizado conforme o ViewMode Ativo */}
         {viewMode === "skills" ? (
           <div className="flex-1 overflow-y-auto no-scrollbar">
-            <CopilotSkillsCenter onSelectSkill={() => setViewMode("chat")} />
+            <CopilotSkillsCenter
+              onSelectSkill={(skill) => {
+                setViewMode("chat");
+                void onSendMessage(`Executar habilidade ${skill.name}: ${skill.description}`);
+              }}
+            />
           </div>
         ) : viewMode === "schedule" ? (
           <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -887,17 +905,23 @@ export function AIChatShell({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowContextPanel((prev) => !prev)} /* focus-visible:ring-2 */
+                  onClick={() => {
+                    if (isCompact) {
+                      setShowContextPanel((prev) => !prev);
+                    } else {
+                      setShowDesktopContextPanel((prev) => !prev);
+                    }
+                  }} /* focus-visible:ring-2 */
                   className={cn(
-                    "h-11 min-h-11 px-3 text-xs rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer transition-colors md:hidden",
-                    showContextPanel
+                    "h-11 min-h-11 px-3 text-xs rounded-md gap-2 border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer transition-colors",
+                    (isCompact ? showContextPanel : showDesktopContextPanel)
                       ? "bg-primary text-primary-foreground font-semibold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                   title="Alternar painel de contexto e artefatos"
                 >
                   <Layers className="size-4" />
-                  <span>Painel</span>
+                  <span>Contexto</span>
                 </Button>
               </div>
             </header>
@@ -1083,7 +1107,8 @@ export function AIChatShell({
         )}
       </main>
 
-      {/* ── COLUNA 3: PAINEL DE CONTEXTO E ARTEFATOS (Desktop >= 768px / 3 Painéis Estáveis) ── */}
+      {/* ── COLUNA 3: PAINEL DE CONTEXTO E ARTEFATOS (Desktop >= 768px / Colapsável & Auto-Aberto em Artefatos) ── */}
+      {(showDesktopContextPanel || Boolean(activeArtifact)) && (
       <aside className="w-80 xl:w-96 border-l border-border/40 bg-card/30 p-3 space-y-4 overflow-y-auto hidden md:flex flex-col shrink-0 no-scrollbar">
         {activeArtifact ? (
           /* Claude Artifacts Split-Screen Inspector */
@@ -1248,6 +1273,7 @@ export function AIChatShell({
           </div>
         )}
       </aside>
+      )}
 
       {/* ── PAINEL / SHEET DE ARTEFATO RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
       <Sheet

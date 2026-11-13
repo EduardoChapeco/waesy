@@ -1,5 +1,6 @@
 import React from "react";
 import { InfiniteMarqueeBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { ArrowUpRight } from "lucide-react";
 import { isSafeBuilderHref } from "@/lib/builder/safe-href";
 
@@ -30,10 +31,7 @@ export const InfiniteMarqueeRibbon: React.FC<InfiniteMarqueeRibbonProps> = ({
     xl: "py-12",
   }[styling?.paddingY || "sm"];
 
-  const customStyle: React.CSSProperties = {
-    backgroundColor: styling?.backgroundColor || undefined,
-    color: styling?.textColor || undefined,
-  };
+  const customStyle = getSectionStyle(styling).style;
 
   if (items.length === 0) {
     return (

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link as RouterLink } from "@tanstack/react-router";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TransferChatThreadModal } from "@/components/chat/TransferChatThreadModal";
@@ -1538,6 +1538,12 @@ function WorkspaceAtendimentoPage() {
       )}>
         <div className="flex items-center justify-between gap-3 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
+            <Button asChild variant="ghost" size="sm" className="h-11 min-h-11 px-3 gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary">
+              <RouterLink to="/workspace">
+                <ArrowLeft className="size-4" />
+                <span>Workspace</span>
+              </RouterLink>
+            </Button>
             <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
               Atendimento
             </h1>
@@ -1702,15 +1708,15 @@ function WorkspaceAtendimentoPage() {
             type="button"
             onClick={() => {
               if (typeof window !== "undefined") {
-                const isStandalone = new URLSearchParams(window.location.search).get("view") === "standalone";
+                const isEmbedded = new URLSearchParams(window.location.search).get("view") === "embedded";
                 const url = new URL(window.location.href);
-                if (isStandalone) {
+                if (isEmbedded) {
                   url.searchParams.delete("view");
                   url.searchParams.delete("fullscreen");
                   window.location.href = url.toString();
                 } else {
-                  url.searchParams.set("view", "standalone");
-                  window.open(url.toString(), "_blank");
+                  url.searchParams.set("view", "embedded");
+                  window.location.href = url.toString();
                 }
               }
             }}

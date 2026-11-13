@@ -1,5 +1,6 @@
 import React from "react";
 import { TestimonialsBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { Star, CheckCircle2, Quote } from "lucide-react";
 
 export interface TestimonialsSocialProofProps {
@@ -33,10 +34,7 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
     full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
-  const customStyle: React.CSSProperties = {
-    backgroundColor: styling?.backgroundColor || undefined,
-    color: styling?.textColor || undefined,
-  };
+  const customStyle = getSectionStyle(styling).style;
 
   const testimonials = data.testimonials ?? [];
 

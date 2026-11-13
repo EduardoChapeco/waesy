@@ -225,7 +225,9 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
  const contextConfig = resolveContextNavigation(location.pathname, session);
  const isFullBleedPage =
  location.pathname.startsWith("/mapa") ||
- location.pathname.startsWith("/mobilidade");
+ location.pathname.startsWith("/mobilidade") ||
+ location.pathname.startsWith("/copilot") ||
+ location.pathname.startsWith("/conta/conversas");
 
   const isProfilePage =
     location.pathname.startsWith("/membro/") ||
@@ -249,6 +251,13 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
  {children}
  </main>
  <CartSheet />
+ <SuperAppModuleDrawer
+ open={isSuperAppOpen}
+ onOpenChange={setIsSuperAppOpen}
+ session={session}
+ userRole={session?.role}
+ brandName={brandSettings?.platform_name}
+ />
  </div>
  );
  }

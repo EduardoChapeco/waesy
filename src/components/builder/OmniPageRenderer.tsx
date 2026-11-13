@@ -13,10 +13,10 @@ import { submitOmniPageLeadFn } from "@/services/builder.functions";
 import { PrometheePortalProvider } from "@/components/news/promethee-portal-store";
 import {
   getBlockDeviceVisibilityClass,
+  getDocumentThemeCanvasStyle,
   isBlockVisibleForCity,
   isBlockWithinSchedule,
   resolveBlockBoundData,
-  shouldApplyCustomDocumentTheme,
 } from "@/lib/builder/block-data-resolver";
 
 export interface OmniPageRendererProps {
@@ -64,16 +64,7 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
     return null;
   }
 
-  const applyCustomTheme = shouldApplyCustomDocumentTheme(document.theme);
-  const pageThemeStyle: React.CSSProperties = applyCustomTheme
-    ? {
-        backgroundColor: document.theme?.backgroundColor,
-        color: document.theme?.textColor,
-        fontFamily: document.theme?.fontFamily,
-      }
-    : document.theme?.fontFamily && document.theme.fontFamily !== "Inter, sans-serif"
-      ? { fontFamily: document.theme.fontFamily }
-      : {};
+  const pageThemeStyle = getDocumentThemeCanvasStyle(document.theme);
 
   const getAnimationClass = (anim?: string) => {
     switch (anim) {

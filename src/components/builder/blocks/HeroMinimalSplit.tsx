@@ -14,8 +14,8 @@ export interface HeroMinimalSplitProps {
 
 export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, styling, className = "" }) => {
   const sectionStyle = getSectionStyle(styling);
-  const primaryHref = getSafeBuilderHref(data.primaryCta.href) ?? "#";
-  const secondaryHref = data.secondaryCta ? getSafeBuilderHref(data.secondaryCta.href) ?? "#" : undefined;
+  const primaryHref = data?.primaryCta?.href ? getSafeBuilderHref(data.primaryCta.href) ?? "#" : "#";
+  const secondaryHref = data?.secondaryCta?.href ? getSafeBuilderHref(data.secondaryCta.href) ?? "#" : undefined;
   return (
     <section
       id={id}

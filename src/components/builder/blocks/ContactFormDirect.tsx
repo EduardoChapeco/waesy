@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ContactFormBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { Send, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,10 +67,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
     full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
-  const customStyle: React.CSSProperties = {
-    backgroundColor: styling?.backgroundColor || undefined,
-    color: styling?.textColor || undefined,
-  };
+  const customStyle = getSectionStyle(styling).style;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

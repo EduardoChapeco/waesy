@@ -75,8 +75,8 @@ import {
 import {
   resolveBlockBoundData,
   getBlockDeviceVisibilityClass,
+  getDocumentThemeCanvasStyle,
   isBlockWithinSchedule,
-  shouldApplyCustomDocumentTheme,
 } from "@/lib/builder/block-data-resolver";
 import { CANONICAL_PLATFORM_SURFACES, openOrCreatePageExperienceDocument } from "@/services/surface-cms.functions";
 
@@ -2807,6 +2807,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           textColor: updated.textColor,
           headingFont: updated.headingFont,
           bodyFont: updated.bodyFont,
+          fontFamily: updated.bodyFont || updated.headingFont || curr.theme?.fontFamily || "Inter, sans-serif",
           borderRadius: updated.borderRadius,
           customThemeEnabled: true,
         },
@@ -2910,9 +2911,23 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     toast.success(`Bloco "${def.name}" adicionado com sucesso!`);
   };
 
+  const syncGlobalThemeFromDocument = (doc: OmniPageDocument) => {
+    if (!doc.theme) return;
+    setGlobalTheme((prev) => ({
+      ...prev,
+      primaryColor: doc.theme.primaryColor || prev.primaryColor,
+      backgroundColor: doc.theme.backgroundColor || prev.backgroundColor,
+      textColor: doc.theme.textColor || prev.textColor,
+      headingFont: (doc.theme as any).headingFont || doc.theme.fontFamily || prev.headingFont,
+      bodyFont: (doc.theme as any).bodyFont || doc.theme.fontFamily || prev.bodyFont,
+      borderRadius: doc.theme.borderRadius || prev.borderRadius,
+    }));
+  };
+
   const handleApplyTemplate = (templateId: string) => {
     const updated = materializeStudioTemplate(document, templateId);
     setActiveStudioManifest(getStudioTemplate(templateId) ?? null);
+    syncGlobalThemeFromDocument(updated);
     commitDocumentChange(updated);
     if (updated.blocks.length > 0) {
       setSelectedBlockId(updated.blocks[0].id);
@@ -2923,6 +2938,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   const handleApplyStudioManifest = (template: StudioTemplateManifest) => {
     const updated = materializeStudioManifest(document, template);
     setActiveStudioManifest(template);
+    syncGlobalThemeFromDocument(updated);
     commitDocumentChange(updated);
     if (updated.blocks.length > 0) setSelectedBlockId(updated.blocks[0].id);
     toast.success("Template aplicado como rascunho editável. Revise os findings antes de publicar.");
@@ -3284,67 +3300,56 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </div>
         </div>
 
-        {/* Cluster de Ações: Planilha Sheet + Menus + Sitemap + Apps + Código + Domínio + Preview + Salvar + Publicar */}
+        {/* Cluster de Ações Minimalista: Planilha + Apps + Código + Domínio + Preview + Histórico + Salvar + Publicar */}
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setIsCmsTableModalOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg border-primary/40 text-primary hover:bg-primary/10 text-xs font-bold focus-visible:ring-2 focus-visible:ring-primary"
-            title="Planilha Editável In-Page (Modo Sheet Wix)"
+            className="h-11 min-h-11 px-3 rounded-lg text-muted-foreground hover:text-foreground text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
+            title="Planilha Editável In-Page (Modo Sheet)"
           >
             <Database className="size-4 sm:mr-2" />
-            <span className="hidden sm:inline">Planilha (Sheet)</span>
+            <span className="hidden lg:inline">Dados</span>
           </Button>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsMenuManagerOpen(true)}
-            className="hidden lg:inline-flex h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
-            title="Gerenciar Menus (5 Abas Mobile, Hambúrguer & Header)"
-          >
-            <MenuIcon className="size-4 mr-2" />
-            <span>Menus & Abas</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsVisualSitemapOpen(true)}
-            className="hidden xl:inline-flex h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
-            title="Mapa Visual de Páginas & SEO/GEO"
-          >
-            <Layers className="size-4 mr-1" />
-            <span>Sitemap & GEO</span>
-          </Button>
-          <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setIsAppMarketOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg border-primary/40 text-primary hover:bg-primary/10 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-3 rounded-lg text-muted-foreground hover:text-foreground text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
             title="Omni Apps Market"
           >
             <LayoutTemplate className="size-4 sm:mr-2" />
-            <span className="hidden sm:inline">Apps</span>
+            <span className="hidden lg:inline">Apps</span>
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setIsCodeExplorerOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
-            title="Explorador de Código TanStack"
+            className="hidden xl:inline-flex h-11 min-h-11 px-3 rounded-lg text-muted-foreground hover:text-foreground text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
+            title="Explorador de Código"
           >
-            <Code2 className="size-4 sm:mr-2" />
-            <span className="hidden sm:inline">Código</span>
+            <Code2 className="size-4 mr-2" />
+            <span>Código</span>
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => setIsDomainModalOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-3 rounded-lg text-muted-foreground hover:text-foreground text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
             title="Domínios e Hospedagem"
           >
             <Globe className="size-4 sm:mr-2" />
-            <span className="hidden sm:inline">Domínio</span>
+            <span className="hidden lg:inline">Domínio</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsVersionHistoryOpen(true)}
+            className="hidden sm:inline-flex h-11 min-h-11 px-3 rounded-lg text-muted-foreground hover:text-foreground text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
+            title="Histórico de Versões"
+          >
+            <History className="size-4" />
           </Button>
           <Button
             variant="outline"
@@ -3357,22 +3362,11 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           </Button>
 
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsVersionHistoryOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary"
-            title="Histórico de Versões do Documento"
-          >
-            <History className="size-4 sm:mr-2" />
-            <span className="hidden sm:inline">Histórico</span>
-          </Button>
-
-          <Button
             size="sm"
             onClick={handleSaveDocument}
             disabled={isSaving || isPublishing}
             variant="outline"
-            className="h-11 min-h-11 px-3 sm:px-4 rounded-lg border-border font-semibold text-xs transition-transform active:scale-95 shadow-xs focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 px-3 rounded-lg border-border font-semibold text-xs transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Save className="size-4 sm:mr-2" />
             <span className="hidden sm:inline">{isSaving ? "Salvando..." : "Salvar"}</span>
@@ -3383,7 +3377,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               size="sm"
               onClick={handlePublishDocument}
               disabled={isPublishing || isSaving}
-              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95  focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-3 sm:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Send className="size-4 sm:mr-2" />
               <span>{isPublishing ? "Publicando..." : "Publicar"}</span>
@@ -3768,14 +3762,15 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             isEditorCanvas={true}
           >
           <div
+            style={getDocumentThemeCanvasStyle(document.theme, { forceIsolate: true })}
             className={`transition-colors duration-200 ${
               viewport === "native_app"
-                ? "w-full max-w-sm min-h-dvh rounded-3xl border-4 border-foreground/20 overflow-hidden bg-background my-auto flex flex-col"
+                ? "w-full max-w-sm min-h-dvh rounded-3xl border-4 border-foreground/20 overflow-hidden bg-background text-foreground my-auto flex flex-col"
                 : viewport === "mobile"
-                  ? "w-full max-w-sm min-h-dvh rounded-lg border border-border/80 overflow-hidden bg-background my-auto"
+                  ? "w-full max-w-sm min-h-dvh rounded-lg border border-border/80 overflow-hidden bg-background text-foreground my-auto"
                   : viewport === "tablet"
-                    ? "w-full max-w-3xl bg-background rounded-xl border border-border/70"
-                    : "w-full max-w-6xl bg-background rounded-lg border border-border/60"
+                    ? "w-full max-w-3xl bg-background text-foreground rounded-xl border border-border/70"
+                    : "w-full max-w-6xl bg-background text-foreground rounded-lg border border-border/60"
             }`}
           >
             {/* Moldura Superior de App Nativo (Dynamic Island + Top Tab Bar opcional) */}
@@ -4055,7 +4050,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
       {/* ── 2. EXPERIÊNCIA MOBILE (CANVAS CONSOME A TELA TODA + BARRA INFERIOR FLUTUANTE) ── */}
       <BuilderViewportProvider viewport="mobile" isEditorCanvas={true}>
-      <div className="flex md:hidden flex-1 flex-col overflow-y-auto relative pb-28">
+      <div
+        style={getDocumentThemeCanvasStyle(document.theme, { forceIsolate: true })}
+        className="flex md:hidden flex-1 flex-col overflow-y-auto relative pb-28 bg-background text-foreground"
+      >
         {document.blocks.length === 0 ? (
           <div className="py-24 text-center p-6 flex flex-col items-center justify-center flex-1">
             <LayoutTemplate className="size-8 text-muted-foreground/30 mb-3" />

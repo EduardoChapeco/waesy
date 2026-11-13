@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { NicheTemplateDefinition, applyTemplateToPage } from "./templates";
 import { createEmptyOmniPage, OmniPageDocument } from "./types";
 import { OmniPageRenderer } from "./OmniPageRenderer";
+import { getDocumentThemeCanvasStyle } from "@/lib/builder/block-data-resolver";
 import { BuilderViewportProvider } from "@/design-system/vitrine";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -110,6 +111,7 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
 
         <div className="flex-1 bg-muted/20 overflow-y-auto p-2 sm:p-8 flex justify-center items-start overflow-x-hidden">
           <div
+            style={getDocumentThemeCanvasStyle(previewDocument.theme, { forceIsolate: true })}
             className={`transition-colors duration-200 motion-reduce:transition-none ${
               viewport === "mobile"
                 ? "w-full max-w-sm min-h-dvh shadow-xs rounded-lg border border-border/80 overflow-hidden bg-background my-2 shrink-0"

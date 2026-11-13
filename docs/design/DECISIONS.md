@@ -1,5 +1,18 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-494: Imersão Full Page Canônica (`100dvh`) por Padrão para Chat & Copilot (Workspace & SuperApp Civil)
+- **Data:** 2026-11-13
+- **Contexto:**
+  1. As superfícies operacionais de Chat (`/workspace/atendimento`) e Copilot (`/workspace/copilot`) exigiam querystring manual (`?view=standalone`) para ocultar o `WorkspaceShell`, abrindo comprimidas dentro de barras laterais duplas ao clicar na navegação padrão — diferentemente dos Editores e Builders (`/workspace/builder/*`, `/workspace/estudio`, `/workspace/turismo/propostas/$id`).
+  2. O container de `/workspace/copilot` não constava na lista de rotas full-bleed (`p-0 h-full overflow-hidden`) de `workspace-shell.tsx`, recebendo `px-4 sm:px-6 py-4 pb-28` quando embutido, e a leitura de `window.location.search` em `workspace.tsx` causava flash de hidratação SSR.
+  3. No SuperApp público/civil (`AppShell`), `/copilot` e `/conta/conversas` mantinham `TopBar`, `ContextSidebar` e `WaesyCopilotDrawer` flutuante no desktop, e `/conta/conversas` operava em coluna estreita (`max-w-5xl`) em vez de tela cheia split-pane (`100dvh`).
+- **Decisão:**
+  1. **Imersão Nativa no Workspace (`src/routes/workspace.tsx`, `src/components/workspace/workspace-shell.tsx`):** `/workspace/atendimento` e `/workspace/copilot` agora ativam `isImmersiveEditor = true` automaticamente por padrão (lendo `routerState.location.searchStr` sem flash SSR e permitindo `?view=embedded` sob demanda), envolvidos por `<div className="h-dvh w-full overflow-hidden flex flex-col bg-background text-foreground">`. Em `workspace-shell.tsx`, `/workspace/copilot` foi adicionado à regra `max-w-none p-0 h-full overflow-hidden`.
+  2. **Navegação Canônica nos Headers (`src/routes/workspace.copilot.tsx`, `src/routes/workspace.atendimento.index.tsx`):** Inclusão do botão tátil `"Workspace"` (`h-11 min-h-11`, `ArrowLeft`, `Link to="/workspace"`) à esquerda do cabeçalho superior e conversão do botão `<Maximize2 />` para alternar entre Full Page (padrão) e Sidebar (`?view=embedded`) na mesma aba.
+  3. **Full-Bleed `100dvh` e Split-Pane no SuperApp (`src/components/shell/app-shell.tsx`, `src/routes/_store.copilot.tsx`, `src/routes/_store.conta.conversas.index.tsx`):** Inclusão de `/copilot` e `/conta/conversas` em `isFullBleedPage` (`h-dvh w-full overflow-hidden` com `CartSheet` e `SuperAppModuleDrawer` preservados), botão `"Início"` (`h-11 min-h-11`) no topo de `/copilot` e `/conta/conversas`, e layout split-pane `100dvh` estilo WhatsApp Web em `_store.conta.conversas.index.tsx` com `CustomerChatRoom` integrado no painel direito desktop.
+- **Fundamentação:** AGENTS.md Regras B.4, B.5, B.7, B.8, B.9, B.26 e `docs/specs/SPEC-FULLPAGE-CHAT-COPILOT.md`.
+- **Consequências:** Chat e Copilot abrem nativamente em tela cheia (`100dvh`) em todo o ecossistema Waesy com paridade idêntica aos Editores/Builders, zero violações P0 e zero regressões na catraca de Design Lint.
+
 ## DEC-493: Consolidação Integral do Ecossistema (Governança Admin Master, Hub de Integrações, WhatsApp E2E, Cap de Subrequests Cloudflare & Hierarquia Pastas/Projetos/RAG no Copilot)
 - **Data:** 2026-11-12
 - **Contexto:**

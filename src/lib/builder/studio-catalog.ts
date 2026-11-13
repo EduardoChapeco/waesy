@@ -1,5 +1,5 @@
 import type { OmniBlockInstance, OmniPageDocument } from "@/types/omni-builder";
-import { NICHE_TEMPLATE_MATRIX, type NicheTemplateDefinition } from "./omni-templates";
+import { NICHE_TEMPLATE_MATRIX, resolveTemplateTheme, type NicheTemplateDefinition } from "./omni-templates";
 import { STUDIO_PILOT_TEMPLATES } from "./studio-pilot-templates";
 import {
   STUDIO_MANIFEST_SCHEMA_VERSION,
@@ -256,6 +256,7 @@ export function materializeStudioManifest(page: OmniPageDocument, template: Stud
     ...page,
     schemaVersion: page.schemaVersion ?? 1,
     niche: validatedTemplate.niche,
+    theme: resolveTemplateTheme(validatedTemplate.id, validatedTemplate.niche, page.theme),
     source_template_id: validatedTemplate.id,
     source_template_version: validatedTemplate.version,
     blocks,

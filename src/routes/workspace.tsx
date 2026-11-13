@@ -472,16 +472,23 @@ function WorkspaceLayout() {
     pathname.startsWith("/workspace/turismo/propostas/") &&
     pathname !== "/workspace/turismo/propostas";
   const isContractEditor = pathname.includes("/contratos/") && pathname.endsWith("/editor");
+  const rawSearchStr =
+    routerState.location.searchStr ||
+    (typeof window !== "undefined" ? window.location.search : "");
+  const routeSearchParams = new URLSearchParams(rawSearchStr);
+  const viewModeParam = routeSearchParams.get("view");
+  const isEmbeddedRequested = viewModeParam === "embedded" || viewModeParam === "sidebar";
   const isStandaloneRequested =
-    typeof window !== "undefined" &&
-    (new URLSearchParams(window.location.search).get("view") === "standalone" ||
-      new URLSearchParams(window.location.search).get("fullscreen") === "true");
-  const isStandaloneVerticalApp =
-    isStandaloneRequested &&
+    viewModeParam === "standalone" || routeSearchParams.get("fullscreen") === "true";
+  const isNativeFullPageChatOrCopilot =
     (pathname.startsWith("/workspace/atendimento") ||
-      pathname.startsWith("/workspace/copilot") ||
-      pathname.startsWith("/workspace/pdv") ||
-      pathname.startsWith("/workspace/pedidos/gestor"));
+      pathname.startsWith("/workspace/copilot")) &&
+    !isEmbeddedRequested;
+  const isStandaloneVerticalApp =
+    isNativeFullPageChatOrCopilot ||
+    (isStandaloneRequested &&
+      (pathname.startsWith("/workspace/pdv") ||
+        pathname.startsWith("/workspace/pedidos/gestor")));
   const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isContractEditor || isStandaloneVerticalApp;
 
   const isPlatformAdmin = isPlatformAdminUser(session);
@@ -536,6 +543,13 @@ function WorkspaceLayout() {
             path={pathname}
             storeName={activeMembership?.name}
           />
+        </div>
+      );
+    }
+    if (isStandaloneVerticalApp) {
+      return (
+        <div className="h-dvh w-full overflow-hidden flex flex-col bg-background text-foreground">
+          <Outlet />
         </div>
       );
     }

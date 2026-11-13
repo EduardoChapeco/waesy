@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MediaGalleryBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { Image as ImageIcon, X, ZoomIn } from "lucide-react";
 
 export interface MediaGalleryMosaicProps {
@@ -35,10 +36,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
     full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
-  const customStyle: React.CSSProperties = {
-    backgroundColor: styling?.backgroundColor || undefined,
-    color: styling?.textColor || undefined,
-  };
+  const customStyle = getSectionStyle(styling).style;
 
   const items = (data.items || []).filter((item) => !!item.imageUrl);
 

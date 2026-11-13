@@ -5,6 +5,7 @@
  * Consumido de forma 100% simétrica por `OmniEditor` (preview) e `OmniPageRenderer` (produção).
  */
 
+import type React from "react";
 import type { OmniBlockInstance, OmniPageDocument } from "@/types/omni-builder";
 
 export interface BuilderRuntimeDatasets {
@@ -115,11 +116,76 @@ export function shouldApplyCustomDocumentTheme(
   }
   const bg = (theme.backgroundColor || "").trim().toLowerCase();
   const fg = (theme.textColor || "").trim().toLowerCase();
+  const primary = (theme.primaryColor || "").trim().toLowerCase();
   // design-lint-ignore DL-01 reason:"Comparação de tokens para detecção de tema padrão" expiry:"2027-12-31"
-  const isDefaultBg = !bg || bg === "#ffffff" || bg === "#fff";
+  const isDefaultBg = !bg || bg === "#ffffff" || bg === "#fff" || bg === "var(--background)";
   // design-lint-ignore DL-01 reason:"Comparação de tokens para detecção de tema padrão" expiry:"2027-12-31"
-  const isDefaultFg = !fg || fg === "#09090b" || fg === "#000000";
-  return !isDefaultBg || !isDefaultFg;
+  const isDefaultFg = !fg || fg === "#09090b" || fg === "#000000" || fg === "var(--foreground)";
+  // design-lint-ignore DL-01 reason:"Comparação de tokens para detecção de tema padrão" expiry:"2027-12-31"
+  const isDefaultPrimary = !primary || primary === "#09090b" || primary === "#000000" || primary === "var(--primary)";
+  return !isDefaultBg || !isDefaultFg || !isDefaultPrimary;
+}
+
+/**
+ * Gera os estilos inline e as variáveis CSS escopadas (`--background`, `--color-background`,
+ * `--foreground`, `--color-foreground`, `--primary`, `--color-primary`, `--card`, `--muted-foreground`, etc.)
+ * para isolar completamente o canvas do editor e o site publicado do tema do sistema operacional/Waesy.
+ */
+export function getDocumentThemeCanvasStyle(
+  theme?: (OmniPageDocument["theme"] & {
+    customThemeEnabled?: boolean;
+    headingFont?: string;
+    bodyFont?: string;
+  }) | null,
+  options?: { forceIsolate?: boolean },
+): React.CSSProperties {
+  const applyCustom = Boolean(options?.forceIsolate) || shouldApplyCustomDocumentTheme(theme);
+  const fontFamily = theme?.bodyFont || theme?.fontFamily;
+
+  if (!applyCustom) {
+    if (fontFamily && fontFamily !== "Inter, sans-serif") {
+      return { fontFamily };
+    }
+    return {};
+  }
+
+  // design-lint-ignore DL-01 reason:"Isolamento de canvas do site editado contra o tema do sistema" expiry:"2027-12-31"
+  const bg = theme?.backgroundColor && theme.backgroundColor !== "var(--background)" ? theme.backgroundColor : "#ffffff";
+  // design-lint-ignore DL-01 reason:"Isolamento de canvas do site editado contra o tema do sistema" expiry:"2027-12-31"
+  const fg = theme?.textColor && theme.textColor !== "var(--foreground)" ? theme.textColor : "#09090b";
+  // design-lint-ignore DL-01 reason:"Isolamento de canvas do site editado contra o tema do sistema" expiry:"2027-12-31"
+  const primary = theme?.primaryColor && theme.primaryColor !== "var(--primary)" ? theme.primaryColor : "#09090b";
+
+  const cardSurface = `color-mix(in srgb, ${bg} 94%, ${fg} 6%)`;
+  const mutedSurface = `color-mix(in srgb, ${bg} 88%, ${fg} 12%)`;
+  const mutedFg = `color-mix(in srgb, ${fg} 68%, ${bg} 32%)`;
+  const borderToken = `color-mix(in srgb, ${fg} 16%, ${bg} 84%)`;
+
+  return {
+    backgroundColor: bg,
+    color: fg,
+    ...(fontFamily ? { fontFamily } : {}),
+    "--background": bg,
+    "--color-background": bg,
+    "--canvas": bg,
+    "--color-canvas": bg,
+    "--foreground": fg,
+    "--color-foreground": fg,
+    "--text-primary": fg,
+    "--color-text-primary": fg,
+    "--card": cardSurface,
+    "--color-card": cardSurface,
+    "--card-foreground": fg,
+    "--color-card-foreground": fg,
+    "--primary": primary,
+    "--color-primary": primary,
+    "--muted": mutedSurface,
+    "--color-muted": mutedSurface,
+    "--muted-foreground": mutedFg,
+    "--color-muted-foreground": mutedFg,
+    "--border": borderToken,
+    "--color-border": borderToken,
+  } as React.CSSProperties;
 }
 
 function extractNumericPrice(item: Record<string, any>): number {

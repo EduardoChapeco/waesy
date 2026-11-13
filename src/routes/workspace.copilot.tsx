@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
 import {
   AIChatShell,
@@ -12,6 +12,7 @@ import {
   getAiConversationThread,
   createAiConversationThread,
   sendAiConversationMessage,
+  executeGuestCopilotMessage,
   dispatchAiChatAction,
   deleteAiConversationThread,
   toggleAiThreadPinned,
@@ -49,7 +50,7 @@ import {
   type BackgroundTaskItem,
 } from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
-import { Monitor, Info, CheckCircle2, Clock, Maximize2 } from "lucide-react";
+import { Monitor, Info, CheckCircle2, Clock, Maximize2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -487,14 +488,52 @@ function WorkspaceCopilotPage() {
     setIsSending(true);
 
     try {
-      if (effectiveUserId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_WORKSPACE_THREAD_ID) {
+      let targetThreadId = requestThreadId;
+      if (effectiveUserId && (!isUuid(targetThreadId) || targetThreadId === DEFAULT_WORKSPACE_THREAD_ID)) {
+        try {
+          const created = await createAiConversationThread({
+            data: {
+              type: "project",
+              title: text.slice(0, 48) || "Gestão Operacional",
+              storeId: activeStoreId || undefined,
+              folderId: selectedFolderId ?? null,
+              projectId: selectedProjectId ?? null,
+              metadata: {
+                workspaceContext: true,
+                storeId: activeStoreId,
+              },
+              workingMemory: {},
+            },
+          });
+          if (created?.id) {
+            targetThreadId = created.id;
+            activeThreadRef.current = created.id;
+            setActiveThreadId(created.id);
+            setThreads((prev) => [
+              {
+                id: created.id,
+                type: (created.thread_type as any) || "project",
+                title: created.subject || "Gestão Operacional",
+                folderId: selectedFolderId ?? null,
+                projectId: selectedProjectId ?? null,
+                isPinned: true,
+              },
+              ...prev.filter((t) => t.id !== DEFAULT_WORKSPACE_THREAD_ID),
+            ]);
+          }
+        } catch {
+          // Continua com fallback determinístico caso criação de thread falhe
+        }
+      }
+
+      if (effectiveUserId && isUuid(targetThreadId) && targetThreadId !== DEFAULT_WORKSPACE_THREAD_ID) {
         const uploadedAttachments = await uploadComposerAttachments(
           attachments,
           uploadCopilotMultimodalAttachment as any,
         );
         const result = await sendAiConversationMessage({
           data: {
-            threadId: requestThreadId,
+            threadId: targetThreadId,
             clientMessageId: userMessageItem.id,
             message: text,
             replyToId,
@@ -503,7 +542,7 @@ function WorkspaceCopilotPage() {
             userLng: userCoords.lng,
           },
         });
-        if (runId !== activeRunRef.current || activeThreadRef.current !== requestThreadId) return;
+        if (runId !== activeRunRef.current || activeThreadRef.current !== targetThreadId) return;
         setMessages((prev) => {
           const executionFailed =
             result?.aiMessage?.status === "failed" ||
@@ -524,7 +563,7 @@ function WorkspaceCopilotPage() {
             ...deliveredUser,
             {
               id: aiMessage.id,
-              threadId: requestThreadId,
+              threadId: targetThreadId,
               executionId: aiMessage.executionId,
               senderName: "Copilot Operacional",
               isStaffOrAI: true,
@@ -543,11 +582,46 @@ function WorkspaceCopilotPage() {
         if (result?.updatedWorkingMemory) {
           setThreads((prev) =>
             prev.map((thread) =>
-              thread.id === requestThreadId
+              thread.id === targetThreadId
                 ? { ...thread, workingMemory: result.updatedWorkingMemory }
                 : thread,
             ),
           );
+        }
+      } else {
+        const execution = await executeGuestCopilotMessage({
+          data: {
+            message: text,
+            userLat: userCoords.lat,
+            userLng: userCoords.lng,
+          },
+        });
+        const executionFailed =
+          execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL";
+        const aiMessageItem: ChatMessageItem = {
+          id: `ai-${Date.now()}`,
+          threadId: targetThreadId,
+          executionId: execution.executionId,
+          senderName: "Copilot Operacional",
+          isStaffOrAI: true,
+          text: execution.responseMessage,
+          createdAt: new Date().toISOString(),
+          status: executionFailed ? "failed" : "delivered",
+          fsmPhase: execution.fsmPhase,
+          fsmState: execution.fsmState,
+          activitySteps: execution.activitySteps,
+          artifact: execution.artifact,
+          structuredPayload: execution.structuredPayload,
+        };
+        if (runId === activeRunRef.current && activeThreadRef.current === targetThreadId) {
+          setMessages((prev) => [
+            ...prev.map((item) =>
+              item.id === userMessageItem.id
+                ? { ...item, status: executionFailed ? ("failed" as const) : ("delivered" as const) }
+                : item,
+            ),
+            aiMessageItem,
+          ]);
         }
       }
     } catch (err: any) {
@@ -749,6 +823,12 @@ function WorkspaceCopilotPage() {
     <div className="size-full flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border/70 bg-card shrink-0 gap-2">
         <div className="flex items-center gap-2 min-w-0">
+          <Button asChild variant="ghost" size="sm" className="h-11 min-h-11 px-3 gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary">
+            <Link to="/workspace">
+              <ArrowLeft className="size-4" />
+              <span>Workspace</span>
+            </Link>
+          </Button>
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
             <CheckCircle2 className="size-3.5" />
             Waesy Copilot
@@ -760,32 +840,20 @@ function WorkspaceCopilotPage() {
         <div className="flex items-center gap-2 shrink-0">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={() => setBackgroundTasksOpen(true)}
-            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
+            onClick={() => setComputerDrawerOpen(true)}
+            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground focus-visible:ring-2"
+            title="Inspecionar terminal, navegador e editor do Computador Waesy"
           >
-            <Clock className="size-4 text-emerald-600" />
-            <span className="hidden sm:inline">Segundo Plano</span>
-            {runningBackgroundCount > 0 && (
+            <Monitor className="size-4 text-primary" />
+            <span className="hidden sm:inline">Computador</span>
+            {computerSteps && computerSteps.length > 0 && (
               <span className="rounded bg-muted px-2 py-0 font-mono text-xs">
-                {runningBackgroundCount}
+                {computerSteps.length}
               </span>
             )}
           </Button>
-          {computerSteps && computerSteps.length > 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setComputerDrawerOpen(true)}
-              className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
-            >
-              <Monitor className="size-4 text-primary" />
-              <span>Computador do Waesy</span>
-              <span className="rounded bg-muted px-2 py-0 font-mono text-xs">{computerSteps.length}</span>
-            </Button>
-          )}
           <Button
             type="button"
             variant="ghost"
@@ -802,26 +870,27 @@ function WorkspaceCopilotPage() {
             size="icon"
             onClick={() => {
               if (typeof window !== "undefined") {
-                const isStandalone = new URLSearchParams(window.location.search).get("view") === "standalone";
+                const isEmbedded = new URLSearchParams(window.location.search).get("view") === "embedded";
                 const url = new URL(window.location.href);
-                if (isStandalone) {
+                if (isEmbedded) {
                   url.searchParams.delete("view");
                   window.location.href = url.toString();
                 } else {
-                  url.searchParams.set("view", "standalone");
-                  window.open(url.toString(), "_blank");
+                  url.searchParams.set("view", "embedded");
+                  window.location.href = url.toString();
                 }
               }
             }}
             className="size-11 min-h-11 focus-visible:ring-2 focus-visible:ring-primary"
-            title="Abrir Copilot em Janela Própria Dedicada (Modo Full Page)"
-            aria-label="Abrir Copilot em tela cheia"
+            title="Alternar modo Tela Cheia / Painel com Sidebar"
+            aria-label="Alternar modo tela cheia"
           >
             <Maximize2 className="size-4" />
           </Button>
         </div>
       </div>
       <AIChatShell
+        mode="workspace"
         threads={threads}
         activeThreadId={activeThreadId}
         messages={messages}

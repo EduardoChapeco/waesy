@@ -60,8 +60,8 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
   }
 
   const currentSlide = slides[currentIndex] || slides[0];
-  const primaryHref = getSafeBuilderHref(currentSlide.primaryCta.href) ?? "#";
-  const secondaryHref = currentSlide.secondaryCta ? getSafeBuilderHref(currentSlide.secondaryCta.href) ?? "#" : undefined;
+  const primaryHref = currentSlide?.primaryCta?.href ? getSafeBuilderHref(currentSlide.primaryCta.href) ?? "#" : "#";
+  const secondaryHref = currentSlide?.secondaryCta?.href ? getSafeBuilderHref(currentSlide.secondaryCta.href) ?? "#" : undefined;
 
   return (
     <section
