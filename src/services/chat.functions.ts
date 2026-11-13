@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
-import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import { getSSRClient, getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { getAllActiveKeysForProvider } from "@/services/api-orchestrator.functions";
 
 export interface StaffOutboxDispatchInput {
@@ -177,9 +177,12 @@ export const listChatThreads = createServerFn({ method: "GET" })
  assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
  const effectiveStoreId = targetStoreId;
 
- const isSupervisor = ["owner", "admin", "manager", "platform_admin", "master"].includes(
- identity.role,
+ const targetMembership = (identity.memberships || []).find(
+   (m) => m.store_id === targetStoreId,
  );
+ const effectiveRole = targetMembership?.role || identity.role;
+ const isSupervisor = [...MANAGER_ROLES].includes(effectiveRole as any) ||
+   (identity.role === "platform_admin" || identity.role === "master");
 
  let query = db
  .from("chat_threads")
@@ -278,10 +281,19 @@ export const listChatThreads = createServerFn({ method: "GET" })
  messages.sort(
  (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
  );
- // Mensagens públicas (exclui notas internas da equipe para não distorcer a fila de espera do cliente)
- const publicMessages = messages.filter(
-   (m: any) => !m.payload?.is_internal && !m.payload?.is_whisper && m.message_type !== "internal_note" && m.message_type !== "system_event"
- );
+ // Mensagens públicas (exclui notas internas da equipe para não vazar informações confidenciais)
+ const isInternalMsg = (m: any) => {
+   return Boolean(
+     m.payload?.is_internal ||
+     m.payload?.is_whisper ||
+     m.payload?.whisper ||
+     m.message_type === "internal_note" ||
+     m.message_type === "system_event" ||
+     m.origin === "internal_note" ||
+     (typeof m.message === "string" && thread.internal_notes && thread.internal_notes.includes(m.message))
+   );
+ };
+ const publicMessages = messages.filter((m: any) => !isInternalMsg(m));
  const lastPublicMsg = publicMessages[0];
  const lastMsg = messages[0];
  const customerProfile = thread.customer_id ? profilesMap.get(thread.customer_id) : null;
@@ -329,13 +341,11 @@ export const listChatThreads = createServerFn({ method: "GET" })
        : lastPublicMsg.message_type === "sticker" ? "[Figurinha]"
        : "[Mensagem]";
    }
-   const hasInternalNotes = messages.some((m: any) => m.payload?.is_internal || m.payload?.is_whisper || m.message_type === "internal_note" || m.message_type === "system_event");
+   const hasInternalNotes = messages.some(isInternalMsg) || Boolean(thread.internal_notes && thread.internal_notes.trim());
    if (hasInternalNotes) {
-     return "(Apenas anotações internas)";
+     return "(Apenas anotações internas da equipe)";
    }
-   return thread.last_message_text && !thread.last_message_text.startsWith("waesy-msg:")
-     ? thread.last_message_text
-     : "";
+   return "";
  })(),
  last_message_type: lastPublicMsg ? lastPublicMsg.message_type : (lastMsg ? lastMsg.message_type : "text"),
  is_last_reply_staff: lastPublicMsg ? Boolean(lastPublicMsg.is_staff_reply) : false,
@@ -368,6 +378,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  return {
  threads: formattedThreads,
  metrics,
+ isSupervisor,
  };
  } catch (error: any) {
  console.warn("[chat.functions] Falha inesperada ao listar threads:", error?.message || error);
@@ -598,6 +609,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
         // Se ainda assim permaneceu como waesy-msg:, exibe fallback honesto em vez de hash criptográfico
         if (typeof text === "string" && text.startsWith("waesy-msg:")) {
           text = m.message_type === "image" ? "[Imagem]" : m.message_type === "audio" ? "[Áudio]" : m.message_type === "sticker" ? "[Figurinha]" : "[Mensagem]";
+          healed = true;
         }
 
         // Persiste a autocura no banco para curar a linha para sempre
@@ -612,7 +624,12 @@ export const getChatMessages = createServerFn({ method: "GET" })
       return {
         ...m,
         message: text,
-        is_internal: Boolean(m.payload?.is_internal),
+        is_internal: Boolean(
+          m.payload?.is_internal ||
+          m.payload?.is_whisper ||
+          m.message_type === "internal_note" ||
+          (m.message_type === "system_event" && m.payload?.is_whisper)
+        ),
         is_revoked_by_sender: Boolean(m.payload?.is_revoked_by_sender),
         revoked_at: (m.payload?.revoked_at as string) || null,
       };
@@ -799,11 +816,23 @@ export const assignChatThread = createServerFn({ method: "POST" })
  updated_at: new Date().toISOString(),
  };
 
+ const targetMembership = (identity.memberships || []).find(
+   (m) => m.store_id === identity.store_id,
+ );
+ const effectiveRole = targetMembership?.role || identity.role;
+ const isSupervisor = [...MANAGER_ROLES].includes(effectiveRole as any) ||
+   (identity.role === "platform_admin" || identity.role === "master");
+
  if (data.department) updatePayload.department = data.department;
  if (data.assigned_to_profile_id !== undefined)
  updatePayload.assigned_to_profile_id = data.assigned_to_profile_id;
  if (data.priority) updatePayload.priority = data.priority;
- if (data.internal_notes !== undefined) updatePayload.internal_notes = data.internal_notes;
+ if (data.internal_notes !== undefined) {
+   if (!isSupervisor && !data.internal_notes.trim()) {
+     throw new Error("Apenas gerentes e proprietários têm permissão para apagar anotações internas da equipe.");
+   }
+   updatePayload.internal_notes = data.internal_notes;
+ }
 
  const { data: updated, error } = await db
  .from("chat_threads")
@@ -2839,7 +2868,7 @@ export const clearChatThreadMessagesLocal = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
 
     const db = getServerClient();
     const { data: thread } = await db
@@ -2893,24 +2922,52 @@ export const deleteChatThreadLocal = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
 
     const db = getServerClient();
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, store_id")
+      .select("id, store_id, internal_notes")
       .eq("id", threadId)
       .eq("store_id", storeId)
       .single();
 
     if (!thread) throw new Error("Conversa não localizada.");
 
-    await db.from("chat_messages").delete().eq("thread_id", threadId);
-    await db.from("chat_conversation_keys").delete().eq("thread_id", threadId);
-    const { error } = await db.from("chat_threads").delete().eq("id", threadId).eq("store_id", storeId);
-    if (error) throw new Error(`Falha ao excluir conversa do sistema: ${error.message}`);
+    // Identifica mensagens internas e notas protegidas
+    const { data: allMsgs } = await db
+      .from("chat_messages")
+      .select("id, payload, message_type")
+      .eq("thread_id", threadId);
 
-    return { success: true, threadId, message: "Conversa excluída do sistema local." };
+    const isInternal = (m: any) => Boolean(
+      m.payload?.is_internal ||
+      m.payload?.is_whisper ||
+      m.payload?.whisper ||
+      m.message_type === "internal_note" ||
+      m.message_type === "system_event"
+    );
+
+    const idsToDelete = (allMsgs || []).filter((m: any) => !isInternal(m)).map((m: any) => m.id);
+    const hasRemainingNotes = (allMsgs || []).some(isInternal) || Boolean(thread.internal_notes && thread.internal_notes.trim());
+
+    if (idsToDelete.length > 0) {
+      await db.from("chat_messages").delete().in("id", idsToDelete);
+    }
+    await db.from("chat_conversation_keys").delete().eq("thread_id", threadId);
+
+    if (hasRemainingNotes) {
+      await db.from("chat_threads").update({
+        status: "archived",
+        last_message_text: "(Histórico WhatsApp excluído - Anotações internas preservadas)",
+        updated_at: new Date().toISOString(),
+      }).eq("id", threadId);
+    } else {
+      const { error } = await db.from("chat_threads").delete().eq("id", threadId).eq("store_id", storeId);
+      if (error) throw new Error(`Falha ao excluir conversa do sistema: ${error.message}`);
+    }
+
+    return { success: true, threadId, message: "Conversa e histórico limpos com segurança (anotações internas preservadas)." };
   });
 
 export const deleteChatContactPermanentlySchema = z.object({
@@ -2925,12 +2982,12 @@ export const deleteChatContactPermanently = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
 
     const db = getServerClient();
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, store_id, customer_id, guest_name, entity_id, metadata")
+      .select("id, store_id, customer_id, guest_name, entity_id, metadata, internal_notes")
       .eq("id", threadId)
       .eq("store_id", storeId)
       .single();
@@ -2938,15 +2995,32 @@ export const deleteChatContactPermanently = createServerFn({ method: "POST" })
     if (!thread) throw new Error("Conversa ou contato não localizado.");
 
     // 1. Limpa histórico de mensagens e chaves criptográficas (preservando notas internas da equipe para auditoria)
-    await db.from("chat_messages").delete().eq("thread_id", threadId).neq("message_type", "internal_note").neq("message_type", "system_event");
+    const { data: allMsgs } = await db
+      .from("chat_messages")
+      .select("id, payload, message_type")
+      .eq("thread_id", threadId);
+
+    const isInternal = (m: any) => Boolean(
+      m.payload?.is_internal ||
+      m.payload?.is_whisper ||
+      m.payload?.whisper ||
+      m.message_type === "internal_note" ||
+      m.message_type === "system_event"
+    );
+
+    const idsToDelete = (allMsgs || []).filter((m: any) => !isInternal(m)).map((m: any) => m.id);
+    const hasRemainingNotes = (allMsgs || []).some(isInternal) || Boolean(thread.internal_notes && thread.internal_notes.trim());
+
+    if (idsToDelete.length > 0) {
+      await db.from("chat_messages").delete().in("id", idsToDelete);
+    }
     await db.from("chat_conversation_keys").delete().eq("thread_id", threadId);
 
     // 2. Remove da fila de outbox pendente (se houver)
     await db.from("whatsapp_outbox").delete().eq("thread_id", threadId).eq("store_id", storeId);
 
     // 3. Exclui a thread principal se não houver anotações internas remanescentes
-    const { count: remainingNotesCount } = await db.from("chat_messages").select("id", { count: "exact", head: true }).eq("thread_id", threadId);
-    if ((remainingNotesCount || 0) === 0) {
+    if (!hasRemainingNotes) {
       const { error: threadErr } = await db.from("chat_threads").delete().eq("id", threadId).eq("store_id", storeId);
       if (threadErr) throw new Error(`Falha ao excluir conversa: ${threadErr.message}`);
     } else {
@@ -3085,7 +3159,7 @@ export const listChatContactDeletionRequests = createServerFn({ method: "GET" })
     const identity = await getServerIdentity();
     const storeId = data?.storeId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
-    assertStoreAccess(identity, ["owner", "admin", "manager", "platform_admin"], storeId);
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
 
     const db = getServerClient();
     let query = db

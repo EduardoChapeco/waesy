@@ -256,6 +256,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
           threads: [],
           metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 },
         }),
+        isSupervisor: Boolean((res as any)?.isSupervisor || (store as any)?.is_owner),
         store,
         sdrSessions: sdrData?.sessions || [],
         sdrMetrics: sdrData?.metrics || { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
@@ -268,6 +269,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
       return {
         threads: [],
         metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 },
+        isSupervisor: false,
         store: null,
         sdrSessions: [],
         sdrMetrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
@@ -1883,9 +1885,9 @@ function WorkspaceAtendimentoPage() {
                         </div>
 
                         <p className="text-xs text-muted-foreground line-clamp-1 leading-snug">
-                          {t.is_last_reply_staff ? "Você: " : ""}
+                          {t.is_last_reply_staff && !String(t.last_message || "").startsWith("(") ? "Você: " : ""}
                           {String(t.last_message || "").startsWith("waesy-msg:")
-                            ? "[Mensagem]"
+                            ? (t.last_message_type === "image" ? "[Imagem]" : t.last_message_type === "audio" ? "[Áudio]" : "[Mensagem]")
                             : (t.last_message || "Sem mensagens")}
                         </p>
 
@@ -2348,8 +2350,11 @@ function WorkspaceAtendimentoPage() {
 
                     // Card de Nota Interna (Whisper)
                     if (
+                      msg.is_internal ||
                       msg.payload?.is_whisper ||
-                      (msg.message_type === "system_event" && msg.payload?.is_whisper)
+                      msg.payload?.is_internal ||
+                      msg.message_type === "internal_note" ||
+                      (msg.message_type === "system_event" && (msg.payload?.is_whisper || msg.payload?.is_internal))
                     ) {
                       return (
                         <div key={msg.id} className="w-full flex justify-center my-2">
