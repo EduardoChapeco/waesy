@@ -5,7 +5,65 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
 import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
 import { logOperationalEvent } from "@/lib/telemetry/operational-logger";
-import { getNextActiveKey, getAllActiveKeysForProvider, recordKeyUsage, markKeyError } from "./api-orchestrator.functions";
+import * as apiOrchestrator from "./api-orchestrator.functions";
+
+export const MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS = 8;
+const MAX_GATEWAY_ERROR_REPORT_SUBREQUESTS = 4;
+
+async function safeLoadBatchKeys(
+  providers: string[],
+  ownerId?: string,
+  storeId?: string,
+): Promise<Record<string, Array<{ id: string; rawKey: string; label?: string }>> | null> {
+  if (providers.length === 0) return null;
+  try {
+    const fn = apiOrchestrator.getBatchActiveKeysForProviders;
+    if (typeof fn !== "function") return null;
+    return await fn(providers, ownerId, storeId);
+  } catch {
+    return null;
+  }
+}
+
+async function safeLoadProviderKeys(
+  provider: string,
+  ownerId?: string,
+  storeId?: string,
+): Promise<Array<{ id: string; rawKey: string; label?: string }>> {
+  try {
+    const getAllFn = apiOrchestrator.getAllActiveKeysForProvider;
+    if (typeof getAllFn === "function") {
+      const allKeys = await getAllFn(provider as any, ownerId, storeId);
+      if (Array.isArray(allKeys) && allKeys.length > 0) return allKeys;
+    }
+  } catch {
+    // Fallback para mocks parciais em testes sem getAllActiveKeysForProvider
+  }
+  const singleKey = await apiOrchestrator.getNextActiveKey(provider as any, ownerId);
+  return singleKey && singleKey.rawKey ? [singleKey] : [];
+}
+
+function safeRecordKeyUsage(keyId: string): void {
+  try {
+    const fn = apiOrchestrator.recordKeyUsage;
+    if (typeof fn === "function") {
+      fn(keyId).catch(() => {});
+    }
+  } catch {
+    // Fallback para mocks parciais sem recordKeyUsage
+  }
+}
+
+function safeMarkKeyError(keyId: string, errMessage: string, status?: number): void {
+  try {
+    const fn = apiOrchestrator.markKeyError;
+    if (typeof fn === "function") {
+      fn(keyId, errMessage, status).catch(() => {});
+    }
+  } catch {
+    // Fallback para mocks parciais sem markKeyError
+  }
+}
 
 // ============================================================
 // Tipos & Schemas Canônicos da Porta Única (ia/02-contrato.md)
@@ -302,6 +360,7 @@ async function callProviderLowLevel(
     images?: Array<{ mimeType: string; base64: string }>;
     timeoutMs?: number;
     signal?: AbortSignal;
+    consumeRetrySubrequest?: () => boolean;
   }
 ): Promise<{ text: string; inputTokens: number; outputTokens: number; rawJson?: any }> {
   const timeout = options?.timeoutMs || 15000;
@@ -339,15 +398,16 @@ async function callProviderLowLevel(
         const firstErr = await res.text().catch(() => "");
         const lowerErr = firstErr.toLowerCase();
         if (
-          res.status === 429 ||
-          lowerErr.includes("model_not_found") ||
-          lowerErr.includes("does not exist") ||
-          lowerErr.includes("not found") ||
-          lowerErr.includes("not supported") ||
-          lowerErr.includes("decommissioned") ||
-          lowerErr.includes("invalid model") ||
-          lowerErr.includes("unknown model") ||
-          lowerErr.includes("json_validate_failed")
+          (res.status === 429 ||
+            lowerErr.includes("model_not_found") ||
+            lowerErr.includes("does not exist") ||
+            lowerErr.includes("not found") ||
+            lowerErr.includes("not supported") ||
+            lowerErr.includes("decommissioned") ||
+            lowerErr.includes("invalid model") ||
+            lowerErr.includes("unknown model") ||
+            lowerErr.includes("json_validate_failed")) &&
+          (!options?.consumeRetrySubrequest || options.consumeRetrySubrequest())
         ) {
           console.warn(`[Groq] Modelo "${model}" indisponível ou limitado no Groq (${res.status}). Executando failover transparente para "llama-3.3-70b-versatile"...`);
           res = await tryFetchGroq("llama-3.3-70b-versatile");
@@ -541,6 +601,7 @@ async function callProviderLowLevel(
         ].filter((m) => m !== model);
 
         for (const altModel of fallbackOrModels) {
+          if (options?.consumeRetrySubrequest && !options.consumeRetrySubrequest()) break;
           res = await tryOpenAiCompatible(altModel);
           if (res.ok) break;
         }
@@ -754,8 +815,38 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
     let attempts = 0;
     let fallbackUsed = false;
     let fallbackFrom: string | undefined;
+    let externalHttpSubrequests = 0;
+    let errorReportSubrequests = 0;
+    const consumeExternalHttpSubrequest = (): boolean => {
+      if (externalHttpSubrequests >= MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS) {
+        return false;
+      }
+      externalHttpSubrequests++;
+      return true;
+    };
+
+    const targetOwnerId = request.authContext?.userId || request.authContext?.storeId;
+    const activeCandidateProviders = Array.from(
+      new Set(
+        candidates
+          .filter((c) => getCircuit(c.provider).state !== "open")
+          .map((c) => c.provider),
+      ),
+    );
+    const preloadedKeysMap = await safeLoadBatchKeys(
+      activeCandidateProviders,
+      targetOwnerId,
+      request.authContext?.storeId,
+    );
 
     for (let i = 0; i < candidates.length; i++) {
+      if (externalHttpSubrequests >= MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS) {
+        lastError =
+          lastError ||
+          new Error("Orçamento de subrequests externos do gateway atingido nesta invocação.");
+        break;
+      }
+
       const candidate = candidates[i];
       attempts++;
 
@@ -768,21 +859,17 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
         continue;
       }
 
-      // 5.2 Obter todas as chaves ativas do Provedor para rotação Multi-Key intra-provedor
+      // 5.2 Obter todas as chaves ativas do Provedor a partir do lote pré-carregado (ou fallback legado)
       let providerKeys: Array<{ id: string; rawKey: string; label?: string }> = [];
-      const targetOwnerId = request.authContext?.userId || request.authContext?.storeId;
       try {
-        if (typeof getAllActiveKeysForProvider === "function") {
-          const allKeys = await getAllActiveKeysForProvider(candidate.provider as any, targetOwnerId);
-          if (Array.isArray(allKeys) && allKeys.length > 0) {
-            providerKeys = allKeys;
-          }
-        }
-        if (providerKeys.length === 0) {
-          const singleKey = await getNextActiveKey(candidate.provider as any, targetOwnerId);
-          if (singleKey && singleKey.rawKey) {
-            providerKeys = [singleKey];
-          }
+        if (preloadedKeysMap && Array.isArray(preloadedKeysMap[candidate.provider])) {
+          providerKeys = preloadedKeysMap[candidate.provider];
+        } else {
+          providerKeys = await safeLoadProviderKeys(
+            candidate.provider,
+            targetOwnerId,
+            request.authContext?.storeId,
+          );
         }
       } catch (keyErr) {
         console.warn(`[AI-CORE-GATEWAY] Pool sem chave para ${candidate.provider}:`, keyErr);
@@ -798,6 +885,10 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
       let providerLastError: any = null;
 
       for (let kIdx = 0; kIdx < providerKeys.length; kIdx++) {
+        if (!consumeExternalHttpSubrequest()) {
+          break;
+        }
+
         const activeKey = providerKeys[kIdx];
         if (kIdx > 0) {
           attempts++;
@@ -818,13 +909,12 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
               images: request.images,
               timeoutMs: request.constraints?.timeoutMs,
               signal: request.signal,
+              consumeRetrySubrequest: consumeExternalHttpSubrequest,
             }
           );
 
           recordCircuitSuccess(candidate.provider);
-          if (typeof recordKeyUsage === "function") {
-            recordKeyUsage(activeKey.id).catch(() => {});
-          }
+          safeRecordKeyUsage(activeKey.id);
 
           const sanitizedText = sanitizeAiOutput(response.text);
           const costUsd = calculateCost(candidate.provider, candidate.model, response.inputTokens, response.outputTokens);
@@ -928,24 +1018,16 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
           const errMessage = err instanceof Error ? err.message : String(err);
           const statusMatch = errMessage.match(/\b(401|402|403|429|500|502|503|504)\b/);
           const parsedStatus = (err as any)?.status ?? (statusMatch ? Number(statusMatch[1]) : undefined);
-          markKeyError(activeKey.id, errMessage, parsedStatus).catch(() => {});
+          if (errorReportSubrequests < MAX_GATEWAY_ERROR_REPORT_SUBREQUESTS) {
+            errorReportSubrequests++;
+            safeMarkKeyError(activeKey.id, errMessage, parsedStatus);
+          }
         }
       }
 
-      // Circuit Breaker do provedor só abre se TODAS as chaves saudáveis falharam e o pool
-      // não tem mais nenhuma chave fora de quarentena (evita derrubar o provedor por 1 chave com 429).
+      // Todas as chaves pré-carregadas para o provedor falharam; aciona Circuit Breaker sem subrequests extras
       if (providerLastError) {
-        let remainingHealthy = 0;
-        try {
-          const triedIds = new Set(providerKeys.map((k) => k.id));
-          const refreshed = await getAllActiveKeysForProvider(candidate.provider as any);
-          remainingHealthy = refreshed.filter((k) => !triedIds.has(k.id)).length;
-        } catch {
-          remainingHealthy = 0;
-        }
-        if (remainingHealthy === 0) {
-          recordCircuitFailure(candidate.provider, providerLastError.message);
-        }
+        recordCircuitFailure(candidate.provider, providerLastError.message);
         if (!fallbackFrom) fallbackFrom = candidate.provider;
         fallbackUsed = true;
       }
@@ -1175,12 +1257,27 @@ export async function executeAiCoreGatewayStream(request: AIGatewayRequest, onDe
   if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Mensagem bloqueada por regras de segurança e proteção de dados." } };
   const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(security.sanitizedPrompt || request.prompt, request.systemPrompt);
   const candidates: RouteCandidate[] = CANONICAL_TASK_ROUTES[request.task] || CANONICAL_TASK_ROUTES.chat;
+  const targetOwnerId = request.authContext?.userId || request.authContext?.storeId;
+  const candidateProviders = Array.from(new Set(candidates.map((c) => c.provider)));
+  const preloadedKeysMap = await safeLoadBatchKeys(
+    candidateProviders,
+    targetOwnerId,
+    request.authContext?.storeId,
+  );
+
   let attempts = 0;
   let lastError = "Instabilidade temporária nos serviços de transmissão";
   for (const candidate of candidates) {
+    if (attempts >= MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS) break;
     attempts++;
     try {
-      const activeKey = await getNextActiveKey(candidate.provider as any);
+      const batchKeys = preloadedKeysMap?.[candidate.provider];
+      const activeKey =
+        Array.isArray(batchKeys) && batchKeys.length > 0
+          ? batchKeys[0]
+          : preloadedKeysMap
+            ? null
+            : (await safeLoadProviderKeys(candidate.provider, targetOwnerId, request.authContext?.storeId))[0] ?? null;
       if (!activeKey?.rawKey) continue;
       let endpoint: string;
       let headers: Record<string, string>;

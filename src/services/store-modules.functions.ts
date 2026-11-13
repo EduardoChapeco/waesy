@@ -5,9 +5,12 @@ import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import {
   COMMERCIAL_MODULE_CATALOG,
   STORE_PLANS,
+  STAFF_MEMBER_ROLES,
   CommercialModuleId,
   StorePlanTier,
   isStoreModuleActive,
+  isStorePlanExempt,
+  calculateStoreMonthlyPlanTotalCents,
 } from "@/lib/architecture/module-plan-governance";
 
 export const getStorePlanOverview = createServerFn({ method: "GET" })
@@ -17,11 +20,28 @@ export const getStorePlanOverview = createServerFn({ method: "GET" })
     assertStoreAccess(identity, ["owner", "admin", "platform_admin", "manager", "operator"], storeId);
 
     const db = getServerClient();
-    const { data: store, error } = await db
-      .from("stores")
-      .select("id, name, slug, plan_tier, settings, created_at")
-      .eq("id", storeId)
-      .single();
+    const [{ data: store, error }, staffRes, instancesRes, invoicesRes] = await Promise.all([
+      db
+        .from("stores")
+        .select("id, name, slug, is_platform_root, plan_tier, settings, created_at")
+        .eq("id", storeId)
+        .single(),
+      db
+        .from("workspace_members")
+        .select("profile_id", { count: "exact", head: true })
+        .eq("store_id", storeId)
+        .in("role", [...STAFF_MEMBER_ROLES]),
+      db
+        .from("whatsapp_channel_instances")
+        .select("id", { count: "exact", head: true })
+        .eq("store_id", storeId),
+      db
+        .from("platform_invoices")
+        .select("id, description, amount_cents, status, due_date, paid_at, created_at")
+        .eq("store_id", storeId)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
 
     if (error || !store) throw new Error("Loja não encontrada.");
 
@@ -29,11 +49,12 @@ export const getStorePlanOverview = createServerFn({ method: "GET" })
     const currentPlan = STORE_PLANS[rawTier] || STORE_PLANS.free;
     const storeSettings = (store.settings && typeof store.settings === "object" ? store.settings : {}) as Record<string, any>;
     const activeAddons: string[] = Array.isArray(storeSettings.active_modules) ? storeSettings.active_modules : [];
+    const exempt = isStorePlanExempt(store);
 
     const modulesStatus = Object.values(COMMERCIAL_MODULE_CATALOG).map((mod) => {
       const isIncludedInPlan = currentPlan.includedModules.includes(mod.id);
       const isSubscribedAsAddon = activeAddons.includes(mod.id);
-      const isActive = isIncludedInPlan || isSubscribedAsAddon || Boolean(storeSettings.all_modules_enabled);
+      const isActive = isIncludedInPlan || isSubscribedAsAddon || exempt;
 
       return {
         ...mod,
@@ -50,8 +71,17 @@ export const getStorePlanOverview = createServerFn({ method: "GET" })
         slug: store.slug,
         tier: currentPlan.tier,
         planName: currentPlan.name,
+        isExempt: exempt,
       },
       plan: currentPlan,
+      usage: {
+        staffCount: staffRes.count || 0,
+        maxStaffUsers: currentPlan.maxStaffUsers,
+        whatsAppInstancesCount: instancesRes.count || 0,
+        maxWhatsAppInstances: currentPlan.maxWhatsAppInstances,
+      },
+      monthlyTotalCents: calculateStoreMonthlyPlanTotalCents(store),
+      invoices: invoicesRes.data || [],
       modules: modulesStatus,
       availablePlans: Object.values(STORE_PLANS),
     };

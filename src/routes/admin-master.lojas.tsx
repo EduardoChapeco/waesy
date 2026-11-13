@@ -381,7 +381,8 @@ function MasterLojasPage() {
            <div className="flex items-center justify-between">
              <span className="font-semibold text-foreground">Usuários de Equipe Inclusos:</span>
              <span className="font-mono text-muted-foreground">
-               {STORE_PLANS[selectedTier].maxStaffUsers === 9999
+               {typeof selectedStoreForPlan?.staff_count === "number" ? `${selectedStoreForPlan.staff_count} / ` : ""}
+               {STORE_PLANS[selectedTier].maxStaffUsers >= 999
                  ? "Ilimitados"
                  : STORE_PLANS[selectedTier].maxStaffUsers}
              </span>
@@ -389,7 +390,10 @@ function MasterLojasPage() {
            <div className="flex items-center justify-between">
              <span className="font-semibold text-foreground">Instâncias WhatsApp:</span>
              <span className="font-mono text-muted-foreground">
-               {STORE_PLANS[selectedTier].maxWhatsAppInstances === 999
+               {typeof selectedStoreForPlan?.whatsapp_instances_count === "number"
+                 ? `${selectedStoreForPlan.whatsapp_instances_count} / `
+                 : ""}
+               {STORE_PLANS[selectedTier].maxWhatsAppInstances >= 999
                  ? "Ilimitadas"
                  : STORE_PLANS[selectedTier].maxWhatsAppInstances}
              </span>

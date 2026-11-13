@@ -2399,6 +2399,111 @@ export const getMarketplaceOAuthUrl = createServerFn({ method: "POST" })
     };
   });
 
+export async function verifyMarketplaceConnectorConnectivity(params: {
+  platform: string;
+  resolved: { isConfigured: boolean; accessToken?: string | null };
+  fetchImpl?: typeof fetch;
+}): Promise<{ success: boolean; verifiedRemotely: boolean; message: string }> {
+  const { platform, resolved } = params;
+  const doFetch = params.fetchImpl || fetch;
+
+  if (!resolved.isConfigured) {
+    return {
+      success: false,
+      verifiedRemotely: false,
+      message: "Nenhuma credencial válida encontrada no cofre nem no formulário.",
+    };
+  }
+
+  if (platform === "mercadolivre" && resolved.accessToken) {
+    try {
+      const res = await doFetch("https://api.mercadolibre.com/users/me", {
+        headers: { Authorization: `Bearer ${resolved.accessToken}` },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        return {
+          success: false,
+          verifiedRemotely: true,
+          message: `Mercado Livre rejeitou o Access Token (HTTP ${res.status}).`,
+        };
+      }
+      const body = (await res.json().catch(() => ({}))) as Record<string, any>;
+      return {
+        success: true,
+        verifiedRemotely: true,
+        message: `Conexão Mercado Livre ativa: Conta ${body.nickname || body.id || "autenticada"} verificada (HTTP 200).`,
+      };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        verifiedRemotely: true,
+        message: `Falha de rede ao consultar Mercado Livre: ${err instanceof Error ? err.message : "Timeout"}`,
+      };
+    }
+  }
+
+  if (platform === "bling" && resolved.accessToken) {
+    try {
+      const res = await doFetch("https://api.bling.com.br/v3/situacoes/modulos", {
+        headers: { Authorization: `Bearer ${resolved.accessToken}`, Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        return {
+          success: false,
+          verifiedRemotely: true,
+          message: `Bling v3 rejeitou as credenciais (HTTP ${res.status}).`,
+        };
+      }
+      return {
+        success: true,
+        verifiedRemotely: true,
+        message: "Token OAuth 2.0 Bling ERP v3 verificado ao vivo (HTTP 200).",
+      };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        verifiedRemotely: true,
+        message: `Falha de rede ao consultar Bling ERP: ${err instanceof Error ? err.message : "Timeout"}`,
+      };
+    }
+  }
+
+  if (platform === "ifood" && resolved.accessToken) {
+    try {
+      const res = await doFetch("https://merchant-api.ifood.com.br/merchant/v1.0/merchants", {
+        headers: { Authorization: `Bearer ${resolved.accessToken}` },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        return {
+          success: false,
+          verifiedRemotely: true,
+          message: `iFood OpenDelivery rejeitou o token informado (HTTP ${res.status}).`,
+        };
+      }
+      return {
+        success: true,
+        verifiedRemotely: true,
+        message: "Token OAuth 2.0 iFood OpenDelivery verificado ao vivo (HTTP 200).",
+      };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        verifiedRemotely: true,
+        message: `Falha de rede ao consultar iFood OpenDelivery: ${err instanceof Error ? err.message : "Timeout"}`,
+      };
+    }
+  }
+
+  return {
+    success: true,
+    verifiedRemotely: false,
+    message: `Credenciais de ${platform.toUpperCase()} localizadas no cofre AES-256-GCM. Teste ao vivo não suportado diretamente para este conector.`,
+  };
+}
+
 /**
  * Testa em tempo real as credenciais salvas ou digitadas para o conector de Marketplace.
  */
@@ -2421,37 +2526,10 @@ export const testMarketplaceConnectorCredentialsFn = createServerFn({ method: "P
       connectorRow: data.credentialPayload ? { settings: { credentials: data.credentialPayload } } : undefined,
     });
 
-    if (!resolved.isConfigured) {
-      return {
-        success: false,
-        message: "Nenhuma credencial válida encontrada no cofre nem no formulário.",
-      };
-    }
-
-    if (data.platform === "mercadolivre" && resolved.accessToken) {
-      const res = await fetch("https://api.mercadolibre.com/users/me", {
-        headers: { Authorization: `Bearer ${resolved.accessToken}` },
-      }).catch(() => null);
-      if (res?.ok) {
-        const body = (await res.json().catch(() => ({}))) as Record<string, any>;
-        return {
-          success: true,
-          message: `Conexão Mercado Livre ativa: Conta ${body.nickname || body.id} verificada (HTTP 200).`,
-        };
-      }
-    }
-
-    if (data.platform === "ifood" && resolved.accessToken) {
-      return {
-        success: true,
-        message: "Token OAuth 2.0 iFood OpenDelivery autenticado e pronto para polling.",
-      };
-    }
-
-    return {
-      success: true,
-      message: `Credenciais de ${data.platform.toUpperCase()} validadas no cofre AES-256-GCM.`,
-    };
+    return await verifyMarketplaceConnectorConnectivity({
+      platform: data.platform,
+      resolved,
+    });
   });
 
 

@@ -292,6 +292,7 @@ import { Route as WorkspaceConfiguracoesIntegracoesRouteImport } from './routes/
 import { Route as WorkspaceConfiguracoesInteligenciaArtificialRouteImport } from './routes/workspace.configuracoes.inteligencia-artificial'
 import { Route as WorkspaceConfiguracoesLojaRouteImport } from './routes/workspace.configuracoes.loja'
 import { Route as WorkspaceConfiguracoesParceirosRouteImport } from './routes/workspace.configuracoes.parceiros'
+import { Route as WorkspaceConfiguracoesPlanosRouteImport } from './routes/workspace.configuracoes.planos'
 import { Route as WorkspaceConfiguracoesPrivacidadeLojaRouteImport } from './routes/workspace.configuracoes.privacidade-loja'
 import { Route as WorkspaceConfiguracoesPwaRouteImport } from './routes/workspace.configuracoes.pwa'
 import { Route as WorkspaceConfiguracoesSessoesRouteImport } from './routes/workspace.configuracoes.sessoes'
@@ -1904,6 +1905,12 @@ const WorkspaceConfiguracoesParceirosRoute =
     path: '/configuracoes/parceiros',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceConfiguracoesPlanosRoute =
+  WorkspaceConfiguracoesPlanosRouteImport.update({
+    id: '/configuracoes/planos',
+    path: '/configuracoes/planos',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceConfiguracoesPrivacidadeLojaRoute =
   WorkspaceConfiguracoesPrivacidadeLojaRouteImport.update({
     id: '/configuracoes/privacidade-loja',
@@ -3132,6 +3139,7 @@ export interface FileRoutesByFullPath {
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
   '/workspace/configuracoes/loja': typeof WorkspaceConfiguracoesLojaRoute
   '/workspace/configuracoes/parceiros': typeof WorkspaceConfiguracoesParceirosRoute
+  '/workspace/configuracoes/planos': typeof WorkspaceConfiguracoesPlanosRoute
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
@@ -3577,6 +3585,7 @@ export interface FileRoutesByTo {
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
   '/workspace/configuracoes/loja': typeof WorkspaceConfiguracoesLojaRoute
   '/workspace/configuracoes/parceiros': typeof WorkspaceConfiguracoesParceirosRoute
+  '/workspace/configuracoes/planos': typeof WorkspaceConfiguracoesPlanosRoute
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
@@ -4033,6 +4042,7 @@ export interface FileRoutesById {
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
   '/workspace/configuracoes/loja': typeof WorkspaceConfiguracoesLojaRoute
   '/workspace/configuracoes/parceiros': typeof WorkspaceConfiguracoesParceirosRoute
+  '/workspace/configuracoes/planos': typeof WorkspaceConfiguracoesPlanosRoute
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
@@ -4489,6 +4499,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/inteligencia-artificial'
     | '/workspace/configuracoes/loja'
     | '/workspace/configuracoes/parceiros'
+    | '/workspace/configuracoes/planos'
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
@@ -4934,6 +4945,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/inteligencia-artificial'
     | '/workspace/configuracoes/loja'
     | '/workspace/configuracoes/parceiros'
+    | '/workspace/configuracoes/planos'
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
@@ -5389,6 +5401,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/inteligencia-artificial'
     | '/workspace/configuracoes/loja'
     | '/workspace/configuracoes/parceiros'
+    | '/workspace/configuracoes/planos'
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
@@ -7627,6 +7640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceConfiguracoesParceirosRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/configuracoes/planos': {
+      id: '/workspace/configuracoes/planos'
+      path: '/configuracoes/planos'
+      fullPath: '/workspace/configuracoes/planos'
+      preLoaderRoute: typeof WorkspaceConfiguracoesPlanosRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/configuracoes/privacidade-loja': {
       id: '/workspace/configuracoes/privacidade-loja'
       path: '/configuracoes/privacidade-loja'
@@ -9462,6 +9482,7 @@ interface WorkspaceRouteChildren {
   WorkspaceConfiguracoesInteligenciaArtificialRoute: typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
   WorkspaceConfiguracoesLojaRoute: typeof WorkspaceConfiguracoesLojaRoute
   WorkspaceConfiguracoesParceirosRoute: typeof WorkspaceConfiguracoesParceirosRoute
+  WorkspaceConfiguracoesPlanosRoute: typeof WorkspaceConfiguracoesPlanosRoute
   WorkspaceConfiguracoesPrivacidadeLojaRoute: typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   WorkspaceConfiguracoesPwaRoute: typeof WorkspaceConfiguracoesPwaRoute
   WorkspaceConfiguracoesSessoesRoute: typeof WorkspaceConfiguracoesSessoesRoute
@@ -9649,6 +9670,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
     WorkspaceConfiguracoesInteligenciaArtificialRoute,
   WorkspaceConfiguracoesLojaRoute: WorkspaceConfiguracoesLojaRoute,
   WorkspaceConfiguracoesParceirosRoute: WorkspaceConfiguracoesParceirosRoute,
+  WorkspaceConfiguracoesPlanosRoute: WorkspaceConfiguracoesPlanosRoute,
   WorkspaceConfiguracoesPrivacidadeLojaRoute:
     WorkspaceConfiguracoesPrivacidadeLojaRoute,
   WorkspaceConfiguracoesPwaRoute: WorkspaceConfiguracoesPwaRoute,

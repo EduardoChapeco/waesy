@@ -6,6 +6,7 @@
 
 import { getServerClient } from "@/lib/supabase";
 import { formatMoney } from "@/lib/money";
+import { generatePixBrCode } from "@/lib/pix-payload";
 
 export interface StockCheckInput {
   storeId: string;
@@ -98,35 +99,83 @@ export async function toolCheckInventory(input: StockCheckInput): Promise<StockI
   });
 }
 
+export function buildStoreAgentPixPayload(params: {
+  pixKey: string;
+  merchantName: string;
+  merchantCity: string;
+  amountCents: number;
+  chargeId: string;
+  description: string;
+}): string {
+  return generatePixBrCode({
+    pixKey: params.pixKey,
+    amountCents: params.amountCents,
+    merchantName: params.merchantName,
+    merchantCity: params.merchantCity,
+    txId: params.chargeId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 25),
+    description: params.description,
+  });
+}
+
 /**
  * 2. Tool: Emitir Cobrança / Carnê PIX Imediato
  */
 export async function toolCreatePixCharge(input: PixChargeInput): Promise<PixChargeResult> {
-  const db = getServerClient();
-  const chargeId = `pix_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const fakeEmv = `00020126580014br.gov.bcb.pix0136${input.storeId}520400005303986540${(input.amountCents / 100).toFixed(2)}5802BR5913Waesy Pay6009Sao Paulo62070503***6304`;
+  if (!Number.isFinite(input.amountCents) || input.amountCents <= 0) {
+    throw new Error("O valor da cobrança PIX deve ser maior que zero.");
+  }
 
-  // Registra ou vincula cobrança
-  try {
-    await db.from("payment_transactions").insert({
-      store_id: input.storeId,
-      amount_cents: input.amountCents,
-      payment_method: "pix",
-      status: "pending",
-      metadata: {
-        charge_id: chargeId,
-        customer_phone: input.customerPhone,
-        description: input.description,
-        pix_copy_paste: fakeEmv,
-      },
-    });
-  } catch {
-    // Best-effort transaction insert
+  const db = getServerClient();
+  const { data: storeRow, error: storeErr } = await db
+    .from("stores")
+    .select("id, name, city, pix_key, settings")
+    .eq("id", input.storeId)
+    .single();
+
+  if (storeErr || !storeRow) {
+    throw new Error(`Loja não encontrada para emissão PIX: ${storeErr?.message || input.storeId}`);
+  }
+
+  const storeSettings = (storeRow.settings && typeof storeRow.settings === "object" ? storeRow.settings : {}) as Record<string, any>;
+  const realPixKey = String(storeRow.pix_key || storeSettings.pix_key || storeSettings.pixKey || "").trim();
+  if (!realPixKey) {
+    throw new Error(
+      "Chave PIX da loja não configurada. Acesse Configurações > Pagamentos ou Dados Financeiros para definir a chave PIX antes de emitir cobranças."
+    );
+  }
+
+  const chargeId = `pix_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const brCode = buildStoreAgentPixPayload({
+    pixKey: realPixKey,
+    merchantName: String(storeRow.name || "Waesy Loja"),
+    merchantCity: String(storeRow.city || "Brasil"),
+    amountCents: input.amountCents,
+    chargeId,
+    description: input.description,
+  });
+
+  const { error: txErr } = await db.from("payment_transactions").insert({
+    store_id: input.storeId,
+    order_id: input.orderId || null,
+    amount_cents: input.amountCents,
+    payment_method: "pix",
+    status: "pending",
+    metadata: {
+      charge_id: chargeId,
+      customer_phone: input.customerPhone,
+      description: input.description,
+      pix_copy_paste: brCode,
+      pix_key: realPixKey,
+    },
+  });
+
+  if (txErr) {
+    throw new Error(`Falha ao registrar cobrança PIX no banco de dados: ${txErr.message}`);
   }
 
   return {
     chargeId,
-    pixCopyPaste: fakeEmv,
+    pixCopyPaste: brCode,
     expiresInMinutes: 30,
     amountDisplay: formatMoney(input.amountCents),
   };

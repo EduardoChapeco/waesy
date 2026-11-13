@@ -1,7 +1,13 @@
 import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { encryptConversationMessage } from "@/lib/conversation-crypto.server";
-import { toolLookupTourismPackages, toolGetTourismAviationPolicies } from "@/services/whatsapp-ai-agent-tools.server";
+import {
+  toolCheckInventory,
+  toolGetOrderStatus,
+  toolHandoffToHuman,
+  toolLookupTourismPackages,
+  toolGetTourismAviationPolicies,
+} from "@/services/whatsapp-ai-agent-tools.server";
 
 function normalizePhone(value: string) { const digits = value.replace(/\D/g, ""); return digits.length >= 7 ? `+${digits}` : null; }
 function phoneHash(value: string) { return createHash("sha256").update(value).digest("hex"); }
@@ -33,7 +39,7 @@ export async function resolveWhatsAppIdentity(input: InboundIdentityInput) {
   return data;
 }
 
-function conditionMatches(condition: any, input: Record<string, any>) {
+export function conditionMatches(condition: any, input: Record<string, any>) {
   if (!condition?.config) return true;
   // Keyword match condicional (Typebot-grade)
   if (condition.config.keyword) {
@@ -44,6 +50,13 @@ function conditionMatches(condition: any, input: Record<string, any>) {
   if (condition.config.keywords && Array.isArray(condition.config.keywords)) {
     const text = String(input.text || "").toLowerCase();
     return condition.config.keywords.some((k: string) => text.includes(k.toLowerCase().trim()));
+  }
+  if (typeof condition.config.text === "string" && condition.config.text.trim()) {
+    const rule = condition.config.text.trim();
+    if (rule === "*") return true;
+    const text = String(input.text || "").toLowerCase();
+    const parts = rule.split(/[,;\n|]+/).map((p: string) => p.trim().toLowerCase()).filter(Boolean);
+    return parts.some((p: string) => text.includes(p));
   }
   if (!condition.config.field) return true;
   const actual = input[condition.config.field];
@@ -214,6 +227,86 @@ export async function dispatchWhatsAppInboundFlows(input: { storeId: string; ins
           const { data: outbox, error: outboxError } = await db.from("whatsapp_outbox").upsert({ store_id: input.storeId, thread_id: input.threadId, channel_instance_id: input.instanceId, provider: input.provider, idempotency_key: `flow:${flow.id}:run:${run.id}:node:${node.id}`, recipient_phone: input.phone, message_type: "text", payload: { text: body }, status: "pending" }, { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }).select("id").maybeSingle();
           if (outboxError) throw new Error(`outbox_enqueue_failed:${outboxError.message}`);
           if (outbox?.id) sent++;
+        } else if (action === "send_buttons" || action === "send_list") {
+          const rawSpec = String(node.config?.text || node.config?.messageTemplate || "").trim();
+          const options = rawSpec
+            .split(/[,;\n]+/)
+            .map((item: string) => item.trim())
+            .filter(Boolean);
+          const promptText = options.length > 0
+            ? `Olá ${senderName}, escolha uma opção para prosseguirmos:`
+            : "Olá, selecione uma opção abaixo:";
+          const payload =
+            action === "send_list"
+              ? {
+                  text: promptText,
+                  title: String(node.title || "Menu de Atendimento"),
+                  buttonText: "Ver opções",
+                  sections: [
+                    {
+                      title: "Opções",
+                      rows: (options.length > 0 ? options : ["Atendimento Comercial", "Financeiro"]).slice(0, 10).map((opt, idx) => ({
+                        rowId: `list_${idx + 1}`,
+                        title: opt.slice(0, 24),
+                      })),
+                    },
+                  ],
+                }
+              : {
+                  text: promptText,
+                  title: String(node.title || "Opções Rápidas"),
+                  buttons: (options.length > 0 ? options : ["Falar com Consultor", "Ver Catálogo"]).slice(0, 3).map((opt, idx) => ({
+                    id: `btn_${idx + 1}`,
+                    title: opt.slice(0, 20),
+                  })),
+                };
+          const { data: outbox, error: outboxError } = await db.from("whatsapp_outbox").upsert({ store_id: input.storeId, thread_id: input.threadId, channel_instance_id: input.instanceId, provider: input.provider, idempotency_key: `flow:${flow.id}:run:${run.id}:node:${node.id}`, recipient_phone: input.phone, message_type: input.provider === "meta_cloud_api" ? "text" : "interactive", payload: { ...payload, text: `${promptText}\n${(options.length > 0 ? options : ["Atendimento"]).map((o, i) => `${i + 1}. ${o}`).join("\n")}` }, status: "pending" }, { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }).select("id").maybeSingle();
+          if (outboxError) throw new Error(`outbox_enqueue_failed:${outboxError.message}`);
+          if (outbox?.id) sent++;
+        } else if (
+          action === "ai_sdr_reply" ||
+          action === "mobility_quote_dispatch" ||
+          action === "catalog_reservation_sdr" ||
+          action === "corporate_travel_quote"
+        ) {
+          const [products, packages, recentOrders] = await Promise.all([
+            toolCheckInventory({ storeId: input.storeId, query: input.text.slice(0, 80), limit: 3 }).catch(() => []),
+            toolLookupTourismPackages({ storeId: input.storeId, query: input.text.slice(0, 80), limit: 2 }).catch(() => []),
+            toolGetOrderStatus({ storeId: input.storeId, customerPhone: input.phone }).catch(() => ({ orders: [] })),
+          ]);
+
+          const lines: string[] = [];
+          if (action === "mobility_quote_dispatch") {
+            lines.push(`Olá ${senderName}! Para simular sua corrida ou frete no Waesy Go, informe o endereço de origem e destino.`);
+          } else if (action === "corporate_travel_quote") {
+            lines.push(
+              packages.length > 0
+                ? `Olá ${senderName}! Localizei roteiros relacionados: ${packages.map((p) => `${p.title} (${p.priceDisplay})`).join("; ")}. Informe datas e número de viajantes para emissão.`
+                : `Olá ${senderName}! Informe origem, destino e datas de ida/volta para preparamos sua cotação aérea/pacote.`
+            );
+          } else if (products.length > 0) {
+            lines.push(`Olá ${senderName}! Encontrei em nosso catálogo: ${products.map((p) => `${p.title} (${p.priceDisplay}${p.inStock ? "" : " - sob consulta"})`).join("; ")}. Deseja finalizar ou tirar dúvidas?`);
+          } else if (recentOrders.orders.length > 0) {
+            const latest = recentOrders.orders[0];
+            lines.push(`Olá ${senderName}! Seu pedido mais recente (${latest.displayId}) está com status "${latest.statusLabel}" (${latest.totalDisplay}). Como posso ajudar?`);
+          } else if (packages.length > 0) {
+            lines.push(`Olá ${senderName}! Confira os pacotes disponíveis: ${packages.map((p) => `${p.title} por ${p.priceDisplay}`).join("; ")}.`);
+          } else {
+            lines.push(`Olá ${senderName}! Recebi sua mensagem e já encaminhei seu contexto para nossa equipe comercial.`);
+            await toolHandoffToHuman({
+              storeId: input.storeId,
+              threadId: input.threadId,
+              targetDepartment: "comercial",
+              summaryReason: `Fluxo ${action} sem correspondência direta no catálogo para "${input.text.slice(0, 120)}".`,
+            }).catch(() => null);
+          }
+
+          const replyBody = lines.join(" ").trim();
+          if (replyBody) {
+            const { data: outbox, error: outboxError } = await db.from("whatsapp_outbox").upsert({ store_id: input.storeId, thread_id: input.threadId, channel_instance_id: input.instanceId, provider: input.provider, idempotency_key: `flow:${flow.id}:run:${run.id}:node:${node.id}`, recipient_phone: input.phone, message_type: "text", payload: { text: replyBody, origin: `flow_${action}` }, status: "pending" }, { onConflict: "store_id,idempotency_key", ignoreDuplicates: true }).select("id").maybeSingle();
+            if (outboxError) throw new Error(`outbox_enqueue_failed:${outboxError.message}`);
+            if (outbox?.id) sent++;
+          }
         }
         await db.from("whatsapp_flow_runs").update({ current_node_id: node.id, updated_at: new Date().toISOString() }).eq("id", run.id);
       }

@@ -18,15 +18,73 @@ interface ManusTaskTelemetrySheetProps {
   clusterNodeLabel?: string
 }
 
+export function computeCopilotSessionTelemetry(params: {
+  messages?: Array<{
+    createdAt?: string
+    activitySteps?: Array<{ durationMs?: number; tokensUsed?: number }>
+    structuredPayload?: Record<string, any>
+  }>
+  backgroundTasks?: Array<{ cost_wz?: number }>
+  threadCreatedAt?: string
+}) {
+  const msgs = Array.isArray(params.messages) ? params.messages : []
+  const tasks = Array.isArray(params.backgroundTasks) ? params.backgroundTasks : []
+
+  let totalTokens = 0
+  let totalDurationMs = 0
+  for (const msg of msgs) {
+    for (const step of msg.activitySteps || []) {
+      if (typeof step.tokensUsed === 'number' && Number.isFinite(step.tokensUsed)) {
+        totalTokens += step.tokensUsed
+      }
+      if (typeof step.durationMs === 'number' && Number.isFinite(step.durationMs)) {
+        totalDurationMs += step.durationMs
+      }
+    }
+  }
+
+  const totalCostWz = tasks.reduce(
+    (acc, t) => acc + (typeof t.cost_wz === 'number' && Number.isFinite(t.cost_wz) ? t.cost_wz : 0),
+    0,
+  )
+
+  const durationSec = Math.round(totalDurationMs / 1000)
+  const durationLabel =
+    durationSec <= 0
+      ? '—'
+      : durationSec < 60
+        ? `${durationSec}s`
+        : `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`
+
+  const firstTs = msgs[0]?.createdAt || params.threadCreatedAt
+  const createdAtLabel = firstTs
+    ? new Date(firstTs).toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'Sessão atual'
+
+  return {
+    durationLabel,
+    modelLabel: 'Waesy Multi-Agent Router',
+    tokensUsedLabel: `${totalTokens.toLocaleString('pt-BR')} tokens`,
+    creditsUsedLabel: totalCostWz > 0 ? `${totalCostWz} $WZ` : '0 créditos',
+    createdAtLabel,
+    clusterNodeLabel: 'Infraestrutura Edge Waesy',
+  }
+}
+
 export function ManusTaskTelemetrySheet({
   open,
   onOpenChange,
-  durationLabel = '5m 36s',
-  modelLabel = 'Waesy 2.0 Lite (Multi-Agent Router)',
-  tokensUsedLabel = '14.820 tokens',
-  creditsUsedLabel = '95 créditos (Free Tier Pool)',
-  createdAtLabel = 'Hoje, 14:20',
-  clusterNodeLabel = 'Oracle Cloud VPS · 147.15.61.45',
+  durationLabel = '—',
+  modelLabel = 'Waesy Multi-Agent Router',
+  tokensUsedLabel = '0 tokens',
+  creditsUsedLabel = '0 créditos',
+  createdAtLabel = 'Sessão atual',
+  clusterNodeLabel = 'Infraestrutura Edge Waesy',
 }: ManusTaskTelemetrySheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

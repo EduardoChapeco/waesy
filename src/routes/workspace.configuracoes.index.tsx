@@ -627,6 +627,13 @@ export default function WorkspaceConfiguracoesPage() {
               </Link>
             </Button>
 
+            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
+              <Link to="/workspace/configuracoes/planos">
+                <CreditCard className="size-4 text-primary" />
+                <span>Plano e Módulos</span>
+              </Link>
+            </Button>
+
  <Button
  onClick={handleSaveAll}
  disabled={isSaving}

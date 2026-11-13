@@ -239,6 +239,156 @@ export function isStoreModuleActive(
   return false;
 }
 
+export const STAFF_MEMBER_ROLES = [
+  "owner",
+  "admin",
+  "manager",
+  "seller",
+  "cashier",
+  "finance",
+  "content",
+  "stock",
+  "support",
+] as const;
+
+export type StaffMemberRole = (typeof STAFF_MEMBER_ROLES)[number];
+
+export type StoreGovernanceSubject = {
+  id?: string | null;
+  name?: string | null;
+  slug?: string | null;
+  is_platform_root?: boolean | null;
+  plan_tier?: string | null;
+  settings?: Record<string, any> | null;
+};
+
+/**
+ * Identifica se uma loja possui isenção operacional irrestrita (Root, Demo ou Excelência Tour SSOT).
+ */
+export function isStorePlanExempt(store: StoreGovernanceSubject | null | undefined): boolean {
+  if (!store) return false;
+  if (store.is_platform_root) return true;
+  if (store.settings?.is_platform_demo || store.settings?.all_modules_enabled) return true;
+
+  const slug = String(store.slug || "").toLowerCase().trim();
+  const normalizedName = String(store.name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  return (
+    slug === "excelencia-tour-smo" ||
+    slug === "excelencia-tour" ||
+    slug === "waesy" ||
+    normalizedName.includes("excelencia tour")
+  );
+}
+
+/**
+ * Resolve o plano comercial canônico atribuído à loja.
+ */
+export function resolveStorePlanDefinition(store: StoreGovernanceSubject | null | undefined): StorePlanDefinition {
+  if (!store) return STORE_PLANS.free;
+  const rawTier = (store.plan_tier || store.settings?.plan_tier || "free").toLowerCase() as StorePlanTier;
+  return STORE_PLANS[rawTier] || STORE_PLANS.free;
+}
+
+/**
+ * Verifica cota de usuários/membros de equipe permitida pelo plano da loja.
+ */
+export function checkStoreStaffSeatLimit(
+  store: StoreGovernanceSubject | null | undefined,
+  currentStaffCount: number,
+  options?: { isExistingStoreMember?: boolean }
+) {
+  const plan = resolveStorePlanDefinition(store);
+  const isUnlimited = plan.maxStaffUsers >= 999 || isStorePlanExempt(store);
+  const allowed = Boolean(options?.isExistingStoreMember) || isUnlimited || currentStaffCount < plan.maxStaffUsers;
+  return {
+    allowed,
+    current: currentStaffCount,
+    max: plan.maxStaffUsers,
+    isUnlimited,
+    planTier: plan.tier,
+    planName: plan.name,
+  };
+}
+
+/**
+ * Lança erro explícito caso a loja tente adicionar colaborador além do limite do plano.
+ */
+export function assertStoreStaffSeatAvailable(
+  store: StoreGovernanceSubject | null | undefined,
+  currentStaffCount: number,
+  options?: { isExistingStoreMember?: boolean }
+): void {
+  const status = checkStoreStaffSeatLimit(store, currentStaffCount, options);
+  if (!status.allowed) {
+    throw new Error(
+      `Limite de ${status.max} usuário(s) de equipe do plano ${status.planName} atingido (${status.current}/${status.max}). Acesse Configurações > Planos para fazer upgrade.`
+    );
+  }
+}
+
+/**
+ * Verifica cota de instâncias WhatsApp permitida pelo plano da loja.
+ */
+export function checkStoreWhatsAppInstanceLimit(
+  store: StoreGovernanceSubject | null | undefined,
+  currentInstanceCount: number,
+  options?: { isUpdatingExistingInstance?: boolean }
+) {
+  const plan = resolveStorePlanDefinition(store);
+  const isUnlimited = plan.maxWhatsAppInstances >= 999 || isStorePlanExempt(store);
+  const allowed =
+    Boolean(options?.isUpdatingExistingInstance) ||
+    isUnlimited ||
+    currentInstanceCount < plan.maxWhatsAppInstances;
+
+  return {
+    allowed,
+    current: currentInstanceCount,
+    max: plan.maxWhatsAppInstances,
+    isUnlimited,
+    planTier: plan.tier,
+    planName: plan.name,
+  };
+}
+
+/**
+ * Lança erro explícito caso a loja exceda o número de instâncias WhatsApp contratadas.
+ */
+export function assertStoreWhatsAppInstanceAvailable(
+  store: StoreGovernanceSubject | null | undefined,
+  currentInstanceCount: number,
+  options?: { isUpdatingExistingInstance?: boolean }
+): void {
+  const status = checkStoreWhatsAppInstanceLimit(store, currentInstanceCount, options);
+  if (!status.allowed) {
+    throw new Error(
+      `Limite de ${status.max} instância(s) WhatsApp do plano ${status.planName} atingido (${status.current}/${status.max}). Acesse Configurações > Planos para ampliar sua cota.`
+    );
+  }
+}
+
+/**
+ * Calcula o valor mensal consolidado do plano base somado aos add-ons ativos não inclusos no tier.
+ */
+export function calculateStoreMonthlyPlanTotalCents(store: StoreGovernanceSubject | null | undefined): number {
+  const plan = resolveStorePlanDefinition(store);
+  const activeModules: string[] = Array.isArray(store?.settings?.active_modules)
+    ? store!.settings!.active_modules
+    : [];
+  const addonTotal = activeModules.reduce((acc, modId) => {
+    const def = COMMERCIAL_MODULE_CATALOG[modId as CommercialModuleId];
+    if (!def || plan.includedModules.includes(def.id)) {
+      return acc;
+    }
+    return acc + def.monthlyPriceCents;
+  }, 0);
+  return plan.monthlyPriceCents + addonTotal;
+}
+
 /**
  * Validação rigorosa de acesso a módulo (lança erro se o módulo não estiver contratado)
  */

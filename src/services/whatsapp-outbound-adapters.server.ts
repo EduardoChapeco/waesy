@@ -68,8 +68,15 @@ async function sendMeta(instance: OutboundInstance, message: OutboundMessage): P
   if (!phoneNumberId || !accessToken) throw new OutboundAdapterError("MISSING_CREDENTIALS", "Meta exige phone_number_id e access_token", false);
   const text = typeof message.payload.text === "string" ? message.payload.text.trim() : null;
   const template = message.payload.template && typeof message.payload.template === "object" ? message.payload.template : null;
-  if ((!text && !template) || (template && typeof (template as Record<string, unknown>).name !== "string")) throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", "Payload Meta exige texto ou template válido", false);
-  const body = text ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "text", text: { body: text } } : { messaging_product: "whatsapp", to: message.recipientPhone, type: "template", template };
+  const interactive = message.payload.interactive && typeof message.payload.interactive === "object" ? message.payload.interactive : null;
+  if ((!text && !template && !interactive) || (template && typeof (template as Record<string, unknown>).name !== "string")) {
+    throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", "Payload Meta exige texto, template ou objeto interativo válido", false);
+  }
+  const body = interactive
+    ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "interactive", interactive }
+    : text
+      ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "text", text: { body: text } }
+      : { messaging_product: "whatsapp", to: message.recipientPhone, type: "template", template };
   const response = await fetch(`https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
   const json = await readJson(response);
   if (!response.ok) throw providerError("Meta Cloud API", response, json);
@@ -90,7 +97,37 @@ async function sendEvolution(instance: OutboundInstance, message: OutboundMessag
   let url: string;
   let body: Record<string, unknown>;
   const type = message.messageType;
-  if (type === "text") {
+  if (type === "interactive" || type === "buttons") {
+    const buttons = Array.isArray(message.payload.buttons) ? (message.payload.buttons as Array<{ id?: string; title?: string }>) : [];
+    const sections = Array.isArray(message.payload.sections) ? (message.payload.sections as Array<Record<string, unknown>>) : [];
+    const promptText = stringValue(message.payload.text, message.payload.description) || "Escolha uma opção:";
+    if (sections.length > 0) {
+      url = `${root}/message/sendList/${encodeURIComponent(instanceName || "")}`;
+      body = {
+        number,
+        title: stringValue(message.payload.title) || "Opções disponíveis",
+        description: promptText,
+        buttonText: stringValue(message.payload.buttonText) || "Ver opções",
+        footerText: stringValue(message.payload.footer) || "Waesy",
+        sections,
+      };
+    } else if (buttons.length > 0) {
+      url = `${root}/message/sendButtons/${encodeURIComponent(instanceName || "")}`;
+      body = {
+        number,
+        title: stringValue(message.payload.title) || "Menu de Atendimento",
+        description: promptText,
+        footer: stringValue(message.payload.footer) || "Responda selecionando uma opção",
+        buttons: buttons.slice(0, 3).map((b, idx) => ({
+          type: "reply",
+          reply: { id: stringValue(b.id) || `opt_${idx + 1}`, title: (stringValue(b.title) || `Opção ${idx + 1}`).slice(0, 20) },
+        })),
+      };
+    } else {
+      url = `${root}/message/sendText/${encodeURIComponent(instanceName || "")}`;
+      body = { number, text: promptText };
+    }
+  } else if (type === "text") {
     const text = typeof message.payload.text === "string" ? message.payload.text.trim() : null;
     if (!text) throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", "Mensagem de texto vazia", false);
     url = `${root}/message/sendText/${encodeURIComponent(instanceName || "")}`;

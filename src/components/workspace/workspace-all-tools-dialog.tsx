@@ -385,6 +385,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     tools: [
       { title: "Identidade da Loja", path: "/workspace/configuracoes", icon: Settings },
       { title: "Dados da Empresa", path: "/workspace/configuracoes/loja", icon: Building2 },
+      { title: "Planos e Módulos", path: "/workspace/configuracoes/planos", icon: Layers },
       { title: "Ativação Guiada", path: "/workspace/onboarding", icon: Layers },
       { title: "Revisão de Ativação", path: "/workspace/onboarding/revisao", icon: Layers },
       { title: "Conexões e Chaves de Acesso", path: "/workspace/configuracoes/ai", icon: Zap },

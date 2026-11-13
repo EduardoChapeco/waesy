@@ -196,13 +196,45 @@ export const toggleStoreDebtBlock = createServerFn({ method: "POST" })
 export const getPlatformStoresList = createServerFn({ method: "GET" }).handler(async () => {
  await requirePlatformAdmin();
  const db = getServerClient();
- const { data, error } = await db
- .from("stores")
- .select("id, name, slug, is_active, created_at, settings, plan_tier")
- .order("created_at", { ascending: false });
+ const [storesRes, membersRes, instancesRes] = await Promise.all([
+   db
+     .from("stores")
+     .select("id, name, slug, is_active, is_platform_root, created_at, settings, plan_tier")
+     .order("created_at", { ascending: false }),
+   db
+     .from("workspace_members")
+     .select("store_id, role")
+     .in("role", ["owner", "admin", "manager", "seller", "cashier", "finance", "content", "stock", "support"]),
+   db
+     .from("whatsapp_channel_instances")
+     .select("store_id, is_active"),
+ ]);
 
- if (error) throw new Error("Erro ao buscar lojas: " + error.message);
- return data || [];
+ if (storesRes.error) throw new Error("Erro ao buscar lojas: " + storesRes.error.message);
+
+ const staffCounts = new Map<string, number>();
+ for (const m of membersRes.data || []) {
+   if (m.store_id) {
+     staffCounts.set(m.store_id, (staffCounts.get(m.store_id) || 0) + 1);
+   }
+ }
+
+ const instanceCounts = new Map<string, { total: number; active: number }>();
+ for (const inst of instancesRes.data || []) {
+   if (inst.store_id) {
+     const curr = instanceCounts.get(inst.store_id) || { total: 0, active: 0 };
+     curr.total += 1;
+     if (inst.is_active) curr.active += 1;
+     instanceCounts.set(inst.store_id, curr);
+   }
+ }
+
+ return (storesRes.data || []).map((s: any) => ({
+   ...s,
+   staff_count: staffCounts.get(s.id) || 0,
+   whatsapp_instances_count: instanceCounts.get(s.id)?.total || 0,
+   active_whatsapp_instances_count: instanceCounts.get(s.id)?.active || 0,
+ }));
 });
 
 export const toggleStoreStatus = createServerFn({ method: "POST" })

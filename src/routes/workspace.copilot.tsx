@@ -20,11 +20,34 @@ import {
 } from "@/services/ai-conversations.functions";
 import { uploadComposerAttachments } from "@/lib/copilot-attachments";
 import type { AIChatAction } from "@/components/chat/structured-message-view";
+import {
+  listUserDurableAiTasks,
+  cancelDurableAiTask,
+} from "@/services/ai-tasks-durability.functions";
+import {
+  listCopilotHierarchy,
+  createCopilotFolder,
+  createCopilotProject,
+  updateCopilotProject,
+  assignThreadHierarchy,
+  listCopilotProjectFiles,
+  uploadCopilotProjectContextFile,
+  deleteCopilotProjectContextFile,
+  type CopilotFolderDTO,
+  type CopilotProjectDTO,
+  type CopilotProjectFileDTO,
+} from "@/services/copilot-projects.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { ManusComputerDrawer, type ManusComputerStep } from "@/components/chat/manus-computer-drawer";
-import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
-import { CopilotBackgroundTasksDrawer } from "@/components/chat/copilot-background-tasks-drawer";
+import {
+  ManusTaskTelemetrySheet,
+  computeCopilotSessionTelemetry,
+} from "@/components/chat/manus-task-telemetry-sheet";
+import {
+  CopilotBackgroundTasksDrawer,
+  type BackgroundTaskItem,
+} from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
 import { Monitor, Info, CheckCircle2, Clock, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
@@ -49,17 +72,23 @@ export const Route = createFileRoute("/workspace/copilot")({
   loader: async () => {
     try {
       let threadLoadError = false;
-      const [session, threads] = await Promise.all([
+      const [session, threads, initialTasks] = await Promise.all([
         getUserSession().catch(() => null),
         listAiConversationThreads().catch(() => {
           threadLoadError = true;
           return [];
         }),
+        listUserDurableAiTasks({ data: { status: "all", limit: 30 } }).catch(() => []),
       ]);
 
       let resolvedThreads = threads || [];
       const effectiveUserId = session?.id || session?.user?.id || null;
       const activeStoreId = session?.store_id || session?.memberships?.[0]?.store_id || null;
+      const initialHierarchy = effectiveUserId
+        ? await listCopilotHierarchy({
+            data: activeStoreId ? { storeId: activeStoreId } : undefined,
+          }).catch(() => ({ folders: [], projects: [] }))
+        : { folders: [], projects: [] };
 
       // Se o usuário corporativo não possui threads de workspace, cria a primeira thread de projeto
       if (effectiveUserId && resolvedThreads.length === 0) {
@@ -86,10 +115,21 @@ export const Route = createFileRoute("/workspace/copilot")({
         session,
         activeStoreId,
         initialThreads: resolvedThreads,
+        initialFolders: initialHierarchy.folders || [],
+        initialProjects: initialHierarchy.projects || [],
+        initialTasks: (initialTasks || []) as BackgroundTaskItem[],
         initialLoadError: threadLoadError && Boolean(effectiveUserId),
       };
     } catch {
-      return { session: null, activeStoreId: null, initialThreads: [], initialLoadError: false };
+      return {
+        session: null,
+        activeStoreId: null,
+        initialThreads: [],
+        initialFolders: [],
+        initialProjects: [],
+        initialTasks: [],
+        initialLoadError: false,
+      };
     }
   },
   component: WorkspaceCopilotPage,
@@ -144,10 +184,25 @@ function deriveManusComputerSteps(messages: ChatMessageItem[]): ManusComputerSte
 }
 
 function WorkspaceCopilotPage() {
-  const { session, activeStoreId, initialThreads, initialLoadError } = Route.useLoaderData();
+  const {
+    session,
+    activeStoreId,
+    initialThreads,
+    initialFolders,
+    initialProjects,
+    initialTasks,
+    initialLoadError,
+  } = Route.useLoaderData();
   const effectiveUserId = session?.id || session?.user?.id || null;
   const navigate = useNavigate();
   const [userCoords, setUserCoords] = useState<{ lat?: number; lng?: number }>({});
+  const [folders, setFolders] = useState<CopilotFolderDTO[]>(initialFolders || []);
+  const [projects, setProjects] = useState<CopilotProjectDTO[]>(initialProjects || []);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [projectFiles, setProjectFiles] = useState<CopilotProjectFileDTO[]>([]);
+  const [isLoadingProjectFiles, setIsLoadingProjectFiles] = useState(false);
+  const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskItem[]>(initialTasks || []);
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
@@ -182,6 +237,8 @@ function WorkspaceCopilotPage() {
       isPinned: t.is_pinned || false,
       isArchived: t.status === "archived",
       assignedToProfileId: t.assigned_to_profile_id,
+      folderId: t.folder_id ?? t.metadata?.folder_id ?? null,
+      projectId: t.project_id ?? t.metadata?.project_id ?? null,
       metadata: t.metadata || {},
       workingMemory: t.working_memory || {},
       updatedAt: t.updated_at,
@@ -211,6 +268,163 @@ function WorkspaceCopilotPage() {
   const activeRunRef = useRef(0);
   const threadLoadRef = useRef(0);
   const activeThreadRef = useRef(activeThreadId);
+
+  const activeThreadObj = React.useMemo(
+    () => threads.find((t) => t.id === activeThreadId) || null,
+    [threads, activeThreadId],
+  );
+  const resolvedActiveProjectId =
+    activeThreadObj?.projectId ??
+    (activeThreadObj?.metadata?.project_id as string | undefined) ??
+    selectedProjectId ??
+    null;
+
+  useEffect(() => {
+    if (!effectiveUserId || !resolvedActiveProjectId) {
+      setProjectFiles([]);
+      return;
+    }
+    let cancelled = false;
+    setIsLoadingProjectFiles(true);
+    listCopilotProjectFiles({ data: { projectId: resolvedActiveProjectId } })
+      .then((files) => {
+        if (!cancelled) setProjectFiles(files || []);
+      })
+      .catch(() => {
+        if (!cancelled) setProjectFiles([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingProjectFiles(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveUserId, resolvedActiveProjectId]);
+
+  const refreshBackgroundTasks = async () => {
+    if (!effectiveUserId) return;
+    try {
+      const next = await listUserDurableAiTasks({ data: { status: "all", limit: 30 } });
+      setBackgroundTasks((next || []) as BackgroundTaskItem[]);
+    } catch {
+      toast.error("Não foi possível atualizar as tarefas em segundo plano.");
+    }
+  };
+
+  const handleCancelBackgroundTask = async (taskId: string) => {
+    try {
+      await cancelDurableAiTask({ data: { taskId, reason: "Cancelado no Copilot" } });
+      setBackgroundTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: "cancelled" } : t)),
+      );
+      toast.success("Tarefa cancelada.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao cancelar tarefa.");
+    }
+  };
+
+  const handleCreateFolder = async (name: string) => {
+    try {
+      const created = await createCopilotFolder({
+        data: { name, storeId: activeStoreId || undefined },
+      });
+      setFolders((prev) => [...prev, created]);
+      setSelectedFolderId(created.id);
+      toast.success("Pasta criada.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao criar pasta.");
+    }
+  };
+
+  const handleCreateProject = async (payload: {
+    title: string;
+    folderId?: string | null;
+  }) => {
+    try {
+      const created = await createCopilotProject({
+        data: {
+          title: payload.title,
+          folderId: payload.folderId ?? selectedFolderId,
+          storeId: activeStoreId || undefined,
+        },
+      });
+      setProjects((prev) => [created, ...prev]);
+      setSelectedProjectId(created.id);
+      toast.success("Projeto criado.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao criar projeto.");
+    }
+  };
+
+  const handleAssignThreadHierarchy = async (
+    threadId: string,
+    hierarchy: { folderId?: string | null; projectId?: string | null },
+  ) => {
+    try {
+      await assignThreadHierarchy({
+        data: {
+          threadId,
+          folderId: hierarchy.folderId ?? null,
+          projectId: hierarchy.projectId ?? null,
+        },
+      });
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === threadId
+            ? { ...t, folderId: hierarchy.folderId ?? null, projectId: hierarchy.projectId ?? null }
+            : t,
+        ),
+      );
+      toast.success("Conversa vinculada ao projeto.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao mover conversa.");
+    }
+  };
+
+  const handleUploadProjectFile = async (payload: {
+    projectId: string;
+    filename: string;
+    fileType: string;
+    fileSize: number;
+    contentText: string;
+  }) => {
+    const uploaded = await uploadCopilotProjectContextFile({ data: payload });
+    setProjectFiles((prev) => [uploaded, ...prev]);
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === payload.projectId ? { ...p, file_count: (p.file_count || 0) + 1 } : p,
+      ),
+    );
+    toast.success("Arquivo indexado na base do projeto.");
+  };
+
+  const handleDeleteProjectFile = async (fileId: string) => {
+    try {
+      await deleteCopilotProjectContextFile({ data: { fileId } });
+      setProjectFiles((prev) => prev.filter((f) => f.id !== fileId));
+      if (resolvedActiveProjectId) {
+        setProjects((prev) =>
+          prev.map((p) =>
+            p.id === resolvedActiveProjectId
+              ? { ...p, file_count: Math.max(0, (p.file_count || 1) - 1) }
+              : p,
+          ),
+        );
+      }
+      toast.success("Arquivo removido da base de conhecimento.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao remover arquivo.");
+    }
+  };
+
+  const handleUpdateProjectInstructions = async (projectId: string, instructions: string) => {
+    const updated = await updateCopilotProject({
+      data: { projectId, systemInstructions: instructions },
+    });
+    setProjects((prev) =>
+      prev.map((p) => (p.id === projectId ? { ...p, ...updated } : p)),
+    );
+  };
 
   useEffect(() => {
     activeThreadRef.current = activeThreadId;
@@ -386,15 +600,28 @@ function WorkspaceCopilotPage() {
     setActiveThreadId(threadId);
   };
 
-  const handleCreateThread = async (type: ThreadType, title: string) => {
+  const handleCreateThread = async (
+    type: ThreadType,
+    title: string,
+    options?: { folderId?: string | null; projectId?: string | null },
+  ) => {
     try {
       if (effectiveUserId) {
+        const targetFolderId = options?.folderId ?? selectedFolderId ?? null;
+        const targetProjectId = options?.projectId ?? selectedProjectId ?? null;
         const created = await createAiConversationThread({
           data: {
             type,
             title,
             storeId: activeStoreId || undefined,
-            metadata: { workspaceContext: true, storeId: activeStoreId },
+            folderId: targetFolderId,
+            projectId: targetProjectId,
+            metadata: {
+              workspaceContext: true,
+              storeId: activeStoreId,
+              ...(targetFolderId ? { folder_id: targetFolderId } : {}),
+              ...(targetProjectId ? { project_id: targetProjectId } : {}),
+            },
             workingMemory: {},
           },
         });
@@ -402,6 +629,8 @@ function WorkspaceCopilotPage() {
           id: created.id,
           type: (created.thread_type as any) || type,
           title: created.subject || title,
+          folderId: targetFolderId,
+          projectId: targetProjectId,
           isPinned: false,
         };
         setThreads((prev) => [newThreadItem, ...prev]);
@@ -499,13 +728,30 @@ function WorkspaceCopilotPage() {
     }
   };
 
+  const runningBackgroundCount = React.useMemo(
+    () =>
+      backgroundTasks.filter((t) =>
+        ["queued", "planning", "running", "waiting_user", "validating"].includes(t.status),
+      ).length,
+    [backgroundTasks],
+  );
+
+  const sessionTelemetry = React.useMemo(
+    () =>
+      computeCopilotSessionTelemetry({
+        messages,
+        backgroundTasks,
+      }),
+    [messages, backgroundTasks],
+  );
+
   return (
     <div className="size-full flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border/70 bg-card shrink-0 gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
             <CheckCircle2 className="size-3.5" />
-            Waesy 2.0 Lite
+            Waesy Copilot
           </span>
           <span className="text-xs text-muted-foreground truncate hidden sm:inline">
             Orquestrador Multi-Agente · Computador & Navegador Cloud
@@ -521,19 +767,25 @@ function WorkspaceCopilotPage() {
           >
             <Clock className="size-4 text-emerald-600" />
             <span className="hidden sm:inline">Segundo Plano</span>
-            <span className="rounded bg-muted px-2 py-0 font-mono text-xs">2</span>
+            {runningBackgroundCount > 0 && (
+              <span className="rounded bg-muted px-2 py-0 font-mono text-xs">
+                {runningBackgroundCount}
+              </span>
+            )}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setComputerDrawerOpen(true)}
-            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
-          >
-            <Monitor className="size-4 text-primary" />
-            <span>Computador do Waesy</span>
-            <span className="rounded bg-muted px-2 py-0 font-mono text-xs">3/3</span>
-          </Button>
+          {computerSteps && computerSteps.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setComputerDrawerOpen(true)}
+              className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 focus-visible:ring-2"
+            >
+              <Monitor className="size-4 text-primary" />
+              <span>Computador do Waesy</span>
+              <span className="rounded bg-muted px-2 py-0 font-mono text-xs">{computerSteps.length}</span>
+            </Button>
+          )}
           <Button
             type="button"
             variant="ghost"
@@ -585,6 +837,23 @@ function WorkspaceCopilotPage() {
         onTogglePinThread={handleTogglePinThread}
         onToggleArchiveThread={handleToggleArchiveThread}
         onStructuredAction={handleStructuredAction}
+        folders={folders}
+        projects={projects}
+        selectedFolderId={selectedFolderId}
+        selectedProjectId={selectedProjectId}
+        onSelectFolder={setSelectedFolderId}
+        onSelectProject={setSelectedProjectId}
+        onCreateFolder={handleCreateFolder}
+        onCreateProject={handleCreateProject}
+        onAssignThreadHierarchy={handleAssignThreadHierarchy}
+        projectFiles={projectFiles}
+        isLoadingProjectFiles={isLoadingProjectFiles}
+        onUploadProjectFile={handleUploadProjectFile}
+        onDeleteProjectFile={handleDeleteProjectFile}
+        onUpdateProjectInstructions={handleUpdateProjectInstructions}
+        backgroundTasks={backgroundTasks}
+        onCancelBackgroundTask={handleCancelBackgroundTask}
+        onRefreshBackgroundTasks={refreshBackgroundTasks}
         isSending={isSending}
         isStreaming={isSending}
         currentUserProfileId={effectiveUserId || undefined}
@@ -593,36 +862,20 @@ function WorkspaceCopilotPage() {
       <ManusComputerDrawer
         open={computerDrawerOpen}
         onOpenChange={setComputerDrawerOpen}
+        taskTitle={threads.find((t) => t.id === activeThreadId)?.title || "Sessão Ativa"}
         steps={computerSteps}
       />
-      <ManusTaskTelemetrySheet open={telemetrySheetOpen} onOpenChange={setTelemetrySheetOpen} />
+      <ManusTaskTelemetrySheet
+        open={telemetrySheetOpen}
+        onOpenChange={setTelemetrySheetOpen}
+        {...sessionTelemetry}
+      />
       <CopilotBackgroundTasksDrawer
         open={backgroundTasksOpen}
         onOpenChange={setBackgroundTasksOpen}
-        tasks={[
-          {
-            id: "bg-1",
-            task_type: "playwright_browser_agent",
-            title: "Monitoramento de concorrentes locais & catálogo via Navegador Cloud",
-            status: "completed",
-            progress_percent: 100,
-            current_step: "Planilha comparativa gerada",
-            cost_wz: 12,
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: "bg-2",
-            task_type: "whatsapp_sdr_sync",
-            title: "Sincronização de filas WhatsApp Omnichannel & qualificação IA SDR",
-            status: "completed",
-            progress_percent: 100,
-            current_step: "3 canais ativos sincronizados na VPS 147.15.61.45",
-            cost_wz: 8,
-            created_at: new Date().toISOString(),
-          },
-        ]}
-      />
-      <span className="hidden"
+        tasks={backgroundTasks}
+        onCancelTask={handleCancelBackgroundTask}
+        onRefresh={refreshBackgroundTasks}
       />
     </div>
   );

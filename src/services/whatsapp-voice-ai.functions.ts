@@ -11,7 +11,21 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import { createHash } from "node:crypto";
+import { getAllActiveKeysForProvider } from "@/services/api-orchestrator.functions";
+
+async function resolveVoiceProviderKey(
+  provider: "groq" | "openai",
+  ownerId?: string,
+  storeId?: string,
+): Promise<string> {
+  const poolKeys = await getAllActiveKeysForProvider(provider, ownerId, storeId).catch(() => []);
+  if (poolKeys.length > 0 && poolKeys[0]?.rawKey) {
+    return poolKeys[0].rawKey;
+  }
+  return provider === "groq"
+    ? process.env.GROQ_API_KEY?.trim() || ""
+    : process.env.OPENAI_API_KEY?.trim() || "";
+}
 
 export const voicePersonaSchema = z.object({
   gender: z.enum(["female", "male"]).default("female"),
@@ -35,7 +49,8 @@ export type TranscribeWhatsAppAudioInput = z.infer<typeof transcribeWhatsAppAudi
  */
 export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
   .validator(transcribeWhatsAppAudioSchema)
-  .handler(async ({ data: { threadId, messageId } }) => {
+  .handler(async ({ data }) => {
+    const { threadId, messageId } = data;
     const identity = await getServerIdentity();
     if (!identity.id) throw new Error("Não autorizado");
 
@@ -69,52 +84,82 @@ export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
         : curPayload.media?.url || null;
 
     let transcriptText = "";
+    const effectiveAudioUri = data.audioUrl || rawAudioUri;
 
-    // Se temos uma chave da Groq ou OpenAI configurada, fazemos a inferência via Whisper
-    const groqKey = process.env.GROQ_API_KEY?.trim() || "";
-    const openaiKey = process.env.OPENAI_API_KEY?.trim() || "";
+    // Resolve chaves via Cofre BYOK / api_key_pools do Admin Master + fallback ENV
+    const [groqKey, openaiKey] = await Promise.all([
+      resolveVoiceProviderKey("groq", identity.id, thread.store_id),
+      resolveVoiceProviderKey("openai", identity.id, thread.store_id),
+    ]);
 
-    if ((groqKey || openaiKey) && rawAudioUri && rawAudioUri.startsWith("data:")) {
+    if ((groqKey || openaiKey) && effectiveAudioUri) {
       try {
-        const base64Data = rawAudioUri.replace(/^data:[^;]+;base64,/, "");
-        const audioBuffer = Buffer.from(base64Data, "base64");
-        const blob = new Blob([audioBuffer], { type: "audio/ogg" });
+        let audioBuffer: Buffer | null = null;
+        let mimeType = "audio/ogg";
+        if (effectiveAudioUri.startsWith("data:")) {
+          const mimeMatch = /^data:([^;]+);base64,/.exec(effectiveAudioUri);
+          if (mimeMatch?.[1]) mimeType = mimeMatch[1];
+          const base64Data = effectiveAudioUri.replace(/^data:[^;]+;base64,/, "");
+          audioBuffer = Buffer.from(base64Data, "base64");
+        } else if (/^https?:\/\//i.test(effectiveAudioUri)) {
+          const mediaRes = await fetch(effectiveAudioUri, { signal: AbortSignal.timeout(15000) });
+          if (mediaRes.ok) {
+            const contentType = mediaRes.headers.get("content-type");
+            if (contentType) mimeType = contentType.split(";")[0].trim();
+            audioBuffer = Buffer.from(await mediaRes.arrayBuffer());
+          }
+        }
 
-        const formData = new FormData();
-        formData.append("file", blob, "audio.ogg");
-        formData.append("model", groqKey ? "whisper-large-v3" : "whisper-1");
-        formData.append("language", "pt");
-        formData.append("response_format", "json");
+        if (audioBuffer && audioBuffer.byteLength > 32) {
+          const ext = mimeType.includes("mp4") || mimeType.includes("m4a")
+            ? "m4a"
+            : mimeType.includes("mpeg") || mimeType.includes("mp3")
+              ? "mp3"
+              : mimeType.includes("wav")
+                ? "wav"
+                : "ogg";
+          const blob = new Blob([new Uint8Array(audioBuffer)], { type: mimeType });
 
-        const targetUrl = groqKey
-          ? "https://api.groq.com/openai/v1/audio/transcriptions"
-          : "https://api.openai.com/v1/audio/transcriptions";
+          const formData = new FormData();
+          formData.append("file", blob, `audio.${ext}`);
+          formData.append("model", groqKey ? "whisper-large-v3" : "whisper-1");
+          formData.append("language", "pt");
+          formData.append("response_format", "json");
 
-        const res = await fetch(targetUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${groqKey || openaiKey}`,
-          },
-          body: formData,
-          signal: AbortSignal.timeout(15000),
-        });
+          const targetUrl = groqKey
+            ? "https://api.groq.com/openai/v1/audio/transcriptions"
+            : "https://api.openai.com/v1/audio/transcriptions";
 
-        if (res.ok) {
-          const json = await res.json().catch(() => ({}));
-          transcriptText = String((json as any).text || "").trim();
+          const res = await fetch(targetUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${groqKey || openaiKey}`,
+            },
+            body: formData,
+            signal: AbortSignal.timeout(15000),
+          });
+
+          if (res.ok) {
+            const json = await res.json().catch(() => ({}));
+            transcriptText = String((json as any).text || "").trim();
+          }
         }
       } catch (err: any) {
         console.warn("[whatsapp-voice-ai] Falha na chamada Whisper:", err?.message);
       }
     }
 
-    // Fallback contextual defensivo caso a API não esteja configurada ou o áudio seja sintético
     if (!transcriptText) {
       const msgText = String(msg.message || "").trim();
-      transcriptText =
-        msgText && !["[Áudio]", "[Audio]", "audio"].includes(msgText)
-          ? msgText
-          : "[Áudio transcrito: O cliente enviou uma mensagem de voz informando detalhes da solicitação de atendimento.]";
+      if (msgText && !["[Áudio]", "[Audio]", "audio"].includes(msgText)) {
+        transcriptText = msgText;
+      } else {
+        throw new Error(
+          groqKey || openaiKey
+            ? "Não foi possível transcrever o áudio: mídia inacessível ou serviço Whisper indisponível."
+            : "Transcrição de áudio indisponível: configure uma chave Groq ou OpenAI em Integrações > Cofre IA."
+        );
+      }
     }
 
     // Salva a transcrição no banco de dados para evitar reprocessamento
@@ -170,41 +215,49 @@ export const generateAiVoiceAudio = createServerFn({ method: "POST" })
       speechInput = speechInput.replace(/\b(beleza|ola|olá)\b/gi, "Fala aí, $1");
     }
 
-    // 3. Síntese via OpenAI TTS API (se chave disponível no ambiente)
-    const openaiKey = process.env.OPENAI_API_KEY?.trim() || "";
-    let audioDataUri = "";
-
-    if (openaiKey) {
-      try {
-        const ttsRes = await fetch("https://api.openai.com/v1/audio/speech", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${openaiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "tts-1",
-            voice: mappedVoice,
-            input: speechInput,
-            response_format: "opus",
-          }),
-          signal: AbortSignal.timeout(15000),
-        });
-
-        if (ttsRes.ok) {
-          const buffer = await ttsRes.arrayBuffer();
-          const base64Audio = Buffer.from(buffer).toString("base64");
-          audioDataUri = `data:audio/ogg;codecs=opus;base64,${base64Audio}`;
-        }
-      } catch (err: any) {
-        console.warn("[whatsapp-voice-ai] Falha ao sintetizar voz OpenAI:", err?.message);
-      }
+    // 3. Síntese via OpenAI TTS API (Pool / BYOK + fallback ENV)
+    const openaiKey = await resolveVoiceProviderKey("openai", identity.id, identity.store_id ?? undefined);
+    if (!openaiKey) {
+      throw new Error(
+        "Síntese de voz IA indisponível: configure uma chave OpenAI válida no Pool Master ou Cofre IA (BYOK)."
+      );
     }
 
-    // Fallback de áudio sintético funcional para testes e desenvolvimento
+    let audioDataUri = "";
+    try {
+      const ttsRes = await fetch("https://api.openai.com/v1/audio/speech", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${openaiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "tts-1",
+          voice: mappedVoice,
+          input: speechInput,
+          response_format: "opus",
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!ttsRes.ok) {
+        const errBody = await ttsRes.text().catch(() => "");
+        throw new Error(`OpenAI TTS HTTP ${ttsRes.status}${errBody ? `: ${errBody.slice(0, 120)}` : ""}`);
+      }
+
+      const buffer = await ttsRes.arrayBuffer();
+      const base64Audio = Buffer.from(buffer).toString("base64");
+      audioDataUri = `data:audio/ogg;codecs=opus;base64,${base64Audio}`;
+    } catch (err: any) {
+      throw new Error(
+        err instanceof Error
+          ? `Falha na síntese de voz IA: ${err.message}`
+          : "Falha ao gerar áudio via OpenAI TTS."
+      );
+    }
+
     if (!audioDataUri) {
-      const dummyHeader = Buffer.from("OggS\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00").toString("base64");
-      audioDataUri = `data:audio/ogg;codecs=opus;base64,${dummyHeader}`;
+      throw new Error("A API TTS retornou áudio vazio.");
     }
 
     const durationSeconds = Math.max(2, Math.ceil(speechInput.split(" ").length * 0.4));
@@ -290,12 +343,44 @@ export const sendAiVoiceNoteToWhatsApp = createServerFn({ method: "POST" })
 
     if (msgErr || !insertedMsg) throw new Error(`Falha ao registrar mensagem de áudio: ${msgErr?.message}`);
 
+    let resolvedInstanceId: string | null = thread.channel_instance_id || null;
+    let resolvedProvider: string | null = null;
+    if (resolvedInstanceId) {
+      const { data: inst } = await db
+        .from("whatsapp_channel_instances")
+        .select("id, provider, is_active")
+        .eq("id", resolvedInstanceId)
+        .eq("store_id", storeId)
+        .maybeSingle();
+      if (inst?.is_active) resolvedProvider = inst.provider;
+      else resolvedInstanceId = null;
+    }
+    if (!resolvedInstanceId) {
+      const { data: defInst } = await db
+        .from("whatsapp_channel_instances")
+        .select("id, provider")
+        .eq("store_id", storeId)
+        .eq("is_active", true)
+        .order("is_default", { ascending: false })
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (defInst) {
+        resolvedInstanceId = defInst.id;
+        resolvedProvider = defInst.provider;
+      }
+    }
+    if (!resolvedInstanceId || !resolvedProvider) {
+      throw new Error("Nenhuma instância WhatsApp ativa configurada para enviar nota de voz.");
+    }
+
     // 2. Enfileira na outbox para entrega como Nota de Voz Nativa PTT (Evolution API /message/sendWhatsAppAudio)
     const idempotencyKey = `voice_note:${insertedMsg.id}:${Date.now()}`;
-    await db.from("whatsapp_outbox").insert({
+    const { error: outboxErr } = await db.from("whatsapp_outbox").insert({
       store_id: storeId,
       thread_id: threadId,
-      channel_instance_id: thread.channel_instance_id || null,
+      channel_instance_id: resolvedInstanceId,
+      provider: resolvedProvider,
       idempotency_key: idempotencyKey,
       recipient_phone: recipientPhone,
       message_type: "audio",
@@ -308,6 +393,7 @@ export const sendAiVoiceNoteToWhatsApp = createServerFn({ method: "POST" })
       },
       status: "pending",
     });
+    if (outboxErr) throw new Error(`Falha ao enfileirar nota de voz: ${outboxErr.message}`);
 
     // 3. Atualiza timestamps na thread
     await db

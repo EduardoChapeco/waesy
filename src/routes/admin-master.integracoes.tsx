@@ -118,8 +118,8 @@ function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: Wha
       <div className="flex items-center gap-2">
        <Smartphone className="size-4 text-emerald-500" />
        <h3 className="text-sm font-bold text-foreground">Número Global Oficial Waesy (Concierge Mobilidade, Aéreo & Verificação Civil)</h3>
-       <Badge variant="outline" className="text-3xs font-mono border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
-        Oracle Cloud · 147.15.61.45:8080
+       <Badge variant="outline" className="text-3xs font-mono border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10">
+        Gateway Global Evolution / Meta Cloud
        </Badge>
       </div>
       <p className="text-xs text-muted-foreground max-w-2xl">
