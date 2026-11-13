@@ -174,6 +174,50 @@ export interface TravelRoomRates {
   extra_bed_cents?: number;
 }
 
+export interface TravelFlightLeg {
+  id?: string;
+  type?: "outbound" | "return" | "round_trip";
+  leg?: string;
+  airline?: string;
+  airline_name?: string;
+  airline_code?: string;
+  flight_number?: string;
+  origin?: string;
+  origin_iata?: string;
+  origin_city?: string;
+  destination?: string;
+  destination_iata?: string;
+  destination_city?: string;
+  departure_date?: string;
+  departure_time?: string;
+  arrival_time?: string;
+  cabin_class?: string;
+  baggage?: string;
+  baggage_included?: string | boolean;
+  stops?: number;
+  stops_count?: number;
+}
+
+export interface TravelHotelStay {
+  id?: string;
+  hotel_name?: string;
+  name?: string;
+  destination?: string;
+  check_in?: string;
+  check_out?: string;
+  checkin_date?: string;
+  checkout_date?: string;
+  nights_count?: number;
+  room_type?: string;
+  board_basis?: string;
+  stars?: number;
+  featured_image_url?: string;
+  image_url?: string;
+  address?: string;
+  badges?: string[];
+  amenities?: string[];
+}
+
 export interface TravelPackageData {
  destination: TravelDestinationDetails;
  resort: TravelResortDetails;

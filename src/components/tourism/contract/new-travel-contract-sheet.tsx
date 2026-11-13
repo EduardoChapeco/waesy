@@ -8,11 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Scale, ShieldCheck, User, UserPlus, Users, Compass, DollarSign, FileText, Check, Plus, Trash2, ChevronRight, ChevronDown, Loader2, Calendar, FileSpreadsheet, Link2 } from "lucide-react";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
 import { createTravelContract, CANONICAL_TOURISM_CLAUSES, type ContractClauseDTO } from "@/services/travel-contract.functions";
 import { getAgencySalesAndCommissionConfigFn, type AgencyCancellationPolicyConfig, type OperatorOverRetentionConfig } from "@/services/travel-pre-boarding-and-commissions.functions";
+import { getStoreSettings } from "@/services/store.functions";
+import { compileContractDocument, type ContractCompilerSectionConfig } from "@/lib/contracts/contract-compiler";
+import { getNicheContractBlueprint } from "@/lib/niches/unified-field-bridge";
+import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templates";
 import { formatMoney } from "@/lib/money";
 
 // Modelos de pagamento vem das configuracoes da agencia (nenhum embutido)
@@ -45,9 +50,34 @@ export function NewTravelContractSheet({
     staleTime: 60_000,
   });
 
+  const { data: storeInfo } = useQuery({
+    queryKey: ["store-settings-travel-contract", storeId || "active"],
+    queryFn: () => getStoreSettings({ data: storeId ? { store_id: storeId } : undefined }),
+    enabled: effectiveOpen,
+    staleTime: 60_000,
+  });
+
   const configuredOperatorRules: OperatorOverRetentionConfig[] = agencyErpConfig?.operatorConfigs || [];
   const configuredCancellationPolicies: AgencyCancellationPolicyConfig[] = agencyErpConfig?.cancellationPolicies || [];
   const [selectedPolicyKey, setSelectedPolicyKey] = useState<string>("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
+    () => getNicheContractBlueprint("tourism").defaultTemplateId,
+  );
+  const [linkedLeadId, setLinkedLeadId] = useState<string | null>(null);
+  const [importedCustomFields, setImportedCustomFields] = useState<Record<string, unknown>>({});
+  const [importedItinerary, setImportedItinerary] = useState<
+    Array<{ day: number | string; title: string; description?: string }>
+  >([]);
+  const [importedSpecs, setImportedSpecs] = useState<Array<{ label: string; value: string }>>([]);
+  const [sectionConfig, setSectionConfig] = useState<ContractCompilerSectionConfig>({
+    showItemsTable: true,
+    showSpecsTable: true,
+    showItineraryTable: true,
+    showPassengersTable: true,
+    showFinancialTable: true,
+    showCustomFieldsTable: true,
+    includeLegalClauses: true,
+  });
 
  // Modo ativo: 'proposal' | 'crm' | 'manual'
  const [activeTab, setActiveTab] = useState<"proposal" | "crm" | "manual">("proposal");
@@ -205,18 +235,60 @@ export function NewTravelContractSheet({
  // Importar de Proposta
  const handleSelectProposal = (prop: any) => {
  setSelectedProposalId(prop.id);
+ setLinkedLeadId(prop.lead_id || null);
+ if (prop.customer_id) setCustomerId(prop.customer_id);
  setContractTitle(`Contrato de Viagem — ${prop.title || prop.destination_city}`);
  setDestination(prop.destination_city || "");
  setClientName(prop.client_name || "");
  setClientPhone(prop.client_whatsapp || "");
  setClientEmail(prop.client_email || "");
+ if (prop.client_document) setClientDocument(prop.client_document);
 
  if (prop.travel_start_date) setTravelStartDate(prop.travel_start_date);
  if (prop.travel_end_date) setTravelEndDate(prop.travel_end_date);
 
+ const rawPricing = prop.pricing || {};
+ const propCustom =
+   rawPricing.custom_fields && typeof rawPricing.custom_fields === "object"
+     ? (rawPricing.custom_fields as Record<string, unknown>)
+     : {};
+ setImportedCustomFields(propCustom);
+
+ const propItinerary = Array.isArray(prop.itinerary)
+   ? prop.itinerary.map((day: any, idx: number) => ({
+       day: day.day_number || day.day || idx + 1,
+       title: day.title || `Dia ${idx + 1}`,
+       description: day.description || "",
+     }))
+   : [];
+ setImportedItinerary(propItinerary);
+
+ const specsList: Array<{ label: string; value: string }> = [];
+ if (prop.destination_city) specsList.push({ label: "Destino", value: String(prop.destination_city) });
+ if (Array.isArray(prop.flights) && prop.flights.length > 0) {
+   specsList.push({
+     label: "Aéreo",
+     value: prop.flights
+       .map((f: any) => `${f.airline_name || f.airline || "Cia"} (${f.origin_iata || f.origin || ""} -> ${f.destination_iata || f.destination || ""})`)
+       .join(", "),
+   });
+ }
+ if (Array.isArray(prop.hotels) && prop.hotels.length > 0) {
+   specsList.push({
+     label: "Hospedagem",
+     value: prop.hotels
+       .map((h: any) => `${h.hotel_name || h.name || "Hotel"}${h.room_type ? ` (${h.room_type})` : ""}`)
+       .join(", "),
+   });
+ }
+ if (Array.isArray(prop.includes) && prop.includes.length > 0) {
+   specsList.push({ label: "Inclusões", value: prop.includes.join(", ") });
+ }
+ setImportedSpecs(specsList);
+
  // Resumo dos serviços a partir dos itens da proposta
  const flights = Array.isArray(prop.flights) && prop.flights.length > 0
- ? `Aéreo: ${prop.flights.map((f: any) => `${f.airline_name || "Cia"} (${f.origin_iata || ""}  ${f.destination_iata || ""})`).join(", ")}.`
+ ? `Aéreo: ${prop.flights.map((f: any) => `${f.airline_name || "Cia"} (${f.origin_iata || ""} -> ${f.destination_iata || ""})`).join(", ")}.`
  : "";
  const hotels = Array.isArray(prop.hotels) && prop.hotels.length > 0
  ? `Hospedagem: ${prop.hotels.map((h: any) => `${h.hotel_name} (${h.room_type || ""})`).join(", ")}.`
@@ -254,6 +326,9 @@ export function NewTravelContractSheet({
  setClientDocument(c.document || c.taxId || "");
  if (c.city || c.addressLine) {
  setClientAddress([c.addressLine, c.city, c.state].filter(Boolean).join(" - "));
+ }
+ if (c.custom_fields && typeof c.custom_fields === "object") {
+   setImportedCustomFields((prev) => ({ ...c.custom_fields, ...prev }));
  }
  setIsCustomerDropdownOpen(false);
  setCustomerSearch("");
@@ -329,8 +404,68 @@ export function NewTravelContractSheet({
  document: p.document.trim() || undefined,
  }));
 
+ const compiledDoc = compileContractDocument({
+ title,
+ nicheHint: "tourism",
+ templateId: selectedTemplateId,
+ sectionConfig,
+ issuer: {
+ name: (storeInfo as any)?.name || "Agência Contratada",
+ document: (storeInfo as any)?.cnpj || "",
+ address: (storeInfo as any)?.address || "",
+ cityState: [(storeInfo as any)?.city, (storeInfo as any)?.state].filter(Boolean).join(" - "),
+ phone: (storeInfo as any)?.phone || "",
+ email: (storeInfo as any)?.email || "",
+ },
+ customer: {
+ name: clientName.trim(),
+ document: clientDocument.trim(),
+ phone: clientPhone.trim(),
+ email: clientEmail.trim() || undefined,
+ address: clientAddress.trim() || undefined,
+ },
+ items: [
+ {
+ title: `Pacote Turístico — ${destination.trim()}`,
+ unit: "pacote",
+ quantity: Math.max(1, validPassengers.length + 1),
+ unitPriceCents: totalValueCents,
+ totalPriceCents: totalValueCents,
+ },
+ ],
+ specs:
+ importedSpecs.length > 0
+ ? importedSpecs
+ : [
+ { label: "Destino Principal", value: destination.trim() },
+ ...(travelStartDate ? [{ label: "Data de Embarque", value: travelStartDate }] : []),
+ ...(travelEndDate ? [{ label: "Data de Retorno", value: travelEndDate }] : []),
+ { label: "Objeto Contratado", value: packageSummary.trim() },
+ ],
+ itinerary: importedItinerary,
+ passengers: validPassengers,
+ customFields: importedCustomFields,
+ totalValueCents,
+ paymentConditions: paymentConditions.trim(),
+ travelStartDate: travelStartDate || undefined,
+ travelEndDate: travelEndDate || undefined,
+ destination: destination.trim(),
+ summaryText: packageSummary.trim(),
+ extraClauses: customClauses.map((c) => ({
+ number: c.number,
+ section: c.section,
+ clause_text: c.clause_text,
+ is_mandatory: c.is_mandatory,
+ })),
+ });
+
  const payload = {
  proposalId: selectedProposalId || undefined,
+ leadId: linkedLeadId || undefined,
+ templateId: selectedTemplateId || compiledDoc.templateIdUsed,
+ compiledMarkdown: compiledDoc.contentMarkdown,
+ customFields: Object.keys(importedCustomFields).length > 0 ? importedCustomFields : undefined,
+ itinerary: importedItinerary.length > 0 ? importedItinerary : undefined,
  contractTitle: title,
  clientName: clientName.trim(),
  clientDocument: clientDocument.trim(),
@@ -961,6 +1096,61 @@ export function NewTravelContractSheet({
  className="text-xs rounded-lg"
  required
  />
+ </div>
+ </div>
+
+ {/* Card 4B: Modelo Jurídico & Seções Tabeladas */}
+ <div className="p-4 rounded-lg bg-card border border-border/70 space-y-4 shadow-xs">
+ <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+ <FileText className="size-4 text-primary" />
+ <span>Modelo Jurídico e Tabelas do Contrato</span>
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-bold">Modelo Base da Minuta</Label>
+ <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+ <SelectTrigger className="h-11 min-h-11 text-xs rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
+ <SelectValue placeholder="Selecione um modelo contratual" />
+ </SelectTrigger>
+ <SelectContent className="rounded-lg text-xs">
+ {ADVANCED_CONTRACT_TEMPLATES.map((tpl) => (
+ <SelectItem key={tpl.id} value={tpl.id}>
+ {tpl.title}
+ </SelectItem>
+ ))}
+ </SelectContent>
+ </Select>
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-muted-foreground">Blocos Tabelados (Markdown GFM) na Minuta</Label>
+ <div className="flex flex-wrap gap-2">
+ {[
+ { key: "showItemsTable" as const, label: "Tabela de Serviços" },
+ { key: "showSpecsTable" as const, label: "Especificações" },
+ { key: "showItineraryTable" as const, label: "Roteiro" },
+ { key: "showPassengersTable" as const, label: "Passageiros" },
+ { key: "showFinancialTable" as const, label: "Financeiro" },
+ { key: "showCustomFieldsTable" as const, label: "Campos Extras" },
+ ].map((sec) => {
+ const enabled = Boolean(sectionConfig[sec.key]);
+ return (
+ <button
+ key={sec.key}
+ type="button"
+ onClick={() => setSectionConfig((prev) => ({ ...prev, [sec.key]: !enabled }))}
+ className={`h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold inline-flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+ enabled
+ ? "bg-primary/10 text-primary border-primary/40"
+ : "bg-muted/30 text-muted-foreground border-border"
+ }`}
+ >
+ {enabled && <Check className="size-3.5 shrink-0" />}
+ <span>{sec.label}</span>
+ </button>
+ );
+ })}
+ </div>
  </div>
  </div>
 

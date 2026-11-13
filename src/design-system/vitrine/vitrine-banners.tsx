@@ -7,7 +7,6 @@ import {
   Copy,
   Image as ImageIcon,
   LayoutGrid,
-  Sparkles,
   Ticket,
   X,
 } from "lucide-react";
@@ -646,7 +645,7 @@ export function VitrineCouponStrip({
       >
         <div className="flex items-start sm:items-center gap-3 min-w-0">
           <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            {variant === "coupon" ? <Ticket className="size-5" /> : <Sparkles className="size-5" />}
+            {variant === "coupon" ? <Ticket className="size-5" /> : <LayoutGrid className="size-5" />}
           </div>
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">

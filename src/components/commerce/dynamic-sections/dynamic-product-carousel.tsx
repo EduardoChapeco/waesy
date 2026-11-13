@@ -5,7 +5,6 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   Tag,
@@ -91,7 +90,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
           <div className="space-y-1">
             {tagline && (
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-                <Sparkles className="size-3.5" />
+                <Tag className="size-3.5" />
                 <span>{tagline}</span>
               </div>
             )}

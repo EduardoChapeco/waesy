@@ -379,10 +379,10 @@ function WorkspaceVisasPage() {
                 )}
               </div>
 
-              {/* Coluna 2: Scanner MRZ ICAO 9303 e Regra dos 6 Meses */}
-              <div className="rounded-lg bg-muted/20 border border-border p-4 space-y-4">
+              {/* Coluna 2: Scanner MRZ */}
+              <div className="rounded-lg bg-muted border border-border p-4 space-y-4">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold text-foreground">2. Validador MRZ (ICAO 9303) & Regra de 6 Meses</h3>
+                  <h3 className="text-sm font-bold text-foreground">Validador de Passaporte MRZ</h3>
                   {mrzResult && (
                     <Badge variant={mrzResult.meetsSixMonthValidityRule && mrzResult.isValidMrz ? "default" : "outline"} className="text-xs font-bold">
                       {mrzResult.meetsSixMonthValidityRule ? "Apto para Embarque" : "Alerta de Validade"}

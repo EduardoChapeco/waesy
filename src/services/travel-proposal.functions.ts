@@ -3,6 +3,11 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireStaff } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import {
+  extractNormalizedCatalogContext,
+  normalizeCustomFieldMap,
+  type UnifiedBridgeCatalogContext,
+} from "@/lib/niches/unified-field-bridge";
 
 // ─── Tipos e Contratos de Domínio ─────────────────────────────────────────────
 
@@ -129,6 +134,9 @@ export interface PricingBreakdownDTO {
     has_interest?: boolean;
   }>;
   payment_terms?: string;
+  custom_fields?: Record<string, any>;
+  source_listing_id?: string | null;
+  source_listing_origin?: string | null;
 }
 
 export interface TravelProposalDTO {
@@ -150,6 +158,10 @@ export interface TravelProposalDTO {
   customer_name?: string;
   client_whatsapp: string;
   client_email?: string | null;
+  client_document?: string | null;
+  custom_fields?: Record<string, any>;
+  source_listing_id?: string | null;
+  source_listing_origin?: string | null;
   adults_count: number;
   children_count: number;
   canvas_format: ProposalCanvasFormat;
@@ -289,6 +301,16 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
       ? row.excludes
       : Array.isArray(meta.excludes) ? meta.excludes : [];
 
+  const customFields = normalizeCustomFieldMap(
+    meta.custom_fields ||
+      rawPricing.custom_fields ||
+      (row.custom_fields && typeof row.custom_fields === "object" ? row.custom_fields : {}),
+  );
+  const sourceListingId =
+    row.source_listing_id || meta.source_listing_id || rawPricing.source_listing_id || null;
+  const sourceListingOrigin =
+    row.source_listing_origin || meta.source_listing_origin || rawPricing.source_listing_origin || null;
+
   return {
     id: row.id,
     store_id: row.store_id || null,
@@ -306,6 +328,10 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     customer_name: clientName,
     client_whatsapp: clientWhatsapp,
     client_email: clientEmail,
+    client_document: meta.client_document || row.client_document || rawPricing.client_document || null,
+    custom_fields: customFields,
+    source_listing_id: sourceListingId,
+    source_listing_origin: sourceListingOrigin,
     adults_count: row.adults_count ?? meta.adults_count ?? 0,
     children_count: row.children_count ?? meta.children_count ?? 0,
     canvas_format: (row.canvas_format ||
@@ -567,6 +593,9 @@ export const createTravelProposalInputSchema = z.object({
   excludes: z.array(z.string()).optional(),
   pricing: z.any().optional(),
   leadId: z.string().uuid().optional().nullable(),
+  customFields: z.record(z.string(), z.unknown()).optional(),
+  sourceListingId: z.string().optional().nullable(),
+  sourceListingOrigin: z.enum(["product", "classified"]).optional().nullable(),
 });
 
 export const createTravelProposal = createServerFn({ method: "POST" })
@@ -606,6 +635,12 @@ export const createTravelProposal = createServerFn({ method: "POST" })
             basePriceCents + boardingTaxCents + otherTaxesCents - discountCents,
         ) || 0;
 
+      const normalizedCustomFields = normalizeCustomFieldMap(input.customFields || {});
+      const hasCustomFields = Object.keys(normalizedCustomFields).length > 0;
+      const clientDocument = input.clientDocument?.trim() || (typeof normalizedCustomFields.document === "string" ? normalizedCustomFields.document : null);
+      const sourceListingId = input.sourceListingId?.trim() || (typeof normalizedCustomFields.source_listing_id === "string" ? normalizedCustomFields.source_listing_id : null);
+      const sourceListingOrigin = input.sourceListingOrigin || (typeof normalizedCustomFields.source_listing_origin === "string" ? normalizedCustomFields.source_listing_origin : null);
+
       const initialPricing: PricingBreakdownDTO = {
         currency: rawPricing.currency || input.currency || "BRL",
         base_price_cents: basePriceCents || calculatedTotal,
@@ -634,6 +669,9 @@ export const createTravelProposal = createServerFn({ method: "POST" })
                 ]
               : [],
         payment_terms: rawPricing.payment_terms || undefined,
+        custom_fields: hasCustomFields ? normalizedCustomFields : undefined,
+        source_listing_id: sourceListingId,
+        source_listing_origin: sourceListingOrigin,
       };
 
       const includesList = input.includes || [
@@ -724,7 +762,10 @@ export const createTravelProposal = createServerFn({ method: "POST" })
         client_name: clientName,
         client_whatsapp: clientWhatsapp,
         client_email: input.clientEmail?.trim() || null,
-        client_document: input.clientDocument?.trim() || null,
+        client_document: clientDocument || null,
+        custom_fields: hasCustomFields ? normalizedCustomFields : undefined,
+        source_listing_id: sourceListingId,
+        source_listing_origin: sourceListingOrigin,
         customer_id: input.customerId || null,
         destination_city: destinationCity,
         travel_start_date: startDate,
@@ -1519,4 +1560,44 @@ export const bundleTravelProposalsIntoSingleLink = createServerFn({ method: "POS
       publicToken: primary.public_token,
       optionsCount: bundledOptions.length,
     };
+  });
+
+export const listStoreCatalogItemsForProposal = createServerFn({ method: "GET" })
+  .handler(async (): Promise<UnifiedBridgeCatalogContext[]> => {
+    const identity = await requireStaff();
+    const storeId = identity?.store_id;
+    if (!storeId) return [];
+
+    const supabase = getServerClient();
+    const [{ data: storeRow }, { data: productsRows }, { data: classifiedsRows }] = await Promise.all([
+      supabase.from("stores").select("id, primary_niche_id, settings").eq("id", storeId).maybeSingle(),
+      supabase
+        .from("products")
+        .select("*, product_variants(*), product_media(*)")
+        .eq("store_id", storeId)
+        .order("updated_at", { ascending: false })
+        .limit(50),
+      supabase
+        .from("classifieds")
+        .select("*")
+        .eq("store_id", storeId)
+        .neq("status", "archived")
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
+
+    const nicheHint =
+      (storeRow as any)?.primary_niche_id ||
+      ((storeRow as any)?.settings && typeof (storeRow as any).settings === "object"
+        ? (storeRow as any).settings.niche_id || (storeRow as any).settings.niche
+        : undefined);
+
+    const normalizedProducts = (productsRows || []).map((row: any) =>
+      extractNormalizedCatalogContext({ origin: "product", row }, nicheHint),
+    );
+    const normalizedClassifieds = (classifiedsRows || []).map((row: any) =>
+      extractNormalizedCatalogContext({ origin: "classified", row }, nicheHint),
+    );
+
+    return [...normalizedProducts, ...normalizedClassifieds];
   });

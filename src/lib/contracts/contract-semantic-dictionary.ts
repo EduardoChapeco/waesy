@@ -75,8 +75,10 @@ export const CONTRACT_SEMANTIC_GROUPS: ContractNicheGroup[] = [
       { key: "desconto_aplicado", token: "{{desconto_aplicado}}", label: "Desconto Concedido", category: "financeiro", example: "R$ 150,00 (5% à vista)", description: "Valor de bonificação ou desconto comercial" },
       { key: "taxa_juros_mora", token: "{{taxa_juros_mora}}", label: "Juros de Mora (% ao mês)", category: "financeiro", example: "1% (um por cento) ao mês", description: "Taxa de juros incidente em atrasos" },
       { key: "multa_atraso", token: "{{multa_atraso}}", label: "Multa por Atraso (%)", category: "financeiro", example: "2% (dois por cento)", description: "Multa moratória prevista pelo CDC" },
-      { key: "tabela_itens", token: "{{tabela_itens}}", label: "Tabela de Itens Comprados", category: "financeiro", example: "• 1x Smartphone Modelo X - R$ 3.000,00\n• 1x Garantia - R$ 500,00", description: "Lista discriminada dos produtos ou serviços da venda" },
-      { key: "tabela_parcelas", token: "{{tabela_parcelas}}", label: "Cronograma de Parcelas", category: "financeiro", example: "1ª: 10/10 - R$ 450 | 2ª: 10/11 - R$ 450...", description: "Grade completa de vencimentos do carnê" },
+      { key: "tabela_itens", token: "{{tabela_itens}}", label: "Tabela de Itens Comprados", category: "financeiro", example: "| Item | Qtd | Total |\n| --- | :---: | :---: |\n| Pacote | 1 | R$ 3.000,00 |", description: "Tabela estruturada dos produtos, pacotes ou serviços da venda" },
+      { key: "tabela_parcelas", token: "{{tabela_parcelas}}", label: "Cronograma de Parcelas", category: "financeiro", example: "| Parcela | Vencimento | Valor |\n| --- | :---: | :---: |\n| 1/10 | 10/10/2026 | R$ 450,00 |", description: "Grade completa de vencimentos e parcelas do negócio" },
+      { key: "tabela_especificacoes", token: "{{tabela_especificacoes}}", label: "Ficha Técnica / Especificações", category: "financeiro", example: "| Atributo | Detalhe |\n| --- | --- |\n| Categoria | Produto / Serviço |", description: "Tabela adaptativa de atributos do anúncio, ficha ou nicho" },
+      { key: "campos_personalizados_tabela", token: "{{campos_personalizados_tabela}}", label: "Campos Personalizados (Tabela)", category: "financeiro", example: "| Campo | Resposta |\n| --- | --- |\n| Preferência | Janela |", description: "Tabela com todas as respostas extras de formulários e onboarding" },
     ],
   },
   {
@@ -96,6 +98,8 @@ export const CONTRACT_SEMANTIC_GROUPS: ContractNicheGroup[] = [
       { key: "guia_responsavel", token: "{{guia_responsavel}}", label: "Guia Responsável", category: "turismo", example: "Marcos Vinicius (Cadastur 123456)", description: "Nome e credencial do guia acompanhante" },
       { key: "numero_voucher", token: "{{numero_voucher}}", label: "Código do Voucher", category: "turismo", example: "TRV-2026-9876", description: "Identificador unívoco do bilhete de viagem" },
       { key: "lista_passageiros", token: "{{lista_passageiros}}", label: "Lista de Acompanhantes", category: "turismo", example: "1. Carlos Silveira (RG 1234)\n2. Mariana Silveira (RG 5678)", description: "Nomes e documentos de todos os viajantes do voucher" },
+      { key: "tabela_passageiros", token: "{{tabela_passageiros}}", label: "Manifesto de Passageiros (Tabela)", category: "turismo", example: "| # | Nome | Documento |\n| :---: | --- | --- |", description: "Tabela estruturada de viajantes e documentos" },
+      { key: "tabela_roteiro", token: "{{tabela_roteiro}}", label: "Roteiro Dia-a-Dia (Tabela)", category: "turismo", example: "| Dia | Programação | Refeições |\n| :---: | --- | --- |", description: "Tabela cronológica do itinerário do pacote turístico" },
     ],
   },
   {
@@ -205,9 +209,10 @@ export function interpolateContractVariables(
   Object.entries(variables).forEach(([key, rawValue]) => {
     if (rawValue === undefined || rawValue === null) return;
     const stringValue = String(rawValue);
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    const regexDouble = new RegExp(`\\{\\{${key}\\}\\}`, "gi");
-    const regexSingle = new RegExp(`\\{${key}\\}`, "gi");
+    const regexDouble = new RegExp(`\\{\\{${escapedKey}\\}\\}`, "gi");
+    const regexSingle = new RegExp(`\\{${escapedKey}\\}`, "gi");
 
     result = result.replace(regexDouble, stringValue).replace(regexSingle, stringValue);
   });

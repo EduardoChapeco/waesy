@@ -14,13 +14,28 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { getLinkedInMasterCredentials, saveLinkedInMasterCredentials, type LinkedInMasterCredentialsDTO } from "@/services/linkedin-integrations.functions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getPlatformApiIntegrations, updatePlatformApiIntegrations, type PlatformApiIntegrationsDTO } from "@/services/master.functions";
 import { listApiKeyPools, saveApiKeyToPool, batchSaveApiKeysToPool, resetProviderPoolCooldowns, toggleApiKeyStatus, deleteApiKeyFromPool, testPoolKeyConnection, listMasterPrompts, saveMasterPrompt, type ApiKeyPoolDTO, type MasterPromptDTO, type ApiProvider } from "@/services/api-orchestrator.functions";
 import { GmapsScraperPanel } from "@/components/admin/gmaps-scraper-panel";
 import { WebAgentPanel } from "@/components/admin/web-agent-panel";
 import { InfotravelIntegrationPanel } from "@/components/admin/infotravel-integration-panel";
-import { listMasterWhatsAppInstances, toggleMasterWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
+import {
+  listMasterWhatsAppInstances,
+  toggleMasterWhatsAppInstance,
+  deleteMasterWhatsAppInstance,
+  type WhatsAppChannelInstanceDTO,
+} from "@/services/whatsapp-channel-instances.functions";
 import { WaesyCloudIntegrationPanel } from "@/components/admin/waesy-cloud-integration-panel";
 import { getWaesyCloudStatus, type WaesyCloudStatusDTO } from "@/services/waesy-cloud.functions";
 import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
@@ -109,21 +124,44 @@ type TabType = "database" | "pools" | "prompts" | "maps" | "payments" | "comms" 
 function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: WhatsAppChannelInstanceDTO[]; onChanged: () => void }) {
  const [busyId, setBusyId] = useState<string | null>(null);
  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+ const [instanceToDelete, setInstanceToDelete] = useState<WhatsAppChannelInstanceDTO | null>(null);
+ const [isDeleting, setIsDeleting] = useState(false);
+
+ const handleConfirmDelete = async () => {
+  if (!instanceToDelete) return;
+  setIsDeleting(true);
+  try {
+   const res = await deleteMasterWhatsAppInstance({
+    data: { id: instanceToDelete.id, storeId: instanceToDelete.store_id },
+   });
+   toast.success(
+    res?.gatewayCleanupOk
+     ? "Conexão WhatsApp excluída definitivamente."
+     : "Registro removido localmente (gateway externo indisponível no momento).",
+   );
+   setInstanceToDelete(null);
+   onChanged();
+  } catch (error) {
+   toast.error(error instanceof Error ? error.message : "Erro ao excluir instância WhatsApp.");
+  } finally {
+   setIsDeleting(false);
+  }
+ };
 
  return (
   <div className="space-y-6">
-   <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4">
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
+   <div className="p-6 rounded-lg bg-card border border-border space-y-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
      <div className="space-y-1">
       <div className="flex items-center gap-2">
-       <Smartphone className="size-4 text-emerald-500" />
-       <h3 className="text-sm font-bold text-foreground">Número Global Oficial Waesy (Concierge Mobilidade, Aéreo & Verificação Civil)</h3>
-       <Badge variant="outline" className="text-3xs font-mono border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10">
-        Gateway Global Evolution / Meta Cloud
+       <Smartphone className="size-4 text-success" />
+       <h3 className="text-sm font-bold text-foreground">WhatsApp Oficial Global</h3>
+       <Badge variant="outline" className="text-3xs font-mono border-border text-foreground bg-muted">
+        Evolution e Meta Cloud
        </Badge>
       </div>
       <p className="text-xs text-muted-foreground max-w-2xl">
-       Canal oficial da plataforma para chamada de corridas Waesy Go (com OTP de 4 dígitos), cotações de passagens aéreas corporativas e validação automática de telefone em <code>profiles.phone_verified_at</code>.
+       Canal oficial para corridas Waesy Go, cotações aéreas e validação em <code>profiles.phone_verified_at</code>.
       </p>
      </div>
      <Button
@@ -132,37 +170,37 @@ function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: Wha
       className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
      >
       <QrCode className="size-4" />
-      <span>Parear WhatsApp Global via QR</span>
+      <span>Parear WhatsApp via QR</span>
      </Button>
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-     <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
+     <div className="p-3 rounded-lg bg-muted border border-border space-y-1">
       <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Validação Civil</span>
-      <p className="text-xs font-semibold text-foreground">Auto-Verificação de Perfil</p>
-      <p className="text-2xs text-muted-foreground">Marca o WhatsApp do cidadão como verificado ao enviar mensagem para o número global.</p>
+      <p className="text-xs font-semibold text-foreground">Auto-Verificação</p>
+      <p className="text-2xs text-muted-foreground">Marca o WhatsApp como verificado ao enviar mensagem ao número global.</p>
      </div>
-     <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
-      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Mobilidade Waesy Go</span>
-      <p className="text-xs font-semibold text-foreground">Corridas, Fretes & Mudanças</p>
-      <p className="text-2xs text-muted-foreground">Cotação instantânea por localização ou texto, despacho e código OTP de embarque.</p>
+     <div className="p-3 rounded-lg bg-muted border border-border space-y-1">
+      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Waesy Go</span>
+      <p className="text-xs font-semibold text-foreground">Corridas e Fretes</p>
+      <p className="text-2xs text-muted-foreground">Cotação por localização, despacho e OTP de embarque.</p>
      </div>
-     <div className="p-3 rounded-lg bg-muted/20 border border-border/60 space-y-1">
-      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Viagens & Lojas</span>
-      <p className="text-xs font-semibold text-foreground">Aéreo Corporativo & Catálogo</p>
-      <p className="text-2xs text-muted-foreground">Cotações de voos/pacotes e roteamento inteligente para lojas e reservas locais.</p>
+     <div className="p-3 rounded-lg bg-muted border border-border space-y-1">
+      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">Viagens e Lojas</span>
+      <p className="text-xs font-semibold text-foreground">Aéreo e Catálogo</p>
+      <p className="text-2xs text-muted-foreground">Cotações de voos e roteamento para lojas locais.</p>
      </div>
     </div>
    </div>
 
-   <div className="p-6 rounded-lg bg-card border border-border/70 space-y-4">
+   <div className="p-6 rounded-lg bg-card border border-border space-y-4">
     <div>
-     <h3 className="text-sm font-bold">Instâncias WhatsApp — visão global</h3>
-     <p className="text-xs text-muted-foreground mt-1">Controle de operação por loja, provedor, modo oficial/não oficial e último estado conhecido. Credenciais nunca são exibidas.</p>
+     <h3 className="text-sm font-bold">Instâncias WhatsApp</h3>
+     <p className="text-xs text-muted-foreground mt-1">Operação por loja, provedor e estado da conexão.</p>
     </div>
     <div className="space-y-2">
      {instances.map((instance) => (
-      <div key={instance.id} className="rounded-lg border border-border/70 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div key={instance.id} className="rounded-lg border border-border p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
        <div>
         <div className="flex items-center gap-2">
          <span className="text-xs font-semibold">{instance.display_name}</span>
@@ -173,26 +211,38 @@ function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: Wha
          Loja: {instance.store_id} · {instance.provider} · {instance.display_phone_number || instance.phone_number_id || instance.external_instance_id || "sem identificador"}
         </p>
        </div>
-       <Button
-        size="sm"
-        variant={instance.is_active ? "outline" : "default"}
-        disabled={busyId === instance.id}
-        onClick={async () => {
-         setBusyId(instance.id);
-         try {
-          await toggleMasterWhatsAppInstance({ data: { id: instance.id, storeId: instance.store_id, active: !instance.is_active } });
-          toast.success("Status da instância atualizado.");
-          onChanged();
-         } catch (error) {
-          toast.error(error instanceof Error ? error.message : "Erro ao atualizar instância.");
-         } finally {
-          setBusyId(null);
-         }
-        }}
-        className="text-xs h-11 min-h-11"
-       >
-        {instance.is_active ? "Desativar" : "Ativar"}
-       </Button>
+       <div className="flex items-center gap-2 self-end md:self-center">
+        <Button
+         size="sm"
+         variant={instance.is_active ? "outline" : "default"}
+         disabled={busyId === instance.id || isDeleting}
+         onClick={async () => {
+          setBusyId(instance.id);
+          try {
+           await toggleMasterWhatsAppInstance({ data: { id: instance.id, storeId: instance.store_id, active: !instance.is_active } });
+           toast.success("Status da instância atualizado.");
+           onChanged();
+          } catch (error) {
+           toast.error(error instanceof Error ? error.message : "Erro ao atualizar instância.");
+          } finally {
+           setBusyId(null);
+          }
+         }}
+         className="text-xs h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+         {instance.is_active ? "Desativar" : "Ativar"}
+        </Button>
+        <Button
+         size="sm"
+         variant="ghost"
+         disabled={busyId === instance.id || isDeleting}
+         onClick={() => setInstanceToDelete(instance)}
+         className="text-xs h-11 min-h-11 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+         <Trash2 className="size-4" />
+         <span>Excluir</span>
+        </Button>
+       </div>
       </div>
      ))}
      {instances.length === 0 && (
@@ -209,6 +259,36 @@ function MasterWhatsAppInstancesPanel({ instances, onChanged }: { instances: Wha
     canManageConnection={true}
     isPlatformMaster={true}
    />
+
+   <AlertDialog
+    open={Boolean(instanceToDelete)}
+    onOpenChange={(open) => {
+     if (!open && !isDeleting) setInstanceToDelete(null);
+    }}
+   >
+    <AlertDialogContent className="rounded-lg p-6 sm:max-w-md pt-safe-modal">
+     <AlertDialogHeader className="text-left space-y-2">
+      <AlertDialogTitle className="text-base font-bold text-foreground">
+       Excluir Conexão WhatsApp Globalmente?
+      </AlertDialogTitle>
+      <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed">
+       A conexão <strong>{instanceToDelete?.display_name}</strong> ({instanceToDelete?.display_phone_number || instanceToDelete?.instance_key}) será desconectada no gateway e removida da operação da loja. Atendentes e setores vinculados ficarão sem canal padrão até novo vínculo.
+      </AlertDialogDescription>
+     </AlertDialogHeader>
+     <AlertDialogFooter className="pt-4 gap-2">
+      <AlertDialogCancel disabled={isDeleting} className="h-11 min-h-11 rounded-lg text-xs">
+       Cancelar
+      </AlertDialogCancel>
+      <AlertDialogAction
+       onClick={handleConfirmDelete}
+       disabled={isDeleting}
+       className="h-11 min-h-11 rounded-lg text-xs font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      >
+       {isDeleting ? "Excluindo..." : "Excluir Conexão"}
+      </AlertDialogAction>
+     </AlertDialogFooter>
+    </AlertDialogContent>
+   </AlertDialog>
   </div>
  );
 }
@@ -366,6 +446,12 @@ function AdminMasterIntegracoesPage() {
  meta_app_secret: formData.meta_app_secret,
  google_client_id: formData.google_client_id,
  google_client_secret: formData.google_client_secret,
+ mercadolivre_app_id: formData.mercadolivre_app_id,
+ mercadolivre_client_secret: formData.mercadolivre_client_secret,
+ ifood_client_id: formData.ifood_client_id,
+ ifood_client_secret: formData.ifood_client_secret,
+ shopee_partner_id: formData.shopee_partner_id,
+ shopee_partner_key: formData.shopee_partner_key,
  abacatepay_api_key: formData.abacatepay_api_key,
  mercadopago_access_token: formData.mercadopago_access_token,
  paypal_client_id: formData.paypal_client_id,
@@ -1630,18 +1716,18 @@ function AdminMasterIntegracoesPage() {
  {activeTab === "webhooks" && (
  <form onSubmit={handleSave} className="space-y-6">
  {/* Bloco 1: Meta Developers & Lead Ads Webhook */}
- <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
+ <div className="p-6 rounded-lg bg-card border border-border space-y-6">
  <div className="flex items-start justify-between gap-4">
  <div>
  <div className="flex items-center gap-2">
  <ShieldCheck className="size-4 text-primary" />
- <h3 className="text-sm font-bold text-foreground">Meta Developers & Webhooks de Plataforma</h3>
+ <h3 className="text-sm font-bold text-foreground">Meta Webhooks</h3>
  </div>
  <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
  Credenciais globais do aplicativo Meta da Waesy. Utilizadas para validar a assinatura criptográfica HMAC-SHA256 (<code>x-hub-signature-256</code>) dos webhooks de Lead Ads em <code>/api/webhooks/meta-ads</code> e autenticar chamadas a nível de app na Graph API v19.0+. Armazenadas com criptografia AES-256-GCM.
  </p>
  </div>
- <Badge variant="outline" className="font-mono text-2xs uppercase tracking-wider shrink-0 border-primary/30 text-primary bg-primary/5">
+ <Badge variant="outline" className="font-mono text-2xs uppercase tracking-wider shrink-0 border-border text-foreground bg-muted">
  Cofre Seguro AES-256
  </Badge>
  </div>
@@ -1713,14 +1799,14 @@ function AdminMasterIntegracoesPage() {
  </div>
 
  {/* Bloco 2: Google Cloud Platform & OAuth Global */}
- <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
+ <div className="p-6 rounded-lg bg-card border border-border space-y-6">
  <div>
  <div className="flex items-center gap-2">
  <Globe2 className="size-4 text-foreground" />
- <h3 className="text-sm font-bold text-foreground">Google Cloud Platform & OAuth Global</h3>
+ <h3 className="text-sm font-bold text-foreground">Google Cloud e OAuth Global</h3>
  </div>
  <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
- Credenciais mestre do projeto Google Cloud para login unificado, Google Ads Enhanced Conversions e integração com serviços da plataforma.
+ Credenciais do projeto Google Cloud para login unificado, Google Ads e serviços da plataforma.
  </p>
  </div>
 
@@ -1754,6 +1840,120 @@ function AdminMasterIntegracoesPage() {
  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
  >
  {visibleKeys["google_secret"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+ </button>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ {/* Bloco 3: Apps OAuth Master de Marketplaces (Mercado Livre, iFood & Shopee) */}
+ <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
+ <div>
+ <div className="flex items-center gap-2">
+ <Plug className="size-4 text-primary" />
+ <h3 className="text-sm font-bold text-foreground">Apps OAuth Master de Marketplaces</h3>
+ </div>
+ <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
+ Credenciais centralizadas da Waesy utilizadas como fallback automático quando lojistas clicam em Login Rápido OAuth 2.0 (Mercado Livre, iFood e Shopee v2) e para validação de assinaturas HMAC em webhooks globais.
+ </p>
+ </div>
+
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+ <div className="space-y-2">
+ <Label htmlFor="mercadolivre_app_id" className="text-xs font-bold">Mercado Livre App ID (Master)</Label>
+ <Input
+ id="mercadolivre_app_id"
+ type="text"
+ value={formData.mercadolivre_app_id || ""}
+ onChange={(e) => handleInputChange("mercadolivre_app_id", e.target.value)}
+ placeholder="Ex: 68192049182041"
+ className="h-11 min-h-11 text-xs font-mono rounded-lg"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="mercadolivre_client_secret" className="text-xs font-bold">Mercado Livre Client Secret (Master)</Label>
+ <div className="relative">
+ <Input
+ id="mercadolivre_client_secret"
+ type={visibleKeys["ml_master_secret"] ? "text" : "password"}
+ value={formData.mercadolivre_client_secret || ""}
+ onChange={(e) => handleInputChange("mercadolivre_client_secret", e.target.value)}
+ placeholder="Secret Key do App Mercado Livre"
+ className="h-11 min-h-11 text-xs font-mono rounded-lg pr-10"
+ />
+ <button
+ type="button"
+ onClick={() => toggleVisibility("ml_master_secret")}
+ className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ {visibleKeys["ml_master_secret"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+ </button>
+ </div>
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="ifood_client_id" className="text-xs font-bold">iFood Partner Client ID (Master)</Label>
+ <Input
+ id="ifood_client_id"
+ type="text"
+ value={formData.ifood_client_id || ""}
+ onChange={(e) => handleInputChange("ifood_client_id", e.target.value)}
+ placeholder="Client ID Portal do Parceiro iFood"
+ className="h-11 min-h-11 text-xs font-mono rounded-lg"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="ifood_client_secret" className="text-xs font-bold">iFood Partner Client Secret (Master)</Label>
+ <div className="relative">
+ <Input
+ id="ifood_client_secret"
+ type={visibleKeys["ifood_master_secret"] ? "text" : "password"}
+ value={formData.ifood_client_secret || ""}
+ onChange={(e) => handleInputChange("ifood_client_secret", e.target.value)}
+ placeholder="Client Secret Portal do Parceiro iFood"
+ className="h-11 min-h-11 text-xs font-mono rounded-lg pr-10"
+ />
+ <button
+ type="button"
+ onClick={() => toggleVisibility("ifood_master_secret")}
+ className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ {visibleKeys["ifood_master_secret"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+ </button>
+ </div>
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="shopee_partner_id" className="text-xs font-bold">Shopee v2 Partner ID (Master)</Label>
+ <Input
+ id="shopee_partner_id"
+ type="text"
+ value={formData.shopee_partner_id || ""}
+ onChange={(e) => handleInputChange("shopee_partner_id", e.target.value)}
+ placeholder="Ex: 2004918"
+ className="h-11 min-h-11 text-xs font-mono rounded-lg"
+ />
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="shopee_partner_key" className="text-xs font-bold">Shopee v2 Partner Key (Master)</Label>
+ <div className="relative">
+ <Input
+ id="shopee_partner_key"
+ type={visibleKeys["shopee_master_key"] ? "text" : "password"}
+ value={formData.shopee_partner_key || ""}
+ onChange={(e) => handleInputChange("shopee_partner_key", e.target.value)}
+ placeholder="shpk..."
+ className="h-11 min-h-11 text-xs font-mono rounded-lg pr-10"
+ />
+ <button
+ type="button"
+ onClick={() => toggleVisibility("shopee_master_key")}
+ className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ {visibleKeys["shopee_master_key"] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
  </button>
  </div>
  </div>

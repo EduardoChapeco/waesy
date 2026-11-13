@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShoppingBag, Store, Truck, Utensils, RefreshCw, CheckCircle2, AlertCircle, Link2, Unlink, Sliders, ExternalLink, ChevronRight, TrendingUp, Package, Copy, Plus, Search, Check, Radio, FileCode2, History, Barcode } from "lucide-react";
+import { ShoppingBag, Store, Truck, Utensils, RefreshCw, CheckCircle2, AlertCircle, Link2, Unlink, Sliders, ExternalLink, ChevronRight, TrendingUp, Package, Copy, Plus, Search, Check, Radio, FileCode2, History, Barcode, MessageSquare, Warehouse, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { listMarketplaceConnectors, saveMarketplaceConnector, disconnectMarketplaceConnector, triggerSyncConnector, getMarketplaceFinancialSummary, syncProductStockToMarketplaces, mapProductToMarketplace, deleteProductChannelListing, listProductMarketplaceMappings, importProductFromMercadoLivre, calculateAndApplyChannelPricing, listMarketplaceSyncLogs, getMarketplaceOAuthUrl, testMarketplaceConnectorCredentialsFn, type MarketplaceConnectorDTO, type MarketplacePlatform, type ProductMarketplaceMappingDTO, type MarketplaceSyncLogDTO } from "@/services/marketplace-hub.functions";
-import { listStoreWebhookEvents, reprocessWebhookEvent } from "@/services/marketplace-webhooks.functions";
+import {
+  MarketplaceCatalogActionsBar,
+  MarketplaceOrdersPanel,
+  MarketplaceQuestionsPanel,
+  MarketplaceWarehousesPanel,
+  PublishAndPriceModal,
+} from "@/components/workspace/marketplace-hub-panels";
+import {
+  listMarketplaceConnectors,
+  saveMarketplaceConnector,
+  disconnectMarketplaceConnector,
+  triggerSyncConnector,
+  getMarketplaceFinancialSummary,
+  syncProductStockToMarketplaces,
+  mapProductToMarketplace,
+  deleteProductChannelListing,
+  listProductMarketplaceMappings,
+  listMarketplaceSyncLogs,
+  listMarketplaceExternalOrders,
+  listInventoryLocations,
+  getMarketplaceOAuthUrl,
+  testMarketplaceConnectorCredentialsFn,
+  type MarketplaceConnectorDTO,
+  type MarketplacePlatform,
+  type ProductMarketplaceMappingDTO,
+  type MarketplaceSyncLogDTO,
+} from "@/services/marketplace-hub.functions";
+import { listStoreWebhookEvents, reprocessWebhookEvent, retryStoreFailedWebhooks } from "@/services/marketplace-webhooks.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
@@ -23,12 +49,14 @@ export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
   }),
   loader: async () => {
     try {
-      const [connectors, financialSummary, mappings, syncLogs, webhookEvents] = await Promise.all([
+      const [connectors, financialSummary, mappings, syncLogs, webhookEvents, externalOrders, locations] = await Promise.all([
         listMarketplaceConnectors().catch(() => []),
         getMarketplaceFinancialSummary().catch(() => []),
         listProductMarketplaceMappings().catch(() => []),
         listMarketplaceSyncLogs({ data: { limit: 20 } }).catch(() => []),
         listStoreWebhookEvents({ data: { status: "all", limit: 20 } }).catch(() => []),
+        listMarketplaceExternalOrders().catch(() => []),
+        listInventoryLocations().catch(() => []),
       ]);
       return {
         initialConnectors: connectors,
@@ -36,6 +64,8 @@ export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
         initialMappings: mappings,
         initialSyncLogs: syncLogs,
         initialWebhookEvents: webhookEvents,
+        initialExternalOrders: externalOrders,
+        initialLocations: locations,
       };
     } catch (err) {
       console.error("[loader:workspace.integracoes.marketplaces] error:", err);
@@ -45,6 +75,8 @@ export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
         initialMappings: [],
         initialSyncLogs: [],
         initialWebhookEvents: [],
+        initialExternalOrders: [],
+        initialLocations: [],
       };
     }
   },
@@ -248,12 +280,14 @@ function MarketplaceHubPage() {
     initialMappings,
     initialSyncLogs,
     initialWebhookEvents,
+    initialExternalOrders,
+    initialLocations,
   } = Route.useLoaderData();
 
   const queryClient = useQueryClient();
 
   // Navigation tabs
-  const [mainView, setMainView] = useState<"connectors" | "mapping" | "audit">("connectors");
+  const [mainView, setMainView] = useState<"connectors" | "orders" | "mapping" | "questions" | "warehouses" | "audit">("connectors");
   const [categoryFilter, setCategoryFilter] = useState<"all" | "ecommerce" | "food" | "logistics">("all");
 
   // Modal states
@@ -261,6 +295,8 @@ function MarketplaceHubPage() {
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [webhookModalOpen, setWebhookModalOpen] = useState(false);
   const [mappingModalOpen, setMappingModalOpen] = useState(false);
+  const [publishModalProduct, setPublishModalProduct] = useState<ProductMarketplaceMappingDTO | null>(null);
+  const [selectedMappingProductId, setSelectedMappingProductId] = useState<string>("");
 
   // Form states for Connector Config
   const [formValues, setFormValues] = useState<Record<string, string>>({});
@@ -385,9 +421,22 @@ function MarketplaceHubPage() {
     onSuccess: () => {
       toast.success("Evento de webhook reprocessado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["marketplace-webhook-events"] });
+      queryClient.invalidateQueries({ queryKey: ["marketplace-external-orders"] });
     },
     onError: (err: any) => {
       toast.error(err.message || "Falha ao reprocessar evento.");
+    },
+  });
+
+  const retryFailedMutation = useMutation({
+    mutationFn: () => retryStoreFailedWebhooks(),
+    onSuccess: (res) => {
+      toast.success(`${res.retried || 0} evento(s) reprocessado(s), ${res.recovered || 0} recuperado(s).`);
+      queryClient.invalidateQueries({ queryKey: ["marketplace-webhook-events"] });
+      queryClient.invalidateQueries({ queryKey: ["marketplace-external-orders"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao reprocessar fila com falha.");
     },
   });
 
@@ -460,9 +509,13 @@ function MarketplaceHubPage() {
   };
 
   const handleSaveMapping = () => {
-    if (!selectedProductForMapping) return;
+    const productId = selectedProductForMapping?.id || selectedMappingProductId;
+    if (!productId) {
+      toast.error("Selecione um produto para vincular.");
+      return;
+    }
     mapProductMutation.mutate({
-      productId: selectedProductForMapping.id,
+      productId,
       platform: mappingPlatform,
       externalListingId,
       externalSku: externalSku || undefined,
@@ -564,13 +617,14 @@ function MarketplaceHubPage() {
         </div>
       </div>
 
-      {/* Barra de Abas Principal (Apple Segmented Control) */}
+      {/* Barra de Abas Principal */}
       <div className="flex items-center gap-2 border-b border-border pb-3 overflow-x-auto scroll-area-carousel">
         <button
           type="button"
           onClick={() => setMainView("connectors")}
-          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
+          className={cn(
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer shrink-0",
             mainView === "connectors"
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground bg-muted/40"
@@ -580,29 +634,90 @@ function MarketplaceHubPage() {
         </button>
         <button
           type="button"
+          onClick={() => setMainView("orders")}
+          className={cn(
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer shrink-0",
+            mainView === "orders"
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:text-foreground bg-muted/40"
+          )}
+        >
+          <ShoppingBag className="size-3.5" /> Pedidos Externos ({initialExternalOrders.length})
+        </button>
+        <button
+          type="button"
           onClick={() => setMainView("mapping")}
-          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
+          className={cn(
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer shrink-0",
             mainView === "mapping"
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground bg-muted/40"
           )}
         >
-          <Barcode className="size-3.5" /> Mapeamento de SKUs ({mappings.length})
+          <Barcode className="size-3.5" /> Catálogo & SKUs ({mappings.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setMainView("questions")}
+          className={cn(
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer shrink-0",
+            mainView === "questions"
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:text-foreground bg-muted/40"
+          )}
+        >
+          <MessageSquare className="size-3.5" /> Perguntas ML
+        </button>
+        <button
+          type="button"
+          onClick={() => setMainView("warehouses")}
+          className={cn(
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer shrink-0",
+            mainView === "warehouses"
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:text-foreground bg-muted/40"
+          )}
+        >
+          <Warehouse className="size-3.5" /> Depósitos ({initialLocations.length})
         </button>
         <button
           type="button"
           onClick={() => setMainView("audit")}
-          className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-            "px-4 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer",
+          className={cn(
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 cursor-pointer shrink-0",
             mainView === "audit"
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground bg-muted/40"
           )}
         >
-          <History className="size-3.5" /> Auditoria de Webhooks ({webhookEvents.length})
+          <History className="size-3.5" /> Webhooks & Logs ({webhookEvents.length})
         </button>
       </div>
+
+      {/* ========================================================================= */}
+      {/* ABA: PEDIDOS EXTERNOS DE MARKETPLACES                                     */}
+      {/* ========================================================================= */}
+      {mainView === "orders" && (
+        <MarketplaceOrdersPanel
+          initialOrders={initialExternalOrders}
+          hasBlingConnected={connectors.some((c: MarketplaceConnectorDTO) => c.platform === "bling" && c.status === "connected")}
+        />
+      )}
+
+      {/* ========================================================================= */}
+      {/* ABA: PERGUNTAS PRÉ-VENDA (MERCADO LIVRE Q&A)                              */}
+      {/* ========================================================================= */}
+      {mainView === "questions" && <MarketplaceQuestionsPanel />}
+
+      {/* ========================================================================= */}
+      {/* ABA: DEPÓSITOS E DARK STORES                                              */}
+      {/* ========================================================================= */}
+      {mainView === "warehouses" && <MarketplaceWarehousesPanel initialLocations={initialLocations} />}
 
       {/* ========================================================================= */}
       {/* ABA 1: CANAIS */}
@@ -778,6 +893,8 @@ function MarketplaceHubPage() {
       {/* ========================================================================= */}
       {mainView === "mapping" && (
         <div className="space-y-4">
+          <MarketplaceCatalogActionsBar />
+
           <div className="rounded-lg border border-border/70 bg-card p-6 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
@@ -791,13 +908,17 @@ function MarketplaceHubPage() {
                   size="sm"
                   onClick={() => {
                     setSelectedProductForMapping(null);
+                    setSelectedMappingProductId(mappings[0]?.id || "");
                     setMappingPlatform("mercadolivre");
+                    setExternalListingId("");
+                    setExternalSku(mappings[0]?.sku || "");
+                    setPriceMarginPercent(0);
                     setMappingModalOpen(true);
                   }}
-                  className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
+                  className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
                 >
                   <ShoppingBag className="size-3.5" />
-                  <span>Vincular ao Mercado Livre</span>
+                  <span>Vincular Anúncio</span>
                 </Button>
               </div>
             </div>
@@ -873,25 +994,37 @@ function MarketplaceHubPage() {
                               </div>
                             )}
                           </TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 text-xs font-medium cursor-pointer"
-                              onClick={() => syncStockMutation.mutate({ productId: item.id, newStockQty: item.stock_on_hand })}
-                              disabled={syncStockMutation.isPending}
-                              title="Sincronizar estoque nos canais"
-                            >
-                              <RefreshCw className={cn("size-3 mr-1", syncStockMutation.isPending && "animate-spin motion-reduce:animate-none")} />
-                              Sync Estoque
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 px-3 text-xs font-semibold bg-foreground text-background cursor-pointer"
-                              onClick={() => handleOpenMapping(item)}
-                            >
-                              <Plus className="size-3 mr-1" /> Vincular Canal
-                            </Button>
+                          <TableCell className="text-right">
+                            <div className="flex flex-wrap justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-11 min-h-11 px-3 text-xs font-medium cursor-pointer"
+                                onClick={() => syncStockMutation.mutate({ productId: item.id, newStockQty: item.stock_on_hand })}
+                                disabled={syncStockMutation.isPending}
+                                title="Sincronizar estoque nos canais"
+                              >
+                                <RefreshCw className={cn("size-3 mr-1", syncStockMutation.isPending && "animate-spin motion-reduce:animate-none")} />
+                                Sync Estoque
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-11 min-h-11 px-3 text-xs font-medium cursor-pointer"
+                                onClick={() => setPublishModalProduct(item)}
+                                title="Publicar ou calcular preço no canal"
+                              >
+                                <Upload className="size-3 mr-1" />
+                                Publicar
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="h-11 min-h-11 px-3 text-xs font-semibold bg-foreground text-background cursor-pointer"
+                                onClick={() => handleOpenMapping(item)}
+                              >
+                                <Plus className="size-3 mr-1" /> Vincular Canal
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -920,14 +1053,26 @@ function MarketplaceHubPage() {
                   Auditoria em tempo real de notificações de pedidos e eventos recebidos de Mercado Livre, iFood, Shopee e APIs fiscais.
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 text-xs cursor-pointer"
-                onClick={() => queryClient.invalidateQueries({ queryKey: ["marketplace-webhook-events"] })}
-              >
-                <RefreshCw className="size-3 mr-1" /> Atualizar Feed
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-11 min-h-11 text-xs cursor-pointer gap-2"
+                  disabled={retryFailedMutation.isPending}
+                  onClick={() => retryFailedMutation.mutate()}
+                >
+                  <RefreshCw className={cn("size-3", retryFailedMutation.isPending && "animate-spin motion-reduce:animate-none")} />
+                  {retryFailedMutation.isPending ? "Reprocessando..." : "Reprocessar Falhas"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-11 min-h-11 text-xs cursor-pointer gap-2"
+                  onClick={() => queryClient.invalidateQueries({ queryKey: ["marketplace-webhook-events"] })}
+                >
+                  <RefreshCw className="size-3" /> Atualizar Feed
+                </Button>
+              </div>
             </div>
 
             <div className="border border-border/70 rounded-lg overflow-hidden">
@@ -1080,7 +1225,7 @@ function MarketplaceHubPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedPlatform && ["mercadolivre", "bling"].includes(selectedPlatform.platform) && (
+          {selectedPlatform && ["mercadolivre", "bling", "shopee", "magalu", "ifood"].includes(selectedPlatform.platform) && (
             <div className="pt-1 pb-2 border-b border-border/50">
               <Button
                 type="button"
@@ -1088,17 +1233,20 @@ function MarketplaceHubPage() {
                 size="sm"
                 onClick={async () => {
                   try {
+                    const rawClientId = (formValues.client_id || formValues.partner_id || "").trim();
+                    const rawPartnerKey = (formValues.partner_key || formValues.client_secret || "").trim();
                     const res = await getMarketplaceOAuthUrl({
                       data: {
                         platform: selectedPlatform.platform,
-                        clientId: formValues.client_id || undefined,
+                        clientId: rawClientId && !rawClientId.includes("••••") ? rawClientId : undefined,
+                        partnerKey: rawPartnerKey && !rawPartnerKey.includes("••••") ? rawPartnerKey : undefined,
                       },
                     });
                     if (res?.configured && res.authUrl) {
                       window.location.href = res.authUrl;
                       return;
                     }
-                    toast.info(res?.message || "Preencha o Client ID abaixo para iniciar o OAuth 2.0.");
+                    toast.info(res?.message || "Preencha o Client ID / Partner ID ou configure no Admin Master para iniciar o OAuth 2.0.");
                   } catch (err: any) {
                     toast.error(err?.message || "Falha ao gerar link OAuth 2.0.");
                   }
@@ -1177,10 +1325,13 @@ function MarketplaceHubPage() {
               onClick={async () => {
                 if (!selectedPlatform) return;
                 try {
+                  const cleanPayload = Object.fromEntries(
+                    Object.entries(formValues).filter(([, v]) => v.trim() !== "" && !v.includes("••••"))
+                  );
                   const res = await testMarketplaceConnectorCredentialsFn({
                     data: {
                       platform: selectedPlatform.platform,
-                      credentialPayload: formValues,
+                      credentialPayload: Object.keys(cleanPayload).length > 0 ? cleanPayload : undefined,
                     },
                   });
                   if (res.success) {
@@ -1235,11 +1386,13 @@ function MarketplaceHubPage() {
               <div className="flex items-center gap-2">
                 <Input
                   readOnly
-                  value={
-                    typeof window !== "undefined"
-                      ? `${window.location.origin}/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`
-                      : `/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`
-                  }
+                  value={(() => {
+                    const activeStoreId = connectors[0]?.store_id || "";
+                    const qs = `platform=${selectedPlatform?.platform || "mercadolivre"}${activeStoreId ? `&store_id=${activeStoreId}` : ""}`;
+                    return typeof window !== "undefined"
+                      ? `${window.location.origin}/api/webhooks/marketplaces?${qs}`
+                      : `/api/webhooks/marketplaces?${qs}`;
+                  })()}
                   className="h-11 min-h-11 text-xs rounded-lg font-mono bg-muted/30"
                 />
                 <Button
@@ -1247,7 +1400,9 @@ function MarketplaceHubPage() {
                   variant="outline"
                   className="h-11 min-h-11 px-3 cursor-pointer"
                   onClick={() => {
-                    const url = `${window.location.origin}/api/webhooks/marketplaces?platform=${selectedPlatform?.platform || "mercadolivre"}`;
+                    const activeStoreId = connectors[0]?.store_id || "";
+                    const qs = `platform=${selectedPlatform?.platform || "mercadolivre"}${activeStoreId ? `&store_id=${activeStoreId}` : ""}`;
+                    const url = `${window.location.origin}/api/webhooks/marketplaces?${qs}`;
                     navigator.clipboard.writeText(url);
                     toast.success("Webhook URL copiada para a área de transferência!");
                   }}
@@ -1259,9 +1414,9 @@ function MarketplaceHubPage() {
 
             <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground space-y-2">
               <p className="font-semibold text-foreground">Garantias Técnicas Ativas:</p>
-              <p>• Idempotência transacional com prevenção estrita de duplicidade.</p>
-              <p>• Inserção automática na tabela mestra de pedidos e KDS.</p>
-              <p>• Baixa de estoque física imediata para SKUs mapeados.</p>
+              <p>• Validação criptográfica HMAC-SHA256 por provedor e janela anti-replay.</p>
+              <p>• Idempotência transacional com pull-back completo da API oficial.</p>
+              <p>• Baixa de estoque isolada por loja e reconciliação no pedido mestre.</p>
             </div>
           </div>
 
@@ -1284,11 +1439,29 @@ function MarketplaceHubPage() {
               Vincular Canal ao Produto
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              {selectedProductForMapping?.title}
+              {selectedProductForMapping?.title || "Selecione o produto local e informe o ID do anúncio externo."}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            {!selectedProductForMapping && (
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">Produto Local</Label>
+                <select
+                  value={selectedMappingProductId}
+                  onChange={(e) => setSelectedMappingProductId(e.target.value)}
+                  className="w-full h-11 min-h-11 px-3 rounded-lg border border-input bg-background text-xs"
+                >
+                  <option value="">Selecione um produto...</option>
+                  {mappings.map((m: ProductMarketplaceMappingDTO) => (
+                    <option key={m.id} value={m.id}>
+                      {m.title} {m.sku ? `(${m.sku})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label className="text-xs font-medium">Plataforma Externa</Label>
               <select
@@ -1301,6 +1474,7 @@ function MarketplaceHubPage() {
                 <option value="shopee">Shopee</option>
                 <option value="amazon">Amazon Brasil</option>
                 <option value="magalu">Magazine Luiza</option>
+                <option value="bling">Bling ERP v3</option>
               </select>
             </div>
 
@@ -1356,13 +1530,19 @@ function MarketplaceHubPage() {
             <Button
               className="h-11 min-h-11 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
               onClick={handleSaveMapping}
-              disabled={mapProductMutation.isPending || !externalListingId.trim()}
+              disabled={mapProductMutation.isPending || !externalListingId.trim() || (!selectedProductForMapping && !selectedMappingProductId)}
             >
               {mapProductMutation.isPending ? "Salvando..." : "Salvar Mapeamento"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      <PublishAndPriceModal
+        product={publishModalProduct}
+        open={Boolean(publishModalProduct)}
+        onOpenChange={(open) => !open && setPublishModalProduct(null)}
+      />
     </div>
   );
 }

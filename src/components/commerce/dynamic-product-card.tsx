@@ -36,12 +36,12 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  to="/produto/$slug"
  params={{ slug: product.slug }}
  className={cn(
- "group flex flex-col h-full squircle squircle-hover overflow-hidden border bg-card transition-colors duration-200 content-auto-card",
+ "group flex flex-col h-full squircle squircle-hover overflow-hidden border border-border bg-card transition-colors duration-200 content-auto-card",
  product.isBoosted &&
- "border-warning/50 ring-1 ring-warning/30 bg-warning/10",
+ "border-warning ring-1 ring-warning bg-card",
  )}
  >
- <div className="relative aspect-square w-full squircle-media bg-muted/50">
+ <div className="relative aspect-square w-full squircle-media bg-muted">
  {product.coverUrl ? (
  <img
  src={product.coverUrl}
@@ -52,9 +52,9 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  ) : (
  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
  {tipo === "event_producer" ? (
- <Ticket className="size-10 opacity-20" />
+ <Ticket className="size-10 opacity-40" />
  ) : (
- <ShoppingCart className="size-10 opacity-20" />
+ <ShoppingCart className="size-10 opacity-40" />
  )}
  </div>
  )}
@@ -62,17 +62,17 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  {/* Top Badges */}
  <div className="absolute top-2 left-2 flex flex-col gap-1">
  {product.isBoosted && (
- <Badge className="bg-warning hover:bg-warning/90 text-warning-foreground font-black uppercase ">
+ <Badge className="bg-warning hover:bg-warning/90 text-warning-foreground font-black uppercase">
  Patrocinado
  </Badge>
  )}
  {tipo === "event_producer" && (
- <Badge className="bg-primary hover:bg-primary/90 text-foreground font-black uppercase ">
+ <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase">
  Ingresso
  </Badge>
  )}
  {tipo === "creator" && (
- <Badge variant="secondary" className="bg-primary text-foreground font-bold ">
+ <Badge variant="secondary" className="bg-primary text-primary-foreground font-bold">
  Serviço
  </Badge>
  )}
@@ -80,7 +80,7 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  </div>
 
  <div className="flex flex-1 flex-col p-4">
- <h3 className="font-bold text-lg leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+ <h3 className="font-bold text-lg leading-tight line-clamp-2 text-anti-truncate mb-2 group-hover:text-primary transition-colors">
  {product.title}
  </h3>
 

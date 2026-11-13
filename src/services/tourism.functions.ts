@@ -257,7 +257,7 @@ export const bookTourismExperience = createServerFn({ method: "POST" })
     // 1. Obter detalhes da experiência e o mapa de assentos atual
     const { data: experience, error: expError } = await supabase
       .from("tourism_experiences")
-      .select("id, title, location, price_cents, provider_name, contact_whatsapp, seats, total_seats, available_seats, category")
+      .select("id, store_id, title, location, destination, departure_date, return_date, price_cents, provider_name, contact_whatsapp, seats, total_seats, available_seats, category")
       .eq("id", data.experienceId)
       .single();
 
@@ -378,6 +378,49 @@ export const bookTourismExperience = createServerFn({ method: "POST" })
     if (bookError) {
       console.error("[tourism.functions] Erro ao gravar reserva de turismo:", bookError);
       throw new Error("Não foi possível confirmar a sua reserva no momento. Tente novamente.");
+    }
+
+    // 6. Espelhar reserva de experiencia no Kanban CRM + Cadastro Unico de Cliente
+    if ((experience as any).store_id) {
+      try {
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        await ingestOmnichannelLead(supabase, {
+          storeId: (experience as any).store_id,
+          source: "tourism_experience_booking",
+          sourceDetail: experience.title,
+          fullName: data.customerName.trim(),
+          phone: data.customerPhone.trim(),
+          email: data.customerEmail.trim().toLowerCase(),
+          destination: (experience as any).destination || experience.location || experience.title,
+          travelStart: data.desiredDate || (experience as any).departure_date || null,
+          travelEnd: (experience as any).return_date || null,
+          paxCount: data.guestsCount,
+          paxAdults: data.guestsCount,
+          paxList: Array.isArray(data.passengers)
+            ? data.passengers.map((p) => ({
+                full_name: p.name,
+                document: p.document || null,
+                phone: p.phone || null,
+                seat_number: p.seatNumber || null,
+                notes: p.notes || null,
+              }))
+            : null,
+          estimatedValueCents: totalPriceCents,
+          message: data.message?.trim() || null,
+          status: "negotiation",
+          sourceListingId: experience.id,
+          sourceListingOrigin: "experience",
+          sourceListingTitle: experience.title,
+          customFields: {
+            voucher_code: booking.voucher_code,
+            payment_method: data.paymentMethod,
+            selected_seats: seatsToBook,
+            meeting_point: experience.location || null,
+          },
+        });
+      } catch (syncErr) {
+        console.warn("[tourism.functions] Aviso ao sincronizar reserva com Kanban:", syncErr);
+      }
     }
 
     return {
@@ -714,37 +757,74 @@ export const requestTravelQuote = createServerFn({ method: "POST" })
       return { success: false, id: "", protocol: "" };
     }
 
-    // Gravação defensiva também em travel_quote_requests para sincronia total
+    // Gravação defensiva também em travel_quote_requests + sincronia omnichannel em leads_crm
+    let leadId: string | null = null;
     if (data.store_id) {
       try {
-      await supabase.from("travel_quote_requests").insert({
-        id: inserted.id,
-        store_id: data.store_id,
-        client_name: data.contact_name,
-        client_phone: data.contact_whatsapp,
-        client_email: data.contact_email || null,
-        destination: data.destination_city,
-        departure_date: data.departure_date || null,
-        return_date: data.return_date || null,
-        passengers_count: data.adults_count + data.children_count,
-        status: "new",
-        source: "showcase_wizard",
-        notes: data.special_notes || null,
-        metadata: {
-          protocol,
-          origin_city: data.origin_city,
-          rooms_count: data.rooms_count,
-          adults_count: data.adults_count,
-          children_count: data.children_count,
-          children_ages: data.children_ages,
-          trip_type: data.trip_type,
-          flexible_dates: data.flexible_dates,
-          budget_tier: data.budget_tier,
-        },
-      });
-    } catch (syncErr: any) {
-      console.warn("[tourism.functions] Aviso ao espelhar em travel_quote_requests:", syncErr);
-    }
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        const ingested = await ingestOmnichannelLead(supabase, {
+          storeId: data.store_id,
+          source: "travel_quote_wizard",
+          sourceDetail: `Cotacao ${protocol}`,
+          fullName: data.contact_name,
+          phone: data.contact_whatsapp,
+          email: data.contact_email || null,
+          destination: data.destination_city,
+          travelStart: data.departure_date || null,
+          travelEnd: data.return_date || null,
+          paxAdults: data.adults_count,
+          paxChildren: data.children_count,
+          paxCount: data.adults_count + data.children_count,
+          message: data.special_notes || null,
+          sourceQuoteId: inserted.id,
+          customFields: {
+            protocol,
+            origin_city: data.origin_city,
+            origin_iata: data.origin_iata || null,
+            destination_iata: data.destination_iata || null,
+            rooms_count: data.rooms_count,
+            children_ages: data.children_ages,
+            trip_type: data.trip_type,
+            flexible_dates: data.flexible_dates,
+            budget_tier: data.budget_tier,
+          },
+        });
+        leadId = ingested.leadId;
+      } catch (syncLeadErr) {
+        console.warn("[tourism.functions] Aviso ao sincronizar wizard com leads_crm:", syncLeadErr);
+      }
+
+      try {
+        await supabase.from("travel_quote_requests").insert({
+          id: inserted.id,
+          store_id: data.store_id,
+          ...(leadId ? { lead_id: leadId } : {}),
+          client_name: data.contact_name,
+          client_phone: data.contact_whatsapp,
+          client_email: data.contact_email || null,
+          destination: data.destination_city,
+          departure_date: data.departure_date || null,
+          return_date: data.return_date || null,
+          passengers_count: data.adults_count + data.children_count,
+          status: "new",
+          source: "showcase_wizard",
+          notes: data.special_notes || null,
+          metadata: {
+            protocol,
+            lead_id: leadId,
+            origin_city: data.origin_city,
+            rooms_count: data.rooms_count,
+            adults_count: data.adults_count,
+            children_count: data.children_count,
+            children_ages: data.children_ages,
+            trip_type: data.trip_type,
+            flexible_dates: data.flexible_dates,
+            budget_tier: data.budget_tier,
+          },
+        });
+      } catch (syncErr: any) {
+        console.warn("[tourism.functions] Aviso ao espelhar em travel_quote_requests:", syncErr);
+      }
     }
 
     return { success: true, id: inserted.id, protocol };
@@ -1379,4 +1459,111 @@ export const createCarRentalBooking = createServerFn({ method: "POST" })
       message: `Reserva do veículo ${input.carTitle} confirmada com sucesso! Voucher: ${voucherCode}`,
     };
   });
+
+// ==============================================================================
+// 13. CAPTURA DE INTERESSE / RESERVA DIRETA EM PRODUTO/PACOTE DE VITRINE
+// ==============================================================================
+
+export const registerStorefrontProductInterest = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      productId: z.string().uuid(),
+      storeId: z.string().uuid().optional(),
+      contactName: z.string().min(2).optional(),
+      contactPhone: z.string().optional(),
+      contactEmail: z.string().optional(),
+      guestsCount: z.number().int().min(1).max(100).optional().default(1),
+      selectedDeparture: z.record(z.any()).optional(),
+      notes: z.string().max(1500).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity().catch(() => null);
+
+    const { data: product, error: prodErr } = await supabase
+      .from("products")
+      .select("id, store_id, title, price_cents, attributes")
+      .eq("id", data.productId)
+      .maybeSingle();
+
+    if (prodErr || !product) {
+      throw new Error("Produto ou pacote nao encontrado.");
+    }
+
+    const resolvedStoreId = product.store_id || data.storeId;
+    if (!resolvedStoreId) {
+      return { success: false, leadId: null, customerId: null };
+    }
+
+    let fullName = data.contactName?.trim() || "";
+    let phone = data.contactPhone?.trim() || "";
+    let email = data.contactEmail?.trim() || "";
+    let document: string | null = null;
+
+    if (identity?.customer_id || (identity as any)?.id) {
+      const profileId = (identity as any).id || identity?.customer_id;
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("full_name, phone, cpf")
+        .eq("id", profileId)
+        .maybeSingle();
+      if (prof) {
+        if (!fullName) fullName = prof.full_name || "";
+        if (!phone) phone = prof.phone || "";
+        if (!email) email = (identity as any)?.email || "";
+        document = prof.cpf || null;
+      }
+    }
+
+    if (!fullName && !phone && !email) {
+      return { success: false, leadId: null, customerId: null, requiresContact: true };
+    }
+
+    const travelPkg =
+      (product.attributes as any)?.travel_package ||
+      (product.attributes as any)?.travel ||
+      {};
+    const dep = (data.selectedDeparture || {}) as Record<string, any>;
+    const depUnitCents = Number(dep.price_cents || product.price_cents || 0);
+    const totalEstimateCents = depUnitCents * (data.guestsCount || 1);
+
+    const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+    const ingested = await ingestOmnichannelLead(supabase, {
+      storeId: resolvedStoreId,
+      source: "storefront_product_interest",
+      sourceDetail: product.title,
+      fullName: fullName || "Cliente da Vitrine",
+      phone: phone || null,
+      email: email || null,
+      document,
+      destination:
+        (travelPkg as any)?.destination?.name ||
+        (travelPkg as any)?.destination ||
+        product.title,
+      travelStart: dep.departure_date || null,
+      travelEnd: dep.return_date || null,
+      paxCount: data.guestsCount || 1,
+      paxAdults: data.guestsCount || 1,
+      estimatedValueCents: totalEstimateCents,
+      message: data.notes || `Interesse registrado no pacote/item "${product.title}"`,
+      status: "new",
+      sourceListingId: product.id,
+      sourceListingOrigin: "product",
+      sourceListingTitle: product.title,
+      departureOption: dep && Object.keys(dep).length > 0 ? dep : null,
+      customFields: {
+        product_id: product.id,
+        selected_departure: dep,
+        guests_count: data.guestsCount || 1,
+      },
+    });
+
+    return {
+      success: ingested.success,
+      leadId: ingested.leadId,
+      customerId: ingested.customerId,
+    };
+  });
+
 

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, isRedirect } from "@tanstack/react-router
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Type, Square, Image as ImageIcon, Palette, Award, Layers, Save, Download, Play, Pause, Plus, Trash2, Copy, Undo2, Redo2, ZoomIn, ZoomOut, Video, Film, Music, Scissors, ArrowLeft, Smartphone, Check, Loader2, ChevronRight, Maximize2 } from "lucide-react";
+import { Type, Square, Image as ImageIcon, Palette, Award, Layers, Save, Download, FileText, Play, Pause, Plus, Trash2, Copy, Undo2, Redo2, ZoomIn, ZoomOut, Video, Film, Music, Scissors, ArrowLeft, Smartphone, Check, Loader2, ChevronRight, Maximize2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -18,7 +18,7 @@ import { MotionStudioViewport } from "@/components/studio/motion/motion-viewport
 import { VideoStudioEditor } from "@/components/studio/video-studio-editor";
 import { listStudioProjects, listStudioTemplates, saveStudioProject, getStudioProjectById, type StudioProjectDTO, type StudioTemplateDTO } from "@/services/studio.functions";
 import { getProductById } from "@/services/admin-catalog.functions";
-import { exportElementAsImage } from "@/lib/pdf-export";
+import { exportElementAsImage, exportElementAsPdf } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/workspace/estudio/")({
  head: () => ({ meta: [{ title: "Estúdio | Workspace Waesy" }] }),
@@ -31,13 +31,11 @@ export const Route = createFileRoute("/workspace/estudio/")({
  },
  loader: async () => {
    try {
-    // Studio desativado no MVP — apenas platform_admin pode acessar
     const { getUserSession } = await import("@/services/auth.functions");
     const session = await getUserSession().catch(() => null);
-    const role = session?.role || session?.user?.user_metadata?.role;
-    if (role !== "platform_admin" && role !== "master") {
+    if (!session?.user?.id) {
       const { redirect } = await import("@tanstack/react-router");
-      throw redirect({ to: "/workspace" });
+      throw redirect({ to: "/entrar" });
     }
     return {};
    } catch (err) {
@@ -94,11 +92,12 @@ function StudioWorkspacePage() {
  const [isPlaying, setIsPlaying] = useState(false);
  const [currentTime, setCurrentTime] = useState(0);
  const [videoDuration, setVideoDuration] = useState(15);
-  const [videoTracks, setVideoTracks] = useState([
-    { id: "tr-video", name: "Vídeo Principal", type: "video", clips: [{ id: "c1", start: 0, end: 10, duration: 10, name: "Clipe 01.mp4" }] },
-    { id: "tr-audio", name: "Trilha Sonora", type: "audio", clips: [{ id: "c2", start: 0, end: 15, duration: 15, name: "Lo-Fi Chill Beat.mp3" }] },
-    { id: "tr-text", name: "Texto / Legendas", type: "text", clips: [{ id: "c3", start: 2, end: 7, duration: 5, name: "Legenda Oferta" }] },
-  ]);
+  const [videoTracks, setVideoTracks] = useState<Array<{
+    id: string;
+    name: string;
+    type: "video" | "audio" | "text" | string;
+    clips: Array<{ id: string; start: number; end: number; duration: number; name: string }>;
+  }>>([]);
 
  const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string>("all");
 
@@ -212,7 +211,7 @@ function StudioWorkspacePage() {
 
  const handleExport = async () => {
  if (studioMode === "video") {
- toast.info("A renderização de vídeo MP4 no navegador está em processamento.");
+ toast.info("Use o editor de trilhas para importar e combinar clipes reais.");
  return;
  }
  try {
@@ -223,6 +222,24 @@ function StudioWorkspacePage() {
  } catch (err: any) {
       if (isRedirect(err)) throw err;
  toast.error(err?.message || "Erro ao exportar arte.");
+ } finally {
+ setIsExporting(false);
+ }
+ };
+
+ const handleExportPdf = async () => {
+ if (studioMode === "video") {
+ toast.info("Alterne para o modo Design Gráfico para gerar PDF.");
+ return;
+ }
+ try {
+ setIsExporting(true);
+ const safeTitle = projectTitle.toLowerCase().replace(/[^a-z0-9]/g, "_");
+ await exportElementAsPdf("studio-canvas-stage", `${safeTitle || "arte_studio"}.pdf`);
+ toast.success("Arte exportada com sucesso em PDF!");
+ } catch (err: any) {
+ if (isRedirect(err)) throw err;
+ toast.error(err?.message || "Erro ao gerar PDF.");
  } finally {
  setIsExporting(false);
  }
@@ -310,6 +327,17 @@ function StudioWorkspacePage() {
  <Save className="size-3.5" />
  )}
  <span>Salvar</span>
+ </Button>
+
+ <Button
+ size="sm"
+ variant="outline"
+ disabled={isExporting}
+ onClick={handleExportPdf}
+ className="h-8 rounded-lg font-bold text-xs gap-2 min-h-11 sm:min-h-0"
+ >
+ <FileText className="size-3.5" />
+ <span>PDF</span>
  </Button>
 
  <Button

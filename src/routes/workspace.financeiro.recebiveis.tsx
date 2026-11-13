@@ -468,46 +468,46 @@ Assinatura da Loja (Consignante)`;
             <>
               {selectedInstallmentIds.length > 0 && (
                 <Button
-                  className="rounded-lg bg-primary text-primary-foreground font-medium text-xs h-11 min-h-11 px-4 shadow-xs"
+                  className="rounded-lg bg-primary text-primary-foreground font-medium text-xs h-11 min-h-11 px-4"
                   onClick={() => setIsMassBillingOpen(true)}
                 >
-                  <Send className="h-3.5 w-3.5 mr-2" /> Cobrar ({selectedInstallmentIds.length}) Selecionados
+                  <Send className="size-4 mr-2" /> Cobrar ({selectedInstallmentIds.length}) Selecionados
                 </Button>
               )}
               <Button
-                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-11 min-h-11 px-4 shadow-xs"
+                className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-11 min-h-11 px-4"
                 onClick={() => setIsCreateModalOpen(true)}
               >
-                <Plus className="h-4 w-4 mr-2" /> Emitir Novo Carnê
+                <Plus className="h-4 w-4 mr-2" /> Emitir Carnê
               </Button>
             </>
           )}
 
           {mainTab === "condicionais" && (
             <Button
-              className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-11 min-h-11 px-4 shadow-xs"
+              className="rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-11 min-h-11 px-4"
               onClick={() => setIsCreateCondicionalOpen(true)}
             >
-              <Plus className="h-4 w-4 mr-2" /> Nova Saída em Condicional
+              <Plus className="h-4 w-4 mr-2" /> Nova Condicional
             </Button>
           )}
         </div>
       </div>
 
       {/* Seletor de Abas Principais (Clean Paradigm) */}
-      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 border border-border/60 max-w-xl">
+      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted border border-border max-w-xl">
         <button
           type="button"
           onClick={() => setMainTab("carnes")}
           className={cn("flex-1 flex items-center justify-center gap-2 h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             mainTab === "carnes"
-              ? "bg-background text-foreground shadow-xs"
+              ? "bg-card border border-border text-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
           <Receipt className="h-4 w-4" />
-          <span>Carnês e Caderninho</span>
-          <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-2 py-0 h-4">
+          <span>Carnês</span>
+          <Badge variant="secondary" className="text-xs px-2 py-1">
             {carnes.length}
           </Badge>
         </button>
@@ -517,15 +517,15 @@ Assinatura da Loja (Consignante)`;
           onClick={() => setMainTab("condicionais")}
           className={cn("flex-1 flex items-center justify-center gap-2 h-11 min-h-11 px-4 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             mainTab === "condicionais"
-              ? "bg-background text-foreground shadow-xs"
+              ? "bg-card border border-border text-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          <Shirt className="h-4 w-4 text-indigo-500" />
-          <span>Condicionais e Malas</span>
+          <Shirt className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+          <span>Condicionais</span>
           <Badge
             variant="outline"
-            className="text-xs text-muted-foreground/75 px-2 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
+            className="text-xs px-2 py-1 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200"
           >
             {condicionaisList.filter((c: any) => c.status !== "closed").length} ativas
           </Badge>
@@ -537,7 +537,7 @@ Assinatura da Loja (Consignante)`;
         <>
           {/* KPI Cards de Carteira (Clean Paradigm) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Total a Receber
@@ -550,7 +550,7 @@ Assinatura da Loja (Consignante)`;
           <div className="text-xs text-muted-foreground">Carteira ativa em aberto</div>
         </div>
 
-        <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+        <div className="p-5 rounded-lg bg-card border border-border space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Inadimplência Geral
@@ -601,7 +601,7 @@ Assinatura da Loja (Consignante)`;
             onClick={() => setActiveFilter("all")}
             className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "all"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-card border border-border text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -612,7 +612,7 @@ Assinatura da Loja (Consignante)`;
             onClick={() => setActiveFilter("due_soon")}
             className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "due_soon"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-card border border-border text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -623,7 +623,7 @@ Assinatura da Loja (Consignante)`;
             onClick={() => setActiveFilter("late")}
             className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "late"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-card border border-border text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -634,13 +634,13 @@ Assinatura da Loja (Consignante)`;
             onClick={() => setActiveFilter("pending_conciliation")}
             className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "pending_conciliation"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-card border border-border text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
             Conciliações
             {(report?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-2 py-0.2 rounded-full bg-warning/10 text-warning-strong font-bold text-xs text-muted-foreground/75">
+              <span className="px-2 py-1 rounded-full bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 font-bold text-xs">
                 {report?.pendingConciliationCount}
               </span>
             )}
@@ -650,7 +650,7 @@ Assinatura da Loja (Consignante)`;
             onClick={() => setActiveFilter("settled")}
             className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeFilter === "settled"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-card border border-border text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -672,8 +672,8 @@ Assinatura da Loja (Consignante)`;
 
       {/* Lista de Carnês & Parcelas */}
       {carnes.length === 0 ? (
-        <div className="py-16 text-center space-y-3 bg-card rounded-lg p-8 border border-dashed border-border/60 shadow-xs">
-          <Receipt size={40} className="text-muted-foreground/40 mx-auto" />
+        <div className="py-16 text-center space-y-3 bg-card rounded-lg p-8 border border-dashed border-border">
+          <Receipt size={40} className="text-muted-foreground mx-auto" />
           <h3 className="text-base font-semibold text-foreground">Nenhum carnê encontrado</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             Não há contas a receber correspondentes ao filtro ativo. Use o botão acima para emitir um novo carnê.
@@ -689,21 +689,21 @@ Assinatura da Loja (Consignante)`;
             return (
               <div
                 key={carne.id}
-                className="bg-card rounded-lg border border-border/60 shadow-xs overflow-hidden space-y-4 p-5"
+                className="bg-card rounded-lg border border-border overflow-hidden space-y-4 p-5"
               >
                 {/* Header do Carnê */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-border">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
                         <Receipt className="h-4 w-4 text-primary" /> {carne.title}
                       </h3>
                       {isSettled ? (
-                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+                        <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800 text-xs">
                           Quitado
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs">
+                        <Badge variant="secondary" className="text-xs">
                           Ativo
                         </Badge>
                       )}
@@ -858,17 +858,17 @@ Assinatura da Loja (Consignante)`;
                                 size="sm"
                                 variant={isPending ? "default" : "outline"}
                                 className={cn(
-                                  "h-11 min-h-11 px-4 text-xs rounded-lg font-medium cursor-pointer shadow-2xs",
+                                  "h-11 min-h-11 px-4 text-xs rounded-lg font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                   isPending ? "bg-primary text-primary-foreground" : "text-foreground",
                                 )}
                                 onClick={() => handleOpenConciliation(carne, inst)}
                               >
                                 {isPending ? (
                                   <>
-                                    <Eye className="h-3.5 w-3.5 mr-1" /> Analisar Comprovante
+                                    <Eye className="size-4 mr-1" /> Analisar Comprovante
                                   </>
                                 ) : (
-                                  <>Conciliar / Renegociar</>
+                                  <>Conciliar Parcela</>
                                 )}
                               </Button>
                             </div>
@@ -886,17 +886,17 @@ Assinatura da Loja (Consignante)`;
         </>
       )}
 
-      {/* Conteúdo da Aba 2: Condicionais & Malas (Varejo de Moda) */}
+      {/* Conteúdo da Aba 2: Condicionais e Malas (Varejo de Moda) */}
       {mainTab === "condicionais" && (
         <div className="space-y-6">
           {/* KPI Cards de Condicional */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Peças na Rua / Em Prova
+                  Peças em Prova
                 </span>
-                <Shirt className="h-4 w-4 text-indigo-500" />
+                <Shirt className="size-4 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div className="text-xl font-bold text-foreground">
                 {condicionaisList
@@ -909,12 +909,12 @@ Assinatura da Loja (Consignante)`;
               </div>
             </div>
 
-            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Valor sob Confiança
                 </span>
-                <Banknote className="h-4 w-4 text-muted-foreground" />
+                <Banknote className="size-4 text-muted-foreground" />
               </div>
               <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                 {formatMoney(
@@ -933,25 +933,25 @@ Assinatura da Loja (Consignante)`;
               <div className="text-xs text-muted-foreground">Potencial de faturamento em aberto</div>
             </div>
 
-            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Taxa de Conversão
                 </span>
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <TrendingUp className="size-4 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">68.4%</div>
               <div className="text-xs text-muted-foreground">Média de peças aprovadas na prova</div>
             </div>
 
-            <div className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-1">
+            <div className="p-5 rounded-lg bg-card border border-border space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Atenção / Vencimento
+                  Vencimento Próximo
                 </span>
-                <AlertCircle className="h-4 w-4 text-warning-strong" />
+                <AlertCircle className="size-4 text-amber-700 dark:text-amber-400" />
               </div>
-              <div className="text-xl font-bold text-warning-strong ">
+              <div className="text-xl font-bold text-amber-700 dark:text-amber-400">
                 {condicionaisList.filter((c: any) => c.status === "due_today" || c.status === "overdue").length}
               </div>
               <div className="text-xs text-muted-foreground">Malas vencendo hoje ou atrasadas</div>
@@ -1019,34 +1019,34 @@ Assinatura da Loja (Consignante)`;
                 return (
                   <div
                     key={cond.id}
-                    className="p-5 rounded-lg bg-card border border-border/60 shadow-xs space-y-4 hover:border-border transition-colors"
+                    className="p-5 rounded-lg bg-card border border-border space-y-4 hover:border-ring transition-colors"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-11 min-h-11 w-10 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="h-11 min-h-11 w-11 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center font-bold text-sm shrink-0">
                           {cond.customerName.charAt(0)}
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="font-semibold text-foreground text-sm">{cond.customerName}</span>
                             <span className="text-xs text-muted-foreground">{cond.customerPhone}</span>
                             {isOverdue && (
-                              <Badge variant="destructive" className="text-xs text-muted-foreground/75 px-2 py-0 h-4">
+                              <Badge variant="destructive" className="text-xs px-2 py-1">
                                 Atrasada
                               </Badge>
                             )}
                             {isDueToday && (
-                              <Badge className="text-xs text-muted-foreground/75 px-2 py-0 h-4 bg-warning/15 text-warning-strong  border-0">
+                              <Badge className="text-xs px-2 py-1 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                 Vence Hoje
                               </Badge>
                             )}
                             {!isOverdue && !isDueToday && !isClosed && (
-                              <Badge variant="secondary" className="text-xs text-muted-foreground/75 px-2 py-0 h-4">
+                              <Badge variant="secondary" className="text-xs px-2 py-1 text-secondary-foreground">
                                 Em Prova
                               </Badge>
                             )}
                             {isClosed && (
-                              <Badge className="text-xs text-muted-foreground/75 px-2 py-0 h-4 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-0">
+                              <Badge className="text-xs px-2 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                 Finalizada
                               </Badge>
                             )}
@@ -1066,37 +1066,37 @@ Assinatura da Loja (Consignante)`;
                             )}!%20Passando%20para%20saber%20como%20ficaram%20as%20pe%C3%A7as%20da%20sua%20mala%20condicional%20%E2%9C%A8`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 h-11 min-h-11 text-xs font-medium rounded-lg border border-border/70 hover:bg-muted/50 text-foreground transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-2 px-4 h-11 min-h-11 text-xs font-medium rounded-lg border border-border hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
-                            <MessageSquare className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-emerald-500" /> WhatsApp
+                            <MessageSquare className="size-4 text-emerald-600 dark:text-emerald-400" /> WhatsApp
                           </a>
                         )}
 
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-11 min-h-11 px-3 text-xs rounded-lg font-medium border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
+                          className="h-11 min-h-11 px-3 text-xs rounded-lg font-medium border-border text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           onClick={() => handleGenerateCondicionalContract(cond)}
-                          title="Gerar Termo"
+                          title="Gerar Contrato"
                         >
-                          <FileText className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1" />
-                          <span className="hidden sm:inline">Termo /</span> Contrato
+                          <FileText className="size-4 mr-1" />
+                          <span>Gerar Contrato</span>
                         </Button>
 
                         {!isClosed && (
                           <Button
                             size="sm"
-                            className="h-11 min-h-11 px-4 text-xs rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium cursor-pointer shadow-2xs"
+                            className="h-11 min-h-11 px-4 text-xs rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             onClick={() => handleOpenReturnModal(cond)}
                           >
-                            <CheckCircle2 className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1 text-emerald-400" /> Dar Baixa / Conferir
+                            <CheckCircle2 className="size-4 mr-1" /> Conferir Baixa
                           </Button>
                         )}
                       </div>
                     </div>
 
                     {/* Peças da Mala */}
-                    <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+                    <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
                       <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-1">
                         <span>Peças Sob Confiança ({cond.items.length})</span>
                         <span>Total da Mala: {formatMoney(totalMalaCents)}</span>

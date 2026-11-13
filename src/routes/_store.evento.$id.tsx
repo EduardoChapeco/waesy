@@ -1,6 +1,6 @@
 import { FastLeadRsvpModal } from "@/components/eventos/fast-lead-rsvp-modal";
 import { EventStoryViewerModal } from "@/components/events/event-story-viewer-modal";
-import { Sparkles, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { useIsDesktop } from "@/hooks/use-mobile";
 import { EventDetailMobile } from "@/components/events/event-detail-mobile";
 import { EventDetailDesktop } from "@/components/events/event-detail-desktop";
@@ -345,7 +345,7 @@ function EventDetailPage() {
                 onClick={() => setIsStoryOpen(true)}
                 className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold text-purple-600 border-purple-500/30 hover:bg-purple-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Sparkles className="size-3.5 mr-1" />
+                <Star className="size-3.5 mr-1" />
                 Story
               </Button>
             )}

@@ -434,7 +434,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
             <section key={section.id} aria-label={section.title} className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                  <span className="size-6 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center font-bold text-xs">
                     <SquaresFour size={14} weight="bold" />
                   </span>
                   <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
@@ -460,7 +460,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
             <section key={section.id} aria-label={section.title} className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                  <span className="size-6 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center font-bold text-xs">
                     <Lightning size={14} weight="fill" />
                   </span>
                   <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">

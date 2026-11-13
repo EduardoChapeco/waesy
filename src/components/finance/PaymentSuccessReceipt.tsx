@@ -69,8 +69,8 @@ export function PaymentSuccessReceipt({
 
       {/* ── Círculo Verde-Limão com Halo Suave & Checkmark ── */}
       <div className="my-4 flex flex-col items-center w-full">
-        <div className="size-28 rounded-full bg-warning/25 flex items-center justify-center shrink-0">
-          <div className="size-20 rounded-full bg-warning text-zinc-950 flex items-center justify-center shadow-xs">
+        <div className="size-28 rounded-full bg-emerald-100 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center shrink-0">
+          <div className="size-20 rounded-full bg-emerald-600 text-emerald-50 flex items-center justify-center">
             <Check className="size-10 stroke-3" />
           </div>
         </div>
@@ -89,28 +89,28 @@ export function PaymentSuccessReceipt({
         </div>
 
         {/* Nome do Destinatário */}
-        <p className="text-xs font-semibold text-foreground/80 mt-2">
+        <p className="text-xs font-semibold text-muted-foreground mt-2">
           Para {recipientName}
         </p>
       </div>
 
       {/* ── Cartão de Metadados da Transação ── */}
-      <div className="w-full rounded-2xl bg-zinc-50 border border-zinc-200/60 p-4 space-y-2 text-xs text-left shadow-2xs my-4">
-        <div className="flex items-center justify-between py-1 border-b border-border/40">
+      <div className="w-full rounded-2xl bg-card border border-border p-4 space-y-2 text-xs text-left my-4">
+        <div className="flex items-center justify-between gap-2 py-1 border-b border-border">
           <span className="text-muted-foreground font-medium">Instituição</span>
-          <span className="font-bold text-foreground truncate max-w-50">
+          <span className="font-bold text-foreground text-right line-clamp-2 text-anti-truncate">
             {recipientInstitution}
           </span>
         </div>
 
-        <div className="flex items-center justify-between py-1 border-b border-border/40">
+        <div className="flex items-center justify-between py-1 border-b border-border">
           <span className="text-muted-foreground font-medium">Quando</span>
           <span className="font-semibold text-foreground">{dateText}</span>
         </div>
 
-        <div className="flex items-center justify-between py-1">
+        <div className="flex items-center justify-between gap-2 py-1">
           <span className="text-muted-foreground font-medium">ID da Transação</span>
-          <span className="font-mono text-2xs text-foreground/80 truncate max-w-45">
+          <span className="font-mono text-2xs text-foreground break-all text-right">
             {transactionId}
           </span>
         </div>

@@ -265,7 +265,7 @@ export function MasterHeroCards({
 
  {/* Degradê de Contraste Escuro (Apenas se explicitamente habilitado) */}
  {card.showOverlay && (
- <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/25 to-transparent transition-opacity" />
+ <div className="absolute inset-0 bg-foreground/25 transition-opacity" />
  )}
 
  {/* Badges Flutuantes (Apenas se explicitamente habilitado) */}
@@ -273,7 +273,7 @@ export function MasterHeroCards({
  <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
  <div className="flex items-center gap-1 flex-wrap">
  {card.badgeLabel && (
- <span className="inline-block px-2 py-0.2 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card/30 backdrop-blur-md text-foreground border border-white/20 shadow-xs">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card text-foreground border border-border">
  {card.badgeLabel}
  </span>
  )}
@@ -283,8 +283,8 @@ export function MasterHeroCards({
 
                     {/* Título e Ícone (Apenas se explicitamente habilitado) */}
                     {card.showTitle && card.title && (
-                      <div className="relative z-10 p-2 text-left w-full bg-linear-to-t from-black/80 via-black/20 to-transparent">
-                        <h3 className="text-2xs sm:text-xs font-bold text-foreground leading-tight  truncate">
+                      <div className="relative z-10 p-2 text-left w-full bg-card border-t border-border">
+                        <h3 className="text-2xs sm:text-xs font-bold text-foreground leading-tight line-clamp-2 text-anti-truncate">
                           {card.title}
                         </h3>
                       </div>

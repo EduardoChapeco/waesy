@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { withDataPayload } from "@/services/cart-helpers";
+import { pushOrderUpdateToOriginMarketplace } from "@/lib/marketplace-vault.server";
 
 /**
  * Calculates shipping — pure handler for testability.
@@ -120,7 +121,7 @@ export async function _calculateShipping({
  const { data: cartItems } = await supabase
  .from("cart_items")
  .select(
- "quantity, product_id, variant_id, products(weight_kg, width_cm, height_cm, length_cm, attributes), product_variants(weight_kg, width_cm, height_cm, length_cm)",
+ "qty, item_id, variant_id, product_variants(weight_kg, width_cm, height_cm, length_cm, products(weight_kg, width_cm, height_cm, length_cm, attributes))",
  )
  .eq("cart_id", cartId);
 
@@ -131,10 +132,17 @@ export async function _calculateShipping({
  height_cm: number | null;
  length_cm: number | null;
  attributes?: Record<string, any> | null;
+ products?: {
+ weight_kg: number | null;
+ width_cm: number | null;
+ height_cm: number | null;
+ length_cm: number | null;
+ attributes?: Record<string, any> | null;
+ } | null;
  } | null;
  for (const item of cartItems) {
- const prod = item.products as unknown as LogisticsRow;
  const vari = item.product_variants as unknown as LogisticsRow;
+ const prod = vari?.products || null;
  const logisticsMeta = (prod?.attributes as any)?.logistics || {};
  if (logisticsMeta.packaging_type) dominantPackagingType = logisticsMeta.packaging_type;
  if (logisticsMeta.fragile) hasFragileItem = true;
@@ -144,16 +152,17 @@ export async function _calculateShipping({
  const width = vari?.width_cm ?? prod?.width_cm;
  const height = vari?.height_cm ?? prod?.height_cm;
  const length = vari?.length_cm ?? prod?.length_cm;
+ const itemQty = Math.max(1, Number((item as any).qty ?? 1));
 
  if (wKg == null || width == null || height == null || length == null) {
  hasMissingDimensions = true;
  } else {
- totalWeightKg += Number(wKg) * item.quantity;
+ totalWeightKg += Number(wKg) * itemQty;
  if (Number(width) > maxW) maxW = Number(width);
  if (Number(height) > maxH) maxH = Number(height);
  if (Number(length) > maxL) maxL = Number(length);
  }
- itemsCount += item.quantity;
+ itemsCount += itemQty;
  }
  }
  } else if (singleProductLogistics) {
@@ -265,13 +274,17 @@ export async function _calculateShipping({
  // Regra de Frete Grátis acima de valor X
  const freeDeliveryThreshold = compSettings?.free_delivery_above_cents || settings.free_delivery_above_cents;
  if (freeDeliveryThreshold && Number(freeDeliveryThreshold) > 0 && cartId) {
- const { data: cartData } = await supabase
- .from("carts")
- .select("subtotal_cents")
- .eq("id", cartId)
- .maybeSingle();
+ const { data: cartItemsForSubtotal } = await supabase
+ .from("cart_items")
+ .select("qty, price_snapshot_cents")
+ .eq("cart_id", cartId);
 
- if (cartData && Number(cartData.subtotal_cents) >= Number(freeDeliveryThreshold)) {
+ const cartSubtotalCents = (cartItemsForSubtotal || []).reduce(
+ (acc: number, ci: any) => acc + Number(ci.price_snapshot_cents || 0) * Number(ci.qty || 1),
+ 0,
+ );
+
+ if (cartSubtotalCents >= Number(freeDeliveryThreshold)) {
  finalQuotes.forEach((q) => {
  if (q.provider === "Entrega Própria" || (q.id && (q.id.startsWith("neighborhood-") || q.id === "fixed-store-delivery"))) {
  q.price_cents = 0;
@@ -652,11 +665,21 @@ export async function _deleteShippingRate(id: string) {
   }
   assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
+  const { data: existingRate, error: findErr } = await supabase
+    .from("shipping_rates")
+    .select("id, zone_id, shipping_zones!inner(store_id)")
+    .eq("id", id)
+    .eq("shipping_zones.store_id", identity.store_id)
+    .maybeSingle();
+
+  if (findErr) throw new Error(findErr.message);
+  if (!existingRate) throw new Error("Tarifa de frete não encontrada ou sem permissão.");
+
   const { error } = await supabase
     .from("shipping_rates")
     .delete()
     .eq("id", id)
-    .eq("store_id", identity.store_id);
+    .eq("zone_id", existingRate.zone_id);
 
   if (error) throw new Error(error.message);
   return true;
@@ -801,13 +824,59 @@ export const getOrderShippingLabelData = createServerFn({ method: "GET" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "logistics"]);
 
-    // 1. Busca os dados do pedido com itens
-    const { data: order, error: orderErr } = await supabase
+    // 1. Busca os dados do pedido com itens (suporta orders.id ou marketplace_external_orders.id)
+    const initialRes = await supabase
       .from("orders")
       .select("*, order_items(*, products(*), product_variants(*))")
       .eq("id", orderId)
       .eq("store_id", identity.store_id)
       .single();
+
+    let order: any = initialRes.data;
+    let orderErr: any = initialRes.error;
+
+    if (orderErr || !order) {
+      const { data: extOrder } = await supabase
+        .from("marketplace_external_orders")
+        .select("*")
+        .eq("id", orderId)
+        .eq("store_id", identity.store_id)
+        .maybeSingle();
+
+      if (extOrder?.order_id) {
+        const retryRes = await supabase
+          .from("orders")
+          .select("*, order_items(*, products(*), product_variants(*))")
+          .eq("id", extOrder.order_id)
+          .eq("store_id", identity.store_id)
+          .single();
+        order = retryRes.data;
+        orderErr = retryRes.error;
+      } else if (extOrder) {
+        const cust = ((extOrder as any).customer_data || {}) as Record<string, any>;
+        const addr = cust.address || cust.shipping_address || {};
+        order = {
+          id: extOrder.id,
+          order_number: extOrder.external_order_id,
+          created_at: extOrder.created_at,
+          customer_name: cust.name || "Cliente Marketplace",
+          customer_cpf: cust.document || null,
+          customer_phone: cust.phone || null,
+          shipping_address: addr,
+          carrier: (extOrder as any).shipping_method || String(extOrder.platform || "MKTP").toUpperCase(),
+          tracking_code: (extOrder as any).tracking_code || null,
+          order_items: (Array.isArray(extOrder.items) ? extOrder.items : []).map((it: any, idx: number) => ({
+            id: `${extOrder.id}-${idx}`,
+            qty: Number(it.quantity || it.qty || 1),
+            product_title: it.title || it.name || "Item de Marketplace",
+            variant_sku: it.sku || it.external_sku || null,
+            products: null,
+            product_variants: null,
+          })),
+        };
+        orderErr = null;
+      }
+    }
 
     if (orderErr || !order) {
       throw new Error("Pedido não encontrado para emissão de etiqueta.");
@@ -1029,19 +1098,41 @@ export const updateOrderShippingDispatch = createServerFn({ method: "POST" })
 
     const cleanTracking = data.trackingCode.trim().toUpperCase();
 
-    // 1. Atualiza pedido
-    const { data: order, error: orderErr } = await supabase
+    // 1. Atualiza pedido (suporta orders.id ou marketplace_external_orders.id)
+    let resolvedOrderId = data.orderId;
+    let { data: order, error: orderErr } = await supabase
       .from("orders")
-      .select("id, status, metadata, order_number, customer_phone, customer_name")
-      .eq("id", data.orderId)
+      .select("id, status, custom_fields, order_number, customer_snapshot")
+      .eq("id", resolvedOrderId)
       .eq("store_id", identity.store_id)
       .single();
+
+    if (orderErr || !order) {
+      const { data: extOrd } = await supabase
+        .from("marketplace_external_orders")
+        .select("order_id")
+        .eq("id", data.orderId)
+        .eq("store_id", identity.store_id)
+        .maybeSingle();
+
+      if (extOrd?.order_id) {
+        resolvedOrderId = extOrd.order_id;
+        const retryOrd = await supabase
+          .from("orders")
+          .select("id, status, custom_fields, order_number, customer_snapshot")
+          .eq("id", resolvedOrderId)
+          .eq("store_id", identity.store_id)
+          .single();
+        order = retryOrd.data;
+        orderErr = retryOrd.error;
+      }
+    }
 
     if (orderErr || !order) {
       throw new Error("Pedido não encontrado para despacho.");
     }
 
-    const currentMeta = (order.metadata as Record<string, any>) || {};
+    const currentMeta = ((order as any).custom_fields as Record<string, any>) || {};
     const updatedMeta = {
       ...currentMeta,
       carrier: data.carrier,
@@ -1056,32 +1147,35 @@ export const updateOrderShippingDispatch = createServerFn({ method: "POST" })
       .from("orders")
       .update({
         status: nextStatus,
-        carrier: data.carrier,
-        tracking_code: cleanTracking,
-        metadata: updatedMeta,
+        shipped_at: new Date().toISOString(),
+        custom_fields: updatedMeta,
       })
-      .eq("id", data.orderId);
+      .eq("id", resolvedOrderId)
+      .eq("store_id", identity.store_id);
 
     if (updateErr) {
-      // Tenta fallback sem colunas que possam não existir em schemas antigos
-      await supabase
-        .from("orders")
-        .update({
-          status: nextStatus,
-          metadata: updatedMeta,
-        })
-        .eq("id", data.orderId);
+      throw new Error("Falha ao atualizar status de despacho do pedido: " + updateErr.message);
     }
 
-    // 2. Registra na tabela shipments
+    // 2. Registra na tabela shipments usando colunas canônicas do schema
     await supabase.from("shipments").insert({
       store_id: identity.store_id,
-      order_id: data.orderId,
-      carrier: data.carrier,
-      tracking_number: cleanTracking,
-      shipping_method: data.serviceName || "Standard",
+      order_id: resolvedOrderId,
+      carrier_name: data.carrier,
+      tracking_code: cleanTracking,
+      notes: data.serviceName ? `Serviço: ${data.serviceName}` : null,
       status: "in_transit",
+      shipped_at: new Date().toISOString(),
     });
+
+    // 3. Empurra rastreio e status de despacho para o marketplace de origem
+    void pushOrderUpdateToOriginMarketplace({
+      storeId: identity.store_id,
+      orderId: resolvedOrderId,
+      targetStatus: nextStatus,
+      trackingCode: cleanTracking,
+      carrierName: data.carrier,
+    }).catch((err) => console.warn("[shipping] Falha ao sincronizar rastreio com marketplace:", err));
 
     return { success: true, trackingCode: cleanTracking };
   });

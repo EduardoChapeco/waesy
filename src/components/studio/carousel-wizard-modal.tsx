@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Sliders, Layers, Wand2, ChevronRight, ChevronLeft, Check, Download, Send, Image as ImageIcon, X } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Sliders, Layers, Wand2, ChevronRight, ChevronLeft, Check, Download, FileText, Send, Image as ImageIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { downloadCanvasAsPng, renderElementToCanvasSafe } from '@/lib/canvas/html2canvas-safe';
+import { exportMultipleElementsAsPdf } from '@/lib/pdf-export';
 import { SlideRenderer, StudioSlideData } from './slide-renderer';
 
 const H = (code: string) => String.fromCharCode(35) + code;
@@ -24,6 +27,9 @@ export function CarouselWizardModal({
  const [density, setDensity] = useState<'low' | 'medium' | 'high'>('high');
  const [slideCount, setSlideCount] = useState(4);
  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+ const [isExporting, setIsExporting] = useState(false);
+ const activeSlideStageRef = useRef<HTMLDivElement>(null);
+ const deckExportStageRef = useRef<HTMLDivElement>(null);
 
  const [generatedSlides, setGeneratedSlides] = useState<StudioSlideData[]>([
  {
@@ -75,6 +81,74 @@ export function CarouselWizardModal({
  theme: 'dark',
  },
  ]);
+
+ const handleAdvanceStep = () => {
+  if (step === 2) {
+   const targetSlides = Array.from({ length: slideCount }, (_, idx) => {
+    const existing = generatedSlides[idx];
+    if (existing) {
+     return idx === 0
+      ? {
+         ...existing,
+         title: topic || existing.title,
+         subtitle: targetAudience ? `Para ${targetAudience}` : existing.subtitle,
+        }
+      : existing;
+    }
+    return {
+     id: `s-${idx + 1}`,
+     index: idx + 1,
+     badge: idx === slideCount - 1 ? 'Chamada Final' : `Parte ${idx + 1}`,
+     title: idx === slideCount - 1 ? `Aproveite Agora: ${topic}` : `${topic} — Passo ${idx + 1}`,
+     subtitle: targetAudience ? `Exclusivo para ${targetAudience}` : 'Conteúdo Waesy Studio',
+     body: 'Ajuste textos, cores e chamada para ação no editor ao lado antes de baixar ou publicar.',
+     ctaText: idx === slideCount - 1 ? 'Falar Agora' : 'Próximo Slide',
+     backgroundColor: H('0a0f1d'),
+     accentColor: H('38bdf8'),
+     theme: 'dark' as const,
+    };
+   });
+   setGeneratedSlides(targetSlides);
+   setActiveSlideIndex(0);
+  }
+  setStep((prev) => Math.min(3, prev + 1));
+ };
+
+ const handleDownloadActivePng = async () => {
+  if (!activeSlideStageRef.current) return;
+  try {
+   setIsExporting(true);
+   const canvas = await renderElementToCanvasSafe(activeSlideStageRef.current, {
+    scale: 2,
+    backgroundColor: null,
+   });
+   const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 28) || 'slide';
+   downloadCanvasAsPng(canvas, `${slug}-slide-${activeSlideIndex + 1}.png`);
+   toast.success(`Slide ${activeSlideIndex + 1} baixado em PNG!`);
+  } catch (err: any) {
+   toast.error(err?.message || 'Erro ao gerar imagem PNG do slide.');
+  } finally {
+   setIsExporting(false);
+  }
+ };
+
+ const handleExportDeckPdf = async () => {
+  if (!deckExportStageRef.current) return;
+  try {
+   setIsExporting(true);
+   const slideNodes = Array.from(
+    deckExportStageRef.current.querySelectorAll<HTMLElement>('[data-wizard-deck-slide]')
+   );
+   if (slideNodes.length === 0) throw new Error('Nenhum slide disponível para exportar.');
+   const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 28) || 'carrossel';
+   await exportMultipleElementsAsPdf(slideNodes, `${slug}-carrossel.pdf`);
+   toast.success(`PDF multipágina com ${slideNodes.length} slides exportado!`);
+  } catch (err: any) {
+   toast.error(err?.message || 'Erro ao gerar PDF do carrossel.');
+  } finally {
+   setIsExporting(false);
+  }
+ };
 
  if (!isOpen) return null;
 
@@ -272,7 +346,7 @@ export function CarouselWizardModal({
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
  <div className="lg:col-span-2 flex flex-col items-center">
- <div className="w-full max-w-md border border-border rounded-lg overflow-hidden">
+ <div ref={activeSlideStageRef} className="w-full max-w-md border border-border rounded-lg overflow-hidden">
  <SlideRenderer slide={generatedSlides[activeSlideIndex]} aspectRatio="1:1" />
  </div>
 
@@ -359,23 +433,64 @@ export function CarouselWizardModal({
  {step < 3 ? (
  <Button
  type="button"
- onClick={() => setStep(step + 1)}
- className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2"
+ onClick={handleAdvanceStep}
+ className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Avançar
  <ChevronRight className="w-4 h-4" />
  </Button>
  ) : (
+ <div className="flex flex-wrap items-center gap-2">
  <Button
  type="button"
- onClick={onClose}
- className="h-11 min-h-11 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-xs"
+ variant="outline"
+ disabled={isExporting}
+ onClick={handleExportDeckPdf}
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- Concluir e Fechar
+ <FileText className="w-4 h-4" />
+ {isExporting ? 'Gerando...' : 'PDF Carrossel'}
  </Button>
+ <Button
+ type="button"
+ disabled={isExporting}
+ onClick={handleDownloadActivePng}
+ className="h-11 min-h-11 px-5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Download className="w-4 h-4" />
+ Baixar PNG
+ </Button>
+ <Button
+ type="button"
+ variant="ghost"
+ onClick={onClose}
+ className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ Fechar
+ </Button>
+ </div>
  )}
  </div>
  </div>
+
+ {/* Estágio offscreen para exportação PDF multipágina de todas as lâminas */}
+ {step === 3 && (
+ <div
+ ref={deckExportStageRef}
+ aria-hidden="true"
+ style={{ position: 'fixed', left: -99999, top: 0, pointerEvents: 'none' }}
+ >
+ {generatedSlides.map((slide) => (
+ <div
+ key={slide.id}
+ data-wizard-deck-slide="true"
+ className="w-160 h-160 overflow-hidden"
+ >
+ <SlideRenderer slide={slide} aspectRatio="1:1" />
+ </div>
+ ))}
+ </div>
+ )}
  </div>
  );
 }

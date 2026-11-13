@@ -10,6 +10,24 @@ import {
   executeMcpToolCall,
 } from "./mcp-server.functions";
 import { MCP_TOOL_REGISTRY, getAllMcpTools, getMcpToolsByModule } from "@/registries/mcp-tool-registry";
+import * as serverAccess from "@/lib/server-access";
+
+const mockIdentity = {
+  id: "user-staff-test-1",
+  email: "staff@waesy.test",
+  role: "admin",
+  activeStoreId: "a1111111-1111-4111-8111-111111111111",
+  stores: [{ id: "a1111111-1111-4111-8111-111111111111", role: "admin" }],
+};
+
+vi.mock("@/lib/server-access", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/server-access")>("@/lib/server-access");
+  return {
+    ...actual,
+    getServerIdentity: vi.fn(async () => mockIdentity),
+    assertStoreAccess: vi.fn(() => true),
+  };
+});
 
 vi.mock("@/services/market-radar.functions", () => ({
   captureAndAnalyzeCompetitorLogic: vi.fn(async () => ({
@@ -108,6 +126,21 @@ describe("MCP Server & WebMCP Autonomous Surface Suite", () => {
 
       expect(result.status).toBe("error");
       expect(result.content[0].text).toContain("exige contexto de loja");
+      expect(result.executionMetrics?.tenantValidated).toBe(false);
+    });
+
+    it("should enforce caller authentication on store_staff tools even under NODE_ENV=test", async () => {
+      vi.mocked(serverAccess.getServerIdentity).mockResolvedValueOnce(null as any);
+      const result = await executeMcpToolCall({
+        tool: "orders_get_order_details",
+        storeId: "a1111111-1111-4111-8111-111111111111",
+        arguments: {
+          orderId: "a1111111-1111-4111-8111-111111111111",
+        },
+      });
+
+      expect(result.status).toBe("error");
+      expect(result.content[0].text).toContain("401 Unauthorized");
       expect(result.executionMetrics?.tenantValidated).toBe(false);
     });
 

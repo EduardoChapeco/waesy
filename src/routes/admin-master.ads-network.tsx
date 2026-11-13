@@ -287,22 +287,22 @@ function AdminAdsNetworkPage() {
 
       {/* ── 3. Hub de Integração Global (Bento Card Spatial UI) ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-4 sm:px-0">
-        <div className="md:col-span-2 p-5 rounded-lg border border-border/60 bg-card space-y-4">
+        <div className="md:col-span-2 p-5 rounded-lg border border-border bg-card space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <div className="size-8 rounded-lg bg-muted text-foreground flex items-center justify-center">
                 <Sliders className="size-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Hub de Integração Ad-Tech</h3>
-                <p className="text-xs text-muted-foreground">Tokens globais e taxa de retenção da plataforma</p>
+                <h3 className="text-sm font-bold text-foreground">Integrações de Anúncios</h3>
+                <p className="text-xs text-muted-foreground">Tokens globais e taxa de retenção</p>
               </div>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleOpenConfig}
-              className="rounded-lg text-xs font-semibold h-8.5 gap-2 cursor-pointer min-h-11 sm:min-h-0"
+              className="rounded-lg text-xs font-semibold h-11 min-h-11 gap-2 cursor-pointer"
             >
               <Settings className="size-3.5" /> Configurar Credenciais
             </Button>
@@ -310,7 +310,7 @@ function AdminAdsNetworkPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             {/* Take Rate */}
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-1">
+            <div className="p-3 rounded-lg bg-muted border border-border space-y-1">
               <span className="text-2xs text-muted-foreground font-medium">Taxa de Arbitragem</span>
               <p className="text-base font-bold font-mono text-foreground">
                 {Math.round((globalConfig?.take_rate ?? 0.20) * 100)}% Waesy

@@ -24,6 +24,9 @@ import {
   Ticket,
   ChevronDown,
   ChevronUp,
+  Scissors,
+  Calculator,
+  Scale,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +38,7 @@ import { setClientContextCookies } from "@/lib/context-auth";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { CityCombobox } from "@/components/ui/city-combobox";
 import { generateSlug } from "@/lib/slug-utils";
+import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
 import { useMasterLocation, getStoredLocation } from "@/components/location/location-master-pill";
 import { executeMagicOnboarding, type MagicOnboardingResult } from "@/services/magic-onboarding.functions";
 import { AiLiveExtractionDisplay } from "@/components/onboarding/ai-live-extraction-display";
@@ -96,18 +100,46 @@ export const QUICK_CATEGORIES = [
     description: "Lojas de roupas, calçados, eletrônicos e utilidades",
   },
   {
-    id: "saude",
-    label: "Saúde e Beleza",
-    niche: "services",
-    icon: HeartPulse,
-    description: "Salões de beleza, barbearias, academias, studios e clínicas",
+    id: "salao",
+    label: "Salão e Estética",
+    niche: "beauty_salon",
+    icon: Scissors,
+    description: "Agenda de cadeiras, comandas, comissões e pacotes de beleza",
   },
   {
-    id: "automotivo",
-    label: "Veículos e Oficinas",
-    niche: "vehicles",
+    id: "barbearia",
+    label: "Barbearia & Grooming",
+    niche: "barbershop",
+    icon: Scissors,
+    description: "Agendamento por barbeiro, assinaturas de clube e comissões",
+  },
+  {
+    id: "clinica",
+    label: "Clínicas, Saúde & Bem-Estar",
+    niche: "healthcare",
+    icon: HeartPulse,
+    description: "Consultórios médicos, odontologia, psicologia, fisioterapia e vet",
+  },
+  {
+    id: "oficina",
+    label: "Oficina, Estética Auto & Veículos",
+    niche: "automotive",
     icon: Car,
-    description: "Lava-rápidos, oficinas mecânicas e revenda de veículos",
+    description: "Ordens de serviço (OS), check-in por placa, peças e revenda",
+  },
+  {
+    id: "contabilidade",
+    label: "Contabilidade & Consultoria",
+    niche: "accounting",
+    icon: Calculator,
+    description: "Guias fiscais, OS de rotinas, honorários e certificados",
+  },
+  {
+    id: "advocacia",
+    label: "Advocacia & Escritório Jurídico",
+    niche: "law_firm",
+    icon: Scale,
+    description: "Prazos, audiências, contratos digitais e cobrança de honorários",
   },
   {
     id: "outros",
@@ -420,12 +452,15 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         : city;
 
       const selectedCatObj = QUICK_CATEGORIES.find((c) => c.id === category) || QUICK_CATEGORIES[0];
+      const nicheSpec = getUnifiedNicheSpec(selectedCatObj.niche);
 
       const res = await fastRegisterCompany({
         data: {
           name: name.trim(),
           category,
           niche: selectedCatObj.niche,
+          primary_niche_id: nicheSpec.id,
+          vertical_sku: nicheSpec.defaultVerticalSku,
           phone: phone.trim(),
           city: city.trim(),
           state: state.trim() || "SC",

@@ -181,15 +181,15 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+          <p className="font-bold text-xs text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
             {event.title}
           </p>
-          <div className="flex items-center gap-2 text-2xs text-muted-foreground truncate">
+          <div className="flex items-center gap-2 text-2xs text-muted-foreground flex-wrap">
             <span>{formatted}</span>
             {event.location && (
               <>
                 <span>•</span>
-                <span className="truncate">{event.location}</span>
+                <span className="line-clamp-1">{event.location}</span>
               </>
             )}
           </div>
@@ -206,7 +206,7 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
     <Link
       to="/evento/$id"
       params={{ id: event.id }}
-      className="flex items-stretch rounded-lg bg-card hover:bg-muted/50 transition-colors overflow-hidden p-0 group border border-border/60"
+      className="flex items-stretch rounded-lg bg-card hover:bg-muted transition-colors overflow-hidden p-0 group border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative w-20 sm:w-24 bg-muted shrink-0 overflow-hidden">
         {event.cover_image ? (
@@ -222,14 +222,14 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
         )}
       </div>
       <div className="flex-1 min-w-0 p-3 space-y-1">
-        <p className="font-semibold text-xs sm:text-sm text-foreground truncate group-hover:text-primary">
+        <p className="font-semibold text-xs sm:text-sm text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary">
           {event.title}
         </p>
         <p className="text-xs text-muted-foreground">{formatted}</p>
         {event.location && (
-          <p className="text-xs text-muted-foreground truncate">{event.location}</p>
+          <p className="text-xs text-muted-foreground line-clamp-1">{event.location}</p>
         )}
-        <Badge variant="outline" className="mt-1 text-2xs font-mono border-border/70 py-0 px-2">
+        <Badge variant="outline" className="mt-1 text-2xs font-mono border-border py-1 px-2">
           {event.is_free ? "Gratuito" : "Pago"}
         </Badge>
       </div>
@@ -244,9 +244,9 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
       <Link
         to="/classificados/$id"
         params={{ id: classified.id }}
-        className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+        className="p-3 flex items-center justify-between gap-3 hover:bg-muted transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <div className="size-12 rounded-lg bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="size-12 rounded-lg bg-muted border border-border shrink-0 overflow-hidden flex items-center justify-center">
           {classified.images && classified.images[0] ? (
             <img
               src={classified.images[0]}
@@ -255,16 +255,16 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
               loading="lazy"
             />
           ) : (
-            <Tag size={20} className="text-muted-foreground/40" />
+            <Tag size={20} className="text-muted-foreground" />
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+            <h4 className="font-bold text-xs text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
               {classified.title}
             </h4>
             {classified.category && (
-              <span className="text-3xs font-mono uppercase px-1 py-0 rounded border border-border/60 text-muted-foreground">
+              <span className="text-3xs font-mono uppercase px-1 py-1 rounded border border-border text-muted-foreground">
                 {classified.category}
               </span>
             )}
@@ -276,7 +276,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
             {classified.location_text && (
               <>
                 <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground text-2xs truncate">{classified.location_text}</span>
+                <span className="text-muted-foreground text-2xs line-clamp-1">{classified.location_text}</span>
               </>
             )}
           </div>
@@ -290,7 +290,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
     <Link
       to="/classificados/$id"
       params={{ id: classified.id }}
-      className="flex items-stretch justify-between rounded-lg bg-card hover:border-foreground/30 transition-colors duration-200 overflow-hidden p-0 group border border-border/60"
+      className="flex items-stretch justify-between rounded-lg bg-card hover:border-ring transition-colors duration-200 overflow-hidden p-0 group border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative w-24 sm:w-28 bg-muted shrink-0 overflow-hidden">
         {classified.images && classified.images[0] ? (
@@ -301,7 +301,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
             loading="lazy"
           />
         ) : (
-          <div className="size-full flex items-center justify-center text-muted-foreground/30">
+          <div className="size-full flex items-center justify-center text-muted-foreground">
             <Tag size={24} />
           </div>
         )}
@@ -310,7 +310,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
       <div className="flex-1 min-w-0 p-3 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
           {classified.category && (
-            <Badge variant="outline" className="text-3xs uppercase font-mono px-2 py-0 border-border/70">
+            <Badge variant="outline" className="text-3xs uppercase font-mono px-2 py-1 border-border">
               {classified.category}
             </Badge>
           )}
@@ -321,7 +321,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
           )}
         </div>
 
-        <h3 className="font-bold text-xs sm:text-sm text-foreground truncate group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-xs sm:text-sm text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
           {classified.title}
         </h3>
 
@@ -332,7 +332,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
           {classified.location_text && (
             <>
               <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground truncate">{classified.location_text}</span>
+              <span className="text-muted-foreground line-clamp-1">{classified.location_text}</span>
             </>
           )}
         </div>
@@ -347,21 +347,21 @@ function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; 
       <Link
         to="/vendedora/$slug"
         params={{ slug: store.slug }}
-        className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+        className="p-3 flex items-center justify-between gap-3 hover:bg-muted transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <div className="size-11 rounded-lg bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="size-11 rounded-lg bg-muted border border-border shrink-0 overflow-hidden flex items-center justify-center">
           {store.logo_url ? (
             <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
           ) : (
-            <Store className="size-5 text-muted-foreground/50" />
+            <Store className="size-5 text-muted-foreground" />
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+          <p className="font-bold text-xs text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
             {store.name}
           </p>
           {store.description && (
-            <p className="text-2xs text-muted-foreground truncate">{store.description}</p>
+            <p className="text-2xs text-muted-foreground line-clamp-1">{store.description}</p>
           )}
         </div>
         <ChevronRight className="size-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
@@ -373,7 +373,7 @@ function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; 
     <Link
       to="/vendedora/$slug"
       params={{ slug: store.slug }}
-      className="flex gap-3 p-3 rounded-lg bg-card hover:bg-muted transition-colors group border border-border/60"
+      className="flex gap-3 p-3 rounded-lg bg-card hover:bg-muted transition-colors group border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {store.logo_url ? (
         <img
@@ -387,11 +387,11 @@ function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; 
         </div>
       )}
       <div className="flex-1 min-w-0 self-center">
-        <p className="font-semibold text-sm text-foreground group-hover:text-primary">
+        <p className="font-semibold text-sm text-foreground group-hover:text-primary line-clamp-2 text-anti-truncate">
           {store.name}
         </p>
         {store.description && (
-          <p className="text-xs text-muted-foreground truncate">{store.description}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2">{store.description}</p>
         )}
       </div>
       <ChevronRight className="size-4 text-muted-foreground self-center shrink-0" />

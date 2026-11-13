@@ -630,8 +630,8 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
  // 8. Padrão: Mural / Feed Social
  return {
  moduleId: "feed",
- title: "Mural da Comunidade",
- subtitle: "Publicações, novidades e moments da cidade",
+ title: "Mural",
+ subtitle: "Publicações e novidades da cidade",
  groups: FEED_NAV_GROUPS,
  action: {
  label: "Publicar",
@@ -642,4 +642,169 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
  widthMode: "social-feed",
  showContextSidebar: true,
  };
+}
+
+/**
+ * ─── Metadados Canônicos de Shell & Títulos Mobile Limpos (SSOT) ────────────
+ */
+export const CLEAN_MOBILE_ROUTE_TITLES: Record<string, string> = {
+  "/marketplace": "Marketplace",
+  "/copilot": "Copiloto",
+  "/buscar": "Buscar",
+  "/carrinho": "Carrinho",
+  "/checkout": "Finalizar Pedido",
+  "/notificacoes": "Notificações",
+  "/afiliados": "Afiliados",
+  "/agenda": "Agenda",
+  "/agendar": "Agendamentos",
+  "/servicos": "Serviços",
+  "/classificados": "Classificados",
+  "/diretorio": "Guia Local",
+  "/empregos": "Empregos",
+  "/eventos": "Eventos",
+  "/noticias": "Notícias",
+  "/imoveis": "Imóveis",
+  "/turismo": "Turismo",
+  "/hospedagem": "Hospedagem",
+  "/gastronomia": "Gastronomia",
+  "/moda": "Moda",
+  "/eletronicos": "Eletrônicos",
+  "/pet": "Pet Shop",
+  "/farmacia": "Farmácia",
+  "/limpeza": "Limpeza",
+  "/livros": "Livros",
+  "/mercado": "Mercado",
+  "/casa": "Casa",
+  "/acougue": "Açougue",
+  "/bebidas": "Bebidas",
+  "/construcao": "Construção",
+  "/beleza": "Beleza",
+  "/receitas": "Receitas",
+  "/explorar": "Explorar",
+  "/mural": "Comunidade",
+  "/criar-negocio": "Criar Negócio",
+  "/contato": "Atendimento",
+  "/conta/pedidos": "Meus Pedidos",
+  "/conta/enderecos": "Endereços",
+  "/conta/financas": "Carteira",
+  "/conta/seguranca": "Segurança",
+  "/conta/salvos": "Salvos",
+  "/conta/notificacoes": "Notificações",
+  "/conta/classificados": "Meus Anúncios",
+  "/conta/creditos": "Créditos",
+  "/conta/tokens": "Tokens",
+  "/conta/contratos": "Contratos",
+  "/conta/curriculo": "Currículo",
+  "/conta/candidaturas": "Candidaturas",
+  "/conta/pacotes": "Pacotes",
+  "/conta/pagamentos": "Pagamentos",
+  "/conta/ingressos": "Ingressos",
+  "/conta/gift-cards": "Cartões Presente",
+  "/conta/lojas": "Minhas Lojas",
+  "/conta/metricas": "Métricas",
+  "/conta/mobilidade": "Mobilidade",
+  "/conta/negociacoes": "Negociações",
+  "/conta/processos": "Processos",
+  "/conta/suporte": "Suporte",
+  "/conta/trocas": "Devoluções",
+  "/conta/verificacao": "Verificação",
+  "/conta/viagens": "Minhas Viagens",
+  "/comunidades": "Comunidades",
+};
+
+export function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): string {
+  const cleanPath = pathname.replace(/\/+$/, "") || "/";
+  if (CLEAN_MOBILE_ROUTE_TITLES[cleanPath]) return CLEAN_MOBILE_ROUTE_TITLES[cleanPath];
+  if (fallbackTitle) return fallbackTitle.replace(/\s+&\s+/g, " e ");
+  const seg = cleanPath.split("/").filter(Boolean).pop() || "Waesy";
+  return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
+}
+
+const EXACT_CUSTOM_MOBILE_HEADER_ROUTES = new Set([
+  "/",
+  "/gastronomia",
+  "/mercado",
+  "/farmacia",
+  "/bebidas",
+  "/acougue",
+  "/pet",
+  "/conta",
+  "/agenda",
+  "/afiliados",
+  "/classificados",
+  "/marketplace",
+  "/diretorio",
+  "/imoveis",
+  "/servicos",
+  "/eventos",
+  "/empregos",
+  "/agendar",
+  "/turismo",
+  "/faq",
+  "/moda",
+  "/eletronicos",
+  "/casa",
+  "/construcao",
+  "/beleza",
+  "/limpeza",
+  "/livros",
+  "/comunidades",
+]);
+
+const PREFIX_CUSTOM_MOBILE_HEADER_ROUTES = [
+  "/eventos",
+  "/doacoes",
+  "/ofertas",
+  "/recuperar-senha",
+  "/redefinir-senha",
+  "/destaques",
+  "/admin-master",
+  "/conta/atividade",
+  "/conta/avaliacoes",
+  "/conta/candidaturas",
+  "/conta/carnes",
+  "/conta/creditos",
+  "/conta/enderecos",
+  "/conta/entregador",
+  "/conta/eventos",
+  "/conta/financas",
+  "/conta/gift-cards",
+  "/conta/lojas",
+  "/conta/pacotes",
+  "/conta/pagamentos",
+  "/conta/salvos",
+  "/conta/seguranca",
+  "/conta/suporte",
+  "/conta/tokens",
+  "/conta/trocas",
+  "/conta/viagens",
+  "/conta/conversas",
+  "/conta/agendamentos",
+  "/conta/classificados",
+  "/conta/negociacoes",
+  "/conta/comissoes",
+  "/conta/curriculo",
+  "/conta/empresa",
+  "/conta/ingressos",
+  "/conta/contratos",
+  "/conta/notificacoes",
+  "/conta/pedidos",
+  "/c",
+];
+
+export function checkHasCustomPageMobileHeader(pathname: string): boolean {
+  const clean = pathname.replace(/\/+$/, "") || "/";
+  if (EXACT_CUSTOM_MOBILE_HEADER_ROUTES.has(clean)) return true;
+  return PREFIX_CUSTOM_MOBILE_HEADER_ROUTES.some(
+    (prefix) => clean === prefix || clean.startsWith(`${prefix}/`)
+  );
+}
+
+export function isFullBleedStoreRoute(pathname: string): boolean {
+  return (
+    pathname.startsWith("/mapa") ||
+    pathname.startsWith("/mobilidade") ||
+    pathname.startsWith("/copilot") ||
+    pathname.startsWith("/conta/conversas")
+  );
 }

@@ -182,9 +182,9 @@ export const generateMatchTimeOffers = createServerFn({ method: "GET" }).handler
  for (let offset = 0; ; offset += MATCH_TIME_PAGE_SIZE) {
   const { data: page, error } = await supabase
    .from("product_variants")
-   .select("id, price_cents, canonical_name, products!inner(id, title, store_id, is_active), product_media(url)")
+   .select("id, display_name, price_override_cents, products!inner(id, title, store_id, status, price_cents, product_media(url, sort_order))")
    .eq("products.store_id", store.id)
-   .eq("products.is_active", true)
+   .in("products.status", ["active", "published"])
    .eq("status", "active")
    .gt("stock_on_hand", 0)
    .order("id", { ascending: true })
@@ -203,14 +203,20 @@ export const generateMatchTimeOffers = createServerFn({ method: "GET" }).handler
   [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
  }
 
- return shuffled.slice(0, 5).map((variant) => ({
-  variantId: variant.id,
-  productId: variant.products?.id,
-  title: variant.products?.title,
-  variantName: variant.canonical_name,
-  image: variant.product_media?.[0]?.url || null,
-  originalPrice: variant.price_cents,
- }));
+ return shuffled.slice(0, 5).map((variant) => {
+  const prod = Array.isArray(variant.products) ? variant.products[0] : variant.products;
+  const media = Array.isArray(prod?.product_media)
+    ? [...prod.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    : [];
+  return {
+    variantId: variant.id,
+    productId: prod?.id,
+    title: prod?.title,
+    variantName: variant.display_name || "Padrão",
+    image: media[0]?.url || null,
+    originalPrice: variant.price_override_cents ?? prod?.price_cents ?? 0,
+  };
+ });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -347,7 +353,7 @@ export const getStoreSocialShareSettings = createServerFn({ method: "GET" }).han
 
     const { data: store, error } = await supabase
       .from("stores")
-      .select("id, name, slug, logo_url, banner_url, headline, settings")
+      .select("id, name, slug, logo_url, banner_url, settings")
       .eq("id", identity.store_id)
       .single();
 

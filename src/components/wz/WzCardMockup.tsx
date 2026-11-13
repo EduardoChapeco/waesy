@@ -10,7 +10,7 @@
  */
 
 import React, { useState } from "react";
-import { Sparkles, Gift, RotateCw, QrCode, Store, ShieldCheck, Heart } from "lucide-react";
+import { Gift, RotateCw, QrCode, Store, ShieldCheck, Heart } from "lucide-react";
 import { formatWz, wzToBrlCentsReference } from "@/lib/wz-quote-engine";
 import { cn } from "@/lib/utils";
 

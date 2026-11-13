@@ -67,7 +67,7 @@ export function MetricCard({
       )}
     >
       <div className="flex items-center justify-between text-muted-foreground">
-        <span className="text-xs font-medium tracking-tight truncate">{label}</span>
+        <span className="text-xs font-medium tracking-tight line-clamp-2 text-anti-truncate">{label}</span>
         {icon && <span className="size-5 shrink-0 text-muted-foreground">{icon}</span>}
       </div>
 
@@ -142,7 +142,7 @@ export function EntityCard({
       className={cn(
         "flex items-center justify-between gap-4 p-4 rounded-2xl bg-card text-card-foreground select-none",
         isInteractive &&
-          "cursor-pointer hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "cursor-pointer hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
     >
@@ -150,11 +150,11 @@ export function EntityCard({
         {avatarSlot && <div className="shrink-0">{avatarSlot}</div>}
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-semibold text-foreground truncate">{title}</h4>
+            <h4 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate">{title}</h4>
             {statusSlot && <div className="shrink-0">{statusSlot}</div>}
           </div>
           {subtitle && (
-            <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate">{subtitle}</p>
           )}
           {metadataSlot && <div className="pt-1">{metadataSlot}</div>}
         </div>
@@ -237,7 +237,7 @@ export function OfferCard({
             {title}
           </h3>
           {location && (
-            <p className="text-xs text-muted-foreground truncate">{location}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate">{location}</p>
           )}
         </div>
 
@@ -294,17 +294,17 @@ export function ActionCard({
       onClick={onClick}
       className={cn(
         "flex items-start gap-4 p-5 rounded-2xl bg-card text-left transition-colors cursor-pointer select-none",
-        "hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
     >
-      <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+      <div className="size-11 rounded-lg bg-muted text-primary border border-border flex items-center justify-center shrink-0">
         {icon}
       </div>
 
       <div className="space-y-1 min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h4 className="text-sm font-semibold text-foreground truncate">{title}</h4>
+          <h4 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate">{title}</h4>
           {badge && (
             <span className="px-2 py-1 rounded-md bg-muted text-3xs font-medium text-muted-foreground">
               {badge}
@@ -354,11 +354,11 @@ export function MediaCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col rounded-2xl bg-card overflow-hidden transition-colors hover:bg-muted/20",
+        "group relative flex flex-col rounded-2xl bg-card overflow-hidden transition-colors hover:bg-muted",
         className
       )}
     >
-      <div className={cn("relative w-full bg-muted/40 overflow-hidden", aspectClass)}>
+      <div className={cn("relative w-full bg-muted overflow-hidden", aspectClass)}>
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -373,13 +373,13 @@ export function MediaCard({
         )}
 
         {badge && (
-          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 text-2xs font-semibold text-foreground">
+          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-card border border-border text-2xs font-semibold text-foreground">
             {badge}
           </span>
         )}
 
         {duration && (
-          <span className="absolute bottom-2.5 right-2.5 px-2 py-1 rounded-md bg-foreground/75 text-2xs font-mono tabular-nums text-primary-foreground">
+          <span className="absolute bottom-2.5 right-2.5 px-2 py-1 rounded-md bg-foreground text-2xs font-mono tabular-nums text-background">
             {duration}
           </span>
         )}
@@ -399,9 +399,9 @@ export function MediaCard({
       </div>
 
       <div className="p-4 space-y-1">
-        <h4 className="text-sm font-semibold text-foreground truncate">{title}</h4>
+        <h4 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate">{title}</h4>
         {subtitle && (
-          <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate">{subtitle}</p>
         )}
       </div>
     </div>
@@ -510,7 +510,7 @@ export function PreviewCard({
           <FileText className="size-5" />
         </div>
         <div className="space-y-1 min-w-0">
-          <h4 className="text-sm font-semibold text-foreground truncate">{title}</h4>
+          <h4 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate">{title}</h4>
           <div className="flex items-center gap-2 text-2xs text-muted-foreground">
             <span className="uppercase font-mono">{fileType}</span>
             {fileSize && <span>• {fileSize}</span>}
@@ -570,11 +570,11 @@ export function InteractiveCard({
         }
       }}
       className={cn(
-        "relative flex flex-col p-5 rounded-2xl transition-colors duration-200 cursor-pointer select-none",
+        "relative flex flex-col p-5 rounded-2xl transition-colors duration-200 cursor-pointer select-none border",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         selected
-          ? "bg-primary/5 ring-2 ring-primary/50"
-          : "bg-card hover:bg-muted/20",
+          ? "bg-muted border-primary ring-1 ring-primary"
+          : "bg-card border-border hover:bg-muted/60",
         className
       )}
     >
@@ -587,7 +587,7 @@ export function InteractiveCard({
           )}
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-semibold text-foreground truncate">
+              <h4 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate">
                 {title}
               </h4>
               {badge && (

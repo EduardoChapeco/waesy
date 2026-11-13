@@ -65,12 +65,12 @@ export async function detectStoryCluster(
 
   const { data: recentArticles } = await supabase
     .from("mined_articles")
-    .select("id, raw_title, cluster_id, created_at")
+    .select("id, raw_title, metadata, duplicate_of, created_at")
     .gte("created_at", windowStart)
     .limit(100);
 
   let bestScore = 0;
-  let matchedArticle: { id: string; raw_title: string; cluster_id?: string } | null = null;
+  let matchedArticle: { id: string; raw_title: string; metadata?: any; duplicate_of?: string | null } | null = null;
 
   if (recentArticles && recentArticles.length > 0) {
     for (const article of recentArticles) {
@@ -88,7 +88,7 @@ export async function detectStoryCluster(
   // Limiar de clusterização de 0.55 (mesmo evento com títulos ligeiramente diferentes)
   // Limiar de duplicata estrita de 0.80 (mesmo texto/republicação direta)
   if (bestScore >= 0.55 && matchedArticle) {
-    const clusterId = matchedArticle.cluster_id || matchedArticle.id;
+    const clusterId = (matchedArticle.metadata as any)?.cluster_id || matchedArticle.duplicate_of || matchedArticle.id;
     return {
       clusterId,
       isDuplicate: bestScore >= 0.80,

@@ -18,7 +18,6 @@ import {
   User,
   Store,
   Bike,
-  Sparkles,
   ShoppingBag,
   Wallet,
   MapPin,
@@ -231,7 +230,7 @@ export function AccountSwitcherDrawer({ session, userRole }: AccountSwitcherDraw
                         : "text-muted-foreground hover:text-foreground hover:bg-background/40"
                     )}
                   >
-                    <Sparkles className={cn("size-4 shrink-0", currentContext === "creator" ? "text-primary" : "")} />
+                    <Tag className={cn("size-4 shrink-0", currentContext === "creator" ? "text-primary" : "")} />
                     <span className="text-xs font-semibold truncate">Criadores</span>
                   </button>
                 </div>

@@ -36,6 +36,9 @@ export interface OmniPageRendererProps {
   hotpages?: any[];
   newsArticles?: any[];
   sponsors?: any[];
+  navigationMenus?: any[];
+  cmsCollections?: any[];
+  cmsItems?: any[];
   activeCity?: string | null;
   onAddToCart?: (productId: string) => void;
 }
@@ -57,6 +60,9 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
   hotpages = [],
   newsArticles = [],
   sponsors = [],
+  navigationMenus = [],
+  cmsCollections = [],
+  cmsItems = [],
   activeCity = null,
   onAddToCart,
 }) => {
@@ -64,7 +70,9 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
     return null;
   }
 
-  const pageThemeStyle = getDocumentThemeCanvasStyle(document.theme);
+  const pageThemeStyle = getDocumentThemeCanvasStyle(document.theme, {
+    settings: document.settings,
+  });
 
   const getAnimationClass = (anim?: string) => {
     switch (anim) {
@@ -129,6 +137,9 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
             hotpages,
             newsArticles,
             sponsors,
+            cmsCollections,
+            cmsItems,
+            navigationMenus,
           },
           {
             activeCity,
@@ -190,6 +201,10 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
                 hotpages={boundDatasets.hotpages}
                 newsArticles={boundDatasets.newsArticles}
                 sponsors={boundDatasets.sponsors}
+                navigationMenus={navigationMenus}
+                cmsCollections={boundDatasets.cmsCollections}
+                cmsItems={boundDatasets.cmsItems}
+                activeCmsCollection={boundDatasets.activeCmsCollection}
                 onAddToCart={onAddToCart}
                 pageSlug={document.slug}
                 onLeadSubmit={handleBlockLeadSubmit}

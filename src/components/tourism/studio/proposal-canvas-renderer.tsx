@@ -2,6 +2,11 @@ import React from "react";
 import type { TravelProposalDTO } from "@/services/travel-proposal.functions";
 import { getProposalTemplate } from "@/components/tourism/proposals/templates";
 import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
+import {
+  formatDynamicFieldLabel,
+  formatFieldPrimitiveValue,
+  normalizeCustomFieldMap,
+} from "@/lib/niches/unified-field-bridge";
 
 interface ProposalCanvasRendererProps {
   proposal: TravelProposalDTO;
@@ -220,6 +225,19 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
           ]
         : [];
 
+  const normalizedCustomFields = normalizeCustomFieldMap(
+    (raw.custom_fields && typeof raw.custom_fields === "object" ? raw.custom_fields : null) ||
+      (pricing.custom_fields && typeof pricing.custom_fields === "object" ? pricing.custom_fields : null) ||
+      {},
+  );
+  const customFieldEntries = Object.entries(normalizedCustomFields)
+    .map(([key, value]) => ({
+      key,
+      label: formatDynamicFieldLabel(key),
+      value: formatFieldPrimitiveValue(value),
+    }))
+    .filter((entry) => Boolean(entry.value));
+
   return {
     ...proposal,
     number:
@@ -249,6 +267,16 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     transfers: normalizedTransfers,
     tours: normalizedTours,
     custom_payments: customPayments,
+    custom_fields: normalizedCustomFields,
+    custom_field_entries: customFieldEntries,
+    boarding_requirements:
+      typeof normalizedCustomFields.boarding_requirements === "string"
+        ? normalizedCustomFields.boarding_requirements
+        : undefined,
+    cancellation_policy:
+      typeof normalizedCustomFields.cancellation_policy === "string"
+        ? normalizedCustomFields.cancellation_policy
+        : undefined,
   };
 }
 

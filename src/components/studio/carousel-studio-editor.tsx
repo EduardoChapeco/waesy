@@ -10,9 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Download, Copy, Check, Share2, ChevronLeft, ChevronRight, Star, Layers, Palette, Type, Maximize2, Save, RefreshCw, X } from "lucide-react";
+import { Download, FileText, Copy, Check, Share2, ChevronLeft, ChevronRight, Star, Layers, Palette, Type, Maximize2, Save, RefreshCw, X } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { saveStudioProject, publishStudioCarouselToSocial, refineSlideTextWithAI, type RefinedSlideOption } from "@/services/studio.functions";
+import { downloadCanvasAsPng, renderElementToCanvasSafe } from "@/lib/canvas/html2canvas-safe";
+import { exportMultipleElementsAsPdf } from "@/lib/pdf-export";
 
 const DEFAULT_CANVAS_BG = String.fromCharCode(35) + "090d16";
 
@@ -33,6 +35,7 @@ export function CarouselStudioEditor({
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const deckExportRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -162,30 +165,51 @@ export function CarouselStudioEditor({
       const originalTransform = artboardEl.style.transform;
       artboardEl.style.transform = "scale(1)";
 
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(artboardEl, {
-        width: 1080,
-        height: 1350,
+      const canvas = await renderElementToCanvasSafe(artboardEl, {
+        width: activeDimensions.width,
+        height: activeDimensions.height,
         scale: 1,
-        useCORS: true,
-        allowTaint: true,
         backgroundColor: project.brand.primaryColor || DEFAULT_CANVAS_BG,
-        logging: false,
       });
 
       // Restaura a escala de visualização
       artboardEl.style.transform = originalTransform;
 
-      // Dispara download
-      const link = document.createElement("a");
-      link.download = `${project.title.replace(/\s+/g, "_")}_slide_${currentSlideIndex + 1}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      // Dispara download PNG seguro
+      downloadCanvasAsPng(
+        canvas,
+        `${project.title.replace(/\s+/g, "_")}_slide_${currentSlideIndex + 1}.png`
+      );
 
-      toast.success(`Slide ${currentSlideIndex + 1} exportado em 1080x1350 HD!`);
+      toast.success(`Slide ${currentSlideIndex + 1} exportado em HD!`);
     } catch (err: any) {
       console.error("Erro na exportação:", err);
       toast.error("Falha ao exportar imagem: " + (err.message || "Verifique imagens externas."));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Exportar Carrossel Completo em PDF Multipágina
+  const handleExportDeckPdf = async () => {
+    if (!deckExportRef.current) return;
+    setIsExporting(true);
+    try {
+      const slideNodes = Array.from(
+        deckExportRef.current.querySelectorAll<HTMLElement>("[data-deck-slide]")
+      );
+      if (slideNodes.length === 0) {
+        throw new Error("Nenhuma lâmina disponível para exportar em PDF.");
+      }
+      const slug = (project.title || "carrossel-waesy")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .slice(0, 40);
+      await exportMultipleElementsAsPdf(slideNodes, `${slug}-carrossel.pdf`);
+      toast.success(`Carrossel completo (${slideNodes.length} lâminas) exportado em PDF!`);
+    } catch (err: any) {
+      console.error("Erro ao exportar PDF do carrossel:", err);
+      toast.error(err?.message || "Falha ao compilar carrossel em PDF.");
     } finally {
       setIsExporting(false);
     }
@@ -203,15 +227,11 @@ export function CarouselStudioEditor({
       const originalTransform = artboardEl.style.transform;
       artboardEl.style.transform = "scale(1)";
 
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(artboardEl, {
-        width: 1080,
-        height: 1350,
+      const canvas = await renderElementToCanvasSafe(artboardEl, {
+        width: activeDimensions.width,
+        height: activeDimensions.height,
         scale: 1,
-        useCORS: true,
-        allowTaint: true,
         backgroundColor: project.brand.primaryColor || DEFAULT_CANVAS_BG,
-        logging: false,
       });
 
       artboardEl.style.transform = originalTransform;
@@ -381,6 +401,17 @@ export function CarouselStudioEditor({
             >
               {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
               {copied ? "Copiado!" : "Copiar"}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportDeckPdf}
+              disabled={isExporting}
+              className="gap-2 h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold cursor-pointer"
+            >
+              <FileText className="size-3.5" />
+              {isExporting ? "Compilando..." : "PDF Completo"}
             </Button>
 
             <Button
@@ -779,6 +810,39 @@ export function CarouselStudioEditor({
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Deck offscreen 1:1 para compilação fiel de PDF multipágina */}
+        <div
+          ref={deckExportRef}
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            left: -99999,
+            top: 0,
+            pointerEvents: "none",
+            opacity: 1,
+          }}
+        >
+          {slides.map((deckSlide) => (
+            <div
+              key={deckSlide.id}
+              data-deck-slide="true"
+              style={{
+                width: activeDimensions.width,
+                height: activeDimensions.height,
+                overflow: "hidden",
+              }}
+            >
+              <SlideRendererEscamas
+                slide={deckSlide}
+                brand={project.brand}
+                aspectRatio={aspectRatio}
+                scale={1}
+                selectedLayerId={null}
+              />
+            </div>
+          ))}
+        </div>
       </DialogContent>
     </Dialog>
   );

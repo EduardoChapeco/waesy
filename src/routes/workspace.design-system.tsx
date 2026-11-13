@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DesignSystemHeader } from "@/components/design-system/design-system-header";
@@ -14,8 +14,11 @@ import type { DesignSystemStateMode } from "@/components/design-system/design-sy
 
 export const Route = createFileRoute("/workspace/design-system")({
   head: () => ({
-    meta: [{ title: "Design System Canônico | Workspace" }],
+    meta: [{ title: "Design System Canônico | Admin Master" }],
   }),
+  beforeLoad: async () => {
+    throw redirect({ to: "/admin-master/marca" });
+  },
   component: WorkspaceDesignSystemPage,
 });
 

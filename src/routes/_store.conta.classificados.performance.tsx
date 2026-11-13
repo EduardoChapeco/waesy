@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   Calendar,
   AlertCircle,
-  Sparkles,
   BarChart3,
   ExternalLink,
   ChevronRight,

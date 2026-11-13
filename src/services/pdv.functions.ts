@@ -285,7 +285,7 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
  // 1. Validar Pedido
  const { data: order, error: orderErr } = await supabase
  .from("orders")
- .select("id, store_id, total_amount_cents, payment_status")
+ .select("id, store_id, total_cents, status")
  .eq("id", data.orderId)
  .eq("store_id", identity.store_id)
  .single();

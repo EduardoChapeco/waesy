@@ -210,14 +210,14 @@ export default function AdminAlgorithmSettingsPage() {
  {/* Sliders dos 6 Sinais do Algoritmo */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {/* Sinal 1: Geolocalização */}
- <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-lg bg-info/10 text-info flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-muted text-info flex items-center justify-center">
  <MapPin className="size-4" />
  </div>
  <div>
- <h2 className="text-xs font-bold text-foreground">Proximidade Física / Geolocalização</h2>
+ <h2 className="text-xs font-bold text-foreground">Proximidade Física</h2>
  <span className="text-2xs text-muted-foreground">Prioriza lojas no mesmo bairro e raio próximo</span>
  </div>
  </div>
@@ -235,14 +235,14 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 2: Aberto Agora */}
- <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-muted text-success flex items-center justify-center">
  <Clock className="size-4" />
  </div>
  <div>
- <h2 className="text-xs font-bold text-foreground">Status Aberto Agora</h2>
+ <h2 className="text-xs font-bold text-foreground">Aberto Agora</h2>
  <span className="text-2xs text-muted-foreground">Multiplicador de relevância para atendimento ativo</span>
  </div>
  </div>
@@ -260,14 +260,14 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 3: Afinidade Comportamental */}
- <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-muted text-foreground flex items-center justify-center">
  <Heart className="size-4" />
  </div>
  <div>
- <h2 className="text-xs font-bold text-foreground">Afinidade por Nicho / Categoria</h2>
+ <h2 className="text-xs font-bold text-foreground">Afinidade por Categoria</h2>
  <span className="text-2xs text-muted-foreground">Histórico individual de cliques e buscas do usuário</span>
  </div>
  </div>
@@ -285,14 +285,14 @@ export default function AdminAlgorithmSettingsPage() {
  </Card>
 
  {/* Sinal 4: Recência do Item */}
- <Card className="p-5 rounded-lg border-border/60 bg-card space-y-4">
+ <Card className="p-5 rounded-lg border-border bg-card space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center">
+ <div className="size-8 rounded-lg bg-muted text-warning-strong flex items-center justify-center">
  <TrendingUp className="size-4" />
  </div>
  <div>
- <h2 className="text-xs font-bold text-foreground">Recência / Novidades no Radar</h2>
+ <h2 className="text-xs font-bold text-foreground">Recência no Radar</h2>
  <span className="text-2xs text-muted-foreground">Impulso orgânico para anúncios criados recentemente</span>
  </div>
  </div>

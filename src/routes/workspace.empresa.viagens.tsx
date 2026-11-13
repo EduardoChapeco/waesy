@@ -914,10 +914,10 @@ export default function CompanyCorporateTravelPage() {
         {/* 3. ABA: PROJETOS DE VIAGEM */}
         {activeTab === "projetos" && (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/50">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border">
               <div>
-                <h3 className="text-sm font-bold text-foreground">Projetos & Missões Corporativas</h3>
-                <p className="text-xs text-muted-foreground">Agrupe viagens, centros de custo e controle orçamentário</p>
+                <h3 className="text-sm font-bold text-foreground">Projetos Corporativos</h3>
+                <p className="text-xs text-muted-foreground">Viagens, centros de custo e orçamento</p>
               </div>
               <Button
                 className="h-11 min-h-11 px-4 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
@@ -937,7 +937,7 @@ export default function CompanyCorporateTravelPage() {
                 <FolderKanban className="size-8 mx-auto text-muted-foreground" />
                 <p className="text-sm font-medium">Nenhum projeto de viagem criado</p>
                 <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                  Projetos agrupam múltiplas viagens, tarefas e a timeline viva para missões e eventos corporativos.
+                  Projetos agrupam viagens e tarefas corporativas.
                 </p>
                 <div className="pt-2 flex justify-center">
                   <Button
@@ -945,7 +945,7 @@ export default function CompanyCorporateTravelPage() {
                     onClick={() => setCreateProjectOpen(true)}
                   >
                     <Plus className="size-4 mr-2" />
-                    Criar Primeiro Projeto
+                    Criar Projeto
                   </Button>
                 </div>
               </div>
@@ -978,7 +978,7 @@ export default function CompanyCorporateTravelPage() {
                         className="w-full h-11 min-h-11 text-xs font-medium focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <Link to="/workspace/turismo/projetos/$id" params={{ id: proj.id }}>
-                          Abrir Timeline e Tarefas do Projeto
+                          Abrir Projeto
                           <ArrowRight className="size-4 ml-2" />
                         </Link>
                       </Button>
@@ -993,10 +993,10 @@ export default function CompanyCorporateTravelPage() {
         {/* 4. ABA: VIAJANTES */}
         {activeTab === "viajantes" && (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/50">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border">
               <div>
-                <h3 className="text-sm font-bold text-foreground">Viajantes & Colaboradores</h3>
-                <p className="text-xs text-muted-foreground">Cofre de passageiros com documentos e preferências de assento</p>
+                <h3 className="text-sm font-bold text-foreground">Viajantes</h3>
+                <p className="text-xs text-muted-foreground">Documentos e preferências de passageiros</p>
               </div>
               <Button
                 className="h-11 min-h-11 px-4 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
@@ -1065,9 +1065,9 @@ export default function CompanyCorporateTravelPage() {
         {/* 5. ABA: POLÍTICA DE VIAGEM */}
         {activeTab === "politica" && (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/50">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border">
               <div>
-                <h3 className="text-sm font-bold text-foreground">Diretrizes de Compliance & Política</h3>
+                <h3 className="text-sm font-bold text-foreground">Política de Viagens</h3>
                 <p className="text-xs text-muted-foreground">Tetos tarifários, antecedência mínima e limites de cabine</p>
               </div>
               <Button

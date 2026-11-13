@@ -18,7 +18,6 @@ import {
   Strikethrough,
   Code,
   Palette,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -354,24 +353,24 @@ export function CommunityPostComposer({
                 </button>
 
                 {isColorPickerOpen && (
-                  <div className="absolute left-0 top-12 z-50 p-2 rounded-xl bg-popover text-popover-foreground border border-border shadow-overlay flex items-center gap-1 animate-in fade-in-50 zoom-in-95">
+                  <div className="absolute left-0 top-12 z-50 p-2 rounded-xl bg-popover text-popover-foreground border border-border flex items-center gap-1">
                     {[
-                      { id: "yellow", name: "Amarelo", bg: "bg-warning/30" },
-                      { id: "cyan", name: "Ciano", bg: "bg-cyan-300" },
-                      { id: "pink", name: "Rosa", bg: "bg-pink-300" },
-                      { id: "green", name: "Verde", bg: "bg-emerald-300" },
-                      { id: "purple", name: "Roxo", bg: "bg-purple-300" },
-                      { id: "orange", name: "Laranja", bg: "bg-orange-300" },
+                      { id: "yellow", name: "Amarelo", bg: "bg-amber-200 dark:bg-amber-800" },
+                      { id: "cyan", name: "Ciano", bg: "bg-sky-200 dark:bg-sky-800" },
+                      { id: "pink", name: "Rosa", bg: "bg-rose-200 dark:bg-rose-800" },
+                      { id: "green", name: "Verde", bg: "bg-emerald-200 dark:bg-emerald-800" },
+                      { id: "purple", name: "Roxo", bg: "bg-violet-200 dark:bg-violet-800" },
+                      { id: "orange", name: "Laranja", bg: "bg-orange-200 dark:bg-orange-800" },
                     ].map((c) => (
                       <button
                         key={c.id}
                         type="button"
                         onClick={() => applyHighlight(c.id)}
-                        className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         title={`Destacar em ${c.name}`}
                         aria-label={`Destacar em ${c.name}`}
                       >
-                        <span className={`size-6 rounded-full ${c.bg} border border-black/20`} />
+                        <span className={`size-6 rounded-full ${c.bg} border border-border`} />
                       </button>
                     ))}
                   </div>
@@ -382,7 +381,7 @@ export function CommunityPostComposer({
               <button
                 type="button"
                 onClick={() => applyFormatting("*", "*", "negrito")}
-                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted text-foreground transition-colors cursor-pointer font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Negrito (*texto*)"
                 aria-label="Negrito"
               >
@@ -393,7 +392,7 @@ export function CommunityPostComposer({
               <button
                 type="button"
                 onClick={() => applyFormatting("_", "_", "itálico")}
-                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer italic focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted text-foreground transition-colors cursor-pointer italic focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Itálico (_texto_)"
                 aria-label="Itálico"
               >
@@ -404,7 +403,7 @@ export function CommunityPostComposer({
               <button
                 type="button"
                 onClick={() => applyFormatting("~", "~", "tachado")}
-                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Tachado (~texto~)"
                 aria-label="Tachado"
               >
@@ -415,7 +414,7 @@ export function CommunityPostComposer({
               <button
                 type="button"
                 onClick={() => applyFormatting("`", "`", "código")}
-                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted/60 text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-11 min-h-11 min-w-11 px-2 rounded-lg flex items-center justify-center hover:bg-muted text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Código (`mono`)"
                 aria-label="Código monoespaçado"
               >
@@ -426,16 +425,16 @@ export function CommunityPostComposer({
             {/* Badge Dinâmico de Tipo de Post */}
             <div className="shrink-0 pr-1">
               {mediaUrls.length === 0 ? (
-                <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-secondary border border-border text-foreground">
                   Tópico
                 </span>
               ) : mediaUrls.length === 1 ? (
-                <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200">
                   1 Imagem
                 </span>
               ) : (
-                <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                  {mediaUrls.length} Imagens (Carrossel)
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-violet-50 dark:bg-violet-950 border border-violet-200 dark:border-violet-800 text-violet-800 dark:text-violet-200">
+                  {mediaUrls.length} Imagens
                 </span>
               )}
             </div>

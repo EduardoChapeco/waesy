@@ -663,13 +663,17 @@ export const getMyEmployeeRecord = createServerFn({ method: "GET" }).handler(asy
   const supabase = getServerClient();
   const { data: employee } = await supabase
     .from("employees")
-    .select("id, store_id, full_name, job_title, department, admission_date, stores(id, name, logo_url)")
+    .select("id, store_id, full_name, job_title, department_id, hire_date, stores(id, name, logo_url)")
     .or(`profile_id.eq.${identity.id},email.eq.${identity.email || ""}`)
     .order("created_at", { ascending: false })
     .maybeSingle();
 
   if (employee) {
-    return employee;
+    return {
+      ...employee,
+      department: (employee as any).department_id || null,
+      admission_date: (employee as any).hire_date || null,
+    };
   }
 
   // Fallback para membro de equipe de workspace
@@ -921,10 +925,15 @@ export const analyzeLaborCompliance = createServerFn({ method: "GET" })
     assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
 
     // 1. Fetch employees
-    const { data: employees } = await supabase
+    const { data: rawEmployees } = await supabase
       .from("employees")
-      .select("id, full_name, admission_date, job_title")
+      .select("id, full_name, hire_date, job_title")
       .eq("store_id", identity.store_id);
+
+    const employees = (rawEmployees || []).map((emp: any) => ({
+      ...emp,
+      admission_date: emp.hire_date || null,
+    }));
 
     // 2. Fetch employee financial records (for advances / vales / off-the-books check)
     const { data: financialRecords } = await supabase

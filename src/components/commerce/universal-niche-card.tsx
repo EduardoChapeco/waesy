@@ -438,13 +438,13 @@ export function UniversalNicheCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col justify-between overflow-hidden rounded-lg border-0 bg-card p-4 sm:p-5 hover:bg-muted/20 transition-colors duration-300 motion-reduce:transition-none h-full",
+        "group relative flex flex-col justify-between overflow-hidden rounded-lg border border-border bg-card p-4 sm:p-5 hover:bg-muted transition-colors duration-300 motion-reduce:transition-none h-full",
         className
       )}
     >
       <div className="flex-1 flex flex-col min-h-0">
         {/* Foto de Topo com Aspect Ratio Amplo e Bordas Arredondadas (16:10 / 4:3) */}
-        <div className="relative aspect-16/10 sm:aspect-4/3 w-full overflow-hidden rounded-lg bg-muted/30 shrink-0">
+        <div className="relative aspect-16/10 sm:aspect-4/3 w-full overflow-hidden rounded-lg bg-muted shrink-0">
           <Link
             to={resolvedLink as any}
             className="block size-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -454,28 +454,22 @@ export function UniversalNicheCard({
               <div className="relative size-full overflow-hidden">
                 <img
                   src={img}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 size-full object-cover blur-lg opacity-30 scale-110 pointer-events-none select-none"
-                />
-                <img
-                  src={img}
                   alt={item.title}
                   className="relative size-full object-cover group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none ease-out"
                   loading="lazy"
                 />
               </div>
             ) : (
-              <div className="size-full bg-muted/40 flex items-center justify-center">
-                <Tag className="size-8 text-muted-foreground/30" />
+              <div className="size-full bg-muted flex items-center justify-center">
+                <Tag className="size-8 text-muted-foreground" />
               </div>
             )}
           </Link>
 
-          {/* Badge Discreto de Vidro no Canto Superior Direito (Apenas quando houver dado real relevante) */}
+          {/* Badge Discreto no Canto Superior Direito (Apenas quando houver dado real relevante) */}
           {floatingBadgeText && floatingBadgeText !== "Destaque" && (
             <div className="absolute top-3 right-3 pointer-events-none z-10">
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-background text-foreground border border-border/60 font-medium text-xs">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-background text-foreground border border-border font-medium text-xs">
                 {floatingBadgeText}
               </span>
             </div>
@@ -496,7 +490,7 @@ export function UniversalNicheCard({
               to={resolvedLink as any}
               className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md mt-2"
             >
-              <h3 className="font-bold text-lg sm:text-xl text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+              <h3 className="font-bold text-lg sm:text-xl text-foreground leading-snug line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
                 {item.title}
               </h3>
             </Link>
@@ -514,10 +508,10 @@ export function UniversalNicheCard({
           </div>
 
           {/* ESPECIFICAÇÕES CANÔNICAS: Texto Puro com Ícone Circular (SEM CAIXAS/PILLS) */}
-          <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-border/40">
+          <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-border">
             {/* Atributo 1 */}
             <div className="flex items-center gap-3 min-w-0">
-              <div className="size-9 rounded-full bg-muted/60 flex items-center justify-center text-foreground shrink-0">
+              <div className="size-9 rounded-full bg-muted flex items-center justify-center text-foreground shrink-0">
                 <pill1.icon className="size-4 text-muted-foreground" />
               </div>
               <div className="min-w-0 flex-1">
@@ -532,7 +526,7 @@ export function UniversalNicheCard({
 
             {/* Atributo 2 */}
             <div className="flex items-center gap-3 min-w-0">
-              <div className="size-9 rounded-full bg-muted/60 flex items-center justify-center text-foreground shrink-0">
+              <div className="size-9 rounded-full bg-muted flex items-center justify-center text-foreground shrink-0">
                 <pill2.icon className="size-4 text-muted-foreground" />
               </div>
               <div className="min-w-0 flex-1">
@@ -549,7 +543,7 @@ export function UniversalNicheCard({
       </div>
 
       {/* Rodapé Comercial: Preço à esquerda + CTA Primário Proeminente à direita */}
-      <div className="pt-4 border-t border-border/40 flex items-center justify-between gap-3 mt-4">
+      <div className="pt-4 border-t border-border flex items-center justify-between gap-3 mt-4">
         {/* Bloco de Preço */}
         <div className="flex flex-col min-w-0">
           <span className="text-xs text-muted-foreground font-medium leading-none mb-1">
@@ -575,7 +569,7 @@ export function UniversalNicheCard({
               variant="outline"
               size="icon"
               onClick={handleWhatsApp}
-              className="size-11 min-h-11 min-w-11 rounded-lg border-border/60 text-foreground hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              className="size-11 min-h-11 min-w-11 rounded-lg border-border text-foreground hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring shrink-0"
               title="Conversar no WhatsApp"
             >
               <WhatsappLogo size={18} weight="fill" />

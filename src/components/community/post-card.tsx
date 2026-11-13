@@ -177,7 +177,7 @@ export function PostCard(props: PostCardProps) {
               {item.author.is_store && (
                 <Badge
                   variant="secondary"
-                  className="text-xs font-semibold px-2 py-0 bg-muted text-muted-foreground border-transparent shrink-0"
+                  className="text-xs font-semibold px-2 py-1 bg-muted text-muted-foreground border-transparent shrink-0"
                 >
                   Negócio
                 </Badge>
@@ -348,7 +348,7 @@ export function PostCard(props: PostCardProps) {
                 onClick={() => setSelectedMediaLightboxIndex(0)}
                 className="bg-card rounded-lg p-3 border border-border/60 flex items-center gap-3 cursor-pointer hover:border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <div className="size-12 rounded-full overflow-hidden bg-muted shrink-0 border border-border/40">
+                <div className="size-12 rounded-full overflow-hidden bg-muted shrink-0 border border-border">
                   <img
                     src={item.media_urls[0] || item.author.avatar_url || ""}
                     alt="Membro 1"
@@ -356,19 +356,27 @@ export function PostCard(props: PostCardProps) {
                   />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-bold text-xs text-foreground truncate">
+                  <h4 className="font-bold text-xs text-foreground line-clamp-2 text-anti-truncate">
                     {item.metadata?.member1_name || item.author.name.split(" ")[0]}
                   </h4>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate">
                     {item.metadata?.member1_role || "Criação"}
                   </p>
                 </div>
               </div>
               <div
+                role="button"
+                tabIndex={0}
                 onClick={() => setSelectedMediaLightboxIndex(1)}
-                className="bg-card rounded-lg p-3 border border-border/60 flex items-center gap-3 cursor-pointer hover:border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedMediaLightboxIndex(1);
+                  }
+                }}
+                className="bg-card rounded-lg p-3 border border-border flex items-center gap-3 cursor-pointer hover:border-ring transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <div className="size-12 rounded-full overflow-hidden bg-muted shrink-0 border border-border/40">
+                <div className="size-12 rounded-full overflow-hidden bg-muted shrink-0 border border-border">
                   <img
                     src={item.media_urls[1] || item.media_urls[0] || item.author.avatar_url || ""}
                     alt="Membro 2"
@@ -376,10 +384,10 @@ export function PostCard(props: PostCardProps) {
                   />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-bold text-xs text-foreground truncate">
+                  <h4 className="font-bold text-xs text-foreground line-clamp-2 text-anti-truncate">
                     {item.metadata?.member2_name || "Parceiro"}
                   </h4>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate">
                     {item.metadata?.member2_role || "Parceria"}
                   </p>
                 </div>
@@ -457,7 +465,7 @@ export function PostCard(props: PostCardProps) {
                     className="size-full object-cover group-hover/slide:scale-103 transition-transform duration-300"
                   />
                 )}
-                <span className="absolute bottom-2 right-2 px-2 py-1 rounded-full bg-foreground/80 text-background text-xs font-medium backdrop-blur-xs">
+                <span className="absolute bottom-2 right-2 px-2 py-1 rounded-full bg-card border border-border text-foreground text-xs font-medium">
                   {idx + 1}/{item.media_urls.length}
                 </span>
               </div>
@@ -574,7 +582,7 @@ export function PostCard(props: PostCardProps) {
             <span className="text-xs font-bold uppercase text-primary tracking-wider">
               {item.reference_data.stores?.name || "Produto Local"}
             </span>
-            <p className="text-sm font-bold text-foreground truncate">
+            <p className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate">
               {item.reference_data.title}
             </p>
             <div className="flex items-center gap-2 mt-1">
@@ -598,9 +606,9 @@ export function PostCard(props: PostCardProps) {
         <Link
           to="/classificados/$id"
           params={{ id: item.reference_data.id }}
-          className="mb-3 flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 transition-colors group border border-border/40"
+          className="mb-3 flex items-center gap-3 p-3 rounded-lg bg-muted hover:bg-secondary transition-colors group border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className="size-14 rounded-lg overflow-hidden bg-background shrink-0 border border-border/40">
+          <div className="size-14 rounded-lg overflow-hidden bg-background shrink-0 border border-border">
             {item.reference_data.images?.[0] ? (
               <img
                 src={item.reference_data.images[0]}
@@ -612,17 +620,17 @@ export function PostCard(props: PostCardProps) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-xs font-bold uppercase text-warning-strong tracking-wider">
+            <span className="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 tracking-wider">
               Classificado
             </span>
-            <p className="text-sm font-bold text-foreground truncate">
+            <p className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate">
               {item.reference_data.title}
             </p>
             <p className="text-xs font-bold text-foreground mt-1">
               {formatMoney(item.reference_data.price_cents)}
             </p>
           </div>
-          <span className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold inline-flex items-center justify-center shrink-0 border border-border/80 bg-background text-foreground group-hover:bg-muted/80 transition-colors pointer-events-none">
+          <span className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold inline-flex items-center justify-center shrink-0 border border-border bg-background text-foreground group-hover:bg-muted transition-colors pointer-events-none">
             Ver Anúncio
           </span>
         </Link>

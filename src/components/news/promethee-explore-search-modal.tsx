@@ -5,7 +5,6 @@ import {
   Hash,
   MapPin,
   Search,
-  Sparkles,
   TrendingUp,
   X,
 } from "lucide-react";

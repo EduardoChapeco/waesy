@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, CheckCircle2, XCircle, Eye, Loader2, Filter, User, AlertTriangle, BadgeAlert } from "lucide-react";
@@ -12,7 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/workspace/moderacao/kyc")({
- head: () => ({ meta: [{ title: "Auditoria KYC | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Auditoria KYC | Admin Master" }] }),
+ beforeLoad: async () => {
+   throw redirect({ to: "/admin-master/kyc" });
+ },
  loader: async () => {
  try {
  const verifications = await listKycVerificationsForAdmin({ data: { status: "under_review" } });

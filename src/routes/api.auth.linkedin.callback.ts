@@ -133,7 +133,7 @@ export const Route = createFileRoute("/api/auth/linkedin/callback")({
             try {
               const { data: currentProfile } = await supabase
                 .from("profiles")
-                .select("id, headline, bio, avatar_url, resume_data")
+                .select("id, bio, avatar_url, resume_data")
                 .eq("id", userId)
                 .maybeSingle();
 
@@ -151,7 +151,6 @@ export const Route = createFileRoute("/api/auth/linkedin/callback")({
                 await supabase
                   .from("profiles")
                   .update({
-                    headline: currentProfile.headline || (userInfo.name ? `Profissional verificado via LinkedIn` : undefined),
                     avatar_url: currentProfile.avatar_url || userInfo.picture || undefined,
                     resume_data: updatedResume,
                   })

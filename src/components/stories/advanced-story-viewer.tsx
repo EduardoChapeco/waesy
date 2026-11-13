@@ -200,7 +200,7 @@ export function AdvancedStoryViewer({
 
  return (
  <div
- className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/95 backdrop-blur-2xl transition-colors duration-200 duration-300 select-none"
+ className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 transition-colors duration-200 select-none"
  role="dialog"
  aria-modal="true"
  aria-label={`Stories de ${currentGroup.entityName}`}
@@ -208,10 +208,10 @@ export function AdvancedStoryViewer({
  {/* Botão de Fechar no Topo Direito */}
  <button
  onClick={onClose}
- className="absolute top-4 right-4 z-50 p-3 rounded-full bg-card/15 hover:bg-card/25 text-foreground backdrop-blur-md transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-4 right-4 z-50 size-11 min-h-11 min-w-11 rounded-full bg-card hover:bg-muted text-foreground border border-border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label="Fechar visualizador de stories"
  >
- <X size={22} weight="bold" />
+ <X size={20} weight="bold" />
  </button>
 
  {/* Navegação entre Grupos (Desktop Chevrons) */}
@@ -222,10 +222,10 @@ export function AdvancedStoryViewer({
  setStoryIndex(0);
  setProgress(0);
  }}
- className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-card/10 hover:bg-card/20 text-foreground backdrop-blur-md transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 z-40 size-11 min-h-11 min-w-11 rounded-full bg-card hover:bg-muted text-foreground border border-border items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label="Loja anterior"
  >
- <CaretLeft size={28} weight="bold" />
+ <CaretLeft size={24} weight="bold" />
  </button>
  )}
 
@@ -236,25 +236,25 @@ export function AdvancedStoryViewer({
  setStoryIndex(0);
  setProgress(0);
  }}
- className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-card/10 hover:bg-card/20 text-foreground backdrop-blur-md transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 z-40 size-11 min-h-11 min-w-11 rounded-full bg-card hover:bg-muted text-foreground border border-border items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label="Próxima loja"
  >
- <CaretRight size={28} weight="bold" />
+ <CaretRight size={24} weight="bold" />
  </button>
  )}
 
  {/* ── Frame Central do Story (Proporção 9:16 Responsiva) ── */}
  <div
- className="relative w-full max-w-sm md:max-w-md h-full sm:h-5/6 sm:max-h-full sm:rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 shadow-overlay flex flex-col justify-between"
+ className="relative w-full max-w-sm md:max-w-md h-full sm:h-5/6 sm:max-h-full sm:rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 flex flex-col justify-between"
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  >
  {/* ── 1. Barras de Progresso Segmentadas no Topo ── */}
  <div className="absolute top-3 inset-x-3 z-30 flex items-center gap-2 pointer-events-none">
  {currentGroup.stories.map((s, idx) => (
- <div key={s.id} className="h-1 flex-1 rounded-full bg-card/30 overflow-hidden backdrop-blur-xs">
+ <div key={s.id} className="h-1 flex-1 rounded-full bg-zinc-700 overflow-hidden">
  <div
- className="h-full bg-card transition-colors duration-200 duration-75 ease-linear"
+ className="h-full bg-zinc-100 transition-colors duration-100 ease-linear"
  style={{
  width: idx < storyIndex ? "100%" : idx === storyIndex ? `${progress}%` : "0%",
  }}
@@ -277,7 +277,7 @@ export function AdvancedStoryViewer({
  className="size-full object-cover"
  />
  ) : (
- <div className="size-full flex items-center justify-center bg-primary/20 text-primary font-bold text-xs">
+ <div className="size-full flex items-center justify-center bg-zinc-800 text-zinc-100 font-bold text-xs">
  {currentGroup.entityName.slice(0, 2).toUpperCase()}
  </div>
  )}
@@ -285,25 +285,25 @@ export function AdvancedStoryViewer({
 
  <div className="min-w-0">
  <div className="flex items-center gap-2">
- <span className="text-sm font-bold text-foreground leading-none truncate shadow-overlay">
+ <span className="text-sm font-bold text-zinc-100 leading-none truncate">
  {currentGroup.entityName}
  </span>
 
  {currentGroup.isOfficialAmbassador && (
- <Badge className="bg-purple-600 text-foreground text-2xs font-black px-2 py-1 rounded-md border-0">
- <SealCheck size={11} weight="fill" className="mr-1" />
+ <Badge className="bg-violet-950 text-violet-100 border border-violet-700 text-xs font-bold px-2 py-1 rounded-md">
+ <SealCheck size={12} weight="fill" className="mr-1" />
  {currentGroup.ambassadorBadgeLabel || "Embaixador"}
  </Badge>
  )}
 
  {currentStory.is_sponsored && (
- <Badge className="bg-warning text-foreground text-2xs font-black px-2 py-1 rounded-md">
+ <Badge className="bg-amber-950 text-amber-100 border border-amber-700 text-xs font-bold px-2 py-1 rounded-md">
  Patrocinado
  </Badge>
  )}
  </div>
 
- <div className="flex items-center gap-2 text-xs text-foreground/70">
+ <div className="flex items-center gap-2 text-xs text-zinc-300">
  {currentGroup.entityHandle && <span>{currentGroup.entityHandle}</span>}
  <span>•</span>
  <span>Há 3h</span>
@@ -318,7 +318,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  setIsMuted(!isMuted);
  }}
- className="p-2 rounded-full bg-foreground/40 text-foreground hover:bg-foreground/60 backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 min-h-11 min-w-11 rounded-full bg-card text-foreground hover:bg-muted border border-border flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-label={isMuted ? "Ativar som" : "Desativar som"}
  >
  {isMuted ? <SpeakerSimpleSlash size={18} weight="bold" /> : <SpeakerHigh size={18} weight="bold" />}
@@ -328,7 +328,7 @@ export function AdvancedStoryViewer({
  </div>
 
  {/* ── 3. Mídia Central (Foto ou Vídeo em Alta Definição) ── */}
- <div className="absolute inset-0 size-full flex items-center justify-center bg-foreground">
+ <div className="absolute inset-0 size-full flex items-center justify-center bg-zinc-950">
  {isVideo ? (
  <video
  ref={videoRef}
@@ -350,20 +350,20 @@ export function AdvancedStoryViewer({
  />
  )}
 
- {/* Gradiente Escuro Superior e Inferior para Legibilidade */}
- <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+ {/* Scrim Escuro para Legibilidade */}
+ <div className="absolute inset-0 bg-zinc-950/40 pointer-events-none" />
  </div>
 
  {/* ── 4. Prompt Interativo de Vídeo Longo (>60s com Countdown de 5s) ── */}
  {showLongPrompt && (
- <div className="absolute inset-0 z-40 bg-foreground/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
- <div className="size-14 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
+ <div className="absolute inset-0 z-40 bg-zinc-950/90 flex flex-col items-center justify-center p-6 text-center space-y-4">
+ <div className="size-14 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 flex items-center justify-center">
  <Clock size={32} weight="bold" />
  </div>
 
  <div className="space-y-1">
- <h4 className="text-base font-bold text-foreground">Storie Longo em Exibição</h4>
- <p className="text-xs text-foreground/70 max-w-xs">
+ <h4 className="text-base font-bold text-zinc-100">Storie Longo em Exibição</h4>
+ <p className="text-xs text-zinc-300 max-w-xs">
  Este conteúdo possui mais de 60 segundos. Deseja continuar assistindo?
  </p>
  </div>
@@ -374,7 +374,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  handleContinueLongStory();
  }}
- className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-overlay"
+ className="w-full h-11 min-h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
  >
  <span>Continuar assistindo</span>
  <ArrowRight size={14} weight="bold" />
@@ -386,7 +386,7 @@ export function AdvancedStoryViewer({
  e.stopPropagation();
  handleNext();
  }}
- className="w-full h-11 min-h-11 rounded-lg text-foreground/80 hover:text-foreground hover:bg-card/10 text-xs font-semibold"
+ className="w-full h-11 min-h-11 rounded-lg text-zinc-200 hover:text-zinc-50 hover:bg-zinc-800 text-xs font-semibold cursor-pointer"
  >
  Pular em {longPromptCountdown}s...
  </Button>
@@ -398,7 +398,7 @@ export function AdvancedStoryViewer({
  <div className="relative z-30 p-4 space-y-3 pointer-events-auto">
  {/* Card Flutuante de Produto Marcado */}
  {currentStory.product_info && (
- <div className="flex items-center justify-between p-3 rounded-lg bg-card/15 backdrop-blur-xl border border-white/20 text-foreground shadow-overlay">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-card border border-border text-foreground">
  <div className="flex items-center gap-3 min-w-0">
  {currentStory.product_info.image_url ? (
  <img
@@ -410,15 +410,15 @@ export function AdvancedStoryViewer({
  className="size-10 rounded-lg object-cover shrink-0"
  />
  ) : (
- <div className="size-10 rounded-lg bg-primary/30 flex items-center justify-center shrink-0">
+ <div className="size-10 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0">
  <ShoppingBag size={18} weight="bold" />
  </div>
  )}
  <div className="min-w-0">
- <span className="text-xs font-bold block truncate leading-tight">
+ <span className="text-xs font-bold block line-clamp-2 text-anti-truncate leading-tight">
  {currentStory.product_info.title}
  </span>
- <span className="text-xs font-mono font-bold text-emerald-400">
+ <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300">
  {(currentStory.product_info.price_cents / 100).toLocaleString("pt-BR", {
  style: "currency",
  currency: "BRL",
@@ -430,7 +430,7 @@ export function AdvancedStoryViewer({
  <Button
  size="sm"
  asChild
- className="h-11 min-h-11 rounded-lg bg-card text-foreground font-bold text-xs px-4 shrink-0 flex items-center justify-center"
+ className="h-11 min-h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs px-4 shrink-0 flex items-center justify-center"
  >
  <a href={`/produto/${currentStory.product_info.id}`}>Comprar</a>
  </Button>
@@ -441,7 +441,7 @@ export function AdvancedStoryViewer({
  {currentStory.link_url && (
  <Button
  asChild
- className="w-full h-11 min-h-11 rounded-lg bg-card/20 hover:bg-card/30 text-foreground backdrop-blur-xl border border-white/20 font-bold text-xs flex items-center justify-center gap-2 transition-transform duration-200 active:scale-95"
+ className="w-full h-11 min-h-11 rounded-lg bg-card hover:bg-muted text-foreground border border-border font-bold text-xs flex items-center justify-center gap-2 transition-colors"
  >
  <a href={currentStory.link_url} target="_blank" rel="noopener noreferrer">
  <span>{currentStory.link_cta || "Acessar Oferta"}</span>
@@ -452,8 +452,8 @@ export function AdvancedStoryViewer({
 
  {/* Hashtags e Badge de Co-Publicação */}
  {currentStory.collab_info && (
- <div className="flex items-center gap-2 text-xs text-foreground/80 font-medium">
- <Handshake size={13} weight="bold" className="text-purple-300" />
+ <div className="flex items-center gap-2 text-xs text-zinc-200 font-medium">
+ <Handshake size={14} weight="bold" className="text-zinc-200" />
  <span>Publicado em parceria com {currentStory.collab_info.creator_name}</span>
  </div>
  )}

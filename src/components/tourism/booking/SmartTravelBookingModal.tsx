@@ -28,7 +28,6 @@ import {
   ShieldCheck,
   Plus,
   Minus,
-  Sparkles,
   Link as LinkIcon,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
@@ -190,7 +189,7 @@ export function SmartTravelBookingModal({
       <DialogContent className="max-w-2xl max-h-screen sm:max-h-160 overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2 text-2xs text-primary font-bold uppercase tracking-wider">
-            <Sparkles className="size-3.5" /> Reserva Inteligente & Acomodação
+            <Bed className="size-3.5" /> Reserva de Viagem
           </div>
           <DialogTitle className="text-lg font-bold">{tourTitle}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -438,7 +437,7 @@ export function SmartTravelBookingModal({
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-foreground flex items-center gap-2">
                           <RadioGroupItem value="shared" id="room-shared" />
-                          <Sparkles className="size-4 text-emerald-600" />
+                          <Bed className="size-4 text-emerald-600" />
                           Quarto Compartilhado do Grupo (Sem Adicional Single)
                         </span>
                         <Badge className="bg-emerald-600 text-primary-foreground text-2xs">Econômico</Badge>

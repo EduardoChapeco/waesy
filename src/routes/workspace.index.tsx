@@ -10,6 +10,7 @@ import { getDashboardData, type DashboardMetrics } from "@/services/dashboard.fu
 import { toggleStoreOpenStatus } from "@/services/store.functions";
 import { StoreShareQrModal } from "@/components/workspace/store-share-qr-modal";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { resolveUnifiedNicheId } from "@/lib/niches/niche-ssot";
 import { formatMoney } from "@/lib/money";
 import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/seasonal-marketing-calendar-widget";
 import { PolymorphicDashboardRenderer } from "@/components/workspace/dashboard/PolymorphicDashboardRenderer";
@@ -97,6 +98,7 @@ export const Route = createFileRoute("/workspace/")({
 export default function WorkspaceDashboardPage() {
   const { activeStore, dashboardMetrics } = ((Route.useLoaderData?.() as any) || {});
   const semantics = getNicheSemantics(activeStore);
+  const unifiedNicheId = resolveUnifiedNicheId(activeStore);
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [metricsPeriod, setMetricsPeriod] = useState<string>("today");
@@ -136,6 +138,39 @@ export default function WorkspaceDashboardPage() {
 
   // Mapeia os atalhos de canais e vitrine de forma estritamente contextual por nicho
   const getContextualChannelLinks = () => {
+    if (unifiedNicheId === "automotive" || semantics.nicheId === "vehicles" || semantics.nicheId === "tech_repair") {
+      return [
+        { label: "Ordens de Serviço", path: "/workspace/ordens-servico", icon: Wrench },
+        { label: "Veículos & Itens", path: "/workspace/catalogo/produtos", icon: CarFront },
+        { label: "Orçamentos", path: "/workspace/orcamentos", icon: FileText },
+        { label: "Clientes", path: "/workspace/clientes", icon: Users },
+      ];
+    }
+    if (unifiedNicheId === "accounting") {
+      return [
+        { label: "Ordens de Serviço", path: "/workspace/ordens-servico", icon: Wrench },
+        { label: "Honorários", path: "/workspace/orcamentos", icon: FileText },
+        { label: "Financeiro", path: "/workspace/financeiro/caixa", icon: DollarSign },
+        { label: "Clientes", path: "/workspace/clientes", icon: Users },
+      ];
+    }
+    if (unifiedNicheId === "beauty_salon" || unifiedNicheId === "barbershop" || unifiedNicheId === "aesthetics_clinic") {
+      return [
+        { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
+        { label: "Serviços", path: "/workspace/agenda/servicos", icon: Layers },
+        { label: "Comandas", path: "/workspace/pdv/comandas", icon: CreditCard },
+        { label: "Pacotes", path: "/workspace/pacotes", icon: Ticket },
+      ];
+    }
+    if (unifiedNicheId === "healthcare" || unifiedNicheId === "dental" || unifiedNicheId === "psychology") {
+      return [
+        { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
+        { label: "Procedimentos", path: "/workspace/agenda/servicos", icon: Layers },
+        { label: "Pacientes", path: "/workspace/clientes", icon: Users },
+        { label: "Financeiro", path: "/workspace/financeiro/caixa", icon: DollarSign },
+      ];
+    }
+
     switch (semantics.nicheId) {
       case "tourism":
         return [
@@ -194,6 +229,7 @@ export default function WorkspaceDashboardPage() {
       case "vehicles":
         return [
           { label: "Veículos", path: "/workspace/catalogo/produtos", icon: CarFront },
+          { label: "Ordens de Serviço", path: "/workspace/ordens-servico", icon: Wrench },
           { label: "Propostas", path: "/workspace/orcamentos", icon: FileText },
           { label: "Leads", path: "/workspace/clientes", icon: Users },
         ];
@@ -216,6 +252,14 @@ export default function WorkspaceDashboardPage() {
   const channelLinks = getContextualChannelLinks();
 
   const getOrdersDestination = () => {
+    if (
+      unifiedNicheId === "automotive" ||
+      unifiedNicheId === "accounting" ||
+      semantics.nicheId === "vehicles" ||
+      semantics.nicheId === "tech_repair"
+    ) {
+      return "/workspace/ordens-servico";
+    }
     if (semantics.nicheId === "gastronomy") return "/workspace/pedidos/gestor";
     if (semantics.nicheId === "tourism") return "/workspace/turismo/cotacoes";
     if (semantics.nicheId === "legal") return "/workspace/advocacia";
@@ -261,9 +305,32 @@ export default function WorkspaceDashboardPage() {
   };
 
   const catalogDetails = getCatalogCardDetails();
+  const subStatus = activeStore?.subscription_status || activeStore?.settings?.subscription_status;
 
   return (
     <div className="w-full space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+      {(subStatus === "past_due" || subStatus === "trialing") && (
+        <div className="rounded-lg border border-border bg-card p-3 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="text-xs text-foreground">
+            {subStatus === "past_due" ? (
+              <span className="font-semibold text-destructive">
+                Assinatura com fatura pendente. Regularize para evitar bloqueio operacional.
+              </span>
+            ) : (
+              <span>
+                Período de avaliação ativo
+                {activeStore?.trial_ends_at
+                  ? ` até ${new Date(activeStore.trial_ends_at).toLocaleDateString("pt-BR")}`
+                  : ""}
+                . Escolha ou confirme seu sistema vertical.
+              </span>
+            )}
+          </div>
+          <Button asChild size="sm" variant="outline" className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs shrink-0">
+            <Link to="/workspace/configuracoes/planos">Gerenciar Plano</Link>
+          </Button>
+        </div>
+      )}
       {/* ── 1. Top Header com Identificação do Negócio ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-card">
         <div className="space-y-1">
@@ -582,7 +649,7 @@ export default function WorkspaceDashboardPage() {
 
           {/* 2. Vendas & CRM */}
           <Link
-            to={semantics.nicheId === "tourism" ? "/workspace/comercial" : "/workspace/pedidos"}
+            to={getOrdersDestination()}
             className="p-4 rounded-2xl bg-muted/40 hover:bg-muted transition-colors text-left group flex flex-col justify-between min-h-24"
           >
             <div className="size-9 rounded-xl bg-card text-foreground flex items-center justify-center mb-3">
@@ -590,10 +657,18 @@ export default function WorkspaceDashboardPage() {
             </div>
             <div>
               <p className="font-semibold text-xs text-foreground">
-                {semantics.nicheId === "tourism" ? "Comercial" : "Vendas"}
+                {unifiedNicheId === "automotive" || unifiedNicheId === "accounting" || semantics.nicheId === "vehicles" || semantics.nicheId === "tech_repair"
+                  ? "Operação & OS"
+                  : semantics.nicheId === "tourism"
+                  ? "Comercial"
+                  : "Vendas"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {semantics.nicheId === "tourism" ? "Funil & CRM" : "Pedidos & PDV"}
+                {unifiedNicheId === "automotive" || unifiedNicheId === "accounting" || semantics.nicheId === "vehicles" || semantics.nicheId === "tech_repair"
+                  ? "Ordens de Serviço"
+                  : semantics.nicheId === "tourism"
+                  ? "Funil & CRM"
+                  : "Pedidos & PDV"}
               </p>
             </div>
           </Link>

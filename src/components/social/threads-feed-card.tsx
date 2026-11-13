@@ -242,7 +242,7 @@ export function CommunityFeedCard({
 
  {/* ── Renderizador de Enquete de Interação (Poll) ── */}
  {pollData && (
- <div className="mt-3 space-y-2 rounded-lg bg-muted/20 border border-border/40 p-4">
+ <div className="mt-3 space-y-2 rounded-lg bg-muted border border-border p-4">
  {pollData.question && (
  <p className="text-xs font-bold text-foreground mb-2">{pollData.question}</p>
  )}
@@ -259,25 +259,25 @@ export function CommunityFeedCard({
  onClick={() => handleVotePoll(option.id)}
  disabled={!!pollData.user_voted_option}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "w-full relative h-10 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-colors duration-200 border min-h-11 sm:min-h-0",
+ "w-full relative min-h-11 py-2 rounded-lg overflow-hidden text-left flex items-center justify-between px-3 text-xs font-bold transition-colors duration-200 border",
  isSelected
- ? "border-primary bg-primary/10 text-primary"
- : "border-border/60 bg-card hover:bg-muted/40 text-foreground"
+ ? "border-primary bg-muted text-foreground"
+ : "border-border bg-card hover:bg-muted text-foreground"
  )}
  >
- {/* Barra de Porcentagem Animada */}
+ {/* Barra de Porcentagem */}
  {pollData.user_voted_option && (
  <div
  className={cn(
- "absolute top-0 bottom-0 left-0 transition-colors duration-200 duration-200 rounded-lg opacity-20",
+ "absolute top-0 bottom-0 left-0 transition-colors duration-200 rounded-lg opacity-20",
  isSelected ? "bg-primary" : "bg-foreground"
  )}
  style={{ width: `${percent}%` }}
  />
  )}
- <span className="relative z-10 truncate flex items-center gap-2">
+ <span className="relative z-10 line-clamp-2 text-anti-truncate flex items-center gap-2">
  {option.text}
- {isSelected && <Check className="size-3 text-primary" />}
+ {isSelected && <Check className="size-3 text-primary shrink-0" />}
  </span>
  {pollData.user_voted_option && (
  <span className="relative z-10 font-mono text-2xs text-muted-foreground">

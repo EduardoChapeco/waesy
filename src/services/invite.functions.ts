@@ -988,8 +988,8 @@ export const processReferralOnboarding = createServerFn({ method: "POST" })
 
 export const adminListGamification = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { requireAdmin } = await import("@/lib/server-access");
-    await requireAdmin();
+    const { requirePlatformAdmin } = await import("@/lib/server-access");
+    await requirePlatformAdmin();
 
     const supabase = getServerClient();
 
@@ -1049,8 +1049,8 @@ export const adminListGamification = createServerFn({ method: "GET" })
 export const adminDrawRaffle = createServerFn({ method: "POST" })
   .validator(z.object({ raffleId: z.string().uuid() }))
   .handler(async ({ data: { raffleId } }) => {
-    const { requireAdmin } = await import("@/lib/server-access");
-    await requireAdmin();
+    const { requirePlatformAdmin } = await import("@/lib/server-access");
+    await requirePlatformAdmin();
 
     const supabase = getServerClient();
 
@@ -1102,8 +1102,8 @@ export const adminDrawRaffle = createServerFn({ method: "POST" })
 export const adminCancelRaffle = createServerFn({ method: "POST" })
   .validator(z.object({ raffleId: z.string().uuid() }))
   .handler(async ({ data: { raffleId } }) => {
-    const { requireAdmin } = await import("@/lib/server-access");
-    await requireAdmin();
+    const { requirePlatformAdmin } = await import("@/lib/server-access");
+    await requirePlatformAdmin();
 
     const supabase = getServerClient();
     const { error } = await supabase
@@ -1118,8 +1118,8 @@ export const adminCancelRaffle = createServerFn({ method: "POST" })
 export const adminGetRaffleTickets = createServerFn({ method: "POST" })
   .validator(z.object({ raffleId: z.string().uuid() }))
   .handler(async ({ data: { raffleId } }) => {
-    const { requireAdmin } = await import("@/lib/server-access");
-    await requireAdmin();
+    const { requirePlatformAdmin } = await import("@/lib/server-access");
+    await requirePlatformAdmin();
 
     const supabase = getServerClient();
     const { data: tickets, error } = await supabase
@@ -1153,8 +1153,8 @@ export const adminUpsertReward = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
-    const { requireAdmin } = await import("@/lib/server-access");
-    await requireAdmin();
+    const { requirePlatformAdmin } = await import("@/lib/server-access");
+    await requirePlatformAdmin();
 
     const supabase = getServerClient();
 
@@ -1197,8 +1197,8 @@ export const adminUpsertReward = createServerFn({ method: "POST" })
 export const adminDeleteReward = createServerFn({ method: "POST" })
   .validator(z.object({ rewardId: z.string().uuid() }))
   .handler(async ({ data: { rewardId } }) => {
-    const { requireAdmin } = await import("@/lib/server-access");
-    await requireAdmin();
+    const { requirePlatformAdmin } = await import("@/lib/server-access");
+    await requirePlatformAdmin();
 
     const supabase = getServerClient();
     const { error } = await supabase.from("invite_rewards").delete().eq("id", rewardId);
@@ -1220,8 +1220,8 @@ export const adminCreateRaffle = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
-    const { requireAdmin } = await import("@/lib/server-access");
-    const identity = await requireAdmin();
+    const { requirePlatformAdmin } = await import("@/lib/server-access");
+    const identity = await requirePlatformAdmin();
 
     const supabase = getServerClient();
 

@@ -512,7 +512,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
     // 1. Verifica existência da loja
     const { data: store, error: storeErr } = await db
       .from("stores")
-      .select("id, name, slug, owner_id, settings")
+      .select("id, name, slug, organization_id, settings")
       .eq("id", safeStoreId)
       .single();
 
@@ -523,7 +523,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
     // 2. Verifica existência do novo proprietário
     const { data: newOwnerProfile, error: profileErr } = await db
       .from("profiles")
-      .select("id, full_name, email, tax_id")
+      .select("id, full_name, tax_id")
       .eq("id", safeNewOwnerId)
       .single();
 
@@ -531,7 +531,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
       throw new Error("Perfil do novo titular não encontrado.");
     }
 
-    const previousOwnerId = safeCurrentOwnerId || store.owner_id;
+    const previousOwnerId = safeCurrentOwnerId || store.organization_id;
     const timestamp = new Date().toISOString();
 
     // 3. Atualiza o proprietário anterior em workspace_members para 'manager'
@@ -540,8 +540,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
         .from("workspace_members")
         .update({ role: "manager" })
         .eq("store_id", safeStoreId)
-        .eq("user_id", previousOwnerId)
-        ;
+        .eq("profile_id", previousOwnerId);
     }
 
     // 4. Insere ou atualiza o novo titular em workspace_members com role 'owner'
@@ -550,6 +549,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
       .upsert(
         {
           store_id: safeStoreId,
+          profile_id: safeNewOwnerId,
           user_id: safeNewOwnerId,
           role: "owner",
           is_active: true,
@@ -562,7 +562,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
       throw new Error(`Falha ao atribuir permissão societária: ${memberErr.message}`);
     }
 
-    // 5. Atualiza a loja com novo owner_id e registro nos settings
+    // 5. Atualiza a loja com novo organization_id e registro nos settings
     const existingSettings =
       store.settings && typeof store.settings === "object" ? store.settings : {};
 
@@ -578,7 +578,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
     const { error: updateStoreErr } = await db
       .from("stores")
       .update({
-        owner_id: safeNewOwnerId,
+        organization_id: safeNewOwnerId,
         settings: updatedSettings,
         updated_at: timestamp,
       })
@@ -595,7 +595,7 @@ export const adminTransferStoreOwnership = createServerFn({ method: "POST" })
       store_name: store.name,
       previous_owner_id: previousOwnerId,
       new_owner_id: safeNewOwnerId,
-      new_owner_name: newOwnerProfile.full_name || newOwnerProfile.email,
+      new_owner_name: newOwnerProfile.full_name || safeNewOwnerId,
       admin_operator_id: admin.id,
       reason: safeReason,
       notes: safeNotes,
@@ -647,7 +647,7 @@ export const adminToggleUserAccess = createServerFn({ method: "POST" })
     // Verifica existência do perfil
     const { data: profile, error: profErr } = await db
       .from("profiles")
-      .select("id, full_name, email, role")
+      .select("id, full_name, role")
       .eq("id", targetUserId)
       .single();
 

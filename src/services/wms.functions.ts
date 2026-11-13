@@ -319,7 +319,7 @@ export const generateShippingManifest = createServerFn({ method: "POST" })
  // Buscar pedidos
  const { data: orders, error } = await db
  .from("orders")
- .select("id, code, customer_name, customer_email, shipping_address, total_amount_cents, items_count")
+ .select("id, order_number, customer_snapshot, shipping_address, total_cents")
  .in("id", data.orderIds)
  .eq("store_id", identity.store_id);
 
@@ -329,7 +329,7 @@ export const generateShippingManifest = createServerFn({ method: "POST" })
 
  const manifestCode = "ROM-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + Math.floor(1000 + Math.random() * 9000);
  const totalOrders = orders.length;
- const totalVolumeValueCents = orders.reduce((acc: number, o: any) => acc + (o.total_amount_cents || 0), 0);
+ const totalVolumeValueCents = orders.reduce((acc: number, o: any) => acc + (o.total_cents || 0), 0);
 
  return {
  status: "success",
@@ -340,8 +340,8 @@ export const generateShippingManifest = createServerFn({ method: "POST" })
  totalVolumeValueCents,
  orders: orders.map((o: any) => ({
  orderId: o.id,
- orderCode: o.code || o.id.slice(0, 8),
- customerName: o.customer_name,
+ orderCode: o.order_number || o.id.slice(0, 8),
+ customerName: o.customer_snapshot?.name || o.customer_snapshot?.email || "Cliente",
  address: o.shipping_address,
  })),
  };

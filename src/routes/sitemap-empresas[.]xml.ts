@@ -22,7 +22,7 @@ export const Route = createFileRoute("/sitemap-empresas.xml")({
               .limit(10000),
             db
               .from("directory_listings")
-              .select("id, slug, updated_at")
+              .select("id, store_id, stores(slug), updated_at")
               .order("updated_at", { ascending: false })
               .limit(10000),
           ]);
@@ -65,11 +65,13 @@ export const Route = createFileRoute("/sitemap-empresas.xml")({
               const lastMod = d.updated_at
                 ? new Date(d.updated_at).toISOString().slice(0, 10)
                 : new Date().toISOString().slice(0, 10);
+              const assocStore = Array.isArray((d as any).stores) ? (d as any).stores[0] : (d as any).stores;
+              const placeKey = assocStore?.slug || d.id;
 
-              if (d.slug && !seen.has(`place_${d.slug}`)) {
-                seen.add(`place_${d.slug}`);
+              if (placeKey && !seen.has(`place_${placeKey}`)) {
+                seen.add(`place_${placeKey}`);
                 xml += `  <url>\n`;
-                xml += `    <loc>${siteOrigin}/places/${encodeURIComponent(d.slug)}</loc>\n`;
+                xml += `    <loc>${siteOrigin}/places/${encodeURIComponent(placeKey)}</loc>\n`;
                 xml += `    <lastmod>${lastMod}</lastmod>\n`;
                 xml += `    <changefreq>weekly</changefreq>\n`;
                 xml += `    <priority>0.7</priority>\n`;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import {
   Compass,
   Calendar,
@@ -6,11 +6,15 @@ import {
   Copy,
   Check,
   Printer,
+  Download,
+  FileText,
   Hotel,
   ShieldCheck,
   MapPin,
   QrCode,
 } from "lucide-react";
+import { toast } from "sonner";
+import { exportElementAsImage, exportElementAsPdf } from "@/lib/pdf-export";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -46,6 +50,9 @@ export function ArtifactTravelDossier({
   className,
 }: ArtifactTravelDossierProps) {
   const [copied, setCopied] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const rawId = useId();
+  const dossierDomId = `waesy-dossier-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   const handleCopyPix = () => {
     if (!pixCode) return;
@@ -58,8 +65,37 @@ export function ArtifactTravelDossier({
     window.print();
   };
 
+  const handleExportPdf = async () => {
+    try {
+      setIsExporting(true);
+      const slug = destination.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 32) || "roteiro";
+      await exportElementAsPdf(dossierDomId, `dossie-${slug}.pdf`, "p");
+      toast.success("Dossiê exportado em PDF com sucesso.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao exportar PDF do dossiê.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPng = async () => {
+    try {
+      setIsExporting(true);
+      const slug = destination.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 32) || "roteiro";
+      await exportElementAsImage(dossierDomId, {
+        filename: `dossie-${slug}.png`,
+        scale: 2,
+      });
+      toast.success("Dossiê salvo em PNG em alta resolução.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao exportar imagem PNG do dossiê.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
-    <div className={cn("rounded-lg border border-border/50 bg-card p-4 space-y-4", className)}>
+    <div id={dossierDomId} className={cn("rounded-lg border border-border/50 bg-card p-4 space-y-4", className)}>
       {/* Cabeçalho do Roteiro */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
         <div>
@@ -156,14 +192,14 @@ export function ArtifactTravelDossier({
 
           <Button
             type="button"
-            variant="default"
+            variant="secondary"
             size="sm"
             onClick={handleCopyPix}
             className="w-full h-11 min-h-11 px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
           >
             {copied ? (
               <>
-                <Check className="size-4 text-primary-foreground" />
+                <Check className="size-4 text-secondary-foreground" />
                 <span>Código Pix Copiado com Sucesso!</span>
               </>
             ) : (
@@ -177,16 +213,38 @@ export function ArtifactTravelDossier({
       )}
 
       {/* Ações Finais */}
-      <div className="pt-1">
+      <div className="pt-1 flex flex-col sm:flex-row gap-2 no-print">
+        <Button
+          type="button"
+          variant="default"
+          size="sm"
+          disabled={isExporting}
+          onClick={handleExportPdf}
+          className="flex-1 h-11 min-h-11 px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
+        >
+          <FileText className="size-4" />
+          <span>{isExporting ? "Exportando..." : "Exportar PDF"}</span>
+        </Button>
         <Button
           type="button"
           variant="outline"
           size="sm"
+          disabled={isExporting}
+          onClick={handleExportPng}
+          className="flex-1 h-11 min-h-11 px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
+        >
+          <Download className="size-4" />
+          <span>Baixar PNG</span>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={handlePrint}
-          className="w-full h-11 min-h-11 px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
+          className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
         >
           <Printer className="size-4" />
-          <span>Exportar Dossiê em PDF / Imprimir</span>
+          <span>Imprimir</span>
         </Button>
       </div>
     </div>

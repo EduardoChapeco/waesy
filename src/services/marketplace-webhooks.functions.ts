@@ -2,6 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { resolveConnectorCredentialsWithRefresh } from "@/lib/marketplace-vault.server";
+import {
+  acknowledgeIfoodEvents,
+  generateShopeeSign,
+  pushIfoodOrderLifecycle,
+} from "@/lib/marketplace-api-client";
 import { addRegisterEntry } from "./cash.functions";
 import { emitOrderNFeAutomated } from "./fiscal-nfe.functions";
 
@@ -16,6 +22,9 @@ export const inboundWebhookPayloadSchema = z.object({
     "shopee",
     "amazon",
     "magalu",
+    "rappi",
+    "amodelivery",
+    "99food",
     "focus_nfe",
     "nuvem_fiscal",
     "melhorenvio",
@@ -212,13 +221,14 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
         created_at: new Date().toISOString(),
       });
 
-      // 5. Baixa de estoque física e multi-armazém se o SKU corresponder a uma variante da loja
+      // 5. Baixa de estoque física e multi-armazém se o SKU corresponder a uma variante da PRÓPRIA loja
       if (item.sku) {
         try {
           const { data: variant } = await supabase
             .from("product_variants")
-            .select("id, product_id, stock_on_hand")
+            .select("id, product_id, stock_on_hand, products!inner(store_id)")
             .eq("sku", item.sku)
+            .eq("products.store_id", input.storeId)
             .maybeSingle();
 
           if (variant) {
@@ -349,6 +359,35 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
  * 3. Encaminha para a rotina específica do provedor.
  * 4. Atualiza o status para 'processed' ou 'failed'.
  */
+async function routeWebhookPlatformEvent(
+  platform: string,
+  resourceId?: string,
+  payload: any = {},
+  storeId?: string
+): Promise<{ handled: boolean; orderId: string | null }> {
+  switch (platform) {
+    case "mercadolivre":
+      return { handled: true, orderId: await processMercadoLivreEvent(resourceId, payload, storeId) };
+    case "ifood":
+      return { handled: true, orderId: await processIfoodEvent(resourceId, payload, storeId) };
+    case "shopee":
+      return { handled: true, orderId: await processShopeeEvent(resourceId, payload, storeId) };
+    case "amazon":
+      return { handled: true, orderId: await processAmazonEvent(resourceId, payload, storeId) };
+    case "magalu":
+      return { handled: true, orderId: await processMagaluEvent(resourceId, payload, storeId) };
+    case "focus_nfe":
+    case "nuvem_fiscal":
+      await processFiscalEvent(resourceId, payload, storeId);
+      return { handled: true, orderId: null };
+    case "bling":
+    case "tiny":
+      return { handled: true, orderId: await processBlingEvent(resourceId, payload, storeId) };
+    default:
+      return { handled: false, orderId: null };
+  }
+}
+
 export async function handleInboundWebhook(data: InboundWebhookPayload): Promise<{
   status: "processed" | "ignored" | "duplicate";
   eventId: string;
@@ -396,45 +435,31 @@ export async function handleInboundWebhook(data: InboundWebhookPayload): Promise
   }
 
   const recordId = eventRecord.id;
-  let syncedOrderId: string | null = null;
 
   try {
-    // 3. Roteamento por Provedor
-    switch (data.platform) {
-      case "mercadolivre":
-        syncedOrderId = await processMercadoLivreEvent(data.resourceId, data.payload, data.storeId);
-        break;
-      case "ifood":
-        syncedOrderId = await processIfoodEvent(data.resourceId, data.payload, data.storeId);
-        break;
-      case "shopee":
-        syncedOrderId = await processShopeeEvent(data.resourceId, data.payload, data.storeId);
-        break;
-      case "amazon":
-        syncedOrderId = await processAmazonEvent(data.resourceId, data.payload, data.storeId);
-        break;
-      case "focus_nfe":
-      case "nuvem_fiscal":
-        await processFiscalEvent(data.resourceId, data.payload, data.storeId);
-        break;
-      case "bling":
-      case "tiny":
-        syncedOrderId = await processBlingEvent(data.resourceId, data.payload, data.storeId);
-        break;
-      default:
-        break;
-    }
+    const routed = await routeWebhookPlatformEvent(
+      data.platform,
+      data.resourceId,
+      data.topic && data.payload && !data.payload.topic ? { ...data.payload, topic: data.topic } : data.payload,
+      data.storeId
+    );
 
-    // 4. Marca como processado com sucesso
+    const finalStatus = routed.handled ? "processed" : "ignored";
+
     await supabase
       .from("marketplace_webhook_events")
       .update({
-        status: "processed",
+        status: finalStatus,
         processed_at: new Date().toISOString(),
       })
       .eq("id", recordId);
 
-    return { status: "processed", eventId: recordId, orderId: syncedOrderId };
+    return {
+      status: finalStatus,
+      eventId: recordId,
+      orderId: routed.orderId,
+      ...(routed.handled ? {} : { message: `Plataforma ${data.platform} sem roteador de webhook configurado.` }),
+    };
   } catch (procErr: any) {
     console.error(`[webhooks:${data.platform}] Erro no processamento:`, procErr);
     await supabase
@@ -455,7 +480,7 @@ export async function handleInboundWebhook(data: InboundWebhookPayload): Promise
 }
 
 /**
- * Re-processa eventos de webhook com falha (retry engine com backoff exponencial).
+ * Re-processa eventos de webhook com falha diretamente pelo roteador sem cair em falso "duplicate".
  */
 export async function retryFailedWebhooks(storeId?: string, maxAttempts = 10): Promise<{ retried: number; recovered: number }> {
   const supabase = getServerClient();
@@ -480,19 +505,33 @@ export async function retryFailedWebhooks(storeId?: string, maxAttempts = 10): P
 
   for (const event of failedEvents) {
     try {
-      const res = await handleInboundWebhook({
-        platform: event.platform as any,
-        eventId: event.event_id || undefined,
-        topic: event.topic || undefined,
-        resourceId: event.resource_id || undefined,
-        storeId: event.store_id || undefined,
-        payload: event.payload || {},
-      });
+      const routed = await routeWebhookPlatformEvent(
+        event.platform,
+        event.resource_id || undefined,
+        event.payload || {},
+        event.store_id || undefined
+      );
 
-      if (res.status === "processed") {
+      if (routed.handled) {
+        await supabase
+          .from("marketplace_webhook_events")
+          .update({
+            status: "processed",
+            error_message: null,
+            retry_count: Number(event.retry_count || 0) + 1,
+            processed_at: new Date().toISOString(),
+          })
+          .eq("id", event.id);
         recoveredCount++;
       }
-    } catch (e) {
+    } catch (e: any) {
+      await supabase
+        .from("marketplace_webhook_events")
+        .update({
+          retry_count: Number(event.retry_count || 0) + 1,
+          error_message: e?.message || "Erro na retentativa",
+        })
+        .eq("id", event.id);
       console.warn(`[webhooks-retry] Evento ${event.id} falhou na retentativa:`, e);
     }
   }
@@ -501,43 +540,90 @@ export async function retryFailedWebhooks(storeId?: string, maxAttempts = 10): P
 }
 
 // ---------------------------------------------------------------------------
-// PROCESSADORES ESPECÍFICOS POR PLATAFORMA
+// PROCESSADORES ESPECÍFICOS POR PLATAFORMA (COM PULL-BACK OFICIAL PARA PAYLOAD FINO)
 // ---------------------------------------------------------------------------
 
 /**
- * Processa notificação de pedido do Mercado Livre
+ * Processa notificação de pedido ou pergunta do Mercado Livre.
  */
 async function processMercadoLivreEvent(resourceId?: string, payload: any = {}, storeId?: string): Promise<string | null> {
   const supabase = getServerClient();
   const targetStoreId = storeId || payload.store_id;
   if (!targetStoreId) return null;
 
-  // Intercepta perguntas de clientes no anúncio (topic = 'questions')
+  // Intercepta perguntas pré-venda no anúncio (topic = 'questions')
   const isQuestion =
     payload.topic === "questions" ||
     String(resourceId || "").includes("/questions/") ||
+    String(payload.resource || "").includes("/questions/") ||
     Boolean(payload.text && (payload.item_id || payload.question_id));
 
   if (isQuestion) {
     return processMercadoLivreQuestion(resourceId, payload, targetStoreId);
   }
 
-  const orderId = resourceId || payload.resource || payload.id || payload.order_id;
+  const rawRef = String(resourceId || payload.resource || payload.id || payload.order_id || "").trim();
+  const orderId = rawRef.replace(/^\/?orders\//i, "").split("/")[0].trim();
   if (!orderId) return null;
 
-  const totalAmountCents = Math.round((Number(payload.total_amount || payload.order_amount || 0)) * 100);
-  const feeCents = Math.round((Number(payload.fee || payload.marketplace_fee || (totalAmountCents * 0.16 / 100))) * 100);
-  const shippingCents = Math.round((Number(payload.shipping_cost || payload.shipping?.cost || 0)) * 100);
+  // Regra Oficial ML: Webhooks enviam apenas referência fina (`resource: "/orders/123"`) -> busca GET /orders/{id}
+  let enriched = payload || {};
+  const isThinPayload = !enriched.total_amount && !enriched.order_amount && !Array.isArray(enriched.order_items);
+  if (isThinPayload) {
+    try {
+      const creds = await resolveConnectorCredentialsWithRefresh({
+        storeId: targetStoreId,
+        platform: "mercadolivre",
+      });
+      if (creds.accessToken) {
+        const orderRes = await fetch(`https://api.mercadolibre.com/orders/${encodeURIComponent(orderId)}`, {
+          headers: { Authorization: `Bearer ${creds.accessToken}` },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (orderRes.ok) {
+          const fullOrder = (await orderRes.json().catch(() => null)) as Record<string, any> | null;
+          if (fullOrder) {
+            enriched = { ...enriched, ...fullOrder };
+            if (fullOrder.shipping?.id && !fullOrder.shipping?.receiver_address) {
+              const shipRes = await fetch(`https://api.mercadolibre.com/shipments/${fullOrder.shipping.id}`, {
+                headers: { Authorization: `Bearer ${creds.accessToken}` },
+                signal: AbortSignal.timeout(6000),
+              }).catch(() => null);
+              if (shipRes?.ok) {
+                const shipData = await shipRes.json().catch(() => null);
+                if (shipData) enriched.shipping = { ...fullOrder.shipping, ...shipData };
+              }
+            }
+          }
+        }
+      }
+    } catch (pullErr) {
+      console.warn(`[webhooks:mercadolivre] Falha ao buscar pedido ${orderId} na API ML:`, pullErr);
+    }
+  }
+
+  const totalAmountCents = Math.round(Number(enriched.total_amount || enriched.order_amount || 0) * 100);
+  const rawItems = enriched.order_items || enriched.items || [];
+  const itemsSaleFeeCents = Array.isArray(rawItems)
+    ? rawItems.reduce((acc: number, it: any) => acc + Math.round(Number(it.sale_fee || 0) * 100), 0)
+    : 0;
+
+  const feeCents =
+    enriched.fee !== undefined || enriched.marketplace_fee !== undefined
+      ? Math.round(Number(enriched.fee || enriched.marketplace_fee || 0) * 100)
+      : itemsSaleFeeCents > 0
+        ? itemsSaleFeeCents
+        : Math.round(totalAmountCents * 0.16);
+
+  const shippingCents = Math.round(Number(enriched.shipping_cost || enriched.shipping?.cost || 0) * 100);
   const netCents = Math.max(0, totalAmountCents - feeCents);
 
-  const buyerName = payload.buyer?.nickname || payload.buyer?.first_name || payload.customer_name || "Cliente Mercado Livre";
-  const buyerEmail = payload.buyer?.email || undefined;
-  const buyerPhone = payload.buyer?.phone?.number || undefined;
-  const buyerDoc = payload.buyer?.billing_info?.doc_number || undefined;
-  const shippingAddress = payload.shipping?.receiver_address || payload.shipping_address || null;
+  const buyerName = enriched.buyer?.nickname || enriched.buyer?.first_name || enriched.customer_name || "Cliente Mercado Livre";
+  const buyerEmail = enriched.buyer?.email || undefined;
+  const buyerPhone = enriched.buyer?.phone?.number || undefined;
+  const buyerDoc = enriched.buyer?.billing_info?.doc_number || undefined;
+  const shippingAddress = enriched.shipping?.receiver_address || enriched.shipping_address || null;
 
-  // Extrai itens do payload
-  const rawItems = payload.order_items || payload.items || [];
   const items = Array.isArray(rawItems) && rawItems.length > 0
     ? rawItems.map((it: any) => ({
         title: it.item?.title || it.title || "Produto Mercado Livre",
@@ -548,14 +634,13 @@ async function processMercadoLivreEvent(resourceId?: string, payload: any = {}, 
       }))
     : [
         {
-          title: payload.title || `Venda Mercado Livre #${orderId}`,
+          title: enriched.title || `Venda Mercado Livre #${orderId}`,
           quantity: 1,
           unit_price_cents: totalAmountCents,
-          sku: payload.sku || `MLB-${orderId}`,
+          sku: enriched.sku || `MLB-${orderId}`,
         },
       ];
 
-  // Ingestão na tabela de pedidos externos
   await supabase
     .from("marketplace_external_orders")
     .upsert(
@@ -563,7 +648,7 @@ async function processMercadoLivreEvent(resourceId?: string, payload: any = {}, 
         store_id: targetStoreId,
         platform: "mercadolivre",
         external_order_id: String(orderId),
-        external_status: payload.status === "paid" ? "paid" : (payload.status || "created"),
+        external_status: enriched.status === "paid" ? "paid" : (enriched.status || "created"),
         buyer_name: buyerName,
         buyer_email: buyerEmail,
         buyer_phone: buyerPhone,
@@ -574,23 +659,23 @@ async function processMercadoLivreEvent(resourceId?: string, payload: any = {}, 
         marketplace_fee_cents: feeCents,
         net_payout_cents: netCents,
         total_amount_cents: totalAmountCents,
-        payment_method: payload.payments?.[0]?.payment_method_id || "mercadopago",
+        payment_method: enriched.payments?.[0]?.payment_method_id || "mercadopago",
         shipping_method: "Mercado Envios",
-        tracking_number: payload.shipping?.tracking_number || null,
-        items: items,
+        tracking_number: enriched.shipping?.tracking_number || null,
+        items,
         import_status: "imported",
-        raw_data: payload,
+        raw_data: enriched,
+        raw_payload: enriched,
         imported_at: new Date().toISOString(),
       },
       { onConflict: "store_id, platform, external_order_id" }
     );
 
-  // Sincroniza com a tabela mestra orders
   const masterOrderId = await syncOrderToMaster({
     storeId: targetStoreId,
     platform: "mercadolivre",
     externalOrderId: String(orderId),
-    externalStatus: payload.status || "paid",
+    externalStatus: enriched.status || "paid",
     buyerName,
     buyerEmail,
     buyerPhone,
@@ -603,8 +688,7 @@ async function processMercadoLivreEvent(resourceId?: string, payload: any = {}, 
     items,
   });
 
-  // Se o pedido for pago, registra no fluxo de caixa com o canal correspondente
-  if ((payload.status === "paid" || !payload.status) && totalAmountCents > 0) {
+  if ((enriched.status === "paid" || !enriched.status) && totalAmountCents > 0) {
     try {
       const { data: openRegister } = await supabase
         .from("cash_registers")
@@ -638,7 +722,7 @@ async function processMercadoLivreEvent(resourceId?: string, payload: any = {}, 
 }
 
 /**
- * Processa evento de pedido do iFood (Padrão OpenDelivery v1.0)
+ * Processa evento de pedido do iFood (Padrão Merchant API v1.0 com fetch + acknowledgment pós-persistência).
  */
 async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId?: string): Promise<string | null> {
   const supabase = getServerClient();
@@ -648,61 +732,63 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
   const targetStoreId = storeId || payload.store_id;
   if (!targetStoreId) return null;
 
-  // Acknowledge OpenDelivery event to iFood (evita reenvio em loop)
-  if (payload.id && targetStoreId) {
-    try {
-      const { data: ifoodConn } = await supabase
-        .from("marketplace_connectors")
-        .select("access_token")
-        .eq("store_id", targetStoreId)
-        .eq("platform", "ifood")
-        .eq("status", "connected")
-        .maybeSingle();
+  let activeToken = "";
+  let autoAcceptEnabled = false;
+  let enriched = payload || {};
 
-      if (ifoodConn?.access_token) {
-        const { decryptSecret } = await import("@/lib/crypto-vault.server");
-        let token = "";
-        try {
-          token = decryptSecret(ifoodConn.access_token);
-        } catch {
-          token = ifoodConn.access_token;
+  try {
+    const creds = await resolveConnectorCredentialsWithRefresh({
+      storeId: targetStoreId,
+      platform: "ifood",
+    });
+    activeToken = creds.accessToken;
+    autoAcceptEnabled = Boolean(creds.settings?.auto_accept_orders);
+
+    // Webhook fino iFood (`{ id, code, fullCode, orderId }`) exige GET /order/v1.0/orders/{orderId}
+    if (activeToken && !enriched.total && !Array.isArray(enriched.items)) {
+      const detailRes = await fetch(`https://merchant-api.ifood.com.br/order/v1.0/orders/${encodeURIComponent(String(orderId))}`, {
+        headers: { Authorization: `Bearer ${activeToken}` },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (detailRes.ok) {
+        const orderDetails = (await detailRes.json().catch(() => null)) as Record<string, any> | null;
+        if (orderDetails) {
+          enriched = { ...enriched, ...orderDetails };
         }
-
-        fetch("https://merchant-api.ifood.com.br/order/v1.0/events/acknowledgment", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify([{ id: payload.id }]),
-          signal: AbortSignal.timeout(4000),
-        }).catch(() => null);
       }
-    } catch (err) { console.warn("[marketplace-webhooks] ifood ack error:", err); }
+    }
+  } catch (pullErr) {
+    console.warn(`[webhooks:ifood] Falha ao enriquecer pedido ${orderId}:`, pullErr);
   }
 
-  const code = payload.code || payload.status;
+  const code = enriched.fullCode || enriched.code || enriched.status;
   const statusMap: Record<string, string> = {
     PLACED: "created",
     CONFIRMED: "paid",
+    INTEGRATED: "paid",
+    PREPARATION_STARTED: "processing",
     READY_FOR_PICKUP: "ready",
     DISPATCHED: "shipped",
+    CONCLUDED: "delivered",
     DELIVERED: "delivered",
     CANCELLED: "cancelled",
   };
-  const normalizedStatus = statusMap[code] || "created";
+  const normalizedStatus = statusMap[String(code || "").toUpperCase()] || "created";
 
-  const totalAmountCents = Math.round((Number(payload.total?.orderAmount || payload.orderAmount || 0)) * 100);
-  const feeCents = Math.round((Number(payload.total?.fees || (totalAmountCents * 0.12 / 100))) * 100);
-  const shippingCents = Math.round((Number(payload.total?.deliveryFee || 0)) * 100);
+  const totalAmountCents = Math.round(Number(enriched.total?.orderAmount || enriched.orderAmount || 0) * 100);
+  const feeCents =
+    enriched.total?.fees !== undefined
+      ? Math.round(Number(enriched.total.fees) * 100)
+      : Math.round(totalAmountCents * 0.12);
+  const shippingCents = Math.round(Number(enriched.total?.deliveryFee || 0) * 100);
   const netCents = Math.max(0, totalAmountCents - feeCents);
 
-  const buyerName = payload.customer?.name || "Cliente iFood";
-  const buyerPhone = payload.customer?.phone?.number || undefined;
-  const buyerDoc = payload.customer?.documentNumber || undefined;
-  const shippingAddress = payload.delivery?.deliveryAddress || null;
+  const buyerName = enriched.customer?.name || "Cliente iFood";
+  const buyerPhone = enriched.customer?.phone?.number || undefined;
+  const buyerDoc = enriched.customer?.documentNumber || undefined;
+  const shippingAddress = enriched.delivery?.deliveryAddress || null;
 
-  const rawItems = payload.items || [];
+  const rawItems = enriched.items || [];
   const items = Array.isArray(rawItems) && rawItems.length > 0
     ? rawItems.map((it: any) => ({
         title: it.name || "Item iFood",
@@ -719,7 +805,7 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
         },
       ];
 
-  await supabase
+  const { error: extUpsertErr } = await supabase
     .from("marketplace_external_orders")
     .upsert(
       {
@@ -736,15 +822,20 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
         marketplace_fee_cents: feeCents,
         net_payout_cents: netCents,
         total_amount_cents: totalAmountCents,
-        payment_method: payload.payments?.methods?.[0]?.method || "ifood_online",
+        payment_method: enriched.payments?.methods?.[0]?.method || "ifood_online",
         shipping_method: "iFood Entrega",
-        items: items,
+        items,
         import_status: "imported",
-        raw_data: payload,
+        raw_data: enriched,
+        raw_payload: enriched,
         imported_at: new Date().toISOString(),
       },
       { onConflict: "store_id, platform, external_order_id" }
     );
+
+  if (extUpsertErr) {
+    throw new Error(`Falha ao persistir pedido iFood em marketplace_external_orders: ${extUpsertErr.message}`);
+  }
 
   const masterOrderId = await syncOrderToMaster({
     storeId: targetStoreId,
@@ -761,6 +852,22 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
     netPayoutCents: netCents,
     items,
   });
+
+  if (!masterOrderId) {
+    throw new Error(`Falha ao persistir pedido iFood #${orderId} na tabela mestra orders (ACK bloqueado).`);
+  }
+
+  // Regra Oficial iFood: Só enviar /events/acknowledgment APÓS gravação confirmada no banco
+  if (payload.id && activeToken) {
+    await acknowledgeIfoodEvents(activeToken, [String(payload.id)]);
+    if (autoAcceptEnabled && String(code || "").toUpperCase() === "PLACED") {
+      await pushIfoodOrderLifecycle({
+        accessToken: activeToken,
+        externalOrderId: String(orderId),
+        targetStatus: "confirmed",
+      }).catch(() => null);
+    }
+  }
 
   if (normalizedStatus === "paid" && totalAmountCents > 0) {
     try {
@@ -796,26 +903,72 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
 }
 
 /**
- * Processa evento de pedido da Shopee
+ * Processa evento de pedido da Shopee v2 com pull-back em `get_order_detail` para push fino.
  */
 async function processShopeeEvent(resourceId?: string, payload: any = {}, storeId?: string): Promise<string | null> {
   const supabase = getServerClient();
-  const orderSn = resourceId || payload.order_sn || payload.orderId || payload.id;
+  const dataObj = payload?.data || {};
+  const orderSn = resourceId || dataObj.ordersn || dataObj.order_sn || payload.order_sn || payload.orderId || payload.id;
   if (!orderSn) return null;
 
   const targetStoreId = storeId || payload.store_id;
   if (!targetStoreId) return null;
 
-  const totalAmountCents = Math.round((Number(payload.total_amount || payload.escrow_amount || 0)) * 100);
-  const feeCents = Math.round((Number(payload.commission_fee || (totalAmountCents * 0.14 / 100))) * 100);
-  const shippingCents = Math.round((Number(payload.actual_shipping_fee || 0)) * 100);
+  let enriched = payload || {};
+  if (!enriched.total_amount && !Array.isArray(enriched.item_list)) {
+    try {
+      const creds = await resolveConnectorCredentialsWithRefresh({
+        storeId: targetStoreId,
+        platform: "shopee",
+      });
+      if (creds.accessToken && creds.clientId && creds.clientSecret && creds.externalAccountId) {
+        const ts = Math.floor(Date.now() / 1000);
+        const apiPath = "/api/v2/order/get_order_detail";
+        const sign = generateShopeeSign({
+          partnerId: creds.clientId,
+          partnerKey: creds.clientSecret,
+          apiPath,
+          timestamp: ts,
+          accessToken: creds.accessToken,
+          shopId: creds.externalAccountId,
+        });
+        const detailUrl =
+          `https://partner.shopeemobile.com${apiPath}` +
+          `?partner_id=${encodeURIComponent(creds.clientId)}` +
+          `&timestamp=${ts}` +
+          `&access_token=${encodeURIComponent(creds.accessToken)}` +
+          `&shop_id=${encodeURIComponent(creds.externalAccountId)}` +
+          `&sign=${sign}` +
+          `&order_sn_list=${encodeURIComponent(String(orderSn))}` +
+          `&response_optional_fields=buyer_username,recipient_address,item_list,total_amount,actual_shipping_fee`;
+
+        const res = await fetch(detailUrl, { signal: AbortSignal.timeout(8000) });
+        if (res.ok) {
+          const detailBody = (await res.json().catch(() => ({}))) as Record<string, any>;
+          const firstOrder = detailBody?.response?.order_list?.[0];
+          if (firstOrder) {
+            enriched = { ...enriched, ...firstOrder };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[webhooks:shopee] Falha ao buscar pedido ${orderSn}:`, err);
+    }
+  }
+
+  const totalAmountCents = Math.round(Number(enriched.total_amount || enriched.escrow_amount || 0) * 100);
+  const feeCents =
+    enriched.commission_fee !== undefined
+      ? Math.round(Number(enriched.commission_fee) * 100)
+      : Math.round(totalAmountCents * 0.14);
+  const shippingCents = Math.round(Number(enriched.actual_shipping_fee || 0) * 100);
   const netCents = Math.max(0, totalAmountCents - feeCents);
 
-  const buyerName = payload.buyer_user?.buyer_name || payload.recipient_address?.name || "Cliente Shopee";
-  const buyerPhone = payload.recipient_address?.phone || undefined;
-  const shippingAddress = payload.recipient_address || null;
+  const buyerName = enriched.buyer_user?.buyer_name || enriched.buyer_username || enriched.recipient_address?.name || "Cliente Shopee";
+  const buyerPhone = enriched.recipient_address?.phone || undefined;
+  const shippingAddress = enriched.recipient_address || null;
 
-  const rawItems = payload.item_list || payload.items || [];
+  const rawItems = enriched.item_list || enriched.items || [];
   const items = Array.isArray(rawItems) && rawItems.length > 0
     ? rawItems.map((it: any) => ({
         title: it.item_name || "Item Shopee",
@@ -832,6 +985,10 @@ async function processShopeeEvent(resourceId?: string, payload: any = {}, storeI
         },
       ];
 
+  const shopeeSt = String(enriched.order_status || dataObj.status || "READY_TO_SHIP").toUpperCase();
+  const normalizedExtStatus =
+    shopeeSt === "COMPLETED" ? "delivered" : shopeeSt === "SHIPPED" ? "shipped" : shopeeSt === "CANCELLED" ? "cancelled" : "paid";
+
   await supabase
     .from("marketplace_external_orders")
     .upsert(
@@ -839,7 +996,7 @@ async function processShopeeEvent(resourceId?: string, payload: any = {}, storeI
         store_id: targetStoreId,
         platform: "shopee",
         external_order_id: String(orderSn),
-        external_status: payload.order_status === "COMPLETED" ? "paid" : "created",
+        external_status: normalizedExtStatus,
         buyer_name: buyerName,
         buyer_phone: buyerPhone,
         shipping_address: shippingAddress,
@@ -850,9 +1007,10 @@ async function processShopeeEvent(resourceId?: string, payload: any = {}, storeI
         total_amount_cents: totalAmountCents,
         payment_method: "shopeepay",
         shipping_method: "Shopee Xpress / Correios",
-        items: items,
+        items,
         import_status: "imported",
-        raw_data: payload,
+        raw_data: enriched,
+        raw_payload: enriched,
         imported_at: new Date().toISOString(),
       },
       { onConflict: "store_id, platform, external_order_id" }
@@ -862,7 +1020,7 @@ async function processShopeeEvent(resourceId?: string, payload: any = {}, storeI
     storeId: targetStoreId,
     platform: "shopee",
     externalOrderId: String(orderSn),
-    externalStatus: payload.order_status || "paid",
+    externalStatus: normalizedExtStatus,
     buyerName,
     buyerPhone,
     shippingAddress,
@@ -875,7 +1033,7 @@ async function processShopeeEvent(resourceId?: string, payload: any = {}, storeI
 }
 
 /**
- * Processa evento de pedido da Amazon (SP-API)
+ * Processa evento de pedido da Amazon (SP-API Orders v0 com fetch-back quando payload fino).
  */
 async function processAmazonEvent(resourceId?: string, payload: any = {}, storeId?: string): Promise<string | null> {
   const supabase = getServerClient();
@@ -885,20 +1043,45 @@ async function processAmazonEvent(resourceId?: string, payload: any = {}, storeI
   const targetStoreId = storeId || payload.store_id;
   if (!targetStoreId) return null;
 
-  const totalAmountCents = Math.round((Number(payload.OrderTotal?.Amount || payload.total_amount || 0)) * 100);
+  let enriched = payload || {};
+  if (!enriched.OrderTotal && !enriched.total_amount) {
+    try {
+      const creds = await resolveConnectorCredentialsWithRefresh({
+        storeId: targetStoreId,
+        platform: "amazon",
+      });
+      if (creds.accessToken) {
+        const orderRes = await fetch(
+          `https://sellingpartnerapi-na.amazon.com/orders/v0/orders/${encodeURIComponent(String(amazonOrderId))}`,
+          {
+            headers: { "x-amz-access-token": creds.accessToken, Accept: "application/json" },
+            signal: AbortSignal.timeout(8000),
+          }
+        );
+        if (orderRes.ok) {
+          const data = (await orderRes.json().catch(() => ({}))) as Record<string, any>;
+          if (data.payload) enriched = { ...enriched, ...data.payload };
+        }
+      }
+    } catch (err) {
+      console.warn(`[webhooks:amazon] Falha ao buscar pedido SP-API ${amazonOrderId}:`, err);
+    }
+  }
+
+  const totalAmountCents = Math.round(Number(enriched.OrderTotal?.Amount || enriched.total_amount || 0) * 100);
   const feeCents = Math.round(totalAmountCents * 0.15);
   const netCents = Math.max(0, totalAmountCents - feeCents);
 
-  const buyerName = payload.BuyerInfo?.BuyerName || payload.ShippingAddress?.Name || "Cliente Amazon";
-  const buyerEmail = payload.BuyerInfo?.BuyerEmail || undefined;
-  const shippingAddress = payload.ShippingAddress || null;
+  const buyerName = enriched.BuyerInfo?.BuyerName || enriched.ShippingAddress?.Name || "Cliente Amazon";
+  const buyerEmail = enriched.BuyerInfo?.BuyerEmail || undefined;
+  const shippingAddress = enriched.ShippingAddress || null;
 
   const items = [
     {
-      title: payload.ItemTitle || `Pedido Amazon #${amazonOrderId}`,
-      quantity: Number(payload.NumberOfItemsShipped || 1),
+      title: enriched.ItemTitle || `Pedido Amazon #${amazonOrderId}`,
+      quantity: Number(enriched.NumberOfItemsShipped || enriched.NumberOfItemsUnshipped || 1),
       unit_price_cents: totalAmountCents,
-      sku: payload.SellerSKU || `AMZ-${amazonOrderId}`,
+      sku: enriched.SellerSKU || `AMZ-${amazonOrderId}`,
     },
   ];
 
@@ -909,7 +1092,7 @@ async function processAmazonEvent(resourceId?: string, payload: any = {}, storeI
         store_id: targetStoreId,
         platform: "amazon",
         external_order_id: String(amazonOrderId),
-        external_status: payload.OrderStatus === "Shipped" ? "shipped" : "paid",
+        external_status: enriched.OrderStatus === "Shipped" ? "shipped" : enriched.OrderStatus === "Canceled" ? "cancelled" : "paid",
         buyer_name: buyerName,
         buyer_email: buyerEmail,
         shipping_address: shippingAddress,
@@ -920,9 +1103,10 @@ async function processAmazonEvent(resourceId?: string, payload: any = {}, storeI
         total_amount_cents: totalAmountCents,
         payment_method: "amazon_payments",
         shipping_method: "Amazon Logistics",
-        items: items,
+        items,
         import_status: "imported",
-        raw_data: payload,
+        raw_data: enriched,
+        raw_payload: enriched,
         imported_at: new Date().toISOString(),
       },
       { onConflict: "store_id, platform, external_order_id" }
@@ -932,10 +1116,96 @@ async function processAmazonEvent(resourceId?: string, payload: any = {}, storeI
     storeId: targetStoreId,
     platform: "amazon",
     externalOrderId: String(amazonOrderId),
-    externalStatus: payload.OrderStatus || "paid",
+    externalStatus: enriched.OrderStatus || "paid",
     buyerName,
     buyerEmail,
     shippingAddress,
+    totalAmountCents,
+    shippingCostCents: 0,
+    marketplaceFeeCents: feeCents,
+    netPayoutCents: netCents,
+    items,
+  });
+}
+
+/**
+ * Processa evento de pedido da Magalu Open API.
+ */
+async function processMagaluEvent(resourceId?: string, payload: any = {}, storeId?: string): Promise<string | null> {
+  const supabase = getServerClient();
+  const magaluOrderId = resourceId || payload.data?.code || payload.order_id || payload.id_order || payload.id;
+  if (!magaluOrderId) return null;
+
+  const targetStoreId = storeId || payload.store_id;
+  if (!targetStoreId) return null;
+
+  let enriched = payload?.data || payload || {};
+  if (!enriched.total_amount && !enriched.amounts) {
+    try {
+      const creds = await resolveConnectorCredentialsWithRefresh({
+        storeId: targetStoreId,
+        platform: "magalu",
+      });
+      if (creds.accessToken) {
+        const res = await fetch(`https://api.magalu.com/seller/v1/orders/${encodeURIComponent(String(magaluOrderId))}`, {
+          headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: "application/json" },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (res.ok) {
+          const data = (await res.json().catch(() => null)) as Record<string, any> | null;
+          if (data) enriched = { ...enriched, ...data };
+        }
+      }
+    } catch (err) {
+      console.warn(`[webhooks:magalu] Falha ao buscar pedido Magalu ${magaluOrderId}:`, err);
+    }
+  }
+
+  const totalAmountCents = Math.round(
+    Number(enriched.amounts?.total || enriched.total_amount || enriched.total || 0) * (enriched.amounts?.total > 1000 && Number.isInteger(enriched.amounts?.total) ? 1 : 100)
+  );
+  const feeCents = Math.round(totalAmountCents * 0.16);
+  const netCents = Math.max(0, totalAmountCents - feeCents);
+  const buyerName = enriched.customer?.name || "Cliente Magalu";
+
+  const items = Array.isArray(enriched.items) && enriched.items.length > 0
+    ? enriched.items.map((it: any) => ({
+        title: it.title || it.sku || "Item Magalu",
+        quantity: Number(it.quantity || 1),
+        unit_price_cents: Math.round(Number(it.unit_price || it.price || 0) * 100) || totalAmountCents,
+        sku: it.sku || undefined,
+      }))
+    : [{ title: `Pedido Magalu #${magaluOrderId}`, quantity: 1, unit_price_cents: totalAmountCents, sku: `MAGALU-${magaluOrderId}` }];
+
+  await supabase.from("marketplace_external_orders").upsert(
+    {
+      store_id: targetStoreId,
+      platform: "magalu",
+      external_order_id: String(magaluOrderId),
+      external_status: String(enriched.status || "paid").toLowerCase(),
+      buyer_name: buyerName,
+      subtotal_cents: totalAmountCents,
+      shipping_cost_cents: 0,
+      marketplace_fee_cents: feeCents,
+      net_payout_cents: netCents,
+      total_amount_cents: totalAmountCents,
+      payment_method: "magalu_payments",
+      shipping_method: "Magalu Entregas",
+      items,
+      import_status: "imported",
+      raw_data: enriched,
+      raw_payload: enriched,
+      imported_at: new Date().toISOString(),
+    },
+    { onConflict: "store_id, platform, external_order_id" }
+  );
+
+  return syncOrderToMaster({
+    storeId: targetStoreId,
+    platform: "magalu",
+    externalOrderId: String(magaluOrderId),
+    externalStatus: String(enriched.status || "paid"),
+    buyerName,
     totalAmountCents,
     shippingCostCents: 0,
     marketplaceFeeCents: feeCents,
@@ -988,7 +1258,8 @@ async function processFiscalEvent(resourceId?: string, payload: any = {}, storeI
 }
 
 /**
- * Processa perguntas pré-venda do Mercado Livre e ingere na Central de Atendimento (Chat Threads)
+ * Processa perguntas pré-venda do Mercado Livre (com pull-back GET /questions/{id} para webhook fino)
+ * e ingere em `marketplace_questions` + Central de Atendimento (`chat_threads`).
  */
 async function processMercadoLivreQuestion(
   resourceId?: string,
@@ -999,12 +1270,65 @@ async function processMercadoLivreQuestion(
   const targetStoreId = storeId || payload.store_id;
   if (!targetStoreId) return null;
 
-  const rawQuestionId = String(
-    payload.id || payload.question_id || (resourceId ? resourceId.replace(/\D/g, "") : Date.now())
+  const resourceDigits = resourceId ? String(resourceId).replace(/^\/?questions\//i, "").replace(/\D/g, "") : "";
+  const rawQuestionId = String(payload.id || payload.question_id || resourceDigits || Date.now());
+
+  let enriched = payload || {};
+  if (!enriched.text && rawQuestionId) {
+    try {
+      const creds = await resolveConnectorCredentialsWithRefresh({
+        storeId: targetStoreId,
+        platform: "mercadolivre",
+      });
+      if (creds.accessToken) {
+        const qRes = await fetch(`https://api.mercadolibre.com/questions/${encodeURIComponent(rawQuestionId)}`, {
+          headers: { Authorization: `Bearer ${creds.accessToken}` },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (qRes.ok) {
+          const fullQ = (await qRes.json().catch(() => null)) as Record<string, any> | null;
+          if (fullQ) enriched = { ...enriched, ...fullQ };
+        }
+      }
+    } catch (err) {
+      console.warn(`[webhooks:mercadolivre:questions] Falha ao buscar pergunta ${rawQuestionId}:`, err);
+    }
+  }
+
+  const questionText = enriched.text || enriched.question || "Dúvida do cliente no anúncio do Mercado Livre";
+  const itemId = String(enriched.item_id || enriched.resource || "Item");
+  const fromId = enriched.from?.id ? String(enriched.from.id) : "visitante";
+
+  // Resolve product_id local caso exista anúncio mapeado em channel_listings
+  const { data: linkedListing } = await supabase
+    .from("channel_listings")
+    .select("product_id")
+    .eq("store_id", targetStoreId)
+    .eq("channel", "mercadolivre")
+    .eq("external_listing_id", itemId)
+    .maybeSingle();
+
+  // Persiste no Inbox Estruturado marketplace_questions
+  const qStatus = enriched.answer?.text || enriched.status === "ANSWERED" ? "answered" : "unanswered";
+  await supabase.from("marketplace_questions").upsert(
+    {
+      store_id: targetStoreId,
+      product_id: linkedListing?.product_id || null,
+      platform: "mercadolivre",
+      external_question_id: rawQuestionId,
+      external_item_id: itemId,
+      buyer_id: fromId !== "visitante" ? fromId : null,
+      buyer_nickname: enriched.from?.nickname || null,
+      question_text: questionText,
+      answer_text: enriched.answer?.text || null,
+      status: qStatus,
+      asked_at: enriched.date_created || new Date().toISOString(),
+      answered_at: enriched.answer?.date_created || null,
+      raw_payload: enriched,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "store_id,platform,external_question_id" }
   );
-  const questionText = payload.text || payload.question || "Dúvida do cliente no anúncio do Mercado Livre";
-  const itemId = payload.item_id || payload.resource || "Item";
-  const fromId = payload.from?.id ? String(payload.from.id) : "visitante";
 
   // Busca ou cria thread em chat_threads
   const { data: existingThread } = await supabase
@@ -1023,9 +1347,9 @@ async function processMercadoLivreQuestion(
       .from("chat_threads")
       .insert({
         store_id: targetStoreId,
-        guest_name: `Comprador ML #${fromId}`,
+        guest_name: enriched.from?.nickname || `Comprador ML #${fromId}`,
         guest_email: `ml_${fromId}@mercadolivre.user`,
-        status: "open",
+        status: qStatus === "answered" ? "closed" : "open",
         subject: `Dúvida ML: Anúncio ${itemId}`,
         department: "vendas",
         priority: "normal",
@@ -1045,22 +1369,21 @@ async function processMercadoLivreQuestion(
       return null;
     }
     threadId = newThread.id;
-  }
 
-  // Insere a pergunta do cliente em chat_messages
-  await supabase.from("chat_messages").insert({
-    thread_id: threadId,
-    message: questionText,
-    message_type: "text",
-    is_staff_reply: false,
-    payload: {
-      channel: "mercadolivre",
-      question_id: rawQuestionId,
-      item_id: itemId,
-      from_id: fromId,
-    },
-    created_at: new Date().toISOString(),
-  });
+    await supabase.from("chat_messages").insert({
+      thread_id: threadId,
+      message: questionText,
+      message_type: "text",
+      is_staff_reply: false,
+      payload: {
+        channel: "mercadolivre",
+        question_id: rawQuestionId,
+        item_id: itemId,
+        from_id: fromId,
+      },
+      created_at: new Date().toISOString(),
+    });
+  }
 
   return threadId;
 }
@@ -1265,37 +1588,39 @@ export const reprocessWebhookEvent = createServerFn({ method: "POST" })
       payload: event.payload || {},
     };
 
-    let orderId: string | null = null;
+    const routed = await routeWebhookPlatformEvent(
+      inboundData.platform,
+      inboundData.resourceId,
+      inboundData.topic && inboundData.payload && !inboundData.payload.topic
+        ? { ...inboundData.payload, topic: inboundData.topic }
+        : inboundData.payload,
+      identity.store_id
+    );
 
-    switch (inboundData.platform) {
-      case "mercadolivre":
-        orderId = await processMercadoLivreEvent(inboundData.resourceId, inboundData.payload, identity.store_id);
-        break;
-      case "ifood":
-        orderId = await processIfoodEvent(inboundData.resourceId, inboundData.payload, identity.store_id);
-        break;
-      case "shopee":
-        orderId = await processShopeeEvent(inboundData.resourceId, inboundData.payload, identity.store_id);
-        break;
-      case "amazon":
-        orderId = await processAmazonEvent(inboundData.resourceId, inboundData.payload, identity.store_id);
-        break;
-      case "focus_nfe":
-      case "nuvem_fiscal":
-        await processFiscalEvent(inboundData.resourceId, inboundData.payload, identity.store_id);
-        break;
-      default:
-        break;
-    }
+    const nextStatus = routed.handled ? "processed" : "ignored";
 
     await supabase
       .from("marketplace_webhook_events")
       .update({
-        status: "processed",
-        error_message: null,
+        status: nextStatus,
+        error_message: routed.handled ? null : `Plataforma ${inboundData.platform} sem roteador configurado.`,
+        retry_count: Number(event.retry_count || 0) + 1,
         processed_at: new Date().toISOString(),
       })
       .eq("id", eventId);
 
-    return { success: true, orderId };
+    return { success: routed.handled, orderId: routed.orderId };
+  });
+
+/**
+ * Dispara reprocessamento em lote dos webhooks com falha da loja atual.
+ */
+export const retryStoreFailedWebhooks = createServerFn({ method: "POST" })
+  .validator(z.object({ maxAttempts: z.number().int().min(1).max(10).default(5) }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
+    const storeId = identity.store_id;
+    if (!storeId) throw new Error("Loja não identificada.");
+    return retryFailedWebhooks(storeId, data?.maxAttempts ?? 5);
   });

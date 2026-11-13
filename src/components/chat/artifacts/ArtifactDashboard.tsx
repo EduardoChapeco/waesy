@@ -59,49 +59,13 @@ export function ArtifactDashboard({
 }: ArtifactDashboardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<"day" | "week" | "month">("month");
 
-  const defaultKpis: MetricKpi[] =
-    kpis.length > 0
-      ? kpis
-      : [
-          {
-            id: "revenue",
-            label: "Faturamento Bruto",
-            value: "R$ 42.850,00",
-            changePercent: 12.4,
-            trend: "up",
-            periodLabel: "vs período anterior",
-          },
-          {
-            id: "orders",
-            label: "Pedidos Concluídos",
-            value: 384,
-            changePercent: 8.1,
-            trend: "up",
-            periodLabel: "vs período anterior",
-          },
-          {
-            id: "ticket",
-            label: "Ticket Médio",
-            value: "R$ 111,58",
-            changePercent: -2.3,
-            trend: "down",
-            periodLabel: "vs período anterior",
-          },
-          {
-            id: "new_customers",
-            label: "Novos Clientes",
-            value: 96,
-            changePercent: 18.0,
-            trend: "up",
-            periodLabel: "vs período anterior",
-          },
-        ];
+  const activeKpis: MetricKpi[] = kpis;
 
   const handleExportSummary = () => {
     const summaryData = {
       title,
       period: selectedPeriod,
-      kpis: defaultKpis,
+      kpis: activeKpis,
       breakdowns,
       exportedAt: new Date().toISOString(),
     };
@@ -177,8 +141,13 @@ export function ArtifactDashboard({
       )}
 
       {/* Grid de KPIs Executivos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {defaultKpis.map((kpi) => {
+      {activeKpis.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border/60 bg-muted/10 p-6 text-center text-xs text-muted-foreground">
+          Nenhum indicador consolidado foi retornado ainda para este relatório. Execute uma consulta no Copilot para preencher métricas reais.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {activeKpis.map((kpi) => {
           const isUp = kpi.trend === "up" || (kpi.changePercent && kpi.changePercent > 0);
           const isDown = kpi.trend === "down" || (kpi.changePercent && kpi.changePercent < 0);
 
@@ -218,8 +187,9 @@ export function ArtifactDashboard({
               )}
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
 
       {/* Composição / Barras de Distribuição se houver */}
       {breakdowns.length > 0 && (

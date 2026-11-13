@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
 import type { HotpageDTO, HotpageModule } from "./hotpage.functions";
 
 const PlatformHubSchema = z.object({
@@ -47,10 +47,7 @@ const PlatformHubSchema = z.object({
 export const listAllAdminHubs = createServerFn({ method: "GET" })
  .validator(z.object({ module: z.string().optional() }).optional())
  .handler(async ({ data }) => {
- const identity = await requireAdmin();
- if (identity.role !== "platform_admin") {
- throw new Error("Acesso restrito ao Administrador Master Global.");
- }
+ await requirePlatformAdmin();
 
  const supabase = getServerClient();
  let query = supabase
@@ -91,10 +88,7 @@ export const listPublicCategoryHubs = createServerFn({ method: "GET" })
 export const saveAdminHub = createServerFn({ method: "POST" })
  .validator(PlatformHubSchema)
  .handler(async ({ data }) => {
- const identity = await requireAdmin();
- if (identity.role !== "platform_admin") {
- throw new Error("Acesso restrito ao Administrador Master Global.");
- }
+ await requirePlatformAdmin();
 
  const supabase = getServerClient();
  const payload = {
@@ -142,10 +136,7 @@ export const saveAdminHub = createServerFn({ method: "POST" })
 export const deleteAdminHub = createServerFn({ method: "POST" })
  .validator(z.object({ id: z.string().uuid() }))
  .handler(async ({ data: { id } }) => {
- const identity = await requireAdmin();
- if (identity.role !== "platform_admin") {
- throw new Error("Acesso restrito ao Administrador Master Global.");
- }
+ await requirePlatformAdmin();
 
  const supabase = getServerClient();
  const { error } = await supabase.from("hotpages").delete().eq("id", id);
@@ -156,10 +147,7 @@ export const deleteAdminHub = createServerFn({ method: "POST" })
 export const toggleAdminHubStatus = createServerFn({ method: "POST" })
  .validator(z.object({ id: z.string().uuid(), is_active: z.boolean() }))
  .handler(async ({ data: { id, is_active } }) => {
- const identity = await requireAdmin();
- if (identity.role !== "platform_admin") {
- throw new Error("Acesso restrito ao Administrador Master Global.");
- }
+ await requirePlatformAdmin();
 
  const supabase = getServerClient();
  const { data: updated, error } = await supabase

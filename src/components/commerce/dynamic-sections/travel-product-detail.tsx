@@ -17,7 +17,6 @@ import {
   ExternalLink,
   MessageCircle,
   ShieldCheck,
-  Sparkles,
   Layers,
   ArrowRight,
   Maximize2,

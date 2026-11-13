@@ -60,7 +60,7 @@ export function GlobalPopupRenderer({ popups }: GlobalPopupRendererProps) {
 
  return (
  <Dialog open={!!activePopup} onOpenChange={handleOpenChange}>
- <DialogContent className="sm:max-w-3xl sm:w-[90vw] w-full p-0 overflow-hidden bg-background border-none">
+ <DialogContent className="sm:max-w-3xl w-full p-0 overflow-hidden bg-background border border-border">
  {/* Render the Tree built from the Builder Platform */}
  <div className="w-full max-h-vh-80 overflow-y-auto no-scrollbar">
  <ExperienceRenderer nodes={activePopup.tree} bindings={(activePopup as any).bindings} />

@@ -1224,7 +1224,7 @@ async function buildHydratedPlatformOmniDocument(
       imageMobileUrl: it.image_mobile_url || it.mobile_image_url || it.image_url || "",
       imageDesktopUrl: it.image_desktop_url || it.image_url || "",
       imageUrl: it.image_url || it.image_desktop_url || "",
-      iconName: it.icon_name || "Sparkles",
+      iconName: it.icon_name || "Star",
       bgColor: it.bg_color || "",
       textColor: it.text_color || "",
       gradient: it.metadata?.gradient || "",
@@ -1720,7 +1720,7 @@ async function buildHydratedPlatformOmniDocument(
        mappedHotpageBtns.length > 0
         ? mappedHotpageBtns
         : [
-           { id: "b1", label: "Destaques", iconName: "Sparkles", badge: "TOP", href: `/${normalizedSlug}` },
+           { id: "b1", label: "Destaques", iconName: "Star", badge: "TOP", href: `/${normalizedSlug}` },
            { id: "b2", label: "Promoções", iconName: "Percent", badge: "OFERTA", href: "/ofertas" },
            { id: "b3", label: "Mais Próximos", iconName: "MapPin", href: "/diretorio" },
            { id: "b4", label: "Novidades", iconName: "Flame", href: `/${normalizedSlug}` },
@@ -2384,7 +2384,7 @@ export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GE
           Promise.resolve(
             supabase
               .from("news_articles")
-              .select("id, title, slug, summary, cover_image, category, published_at")
+              .select("id, title, slug, subtitle, cover_media_url, category, published_at")
               .eq("status", "published")
               .order("published_at", { ascending: false })
               .limit(12),
@@ -2392,7 +2392,7 @@ export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GE
           Promise.resolve(
             supabase
               .from("events")
-              .select("id, title, slug, location_name, city, event_date, cover_image_url, status")
+              .select("id, title, location, venue_name, city, event_date, cover_image, banner_url, status")
               .eq("status", "published")
               .order("event_date", { ascending: true })
               .limit(12),
@@ -2400,7 +2400,7 @@ export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GE
           Promise.resolve(
             supabase
               .from("jobs")
-              .select("id, title, company_name, city, employment_type, salary_range, status, created_at")
+              .select("id, title, company_name, location, location_city, employment_type, salary_display, status, created_at")
               .eq("status", "open")
               .order("created_at", { ascending: false })
               .limit(12),
@@ -2408,7 +2408,7 @@ export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GE
           Promise.resolve(
             supabase
               .from("classifieds")
-              .select("id, title, slug, price_cents, media_urls, category_slug, city, state, status, created_at")
+              .select("id, title, price_cents, images, category, city, state, status, created_at")
               .eq("status", "active")
               .order("created_at", { ascending: false })
               .limit(24),
@@ -2469,10 +2469,28 @@ export const resolveSurfacePageExperienceDocument = createServerFn({ method: "GE
             products: normalizedProducts,
             stores: normalizedStores,
             banners: activeBanners,
-            newsArticles: (newsRes as any)?.data || [],
-            events: (eventsRes as any)?.data || [],
-            jobs: (jobsRes as any)?.data || [],
-            classifieds: (classifiedsRes as any)?.data || [],
+            newsArticles: ((newsRes as any)?.data || []).map((n: any) => ({
+              ...n,
+              summary: n.subtitle || "",
+              cover_image: n.cover_media_url || null,
+            })),
+            events: ((eventsRes as any)?.data || []).map((e: any) => ({
+              ...e,
+              slug: e.id,
+              location_name: e.venue_name || e.location || e.city || "",
+              cover_image_url: e.cover_image || e.banner_url || null,
+            })),
+            jobs: ((jobsRes as any)?.data || []).map((j: any) => ({
+              ...j,
+              city: j.location_city || j.location || "",
+              salary_range: j.salary_display || null,
+            })),
+            classifieds: ((classifiedsRes as any)?.data || []).map((c: any) => ({
+              ...c,
+              slug: c.id,
+              media_urls: Array.isArray(c.images) ? c.images : [],
+              category_slug: c.category || "",
+            })),
             hotpages: activeHotpages,
             posts: Array.isArray(showcasePosts) ? showcasePosts : [],
           },

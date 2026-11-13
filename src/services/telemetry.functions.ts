@@ -250,12 +250,12 @@ export const dispatchPixelConversionEvent = createServerFn({ method: "POST" })
       const supabase = getServerClient();
       const { data: pixelConfig } = await supabase
         .from("store_pixel_configs")
-        .select("meta_pixel_id, meta_capi_token, is_active")
+        .select("meta_pixel_id, meta_capi_token")
         .eq("store_id", data.store_id)
         .maybeSingle();
 
       const { data: integration } = pixelConfig
-        ? { data: { config: { pixel_id: pixelConfig.meta_pixel_id, capi_token: pixelConfig.meta_capi_token }, status: pixelConfig.is_active ? "active" : "inactive" } }
+        ? { data: { config: { pixel_id: pixelConfig.meta_pixel_id, capi_token: pixelConfig.meta_capi_token }, status: pixelConfig.meta_pixel_id ? "active" : "inactive" } }
         : await supabase
             .from("integration_credentials")
             .select("token_payload, is_active")

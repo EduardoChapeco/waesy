@@ -9,7 +9,6 @@ import {
   Share2,
   ShieldCheck,
   MoreHorizontal,
-  Sparkles,
   Inbox,
   Plus,
 } from "lucide-react";

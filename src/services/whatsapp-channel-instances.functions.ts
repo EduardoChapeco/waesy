@@ -458,9 +458,18 @@ export function extractEvolutionQrPayload(payload: Record<string, any> | null | 
   };
 }
 
+export function normalizePhoneE164FromJid(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const digits = trimmed.replace(/@.*$/, "").replace(/\D/g, "");
+  return digits.length >= 8 ? `+${digits}` : null;
+}
+
 export const ConnectQrSchema = z.object({
   id: z.string().uuid().optional(),
   storeId: z.string().uuid().optional(),
+  mode: z.enum(["create", "reconnect"]).optional(),
   displayName: z.string().trim().min(2).max(100).default("WhatsApp Principal"),
   instanceKey: z.string().trim().min(2).max(80).regex(/^[a-z0-9][a-z0-9_-]*$/).optional(),
   department: z.string().trim().max(60).optional(),
@@ -468,503 +477,647 @@ export const ConnectQrSchema = z.object({
   autoImportHistory: z.boolean().default(false),
 });
 
-export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
-  .validator(ConnectQrSchema)
-  .handler(async ({ data }) => {
-    const {
-      id: instanceId,
-      storeId: inputStoreId,
-      displayName,
-      instanceKey,
-      department,
-      isGlobalMaster,
-      autoImportHistory,
-    } = data;
+export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof ConnectQrSchema>) {
+  const {
+    id: instanceId,
+    storeId: inputStoreId,
+    mode: inputMode,
+    displayName,
+    instanceKey,
+    department,
+    isGlobalMaster,
+    autoImportHistory,
+  } = data;
 
-    const identity = await getServerIdentity();
-    if (!identity.id) throw new Error("Autenticação obrigatória para conectar WhatsApp.");
+  const identity = await getServerIdentity();
+  if (!identity.id) throw new Error("Autenticação obrigatória para conectar WhatsApp.");
 
-    const isMaster = identity.role === "platform_admin";
-    if (isGlobalMaster && !isMaster) {
-      throw new Error("Apenas o Admin Master pode configurar o Número Global da plataforma.");
-    }
-    if (!isMaster) {
-      assertStoreAccess(identity, ["owner", "admin", "manager"]);
-    }
+  const isMaster = identity.role === "platform_admin";
+  if (isGlobalMaster && !isMaster) {
+    throw new Error("Apenas o Admin Master pode configurar o Número Global da plataforma.");
+  }
+  if (!isMaster) {
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+  }
 
-    const storeId = inputStoreId || identity.store_id;
-    if (!storeId) throw new Error("Contexto de loja obrigatório para criar instância WhatsApp.");
+  const storeId = inputStoreId || identity.store_id;
+  if (!storeId) throw new Error("Contexto de loja obrigatório para criar instância WhatsApp.");
 
-    const db = getServerClient();
-    let existing: WhatsAppChannelInstanceDTO | null = null;
-    if (instanceId) {
-      const { data: found } = await db
-        .from("whatsapp_channel_instances")
-        .select(PublicFields)
-        .eq("id", instanceId)
-        .eq("store_id", storeId)
-        .maybeSingle();
-      existing = (found as WhatsAppChannelInstanceDTO | null) || null;
-    }
+  const db = getServerClient();
+  const mode: "create" | "reconnect" = inputMode || (instanceId ? "reconnect" : "create");
 
-    const shortStore = storeId.replace(/-/g, "").slice(0, 8);
-    const cleanKey = (instanceKey || existing?.instance_key || `wa_${shortStore}`).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
-    let externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
-    const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(cleanKey)}`;
-
-    let qrBase64: string | null = null;
-    let pairingCode: string | null = null;
-    let connectionState: "connected" | "connecting" | "error" = "connecting";
-    let gatewayErrorCode: string | null = null;
-    let gatewayErrorMessage: string | null = null;
-    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, existing as any);
-
-    const fetchInstanceConnectQr = async (): Promise<{ qrCodeBase64: string | null; pairingCode: string | null }> => {
-      const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
-        method: "GET",
-        headers: { apikey: apiKey },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!connectRes.ok) return { qrCodeBase64: null, pairingCode: null };
-      const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
-      return extractEvolutionQrPayload(connectJson);
-    };
-
-    // 1. Verificar se a instância já existe na Evolution API
-    try {
-      const stateRes = await fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
-        method: "GET",
-        headers: { apikey: apiKey },
-        signal: AbortSignal.timeout(8000),
-      });
-
-      if (stateRes.ok) {
-        const stateJson = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
-        let rawState = String(stateJson?.instance?.state || stateJson?.state || "").toLowerCase();
-        
-        // Verificação profunda anti-zombie: se o socket foi desconectado pelo WhatsApp (código 403/erro), força re-emissão de QR
-        if (rawState === "open") {
-          const infoRes = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
-            method: "GET",
-            headers: { apikey: apiKey },
-            signal: AbortSignal.timeout(6000),
-          }).catch(() => null);
-          const infoList = infoRes && infoRes.ok ? await infoRes.json().catch(() => []) : [];
-          const first = Array.isArray(infoList) ? infoList[0] : infoList;
-          if (first?.disconnectionReasonCode || first?.disconnectionAt) {
-            rawState = "close";
-            // Cria um identificador limpo para escapar do socket travado na VPS
-            externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
-          } else {
-            connectionState = "connected";
-          }
-        }
-
-        if (rawState !== "open") {
-          const firstConnect = await fetchInstanceConnectQr();
-          qrBase64 = firstConnect.qrCodeBase64;
-          pairingCode = firstConnect.pairingCode;
-
-          // Se a instância existente travou sem emitir QR Code ou se foi gerado um novo externalName, cria a nova instância
-          if (!qrBase64) {
-            const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
-              method: "POST",
-              headers: { apikey: apiKey, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                instanceName: externalName,
-                qrcode: true,
-                integration: "WHATSAPP-BAILEYS",
-                webhook: {
-                  url: webhookUrl,
-                  byEvents: false,
-                  base64: true,
-                  events: [
-                    "QRCODE_UPDATED",
-                    "CONNECTION_UPDATE",
-                    "MESSAGES_UPSERT",
-                    "MESSAGES_UPDATE",
-                    "SEND_MESSAGE",
-                  ],
-                },
-              }),
-              signal: AbortSignal.timeout(12000),
-            }).catch(() => null);
-
-            if (freshCreateRes && freshCreateRes.ok) {
-              const freshJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
-              const freshExtracted = extractEvolutionQrPayload(freshJson);
-              qrBase64 = freshExtracted.qrCodeBase64;
-              pairingCode = freshExtracted.pairingCode;
-            }
-
-            if (!qrBase64) {
-              await fetch(`${baseUrl}/instance/restart/${encodeURIComponent(externalName)}`, {
-                method: "PUT",
-                headers: { apikey: apiKey },
-                signal: AbortSignal.timeout(6000),
-              }).catch(() => null);
-              const retryConnect = await fetchInstanceConnectQr();
-              qrBase64 = retryConnect.qrCodeBase64;
-              pairingCode = retryConnect.pairingCode || pairingCode;
-            }
-          }
-        }
-      } else {
-        // 2. Criar nova instância no Baileys da VPS Oracle
-        const createRes = await fetch(`${baseUrl}/instance/create`, {
-          method: "POST",
-          headers: {
-            apikey: apiKey,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            instanceName: externalName,
-            qrcode: true,
-            integration: "WHATSAPP-BAILEYS",
-            webhook: {
-              url: webhookUrl,
-              byEvents: false,
-              base64: true,
-              events: [
-                "QRCODE_UPDATED",
-                "CONNECTION_UPDATE",
-                "MESSAGES_UPSERT",
-                "MESSAGES_UPDATE",
-                "SEND_MESSAGE",
-              ],
-            },
-          }),
-          signal: AbortSignal.timeout(12000),
-        });
-
-        const createJson = (await createRes.json().catch(() => ({}))) as Record<string, any>;
-        if (createRes.ok) {
-          const extracted = extractEvolutionQrPayload(createJson);
-          qrBase64 = extracted.qrCodeBase64;
-          pairingCode = extracted.pairingCode;
-        } else if (createRes.status === 403 || createRes.status === 400 || createRes.status === 409) {
-          // Caso a instância já exista na Evolution API mas não respondeu ao connectionState inicial
-          const fallbackConnect = await fetchInstanceConnectQr();
-          qrBase64 = fallbackConnect.qrCodeBase64;
-          pairingCode = fallbackConnect.pairingCode;
-          if (!qrBase64) {
-            // Se o nome está em uso por uma sessão zumbi inacessível, cria com sufixo fresco
-            externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
-            const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
-              method: "POST",
-              headers: { apikey: apiKey, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                instanceName: externalName,
-                qrcode: true,
-                integration: "WHATSAPP-BAILEYS",
-                webhook: { url: webhookUrl, byEvents: false, base64: true, events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"] }
-              }),
-              signal: AbortSignal.timeout(12000),
-            });
-            const freshCreateJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
-            const freshExtracted = extractEvolutionQrPayload(freshCreateJson);
-            qrBase64 = freshExtracted.qrCodeBase64;
-            pairingCode = freshExtracted.pairingCode;
-            if (!qrBase64) {
-              const followUp = await fetchInstanceConnectQr();
-              qrBase64 = followUp.qrCodeBase64;
-              pairingCode = followUp.pairingCode;
-            }
-          }
-        } else {
-          throw new Error(createJson?.response?.message?.[0] || createJson?.message || `Evolution API HTTP ${createRes.status}`);
-        }
-
-        // Evolution API v2 frequentemente inicializa o socket de forma assíncrona após /instance/create
-        if (!qrBase64) {
-          const followUpConnect = await fetchInstanceConnectQr();
-          qrBase64 = followUpConnect.qrCodeBase64;
-          pairingCode = followUpConnect.pairingCode || pairingCode;
-        }
-      }
-    } catch (err) {
-      connectionState = "error";
-      gatewayErrorCode = "GATEWAY_QR_ERROR";
-      gatewayErrorMessage = `Falha ao comunicar com servidor WhatsApp (${baseUrl}): ${err instanceof Error ? err.message : "Erro de rede"}`;
-    }
-
-    const updatedPublicConfig = {
-      ...(existing?.public_config || {}),
-      base_url: baseUrl,
-      qr_code_url: qrBase64,
-      pairing_code: pairingCode,
-      department: department || existing?.public_config?.department || "Geral",
-      is_global_master: isGlobalMaster || Boolean(existing?.public_config?.is_global_master),
-      auto_import_history: autoImportHistory ?? (existing?.public_config as any)?.auto_import_history ?? false,
-      last_qr_generated_at: new Date().toISOString(),
-      last_error_message: gatewayErrorMessage,
-    };
-
-    const secretEncrypted = encryptSecret(
-      JSON.stringify({
-        api_key: apiKey,
-        base_url: baseUrl,
-      }),
-    );
-
-    const isConnected = connectionState === "connected";
-    const mappedDbStatus = isConnected ? "connected" : connectionState === "error" ? "error" : "pending";
-
-    // Busca se já existe uma instância ativa e padrão nesta loja
-    const { data: existingDefault } = await db
-      .from("whatsapp_channel_instances")
-      .select("id")
-      .eq("store_id", storeId)
-      .eq("is_default", true)
-      .eq("is_active", true)
-      .maybeSingle();
-
-    // Se a instância atual já for a padrão ou não houver nenhuma outra instância padrão ativa, assume default
-    const isThisAlreadyDefault = Boolean(existing?.id && existing.is_default && existingDefault?.id === existing.id);
-    const hasOtherActiveDefault = Boolean(existingDefault && existingDefault.id !== existing?.id);
-    const shouldBeDefault = isThisAlreadyDefault || !hasOtherActiveDefault;
-
-    // Se deve ser padrão, despromove qualquer outra instância default prévia da mesma loja para blindar contra race condition
-    if (shouldBeDefault) {
-      let demoteDefaultQuery = db
-        .from("whatsapp_channel_instances")
-        .update({ is_default: false, updated_at: new Date().toISOString() })
-        .eq("store_id", storeId)
-        .eq("is_default", true);
-      if (existing?.id) {
-        demoteDefaultQuery = demoteDefaultQuery.neq("id", existing.id);
-      }
-      await demoteDefaultQuery;
-    }
-
-    const upsertPayload = {
-      ...(existing?.id ? { id: existing.id } : {}),
-      store_id: storeId,
-      display_name: displayName || existing?.display_name || "WhatsApp Principal",
-      provider: "evolution_api" as const,
-      connection_mode: "unofficial" as const,
-      instance_key: cleanKey,
-      external_instance_id: externalName,
-      webhook_url: webhookUrl,
-      status: mappedDbStatus,
-      is_active: true,
-      is_default: shouldBeDefault,
-      public_config: updatedPublicConfig,
-      secret_payload_encrypted: secretEncrypted,
-      last_error_code: gatewayErrorCode,
-      last_error_message: gatewayErrorMessage,
-      last_health_check_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      created_by: identity.id,
-    };
-
-    let saved: WhatsAppChannelInstanceDTO | null = null;
-    const { data: initialSaved, error: initialError } = await db
-      .from("whatsapp_channel_instances")
-      .upsert(upsertPayload, { onConflict: "store_id,instance_key" })
-      .select(PublicFields)
-      .single();
-
-    if (initialError) {
-      // Blindagem contra duplicate key na unique constraint uq_whatsapp_default_instance_per_store
-      if (
-        initialError.message.includes("uq_whatsapp_default_instance_per_store") ||
-        (initialError as any).code === "23505"
-      ) {
-        const retryPayload = { ...upsertPayload, is_default: false };
-        const { data: retrySaved, error: retryError } = await db
-          .from("whatsapp_channel_instances")
-          .upsert(retryPayload, { onConflict: "store_id,instance_key" })
-          .select(PublicFields)
-          .single();
-
-        if (retryError) {
-          throw new Error(`Erro ao persistir instância QR Code: ${retryError.message}`);
-        }
-        saved = retrySaved as WhatsAppChannelInstanceDTO;
-      } else {
-        throw new Error(`Erro ao persistir instância QR Code: ${initialError.message}`);
-      }
-    } else {
-      saved = initialSaved as WhatsAppChannelInstanceDTO;
-    }
-
-    if (!saved) {
-      throw new Error("Erro desconhecido ao registrar instância WhatsApp.");
-    }
-
-    await audit(
-      String(saved.id),
-      storeId,
-      identity.id,
-      connectionState === "error" ? "instance.qr_error" : "instance.qr_requested",
-      connectionState === "error" ? "error" : "info",
-      {
-        external_instance_id: externalName,
-        connection_state: connectionState,
-        is_global_master: isGlobalMaster,
-        error_message: gatewayErrorMessage,
-      },
-    );
-
-    return {
-      instance: saved as WhatsAppChannelInstanceDTO,
-      qrCodeBase64: qrBase64,
-      pairingCode,
-      connectionState,
-      errorMessage: gatewayErrorMessage,
-    };
-  });
-
-export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
-  .handler(async ({ data }) => {
-    const { id: instanceId, storeId: inputStoreId } = data;
-    const identity = await getServerIdentity();
-    if (!identity.id) throw new Error("Autenticação obrigatória.");
-    const storeId = inputStoreId || identity.store_id;
-    if (!storeId) throw new Error("Loja obrigatória.");
-
-    const db = getServerClient();
-    const { data: instance, error } = await db
+  let existing: WhatsAppChannelInstanceDTO | null = null;
+  if (mode === "reconnect" && instanceId) {
+    const { data: found } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
       .eq("id", instanceId)
       .eq("store_id", storeId)
-      .single();
-
-    if (error || !instance) throw new Error("Instância WhatsApp não encontrada.");
-    if (instance.provider !== "evolution_api") {
-      return {
-        instance: instance as WhatsAppChannelInstanceDTO,
-        state: instance.status,
-        qrCodeBase64: normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url),
-        pairingCode: ((instance.public_config as any)?.pairing_code as string) || null,
-        errorMessage: instance.last_error_message || null,
-      };
+      .maybeSingle();
+    if (!found) {
+      throw new Error("Instância WhatsApp não encontrada nesta loja.");
     }
+    existing = found as WhatsAppChannelInstanceDTO;
+  }
 
-    const externalName = instance.external_instance_id || instance.instance_key;
-    const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
+  const shortStore = storeId.replace(/-/g, "").slice(0, 8);
+  const cleanKey = (instanceKey || existing?.instance_key || `wa_${shortStore}`)
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "_");
 
-    let liveState: string | null = null;
-    let stateHttpStatus: number | null = null;
-    let fetchRecord: Record<string, unknown> | null = null;
-    let connectedPhone: string | null = instance.display_phone_number;
-    let qrCodeBase64: string | null = normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url);
-    let pairingCode: string | null = ((instance.public_config as any)?.pairing_code as string) || null;
-    let syncErrorMessage: string | null = null;
+  if (mode === "create") {
+    const [{ data: storeRow }, { data: existingInstances }] = await Promise.all([
+      db.from("stores").select("id, name, slug, is_platform_root, plan_tier, settings").eq("id", storeId).maybeSingle(),
+      db.from("whatsapp_channel_instances").select("id, instance_key, display_name").eq("store_id", storeId),
+    ]);
+    const existingList = existingInstances || [];
+    const keyCollision = existingList.find((row: any) => String(row.instance_key).toLowerCase() === cleanKey);
+    if (keyCollision) {
+      throw new Error(
+        `Já existe um canal WhatsApp com a chave "${cleanKey}" nesta loja (${keyCollision.display_name || cleanKey}). Escolha outro identificador para adicionar um novo número.`,
+      );
+    }
+    if (!isMaster && storeRow) {
+      assertStoreWhatsAppInstanceAvailable(storeRow, existingList.length, { isUpdatingExistingInstance: false });
+    }
+  }
 
-    try {
-      const [stateRes, infoRes] = await Promise.all([
-        fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
+  let externalName = existing?.external_instance_id || `waesy_${shortStore}_${cleanKey}`.slice(0, 48);
+  const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(externalName)}`;
+
+  let qrBase64: string | null = null;
+  let pairingCode: string | null = null;
+  let connectionState: "connected" | "connecting" | "error" = "connecting";
+  let gatewayErrorCode: string | null = null;
+  let gatewayErrorMessage: string | null = null;
+  let detectedPhone: string | null = existing?.display_phone_number || null;
+  const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, existing as any);
+
+  const fetchInstanceConnectQr = async (): Promise<{ qrCodeBase64: string | null; pairingCode: string | null }> => {
+    const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
+      method: "GET",
+      headers: { apikey: apiKey },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!connectRes.ok) return { qrCodeBase64: null, pairingCode: null };
+    const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
+    return extractEvolutionQrPayload(connectJson);
+  };
+
+  // 1. Verificar se a instância já existe na Evolution API
+  try {
+    const stateRes = await fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
+      method: "GET",
+      headers: { apikey: apiKey },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (stateRes.ok) {
+      const stateJson = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
+      let rawState = String(stateJson?.instance?.state || stateJson?.state || "").toLowerCase();
+
+      // Verificação temporal anti-zombie alinhada com classifyWhatsAppSessionHealth
+      if (rawState === "open") {
+        const infoRes = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
           method: "GET",
           headers: { apikey: apiKey },
           signal: AbortSignal.timeout(6000),
-        }),
-        fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
-          method: "GET",
-          headers: { apikey: apiKey },
-          signal: AbortSignal.timeout(6000),
-        }).catch(() => null),
-      ]);
+        }).catch(() => null);
+        const infoList = infoRes && infoRes.ok ? await infoRes.json().catch(() => []) : [];
+        const first = (Array.isArray(infoList) ? infoList[0] : infoList) as Record<string, any> | undefined;
+        const fetchStatus = String(first?.connectionStatus || first?.state || "").toLowerCase();
+        const ownerPhone = normalizePhoneE164FromJid(first?.ownerJid || first?.instance?.owner);
+        if (ownerPhone) detectedPhone = ownerPhone;
 
-      stateHttpStatus = stateRes.status;
-      if (stateRes.ok) {
-        const json = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
-        liveState = String(json?.instance?.state || json?.state || "close").toLowerCase();
-      } else {
-        syncErrorMessage = `Gateway HTTP ${stateRes.status}`;
+        const disconnectAtMs = first?.disconnectionAt ? new Date(String(first.disconnectionAt)).getTime() : 0;
+        const lastConnectedMs = existing?.public_config?.last_connected_at
+          ? new Date(String(existing.public_config.last_connected_at)).getTime()
+          : 0;
+        const updatedAtMs = first?.updatedAt ? new Date(String(first.updatedAt)).getTime() : 0;
+        const reconnectedAfterDisconnect =
+          disconnectAtMs > 0 &&
+          (lastConnectedMs > disconnectAtMs ||
+            (updatedAtMs > disconnectAtMs + 5000 && (rawState === "open" || fetchStatus === "open")));
+
+        const isZombieSession =
+          (fetchStatus === "close" && !reconnectedAfterDisconnect) ||
+          (!ownerPhone && Boolean(first?.disconnectionReasonCode || disconnectAtMs > 0) && !reconnectedAfterDisconnect);
+
+        if (isZombieSession) {
+          rawState = "close";
+          // Cria identificador limpo para escapar do socket travado na VPS
+          externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
+        } else {
+          connectionState = "connected";
+        }
       }
 
-      if (infoRes && infoRes.ok) {
-        const infoList = await infoRes.json().catch(() => []);
-        const first = (Array.isArray(infoList) ? infoList[0] : infoList) as Record<string, any> | undefined;
-        if (first && typeof first === "object") {
-          fetchRecord = first;
-          const ownerJid = String(first?.ownerJid || first?.instance?.owner || "");
-          if (ownerJid) {
-            const digits = ownerJid.replace(/@.*$/, "").replace(/\D/g, "");
-            if (digits.length >= 8) connectedPhone = `+${digits}`;
+      if (rawState !== "open") {
+        const firstConnect = await fetchInstanceConnectQr();
+        qrBase64 = firstConnect.qrCodeBase64;
+        pairingCode = firstConnect.pairingCode;
+
+        if (!qrBase64) {
+          const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
+            method: "POST",
+            headers: { apikey: apiKey, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              instanceName: externalName,
+              qrcode: true,
+              integration: "WHATSAPP-BAILEYS",
+              webhook: {
+                url: webhookUrl,
+                byEvents: false,
+                base64: true,
+                events: [
+                  "QRCODE_UPDATED",
+                  "CONNECTION_UPDATE",
+                  "MESSAGES_UPSERT",
+                  "MESSAGES_UPDATE",
+                  "SEND_MESSAGE",
+                ],
+              },
+            }),
+            signal: AbortSignal.timeout(12000),
+          }).catch(() => null);
+
+          if (freshCreateRes && freshCreateRes.ok) {
+            const freshJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
+            const freshExtracted = extractEvolutionQrPayload(freshJson);
+            qrBase64 = freshExtracted.qrCodeBase64;
+            pairingCode = freshExtracted.pairingCode;
+          }
+
+          if (!qrBase64) {
+            await fetch(`${baseUrl}/instance/restart/${encodeURIComponent(externalName)}`, {
+              method: "PUT",
+              headers: { apikey: apiKey },
+              signal: AbortSignal.timeout(6000),
+            }).catch(() => null);
+            const retryConnect = await fetchInstanceConnectQr();
+            qrBase64 = retryConnect.qrCodeBase64;
+            pairingCode = retryConnect.pairingCode || pairingCode;
           }
         }
       }
+    } else {
+      const createRes = await fetch(`${baseUrl}/instance/create`, {
+        method: "POST",
+        headers: {
+          apikey: apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instanceName: externalName,
+          qrcode: true,
+          integration: "WHATSAPP-BAILEYS",
+          webhook: {
+            url: webhookUrl,
+            byEvents: false,
+            base64: true,
+            events: [
+              "QRCODE_UPDATED",
+              "CONNECTION_UPDATE",
+              "MESSAGES_UPSERT",
+              "MESSAGES_UPDATE",
+              "SEND_MESSAGE",
+            ],
+          },
+        }),
+        signal: AbortSignal.timeout(12000),
+      });
 
-      if (liveState === "open") {
-        qrCodeBase64 = null;
-        pairingCode = null;
-      } else if (stateRes.ok) {
-        // Busca QR Code atualizado enquanto aguarda leitura
-        const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
-          method: "GET",
-          headers: { apikey: apiKey },
-          signal: AbortSignal.timeout(8000),
-        });
-        if (connectRes.ok) {
-          const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
-          const extracted = extractEvolutionQrPayload(connectJson);
-          if (extracted.qrCodeBase64) qrCodeBase64 = extracted.qrCodeBase64;
-          if (extracted.pairingCode) pairingCode = extracted.pairingCode;
+      const createJson = (await createRes.json().catch(() => ({}))) as Record<string, any>;
+      if (createRes.ok) {
+        const extracted = extractEvolutionQrPayload(createJson);
+        qrBase64 = extracted.qrCodeBase64;
+        pairingCode = extracted.pairingCode;
+      } else if (createRes.status === 403 || createRes.status === 400 || createRes.status === 409) {
+        const fallbackConnect = await fetchInstanceConnectQr();
+        qrBase64 = fallbackConnect.qrCodeBase64;
+        pairingCode = fallbackConnect.pairingCode;
+        if (!qrBase64) {
+          externalName = `waesy_${shortStore}_${cleanKey}_${Date.now().toString(36)}`.slice(0, 48);
+          const freshCreateRes = await fetch(`${baseUrl}/instance/create`, {
+            method: "POST",
+            headers: { apikey: apiKey, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              instanceName: externalName,
+              qrcode: true,
+              integration: "WHATSAPP-BAILEYS",
+              webhook: { url: webhookUrl, byEvents: false, base64: true, events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"] },
+            }),
+            signal: AbortSignal.timeout(12000),
+          });
+          const freshCreateJson = (await freshCreateRes.json().catch(() => ({}))) as Record<string, any>;
+          const freshExtracted = extractEvolutionQrPayload(freshCreateJson);
+          qrBase64 = freshExtracted.qrCodeBase64;
+          pairingCode = freshExtracted.pairingCode;
+          if (!qrBase64) {
+            const followUp = await fetchInstanceConnectQr();
+            qrBase64 = followUp.qrCodeBase64;
+            pairingCode = followUp.pairingCode;
+          }
         }
+      } else {
+        throw new Error(createJson?.response?.message?.[0] || createJson?.message || `Evolution API HTTP ${createRes.status}`);
       }
-    } catch (err) {
-      syncErrorMessage = err instanceof Error ? err.message : "Oscilação de rede ao consultar gateway WhatsApp";
+
+      if (!qrBase64) {
+        const followUpConnect = await fetchInstanceConnectQr();
+        qrBase64 = followUpConnect.qrCodeBase64;
+        pairingCode = followUpConnect.pairingCode || pairingCode;
+      }
     }
+  } catch (err) {
+    connectionState = "error";
+    gatewayErrorCode = "GATEWAY_QR_ERROR";
+    gatewayErrorMessage = `Falha ao comunicar com servidor WhatsApp (${baseUrl}): ${err instanceof Error ? err.message : "Erro de rede"}`;
+  }
 
-    const currentPub = ((instance.public_config as Record<string, unknown>) || {});
-    const health = classifyWhatsAppSessionHealth({
-      connectionStateStatus: liveState,
-      connectionStateHttpStatus: stateHttpStatus,
-      fetchInstancesRecord: fetchRecord,
-      lastWebhookState: typeof currentPub.last_webhook_state === "string" ? currentPub.last_webhook_state : null,
-      lastWebhookAt: typeof currentPub.last_webhook_at === "string" ? currentPub.last_webhook_at : null,
-      lastConnectedAt: typeof currentPub.last_connected_at === "string" ? currentPub.last_connected_at : null,
-      lastSendFailureCode: instance.last_error_code,
-      lastSendFailureAt: typeof currentPub.last_send_failure_at === "string" ? currentPub.last_send_failure_at : null,
-      hasQrCode: Boolean(qrCodeBase64),
-      networkError: syncErrorMessage,
-    });
-
-    const mappedStatus = health.dbStatus;
-    const nowIso = new Date().toISOString();
-
-    const nextPublicConfig = {
-      ...currentPub,
-      qr_code_url: mappedStatus === "connected" ? null : qrCodeBase64,
-      pairing_code: mappedStatus === "connected" ? null : pairingCode,
-      last_synced_state: liveState || "unknown",
-      diagnostic_state: health.diagnosticState,
-      diagnostic_reason: health.reason,
-      ...(mappedStatus === "connected" ? { last_connected_at: nowIso, session_revoked: false } : {}),
-      ...(health.diagnosticState === "session_revoked" ? { session_revoked: true } : {}),
-      ...(mappedStatus !== "connected" && qrCodeBase64 ? { last_qr_generated_at: nowIso } : {}),
-    };
-
-    const { data: updated } = await db
+  // Proteção contra duplicidade caso a sessão recém-pareada já esteja ativa em outro card da loja
+  if (connectionState === "connected" && detectedPhone) {
+    let dupQuery = db
       .from("whatsapp_channel_instances")
-      .update({
-        status: mappedStatus,
-        is_active: mappedStatus === "connected" || instance.is_active,
-        display_phone_number: connectedPhone,
-        public_config: nextPublicConfig,
-        last_error_code: mappedStatus === "connected" ? null : health.diagnosticState.toUpperCase(),
-        last_error_message: mappedStatus === "connected" ? null : syncErrorMessage || health.reason,
-        last_health_check_at: nowIso,
-        updated_at: nowIso,
-      })
-      .eq("id", instance.id)
+      .select("id, display_name")
+      .eq("store_id", storeId)
+      .eq("display_phone_number", detectedPhone)
+      .eq("status", "connected");
+    if (existing?.id) dupQuery = dupQuery.neq("id", existing.id);
+    const { data: duplicate } = await dupQuery.maybeSingle();
+    if (duplicate) {
+      await fetch(`${baseUrl}/instance/logout/${encodeURIComponent(externalName)}`, {
+        method: "DELETE",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(5000),
+      }).catch(() => null);
+      connectionState = "error";
+      qrBase64 = null;
+      pairingCode = null;
+      detectedPhone = null;
+      gatewayErrorCode = "DUPLICATE_PHONE_CONFLICT";
+      gatewayErrorMessage = `Número já conectado em outra instância desta loja (${duplicate.display_name}). Desconecte a outra antes ou escaneie um chip diferente.`;
+    }
+  }
+
+  const nowIso = new Date().toISOString();
+  const updatedPublicConfig = {
+    ...(existing?.public_config || {}),
+    base_url: baseUrl,
+    qr_code_url: qrBase64,
+    pairing_code: pairingCode,
+    department: department || existing?.public_config?.department || "Geral",
+    is_global_master: isGlobalMaster || Boolean(existing?.public_config?.is_global_master),
+    auto_import_history: autoImportHistory ?? (existing?.public_config as any)?.auto_import_history ?? false,
+    last_qr_generated_at: nowIso,
+    ...(connectionState === "connected" ? { last_connected_at: nowIso, session_revoked: false } : {}),
+    last_error_message: gatewayErrorMessage,
+  };
+
+  const secretEncrypted = encryptSecret(
+    JSON.stringify({
+      api_key: apiKey,
+      base_url: baseUrl,
+    }),
+  );
+
+  const isConnected = connectionState === "connected";
+  const mappedDbStatus = isConnected ? "connected" : connectionState === "error" ? "error" : "pending";
+
+  const { data: existingDefault } = await db
+    .from("whatsapp_channel_instances")
+    .select("id")
+    .eq("store_id", storeId)
+    .eq("is_default", true)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  const isThisAlreadyDefault = Boolean(existing?.id && existing.is_default && existingDefault?.id === existing.id);
+  const hasOtherActiveDefault = Boolean(existingDefault && existingDefault.id !== existing?.id);
+  const shouldBeDefault = (isThisAlreadyDefault || !hasOtherActiveDefault) && mappedDbStatus !== "error";
+
+  if (shouldBeDefault) {
+    let demoteDefaultQuery = db
+      .from("whatsapp_channel_instances")
+      .update({ is_default: false, updated_at: nowIso })
+      .eq("store_id", storeId)
+      .eq("is_default", true);
+    if (existing?.id) {
+      demoteDefaultQuery = demoteDefaultQuery.neq("id", existing.id);
+    }
+    await demoteDefaultQuery;
+  }
+
+  const persistPayload = {
+    store_id: storeId,
+    display_name: displayName || existing?.display_name || "WhatsApp Principal",
+    provider: "evolution_api" as const,
+    connection_mode: "unofficial" as const,
+    instance_key: existing?.instance_key || cleanKey,
+    external_instance_id: externalName,
+    webhook_url: webhookUrl,
+    status: mappedDbStatus,
+    is_active: mappedDbStatus !== "error",
+    is_default: shouldBeDefault,
+    display_phone_number: detectedPhone,
+    public_config: updatedPublicConfig,
+    secret_payload_encrypted: secretEncrypted,
+    last_error_code: gatewayErrorCode,
+    last_error_message: gatewayErrorMessage,
+    last_health_check_at: nowIso,
+    updated_at: nowIso,
+    created_by: identity.id,
+  };
+
+  const executePersist = async (payloadToSave: typeof persistPayload) => {
+    if (existing?.id) {
+      return db
+        .from("whatsapp_channel_instances")
+        .update(payloadToSave)
+        .eq("id", existing.id)
+        .eq("store_id", storeId)
+        .select(PublicFields)
+        .single();
+    }
+    return db
+      .from("whatsapp_channel_instances")
+      .insert(payloadToSave)
       .select(PublicFields)
       .single();
+  };
 
+  let saved: WhatsAppChannelInstanceDTO | null = null;
+  const { data: initialSaved, error: initialError } = await executePersist(persistPayload);
+
+  if (initialError) {
+    if (
+      initialError.message.includes("uq_whatsapp_default_instance_per_store") ||
+      ((initialError as any).code === "23505" && initialError.message.includes("default"))
+    ) {
+      const { data: retrySaved, error: retryError } = await executePersist({ ...persistPayload, is_default: false });
+      if (retryError) {
+        throw new Error(`Erro ao persistir instância QR Code: ${retryError.message}`);
+      }
+      saved = retrySaved as WhatsAppChannelInstanceDTO;
+    } else if (
+      initialError.message.includes("uq_whatsapp_active_phone_per_store") ||
+      ((initialError as any).code === "23505" && initialError.message.includes("phone"))
+    ) {
+      throw new Error("Este número de WhatsApp já está conectado em outro canal ativo desta loja.");
+    } else {
+      throw new Error(`Erro ao persistir instância QR Code: ${initialError.message}`);
+    }
+  } else {
+    saved = initialSaved as WhatsAppChannelInstanceDTO;
+  }
+
+  if (!saved) {
+    throw new Error("Erro desconhecido ao registrar instância WhatsApp.");
+  }
+
+  await audit(
+    String(saved.id),
+    storeId,
+    identity.id,
+    connectionState === "error" ? "instance.qr_error" : "instance.qr_requested",
+    connectionState === "error" ? "error" : "info",
+    {
+      mode,
+      external_instance_id: externalName,
+      connection_state: connectionState,
+      is_global_master: isGlobalMaster,
+      error_message: gatewayErrorMessage,
+    },
+  );
+
+  return {
+    instance: saved as WhatsAppChannelInstanceDTO,
+    qrCodeBase64: qrBase64,
+    pairingCode,
+    connectionState,
+    errorMessage: gatewayErrorMessage,
+  };
+}
+
+export const connectWhatsAppQrCodeInstance = createServerFn({ method: "POST" })
+  .validator(ConnectQrSchema)
+  .handler(async ({ data }) => _connectWhatsAppQrCodeInstance(data));
+
+export const SyncWhatsAppStatusSchema = z.object({
+  id: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+});
+
+export async function _syncWhatsAppInstanceStatus(data: z.infer<typeof SyncWhatsAppStatusSchema>) {
+  const { id: instanceId, storeId: inputStoreId } = data;
+  const identity = await getServerIdentity();
+  if (!identity.id) throw new Error("Autenticação obrigatória.");
+  const storeId = inputStoreId || identity.store_id;
+  if (!storeId) throw new Error("Loja obrigatória.");
+  if (identity.role !== "platform_admin") {
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"], storeId);
+  }
+
+  const db = getServerClient();
+  const { data: instance, error } = await db
+    .from("whatsapp_channel_instances")
+    .select(PublicFields)
+    .eq("id", instanceId)
+    .eq("store_id", storeId)
+    .single();
+
+  if (error || !instance) throw new Error("Instância WhatsApp não encontrada.");
+  if (instance.provider !== "evolution_api") {
     return {
-      instance: (updated || instance) as WhatsAppChannelInstanceDTO,
-      state: mappedStatus,
-      diagnosticState: health.diagnosticState,
-      qrCodeBase64: mappedStatus === "connected" ? null : qrCodeBase64,
-      pairingCode: mappedStatus === "connected" ? null : pairingCode,
-      errorMessage: mappedStatus === "connected" ? null : syncErrorMessage || health.reason || null,
+      instance: instance as WhatsAppChannelInstanceDTO,
+      state: instance.status,
+      qrCodeBase64: normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url),
+      pairingCode: ((instance.public_config as any)?.pairing_code as string) || null,
+      errorMessage: instance.last_error_message || null,
     };
+  }
+
+  const externalName = instance.external_instance_id || instance.instance_key;
+  const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
+
+  let liveState: string | null = null;
+  let stateHttpStatus: number | null = null;
+  let fetchRecord: Record<string, unknown> | null = null;
+  let connectedPhone: string | null = instance.display_phone_number;
+  let qrCodeBase64: string | null = normalizeWhatsAppQrDataUri((instance.public_config as any)?.qr_code_url);
+  let pairingCode: string | null = ((instance.public_config as any)?.pairing_code as string) || null;
+  let syncErrorMessage: string | null = null;
+
+  try {
+    const [stateRes, infoRes] = await Promise.all([
+      fetch(`${baseUrl}/instance/connectionState/${encodeURIComponent(externalName)}`, {
+        method: "GET",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(6000),
+      }),
+      fetch(`${baseUrl}/instance/fetchInstances?instanceName=${encodeURIComponent(externalName)}`, {
+        method: "GET",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(6000),
+      }).catch(() => null),
+    ]);
+
+    stateHttpStatus = stateRes.status;
+    if (stateRes.ok) {
+      const json = (await stateRes.json().catch(() => ({}))) as Record<string, any>;
+      liveState = String(json?.instance?.state || json?.state || "close").toLowerCase();
+    } else {
+      syncErrorMessage = `Gateway HTTP ${stateRes.status}`;
+    }
+
+    if (infoRes && infoRes.ok) {
+      const infoList = await infoRes.json().catch(() => []);
+      const first = (Array.isArray(infoList) ? infoList[0] : infoList) as Record<string, any> | undefined;
+      if (first && typeof first === "object") {
+        fetchRecord = first;
+        const parsedPhone = normalizePhoneE164FromJid(first?.ownerJid || first?.instance?.owner);
+        if (parsedPhone) connectedPhone = parsedPhone;
+      }
+    }
+
+    if (liveState === "open") {
+      qrCodeBase64 = null;
+      pairingCode = null;
+    } else if (stateRes.ok) {
+      // Busca QR Code atualizado enquanto aguarda leitura
+      const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
+        method: "GET",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (connectRes.ok) {
+        const connectJson = (await connectRes.json().catch(() => ({}))) as Record<string, any>;
+        const extracted = extractEvolutionQrPayload(connectJson);
+        if (extracted.qrCodeBase64) qrCodeBase64 = extracted.qrCodeBase64;
+        if (extracted.pairingCode) pairingCode = extracted.pairingCode;
+      }
+    }
+  } catch (err) {
+    syncErrorMessage = err instanceof Error ? err.message : "Oscilação de rede ao consultar gateway WhatsApp";
+  }
+
+  const currentPub = ((instance.public_config as Record<string, unknown>) || {});
+  const health = classifyWhatsAppSessionHealth({
+    connectionStateStatus: liveState,
+    connectionStateHttpStatus: stateHttpStatus,
+    fetchInstancesRecord: fetchRecord,
+    lastWebhookState: typeof currentPub.last_webhook_state === "string" ? currentPub.last_webhook_state : null,
+    lastWebhookAt: typeof currentPub.last_webhook_at === "string" ? currentPub.last_webhook_at : null,
+    lastConnectedAt: typeof currentPub.last_connected_at === "string" ? currentPub.last_connected_at : null,
+    lastSendFailureCode: instance.last_error_code,
+    lastSendFailureAt: typeof currentPub.last_send_failure_at === "string" ? currentPub.last_send_failure_at : null,
+    hasQrCode: Boolean(qrCodeBase64),
+    networkError: syncErrorMessage,
   });
+
+  const mappedStatus = health.dbStatus;
+  const nowIso = new Date().toISOString();
+
+  // Proteção contra número duplicado ativo no pareamento da mesma loja
+  if (connectedPhone && (mappedStatus === "connected" || mappedStatus === "pending")) {
+    const { data: duplicate } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, display_name")
+      .eq("store_id", storeId)
+      .eq("display_phone_number", connectedPhone)
+      .eq("status", "connected")
+      .neq("id", instance.id)
+      .maybeSingle();
+
+    if (duplicate) {
+      await fetch(`${baseUrl}/instance/logout/${encodeURIComponent(externalName)}`, {
+        method: "DELETE",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(5000),
+      }).catch(() => null);
+
+      const conflictMessage = `Número já conectado em outra instância desta loja (${duplicate.display_name}). Desconecte a outra antes ou escaneie um chip diferente.`;
+      const { data: conflicted } = await db
+        .from("whatsapp_channel_instances")
+        .update({
+          status: "error",
+          is_active: false,
+          is_default: false,
+          display_phone_number: null,
+          public_config: {
+            ...currentPub,
+            qr_code_url: null,
+            pairing_code: null,
+            last_error_message: conflictMessage,
+            duplicate_conflict_instance_id: duplicate.id,
+          },
+          last_error_code: "DUPLICATE_PHONE_CONFLICT",
+          last_error_message: conflictMessage,
+          last_health_check_at: nowIso,
+          updated_at: nowIso,
+        })
+        .eq("id", instance.id)
+        .select(PublicFields)
+        .single();
+
+      await audit(String(instance.id), storeId, identity.id, "instance.duplicate_phone_blocked", "warning", {
+        duplicate_instance_id: duplicate.id,
+        duplicate_display_name: duplicate.display_name,
+        phone: connectedPhone,
+      });
+
+      return {
+        instance: (conflicted || instance) as WhatsAppChannelInstanceDTO,
+        state: "error",
+        diagnosticState: "disconnected" as const,
+        qrCodeBase64: null,
+        pairingCode: null,
+        errorMessage: conflictMessage,
+      };
+    }
+  }
+
+  const nextPublicConfig = {
+    ...currentPub,
+    qr_code_url: mappedStatus === "connected" ? null : qrCodeBase64,
+    pairing_code: mappedStatus === "connected" ? null : pairingCode,
+    last_synced_state: liveState || "unknown",
+    diagnostic_state: health.diagnosticState,
+    diagnostic_reason: health.reason,
+    ...(mappedStatus === "connected" ? { last_connected_at: nowIso, session_revoked: false } : {}),
+    ...(health.diagnosticState === "session_revoked" ? { session_revoked: true } : {}),
+    ...(mappedStatus !== "connected" && qrCodeBase64 ? { last_qr_generated_at: nowIso } : {}),
+  };
+
+  const { data: updated } = await db
+    .from("whatsapp_channel_instances")
+    .update({
+      status: mappedStatus,
+      is_active: mappedStatus === "connected" || instance.is_active,
+      display_phone_number: connectedPhone,
+      public_config: nextPublicConfig,
+      last_error_code: mappedStatus === "connected" ? null : health.diagnosticState.toUpperCase(),
+      last_error_message: mappedStatus === "connected" ? null : syncErrorMessage || health.reason,
+      last_health_check_at: nowIso,
+      updated_at: nowIso,
+    })
+    .eq("id", instance.id)
+    .select(PublicFields)
+    .single();
+
+  return {
+    instance: (updated || instance) as WhatsAppChannelInstanceDTO,
+    state: mappedStatus,
+    diagnosticState: health.diagnosticState,
+    qrCodeBase64: mappedStatus === "connected" ? null : qrCodeBase64,
+    pairingCode: mappedStatus === "connected" ? null : pairingCode,
+    errorMessage: mappedStatus === "connected" ? null : syncErrorMessage || health.reason || null,
+  };
+}
+
+export const syncWhatsAppInstanceStatus = createServerFn({ method: "POST" })
+  .validator(SyncWhatsAppStatusSchema)
+  .handler(async ({ data }) => _syncWhatsAppInstanceStatus(data));
 
 export const disconnectWhatsAppInstanceSchema = z.object({
   id: z.string().uuid().optional(),
@@ -1065,24 +1218,588 @@ export const disconnectWhatsAppInstance = createServerFn({ method: "POST" })
     return updated as WhatsAppChannelInstanceDTO;
   });
 
+export const DeleteWhatsAppInstanceSchema = z.object({
+  id: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  forcePurge: z.boolean().optional(),
+});
+
+export async function _deleteWhatsAppInstance(
+  input: z.infer<typeof DeleteWhatsAppInstanceSchema>,
+  scope: "workspace" | "master",
+) {
+  const identity = scope === "master" ? await requireMaster() : await getServerIdentity();
+  if (!identity.id) throw new Error("Autenticação obrigatória para excluir canal WhatsApp.");
+
+  const db = getServerClient();
+  let targetStoreId = scope === "master" ? input.storeId : input.storeId || identity.store_id;
+
+  if (scope === "master" && !targetStoreId) {
+    const { data: lookup } = await db
+      .from("whatsapp_channel_instances")
+      .select("store_id")
+      .eq("id", input.id)
+      .maybeSingle();
+    targetStoreId = lookup?.store_id || identity.store_id || undefined;
+  }
+
+  if (!targetStoreId) throw new Error("Contexto de loja obrigatório para excluir instância WhatsApp.");
+
+  if (scope === "workspace") {
+    assertStoreAccess(identity, ["owner", "admin", "manager"], targetStoreId);
+  }
+
+  const { data: instance, error: findErr } = await db
+    .from("whatsapp_channel_instances")
+    .select(PublicFields)
+    .eq("id", input.id)
+    .eq("store_id", targetStoreId)
+    .maybeSingle();
+
+  if (findErr || !instance) {
+    throw new Error("Instância WhatsApp não encontrada ou não pertence a esta loja.");
+  }
+
+  let gatewayCleanupOk = true;
+  let gatewayCleanupError: string | null = null;
+  if (instance.provider === "evolution_api") {
+    try {
+      const externalName = instance.external_instance_id || instance.instance_key;
+      const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, targetStoreId, instance as any);
+      await fetch(`${baseUrl}/instance/logout/${encodeURIComponent(externalName)}`, {
+        method: "DELETE",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(5000),
+      }).catch(() => null);
+      const delRes = await fetch(`${baseUrl}/instance/delete/${encodeURIComponent(externalName)}`, {
+        method: "DELETE",
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(6000),
+      });
+      if (!delRes.ok && delRes.status !== 404) {
+        gatewayCleanupOk = false;
+        gatewayCleanupError = `Gateway HTTP ${delRes.status}`;
+      }
+    } catch (err) {
+      gatewayCleanupOk = false;
+      gatewayCleanupError = err instanceof Error ? err.message : "Gateway inacessível no momento da exclusão.";
+    }
+  }
+
+  // Desvincula referências antes de remover definitivamente a instância, preservando histórico de threads e outbox
+  await Promise.all([
+    db
+      .from("workspace_members")
+      .update({ whatsapp_instance_id: null })
+      .eq("store_id", targetStoreId)
+      .eq("whatsapp_instance_id", instance.id),
+    db
+      .from("chat_threads")
+      .update({ channel_instance_id: null })
+      .eq("store_id", targetStoreId)
+      .eq("channel_instance_id", instance.id),
+    db
+      .from("whatsapp_outbox")
+      .update({ channel_instance_id: null })
+      .eq("store_id", targetStoreId)
+      .eq("channel_instance_id", instance.id),
+    db
+      .from("chat_departments")
+      .update({ whatsapp_instance_id: null })
+      .eq("store_id", targetStoreId)
+      .eq("whatsapp_instance_id", instance.id),
+  ]);
+
+  await audit(
+    String(instance.id),
+    targetStoreId,
+    identity.id,
+    "instance.deleted",
+    gatewayCleanupOk ? "info" : "warning",
+    {
+      deleted_instance_id: instance.id,
+      display_name: instance.display_name,
+      instance_key: instance.instance_key,
+      display_phone_number: instance.display_phone_number,
+      provider: instance.provider,
+      force_purge: Boolean(input.forcePurge),
+      gateway_cleanup_ok: gatewayCleanupOk,
+      gateway_cleanup_error: gatewayCleanupError,
+    },
+  );
+
+  const { error: deleteErr } = await db
+    .from("whatsapp_channel_instances")
+    .delete()
+    .eq("id", instance.id)
+    .eq("store_id", targetStoreId);
+
+  if (deleteErr) {
+    throw new Error(`Falha ao excluir instância WhatsApp do banco: ${deleteErr.message}`);
+  }
+
+  let promotedDefaultInstanceId: string | null = null;
+  if (instance.is_default) {
+    const { data: nextActive } = await db
+      .from("whatsapp_channel_instances")
+      .select("id")
+      .eq("store_id", targetStoreId)
+      .eq("is_active", true)
+      .eq("status", "connected")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (nextActive?.id) {
+      await db
+        .from("whatsapp_channel_instances")
+        .update({ is_default: true, updated_at: new Date().toISOString() })
+        .eq("id", nextActive.id)
+        .eq("store_id", targetStoreId);
+      promotedDefaultInstanceId = String(nextActive.id);
+    }
+  }
+
+  return {
+    deletedId: instance.id,
+    storeId: targetStoreId,
+    promotedDefaultInstanceId,
+    gatewayCleanupOk,
+    gatewayCleanupError,
+  };
+}
+
+export const deleteWorkspaceWhatsAppInstance = createServerFn({ method: "POST" })
+  .validator(DeleteWhatsAppInstanceSchema)
+  .handler(async ({ data }) => _deleteWhatsAppInstance(data, "workspace"));
+
+export const deleteMasterWhatsAppInstance = createServerFn({ method: "POST" })
+  .validator(DeleteWhatsAppInstanceSchema)
+  .handler(async ({ data }) => _deleteWhatsAppInstance(data, "master"));
+
+export const UpdateWhatsAppInstanceMetadataSchema = z.object({
+  id: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  displayName: z.string().trim().min(2).max(100).optional(),
+  department: z.string().trim().max(60).optional(),
+  autoImportHistory: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
+});
+
+export async function _updateWorkspaceWhatsAppInstanceMetadata(
+  input: z.infer<typeof UpdateWhatsAppInstanceMetadataSchema>,
+) {
+  const identity = await getServerIdentity();
+  if (!identity.id) throw new Error("Autenticação obrigatória.");
+  const storeId = input.storeId || identity.store_id;
+  if (!storeId) throw new Error("Loja obrigatória.");
+  if (identity.role !== "platform_admin") {
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+  }
+
+  const db = getServerClient();
+  const { data: current, error: fetchErr } = await db
+    .from("whatsapp_channel_instances")
+    .select(PublicFields)
+    .eq("id", input.id)
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  if (fetchErr || !current) throw new Error("Instância WhatsApp não encontrada.");
+
+  const nowIso = new Date().toISOString();
+  const nextPublicConfig = {
+    ...(current.public_config || {}),
+    ...(input.department !== undefined ? { department: input.department } : {}),
+    ...(input.autoImportHistory !== undefined ? { auto_import_history: input.autoImportHistory } : {}),
+  };
+
+  let nextIsDefault = Boolean(current.is_default);
+  if (input.isDefault === true) {
+    if (!current.is_active && current.status !== "connected") {
+      throw new Error("Conecte e ative este número antes de defini-lo como canal padrão da loja.");
+    }
+    await db
+      .from("whatsapp_channel_instances")
+      .update({ is_default: false, updated_at: nowIso })
+      .eq("store_id", storeId)
+      .eq("is_default", true)
+      .neq("id", current.id);
+    nextIsDefault = true;
+  } else if (input.isDefault === false) {
+    nextIsDefault = false;
+  }
+
+  const { data: updated, error } = await db
+    .from("whatsapp_channel_instances")
+    .update({
+      ...(input.displayName ? { display_name: input.displayName } : {}),
+      is_default: nextIsDefault,
+      public_config: nextPublicConfig,
+      updated_at: nowIso,
+    })
+    .eq("id", current.id)
+    .eq("store_id", storeId)
+    .select(PublicFields)
+    .single();
+
+  if (error || !updated) {
+    throw new Error(`Falha ao atualizar metadados do canal WhatsApp: ${error?.message || "Erro desconhecido"}`);
+  }
+
+  await audit(String(current.id), storeId, identity.id, "instance.metadata_updated", "info", {
+    display_name: updated.display_name,
+    is_default: updated.is_default,
+    department: nextPublicConfig.department,
+  });
+
+  return updated as WhatsAppChannelInstanceDTO;
+}
+
+export const updateWorkspaceWhatsAppInstanceMetadata = createServerFn({ method: "POST" })
+  .validator(UpdateWhatsAppInstanceMetadataSchema)
+  .handler(async ({ data }) => _updateWorkspaceWhatsAppInstanceMetadata(data));
+
 // ─── Gestão de Setores (Filas), Atendentes e Permissões RBAC ─────────────────
 
 export const WhatsAppDepartmentSchema = z.object({
   id: z.string().min(1),
+  slug: z.string().trim().max(80).optional(),
   name: z.string().trim().min(2).max(60),
-  description: z.string().trim().max(160).optional(),
+  description: z.string().trim().max(240).optional(),
   color: z.enum(["emerald", "blue", "amber", "purple", "rose", "slate"]).default("emerald"),
+  routingMode: z.enum(["ai_sdr_first", "round_robin", "least_busy", "manual_queue"]).default("ai_sdr_first"),
   instanceIds: z.array(z.string()).default([]),
   assignedAgentIds: z.array(z.string()).default([]),
   roundRobinEnabled: z.boolean().default(true),
   aiSdrEnabled: z.boolean().default(true),
-  slaMinutes: z.number().min(1).max(1440).default(15), scheduleStart: z.string().default("08:00"), scheduleEnd: z.string().default("18:00"), scheduleDays: z.string().default("Seg a Sex"), awayMessage: z.string().optional(), whatsappInstanceId: z.string().optional(), aiTriageStages: z.array(z.object({ id: z.string(), title: z.string(), instruction: z.string(), handoffToHuman: z.boolean().default(false) })).optional(),
+  aiSdrSkillPrompt: z.string().trim().max(1500).optional(),
+  autoGreetingMessage: z.string().trim().max(1000).optional(),
+  slaMinutes: z.number().min(1).max(1440).default(15),
+  scheduleStart: z.string().default("08:00"),
+  scheduleEnd: z.string().default("18:00"),
+  scheduleDays: z.string().default("Seg a Sex"),
+  awayMessage: z.string().optional(),
+  whatsappInstanceId: z.string().optional(),
+  isActive: z.boolean().default(true),
+  aiTriageStages: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        instruction: z.string(),
+        handoffToHuman: z.boolean().default(false),
+      }),
+    )
+    .optional(),
 });
 
 export type WhatsAppDepartmentDTO = z.infer<typeof WhatsAppDepartmentSchema>;
 
+export const ChatDepartmentRecordSchema = z.object({
+  id: z.string().uuid().optional(),
+  storeId: z.string().uuid().optional(),
+  slug: z.string().trim().min(1).max(80).optional(),
+  name: z.string().trim().min(2).max(80),
+  description: z.string().trim().max(240).optional().nullable(),
+  color: z.string().trim().max(32).default("emerald"),
+  routingMode: z.enum(["ai_sdr_first", "round_robin", "least_busy", "manual_queue"]).default("ai_sdr_first"),
+  slaMinutes: z.number().int().min(1).max(1440).default(15),
+  whatsappInstanceId: z.string().uuid().optional().nullable(),
+  scheduleStart: z.string().default("08:00"),
+  scheduleEnd: z.string().default("18:00"),
+  scheduleDays: z.string().default("Seg a Sex"),
+  awayMessage: z.string().optional().nullable(),
+  autoGreetingMessage: z.string().optional().nullable(),
+  aiSdrEnabled: z.boolean().default(true),
+  aiSdrSkillPrompt: z.string().optional().nullable(),
+  roundRobinEnabled: z.boolean().default(true),
+  assignedAgentIds: z.array(z.string().uuid()).default([]),
+  aiTriageStages: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        instruction: z.string(),
+        handoffToHuman: z.boolean().default(false),
+      }),
+    )
+    .default([]),
+  isActive: z.boolean().default(true),
+});
+
+export type ChatDepartmentDTO = {
+  id: string;
+  store_id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  color: string;
+  routing_mode: "ai_sdr_first" | "round_robin" | "least_busy" | "manual_queue";
+  sla_minutes: number;
+  whatsapp_instance_id: string | null;
+  schedule_start: string;
+  schedule_end: string;
+  schedule_days: string;
+  away_message: string | null;
+  auto_greeting_message: string | null;
+  ai_sdr_enabled: boolean;
+  ai_sdr_skill_prompt: string | null;
+  round_robin_enabled: boolean;
+  assigned_agent_ids: string[];
+  ai_triage_stages: Array<{ id: string; title: string; instruction: string; handoffToHuman: boolean }>;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+function slugifyDepartment(name: string): string {
+  return (
+    name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "geral"
+  );
+}
+
+async function mirrorDepartmentsToGovernanceSettings(
+  db: ReturnType<typeof getServerClient>,
+  storeId: string,
+  deptRows: any[],
+) {
+  const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
+  const currentSettings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+  const existingGov = (currentSettings.whatsapp_governance || {}) as Record<string, any>;
+
+  const mappedDepts = deptRows.map((d: any) => ({
+    id: d.id,
+    slug: d.slug,
+    name: d.name,
+    description: d.description || undefined,
+    color: (["emerald", "blue", "amber", "purple", "rose", "slate"].includes(String(d.color)) ? d.color : "emerald"),
+    routingMode: d.routing_mode || "ai_sdr_first",
+    slaMinutes: Number(d.sla_minutes || 15),
+    whatsappInstanceId: d.whatsapp_instance_id || undefined,
+    instanceIds: d.whatsapp_instance_id ? [d.whatsapp_instance_id] : [],
+    assignedAgentIds: Array.isArray(d.assigned_agent_ids) ? d.assigned_agent_ids : [],
+    roundRobinEnabled: Boolean(d.round_robin_enabled ?? true),
+    aiSdrEnabled: Boolean(d.ai_sdr_enabled ?? true),
+    aiSdrSkillPrompt: d.ai_sdr_skill_prompt || undefined,
+    autoGreetingMessage: d.auto_greeting_message || undefined,
+    scheduleStart: d.schedule_start || "08:00",
+    scheduleEnd: d.schedule_end || "18:00",
+    scheduleDays: d.schedule_days || "Seg a Sex",
+    awayMessage: d.away_message || undefined,
+    aiTriageStages: Array.isArray(d.ai_triage_stages) ? d.ai_triage_stages : [],
+  }));
+
+  await db
+    .from("stores")
+    .update({
+      settings: {
+        ...currentSettings,
+        whatsapp_governance: {
+          ...existingGov,
+          departments: mappedDepts,
+          updated_at: new Date().toISOString(),
+        },
+      },
+    })
+    .eq("id", storeId);
+}
+
+export async function _listChatDepartments(storeIdInput?: string): Promise<ChatDepartmentDTO[]> {
+  const identity = await getServerIdentity();
+  if (!identity.id) throw new Error("Autenticação obrigatória.");
+  const storeId = storeIdInput || identity.store_id || identity.memberships?.[0]?.store_id;
+  if (!storeId) return [];
+  if (identity.role !== "platform_admin") {
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support", "cashier", "finance", "content", "stock"], storeId);
+  }
+
+  const db = getServerClient();
+  const { data: rows, error } = await db
+    .from("chat_departments")
+    .select("*")
+    .eq("store_id", storeId)
+    .order("name", { ascending: true });
+
+  if (error) throw new Error(`Falha ao listar setores: ${error.message}`);
+
+  if (rows && rows.length > 0) {
+    return rows as ChatDepartmentDTO[];
+  }
+
+  // Fallback idempotente para lojas que tinham setores apenas em stores.settings.whatsapp_governance
+  const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
+  const govDepts = ((storeRow?.settings as any)?.whatsapp_governance?.departments || []) as any[];
+  if (Array.isArray(govDepts) && govDepts.length > 0) {
+    const seeded = govDepts.map((d) => ({
+      store_id: storeId,
+      slug: d.slug || slugifyDepartment(String(d.name || d.id || "geral")),
+      name: String(d.name || "Geral"),
+      description: d.description || null,
+      color: String(d.colorToken || d.color || "emerald"),
+      routing_mode: d.routingMode || "ai_sdr_first",
+      sla_minutes: Number(d.slaMinutes || 15),
+      whatsapp_instance_id: z.string().uuid().safeParse(d.whatsappInstanceId).success ? d.whatsappInstanceId : null,
+      schedule_start: d.scheduleStart || "08:00",
+      schedule_end: d.scheduleEnd || "18:00",
+      schedule_days: d.scheduleDays || "Seg a Sex",
+      away_message: d.awayMessage || null,
+      auto_greeting_message: d.autoGreetingMessage || null,
+      ai_sdr_enabled: Boolean(d.aiSdrEnabled ?? true),
+      ai_sdr_skill_prompt: d.aiSdrSkillPrompt || null,
+      round_robin_enabled: Boolean(d.roundRobinEnabled ?? true),
+      assigned_agent_ids: Array.isArray(d.assignedAgentIds)
+        ? d.assignedAgentIds.filter((id: string) => z.string().uuid().safeParse(id).success)
+        : [],
+      ai_triage_stages: Array.isArray(d.aiTriageStages) ? d.aiTriageStages : [],
+      is_active: true,
+    }));
+    const { data: inserted } = await db
+      .from("chat_departments")
+      .upsert(seeded, { onConflict: "store_id,slug" })
+      .select("*");
+    if (inserted) return inserted as ChatDepartmentDTO[];
+  }
+
+  return [];
+}
+
+export const listChatDepartments = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }) => _listChatDepartments(data?.storeId));
+
+export async function _upsertChatDepartment(input: z.infer<typeof ChatDepartmentRecordSchema>) {
+  const identity = await getServerIdentity();
+  if (!identity.id) throw new Error("Autenticação obrigatória.");
+  const storeId = input.storeId || identity.store_id;
+  if (!storeId) throw new Error("Loja obrigatória.");
+  if (identity.role !== "platform_admin") {
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+  }
+
+  const db = getServerClient();
+  const cleanSlug = slugifyDepartment(input.slug || input.name);
+  const nowIso = new Date().toISOString();
+
+  const payload = {
+    store_id: storeId,
+    slug: cleanSlug,
+    name: input.name.trim(),
+    description: input.description || null,
+    color: input.color,
+    routing_mode: input.routingMode,
+    sla_minutes: input.slaMinutes,
+    whatsapp_instance_id: input.whatsappInstanceId || null,
+    schedule_start: input.scheduleStart,
+    schedule_end: input.scheduleEnd,
+    schedule_days: input.scheduleDays,
+    away_message: input.awayMessage || null,
+    auto_greeting_message: input.autoGreetingMessage || null,
+    ai_sdr_enabled: input.aiSdrEnabled,
+    ai_sdr_skill_prompt: input.aiSdrSkillPrompt || null,
+    round_robin_enabled: input.roundRobinEnabled,
+    assigned_agent_ids: input.assignedAgentIds || [],
+    ai_triage_stages: input.aiTriageStages || [],
+    is_active: input.isActive,
+    updated_at: nowIso,
+  };
+
+  let saved: ChatDepartmentDTO;
+  if (input.id) {
+    const { data, error } = await db
+      .from("chat_departments")
+      .update(payload)
+      .eq("id", input.id)
+      .eq("store_id", storeId)
+      .select("*")
+      .single();
+    if (error || !data) throw new Error(`Falha ao atualizar setor: ${error?.message || "Setor não encontrado."}`);
+    saved = data as ChatDepartmentDTO;
+  } else {
+    const { data, error } = await db
+      .from("chat_departments")
+      .upsert(payload, { onConflict: "store_id,slug" })
+      .select("*")
+      .single();
+    if (error || !data) throw new Error(`Falha ao salvar setor: ${error?.message || "Erro desconhecido."}`);
+    saved = data as ChatDepartmentDTO;
+  }
+
+  const { data: allRows } = await db
+    .from("chat_departments")
+    .select("*")
+    .eq("store_id", storeId)
+    .order("name", { ascending: true });
+  if (allRows) {
+    await mirrorDepartmentsToGovernanceSettings(db, storeId, allRows);
+  }
+
+  return saved;
+}
+
+export const upsertChatDepartment = createServerFn({ method: "POST" })
+  .validator(ChatDepartmentRecordSchema)
+  .handler(async ({ data }) => _upsertChatDepartment(data));
+
+export async function _deleteChatDepartment(input: { id: string; storeId?: string }) {
+  const identity = await getServerIdentity();
+  if (!identity.id) throw new Error("Autenticação obrigatória.");
+  const storeId = input.storeId || identity.store_id;
+  if (!storeId) throw new Error("Loja obrigatória.");
+  if (identity.role !== "platform_admin") {
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+  }
+
+  const db = getServerClient();
+  await db
+    .from("workspace_members")
+    .update({ department_id: null })
+    .eq("store_id", storeId)
+    .eq("department_id", input.id);
+
+  const { error } = await db
+    .from("chat_departments")
+    .delete()
+    .eq("id", input.id)
+    .eq("store_id", storeId);
+
+  if (error) throw new Error(`Falha ao excluir setor: ${error.message}`);
+
+  const { data: remaining } = await db
+    .from("chat_departments")
+    .select("*")
+    .eq("store_id", storeId)
+    .order("name", { ascending: true });
+  await mirrorDepartmentsToGovernanceSettings(db, storeId, remaining || []);
+
+  return { deletedId: input.id };
+}
+
+export const deleteChatDepartment = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid(), storeId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => _deleteChatDepartment(data));
+
 export const WhatsAppGovernanceConfigSchema = z.object({
-  instanceId: z.string().uuid().optional(), agentPermissions: z.array(z.object({ agentId: z.string(), name: z.string().optional(), whatsappInstanceId: z.string().optional(), onlyAssignedOrSector: z.boolean().default(false), canTransfer: z.boolean().default(true), canCloseTicket: z.boolean().default(true), canManageQr: z.boolean().default(false) })).optional(),
+  instanceId: z.string().uuid().optional(),
+  agentPermissions: z
+    .array(
+      z.object({
+        agentId: z.string(),
+        name: z.string().optional(),
+        whatsappInstanceId: z.string().optional(),
+        onlyAssignedOrSector: z.boolean().default(false),
+        canTransfer: z.boolean().default(true),
+        canCloseTicket: z.boolean().default(true),
+        canManageQr: z.boolean().default(false),
+      }),
+    )
+    .optional(),
   departments: z.array(WhatsAppDepartmentSchema),
   permissions: z.object({
     onlyManagersCanViewQr: z.boolean().default(true),
@@ -1108,10 +1825,92 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
     if (!storeId) throw new Error("Loja obrigatória.");
 
     const db = getServerClient();
+    const nowIso = new Date().toISOString();
+
+    // Sincroniza 1:1 com public.chat_departments mantendo slug/id consistentes
+    for (const dept of data.departments) {
+      const slug = slugifyDepartment(dept.slug || dept.name || dept.id);
+      const validUuidAgents = (dept.assignedAgentIds || []).filter((id) => z.string().uuid().safeParse(id).success);
+      const prefInstance = dept.whatsappInstanceId && z.string().uuid().safeParse(dept.whatsappInstanceId).success
+        ? dept.whatsappInstanceId
+        : (dept.instanceIds || []).find((id) => z.string().uuid().safeParse(id).success) || null;
+
+      await db.from("chat_departments").upsert(
+        {
+          store_id: storeId,
+          slug,
+          name: dept.name,
+          description: dept.description || null,
+          color: dept.color,
+          routing_mode: dept.routingMode,
+          sla_minutes: dept.slaMinutes,
+          whatsapp_instance_id: prefInstance,
+          schedule_start: dept.scheduleStart,
+          schedule_end: dept.scheduleEnd,
+          schedule_days: dept.scheduleDays,
+          away_message: dept.awayMessage || null,
+          auto_greeting_message: dept.autoGreetingMessage || null,
+          ai_sdr_enabled: dept.aiSdrEnabled,
+          ai_sdr_skill_prompt: dept.aiSdrSkillPrompt || null,
+          round_robin_enabled: dept.roundRobinEnabled,
+          assigned_agent_ids: validUuidAgents,
+          ai_triage_stages: dept.aiTriageStages || [],
+          is_active: dept.isActive ?? true,
+          updated_at: nowIso,
+        },
+        { onConflict: "store_id,slug" },
+      );
+    }
+
+    // Sincroniza vínculos individuais de agentes em workspace_members quando informados
+    for (const perm of data.agentPermissions || []) {
+      if (!z.string().uuid().safeParse(perm.agentId).success) continue;
+      const validWa =
+        perm.whatsappInstanceId && z.string().uuid().safeParse(perm.whatsappInstanceId).success
+          ? perm.whatsappInstanceId
+          : null;
+      await db
+        .from("workspace_members")
+        .update({
+          ...(perm.whatsappInstanceId !== undefined ? { whatsapp_instance_id: validWa } : {}),
+          only_assigned_or_sector: perm.onlyAssignedOrSector,
+          can_transfer_chats: perm.canTransfer,
+          can_close_chats: perm.canCloseTicket,
+          can_manage_whatsapp_qr: perm.canManageQr,
+        })
+        .eq("store_id", storeId)
+        .eq("profile_id", perm.agentId);
+    }
+
     const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
     const currentSettings = ((storeRow?.settings as any) || {}) as Record<string, any>;
-    await db.from("stores").update({ settings: { ...currentSettings, whatsapp_governance: { departments: data.departments, permissions: data.permissions, agentPermissions: data.agentPermissions || [], updated_at: new Date().toISOString() } } }).eq("id", storeId);
-    if (!data.instanceId) return { id: storeId, store_id: storeId, public_config: { departments: data.departments, governance_permissions: data.permissions, agent_permissions: data.agentPermissions || [] } } as unknown as WhatsAppChannelInstanceDTO;
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...currentSettings,
+          whatsapp_governance: {
+            departments: data.departments,
+            permissions: data.permissions,
+            agentPermissions: data.agentPermissions || [],
+            updated_at: nowIso,
+          },
+        },
+      })
+      .eq("id", storeId);
+
+    if (!data.instanceId) {
+      return {
+        id: storeId,
+        store_id: storeId,
+        public_config: {
+          departments: data.departments,
+          governance_permissions: data.permissions,
+          agent_permissions: data.agentPermissions || [],
+        },
+      } as unknown as WhatsAppChannelInstanceDTO;
+    }
+
     const { data: current } = await db
       .from("whatsapp_channel_instances")
       .select(PublicFields)
@@ -1126,14 +1925,14 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
       departments: data.departments,
       governance_permissions: data.permissions,
       agent_permissions: data.agentPermissions || [],
-      updated_governance_at: new Date().toISOString(),
+      updated_governance_at: nowIso,
     };
 
     const { data: saved, error } = await db
       .from("whatsapp_channel_instances")
       .update({
         public_config: updatedConfig,
-        updated_at: new Date().toISOString(),
+        updated_at: nowIso,
       })
       .eq("id", data.instanceId)
       .select(PublicFields)
@@ -1243,6 +2042,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
     }
 
     let importedCount = 0;
+    let fetchedPicsCount = 0;
     const validChats = rawChats
       .filter((c) => {
         const jid = String(c.remoteJid || "");
@@ -1259,7 +2059,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         if (digits.length < 8) continue;
         const phone = `+${digits}`;
 
-        const contactInfo = contactMap.get(remoteJid) || contactMap.get(digits) || null;
+        const contactInfo = contactMap.get(remoteJid) || contactMap.get(digits) || (remoteJidAlt ? contactMap.get(remoteJidAlt) : null) || null;
         const isGroup = remoteJid.includes("@g.us") || Boolean(contactInfo?.isGroup);
         const isChannel = remoteJid.includes("@newsletter");
         const isLastFromMe = Boolean(chat.lastMessage?.key?.fromMe);
@@ -1279,9 +2079,16 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
             chat.name,
             contactInfo?.pushName,
             chat.pushName,
+            chat.contact?.pushName,
+            chat.contact?.name,
             isLastFromMe ? null : chat.lastMessage?.pushName,
           ) || (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : phone);
-        const avatarUrl = contactInfo?.profilePicUrl || chat.profilePictureUrl || null;
+        let avatarUrl =
+          contactInfo?.profilePicUrl ||
+          chat.profilePicUrl ||
+          chat.profilePictureUrl ||
+          chat.contact?.profilePicUrl ||
+          null;
 
         const lastMsgObj = chat.lastMessage?.message || {};
         const text = String(
@@ -1318,12 +2125,33 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           .maybeSingle();
 
         const existingMeta = (foundThread?.metadata && typeof foundThread.metadata === "object" ? foundThread.metadata : {}) as Record<string, any>;
+        if (!avatarUrl && !existingMeta.avatar_url && fetchedPicsCount < 15 && !isChannel) {
+          fetchedPicsCount += 1;
+          try {
+            const picRes = await fetch(`${baseUrl}/chat/fetchProfilePictureUrl/${encodeURIComponent(externalName)}`, {
+              method: "POST",
+              headers: { apikey: apiKey, "Content-Type": "application/json" },
+              body: JSON.stringify({ number: remoteJidAlt || remoteJid || digits }),
+              signal: AbortSignal.timeout(2500),
+            });
+            if (picRes.ok) {
+              const picJson = (await picRes.json().catch(() => ({}))) as Record<string, any>;
+              const fetchedPic = picJson.profilePictureUrl || picJson.profilePicUrl || picJson.picture || null;
+              if (typeof fetchedPic === "string" && fetchedPic.startsWith("http")) {
+                avatarUrl = fetchedPic;
+              }
+            }
+          } catch {
+            // Best-effort profile picture fetch
+          }
+        }
         const enrichedMeta = {
           ...existingMeta,
           is_group: isGroup,
           is_channel: isChannel,
           avatar_url: avatarUrl || existingMeta.avatar_url || null,
           whatsapp_jid: remoteJid,
+          ...(remoteJidAlt ? { whatsapp_jid_alt: remoteJidAlt } : {}),
           push_name: cleanName,
         };
 

@@ -628,7 +628,7 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-colors duration-200 duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
+ className="group relative flex flex-col justify-end aspect-16/9 rounded-lg border border-border bg-card overflow-hidden transition-colors duration-200 hover:border-foreground"
  >
  {item.cover_image_url ? (
  <img
@@ -638,15 +638,15 @@ function AdminMasterHotpagesPage() {
  loading="lazy"
  />
  ) : (
- <div className="absolute inset-0 size-full bg-muted flex items-center justify-center text-muted-foreground/40 font-bold text-xs">
+ <div className="absolute inset-0 size-full bg-muted flex items-center justify-center text-muted-foreground font-bold text-xs">
  {item.title}
  </div>
  )}
 
  {/* Se explicitamente habilitado título */}
  {item.show_title && (
- <div className="relative z-10 p-3 bg-linear-to-t from-black/80 via-black/20 to-transparent">
- <p className="text-xs font-bold text-foreground leading-tight truncate">
+ <div className="relative z-10 p-3 bg-card border-t border-border">
+ <p className="text-xs font-bold text-foreground leading-tight line-clamp-2 text-anti-truncate">
  {item.title}
  </p>
  </div>
@@ -654,14 +654,14 @@ function AdminMasterHotpagesPage() {
 
  {/* Rota Tag */}
  <div className="absolute bottom-2 left-2 z-20">
- <span className="text-xs font-mono font-bold bg-foreground/75 text-foreground/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
+ <span className="text-xs font-mono font-bold bg-card text-foreground px-2 py-1 rounded-lg border border-border">
  {item.target_route || `/${item.slug.replace(/^home-/, "")}`}
  </span>
  </div>
 
  {/* Ações de Hover */}
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1">
+ <div className="bg-background p-1 rounded-lg border border-border flex items-center gap-1">
  <Button
  size="sm"
  variant="ghost"
@@ -860,12 +860,12 @@ function AdminMasterHotpagesPage() {
  {showBadgeOnCard && (
  <div className="flex items-center gap-2 flex-wrap">
  {item.badge_label && (
- <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card/25 backdrop-blur-md text-foreground border border-white/20">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card text-foreground border border-border">
  {item.badge_label}
  </span>
  )}
  {item.hero_stat_badge && (
- <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary">
  {item.hero_stat_badge}
  </span>
  )}
@@ -873,14 +873,14 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showTitleOnCard && item.title && (
- <h3 className="text-xs sm:text-sm font-semibold text-foreground leading-tight line-clamp-2">
+ <h3 className="text-xs sm:text-sm font-semibold text-foreground leading-tight line-clamp-2 text-anti-truncate">
  {item.title}
  </h3>
  )}
  </div>
 
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1">
+ <div className="bg-background p-1 rounded-lg border border-border flex items-center gap-1">
  <Button
  size="sm"
  variant="ghost"
@@ -932,15 +932,15 @@ function AdminMasterHotpagesPage() {
  >
  <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-full sm:max-h-180 overflow-y-auto no-scrollbar pr-1">
  {/* Pré-visualização ao Vivo */}
- <div className="p-4 rounded-lg bg-muted/30 border border-border/80 space-y-2">
+ <div className="p-4 rounded-lg bg-muted border border-border space-y-2">
  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Eye className="size-3.5 text-primary" />
  Pré-visualização em Tempo Real
  </span>
 
  {templateType === "category_hub" ? (
- <div className="p-3 rounded-lg bg-card border border-border/80 flex items-center gap-3">
- <div className="size-11 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
+ <div className="p-3 rounded-lg bg-card border border-border flex items-center gap-3">
+ <div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0 border border-border overflow-hidden">
  {customIconUrl ? (
  <img src={customIconUrl} alt="Preview" className="size-7 object-contain" />
  ) : (
@@ -953,7 +953,7 @@ function AdminMasterHotpagesPage() {
  </div>
  </div>
  ) : (
- <div className={`relative aspect-16/9 rounded-lg overflow-hidden bg-card border border-border/80 ${showShadow ? "shadow-xs" : "shadow-xs"}`}>
+ <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-card border border-border">
  {coverImageUrl ? (
  <img src={coverImageUrl} alt="Preview Capa" className="size-full object-cover" />
  ) : (
@@ -974,12 +974,12 @@ function AdminMasterHotpagesPage() {
  {showBadge && (badgeLabel || heroStatBadge) && (
  <div className="absolute top-2 right-2 flex items-center gap-1">
  {badgeLabel && (
- <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-card/25 backdrop-blur-md text-foreground px-2 py-1 rounded-md border border-white/20 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-card text-foreground px-2 py-1 rounded-md border border-border">
  {badgeLabel}
  </span>
  )}
  {heroStatBadge && (
- <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary/30 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary">
  {heroStatBadge}
  </span>
  )}
@@ -987,8 +987,8 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showTitle && title && (
- <div className="absolute bottom-2.5 left-3 right-3 text-left">
- <p className="text-sm font-bold text-foreground leading-tight truncate">{title}</p>
+ <div className="absolute bottom-2 left-3 right-3 text-left">
+ <p className="text-sm font-bold text-foreground leading-tight line-clamp-2 text-anti-truncate">{title}</p>
  </div>
  )}
  </div>

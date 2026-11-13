@@ -524,7 +524,7 @@ function WorkspaceLeadFormsPage() {
           onClick={() => setActiveTab("builder")}
           className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "builder"
-              ? "bg-background text-foreground shadow-xs"
+              ? "bg-background text-foreground border border-border"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -535,13 +535,13 @@ function WorkspaceLeadFormsPage() {
           onClick={() => setActiveTab("crm")}
           className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
             activeTab === "crm"
-              ? "bg-background text-foreground shadow-xs"
+              ? "bg-background text-foreground border border-border"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <span>Caixa de Entrada (CRM)</span>
           {kpis.newLeadsCount > 0 && (
-            <span className="px-2 py-0.2 bg-primary text-primary-foreground text-xs font-bold rounded-full">
+            <span className="px-2 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
               {kpis.newLeadsCount}
             </span>
           )}
@@ -552,15 +552,15 @@ function WorkspaceLeadFormsPage() {
       {activeTab === "formularios" && (
         <div className="space-y-4">
           {forms.length === 0 ? (
-            <div className="py-16 text-center bg-card rounded-lg border border-border/60 p-6 flex flex-col items-center">
-              <FileText className="w-12 h-12 text-muted-foreground/40 mb-3" />
+            <div className="py-16 text-center bg-card rounded-lg border border-border p-6 flex flex-col items-center">
+              <FileText className="w-12 h-12 text-muted-foreground mb-3" />
               <h3 className="text-base font-semibold text-foreground mb-1">
                 Nenhum formulário criado ainda
               </h3>
               <p className="text-xs text-muted-foreground max-w-sm mb-5 leading-relaxed">
                 Crie seu primeiro formulário personalizado para capturar leads através de campanhas do Facebook, Google ou diretamente nos seus anúncios.
               </p>
-              <Button onClick={handleOpenNewForm} className="rounded-lg h-10 gap-2">
+              <Button onClick={handleOpenNewForm} className="rounded-lg h-11 min-h-11 gap-2">
                 <Plus className="w-4 h-4" />
                 <span>Criar Primeiro Formulário</span>
               </Button>

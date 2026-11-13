@@ -1,186 +1,254 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import { decryptSecret, encryptSecret } from "@/lib/crypto-vault.server";
+import {
+  decodeMarketplaceOAuthState,
+  exchangeMarketplaceOAuthCode,
+} from "@/lib/marketplace-api-client";
 
 import type {} from "@tanstack/react-start";
+
+function safeDecrypt(val: unknown): string {
+  if (typeof val !== "string" || !val.trim()) return "";
+  try {
+    return decryptSecret(val.trim());
+  } catch {
+    return val.trim();
+  }
+}
+
 export const Route = createFileRoute("/api/auth/marketplace/callback")({
   server: {
     handlers: {
       GET: async ({ request }: { request: Request }) => {
+        const url = new URL(request.url);
+        let returnPath = "/workspace/integracoes/marketplaces";
+
         try {
-          const url = new URL(request.url);
           const code = url.searchParams.get("code");
-          const state = url.searchParams.get("state") || "";
+          const stateRaw = url.searchParams.get("state") || "";
           const error = url.searchParams.get("error");
           const errorDescription = url.searchParams.get("error_description");
+          const shopIdParam = url.searchParams.get("shop_id") || undefined;
 
-          // Decodifica state: formato esperado "storeId:platform" ou base64
-          let storeId: string | null = null;
-          let platform: string = "mercadolivre";
+          const decodedState = decodeMarketplaceOAuthState(stateRaw);
+          const storeId = decodedState?.storeId || url.searchParams.get("store_id") || null;
+          const platform = (
+            decodedState?.platform ||
+            url.searchParams.get("platform") ||
+            "mercadolivre"
+          ).toLowerCase();
 
-          if (state.includes(":")) {
-            const parts = state.split(":");
-            storeId = parts[0];
-            platform = parts[1] || "mercadolivre";
-          } else if (state.startsWith("{")) {
-            try {
-              const parsed = JSON.parse(state);
-              storeId = parsed.storeId;
-              platform = parsed.platform || "mercadolivre";
-            } catch {
-              // fallback
-            }
+          if (decodedState?.returnPath && decodedState.returnPath.startsWith("/")) {
+            returnPath = decodedState.returnPath;
           }
 
           if (error) {
             console.warn(`[oauth:callback] Provedor ${platform} retornou erro:`, error, errorDescription);
-            const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+            const redirectUrl = new URL(returnPath, url.origin);
             redirectUrl.searchParams.set("error", errorDescription || error);
             redirectUrl.searchParams.set("platform", platform);
             return Response.redirect(redirectUrl.toString(), 302);
           }
 
           if (!code || !storeId) {
-            const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+            const redirectUrl = new URL(returnPath, url.origin);
             redirectUrl.searchParams.set("error", "Código de autorização ou identificador de loja ausente.");
+            redirectUrl.searchParams.set("platform", platform);
             return Response.redirect(redirectUrl.toString(), 302);
           }
 
           const supabase = getServerClient();
 
-          // 1. Busca credenciais da aplicação configuradas no ambiente ou no banco
-          const envClientId =
-            platform === "mercadolivre"
-              ? process.env.MERCADOLIVRE_CLIENT_ID || process.env.VITE_MERCADOLIVRE_CLIENT_ID
-              : platform === "ifood"
-              ? process.env.IFOOD_CLIENT_ID || process.env.VITE_IFOOD_CLIENT_ID
-              : null;
+          // 1. Busca conector da loja e chaves Master da plataforma (waesy-matriz)
+          const [{ data: existingConn }, { data: masterStore }] = await Promise.all([
+            supabase
+              .from("marketplace_connectors")
+              .select("id, external_account_id, account_nickname, refresh_token, settings")
+              .eq("store_id", storeId)
+              .eq("platform", platform)
+              .maybeSingle(),
+            supabase
+              .from("stores")
+              .select("settings")
+              .or("slug.eq.waesy-matriz,is_platform_root.eq.true")
+              .limit(1)
+              .maybeSingle(),
+          ]);
 
-          const envClientSecret =
-            platform === "mercadolivre"
-              ? process.env.MERCADOLIVRE_CLIENT_SECRET
-              : platform === "ifood"
-              ? process.env.IFOOD_CLIENT_SECRET
-              : null;
+          const storeCreds = ((existingConn?.settings as any)?.credentials || {}) as Record<string, any>;
+          const masterIntegrations = ((masterStore?.settings as any)?.integrations || {}) as Record<string, any>;
 
-          let realAccessToken: string | null = null;
-          let realRefreshToken: string | null = null;
-          let expiresIn = 21600;
+          const clientIdMap: Record<string, string> = {
+            mercadolivre:
+              safeDecrypt(storeCreds.client_id) ||
+              safeDecrypt(masterIntegrations.mercadolivre_app_id) ||
+              process.env.MERCADOLIVRE_APP_ID ||
+              process.env.MERCADOLIVRE_CLIENT_ID ||
+              process.env.VITE_MERCADOLIVRE_CLIENT_ID ||
+              "",
+            ifood:
+              safeDecrypt(storeCreds.client_id) ||
+              safeDecrypt(masterIntegrations.ifood_client_id) ||
+              process.env.IFOOD_CLIENT_ID ||
+              process.env.VITE_IFOOD_CLIENT_ID ||
+              "",
+            shopee:
+              safeDecrypt(storeCreds.partner_id) ||
+              safeDecrypt(storeCreds.client_id) ||
+              safeDecrypt(masterIntegrations.shopee_partner_id) ||
+              process.env.SHOPEE_PARTNER_ID ||
+              "",
+            bling:
+              safeDecrypt(storeCreds.client_id) ||
+              process.env.BLING_CLIENT_ID ||
+              "",
+            magalu:
+              safeDecrypt(storeCreds.client_id) ||
+              process.env.MAGALU_CLIENT_ID ||
+              "",
+          };
 
-          // Se houver credenciais reais, efetua a troca HTTP real com o provedor
-          if (envClientId && envClientSecret) {
-            try {
-              const redirectUri = new URL("/api/auth/marketplace/callback", url.origin).toString();
-              let tokenEndpoint = "";
-              let tokenBody: Record<string, string> = {};
+          const clientSecretMap: Record<string, string> = {
+            mercadolivre:
+              safeDecrypt(storeCreds.client_secret) ||
+              safeDecrypt(masterIntegrations.mercadolivre_client_secret) ||
+              process.env.MERCADOLIVRE_CLIENT_SECRET ||
+              "",
+            ifood:
+              safeDecrypt(storeCreds.client_secret) ||
+              safeDecrypt(masterIntegrations.ifood_client_secret) ||
+              process.env.IFOOD_CLIENT_SECRET ||
+              "",
+            shopee:
+              safeDecrypt(storeCreds.partner_key) ||
+              safeDecrypt(storeCreds.client_secret) ||
+              safeDecrypt(masterIntegrations.shopee_partner_key) ||
+              process.env.SHOPEE_PARTNER_KEY ||
+              "",
+            bling:
+              safeDecrypt(storeCreds.client_secret) ||
+              process.env.BLING_CLIENT_SECRET ||
+              "",
+            magalu:
+              safeDecrypt(storeCreds.client_secret) ||
+              process.env.MAGALU_CLIENT_SECRET ||
+              "",
+          };
 
-              if (platform === "mercadolivre") {
-                tokenEndpoint = "https://api.mercadolibre.com/oauth/token";
-                tokenBody = {
-                  grant_type: "authorization_code",
-                  client_id: envClientId,
-                  client_secret: envClientSecret,
-                  code: code,
-                  redirect_uri: redirectUri,
-                };
-              } else if (platform === "ifood") {
-                tokenEndpoint = "https://merchant-api.ifood.com.br/authentication/v1.0/oauth/token";
-                tokenBody = {
-                  grantType: "authorization_code",
-                  clientId: envClientId,
-                  clientSecret: envClientSecret,
-                  authorizationCode: code,
-                  authorizationCodeVerifier: "",
-                };
-              }
+          const resolvedClientId = (clientIdMap[platform] || "").trim();
+          const resolvedClientSecret = (clientSecretMap[platform] || "").trim();
 
-              if (tokenEndpoint) {
-                const tokenRes = await fetch(tokenEndpoint, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                  body: new URLSearchParams(tokenBody).toString(),
-                });
-
-                if (tokenRes.ok) {
-                  const tokenData = await tokenRes.json();
-                  realAccessToken = tokenData.access_token || tokenData.accessToken;
-                  realRefreshToken = tokenData.refresh_token || tokenData.refreshToken || null;
-                  expiresIn = tokenData.expires_in || 21600;
-                } else {
-                  const errJson = await tokenRes.text();
-                  console.error(`[oauth:callback] Provedor ${platform} rejeitou troca de token:`, errJson);
-                  const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
-                  redirectUrl.searchParams.set("error", `Provedor ${platform} rejeitou autorização: ${tokenRes.status}`);
-                  redirectUrl.searchParams.set("platform", platform);
-                  return Response.redirect(redirectUrl.toString(), 302);
-                }
-              }
-            } catch (exchangeErr: any) {
-              console.error(`[oauth:callback] Erro de rede ao trocar token com ${platform}:`, exchangeErr);
-              const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
-              redirectUrl.searchParams.set("error", `Erro de conexão com o provedor ${platform}.`);
-              redirectUrl.searchParams.set("platform", platform);
-              return Response.redirect(redirectUrl.toString(), 302);
-            }
-          } else {
-            // Sem credenciais no servidor — Política Zero Mocks: rejeita conexão simulada
-            console.warn(`[oauth:callback] Credenciais de API para ${platform} não configuradas no servidor.`);
-            const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+          if (!resolvedClientId || !resolvedClientSecret) {
+            console.warn(`[oauth:callback] Credenciais App OAuth para ${platform} ausentes no conector, Admin Master e env.`);
+            const redirectUrl = new URL(returnPath, url.origin);
             redirectUrl.searchParams.set(
               "error",
-              `Credenciais do aplicativo ${platform.toUpperCase()} não configuradas no servidor (MERCADOLIVRE_CLIENT_ID / SECRET). Cadastre as chaves nas variáveis de ambiente.`
+              `Chaves do aplicativo ${platform.toUpperCase()} não configuradas. Configure no Admin Master ou no formulário do canal.`
             );
             redirectUrl.searchParams.set("platform", platform);
             return Response.redirect(redirectUrl.toString(), 302);
           }
 
-          if (!realAccessToken) {
-            const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
-            redirectUrl.searchParams.set("error", "Não foi possível obter o token de acesso oficial.");
+          const redirectUri = new URL("/api/auth/marketplace/callback", url.origin).toString();
+
+          let tokenResult;
+          try {
+            tokenResult = await exchangeMarketplaceOAuthCode({
+              platform,
+              code,
+              redirectUri,
+              clientId: resolvedClientId,
+              clientSecret: resolvedClientSecret,
+              shopId: shopIdParam || existingConn?.external_account_id || undefined,
+            });
+          } catch (exchangeErr: any) {
+            console.error(`[oauth:callback] Erro ao trocar código OAuth (${platform}):`, exchangeErr);
+            const redirectUrl = new URL(returnPath, url.origin);
+            redirectUrl.searchParams.set(
+              "error",
+              exchangeErr?.message || `Provedor ${platform} rejeitou a autorização OAuth.`
+            );
             redirectUrl.searchParams.set("platform", platform);
             return Response.redirect(redirectUrl.toString(), 302);
           }
 
-          // Atualiza conector conectado com credenciais reais
-          await supabase
+          const encAccessToken = encryptSecret(tokenResult.accessToken);
+          const encRefreshToken = tokenResult.refreshToken
+            ? encryptSecret(tokenResult.refreshToken)
+            : existingConn?.refresh_token || null;
+
+          const updatedCredentials: Record<string, string> = {
+            ...storeCreds,
+            access_token: encAccessToken,
+          };
+          if (encRefreshToken) updatedCredentials.refresh_token = encRefreshToken;
+          if (platform === "shopee") {
+            updatedCredentials.partner_id = resolvedClientId;
+            updatedCredentials.partner_key = encryptSecret(resolvedClientSecret);
+            if (tokenResult.externalAccountId) updatedCredentials.shop_id = tokenResult.externalAccountId;
+          } else {
+            updatedCredentials.client_id = resolvedClientId;
+            updatedCredentials.client_secret = encryptSecret(resolvedClientSecret);
+          }
+
+          const platformLabelMap: Record<string, string> = {
+            mercadolivre: "Mercado Livre Brasil",
+            ifood: "iFood Delivery",
+            shopee: "Shopee Brasil",
+            bling: "Bling ERP v3",
+            magalu: "Magalu Marketplace",
+          };
+
+          const mergedSettings = {
+            ...((existingConn?.settings as Record<string, any>) || {}),
+            encryption_algorithm: "AES-256-GCM",
+            sync_stock: (existingConn?.settings as any)?.sync_stock ?? true,
+            sync_orders: true,
+            sync_products: true,
+            token_expires_at: tokenResult.tokenExpiresAt || undefined,
+            credentials: updatedCredentials,
+          };
+
+          const { data: savedConnector, error: upsertErr } = await supabase
             .from("marketplace_connectors")
             .upsert(
               {
                 store_id: storeId,
                 platform: platform as any,
-                name: platform === "mercadolivre" ? "Mercado Livre Brasil" : platform === "ifood" ? "iFood Delivery" : "Canal Marketplace",
+                name: platformLabelMap[platform] || platform.toUpperCase(),
+                external_account_id: tokenResult.externalAccountId || existingConn?.external_account_id || null,
+                account_nickname: tokenResult.accountNickname || existingConn?.account_nickname || null,
+                access_token: encAccessToken,
+                refresh_token: encRefreshToken,
+                token_expires_at: tokenResult.tokenExpiresAt || null,
+                scope: tokenResult.scope || null,
+                credentials: updatedCredentials,
                 status: "connected",
-                credentials: {
-                  access_token: realAccessToken,
-                  refresh_token: realRefreshToken,
-                  token_type: "Bearer",
-                  expires_in: expiresIn,
-                  obtained_at: new Date().toISOString(),
-                },
+                settings: mergedSettings,
                 last_sync_at: new Date().toISOString(),
                 sync_status: "idle",
                 error_message: null,
                 updated_at: new Date().toISOString(),
               },
-              { onConflict: "store_id, platform" }
-            );
-
-          // Registra log de conexão
-          const { data: connector } = await supabase
-            .from("marketplace_connectors")
+              { onConflict: "store_id,platform" }
+            )
             .select("id")
-            .eq("store_id", storeId)
-            .eq("platform", platform)
             .maybeSingle();
 
-          if (connector) {
+          if (upsertErr) {
+            throw new Error(`Erro ao persistir conector conectado: ${upsertErr.message}`);
+          }
+
+          if (savedConnector?.id) {
             await supabase.from("marketplace_sync_logs").insert({
               store_id: storeId,
-              connector_id: connector.id,
-              platform: platform,
-              sync_type: "oauth",
-              direction: "inbound",
+              connector_id: savedConnector.id,
+              platform,
+              sync_type: "full",
+              direction: "import",
               status: "completed",
-              items_processed: 0,
+              items_processed: 1,
               items_created: 0,
               items_updated: 1,
               items_failed: 0,
@@ -188,22 +256,23 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
               errors: [],
               metadata: {
                 action: "oauth_connected",
+                external_account_id: tokenResult.externalAccountId,
                 connected_at: new Date().toISOString(),
               },
             });
           }
 
-          const redirectSuccessUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+          const redirectSuccessUrl = new URL(returnPath, url.origin);
           redirectSuccessUrl.searchParams.set("connected", "true");
           redirectSuccessUrl.searchParams.set("platform", platform);
           return Response.redirect(redirectSuccessUrl.toString(), 302);
         } catch (err: any) {
           console.error("[oauth:callback] Exceção crítica:", err);
-          const redirectUrl = new URL("/workspace/integracoes/marketplaces", request.url);
-          redirectUrl.searchParams.set("error", "Falha interna ao concluir autenticação com o marketplace.");
+          const redirectUrl = new URL(returnPath, url.origin);
+          redirectUrl.searchParams.set("error", err?.message || "Falha interna ao concluir autenticação com o marketplace.");
           return Response.redirect(redirectUrl.toString(), 302);
         }
       },
     },
   },
-} as never)
+} as never);

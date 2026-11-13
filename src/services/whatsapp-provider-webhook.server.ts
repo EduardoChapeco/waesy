@@ -284,12 +284,11 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       channel_instance_id: instance.id,
       channel_identity_id: identity.id,
       guest_name: safeGuestName,
-      guest_phone: message.phone,
       guest_email: syntheticEmail,
       status: "open",
       subject: `WhatsApp ${message.phone}`,
       context_type: "whatsapp",
-      thread_type: isGroupJid ? "group" : "direct",
+      thread_type: isGroupJid ? "group" : "store",
       entity_id: message.phone,
       department: "geral",
       priority: "normal",
@@ -504,7 +503,6 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       updated_at: new Date().toISOString(),
       status: "open",
     }).eq("id", thread.id).eq("store_id", storeId);
-    try { if (cleanDigits.length >= 10) await db.from("profiles").update({ phone_verified_at: new Date().toISOString() }).or(`phone.eq.${message.phone},phone.eq.${cleanDigits}`).is("phone_verified_at", null); } catch { /* noop */ }
     if (!isGroupJid && cleanDigits.length >= 8) {
       try {
         const suffix = cleanDigits.slice(-8);
@@ -724,6 +722,63 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
     const pairingCode = firstString(body.data?.qrcode?.pairingCode, body.qrcode?.pairingCode, body.data?.pairingCode);
     const nowIso = new Date().toISOString();
     const currentPublicConfig = (instance.public_config && typeof instance.public_config === "object" ? instance.public_config : {}) as Record<string, unknown>;
+
+    // Bloqueia duplicidade de número ativo na mesma loja antes de marcar como connected
+    if (ownerPhone && (statusMap === "connected" || statusMap === "pending")) {
+      const { data: duplicate } = await db
+        .from("whatsapp_channel_instances")
+        .select("id, display_name")
+        .eq("store_id", instance.store_id)
+        .eq("display_phone_number", ownerPhone)
+        .eq("status", "connected")
+        .neq("id", instance.id)
+        .maybeSingle();
+
+      if (duplicate) {
+        const baseUrl = firstString(currentPublicConfig.base_url as string | undefined, secrets.base_url as string | undefined, process.env.EVOLUTION_API_URL);
+        const logoutKey = firstString(secrets.api_key as string | undefined, masterApiKey);
+        const extId = instance.external_instance_id || instance.instance_key;
+        if (baseUrl && logoutKey && extId) {
+          await fetch(`${baseUrl.replace(/\/$/, "")}/instance/logout/${encodeURIComponent(extId)}`, {
+            method: "DELETE",
+            headers: { apikey: logoutKey },
+            signal: AbortSignal.timeout(4000),
+          }).catch(() => null);
+        }
+
+        const conflictMessage = `Número já conectado em outra instância desta loja (${duplicate.display_name}). Desconecte a outra antes ou escaneie um chip diferente.`;
+        await db.from("whatsapp_channel_instances").update({
+          status: "error",
+          is_active: false,
+          is_default: false,
+          display_phone_number: null,
+          last_error_code: "DUPLICATE_PHONE_CONFLICT",
+          last_error_message: conflictMessage,
+          public_config: {
+            ...currentPublicConfig,
+            qr_code_url: null,
+            pairing_code: null,
+            last_webhook_state: state,
+            last_webhook_at: nowIso,
+            duplicate_conflict_instance_id: duplicate.id,
+          },
+          last_health_check_at: nowIso,
+          updated_at: nowIso,
+        }).eq("id", instance.id);
+
+        await db.from("whatsapp_channel_audit_events").insert({
+          instance_id: instance.id,
+          store_id: instance.store_id,
+          actor_id: null,
+          action: "instance.duplicate_phone_blocked",
+          severity: "warning",
+          metadata: { duplicate_instance_id: duplicate.id, duplicate_display_name: duplicate.display_name, phone: ownerPhone, source: "webhook" },
+        }).then(() => null, () => null);
+
+        return json({ ok: true, blocked: true, reason: "duplicate_phone", provider, instance: instanceKey, event: name, status: "error", conflictInstanceId: duplicate.id });
+      }
+    }
+
     const nextPublicConfig: Record<string, unknown> = {
       ...currentPublicConfig,
       ...(normalizedQr ? { qr_code_url: normalizedQr, last_qr_generated_at: nowIso } : {}),
@@ -737,7 +792,7 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
     await db.from("whatsapp_channel_instances").update({
       status: statusMap,
       ...(ownerPhone ? { display_phone_number: ownerPhone } : {}),
-      ...(statusMap === "connected" ? { last_error_code: null, last_error_message: null } : {}),
+      ...(statusMap === "connected" ? { is_active: true, last_error_code: null, last_error_message: null } : {}),
       ...(isRevoked ? { last_error_code: "SESSION_REVOKED_401", last_error_message: "Sessão desconectada ou revogada no aparelho WhatsApp." } : {}),
       public_config: nextPublicConfig,
       last_health_check_at: nowIso,

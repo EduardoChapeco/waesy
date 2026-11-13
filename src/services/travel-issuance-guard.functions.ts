@@ -342,16 +342,17 @@ export const listPendingIssuanceQueue = createServerFn({ method: "GET" })
 
     const { data: trips } = await supabase
       .from("tourism_trips")
-      .select("id, trip_number, title, total_cents, status, created_at, metadata")
+      .select("id, trip_number, title, total_cents, status, created_at, financial_details, payment_method")
       .eq("store_id", data.storeId)
       .in("status", ["confirmed", "pending_issuance", "in_progress"])
       .order("created_at", { ascending: false })
       .limit(20);
 
     return (trips || []).map((t: any): PendingIssuanceItemDTO => {
-      const meta = t.metadata || {};
+      const meta = (t.financial_details as any) || {};
       const totalCents = Number(t.total_cents || 0);
-      const isUpfront = meta.payment_method === "pix" || meta.payment_method === "cash";
+      const pm = t.payment_method || meta.payment_method || "credit_card";
+      const isUpfront = pm === "pix" || pm === "cash";
       const isVerified = meta.kyc_status === "verified";
 
       let policy: "instant" | "delayed_1h" | "manual_review" = "manual_review";
@@ -367,7 +368,7 @@ export const listPendingIssuanceQueue = createServerFn({ method: "GET" })
         customerName: meta.customer_name || t.title || "Passageiro",
         productType: meta.product_type || "flight",
         amountDisplay: formatMoney(totalCents),
-        paymentMethod: meta.payment_method || "credit_card",
+        paymentMethod: pm,
         issuancePolicy: policy,
         kycStatus: isVerified ? "verified" : meta.kyc_status || "under_review",
         similarityScore: meta.similarity_score || (isVerified ? 1.0 : 0.75),

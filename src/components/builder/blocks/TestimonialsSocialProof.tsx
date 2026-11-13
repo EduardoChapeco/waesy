@@ -1,6 +1,7 @@
 import React from "react";
 import { TestimonialsBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import { Star, CheckCircle2, Quote } from "lucide-react";
 
 export interface TestimonialsSocialProofProps {
@@ -16,6 +17,7 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
   styling,
   className = "",
 }) => {
+  const { isMobile } = useEffectiveViewport();
   const paddingYClasses = {
     none: "py-0",
     sm: "py-8",
@@ -62,7 +64,7 @@ export const TestimonialsSocialProof: React.FC<TestimonialsSocialProofProps> = (
           <p role="note" className="mx-auto max-w-xl rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
             Nenhum depoimento foi adicionado. Inclua somente relatos reais e autorizados antes de publicar.
           </p>
-        ) : <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        ) : <div className={isMobile ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 md:grid-cols-3 gap-6"}>
           {testimonials.map((t) => (
             <div
               key={t.id}

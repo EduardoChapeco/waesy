@@ -5,6 +5,7 @@ import { resolveTenantStoreId } from "@/lib/server-access";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { getWorkingIntervalsForDate } from "@/services/store.functions";
 import { sendWhatsAppNotification } from "./integrations.functions";
+import { assertStoreEntitlement } from "@/lib/architecture/module-plan-governance";
 
 // --- SCHEMAS ---
 
@@ -46,6 +47,10 @@ export const createManualAppointmentSchema = z.object({
   payment_status: z.enum(["pay_at_location", "paid", "unpaid"]).default("pay_at_location"),
   payment_method: z.string().default("at_location"),
   notes: z.string().optional(),
+  formula_notes: z.string().optional(),
+  service_checklist: z.array(z.record(z.string(), z.unknown())).optional(),
+  return_reminder_at: z.string().datetime().optional().nullable(),
+  supplies_deducted: z.boolean().optional(),
 });
 
 export const reconcilePastAppointmentsSchema = z.object({
@@ -494,6 +499,15 @@ export const createAppointment = createServerFn({ method: "POST" })
       const storeId = service.store_id || tenantStoreId;
       if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("id, slug, plan_tier, subscription_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, is_platform_root, quota_overrides, settings")
+        .eq("id", storeId)
+        .maybeSingle();
+      if (storeRow) {
+        assertStoreEntitlement(storeRow, { capability: "agenda_services" });
+      }
+
       const apptStart = new Date(input.scheduled_at);
       if (Number.isNaN(apptStart.getTime()) || apptStart.getTime() <= Date.now()) {
         throw new Error("O horário do agendamento deve ser uma data futura válida.");
@@ -778,6 +792,15 @@ export const deleteResource = createServerFn({ method: "POST" })
       if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
       const db = getServerClient();
+
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("id, slug, plan_tier, subscription_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, is_platform_root, quota_overrides, settings")
+        .eq("id", storeId)
+        .maybeSingle();
+      if (storeRow) {
+        assertStoreEntitlement(storeRow, { capability: "agenda_services" });
+      }
       await db.from("booking_resource_availabilities").delete().eq("resource_id", input.id);
       const { error } = await db
         .from("booking_resources")
@@ -867,6 +890,8 @@ export const upsertBookingService = createServerFn({ method: "POST" })
  image_url: z.string().optional().nullable(),
  cover_url: z.string().optional().nullable(),
  status: z.enum(["active", "archived"]).default("active"),
+ guidelines: z.string().optional().nullable(),
+ cancellation_policy: z.string().optional().nullable(),
  }),
  )
  .handler(async ({ data: input }) => {
@@ -892,6 +917,8 @@ export const upsertBookingService = createServerFn({ method: "POST" })
  gender_target: input.gender_target ?? null,
  image_url: finalImage,
  status: input.status,
+ guidelines: input.guidelines ?? null,
+ cancellation_policy: input.cancellation_policy ?? null,
  updated_at: new Date().toISOString(),
  })
  .eq("id", input.id)
@@ -915,6 +942,8 @@ export const upsertBookingService = createServerFn({ method: "POST" })
  gender_target: input.gender_target ?? null,
  image_url: finalImage,
  status: input.status,
+ guidelines: input.guidelines ?? null,
+ cancellation_policy: input.cancellation_policy ?? null,
  })
  .select()
  .single();
@@ -980,6 +1009,15 @@ export const updateAppointmentStatus = createServerFn({ method: "POST" })
       const storeId = await resolveTenantStoreId();
 
       const db = getServerClient();
+
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("id, slug, plan_tier, subscription_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, is_platform_root, quota_overrides, settings")
+        .eq("id", storeId)
+        .maybeSingle();
+      if (storeRow) {
+        assertStoreEntitlement(storeRow, { capability: "agenda_services" });
+      }
 
       const { data: appt } = await db
         .from("booking_appointments")
@@ -1203,6 +1241,17 @@ export const rescheduleAppointment = createServerFn({ method: "POST" })
 
       if (apptErr || !appt) throw new Error("Agendamento não encontrado.");
 
+      if (appt.store_id) {
+        const { data: storeRow } = await db
+          .from("stores")
+          .select("id, slug, plan_tier, subscription_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, is_platform_root, quota_overrides, settings")
+          .eq("id", appt.store_id)
+          .maybeSingle();
+        if (storeRow) {
+          assertStoreEntitlement(storeRow, { capability: "agenda_services" });
+        }
+      }
+
       // 2. Verificar permissão: titular do agendamento OU staff da loja
       const isOwner = appt.customer_id === identity.id;
       let isStaff = false;
@@ -1323,6 +1372,15 @@ export const createManualAppointment = createServerFn({ method: "POST" })
 
       const db = getServerClient();
 
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("id, slug, plan_tier, subscription_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, is_platform_root, quota_overrides, settings")
+        .eq("id", storeId)
+        .maybeSingle();
+      if (storeRow) {
+        assertStoreEntitlement(storeRow, { capability: "agenda_services" });
+      }
+
       // Buscar serviço
       const { data: service, error: sErr } = await db
         .from("booking_services")
@@ -1373,6 +1431,10 @@ export const createManualAppointment = createServerFn({ method: "POST" })
           payment_status: input.payment_status || "pay_at_location",
           payment_method: input.payment_method || "at_location",
           notes: input.notes ? `[Lançamento Manual] ${input.notes}` : "[Lançamento Manual]",
+          formula_notes: input.formula_notes || null,
+          service_checklist: input.service_checklist || [],
+          return_reminder_at: input.return_reminder_at || null,
+          supplies_deducted: Boolean(input.supplies_deducted),
           status: "confirmed",
         })
         .select()
@@ -1402,6 +1464,15 @@ export const reconcilePastAppointments = createServerFn({ method: "POST" })
       if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
       const db = getServerClient();
+
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("id, slug, plan_tier, subscription_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, is_platform_root, quota_overrides, settings")
+        .eq("id", storeId)
+        .maybeSingle();
+      if (storeRow) {
+        assertStoreEntitlement(storeRow, { capability: "agenda_services" });
+      }
       const targetStatus = input.action === "mark_completed" ? "completed" : "no_show";
       const nowIso = new Date().toISOString();
 
@@ -1454,6 +1525,7 @@ export const getAppointmentDossier = createServerFn({ method: "GET" })
           price_cents, service_title, cancellation_policy, modality, payment_status,
           payment_method, rescheduled_from_id, reschedule_count, cancelled_by,
           cancellation_reason, cancelled_at, check_in_at, no_show_marked_at,
+          formula_notes, service_checklist, return_reminder_at, supplies_deducted,
           completed_at, created_at, updated_at,
           booking_services ( id, title, duration_minutes, price_cents, category, included_items, guidelines, cancellation_policy, modality ),
           booking_resources ( id, name, resource_type ),
@@ -1494,6 +1566,65 @@ export const getAppointmentDossier = createServerFn({ method: "GET" })
       console.error("[booking.functions] getAppointmentDossier error:", e);
       throw new Error(
         (e instanceof Error ? e.message : String(e)) || "Erro ao carregar dossiê do agendamento."
+      );
+    }
+  });
+
+export const updateAppointmentClinicalNotesSchema = z.object({
+  appointment_id: z.string().uuid(),
+  formula_notes: z.string().optional().nullable(),
+  service_checklist: z.array(z.record(z.string(), z.unknown())).optional(),
+  return_reminder_at: z.string().datetime().optional().nullable(),
+  supplies_deducted: z.boolean().optional(),
+});
+
+/**
+ * Atualiza anotações clínicas, fórmulas químicas, checklist técnico e lembrete de retorno
+ * em um agendamento da vertical de Serviços & Especialistas.
+ */
+export const updateAppointmentClinicalNotes = createServerFn({ method: "POST" })
+  .validator((data: z.infer<typeof updateAppointmentClinicalNotesSchema>) =>
+    updateAppointmentClinicalNotesSchema.parse(data),
+  )
+  .handler(async ({ data: input }) => {
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "gerente", "professional"]);
+      const storeId = await resolveTenantStoreId();
+      if (!storeId) throw new Error("Loja não encontrada no contexto operacional.");
+
+      const db = getServerClient();
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("id, slug, plan_tier, subscription_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, is_platform_root, quota_overrides, settings")
+        .eq("id", storeId)
+        .maybeSingle();
+      if (storeRow) {
+        assertStoreEntitlement(storeRow, { capability: "agenda_services" });
+      }
+
+      const patch: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (input.formula_notes !== undefined) patch.formula_notes = input.formula_notes;
+      if (input.service_checklist !== undefined) patch.service_checklist = input.service_checklist;
+      if (input.return_reminder_at !== undefined) patch.return_reminder_at = input.return_reminder_at;
+      if (input.supplies_deducted !== undefined) patch.supplies_deducted = input.supplies_deducted;
+
+      const { data, error } = await db
+        .from("booking_appointments")
+        .update(patch)
+        .eq("id", input.appointment_id)
+        .eq("store_id", storeId)
+        .select("id, formula_notes, service_checklist, return_reminder_at, supplies_deducted, updated_at")
+        .single();
+
+      if (error || !data) throw error || new Error("Agendamento não encontrado.");
+      return { status: "success" as const, data };
+    } catch (e: unknown) {
+      console.error("[booking.functions] updateAppointmentClinicalNotes error:", e);
+      throw new Error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao salvar ficha técnica do atendimento.",
       );
     }
   });

@@ -46,7 +46,7 @@ export async function getDecryptedWoobaCredentials(agencyId: string): Promise<Wo
 
   const { data: row, error } = await supabase
     .from("travel_operator_integrations")
-    .select("credentials_vault_ref, is_active, default_markup_percent")
+    .select("vault_secret_id, is_active, default_markup_percent")
     .eq("store_id", agencyId)
     .eq("provider_code", "wooba")
     .eq("is_active", true)
@@ -60,7 +60,7 @@ export async function getDecryptedWoobaCredentials(agencyId: string): Promise<Wo
     );
   }
 
-  if (!row.credentials_vault_ref) {
+  if (!row.vault_secret_id) {
     throw new WoobaConnectorError(
       "CREDENTIALS_VAULT_EMPTY",
       "BLOCKED — PROVIDER CREDENTIAL REQUIRED: Credenciais Wooba ausentes no cofre de segurança.",
@@ -69,7 +69,7 @@ export async function getDecryptedWoobaCredentials(agencyId: string): Promise<Wo
   }
 
   try {
-    const rawJson = decryptSecret(row.credentials_vault_ref);
+    const rawJson = decryptSecret(row.vault_secret_id);
     const parsed = JSON.parse(rawJson);
     return WoobaCredentialsSchema.parse({
       ...parsed,

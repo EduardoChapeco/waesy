@@ -114,18 +114,18 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
           </SheetTrigger>
           <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 overscroll-contain">
             <SheetHeader>
-              <SheetTitle className="text-lg font-bold">Cadastrar Atração / Show</SheetTitle>
+              <SheetTitle className="text-lg font-bold">Cadastrar Atração</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
-                Informe os detalhes do artista e o horário de palco.
+                Informe o artista e o horário de apresentação.
               </SheetDescription>
             </SheetHeader>
 
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
               <div className="space-y-2">
-                <Label className="text-xs font-bold">Nome do Artista / Banda *</Label>
+                <Label className="text-xs font-bold">Artista ou Banda *</Label>
                 <Input
                   required
-                  placeholder="Ex: Alok / Banda Titãs"
+                  placeholder="Ex: Banda Local"
                   className="h-11 rounded-lg text-xs"
                   value={nomeArtista}
                   onChange={(e) => setNomeArtista(e.target.value)}
@@ -133,9 +133,9 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-bold">Palco / Espaço</Label>
+                <Label className="text-xs font-bold">Palco</Label>
                 <Input
-                  placeholder="Ex: Palco Principal / Tenda Eletrônica"
+                  placeholder="Ex: Palco Principal"
                   className="h-11 rounded-lg text-xs"
                   value={palco}
                   onChange={(e) => setPalco(e.target.value)}

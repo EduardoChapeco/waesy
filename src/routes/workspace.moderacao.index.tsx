@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ShieldAlert, Flag, CheckCircle2, XCircle, Eye, Trash2, AlertTriangle, Loader2, Filter, User, ExternalLink, ShieldCheck, MessageSquare } from "lucide-react";
@@ -14,7 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatRelativeTime, formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/moderacao/")({
- head: () => ({ meta: [{ title: "Moderação | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Moderação | Admin Master" }] }),
+ beforeLoad: async () => {
+   throw redirect({ to: "/admin-master/denuncias" });
+ },
  component: ModerationQueuePage,
 });
 

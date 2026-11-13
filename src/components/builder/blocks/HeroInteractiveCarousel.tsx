@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { HeroCarouselBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import { ArrowRight, ChevronLeft, ChevronRight, Tag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getSafeBuilderHref } from "@/lib/builder/safe-href";
@@ -18,7 +19,8 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
   styling,
   className = "",
 }) => {
-  const sectionStyle = getSectionStyle(styling);
+  const { isMobile } = useEffectiveViewport();
+  const sectionStyle = getSectionStyle(styling, isMobile);
 
   const slides = Array.isArray(data?.slides) && data.slides.length > 0 ? data.slides : [];
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -72,11 +74,21 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
       className={`relative w-full bg-background text-foreground overflow-hidden border-b border-border/40 select-none ${sectionStyle.className} ${className}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-96 lg:min-h-128">
+        <div
+          className={
+            isMobile
+              ? "grid grid-cols-1 gap-6 items-center min-h-80 py-4"
+              : "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-96 lg:min-h-128"
+          }
+        >
           {/* Lado Esquerdo: Conteúdo Editorial do Slide */}
           <div
             key={currentIndex}
-            className="lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300"
+            className={
+              isMobile
+                ? "col-span-1 flex flex-col items-start text-left z-10 animate-in fade-in duration-300"
+                : "lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300"
+            }
           >
             {/* Badge de Contexto do Slide */}
             {currentSlide.badgeText && (
@@ -87,7 +99,13 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
             )}
 
             {/* Título Display do Slide */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-foreground mb-4 sm:mb-6 [text-wrap:balance]">
+            <h1
+              className={
+                isMobile
+                  ? "text-2xl font-black tracking-tight leading-tight text-foreground mb-3 [text-wrap:balance]"
+                  : "text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-foreground mb-4 sm:mb-6 [text-wrap:balance]"
+              }
+            >
               {currentSlide.title}
             </h1>
 

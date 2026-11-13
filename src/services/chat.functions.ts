@@ -87,6 +87,8 @@ export function buildOutboxDispatchSpecFromStaffMessage(
 export const listStaffThreadsSchema = z.object({
  department: z.string().optional(),
  assigned_to: z.string().optional(),
+ channel_instance_id: z.string().uuid().optional(),
+ channelInstanceId: z.string().uuid().optional(),
  status: z.enum(["open", "closed", "archived", "all"]).default("all"),
  store_id: z.string().uuid().optional(),
  storeId: z.string().uuid().optional(),
@@ -189,14 +191,15 @@ export const listChatThreads = createServerFn({ method: "GET" })
  .select(
  `
  id, store_id, customer_id, guest_name, guest_email, status, subject,
- department, assigned_to_profile_id, order_id, priority, satisfaction_rating,
- internal_notes, updated_at, created_at, thread_type, context_type, entity_id, metadata, tags,
- chat_messages(id, message, message_type, created_at, is_staff_reply, attachments, payload)
+ department, assigned_to_profile_id, channel_instance_id, order_id, priority, satisfaction_rating,
+ internal_notes, first_response_at, closed_at, updated_at, created_at, thread_type, context_type, entity_id, metadata, tags,
+ last_message_text, last_message_at
  `,
  )
  .eq("store_id", effectiveStoreId)
 		.not("thread_type", "in", "(ai_assistant,copilot,project)")
- .order("updated_at", { ascending: false });
+ .order("updated_at", { ascending: false })
+ .limit(150);
 
  // Filtro de status canônico do banco (open, closed, archived, pending)
  const canonicalStatuses = new Set(["open", "closed", "archived", "pending"]);
@@ -213,26 +216,51 @@ export const listChatThreads = createServerFn({ method: "GET" })
  query = query.eq("department", data.department);
  }
 
-  // Se não for supervisor/gerente, visualiza apenas seus setores atribuídos na governança ou atribuídos a ele
+ const channelInstanceFilter = data?.channel_instance_id || data?.channelInstanceId;
+ if (channelInstanceFilter) {
+ query = query.eq("channel_instance_id", channelInstanceFilter);
+ }
+
+  // Se não for supervisor/gerente, visualiza apenas seus setores atribuídos ou threads atribuídas ao perfil
   if (!isSupervisor) {
-    const { data: storeRow } = await db
-      .from("stores")
-      .select("settings")
-      .eq("id", effectiveStoreId)
-      .maybeSingle();
+    const [{ data: storeRow }, { data: memberRow }, { data: deptRows }] = await Promise.all([
+      db.from("stores").select("settings").eq("id", effectiveStoreId).maybeSingle(),
+      db
+        .from("workspace_members")
+        .select("department_id, default_department_slug, only_assigned_or_sector")
+        .eq("store_id", effectiveStoreId)
+        .eq("profile_id", identity.id)
+        .maybeSingle(),
+      db
+        .from("chat_departments")
+        .select("id, slug, assigned_agent_ids")
+        .eq("store_id", effectiveStoreId)
+        .eq("is_active", true),
+    ]);
 
     const governance = (storeRow?.settings as any)?.whatsapp_governance || {};
-    const depts = Array.isArray(governance.departments) ? governance.departments : [];
-    const assignedDepts = depts
-      .filter((d: any) => Array.isArray(d.assignedAgentIds) && d.assignedAgentIds.includes(identity.id))
-      .map((d: any) => d.slug || d.id || d.name)
-      .filter(Boolean);
+    const govDepts = Array.isArray(governance.departments) ? governance.departments : [];
+    const assignedDepts = new Set<string>(
+      govDepts
+        .filter((d: any) => Array.isArray(d.assignedAgentIds) && d.assignedAgentIds.includes(identity.id))
+        .map((d: any) => d.slug || d.id || d.name)
+        .filter(Boolean),
+    );
+    for (const dept of deptRows || []) {
+      const hasAgent = Array.isArray((dept as any).assigned_agent_ids) && (dept as any).assigned_agent_ids.includes(identity.id);
+      if (hasAgent || (memberRow?.department_id && memberRow.department_id === (dept as any).id)) {
+        if ((dept as any).slug) assignedDepts.add(String((dept as any).slug));
+      }
+    }
+    if (memberRow?.default_department_slug) {
+      assignedDepts.add(String(memberRow.default_department_slug));
+    }
 
     const allowedClauses = [`assigned_to_profile_id.eq.${identity.id}`];
     for (const d of assignedDepts) {
       allowedClauses.push(`department.eq.${d}`);
     }
-    if (assignedDepts.length === 0) {
+    if (assignedDepts.size === 0 && !memberRow?.only_assigned_or_sector) {
       allowedClauses.push("department.eq.geral", "department.is.null");
     }
 
@@ -275,9 +303,26 @@ export const listChatThreads = createServerFn({ method: "GET" })
  }
  }
 
+ const messagesByThreadMap = new Map<string, any[]>();
+ const threadIds = threadsList.map((t: any) => t.id).filter(Boolean);
+ if (threadIds.length > 0) {
+  const { data: recentMessages } = await db
+   .from("chat_messages")
+   .select("id, thread_id, message, message_type, created_at, is_staff_reply, payload")
+   .in("thread_id", threadIds)
+   .order("created_at", { ascending: false })
+   .limit(Math.min(threadIds.length * 5, 400));
+
+  for (const msg of recentMessages || []) {
+   const arr = messagesByThreadMap.get(msg.thread_id) || [];
+   arr.push(msg);
+   messagesByThreadMap.set(msg.thread_id, arr);
+  }
+ }
+
  // Mapeamento e extração da última mensagem
  const formattedThreads = threadsList.map((thread: any) => {
- const messages = thread.chat_messages || [];
+ const messages = messagesByThreadMap.get(thread.id) || [];
  messages.sort(
  (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
  );
@@ -299,9 +344,18 @@ export const listChatThreads = createServerFn({ method: "GET" })
  const customerProfile = thread.customer_id ? profilesMap.get(thread.customer_id) : null;
  const agentProfile = thread.assigned_to_profile_id ? profilesMap.get(thread.assigned_to_profile_id) : null;
  const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+ const overrideProfile = (threadMeta.customer_profile_override && typeof threadMeta.customer_profile_override === "object" ? threadMeta.customer_profile_override : null) as Record<string, any> | null;
  const threadIsGroup = Boolean(thread.thread_type === "group" || threadMeta.is_group || String(thread.entity_id || "").includes("@g.us") || (String(thread.entity_id || "").length > 14 && String(thread.entity_id || "").startsWith("+120")));
  const threadIsChannel = Boolean(thread.thread_type === "channel" || threadMeta.is_channel || String(thread.entity_id || "").includes("@newsletter"));
- const threadAvatar = threadMeta.avatar_url || customerProfile?.avatar_url || null;
+ const threadAvatar = overrideProfile?.avatar_url || threadMeta.avatar_url || customerProfile?.avatar_url || null;
+ const rawEmail = String(overrideProfile?.email || customerProfile?.email || thread.guest_email || "").trim();
+ const cleanEmail = rawEmail.endsWith("@whatsapp.waesy") ? "" : rawEmail;
+ const resolvedDisplayName =
+   overrideProfile?.full_name ||
+   customerProfile?.full_name ||
+   thread.guest_name ||
+   threadMeta.push_name ||
+   (threadIsGroup ? "Grupo WhatsApp" : threadIsChannel ? "Canal WhatsApp" : thread.context_type === "whatsapp" ? ("WhatsApp " + (thread.entity_id || "")) : "Cliente");
 
  return {
  id: thread.id,
@@ -318,10 +372,11 @@ export const listChatThreads = createServerFn({ method: "GET" })
  metadata: threadMeta,
 			context_type: thread.context_type,
 			channel: thread.context_type === "whatsapp" ? "whatsapp" : "web",
-			customer: customerProfile || {
-				full_name: thread.guest_name || (threadIsGroup ? "Grupo WhatsApp" : threadIsChannel ? "Canal WhatsApp" : thread.context_type === "whatsapp" ? ("WhatsApp " + (thread.entity_id || "")) : "Cliente"),
-				email: thread.guest_email || "",
-				phone: thread.entity_id || "",
+			customer: {
+				...(customerProfile || {}),
+				full_name: resolvedDisplayName,
+				email: cleanEmail,
+				phone: overrideProfile?.phone || customerProfile?.phone || thread.entity_id || "",
 				avatar_url: threadAvatar,
 			},
  order_id: thread.order_id,
@@ -647,160 +702,253 @@ export const getChatMessages = createServerFn({ method: "GET" })
  }
  });
 
-/**
- * Envio seguro de mensagem pela equipe (com suporte a cards de pedido e cobrança Pix)
- */
-export const sendChatMessage = createServerFn({ method: "POST" })
- .validator(sendStaffMessageSchema)
- .handler(async ({ data: input }) => {
- try {
- const db = getServerClient();
- const identity = await getServerIdentity();
- if (!identity?.id) throw new Error("Não autorizado");
+export async function resolveOutboundWhatsAppInstanceForThread(
+  db: any,
+  params: {
+    storeId: string;
+    threadChannelInstanceId?: string | null;
+    agentProfileId?: string | null;
+    departmentSlug?: string | null;
+  },
+): Promise<{
+  channelInstanceId: string | null;
+  provider: string;
+  source: "thread" | "agent" | "department" | "store_default" | "none";
+}> {
+  const isUsable = (inst: any) =>
+    Boolean(inst && inst.id && inst.is_active !== false && inst.status !== "revoked" && inst.status !== "disabled");
 
- const { data: thread } = await db
- .from("chat_threads")
- .select("id, store_id, context_type, entity_id, channel_instance_id, metadata, assigned_to_profile_id")
- .eq("id", input.threadId)
- .single();
+  if (params.threadChannelInstanceId) {
+    const { data: inst } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, provider, is_active, status")
+      .eq("id", params.threadChannelInstanceId)
+      .eq("store_id", params.storeId)
+      .maybeSingle();
+    if (isUsable(inst)) {
+      return { channelInstanceId: inst.id, provider: inst.provider || "evolution_api", source: "thread" };
+    }
+  }
 
- if (!thread) throw new Error("Conversa não encontrada ou acesso negado.");
- assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
+  if (params.agentProfileId) {
+    const { data: member } = await db
+      .from("workspace_members")
+      .select("whatsapp_instance_id")
+      .eq("store_id", params.storeId)
+      .eq("profile_id", params.agentProfileId)
+      .maybeSingle();
+    if (member?.whatsapp_instance_id) {
+      const { data: agentInst } = await db
+        .from("whatsapp_channel_instances")
+        .select("id, provider, is_active, status")
+        .eq("id", member.whatsapp_instance_id)
+        .eq("store_id", params.storeId)
+        .maybeSingle();
+      if (isUsable(agentInst)) {
+        return { channelInstanceId: agentInst.id, provider: agentInst.provider || "evolution_api", source: "agent" };
+      }
+    }
+  }
 
- const isInternal = Boolean(
+  if (params.departmentSlug) {
+    const { data: dept } = await db
+      .from("chat_departments")
+      .select("whatsapp_instance_id")
+      .eq("store_id", params.storeId)
+      .eq("slug", params.departmentSlug)
+      .maybeSingle();
+    if (dept?.whatsapp_instance_id) {
+      const { data: deptInst } = await db
+        .from("whatsapp_channel_instances")
+        .select("id, provider, is_active, status")
+        .eq("id", dept.whatsapp_instance_id)
+        .eq("store_id", params.storeId)
+        .maybeSingle();
+      if (isUsable(deptInst)) {
+        return { channelInstanceId: deptInst.id, provider: deptInst.provider || "evolution_api", source: "department" };
+      }
+    }
+  }
+
+  const { data: defaultInst } = await db
+    .from("whatsapp_channel_instances")
+    .select("id, provider, is_active, status")
+    .eq("store_id", params.storeId)
+    .eq("is_active", true)
+    .neq("status", "revoked")
+    .neq("status", "disabled")
+    .order("is_default", { ascending: false })
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (isUsable(defaultInst)) {
+    return { channelInstanceId: defaultInst.id, provider: defaultInst.provider || "evolution_api", source: "store_default" };
+  }
+
+  return { channelInstanceId: null, provider: "evolution_api", source: "none" };
+}
+
+export async function _sendChatMessage(
+  input: z.infer<typeof sendStaffMessageSchema>,
+  deps?: { db?: any; identity?: any },
+) {
+  const db = deps?.db ?? getServerClient();
+  const identity = deps?.identity ?? (await getServerIdentity());
+  if (!identity?.id) throw new Error("Não autorizado");
+
+  const { data: thread } = await db
+    .from("chat_threads")
+    .select("id, store_id, context_type, entity_id, channel_instance_id, department, first_response_at, metadata, assigned_to_profile_id")
+    .eq("id", input.threadId)
+    .single();
+
+  if (!thread) throw new Error("Conversa não encontrada ou acesso negado.");
+  assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
+
+  const isInternal = Boolean(
     input.is_internal ||
     input.payload?.is_internal ||
     input.payload?.is_whisper ||
     ((input.message_type as string) === "internal_note") ||
-    (input.message_type === "system_event" && input.payload?.is_whisper)
+    (input.message_type === "system_event" && input.payload?.is_whisper),
   );
- const finalPayload = {
-   ...(input.payload || {}),
-   is_internal: isInternal,
-   ...(isInternal ? { is_whisper: true } : {}),
- };
+  const finalPayload = {
+    ...(input.payload || {}),
+    is_internal: isInternal,
+    ...(isInternal ? { is_whisper: true } : {}),
+  };
 
- const { data: msg, error } = await db
- .from("chat_messages")
- .insert({
- thread_id: input.threadId,
- message: input.message,
- message_type: input.message_type,
- channel: thread.context_type || "web",
- attachments: input.attachments,
- payload: finalPayload,
- is_staff_reply: true,
- sender_id: identity.id,
- sender_profile_id: identity.id,
- })
- .select()
- .single();
+  const { data: msg, error } = await db
+    .from("chat_messages")
+    .insert({
+      thread_id: input.threadId,
+      message: input.message,
+      message_type: input.message_type,
+      channel: thread.context_type || "web",
+      attachments: input.attachments,
+      payload: finalPayload,
+      is_staff_reply: true,
+      sender_id: identity.id,
+      sender_profile_id: identity.id,
+    })
+    .select()
+    .single();
 
- if (error) throw error;
+  if (error) throw error;
 
- if (!isInternal) {
-   await db
-   .from("chat_threads")
-   .update({
-   last_message_text: input.message,
-   metadata: { ...(((thread as any).metadata || {}) as Record<string, any>), handoff_mode: "human_active", ai_auto_reply_enabled: false, last_human_agent_id: identity.id },
-   ...(!(thread as any).assigned_to_profile_id ? { assigned_to_profile_id: identity.id } : {}),
-   last_message_at: new Date().toISOString(),
-   updated_at: new Date().toISOString(),
-   })
-   .eq("id", input.threadId);
+  if (!isInternal) {
+    const nowIso = new Date().toISOString();
+    let resolvedChannelInstanceId: string | null = (thread as any).channel_instance_id || null;
+    let resolvedProvider = "evolution_api";
 
-   // Cross-Module Outbound Dispatch: Disparo bidirecional para canais externos apenas se NÃO for nota interna
-   if (thread.context_type === "whatsapp" && thread.entity_id) {
-     try {
-       const cleanPhone = String(thread.entity_id).replace(/@.*$/, "");
-       let channelInstanceId = (thread as any).channel_instance_id || null;
-       let providerName = "evolution_api";
+    if (thread.context_type === "whatsapp" && thread.entity_id) {
+      const routing = await resolveOutboundWhatsAppInstanceForThread(db, {
+        storeId: thread.store_id,
+        threadChannelInstanceId: (thread as any).channel_instance_id || null,
+        agentProfileId: identity.id,
+        departmentSlug: (thread as any).department || null,
+      });
+      resolvedChannelInstanceId = routing.channelInstanceId;
+      resolvedProvider = routing.provider;
+    }
 
-       if (channelInstanceId) {
-         const { data: inst } = await db
-           .from("whatsapp_channel_instances")
-           .select("id, provider")
-           .eq("id", channelInstanceId)
-           .maybeSingle();
-         if (inst) providerName = inst.provider;
-       } else {
-         const { data: defaultInst } = await db
-           .from("whatsapp_channel_instances")
-           .select("id, provider")
-           .eq("store_id", thread.store_id)
-           .eq("is_active", true)
-           .order("is_default", { ascending: false })
-           .order("updated_at", { ascending: false })
-           .limit(1)
-           .maybeSingle();
-         if (defaultInst) {
-           channelInstanceId = defaultInst.id;
-           providerName = defaultInst.provider;
-         }
-       }
+    await db
+      .from("chat_threads")
+      .update({
+        last_message_text: input.message,
+        metadata: {
+          ...(((thread as any).metadata || {}) as Record<string, any>),
+          handoff_mode: "human_active",
+          ai_auto_reply_enabled: false,
+          last_human_agent_id: identity.id,
+        },
+        ...(!(thread as any).assigned_to_profile_id ? { assigned_to_profile_id: identity.id } : {}),
+        ...(!(thread as any).first_response_at ? { first_response_at: nowIso } : {}),
+        ...(!(thread as any).channel_instance_id && resolvedChannelInstanceId
+          ? { channel_instance_id: resolvedChannelInstanceId }
+          : {}),
+        last_message_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq("id", input.threadId);
 
-       if (channelInstanceId) {
-         const dispatchSpec = buildOutboxDispatchSpecFromStaffMessage(input, msg.id);
-         await db.from("whatsapp_outbox").upsert(
-           {
-             store_id: thread.store_id,
-             thread_id: thread.id,
-             channel_instance_id: channelInstanceId,
-             provider: providerName,
-             idempotency_key: `chat_msg:${msg.id}`,
-             recipient_phone: cleanPhone,
-             message_type: dispatchSpec.messageType,
-             payload: dispatchSpec.payload,
-             status: "pending",
-           },
-           { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
-         );
+    // Cross-Module Outbound Dispatch: Disparo bidirecional para canais externos apenas se NÃO for nota interna
+    if (thread.context_type === "whatsapp" && thread.entity_id) {
+      try {
+        const cleanPhone = String(thread.entity_id).replace(/@.*$/, "");
 
-         // Disparo imediato do outbox worker para envio sem latencia ao cliente
-         try {
-           const { runWhatsAppOutboxWorker } = await import("./whatsapp-outbox.worker");
-           await runWhatsAppOutboxWorker({ batchSize: 5 });
-         } catch (workerImportErr) {
-           console.warn("[chat.functions] Erro ao despachar whatsapp-outbox.worker no envio:", workerImportErr);
-         }
-       } else {
-         const { sendWhatsAppNotification } = await import("./integrations.functions");
-         await sendWhatsAppNotification({
-           storeId: thread.store_id,
-           recipientPhone: thread.entity_id,
-           messageText: input.message,
-         });
-       }
-     } catch (waErr) {
-       console.warn("[chat.functions] Falha ao despachar resposta via WhatsApp:", waErr);
-     }
-   } else if (thread.context_type === "mercadolivre" && thread.entity_id) {
-     try {
-       const { answerMercadoLivreQuestion } = await import("./marketplace-hub.functions");
-       await answerMercadoLivreQuestion({
-         storeId: thread.store_id,
-         questionId: thread.entity_id,
-         answerText: input.message,
-       });
-     } catch (mlErr) {
-       console.warn("[chat.functions] Falha ao despachar resposta via Mercado Livre:", mlErr);
-     }
-   }
- }
+        if (resolvedChannelInstanceId) {
+          const dispatchSpec = buildOutboxDispatchSpecFromStaffMessage(input, msg.id);
+          await db.from("whatsapp_outbox").upsert(
+            {
+              store_id: thread.store_id,
+              thread_id: thread.id,
+              channel_instance_id: resolvedChannelInstanceId,
+              provider: resolvedProvider,
+              idempotency_key: `chat_msg:${msg.id}`,
+              recipient_phone: cleanPhone,
+              message_type: dispatchSpec.messageType,
+              payload: dispatchSpec.payload,
+              status: "pending",
+            },
+            { onConflict: "store_id,idempotency_key", ignoreDuplicates: true },
+          );
 
- const { data: updatedMsg } = await db
-   .from("chat_messages")
-   .select("id, thread_id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
-   .eq("id", msg.id)
-   .maybeSingle();
+          // Disparo imediato do outbox worker para envio sem latencia ao cliente
+          try {
+            const { runWhatsAppOutboxWorker } = await import("./whatsapp-outbox.worker");
+            await runWhatsAppOutboxWorker({ batchSize: 5 });
+          } catch (workerImportErr) {
+            console.warn("[chat.functions] Erro ao despachar whatsapp-outbox.worker no envio:", workerImportErr);
+          }
+        } else {
+          const { sendWhatsAppNotification } = await import("./integrations.functions");
+          await sendWhatsAppNotification({
+            storeId: thread.store_id,
+            recipientPhone: thread.entity_id,
+            messageText: input.message,
+          });
+        }
+      } catch (waErr) {
+        console.warn("[chat.functions] Falha ao despachar resposta via WhatsApp:", waErr);
+      }
+    } else if (thread.context_type === "mercadolivre" && thread.entity_id) {
+      try {
+        const { answerMercadoLivreQuestion } = await import("./marketplace-hub.functions");
+        await answerMercadoLivreQuestion({
+          storeId: thread.store_id,
+          questionId: thread.entity_id,
+          answerText: input.message,
+        });
+      } catch (mlErr) {
+        console.warn("[chat.functions] Falha ao despachar resposta via Mercado Livre:", mlErr);
+      }
+    }
+  }
 
- return updatedMsg || msg;
- } catch (e: any) {
- console.error("[chat] sendChatMessage error:", e);
- throw new Error(e.message || "Erro ao enviar mensagem.");
- }
- });
+  const { data: updatedMsg } = await db
+    .from("chat_messages")
+    .select("id, thread_id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
+    .eq("id", msg.id)
+    .maybeSingle();
+
+  return updatedMsg || msg;
+}
+
+/**
+ * Envio seguro de mensagem pela equipe (com suporte a cards de pedido e cobrança Pix)
+ */
+export const sendChatMessage = createServerFn({ method: "POST" })
+  .validator(sendStaffMessageSchema)
+  .handler(async ({ data: input }) => {
+    try {
+      return await _sendChatMessage(input);
+    } catch (e: any) {
+      console.error("[chat] sendChatMessage error:", e);
+      throw new Error(e.message || "Erro ao enviar mensagem.");
+    }
+  });
 
 /**
  * Atribuição de atendente, setor ou prioridade da conversa
@@ -929,14 +1077,78 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
 
  const customerPhone = profileData?.phone || crmCustomer?.phone || rawPhone || null;
  const overrideMeta = (threadContext?.metadata as any)?.customer_profile_override || null;
+ const rawCandidateEmail = String(overrideMeta?.email || crmCustomer?.email || threadContext?.guest_email || "").trim();
+ const sanitizedCustomerEmail = !rawCandidateEmail || rawCandidateEmail.endsWith("@whatsapp.waesy") ? null : rawCandidateEmail;
+ let resolvedAvatarUrl =
+   overrideMeta?.avatar_url ||
+   profileData?.avatar_url ||
+   (threadContext?.metadata as any)?.avatar_url ||
+   null;
+
+ if (!resolvedAvatarUrl && (cleanDigits.length >= 8 || (threadContext?.metadata as any)?.whatsapp_jid)) {
+   try {
+     const { data: inst } = await db
+       .from("whatsapp_channel_instances")
+       .select("instance_key, external_instance_id, public_config")
+       .eq("store_id", storeId)
+       .eq("provider", "evolution_api")
+       .eq("is_active", true)
+       .order("is_default", { ascending: false })
+       .limit(1)
+       .maybeSingle();
+
+     if (inst) {
+       const externalName = inst.external_instance_id || inst.instance_key;
+       const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
+       const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
+         ? configuredUrl
+         : (process.env.EVOLUTION_API_URL?.trim() || "");
+       const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+       const targetNumber =
+         (threadContext?.metadata as any)?.whatsapp_jid_alt ||
+         (threadContext?.metadata as any)?.whatsapp_jid ||
+         cleanDigits;
+
+       if (baseUrl && apiKey && targetNumber) {
+         const picRes = await fetch(`${baseUrl}/chat/fetchProfilePictureUrl/${encodeURIComponent(externalName)}`, {
+           method: "POST",
+           headers: { apikey: apiKey, "Content-Type": "application/json" },
+           body: JSON.stringify({ number: targetNumber }),
+           signal: AbortSignal.timeout(2500),
+         });
+         if (picRes.ok) {
+           const picJson = (await picRes.json().catch(() => ({}))) as Record<string, any>;
+           const fetchedPic = picJson.profilePictureUrl || picJson.profilePicUrl || picJson.picture || null;
+           if (typeof fetchedPic === "string" && fetchedPic.startsWith("http")) {
+             resolvedAvatarUrl = fetchedPic;
+             if (threadContext?.id) {
+               const nextMeta = {
+                 ...(((threadContext.metadata as any) || {}) as Record<string, any>),
+                 avatar_url: fetchedPic,
+               };
+               threadContext.metadata = nextMeta;
+               await db.from("chat_threads").update({ metadata: nextMeta }).eq("id", threadContext.id);
+             }
+             if (resolvedCustomerId) {
+               await db.from("profiles").update({ avatar_url: fetchedPic }).eq("id", resolvedCustomerId);
+             }
+           }
+         }
+       }
+     }
+   } catch {
+     // Best-effort avatar resolution
+   }
+ }
+
  profileData = {
    id: resolvedCustomerId,
    full_name: overrideMeta?.full_name || crmCustomer?.full_name || profileData?.full_name || guestName || threadContext?.guest_name || customerPhone || "Visitante em Atendimento",
    phone: overrideMeta?.phone || customerPhone,
-   email: overrideMeta?.email || crmCustomer?.email || threadContext?.guest_email || null,
+   email: sanitizedCustomerEmail,
    document_cpf: overrideMeta?.document_cpf || crmCustomer?.document || profileData?.cpf || null,
    city: overrideMeta?.city || crmCustomer?.city || profileData?.city || null,
-   avatar_url: profileData?.avatar_url || (threadContext?.metadata as any)?.avatar_url || null,
+   avatar_url: resolvedAvatarUrl,
    created_at: profileData?.created_at || crmCustomer?.created_at || null,
  };
 
@@ -945,9 +1157,9 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  if (customerPhone) leadOrFilters.push(`phone.eq.${customerPhone}`);
  if (cleanDigits.length >= 8) leadOrFilters.push(`phone.eq.+${cleanDigits}`, `phone.eq.${cleanDigits}`);
 
- const [ordersRes, ticketsRes, tripsRes, creditsRes, leadsRes, quotesRes, contractsRes, debtRes, docsRes, invoicesRes] = await Promise.all([
+ const [ordersRes, ticketsRes, tripsRes, creditsRes, leadsRes, quotesRes, contractsRes, debtRes, docsRes] = await Promise.all([
    resolvedCustomerId
-     ? db.from("orders").select("id, total_amount_cents, status, created_at, payment_method").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
+     ? db.from("orders").select("id, total_cents, status, created_at, payments(method)").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
      : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
      ? db.from("store_support_tickets").select("*").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false })
@@ -959,17 +1171,28 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    leadOrFilters.length > 0
      ? db
          .from("leads_crm")
-         .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+         .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
          .eq("store_id", storeId)
          .or(leadOrFilters.join(","))
          .order("created_at", { ascending: false })
          .limit(20)
      : Promise.resolve({ data: [] as any[] }),
+   (() => {
+     const quoteOrParts: string[] = [];
+     if (profileData?.email) quoteOrParts.push(`contact_email.eq.${profileData.email}`);
+     if (customerPhone) quoteOrParts.push(`contact_whatsapp.eq.${customerPhone}`);
+     if (cleanDigits.length >= 8) quoteOrParts.push(`contact_whatsapp.eq.+${cleanDigits}`, `contact_whatsapp.eq.${cleanDigits}`);
+     if (quoteOrParts.length === 0) return Promise.resolve({ data: [] as any[] });
+     return db
+       .from("travel_quotes")
+       .select("id, protocol_number, destination_city, quote_amount_cents, status, created_at")
+       .eq("store_id", storeId)
+       .or(quoteOrParts.join(","))
+       .order("created_at", { ascending: false })
+       .limit(5);
+   })(),
    resolvedCustomerId
-     ? db.from("travel_quotes").select("id, quote_number, title, destination, total_cents, status, created_at").eq("agency_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(5)
-     : Promise.resolve({ data: [] as any[] }),
-   resolvedCustomerId
-     ? db.from("contracts").select("id, contract_number, title, status, total_amount_cents, public_token, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(5)
+     ? db.from("contracts").select("id, verification_code, title, status, metadata, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(5)
      : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
      ? db.from("customer_debt_ledger").select("id, amount_cents, status, reason, created_at").eq("customer_id", resolvedCustomerId).eq("status", "pending")
@@ -977,12 +1200,24 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    resolvedCustomerId
      ? db.from("customer_documents").select("id, title, document_type, file_url, verified, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
      : Promise.resolve({ data: [] as any[] }),
-   resolvedCustomerId
-     ? db.from("financial_transactions").select("id, description, amount_cents, status, due_date, payment_method, created_at").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
-     : Promise.resolve({ data: [] as any[] }),
  ]);
 
- const opportunities = (leadsRes?.data as any[]) || [];
+ const customerOrderIds = ((ordersRes?.data as any[]) || []).map((o) => o.id).filter(Boolean);
+ const invoicesRes =
+   customerOrderIds.length > 0
+     ? await db
+         .from("financial_transactions")
+         .select("id, type, description, amount_cents, category, reference_date, created_at, order_id")
+         .eq("store_id", storeId)
+         .in("order_id", customerOrderIds)
+         .order("created_at", { ascending: false })
+         .limit(10)
+     : { data: [] as any[] };
+
+ const opportunities = ((leadsRes?.data as any[]) || []).map((op: any) => ({
+   ...op,
+   estimated_budget: op.estimated_value_cents ?? 0,
+ }));
  const activeLeadIdFromThread = (threadContext?.metadata as any)?.active_lead_id;
  let linkedLead: any = null;
  if (activeLeadIdFromThread === "none") {
@@ -992,12 +1227,15 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    if (!linkedLead) {
      const { data: explicitLead } = await db
        .from("leads_crm")
-       .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+       .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
        .eq("id", activeLeadIdFromThread)
        .eq("store_id", storeId)
        .maybeSingle();
      if (explicitLead) {
-       linkedLead = explicitLead;
+       linkedLead = {
+         ...explicitLead,
+         estimated_budget: (explicitLead as any).estimated_value_cents ?? 0,
+       };
        opportunities.unshift(explicitLead);
      }
    }
@@ -1011,15 +1249,51 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    linkedLead = opportunities[0] || null;
  }
 
- const orders = ordersRes.data || [];
+ const orders = (ordersRes.data || []).map((o: any) => ({
+   ...o,
+   total_amount_cents: o.total_cents ?? 0,
+   payment_method: Array.isArray(o.payments) ? o.payments[0]?.method || null : o.payments?.method || null,
+ }));
  const paidOrders = orders.filter((o: any) => ["completed", "delivered", "paid"].includes(o.status));
  const totalSpentCents = paidOrders.reduce((acc: number, curr: any) => acc + (Number(curr.total_amount_cents) || 0), 0);
  const lastPurchaseAt = paidOrders[0]?.created_at || orders[0]?.created_at || null;
  const pendingDebts = (debtRes?.data as any[]) || [];
  const pendingDebtCents = pendingDebts.reduce((acc: number, curr: any) => acc + (Number(curr.amount_cents) || 0), 0);
 
+ const normalizedQuotes = ((quotesRes?.data as any[]) || []).map((q: any) => ({
+   ...q,
+   quote_number: q.protocol_number || null,
+   title: q.destination_city || "Cotação",
+   destination: q.destination_city || null,
+   total_cents: q.quote_amount_cents ?? 0,
+ }));
+ const normalizedContracts = ((contractsRes?.data as any[]) || []).map((c: any) => ({
+   ...c,
+   contract_number: c.verification_code || c.metadata?.contract_number || null,
+   total_amount_cents: Number(c.metadata?.total_amount_cents || 0),
+   public_token: c.verification_code || null,
+ }));
+ const normalizedInvoices = ((invoicesRes?.data as any[]) || []).map((inv: any) => ({
+   ...inv,
+   status: inv.type || null,
+   due_date: inv.reference_date || inv.created_at || null,
+   payment_method: inv.category || null,
+ }));
+
  const memberRole = identity.memberships?.find((m) => m.store_id === storeId)?.role || identity.role || "agent";
  const isManagerOrAdmin = ["platform_admin", "owner", "admin", "manager"].includes(memberRole);
+
+ const rawTravelDossiers = Array.isArray((threadContext?.metadata as any)?.travel_dossiers)
+   ? ((threadContext?.metadata as any).travel_dossiers as any[])
+   : [];
+ const rawLinkedEmails = Array.isArray((threadContext?.metadata as any)?.linked_emails)
+   ? ((threadContext?.metadata as any).linked_emails as any[])
+   : [];
+ const aiAgentConfig = {
+   aiAgentId: String((threadContext?.metadata as any)?.ai_agent_id || "general_copilot"),
+   handoffMode: String((threadContext?.metadata as any)?.handoff_mode || "ai_triage") as "ai_triage" | "human_queue" | "human_active",
+   aiAutoReplyEnabled: (threadContext?.metadata as any)?.ai_auto_reply_enabled !== false,
+ };
 
  return {
    profile: profileData,
@@ -1042,14 +1316,17 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    },
    orders,
    trips: (tripsRes?.data as any[]) || [],
+   travelDossiers: rawTravelDossiers,
+   linkedEmails: rawLinkedEmails,
+   aiAgentConfig,
    credits: (creditsRes?.data as any[]) || [],
    tickets: ticketsRes.data || [],
    opportunities,
    linkedLead,
-   quotes: (quotesRes?.data as any[]) || [],
-   contracts: (contractsRes?.data as any[]) || [],
+   quotes: normalizedQuotes,
+   contracts: normalizedContracts,
    documents: (docsRes?.data as any[]) || [],
-   invoices: (invoicesRes?.data as any[]) || [],
+   invoices: normalizedInvoices,
    debts: pendingDebts,
  };
  });
@@ -1079,12 +1356,15 @@ export const linkThreadToCrmOpportunity = createServerFn({ method: "POST" })
     if (leadId && leadId !== "none") {
       const { data: foundLead } = await db
         .from("leads_crm")
-        .select("id, status, title, estimated_budget, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+        .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
         .eq("id", leadId)
         .eq("store_id", identity.store_id)
         .single();
       if (!foundLead) throw new Error("Oportunidade não encontrada nesta loja.");
-      linkedLead = foundLead;
+      linkedLead = {
+        ...foundLead,
+        estimated_budget: (foundLead as any).estimated_value_cents ?? 0,
+      };
     }
 
     const nextMeta = {
@@ -1551,12 +1831,12 @@ export const searchChatContacts = createServerFn({ method: "GET" })
 
       let storesQuery = db
         .from("stores")
-        .select("id, name, slug, settings, category, city")
-        .eq("status", "active")
+        .select("id, name, slug, settings, city")
+        .eq("is_active", true)
         .limit(data.limit);
 
       if (q.length > 0) {
-        storesQuery = storesQuery.or(`name.ilike.%${q}%,category.ilike.%${q}%`);
+        storesQuery = storesQuery.or(`name.ilike.%${q}%,city.ilike.%${q}%`);
       }
 
       const [profilesRes, storesRes] = await Promise.all([profilesQuery, storesQuery]);
@@ -1576,7 +1856,7 @@ export const searchChatContacts = createServerFn({ method: "GET" })
           name: s.name,
           type: "store" as const,
           avatar_url: settings.logoUrl || settings.logo_url || null,
-          subtitle: s.category || "Loja & Negócio Local",
+          subtitle: settings.category || settings.segment || "Loja & Negócio Local",
           slug: s.slug,
         };
       });
@@ -2271,12 +2551,13 @@ export const updateCustomerProfileFromChatSchema = z.object({
   email: z.string().trim().max(120).optional().nullable(),
   documentCpf: z.string().trim().max(30).optional().nullable(),
   city: z.string().trim().max(80).optional().nullable(),
+  avatarUrl: z.string().trim().max(2000).optional().nullable(),
 });
 
 export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
   .validator(updateCustomerProfileFromChatSchema)
   .handler(async ({ data }) => {
-    const { customerId, threadId, fullName, phone, email, documentCpf, city } = data;
+    const { customerId, threadId, fullName, phone, email, documentCpf, city, avatarUrl } = data;
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
     const db = getServerClient();
@@ -2287,7 +2568,7 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
         .update({
           full_name: fullName,
           ...(phone !== undefined ? { phone: phone || null } : {}),
-
+          ...(avatarUrl !== undefined ? { avatar_url: avatarUrl || null } : {}),
           ...(documentCpf !== undefined ? { cpf: documentCpf || null } : {}),
           ...(city !== undefined ? { city: city || null } : {}),
           updated_at: new Date().toISOString(),
@@ -2303,14 +2584,18 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
         .eq("store_id", identity.store_id)
         .maybeSingle();
 
+      const existingMeta = (((currentThread?.metadata as any) || {}) as Record<string, any>);
       const nextMeta = {
-        ...(((currentThread?.metadata as any) || {}) as Record<string, any>),
+        ...existingMeta,
+        ...(avatarUrl !== undefined ? { avatar_url: avatarUrl || existingMeta.avatar_url || null } : {}),
         customer_profile_override: {
+          ...(existingMeta.customer_profile_override || {}),
           full_name: fullName,
           phone: phone || null,
           email: email || null,
           document_cpf: documentCpf || null,
           city: city || null,
+          ...(avatarUrl !== undefined ? { avatar_url: avatarUrl || null } : {}),
           updated_at: new Date().toISOString(),
         },
       };
@@ -3180,7 +3465,7 @@ export const listChatContactDeletionRequests = createServerFn({ method: "GET" })
 
     const enriched = await Promise.all(
       (requests || []).map(async (r: any) => {
-        const { data: reqProfile } = await db.from("profiles").select("id, full_name, email").eq("id", r.requested_by_profile_id).maybeSingle();
+        const { data: reqProfile } = await db.from("profiles").select("id, full_name").eq("id", r.requested_by_profile_id).maybeSingle();
         const { data: thread } = await db.from("chat_threads").select("id, guest_name, entity_id").eq("id", r.thread_id).maybeSingle();
         return {
           ...r,
@@ -3370,13 +3655,13 @@ export const generateSmartContextualAiReply = createServerFn({ method: "POST" })
     if (thread.customer_id) {
       const [tripsRes, quotesRes, ordersRes] = await Promise.all([
         db.from("tourism_trips").select("id, title, destination_city, total_cents").eq("store_id", effectiveStoreId).eq("customer_id", thread.customer_id).limit(5),
-        db.from("travel_quotes").select("id, destination, total_cents").eq("agency_id", effectiveStoreId).eq("customer_id", thread.customer_id).limit(10),
-        db.from("orders").select("total_amount_cents, status").eq("store_id", effectiveStoreId).eq("customer_id", thread.customer_id).in("status", ["completed", "delivered", "paid"]),
+        Promise.resolve({ data: [] as any[] }),
+        db.from("orders").select("total_cents, status").eq("store_id", effectiveStoreId).eq("customer_id", thread.customer_id).in("status", ["completed", "delivered", "paid"]),
       ]);
 
       tripsCount = tripsRes.data?.length || 0;
       quotesCount = quotesRes.data?.length || 0;
-      const spentCents = (ordersRes.data || []).reduce((acc: number, curr: any) => acc + (Number(curr.total_amount_cents) || 0), 0);
+      const spentCents = (ordersRes.data || []).reduce((acc: number, curr: any) => acc + (Number(curr.total_cents) || 0), 0);
       if (spentCents > 0) {
         totalSpentBrl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(spentCents / 100);
       }
@@ -3719,6 +4004,1286 @@ export const getWhatsAppMediaBase64 = createServerFn({ method: "POST" })
       base64: dataUri,
       mimetype,
       cached: false,
+    };
+  });
+
+// ============================================================
+// 5. Catálogo de Tags e Pastas (Grupos) Editáveis — Paridade uTalk / Whaticket / Monday
+// ============================================================
+
+export interface StoreTagGroupItem {
+  id: string;
+  name: string;
+  order: number;
+}
+
+export interface StoreTagCatalogItem {
+  id: string;
+  label: string;
+  colorKey: "violet" | "emerald" | "warning" | "rose" | "sky" | "indigo" | "slate";
+  groupId: string;
+  description?: string | null;
+}
+
+const DEFAULT_TAG_GROUPS: StoreTagGroupItem[] = [
+  { id: "funil", name: "Funil Comercial & Temperatura", order: 1 },
+  { id: "financeiro", name: "Financeiro, PIX & Boletos", order: 2 },
+  { id: "viagens", name: "Viagens, PNR & Operadora", order: 3 },
+  { id: "suporte", name: "Pós-Venda & SAC", order: 4 },
+];
+
+const DEFAULT_TAG_ITEMS: StoreTagCatalogItem[] = [
+  { id: "vip", label: "VIP", colorKey: "violet", groupId: "funil" },
+  { id: "lead-quente", label: "Lead Quente", colorKey: "emerald", groupId: "funil" },
+  { id: "cotacao-enviada", label: "Cotação Enviada", colorKey: "sky", groupId: "funil" },
+  { id: "aguardando-pix", label: "Aguardando PIX", colorKey: "warning", groupId: "financeiro" },
+  { id: "boleto-emitido", label: "Boleto Emitido", colorKey: "warning", groupId: "financeiro" },
+  { id: "pago-confirmado", label: "Pago / Confirmado", colorKey: "emerald", groupId: "financeiro" },
+  { id: "voo-pnr-emitido", label: "Voo / PNR Emitido", colorKey: "emerald", groupId: "viagens" },
+  { id: "alerta-voo-cia", label: "Alerta Voo / Cia", colorKey: "rose", groupId: "viagens" },
+  { id: "pacote-operadora", label: "Pacote Operadora", colorKey: "violet", groupId: "viagens" },
+  { id: "reclamacao", label: "Reclamação", colorKey: "rose", groupId: "suporte" },
+  { id: "pos-venda", label: "Pós-Venda", colorKey: "sky", groupId: "suporte" },
+  { id: "suporte-tecnico", label: "Suporte Técnico", colorKey: "indigo", groupId: "suporte" },
+];
+
+export const listStoreTagCatalogSchema = z.object({
+  storeId: z.string().uuid().optional(),
+});
+
+export const listStoreTagCatalog = createServerFn({ method: "GET" })
+  .validator(listStoreTagCatalogSchema.optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id;
+    if (!storeId) {
+      return { groups: DEFAULT_TAG_GROUPS, tags: DEFAULT_TAG_ITEMS };
+    }
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    const catalog = (settings.crm_tag_catalog || {}) as {
+      groups?: StoreTagGroupItem[];
+      tags?: StoreTagCatalogItem[];
+    };
+
+    const groups = Array.isArray(catalog.groups) && catalog.groups.length > 0
+      ? catalog.groups
+      : DEFAULT_TAG_GROUPS;
+    const tags = Array.isArray(catalog.tags) && catalog.tags.length > 0
+      ? catalog.tags
+      : DEFAULT_TAG_ITEMS;
+
+    return { groups, tags };
+  });
+
+export const upsertStoreTagCatalogItemSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  id: z.string().optional(),
+  label: z.string().trim().min(1).max(40),
+  colorKey: z.enum(["violet", "emerald", "warning", "rose", "sky", "indigo", "slate"]).default("sky"),
+  groupId: z.string().trim().min(1).default("funil"),
+  description: z.string().trim().max(140).optional().nullable(),
+  previousLabel: z.string().trim().optional().nullable(),
+});
+
+export const upsertStoreTagCatalogItem = createServerFn({ method: "POST" })
+  .validator(upsertStoreTagCatalogItemSchema)
+  .handler(async ({ data }) => {
+    const { storeId: inputStoreId, id, label, colorKey, groupId, description, previousLabel } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    const catalog = (settings.crm_tag_catalog || {}) as {
+      groups?: StoreTagGroupItem[];
+      tags?: StoreTagCatalogItem[];
+    };
+
+    const groups = Array.isArray(catalog.groups) && catalog.groups.length > 0
+      ? [...catalog.groups]
+      : [...DEFAULT_TAG_GROUPS];
+    const tags = Array.isArray(catalog.tags) && catalog.tags.length > 0
+      ? [...catalog.tags]
+      : [...DEFAULT_TAG_ITEMS];
+
+    const slugId = id || label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `tag-${Date.now()}`;
+    const existingIdx = tags.findIndex((t) => t.id === slugId || (previousLabel && t.label.toLowerCase() === previousLabel.toLowerCase()) || t.label.toLowerCase() === label.toLowerCase());
+
+    const item: StoreTagCatalogItem = {
+      id: existingIdx >= 0 ? tags[existingIdx].id : slugId,
+      label,
+      colorKey,
+      groupId,
+      description: description || null,
+    };
+
+    if (existingIdx >= 0) {
+      tags[existingIdx] = item;
+    } else {
+      tags.push(item);
+    }
+
+    const updatedCatalog = { groups, tags, updated_at: new Date().toISOString() };
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          crm_tag_catalog: updatedCatalog,
+        },
+      })
+      .eq("id", storeId);
+
+    if (previousLabel && previousLabel !== label) {
+      const { data: matchingThreads } = await db
+        .from("chat_threads")
+        .select("id, tags")
+        .eq("store_id", storeId)
+        .contains("tags", [previousLabel]);
+
+      for (const th of matchingThreads || []) {
+        const nextTags = (Array.isArray(th.tags) ? th.tags : []).map((t: string) => (t === previousLabel ? label : t));
+        await db.from("chat_threads").update({ tags: Array.from(new Set(nextTags)) }).eq("id", th.id);
+      }
+    }
+
+    return { success: true, item, groups, tags };
+  });
+
+export const deleteStoreTagCatalogItemSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  tagId: z.string().min(1),
+  tagLabel: z.string().optional(),
+});
+
+export const deleteStoreTagCatalogItem = createServerFn({ method: "POST" })
+  .validator(deleteStoreTagCatalogItemSchema)
+  .handler(async ({ data }) => {
+    const { storeId: inputStoreId, tagId, tagLabel } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    const catalog = (settings.crm_tag_catalog || {}) as {
+      groups?: StoreTagGroupItem[];
+      tags?: StoreTagCatalogItem[];
+    };
+
+    const groups = Array.isArray(catalog.groups) && catalog.groups.length > 0
+      ? [...catalog.groups]
+      : [...DEFAULT_TAG_GROUPS];
+    const currentTags = Array.isArray(catalog.tags) && catalog.tags.length > 0
+      ? [...catalog.tags]
+      : [...DEFAULT_TAG_ITEMS];
+
+    const targetItem = currentTags.find((t) => t.id === tagId || (tagLabel && t.label === tagLabel));
+    const nextTags = currentTags.filter((t) => t.id !== tagId && (!tagLabel || t.label !== tagLabel));
+
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          crm_tag_catalog: { groups, tags: nextTags, updated_at: new Date().toISOString() },
+        },
+      })
+      .eq("id", storeId);
+
+    const labelToRemove = tagLabel || targetItem?.label;
+    if (labelToRemove) {
+      const { data: matchingThreads } = await db
+        .from("chat_threads")
+        .select("id, tags")
+        .eq("store_id", storeId)
+        .contains("tags", [labelToRemove]);
+
+      for (const th of matchingThreads || []) {
+        const cleaned = (Array.isArray(th.tags) ? th.tags : []).filter((t: string) => t !== labelToRemove);
+        await db.from("chat_threads").update({ tags: cleaned }).eq("id", th.id);
+      }
+    }
+
+    return { success: true, groups, tags: nextTags };
+  });
+
+export const upsertStoreTagGroupSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  id: z.string().optional(),
+  name: z.string().trim().min(2).max(50),
+});
+
+export const upsertStoreTagGroup = createServerFn({ method: "POST" })
+  .validator(upsertStoreTagGroupSchema)
+  .handler(async ({ data }) => {
+    const { storeId: inputStoreId, id, name } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    const catalog = (settings.crm_tag_catalog || {}) as {
+      groups?: StoreTagGroupItem[];
+      tags?: StoreTagCatalogItem[];
+    };
+
+    const groups = Array.isArray(catalog.groups) && catalog.groups.length > 0
+      ? [...catalog.groups]
+      : [...DEFAULT_TAG_GROUPS];
+    const tags = Array.isArray(catalog.tags) && catalog.tags.length > 0
+      ? [...catalog.tags]
+      : [...DEFAULT_TAG_ITEMS];
+
+    const slugId = id || name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `grp-${Date.now()}`;
+    const existingIdx = groups.findIndex((g) => g.id === slugId);
+    if (existingIdx >= 0) {
+      groups[existingIdx] = { ...groups[existingIdx], name };
+    } else {
+      groups.push({ id: slugId, name, order: groups.length + 1 });
+    }
+
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          crm_tag_catalog: { groups, tags, updated_at: new Date().toISOString() },
+        },
+      })
+      .eq("id", storeId);
+
+    return { success: true, groups, tags };
+  });
+
+export const deleteStoreTagGroupSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  groupId: z.string().min(1),
+});
+
+export const deleteStoreTagGroup = createServerFn({ method: "POST" })
+  .validator(deleteStoreTagGroupSchema)
+  .handler(async ({ data }) => {
+    const { storeId: inputStoreId, groupId } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = ((storeRow?.settings as any) || {}) as Record<string, any>;
+    const catalog = (settings.crm_tag_catalog || {}) as {
+      groups?: StoreTagGroupItem[];
+      tags?: StoreTagCatalogItem[];
+    };
+
+    const currentGroups = Array.isArray(catalog.groups) && catalog.groups.length > 0
+      ? [...catalog.groups]
+      : [...DEFAULT_TAG_GROUPS];
+    const currentTags = Array.isArray(catalog.tags) && catalog.tags.length > 0
+      ? [...catalog.tags]
+      : [...DEFAULT_TAG_ITEMS];
+
+    const nextGroups = currentGroups.filter((g) => g.id !== groupId);
+    const fallbackGroupId = nextGroups[0]?.id || "funil";
+    const nextTags = currentTags.map((t) => (t.groupId === groupId ? { ...t, groupId: fallbackGroupId } : t));
+
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          crm_tag_catalog: { groups: nextGroups, tags: nextTags, updated_at: new Date().toISOString() },
+        },
+      })
+      .eq("id", storeId);
+
+    return { success: true, groups: nextGroups, tags: nextTags };
+  });
+
+// ============================================================
+// 6. Sincronização Ativa de Foto e Identidade do Contato WhatsApp
+// ============================================================
+
+export const syncContactProfileFromWhatsAppSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+});
+
+export const syncContactProfileFromWhatsApp = createServerFn({ method: "POST" })
+  .validator(syncContactProfileFromWhatsAppSchema)
+  .handler(async ({ data }) => {
+    const { threadId, storeId: inputStoreId } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, store_id, customer_id, guest_name, entity_id, metadata")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+
+    if (!thread) throw new Error("Conversa não localizada.");
+
+    const { data: inst } = await db
+      .from("whatsapp_channel_instances")
+      .select("id, instance_key, external_instance_id, public_config")
+      .eq("store_id", storeId)
+      .eq("provider", "evolution_api")
+      .eq("is_active", true)
+      .order("is_default", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!inst) throw new Error("Nenhuma instância WhatsApp ativa encontrada.");
+
+    const externalName = inst.external_instance_id || inst.instance_key;
+    const configuredUrl = String((inst.public_config as any)?.base_url || "").replace(/\/$/, "");
+    const baseUrl = configuredUrl && !configuredUrl.includes("147.15.61.45")
+      ? configuredUrl
+      : (process.env.EVOLUTION_API_URL?.trim() || "");
+    const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
+    if (!baseUrl || !apiKey) throw new Error("Gateway WhatsApp não configurado.");
+
+    const meta = ((thread.metadata as any) || {}) as Record<string, any>;
+    const rawTarget = String(meta.whatsapp_jid_alt || meta.whatsapp_jid || thread.entity_id || "").trim();
+    const digits = rawTarget.replace(/@.*$/, "").replace(/\D/g, "");
+    const targetQuery = rawTarget || digits;
+
+    let fetchedAvatarUrl: string | null = meta.avatar_url || null;
+    let fetchedName: string | null = null;
+
+    try {
+      const picRes = await fetch(`${baseUrl}/chat/fetchProfilePictureUrl/${encodeURIComponent(externalName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ number: targetQuery }),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (picRes.ok) {
+        const picJson = (await picRes.json().catch(() => ({}))) as Record<string, any>;
+        const candidatePic = picJson.profilePictureUrl || picJson.profilePicUrl || picJson.picture || null;
+        if (typeof candidatePic === "string" && candidatePic.startsWith("http")) {
+          fetchedAvatarUrl = candidatePic;
+        }
+      }
+    } catch {
+      // Best-effort profile picture fetch
+    }
+
+    try {
+      const contactsRes = await fetch(`${baseUrl}/chat/findContacts/${encodeURIComponent(externalName)}`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ where: { id: rawTarget.includes("@") ? rawTarget : `${digits}@s.whatsapp.net` } }),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (contactsRes.ok) {
+        const contactsJson = await contactsRes.json().catch(() => []);
+        const list = Array.isArray(contactsJson) ? contactsJson : Array.isArray(contactsJson?.data) ? contactsJson.data : [];
+        const match = list[0];
+        if (match) {
+          if (!fetchedAvatarUrl && typeof match.profilePicUrl === "string" && match.profilePicUrl.startsWith("http")) {
+            fetchedAvatarUrl = match.profilePicUrl;
+          }
+          const candidateName = String(match.pushName || match.name || "").trim();
+          if (candidateName && !["você", "voce", "you", "eu"].includes(candidateName.toLowerCase())) {
+            fetchedName = candidateName;
+          }
+        }
+      }
+    } catch {
+      // Best-effort contact lookup
+    }
+
+    const currentGuestName = String(thread.guest_name || "").trim();
+    const isSyntheticName = !currentGuestName || /^\+?\d+$/.test(currentGuestName) || currentGuestName.startsWith("WhatsApp ");
+    const resolvedName = (isSyntheticName && fetchedName) ? fetchedName : (currentGuestName || fetchedName || `+${digits}`);
+
+    const updatedMeta = {
+      ...meta,
+      ...(fetchedAvatarUrl ? { avatar_url: fetchedAvatarUrl } : {}),
+      ...(fetchedName ? { push_name: fetchedName } : {}),
+      last_whatsapp_profile_sync_at: new Date().toISOString(),
+    };
+
+    await db
+      .from("chat_threads")
+      .update({
+        guest_name: resolvedName,
+        metadata: updatedMeta,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", thread.id);
+
+    if (thread.customer_id && fetchedAvatarUrl) {
+      await db
+        .from("profiles")
+        .update({ avatar_url: fetchedAvatarUrl, updated_at: new Date().toISOString() })
+        .eq("id", thread.customer_id);
+    }
+
+    return {
+      success: true,
+      avatarUrl: fetchedAvatarUrl,
+      fullName: resolvedName,
+      phone: thread.entity_id || (digits ? `+${digits}` : null),
+    };
+  });
+
+// ============================================================
+// 7. Notas Rápidas, Seleção de IA Especialista, Dossiê PNR/Viagem e E-mail Vinculado
+// ============================================================
+
+export const updateThreadInternalNotesSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  internalNotes: z.string().max(4000),
+});
+
+export const updateThreadInternalNotes = createServerFn({ method: "POST" })
+  .validator(updateThreadInternalNotesSchema)
+  .handler(async ({ data }) => {
+    const { threadId, storeId: inputStoreId, internalNotes } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { error } = await db
+      .from("chat_threads")
+      .update({
+        internal_notes: internalNotes.trim() || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", threadId)
+      .eq("store_id", storeId);
+
+    if (error) throw new Error(`Falha ao salvar observações: ${error.message}`);
+    return { success: true, internalNotes: internalNotes.trim() };
+  });
+
+export const updateThreadAiAgentConfigSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  aiAgentId: z.enum([
+    "general_copilot",
+    "tourism_concierge",
+    "commercial_closer",
+    "financial_billing",
+    "sac_triage",
+  ]),
+  handoffMode: z.enum(["ai_triage", "human_queue", "human_active"]).optional(),
+  aiAutoReplyEnabled: z.boolean().optional(),
+});
+
+export const updateThreadAiAgentConfig = createServerFn({ method: "POST" })
+  .validator(updateThreadAiAgentConfigSchema)
+  .handler(async ({ data }) => {
+    const { threadId, storeId: inputStoreId, aiAgentId, handoffMode, aiAutoReplyEnabled } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: current } = await db
+      .from("chat_threads")
+      .select("metadata")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+
+    const curMeta = (((current?.metadata as any) || {}) as Record<string, any>);
+    const nextMeta = {
+      ...curMeta,
+      ai_agent_id: aiAgentId,
+      ...(handoffMode !== undefined ? { handoff_mode: handoffMode } : {}),
+      ...(aiAutoReplyEnabled !== undefined ? { ai_auto_reply_enabled: aiAutoReplyEnabled } : {}),
+      ai_agent_updated_at: new Date().toISOString(),
+      ai_agent_updated_by: identity.id,
+    };
+
+    const { error } = await db
+      .from("chat_threads")
+      .update({
+        metadata: nextMeta,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", threadId)
+      .eq("store_id", storeId);
+
+    if (error) throw new Error(`Falha ao atualizar agente IA: ${error.message}`);
+    return {
+      success: true,
+      aiAgentConfig: {
+        aiAgentId,
+        handoffMode: nextMeta.handoff_mode || "ai_triage",
+        aiAutoReplyEnabled: nextMeta.ai_auto_reply_enabled !== false,
+      },
+    };
+  });
+
+export const upsertCustomerTravelDossierSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  dossierId: z.string().optional(),
+  pnrLocator: z.string().trim().max(30).optional().nullable(),
+  operatorPackageId: z.string().trim().max(60).optional().nullable(),
+  operatorName: z.string().trim().max(80).optional().nullable(),
+  airlineName: z.string().trim().max(60).optional().nullable(),
+  routeSummary: z.string().trim().max(140).optional().nullable(),
+  departureDate: z.string().trim().max(40).optional().nullable(),
+  flightStatus: z.enum(["confirmed", "scheduled", "delayed", "cancelled", "reaccommodation"]).default("confirmed"),
+  passengerNames: z.string().trim().max(240).optional().nullable(),
+  notes: z.string().trim().max(500).optional().nullable(),
+});
+
+export const upsertCustomerTravelDossier = createServerFn({ method: "POST" })
+  .validator(upsertCustomerTravelDossierSchema)
+  .handler(async ({ data }) => {
+    const {
+      threadId,
+      storeId: inputStoreId,
+      dossierId,
+      pnrLocator,
+      operatorPackageId,
+      operatorName,
+      airlineName,
+      routeSummary,
+      departureDate,
+      flightStatus,
+      passengerNames,
+      notes,
+    } = data;
+
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, metadata")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+
+    if (!thread) throw new Error("Conversa não encontrada.");
+
+    const curMeta = (((thread.metadata as any) || {}) as Record<string, any>);
+    const existingList = Array.isArray(curMeta.travel_dossiers) ? [...curMeta.travel_dossiers] : [];
+    const targetId = dossierId || `pnr-${Date.now()}`;
+
+    const entry = {
+      id: targetId,
+      pnr_locator: (pnrLocator || "").toUpperCase().trim() || null,
+      operator_package_id: (operatorPackageId || "").trim() || null,
+      operator_name: (operatorName || "").trim() || null,
+      airline_name: (airlineName || "").trim() || null,
+      route_summary: (routeSummary || "").trim() || null,
+      departure_date: (departureDate || "").trim() || null,
+      flight_status: flightStatus,
+      passenger_names: (passengerNames || "").trim() || null,
+      notes: (notes || "").trim() || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const idx = existingList.findIndex((d: any) => d.id === targetId);
+    if (idx >= 0) {
+      existingList[idx] = entry;
+    } else {
+      existingList.unshift(entry);
+    }
+
+    const nextMeta = {
+      ...curMeta,
+      travel_dossiers: existingList,
+    };
+
+    await db
+      .from("chat_threads")
+      .update({ metadata: nextMeta, updated_at: new Date().toISOString() })
+      .eq("id", threadId)
+      .eq("store_id", storeId);
+
+    return { success: true, dossier: entry, travelDossiers: existingList };
+  });
+
+export const deleteCustomerTravelDossierSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  dossierId: z.string().min(1),
+});
+
+export const deleteCustomerTravelDossier = createServerFn({ method: "POST" })
+  .validator(deleteCustomerTravelDossierSchema)
+  .handler(async ({ data }) => {
+    const { threadId, storeId: inputStoreId, dossierId } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, metadata")
+      .eq("id", threadId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+
+    if (!thread) throw new Error("Conversa não encontrada.");
+
+    const curMeta = (((thread.metadata as any) || {}) as Record<string, any>);
+    const existingList = Array.isArray(curMeta.travel_dossiers) ? curMeta.travel_dossiers : [];
+    const nextList = existingList.filter((d: any) => d.id !== dossierId);
+
+    await db
+      .from("chat_threads")
+      .update({
+        metadata: { ...curMeta, travel_dossiers: nextList },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", threadId)
+      .eq("store_id", storeId);
+
+    return { success: true, travelDossiers: nextList };
+  });
+
+export const sendClientLinkedEmailSchema = z.object({
+  threadId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
+  customerId: z.string().uuid().optional().nullable(),
+  mailboxAddress: z.string().trim().optional().nullable(),
+  recipientEmail: z.string().trim().email("Informe um e-mail destinatário válido"),
+  recipientName: z.string().trim().max(120).optional().nullable(),
+  recipientType: z.enum(["client", "operator", "airline", "support"]).default("operator"),
+  subject: z.string().trim().min(2).max(180),
+  bodyText: z.string().trim().min(2).max(5000),
+  pnrLocator: z.string().trim().max(30).optional().nullable(),
+  operatorPackageId: z.string().trim().max(60).optional().nullable(),
+  ticketId: z.string().trim().max(60).optional().nullable(),
+  attachmentImageUrl: z.string().trim().max(4000).optional().nullable(),
+  notifyInCustomerChat: z.boolean().default(false),
+});
+
+export const sendClientLinkedEmail = createServerFn({ method: "POST" })
+  .validator(sendClientLinkedEmailSchema)
+  .handler(async ({ data }) => {
+    const {
+      threadId,
+      storeId: inputStoreId,
+      customerId,
+      mailboxAddress,
+      recipientEmail,
+      recipientName,
+      recipientType,
+      subject,
+      bodyText,
+      pnrLocator,
+      operatorPackageId,
+      ticketId,
+      attachmentImageUrl,
+      notifyInCustomerChat,
+    } = data;
+
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const [{ data: thread }, { data: storeRow }] = await Promise.all([
+      db.from("chat_threads").select("id, customer_id, guest_name, entity_id, metadata").eq("id", threadId).eq("store_id", storeId).maybeSingle(),
+      db.from("stores").select("name, slug, settings").eq("id", storeId).maybeSingle(),
+    ]);
+
+    if (!thread) throw new Error("Conversa não encontrada.");
+
+    const storeSettings = (((storeRow?.settings as any) || {}) as Record<string, any>);
+    const emailAccounts = Array.isArray(storeSettings.corporate_email_accounts) ? storeSettings.corporate_email_accounts : [];
+    const defaultMailbox = emailAccounts[0]?.address || `atendimento@${storeRow?.slug || "waesy"}.com.br`;
+    const fromEmail = mailboxAddress || defaultMailbox;
+
+    const shortCid = String(customerId || thread.customer_id || threadId).slice(0, 8).toUpperCase();
+    const shortTrd = threadId.slice(0, 8).toUpperCase();
+    const correlationTokens = [
+      `[CID:${shortCid}]`,
+      `[TRD:${shortTrd}]`,
+      ...(pnrLocator ? [`[PNR:${pnrLocator.toUpperCase().trim()}]`] : []),
+      ...(operatorPackageId ? [`[PKG:${operatorPackageId.toUpperCase().trim()}]`] : []),
+      ...(ticketId ? [`[TKT:${ticketId.slice(0, 8).toUpperCase()}]`] : []),
+    ].join(" ");
+
+    const trackedSubject = subject.includes("[TRD:") ? subject : `${subject} ${correlationTokens}`;
+    let deliveryProvider = "local_tracked";
+    let externalId: string | null = null;
+
+    const resendKey = process.env.RESEND_API_KEY?.trim() || "";
+    if (resendKey) {
+      try {
+        const htmlBody = `
+          <div style="font-family: sans-serif; color: #111827; line-height: 1.6;">
+            <p>${bodyText.replace(/\n/g, "<br/>")}</p>
+            ${attachmentImageUrl ? `<div style="margin-top: 16px;"><img src="${attachmentImageUrl}" alt="Anexo" style="max-width: 100%; border-radius: 8px;" /></div>` : ""}
+            <hr style="margin-top: 24px; border: 0; border-top: 1px solid #e5e7eb;" />
+            <p style="font-size: 11px; color: #6b7280;">
+              Enviado por ${storeRow?.name || "Central de Atendimento"} (${fromEmail}) • Rastreio Automático: ${correlationTokens}
+            </p>
+          </div>
+        `;
+        const resendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: `${storeRow?.name || "Atendimento"} <${fromEmail.includes("@") ? fromEmail : "onboarding@resend.dev"}>`,
+            to: [recipientEmail],
+            subject: trackedSubject,
+            html: htmlBody,
+            headers: {
+              "X-Waesy-Thread-Id": threadId,
+              "X-Waesy-Customer-Id": String(customerId || thread.customer_id || ""),
+              ...(pnrLocator ? { "X-Waesy-PNR": pnrLocator } : {}),
+              ...(operatorPackageId ? { "X-Waesy-Operator-Package": operatorPackageId } : {}),
+            },
+          }),
+          signal: AbortSignal.timeout(8000),
+        });
+        if (resendRes.ok) {
+          const resendJson = (await resendRes.json().catch(() => ({}))) as Record<string, any>;
+          externalId = resendJson.id || null;
+          deliveryProvider = "resend_smtp";
+        }
+      } catch {
+        // Fallback to tracked outbox log
+      }
+    }
+
+    const emailRecord = {
+      id: `eml-${Date.now()}`,
+      thread_id: threadId,
+      customer_id: customerId || thread.customer_id || null,
+      from_address: fromEmail,
+      recipient_email: recipientEmail,
+      recipient_name: recipientName || recipientEmail,
+      recipient_type: recipientType,
+      subject: trackedSubject,
+      clean_subject: subject,
+      body_text: bodyText,
+      correlation_tokens: correlationTokens,
+      pnr_locator: pnrLocator ? pnrLocator.toUpperCase().trim() : null,
+      operator_package_id: operatorPackageId ? operatorPackageId.trim() : null,
+      ticket_id: ticketId || null,
+      attachment_image_url: attachmentImageUrl || null,
+      delivery_provider: deliveryProvider,
+      external_id: externalId,
+      status: "sent",
+      sent_by_profile_id: identity.id,
+      created_at: new Date().toISOString(),
+    };
+
+    const curMeta = (((thread.metadata as any) || {}) as Record<string, any>);
+    const existingEmails = Array.isArray(curMeta.linked_emails) ? curMeta.linked_emails : [];
+    const nextEmails = [emailRecord, ...existingEmails].slice(0, 50);
+
+    await db
+      .from("chat_threads")
+      .update({
+        metadata: {
+          ...curMeta,
+          linked_emails: nextEmails,
+        },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", threadId)
+      .eq("store_id", storeId);
+
+    const recipientTypeLabel =
+      recipientType === "operator"
+        ? "Operadora"
+        : recipientType === "airline"
+          ? "Cia Aérea"
+          : recipientType === "support"
+            ? "Suporte / Ticket"
+            : "Cliente";
+
+    await db.from("chat_messages").insert({
+      thread_id: threadId,
+      message: notifyInCustomerChat
+        ? `E-mail enviado para ${recipientEmail} — Assunto: "${subject}" ${pnrLocator ? `(PNR: ${pnrLocator.toUpperCase()})` : ""}`
+        : `[E-MAIL VINCULADO • ${recipientTypeLabel.toUpperCase()}] Para: ${recipientEmail} | Assunto: ${trackedSubject}\n${bodyText}`,
+      message_type: notifyInCustomerChat ? "text" : "system_event",
+      is_staff_reply: true,
+      sender_id: identity.id,
+      sender_profile_id: identity.id,
+      payload: {
+        is_internal: !notifyInCustomerChat,
+        is_whisper: !notifyInCustomerChat,
+        linked_email: emailRecord,
+      },
+    });
+
+    return {
+      success: true,
+      emailRecord,
+      linkedEmails: nextEmails,
+    };
+  });
+
+// ============================================================
+// 8. Cloudwebly / cPanel Hosting & Corporate Email Accounts Management
+// ============================================================
+
+export interface CorporateEmailAccountItem {
+  id: string;
+  address: string;
+  localPart: string;
+  domain: string;
+  displayName: string;
+  quotaMb: number;
+  usedMb: number;
+  departmentSlug: string;
+  assignedProfileId: string | null;
+  assignedProfileName: string | null;
+  status: "active" | "suspended";
+  cpanelSynced: boolean;
+  createdAt: string;
+}
+
+export const getCorporateEmailHostingOverviewSchema = z.object({
+  storeId: z.string().uuid().optional(),
+});
+
+export const getCorporateEmailHostingOverview = createServerFn({ method: "GET" })
+  .validator(getCorporateEmailHostingOverviewSchema.optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+    const db = getServerClient();
+
+    const [{ data: storeRow }, { data: membersRows }, { data: deptsRows }] = await Promise.all([
+      db.from("stores").select("id, name, slug, custom_domain, settings").eq("id", storeId).maybeSingle(),
+      db.from("store_members").select("user_id, role, profiles:user_id(id, full_name)").eq("store_id", storeId),
+      db.from("store_departments").select("id, name, slug").eq("store_id", storeId).eq("is_active", true),
+    ]);
+
+    const settings = (((storeRow?.settings as any) || {}) as Record<string, any>);
+    const hostingConfig = (settings.corporate_email_config || {
+      provider: "cloudwebly_cpanel",
+      cpanelHost: "https://br1.cloudwebly.com:2083",
+      cpanelUsername: "",
+      primaryDomain: storeRow?.custom_domain || `${storeRow?.slug || "empresa"}.com.br`,
+      imapHost: `mail.${storeRow?.custom_domain || `${storeRow?.slug || "empresa"}.com.br`}`,
+      imapPort: 993,
+      smtpHost: `mail.${storeRow?.custom_domain || `${storeRow?.slug || "empresa"}.com.br`}`,
+      smtpPort: 465,
+      planName: "Cloudwebly Hospedagem & E-mail Pro",
+      planActive: Boolean(settings.corporate_email_config?.planActive ?? true),
+      hasApiToken: Boolean(settings.corporate_email_config?.cpanelApiToken),
+    }) as Record<string, any>;
+
+    const accounts = (Array.isArray(settings.corporate_email_accounts) ? settings.corporate_email_accounts : []) as CorporateEmailAccountItem[];
+    const teamMembers = (membersRows || []).map((m: any) => ({
+      id: m.user_id,
+      fullName: m.profiles?.full_name || "Colaborador",
+      role: m.role,
+    }));
+    const departments = (deptsRows || []).map((d: any) => ({
+      id: d.id,
+      name: d.name,
+      slug: d.slug,
+    }));
+
+    return {
+      hostingConfig: {
+        provider: hostingConfig.provider || "cloudwebly_cpanel",
+        cpanelHost: hostingConfig.cpanelHost || "https://br1.cloudwebly.com:2083",
+        cpanelUsername: hostingConfig.cpanelUsername || "",
+        primaryDomain: hostingConfig.primaryDomain || storeRow?.custom_domain || `${storeRow?.slug || "empresa"}.com.br`,
+        imapHost: hostingConfig.imapHost || `mail.${hostingConfig.primaryDomain || "seudominio.com.br"}`,
+        imapPort: Number(hostingConfig.imapPort || 993),
+        smtpHost: hostingConfig.smtpHost || `mail.${hostingConfig.primaryDomain || "seudominio.com.br"}`,
+        smtpPort: Number(hostingConfig.smtpPort || 465),
+        planName: hostingConfig.planName || "Cloudwebly Hospedagem & E-mail Pro",
+        planActive: hostingConfig.planActive !== false,
+        hasApiToken: Boolean(hostingConfig.cpanelApiToken),
+      },
+      accounts,
+      teamMembers,
+      departments,
+    };
+  });
+
+export const saveCorporateEmailHostingConfigSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  provider: z.enum(["cloudwebly_cpanel", "custom_cpanel", "imap_smtp"]).default("cloudwebly_cpanel"),
+  cpanelHost: z.string().trim().min(4).max(200),
+  cpanelUsername: z.string().trim().max(80).optional().nullable(),
+  cpanelApiToken: z.string().trim().max(300).optional().nullable(),
+  primaryDomain: z.string().trim().min(3).max(120),
+  imapHost: z.string().trim().max(120).optional().nullable(),
+  imapPort: z.number().int().default(993),
+  smtpHost: z.string().trim().max(120).optional().nullable(),
+  smtpPort: z.number().int().default(465),
+  planActive: z.boolean().default(true),
+});
+
+export const saveCorporateEmailHostingConfig = createServerFn({ method: "POST" })
+  .validator(saveCorporateEmailHostingConfigSchema)
+  .handler(async ({ data }) => {
+    const {
+      storeId: inputStoreId,
+      provider,
+      cpanelHost,
+      cpanelUsername,
+      cpanelApiToken,
+      primaryDomain,
+      imapHost,
+      imapPort,
+      smtpHost,
+      smtpPort,
+      planActive,
+    } = data;
+
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = (((storeRow?.settings as any) || {}) as Record<string, any>);
+    const prevConfig = (settings.corporate_email_config || {}) as Record<string, any>;
+    const cleanDomain = primaryDomain.replace(/^https?:\/\//, "").replace(/\/.*$/, "").toLowerCase().trim();
+
+    const nextConfig = {
+      ...prevConfig,
+      provider,
+      cpanelHost: cpanelHost.replace(/\/$/, ""),
+      cpanelUsername: (cpanelUsername || "").trim(),
+      cpanelApiToken: cpanelApiToken && cpanelApiToken.trim() ? cpanelApiToken.trim() : (prevConfig.cpanelApiToken || ""),
+      primaryDomain: cleanDomain,
+      imapHost: (imapHost || "").trim() || `mail.${cleanDomain}`,
+      imapPort,
+      smtpHost: (smtpHost || "").trim() || `mail.${cleanDomain}`,
+      smtpPort,
+      planActive,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          corporate_email_config: nextConfig,
+        },
+      })
+      .eq("id", storeId);
+
+    return {
+      success: true,
+      hostingConfig: {
+        ...nextConfig,
+        cpanelApiToken: undefined,
+        hasApiToken: Boolean(nextConfig.cpanelApiToken),
+      },
+    };
+  });
+
+export const createCorporateEmailMailboxSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  localPart: z.string().trim().min(1).max(60),
+  domain: z.string().trim().optional(),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres").max(100),
+  displayName: z.string().trim().min(2).max(80),
+  quotaMb: z.number().int().min(100).max(50000).default(2048),
+  departmentSlug: z.string().trim().default("geral"),
+  assignedProfileId: z.string().uuid().optional().nullable(),
+});
+
+export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
+  .validator(createCorporateEmailMailboxSchema)
+  .handler(async ({ data }) => {
+    const {
+      storeId: inputStoreId,
+      localPart,
+      domain: inputDomain,
+      password,
+      displayName,
+      quotaMb,
+      departmentSlug,
+      assignedProfileId,
+    } = data;
+
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("slug, custom_domain, settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = (((storeRow?.settings as any) || {}) as Record<string, any>);
+    const hostingConfig = (settings.corporate_email_config || {}) as Record<string, any>;
+    const cleanLocal = localPart.replace(/@.*$/, "").toLowerCase().replace(/[^a-z0-9._-]/g, "");
+    if (!cleanLocal) throw new Error("Prefixo do e-mail inválido.");
+
+    const effectiveDomain = (inputDomain || hostingConfig.primaryDomain || storeRow?.custom_domain || `${storeRow?.slug || "empresa"}.com.br`).toLowerCase().trim();
+    const fullAddress = `${cleanLocal}@${effectiveDomain}`;
+
+    const existingAccounts = (Array.isArray(settings.corporate_email_accounts) ? [...settings.corporate_email_accounts] : []) as CorporateEmailAccountItem[];
+    if (existingAccounts.some((acc) => acc.address.toLowerCase() === fullAddress)) {
+      throw new Error(`A caixa de e-mail ${fullAddress} já está cadastrada.`);
+    }
+
+    let cpanelSynced = false;
+    if (hostingConfig.cpanelHost && hostingConfig.cpanelUsername && hostingConfig.cpanelApiToken) {
+      try {
+        const uapiUrl = `${String(hostingConfig.cpanelHost).replace(/\/$/, "")}/execute/Email/add_pop`;
+        const params = new URLSearchParams({
+          email: cleanLocal,
+          domain: effectiveDomain,
+          password,
+          quota: String(quotaMb),
+        });
+        const cpRes = await fetch(`${uapiUrl}?${params.toString()}`, {
+          method: "GET",
+          headers: {
+            Authorization: `cpanel ${hostingConfig.cpanelUsername}:${hostingConfig.cpanelApiToken}`,
+          },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (cpRes.ok) {
+          const cpJson = (await cpRes.json().catch(() => ({}))) as Record<string, any>;
+          if (cpJson.status === 1) {
+            cpanelSynced = true;
+          }
+        }
+      } catch {
+        // Fallback para provisionamento gerenciado local/Cloudwebly
+      }
+    }
+
+    let assignedProfileName: string | null = null;
+    if (assignedProfileId) {
+      const { data: p } = await db.from("profiles").select("full_name").eq("id", assignedProfileId).maybeSingle();
+      assignedProfileName = p?.full_name || null;
+    }
+
+    const newMailbox: CorporateEmailAccountItem = {
+      id: `mbx-${Date.now()}`,
+      address: fullAddress,
+      localPart: cleanLocal,
+      domain: effectiveDomain,
+      displayName,
+      quotaMb,
+      usedMb: 0,
+      departmentSlug: departmentSlug || "geral",
+      assignedProfileId: assignedProfileId || null,
+      assignedProfileName,
+      status: "active",
+      cpanelSynced,
+      createdAt: new Date().toISOString(),
+    };
+
+    const nextAccounts = [newMailbox, ...existingAccounts];
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          corporate_email_accounts: nextAccounts,
+        },
+      })
+      .eq("id", storeId);
+
+    return {
+      success: true,
+      mailbox: newMailbox,
+      accounts: nextAccounts,
+    };
+  });
+
+export const assignCorporateEmailMailboxSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  mailboxId: z.string().min(1),
+  departmentSlug: z.string().trim().default("geral"),
+  assignedProfileId: z.string().uuid().optional().nullable(),
+  displayName: z.string().trim().max(80).optional(),
+});
+
+export const assignCorporateEmailMailbox = createServerFn({ method: "POST" })
+  .validator(assignCorporateEmailMailboxSchema)
+  .handler(async ({ data }) => {
+    const { storeId: inputStoreId, mailboxId, departmentSlug, assignedProfileId, displayName } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = (((storeRow?.settings as any) || {}) as Record<string, any>);
+    const existingAccounts = (Array.isArray(settings.corporate_email_accounts) ? [...settings.corporate_email_accounts] : []) as CorporateEmailAccountItem[];
+
+    let assignedProfileName: string | null = null;
+    if (assignedProfileId) {
+      const { data: p } = await db.from("profiles").select("full_name").eq("id", assignedProfileId).maybeSingle();
+      assignedProfileName = p?.full_name || null;
+    }
+
+    const nextAccounts = existingAccounts.map((acc) =>
+      acc.id === mailboxId
+        ? {
+            ...acc,
+            departmentSlug,
+            assignedProfileId: assignedProfileId || null,
+            assignedProfileName,
+            ...(displayName ? { displayName } : {}),
+          }
+        : acc,
+    );
+
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          corporate_email_accounts: nextAccounts,
+        },
+      })
+      .eq("id", storeId);
+
+    return {
+      success: true,
+      accounts: nextAccounts,
+    };
+  });
+
+export const deleteCorporateEmailMailboxSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  mailboxId: z.string().min(1),
+});
+
+export const deleteCorporateEmailMailbox = createServerFn({ method: "POST" })
+  .validator(deleteCorporateEmailMailboxSchema)
+  .handler(async ({ data }) => {
+    const { storeId: inputStoreId, mailboxId } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity, MANAGER_ROLES, storeId);
+    const db = getServerClient();
+
+    const { data: storeRow } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .maybeSingle();
+
+    const settings = (((storeRow?.settings as any) || {}) as Record<string, any>);
+    const hostingConfig = (settings.corporate_email_config || {}) as Record<string, any>;
+    const existingAccounts = (Array.isArray(settings.corporate_email_accounts) ? [...settings.corporate_email_accounts] : []) as CorporateEmailAccountItem[];
+    const target = existingAccounts.find((a) => a.id === mailboxId);
+
+    if (target && hostingConfig.cpanelHost && hostingConfig.cpanelUsername && hostingConfig.cpanelApiToken) {
+      try {
+        const uapiUrl = `${String(hostingConfig.cpanelHost).replace(/\/$/, "")}/execute/Email/delete_pop`;
+        const params = new URLSearchParams({
+          email: target.localPart,
+          domain: target.domain,
+        });
+        await fetch(`${uapiUrl}?${params.toString()}`, {
+          method: "GET",
+          headers: {
+            Authorization: `cpanel ${hostingConfig.cpanelUsername}:${hostingConfig.cpanelApiToken}`,
+          },
+          signal: AbortSignal.timeout(6000),
+        });
+      } catch {
+        // Best-effort cPanel deletion
+      }
+    }
+
+    const nextAccounts = existingAccounts.filter((a) => a.id !== mailboxId);
+    await db
+      .from("stores")
+      .update({
+        settings: {
+          ...settings,
+          corporate_email_accounts: nextAccounts,
+        },
+      })
+      .eq("id", storeId);
+
+    return {
+      success: true,
+      accounts: nextAccounts,
     };
   });
 

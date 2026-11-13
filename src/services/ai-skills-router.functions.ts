@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { executeAiCoreGateway, AITaskType } from "./ai-core-gateway.functions";
+import { AI_SKILLS_REGISTRY } from "@/registries/ai-skills-registry";
 
 // ============================================================
 // Schemas e Tipos do Contrato Canônico de Skill (ia/03-skills.md)
@@ -508,4 +509,239 @@ ${input.inputs ? `\nDados complementares:\n${JSON.stringify(input.inputs, null, 
       provider: gatewayRes.metadata.provider,
       model: gatewayRes.metadata.model,
     };
+  });
+
+export interface UserSkillCatalogItemDTO {
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+  triggerExplicit: string;
+  isActive: boolean;
+  runsCount: number;
+}
+
+const SKILL_CATALOG_META: Record<
+  string,
+  { name: string; description: string; category: string; triggerExplicit: string }
+> = {
+  commercial_proposal: {
+    name: "Propostas Comerciais",
+    description: "Redige propostas executivas com escopo, cronograma e tabela de investimentos.",
+    category: "Vendas",
+    triggerExplicit: "/proposta",
+  },
+  receipt_organizer: {
+    name: "Organizador Fiscal & Recibos",
+    description: "Lê comprovantes e extrai valores, datas e centros de custo para planilhas.",
+    category: "Financeiro",
+    triggerExplicit: "/recibo",
+  },
+  itinerary_architect: {
+    name: "Arquiteto de Roteiros & Turismo",
+    description: "Monta pacotes turísticos multi-dias com logística, hotelaria e precificação.",
+    category: "Turismo",
+    triggerExplicit: "/roteiro",
+  },
+  social_media_marketer: {
+    name: "Diretor Social Media",
+    description: "Gera posts, legendas e carrosséis otimizados para feed, retrato e stories.",
+    category: "Marketing",
+    triggerExplicit: "/post",
+  },
+  store_ops_auditor: {
+    name: "Auditor Operacional & PDV",
+    description: "Audita catálogo, estoque crítico, conversão de pedidos e gargalos de operação.",
+    category: "Operações",
+    triggerExplicit: "/auditar",
+  },
+  content_copywriter: {
+    name: "Copywriter de Alta Conversão",
+    description: "Cria textos persuasivos para páginas, banners, anúncios e atendimento WhatsApp.",
+    category: "Conteúdo",
+    triggerExplicit: "/copy",
+  },
+  pricing_strategist: {
+    name: "Estrategista de Precificação",
+    description: "Calcula margem, markup, combos promocionais e ponto de equilíbrio por produto.",
+    category: "Financeiro",
+    triggerExplicit: "/preco",
+  },
+  research_miner: {
+    name: "Pesquisa Local & Concorrência",
+    description: "Varre a base real de empresas e tendências locais para inteligência de mercado.",
+    category: "Pesquisa",
+    triggerExplicit: "/pesquisar",
+  },
+  contract_drafter: {
+    name: "Minutas & Contratos Tabulares",
+    description: "Estrutura contratos com cláusulas jurídicas e tabelas sincronizadas de obrigação.",
+    category: "Jurídico",
+    triggerExplicit: "/contrato",
+  },
+  squad_orchestrator: {
+    name: "Fracionador de Demandas (Squads)",
+    description: "Divide objetivos complexos em especialistas (@planner, @miner, @copywriter, @critic).",
+    category: "Autônomo",
+    triggerExplicit: "/squad",
+  },
+};
+
+export async function getActiveSkillSlugsForUser(
+  userId: string,
+  storeId?: string | null
+): Promise<string[]> {
+  const supabase = getServerClient();
+  const allSlugs = Array.from(
+    new Set([...Object.keys(AI_SKILLS_REGISTRY), ...Object.keys(SKILL_CATALOG_META)])
+  );
+  const stateMap = new Map<string, boolean>(allSlugs.map((s) => [s, true]));
+
+  if (storeId) {
+    try {
+      const { data: rows } = await (supabase as any)
+        .from("workspace_skill_settings")
+        .select("is_enabled, ai_skills!inner(slug)")
+        .eq("store_id", storeId);
+      if (Array.isArray(rows)) {
+        for (const r of rows) {
+          const slug = r?.ai_skills?.slug;
+          if (slug) stateMap.set(slug, r.is_enabled !== false);
+        }
+      }
+    } catch {
+      // Fallback para preferências de usuário abaixo
+    }
+  }
+
+  try {
+    const { data: userPrefs } = await (supabase as any)
+      .from("user_skill_preferences")
+      .select("skill_slug, is_active")
+      .eq("user_id", userId);
+
+    if (Array.isArray(userPrefs)) {
+      for (const p of userPrefs) {
+        if (p?.skill_slug) {
+          stateMap.set(p.skill_slug, Boolean(p.is_active));
+        }
+      }
+    }
+  } catch {
+    // Tabela ainda não migrada no banco remoto: mantém padrão ativo
+  }
+
+  return Array.from(stateMap.entries())
+    .filter(([, active]) => active)
+    .map(([slug]) => slug);
+}
+
+export const listUserSkillsCatalog = createServerFn({ method: "GET" }).handler(
+  async (): Promise<UserSkillCatalogItemDTO[]> => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) return [];
+
+    const supabase = getServerClient();
+    const activeSlugs = new Set(
+      await getActiveSkillSlugsForUser(identity.id, (identity as any).store_id)
+    );
+
+    const runCounts = new Map<string, number>();
+    try {
+      const { data: runs } = await (supabase as any)
+        .from("ai_skill_runs")
+        .select("ai_skills!inner(slug)")
+        .eq("user_id", identity.id)
+        .limit(200);
+      if (Array.isArray(runs)) {
+        for (const r of runs) {
+          const slug = r?.ai_skills?.slug;
+          if (slug) runCounts.set(slug, (runCounts.get(slug) || 0) + 1);
+        }
+      }
+    } catch {
+      // Ignora caso join não esteja disponível
+    }
+
+    const unified = new Map<string, { name: string; description: string; category: string; triggerExplicit: string }>();
+    for (const [slug, reg] of Object.entries(AI_SKILLS_REGISTRY)) {
+      unified.set(slug, {
+        name: reg.name,
+        description: reg.description,
+        category: reg.riskTier,
+        triggerExplicit: `/${slug}`,
+      });
+    }
+    for (const [slug, meta] of Object.entries(SKILL_CATALOG_META)) {
+      unified.set(slug, meta);
+    }
+
+    return Array.from(unified.entries()).map(([slug, meta]) => ({
+      slug,
+      name: meta.name,
+      description: meta.description,
+      category: meta.category,
+      triggerExplicit: meta.triggerExplicit,
+      isActive: activeSlugs.has(slug),
+      runsCount: runCounts.get(slug) || 0,
+    }));
+  }
+);
+
+const toggleUserSkillSchema = z.object({
+  skillSlug: z.string().min(2).max(100),
+  isActive: z.boolean(),
+});
+
+export const toggleUserSkillActivation = createServerFn({ method: "POST" })
+  .validator(toggleUserSkillSchema)
+  .handler(async ({ data }): Promise<{ ok: boolean; skillSlug: string; isActive: boolean }> => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para alterar skills do Copilot.");
+    }
+
+    const supabase = getServerClient();
+    const now = new Date().toISOString();
+
+    // 1. Persiste preferência no nível do usuário (civil & operadores)
+    const { error: prefErr } = await (supabase as any)
+      .from("user_skill_preferences")
+      .upsert(
+        {
+          user_id: identity.id,
+          skill_slug: data.skillSlug,
+          is_active: data.isActive,
+          updated_at: now,
+        },
+        { onConflict: "user_id,skill_slug" }
+      );
+
+    if (prefErr) {
+      throw new Error(`Falha ao salvar preferência de skill: ${prefErr.message}`);
+    }
+
+    // 2. Se possuir store_id e a skill existir em ai_skills, espelha em workspace_skill_settings
+    const storeId = (identity as any).store_id;
+    if (storeId) {
+      const { data: skillRow } = await (supabase as any)
+        .from("ai_skills")
+        .select("id")
+        .eq("slug", data.skillSlug)
+        .maybeSingle();
+
+      if (skillRow?.id) {
+        await (supabase as any).from("workspace_skill_settings").upsert(
+          {
+            store_id: storeId,
+            skill_id: skillRow.id,
+            is_enabled: data.isActive,
+            updated_at: now,
+          },
+          { onConflict: "store_id,skill_id" }
+        );
+      }
+    }
+
+    return { ok: true, skillSlug: data.skillSlug, isActive: data.isActive };
   });

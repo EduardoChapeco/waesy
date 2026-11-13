@@ -213,7 +213,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       const isUuid = /^[0-9a-fA-F-]{36}$/.test(args.productId);
       let query = ctx.supabase
         .from("products")
-        .select("id, title, slug, description, price_cents, compare_at_price_cents, stock_quantity, status, store_id, media:product_media(url, sort_order)")
+        .select("id, title, slug, description, price_cents, compare_at_cents, status, store_id, media:product_media(url, sort_order), variants:product_variants(stock_on_hand, allow_backorder)")
         .limit(1);
 
       if (isUuid) {
@@ -229,14 +229,17 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       if (error) throw new Error(error.message);
       if (!data) throw new Error(`Produto "${args.productId}" não encontrado.`);
 
+      const variants = Array.isArray((data as any).variants) ? (data as any).variants : [];
+      const stockQuantity = variants.reduce((sum: number, v: any) => sum + (Number(v.stock_on_hand) || 0), 0);
+
       return {
         id: data.id,
         title: data.title,
         slug: data.slug,
         description: data.description,
         priceBrl: (data.price_cents || 0) / 100,
-        compareAtPriceBrl: data.compare_at_price_cents ? data.compare_at_price_cents / 100 : null,
-        stockQuantity: data.stock_quantity ?? 0,
+        compareAtPriceBrl: data.compare_at_cents ? data.compare_at_cents / 100 : null,
+        stockQuantity,
         status: data.status,
         storeId: data.store_id,
         images: (data.media || []).map((m: any) => m.url),
@@ -266,7 +269,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       let query = ctx.supabase
         .from("categories")
-        .select("id, name, slug, icon, sort_order, parent_id")
+        .select("id, name, slug, icon_url, custom_icon_url, icon_name, sort_order, parent_id")
         .order("sort_order", { ascending: true });
 
       if (args.storeId) {
@@ -282,7 +285,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
           id: c.id,
           name: c.name,
           slug: c.slug,
-          icon: c.icon,
+          icon: c.icon_url || c.custom_icon_url || c.icon_name || null,
           parentId: c.parent_id,
         })),
       };
@@ -313,28 +316,44 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       required: ["storeId", "productId", "stockQuantity"],
     },
     handler: async (ctx, args) => {
-      const { data: updatedProduct, error } = await ctx.supabase
+      const nowIso = new Date().toISOString();
+      const { data: product } = await ctx.supabase
         .from("products")
-        .update({
-          stock_quantity: args.stockQuantity,
-          updated_at: new Date().toISOString(),
-        })
+        .select("id, title")
         .eq("id", args.productId)
         .eq("store_id", args.storeId)
-        .select("id, title, stock_quantity, updated_at")
         .maybeSingle();
 
-      if (error) throw new Error(error.message);
-      if (!updatedProduct) {
+      if (!product) {
         throw new Error(`Produto não encontrado ou não pertence à loja ${args.storeId}.`);
+      }
+
+      const { data: variant } = await ctx.supabase
+        .from("product_variants")
+        .select("id")
+        .eq("product_id", args.productId)
+        .limit(1)
+        .maybeSingle();
+
+      if (variant) {
+        const { error: varErr } = await ctx.supabase
+          .from("product_variants")
+          .update({ stock_on_hand: args.stockQuantity, updated_at: nowIso })
+          .eq("id", variant.id);
+        if (varErr) throw new Error(varErr.message);
+      } else {
+        const { error: insErr } = await ctx.supabase
+          .from("product_variants")
+          .insert({ product_id: args.productId, stock_on_hand: args.stockQuantity });
+        if (insErr) throw new Error(insErr.message);
       }
 
       return {
         success: true,
-        productId: updatedProduct.id,
-        title: updatedProduct.title,
-        newStockQuantity: updatedProduct.stock_quantity,
-        updatedAt: updatedProduct.updated_at,
+        productId: product.id,
+        title: product.title,
+        newStockQuantity: args.stockQuantity,
+        updatedAt: nowIso,
       };
     },
   },
@@ -363,7 +382,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       const isUuid = /^[0-9a-fA-F-]{36}$/.test(args.slugOrId);
       const query = ctx.supabase
         .from("stores")
-        .select("id, name, slug, description, logo_url, phone, whatsapp, address, city, state, rating, is_verified")
+        .select("id, name, slug, description, logo_url, phone, address, city, state, google_rating, verified_badge_url, settings")
         .limit(1);
 
       if (isUuid) {
@@ -383,11 +402,11 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         description: data.description,
         logoUrl: data.logo_url,
         phone: data.phone,
-        whatsapp: data.whatsapp,
+        whatsapp: data.phone || (data.settings as any)?.whatsapp || null,
         city: data.city,
         state: data.state,
-        rating: data.rating || 5.0,
-        isVerified: Boolean(data.is_verified),
+        rating: data.google_rating || 5.0,
+        isVerified: Boolean(data.verified_badge_url),
       };
     },
   },
@@ -421,9 +440,9 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       const limit = Math.min(Math.max(Number(args.limit) || 10, 1), 30);
       let query = ctx.supabase
         .from("stores")
-        .select("id, name, slug, description, logo_url, city, state, rating, is_verified")
-        .eq("status", "active")
-        .order("rating", { ascending: false })
+        .select("id, name, slug, description, logo_url, city, state, google_rating, verified_badge_url")
+        .eq("is_active", true)
+        .order("google_rating", { ascending: false, nullsFirst: false })
         .limit(limit);
 
       if (args.city) query = query.ilike("city", `%${args.city}%`);
@@ -442,8 +461,8 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
           logoUrl: s.logo_url,
           city: s.city,
           state: s.state,
-          rating: s.rating || 5.0,
-          isVerified: Boolean(s.is_verified),
+          rating: s.google_rating || 5.0,
+          isVerified: Boolean(s.verified_badge_url),
         })),
       };
     },
@@ -530,7 +549,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       const limit = Math.min(Math.max(Number(args.limit) || 20, 1), 50);
       const { data, error } = await ctx.supabase
         .from("orders")
-        .select("id, status, payment_status, total_cents, created_at, customer_name, delivery_address")
+        .select("id, status, total_cents, created_at, customer_snapshot, shipping_address, payments(status, method)")
         .eq("store_id", args.storeId)
         .in("status", ["paid", "preparing", "confirmed"])
         .order("created_at", { ascending: true })
@@ -541,15 +560,19 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       return {
         storeId: args.storeId,
         pendingCount: data?.length || 0,
-        orders: (data || []).map((o: any) => ({
-          orderId: o.id,
-          status: o.status,
-          paymentStatus: o.payment_status,
-          totalBrl: (o.total_cents || 0) / 100,
-          customerName: o.customer_name || "Cliente",
-          deliveryAddress: o.delivery_address,
-          createdAt: o.created_at,
-        })),
+        orders: (data || []).map((o: any) => {
+          const payment = Array.isArray(o.payments) ? o.payments[0] : o.payments;
+          const snap = (o.customer_snapshot || {}) as Record<string, any>;
+          return {
+            orderId: o.id,
+            status: o.status,
+            paymentStatus: payment?.status || o.status,
+            totalBrl: (o.total_cents || 0) / 100,
+            customerName: snap.full_name || snap.name || "Cliente",
+            deliveryAddress: o.shipping_address || null,
+            createdAt: o.created_at,
+          };
+        }),
       };
     },
   },
@@ -642,7 +665,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       const { data, error } = await ctx.supabase
         .from("orders")
-        .select("id, status, payment_status, total_cents, subtotal_cents, shipping_fee_cents, discount_cents, payment_method, customer_name, customer_email, customer_phone, delivery_address, created_at, items:order_items(id, product_id, title, quantity, unit_price_cents, total_price_cents)")
+        .select("id, status, total_cents, subtotal_cents, shipping_cents, discount_cents, customer_snapshot, shipping_address, created_at, payments(status, method), items:order_items(id, item_id, product_title, qty, unit_price_cents, total_cents)")
         .eq("id", args.orderId)
         .eq("store_id", args.storeId)
         .maybeSingle();
@@ -650,31 +673,34 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       if (error) throw new Error(error.message);
       if (!data) throw new Error(`Pedido "${args.orderId}" não encontrado na loja ${args.storeId}.`);
 
+      const payment = Array.isArray((data as any).payments) ? (data as any).payments[0] : (data as any).payments;
+      const snap = ((data as any).customer_snapshot || {}) as Record<string, any>;
+
       return {
         orderId: data.id,
         status: data.status,
-        paymentStatus: data.payment_status,
-        paymentMethod: data.payment_method,
+        paymentStatus: payment?.status || data.status,
+        paymentMethod: payment?.method || null,
         totals: {
           subtotalBrl: (data.subtotal_cents || 0) / 100,
-          shippingBrl: (data.shipping_fee_cents || 0) / 100,
+          shippingBrl: (data.shipping_cents || 0) / 100,
           discountBrl: (data.discount_cents || 0) / 100,
           totalBrl: (data.total_cents || 0) / 100,
         },
         customer: {
-          name: data.customer_name,
-          email: data.customer_email,
-          phone: data.customer_phone,
+          name: snap.full_name || snap.name || null,
+          email: snap.email || null,
+          phone: snap.phone || null,
         },
-        deliveryAddress: data.delivery_address,
+        deliveryAddress: data.shipping_address,
         createdAt: data.created_at,
         items: (data.items || []).map((it: any) => ({
           id: it.id,
-          productId: it.product_id,
-          title: it.title,
-          quantity: it.quantity,
+          productId: it.item_id,
+          title: it.product_title,
+          quantity: it.qty,
           unitPriceBrl: (it.unit_price_cents || 0) / 100,
-          totalPriceBrl: (it.total_price_cents || 0) / 100,
+          totalPriceBrl: (it.total_cents || 0) / 100,
         })),
       };
     },
@@ -805,7 +831,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       const { data: trip, error: tripErr } = await ctx.supabase
         .from("tourism_trips")
-        .select("id, title, destination, departure_date, return_date, status, max_passengers, passengers:tourism_passengers(id, full_name, document_number, birth_date, seat_number), locators:tourism_locators(id, provider_name, locator_code)")
+        .select("id, title, destination_city, travel_start_date, travel_end_date, status, adults_count, children_count, passengers:tourism_passengers(id, full_name, document_number, birth_date, seat_number), locators:tourism_locators(id, provider_name, locator_code)")
         .eq("id", args.tripId)
         .eq("store_id", args.storeId)
         .maybeSingle();
@@ -816,12 +842,12 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       return {
         tripId: trip.id,
         title: trip.title,
-        destination: trip.destination,
-        departureDate: trip.departure_date,
-        returnDate: trip.return_date,
+        destination: trip.destination_city,
+        departureDate: trip.travel_start_date,
+        returnDate: trip.travel_end_date,
         status: trip.status,
         passengerCount: trip.passengers?.length || 0,
-        maxCapacity: trip.max_passengers,
+        maxCapacity: Number((trip as any).adults_count || 0) + Number((trip as any).children_count || 0),
         passengers: (trip.passengers || []).map((p: any) => ({
           id: p.id,
           fullName: p.full_name,
@@ -1166,9 +1192,9 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
 
       const { data: orders, error } = await ctx.supabase
         .from("orders")
-        .select("total_cents, payment_status, payment_method")
+        .select("total_cents, status, payments(status, method)")
         .eq("store_id", args.storeId)
-        .eq("payment_status", "paid")
+        .in("status", ["paid", "completed", "shipped", "delivered"])
         .gte("created_at", sinceDate);
 
       if (error) throw new Error(error.message);
@@ -1178,7 +1204,8 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
 
       for (const ord of orders || []) {
         grossRevenueCents += ord.total_cents || 0;
-        const method = ord.payment_method || "outros";
+        const firstPayment = Array.isArray((ord as any).payments) ? (ord as any).payments[0] : (ord as any).payments;
+        const method = firstPayment?.method || "outros";
         byMethod[method] = (byMethod[method] || 0) + ((ord.total_cents || 0) / 100);
       }
 
@@ -1703,7 +1730,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       const { data, error } = await ctx.supabase
         .from("rma_requests")
-        .select("id, order_id, type, reason, status, refund_method, photos, forensics_metadata, created_at, updated_at")
+        .select("id, order_id, type, status, resolution, notes, requested_at, resolved_at, created_at, updated_at")
         .eq("id", args.rmaId)
         .eq("store_id", args.storeId)
         .maybeSingle();
@@ -1715,12 +1742,12 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         rmaId: data.id,
         orderId: data.order_id,
         type: data.type,
-        reason: data.reason,
+        reason: data.notes || null,
         status: data.status,
-        refundMethod: data.refund_method,
-        photosCount: Array.isArray(data.photos) ? data.photos.length : 0,
-        hasForensics: Boolean(data.forensics_metadata),
-        forensics: data.forensics_metadata || null,
+        refundMethod: data.resolution || null,
+        photosCount: 0,
+        hasForensics: false,
+        forensics: null,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       };
@@ -1952,15 +1979,19 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       required: ["storeId", "name"],
     },
     handler: async (ctx, args) => {
+      const estimatedValueCents = args.estimatedBudget
+        ? Math.max(0, Math.round(Number(args.estimatedBudget) * 100))
+        : 0;
       const { data, error } = await ctx.supabase
         .from("leads_crm")
         .insert({
           store_id: args.storeId,
-          name: args.name,
+          full_name: args.name,
           phone: args.phone || null,
           email: args.email || null,
           destination: args.destination || null,
-          estimated_budget: args.estimatedBudget || null,
+          estimated_value_cents: estimatedValueCents,
+          budget_cents: estimatedValueCents || null,
           notes: args.notes || null,
           tags: args.tags || [],
           status: "new",
@@ -1983,7 +2014,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
       return {
         success: true,
         leadId: data.id,
-        name: data.name,
+        name: data.full_name || args.name,
         status: data.status,
       };
     },
@@ -2420,7 +2451,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       let query = ctx.supabase
         .from("news_articles")
-        .select("id, title, slug, subtitle, kicker, category, published_at, reading_time_minutes, source_name, cover_image_url")
+        .select("id, title, slug, subtitle, kicker, category, published_at, reading_time_minutes, source_url, cover_media_url")
         .eq("status", "published");
 
       if (args.category) query = query.eq("category", args.category);
@@ -2455,7 +2486,7 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
     handler: async (ctx, args) => {
       const { data: config, error } = await ctx.supabase
         .from("store_pixel_configs")
-        .select("meta_pixel_id, meta_capi_token, google_ads_id, google_analytics_id, track_lead, track_whatsapp_click, track_add_to_cart, track_initiate_checkout, updated_at")
+        .select("meta_pixel_id, meta_capi_token, google_ads_id, ga4_measurement_id, track_whatsapp_leads, track_catalog_views, track_quotes, track_purchases, updated_at")
         .eq("store_id", args.storeId)
         .maybeSingle();
 
@@ -2470,9 +2501,9 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         capiConfigured: hasCapi,
         trackingHealth: hasPixel && hasCapi ? "optimal" : (hasPixel ? "browser_only" : "disabled"),
         enabledEvents: {
-          lead: Boolean(config?.track_lead),
-          whatsappClick: Boolean(config?.track_whatsapp_click),
-          addToCart: Boolean(config?.track_add_to_cart),
+          lead: Boolean(config?.track_whatsapp_leads || config?.track_quotes),
+          whatsappClick: Boolean(config?.track_whatsapp_leads),
+          addToCart: Boolean(config?.track_purchases),
           checkout: Boolean(config?.track_initiate_checkout),
         },
         recommendations: !hasCapi

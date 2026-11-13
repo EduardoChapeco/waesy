@@ -77,7 +77,7 @@ export function ModuleActionHeader({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Linha Principal de Controle e Ações */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="waesy-expanded-header-row justify-between gap-4">
         {/* Lado Esquerdo: Identidade do Módulo (Direta & Semântica) */}
         <div className="min-w-0">
           {eyebrow ? (
@@ -108,7 +108,7 @@ export function ModuleActionHeader({
                 value={searchValue || ""}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="pl-9 h-10 sm:h-10 rounded-lg bg-card border-border/80 text-xs focus-visible:ring-1 focus-visible:ring-primary"
+                className="pl-9 h-11 min-h-11 rounded-lg bg-card border-border/80 text-xs focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
           ) : null}
@@ -124,13 +124,14 @@ export function ModuleActionHeader({
                     key={v.id}
                     type="button"
                     onClick={() => onViewModeChange(v.id)}
-                    className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200",
+                    className={cn(
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "flex items-center gap-2 px-3 py-2 min-h-11 rounded-lg text-xs font-medium transition-colors duration-200",
                       isActive
-                        ? "bg-background text-foreground "
+                        ? "bg-background text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     )}
-                    title={v.label}
+                    aria-label={v.label}
                   >
                     <IconComponent className="size-3.5" />
                     <span className="hidden sm:inline">{v.label}</span>
@@ -148,9 +149,9 @@ export function ModuleActionHeader({
             <Button
               variant="outline"
               size="sm"
-              className="h-10 px-3 rounded-lg border-border/80 text-xs font-semibold hover:bg-muted/50 min-h-11 sm:min-h-0"
+              className="h-11 min-h-11 px-3 rounded-lg border-border/80 text-xs font-semibold hover:bg-muted/50"
               onClick={() => setConfigDrawerOpen(true)}
-              title="Ajustes rápidos do módulo"
+              aria-label="Ajustes rápidos do módulo"
             >
               <SlidersHorizontal className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Ajustes</span>
@@ -160,7 +161,7 @@ export function ModuleActionHeader({
           {/* Ação Primária de Alto Impacto */}
           {primaryAction ? (
             primaryAction.to ? (
-              <Button asChild className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold  min-h-11 sm:min-h-0">
+              <Button asChild className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold">
                 <Link to={primaryAction.to}>
                   {primaryAction.icon ? (
                     <primaryAction.icon className="size-4 mr-2" />
@@ -174,7 +175,7 @@ export function ModuleActionHeader({
               <Button
                 onClick={primaryAction.onClick}
                 disabled={primaryAction.disabled}
-                className="h-10 sm:h-10 px-4 rounded-lg text-xs font-semibold  min-h-11 sm:min-h-0"
+                className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold"
               >
                 {primaryAction.icon ? (
                   <primaryAction.icon className="size-4 mr-2" />

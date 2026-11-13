@@ -44,12 +44,12 @@ const TOOL_OPTIONS: Array<{
 }> = [
  { type: "seat", label: "Poltrona", badgeColor: "bg-primary text-primary-foreground" },
  { type: "aisle", label: "Corredor", badgeColor: "bg-muted text-muted-foreground" },
- { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-warning text-foreground" },
- { type: "door", label: "Porta", badgeColor: "bg-emerald-500 text-foreground" },
- { type: "driver", label: "Motorista", badgeColor: "bg-indigo-500 text-foreground" },
- { type: "guide", label: "Guia", badgeColor: "bg-purple-500 text-foreground" },
- { type: "stairs", label: "Escada", badgeColor: "bg-slate-500 text-foreground" },
- { type: "empty", label: "Vazio", badgeColor: "bg-background text-muted-foreground border" },
+ { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-200 dark:border-amber-800" },
+ { type: "door", label: "Porta", badgeColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800" },
+ { type: "driver", label: "Motorista", badgeColor: "bg-indigo-100 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800" },
+ { type: "guide", label: "Guia", badgeColor: "bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200 border border-violet-200 dark:border-violet-800" },
+ { type: "stairs", label: "Escada", badgeColor: "bg-muted text-foreground border border-border" },
+ { type: "empty", label: "Vazio", badgeColor: "bg-background text-muted-foreground border border-border" },
 ];
 
 const CATEGORY_OPTIONS: Array<{
@@ -398,9 +398,9 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={handleSave}
  disabled={saving}
- className="h-11 min-h-11 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs"
+ className="h-11 min-h-11 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
  >
- <Save className="size-3.5" /> {saving ? "Salvando..." : "Salvar Mapa"}
+ <Save className="size-4" /> {saving ? "Salvando..." : "Salvar Mapa"}
  </Button>
  </div>
  </div>
@@ -408,36 +408,36 @@ function VehicleLayoutEditorPage() {
  {/* ── 2. Paleta de Ferramentas & Categorias de Assento ── */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {/* Ferramentas de Pintura */}
- <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3">
+ <div className="p-4 rounded-lg bg-card border border-border space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
  Ferramenta de Pintura
  </span>
  {isDoubleDecker && (
- <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/60">
+ <div className="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border">
  <button
  type="button"
  onClick={() => setActiveDeck(1)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-1 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
+ "h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeDeck === 1
- ? "bg-primary text-primary-foreground shadow-2xs"
+ ? "bg-primary text-primary-foreground"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- Piso 1 (Inferior)
+ Piso 1
  </button>
  <button
  type="button"
  onClick={() => setActiveDeck(2)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-1 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
+ "h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeDeck === 2
- ? "bg-primary text-primary-foreground shadow-2xs"
+ ? "bg-primary text-primary-foreground"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- Piso 2 (Superior)
+ Piso 2
  </button>
  </div>
  )}
@@ -452,22 +452,22 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={() => setActiveTool(tool.type)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center gap-2",
+ "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center gap-2",
  isSelected
- ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
- : "border-border/70 bg-background text-foreground hover:bg-muted/50"
+ ? "border-primary bg-secondary text-foreground font-bold"
+ : "border-border bg-background text-foreground hover:bg-muted"
  )}
  >
  <span
  className={cn(
  "size-2.5 rounded-full inline-block",
  tool.type === "seat" && "bg-primary",
- tool.type === "aisle" && "bg-muted-foreground/40",
- tool.type === "wc" && "bg-warning",
- tool.type === "door" && "bg-emerald-500",
- tool.type === "driver" && "bg-indigo-500",
- tool.type === "guide" && "bg-purple-500",
- tool.type === "stairs" && "bg-slate-500",
+ tool.type === "aisle" && "bg-muted-foreground",
+ tool.type === "wc" && "bg-amber-600",
+ tool.type === "door" && "bg-emerald-600",
+ tool.type === "driver" && "bg-indigo-600",
+ tool.type === "guide" && "bg-violet-600",
+ tool.type === "stairs" && "bg-slate-600",
  tool.type === "empty" && "border border-border"
  )}
  />
@@ -479,9 +479,9 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Categorias de Poltrona */}
- <div className="p-4 rounded-lg bg-card border border-border/70 space-y-3">
+ <div className="p-4 rounded-lg bg-card border border-border space-y-3">
  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono">
- Categoria Ativa para Novas Poltronas
+ Categoria de Poltrona
  </span>
  <div className="flex flex-wrap items-center gap-2">
  {CATEGORY_OPTIONS.map((cat) => {
@@ -492,10 +492,10 @@ function VehicleLayoutEditorPage() {
  type="button"
  onClick={() => setActiveCategory(cat.key)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center gap-2",
+ "h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border transition-colors duration-200 cursor-pointer flex items-center gap-2",
  isSelected
- ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-2xs"
- : "border-border/70 bg-background text-foreground hover:bg-muted/50"
+ ? "border-primary bg-secondary text-foreground font-bold"
+ : "border-border bg-background text-foreground hover:bg-muted"
  )}
  >
  <span className={cn("size-2 rounded-full", cat.dotColor)} />
@@ -548,38 +548,38 @@ function VehicleLayoutEditorPage() {
  onClick={(e) => handleCellClick(r, c, e)}
  title={`Linha ${r + 1}, Coluna ${c + 1}: ${cell?.label || cellType} (${cell?.category || ""})`}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "size-11 sm:size-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs transition-colors duration-200 cursor-pointer select-none active:scale-95",
+ "size-11 sm:size-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs transition-colors duration-200 cursor-pointer select-none",
  // Estilização por Tipo
  cellType === "seat" &&
  !isAccessible &&
  !isBlocked &&
  (cell?.category === "leito_cama"
- ? "bg-warning text-foreground border-warning shadow-xs"
+ ? "bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-100 border border-amber-300 dark:border-amber-700"
  : cell?.category === "leito"
- ? "bg-primary text-primary-foreground border-primary shadow-xs"
+ ? "bg-primary text-primary-foreground border border-primary"
  : cell?.category === "semi_leito"
- ? "bg-emerald-600 text-foreground border-emerald-700 shadow-xs"
- : "bg-primary text-primary-foreground border-primary shadow-xs"),
+ ? "bg-emerald-700 text-emerald-50 border border-emerald-800"
+ : "bg-primary text-primary-foreground border border-primary"),
  cellType === "seat" &&
  isAccessible &&
- "bg-cyan-500 text-foreground border-cyan-600 shadow-xs ring-2 ring-cyan-300",
+ "bg-sky-700 text-sky-50 border-2 border-sky-900 dark:border-sky-300",
  cellType === "seat" &&
  isBlocked &&
- "bg-slate-400 text-slate-800 border-slate-500 opacity-60",
+ "bg-muted text-muted-foreground border border-border",
  cellType === "aisle" &&
- "bg-muted/30 border border-dashed border-border/60 text-muted-foreground/30 hover:bg-muted/60",
+ "bg-muted border border-dashed border-border text-muted-foreground hover:bg-accent",
  cellType === "wc" &&
- "bg-warning/20 text-warning-strong  border border-warning/40 font-mono text-xs",
+ "bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 font-mono text-xs",
  cellType === "door" &&
- "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 text-xs",
+ "bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 text-xs",
  cellType === "driver" &&
- "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/40 text-xs",
+ "bg-indigo-50 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 text-xs",
  cellType === "guide" &&
- "bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/40 text-xs",
+ "bg-violet-50 dark:bg-violet-950 text-violet-800 dark:text-violet-200 border border-violet-200 dark:border-violet-800 text-xs",
  cellType === "stairs" &&
- "bg-slate-500/20 text-slate-700 dark:text-slate-300 border border-slate-500/40 text-xs",
+ "bg-secondary text-secondary-foreground border border-border text-xs",
  cellType === "empty" &&
- "border border-border/40 bg-background/50 hover:border-primary/40 text-transparent hover:text-muted-foreground text-xs"
+ "border border-border bg-background hover:border-primary text-transparent hover:text-muted-foreground text-xs"
  )}
  >
  {cellType === "seat" ? (

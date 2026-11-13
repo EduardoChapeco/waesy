@@ -4,6 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getExperienceDocument } from "@/services/builder.functions";
 import { listCategories, listCollections, listAdminProducts } from "@/services/admin-catalog.functions";
+import { getNavigationMenus } from "@/services/cms.functions";
+import { listStoreCmsDashboardData } from "@/services/cms-collections.functions";
 const OmniEditor = React.lazy(() =>
   import("@/components/builder/OmniEditor").then((m) => ({ default: m.OmniEditor })),
 );
@@ -15,17 +17,22 @@ export const Route = createFileRoute("/workspace/builder/$documentId/editor")({
   head: () => ({ meta: [{ title: "Waesy Builder | Editor Unificado" }] }),
   loader: async ({ params }) => {
     try {
-      const [docData, categories, collections, productsRes] = await Promise.all([
+      const [docData, categories, collections, productsRes, navigationMenus] = await Promise.all([
         getExperienceDocument({ data: { id: params.documentId } }),
         listCategories().catch(() => []),
         listCollections().catch(() => []),
         listAdminProducts().catch(() => []),
+        getNavigationMenus().catch(() => []),
       ]);
 
       const realProducts = Array.isArray(productsRes)
         ? productsRes
         : ((productsRes as any)?.products || (productsRes as any)?.data || []);
       const docPayload = (docData as any)?.data || {};
+      const storeId = (docPayload as any)?.document?.store_id ?? null;
+      const cmsDashboard = await listStoreCmsDashboardData({
+        data: { storeId },
+      }).catch(() => ({ storeId, collections: [], nativeCounts: undefined }));
 
       return {
         ...docPayload,
@@ -39,6 +46,11 @@ export const Route = createFileRoute("/workspace/builder/$documentId/editor")({
             : docPayload.collections || [],
         products:
           realProducts.length > 0 ? realProducts : docPayload.products || [],
+        navigationMenus: Array.isArray(navigationMenus) ? navigationMenus : [],
+        cmsCollections: Array.isArray(cmsDashboard?.collections)
+          ? cmsDashboard.collections
+          : [],
+        cmsNativeCounts: cmsDashboard?.nativeCounts,
       };
     } catch (err) {
       console.error("[loader:workspace.builder.$documentId.editor] Unhandled loader error:", err);
@@ -49,6 +61,9 @@ export const Route = createFileRoute("/workspace/builder/$documentId/editor")({
         categories: [],
         collections: [],
         products: [],
+        navigationMenus: [],
+        cmsCollections: [],
+        cmsNativeCounts: undefined,
       };
     }
   },
@@ -172,6 +187,9 @@ function BuilderEditorPage() {
           banners={initialData.banners}
           hotpages={initialData.hotpages}
           storeData={initialData.storeData}
+          navigationMenus={initialData.navigationMenus}
+          cmsCollections={initialData.cmsCollections}
+          cmsNativeCounts={initialData.cmsNativeCounts}
         />
       </React.Suspense>
     </div>

@@ -9,7 +9,6 @@ import {
   Loader2,
   Settings2,
   Shuffle,
-  Sparkles,
   X,
 } from "lucide-react";
 import {
@@ -568,7 +567,7 @@ export function PrometheeNewsStudioModal({
             {/* Feedback & Exportação PNG */}
             {exportFeedback && (
               <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-xs font-medium text-foreground flex items-center gap-2">
-                <Sparkles className="size-4 shrink-0" />
+                <Layers className="size-4 shrink-0" />
                 <span>{exportFeedback}</span>
               </div>
             )}

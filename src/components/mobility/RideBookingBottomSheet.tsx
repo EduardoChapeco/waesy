@@ -24,7 +24,6 @@ import {
   CreditCard,
   QrCode,
   Banknote,
-  Sparkles,
   ArrowRight,
   Footprints,
 } from "lucide-react";

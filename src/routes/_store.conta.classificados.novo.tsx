@@ -924,14 +924,14 @@ function CreateTypePicker({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-foreground truncate">
+                      <h3 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate">
                         {niche.title}
                       </h3>
-                      <span className="text-xs font-medium text-muted-foreground border border-border/60 px-2 py-0.2 rounded-sm shrink-0">
+                      <span className="text-xs font-medium text-muted-foreground border border-border px-2 py-1 rounded-sm shrink-0">
                         {niche.badge}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate mt-1">
+                    <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate mt-1">
                       {niche.subtitle}
                     </p>
                   </div>
@@ -4393,8 +4393,8 @@ const [aiInstructions, setAiInstructions] = useState("");
         <div className="w-full max-w-4xl mx-auto space-y-6">
           <div className="space-y-6">
             {/* Section 1: Mídias do Anúncio (Capa de Topo & Mural do Feed da Cidade) */}
-            <div className="bg-card rounded-lg p-5 sm:p-6 space-y-6 border border-border/60 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+            <div className="bg-card rounded-lg p-5 sm:p-6 space-y-6 border border-border">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ImagePlus className="size-4 text-primary shrink-0" />
                   <span>Mídias e Identidade Visual</span>
@@ -4405,7 +4405,7 @@ const [aiInstructions, setAiInstructions] = useState("");
               </div>
 
               {/* 1.1 Fotos de Capa e Destaque (Topo do Anúncio) */}
-              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border/60 bg-muted/20">
+              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border bg-muted">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="space-y-2 min-w-0">
                     <Label className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -4420,7 +4420,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                     <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
                       4:3 Horizontal
                     </Badge>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-1 px-3 font-mono font-bold">
+                    <Badge variant="secondary" className="text-xs py-1 px-3 font-mono font-bold">
                       {images.length}/10 adicionada(s)
                     </Badge>
                   </div>
@@ -4439,7 +4439,7 @@ const [aiInstructions, setAiInstructions] = useState("");
               </SquircleCard>
 
               {/* 1.2 Mídias do Feed da Cidade e Galeria */}
-              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border/60 bg-muted/20">
+              <SquircleCard variant="media" className="p-5 sm:p-6 space-y-4 border border-border bg-muted">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="space-y-2 min-w-0">
                     <Label className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -4454,7 +4454,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                     <Badge variant="outline" className="text-xs py-1 px-3 font-mono">
                       1:1 Quadrado
                     </Badge>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs py-1 px-3 font-mono font-bold">
+                    <Badge variant="secondary" className="text-xs py-1 px-3 font-mono font-bold">
                       {feedMedia.length}/12 adicionada(s)
                     </Badge>
                   </div>
@@ -4474,8 +4474,8 @@ const [aiInstructions, setAiInstructions] = useState("");
             </div>
 
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
-            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border/40">
+            <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-3 border-b border-border">
                 <FileText className="size-4 text-primary shrink-0" />
                 <span>Informações Gerais</span>
               </div>
@@ -4488,7 +4488,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   variant="ghost"
                   size="sm"
                   onClick={() => handleOpenCopilot("title")}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-foreground hover:bg-muted gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <FileText className="size-4" />
                   <span>Sugerir título</span>
@@ -4524,7 +4524,7 @@ const [aiInstructions, setAiInstructions] = useState("");
                   variant="ghost"
                   size="sm"
                   onClick={() => handleOpenCopilot("all_editorial_fields")}
-                  className="h-11 min-h-11 px-3 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="h-11 min-h-11 px-3 text-xs font-semibold text-foreground hover:bg-muted gap-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Wand2 className="size-4" />
                   <span>Refinar com Copilot</span>
@@ -5129,10 +5129,10 @@ const [aiInstructions, setAiInstructions] = useState("");
                             type="button"
                             onClick={() => setTravelBaggagePersonalItem((p) => !p)}
                             className={cn(
-                              "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                              "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                               travelBaggagePersonalItem
-                                ? "bg-primary/10 border-primary/40 text-primary"
-                                : "bg-background border-border/50 text-muted-foreground"
+                                ? "bg-secondary border-primary text-foreground"
+                                : "bg-background border-border text-muted-foreground hover:bg-muted"
                             )}
                           >
                             <span>Item Pessoal (10kg)</span>
@@ -5142,10 +5142,10 @@ const [aiInstructions, setAiInstructions] = useState("");
                             type="button"
                             onClick={() => setTravelBaggageCarryOn((p) => !p)}
                             className={cn(
-                              "h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                              "h-11 min-h-11 px-3 rounded-lg border text-xs font-semibold flex items-center justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                               travelBaggageCarryOn
-                                ? "bg-primary/10 border-primary/40 text-primary"
-                                : "bg-background border-border/50 text-muted-foreground"
+                                ? "bg-secondary border-primary text-foreground"
+                                : "bg-background border-border text-muted-foreground hover:bg-muted"
                             )}
                           >
                             <span>Bagagem de Mão (10kg)</span>
@@ -5169,7 +5169,7 @@ const [aiInstructions, setAiInstructions] = useState("");
 
                   {/* ── TERRESTRE / EXCURSÃO ── */}
                   {travelTransportType === "bus" && (
-                    <div className="rounded-lg border border-border/50 bg-muted/20 p-4 space-y-3">
+                    <div className="rounded-lg border border-border bg-muted p-4 space-y-3">
                       <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <Bus className="size-4" /> Excursão Rodoviária
                       </p>
@@ -5233,18 +5233,18 @@ const [aiInstructions, setAiInstructions] = useState("");
                             placeholder="Ex: Xaxim, Xanxerê, Joaçaba..."
                             className="h-11 min-h-11 rounded-lg text-xs bg-background flex-1"
                           />
-                          <Button type="button" variant="outline" size="sm" onClick={handleAddGateway} className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                          <Button type="button" variant="outline" size="sm" onClick={handleAddGateway} className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-border bg-card text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                             + Adicionar
                           </Button>
                         </div>
                         {travelBoardingGateways.length > 0 && (
                           <div className="flex flex-wrap gap-2 pt-1">
                             {travelBoardingGateways.map((gw) => (
-                              <span key={gw} className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
-                                <Navigation className="size-2.5" />
+                              <span key={gw} className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-secondary border border-border text-xs font-medium text-foreground">
+                                <Navigation className="size-4" />
                                 {gw}
-                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="size-11 min-h-11 min-w-11 hover:bg-destructive/20 rounded-lg flex items-center justify-center ml-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                                  <X className="size-2.5" />
+                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="size-11 min-h-11 min-w-11 hover:bg-rose-100 dark:hover:bg-rose-950 hover:text-rose-800 dark:hover:text-rose-200 rounded-lg flex items-center justify-center ml-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                  <X className="size-4" />
                                 </button>
                               </span>
                             ))}
@@ -5272,8 +5272,8 @@ const [aiInstructions, setAiInstructions] = useState("");
                   {travelTransportType === "combo" && (
                     <div className="space-y-3">
                       {/* Leg 1: Voo */}
-                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-                        <p className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1">
+                      <div className="rounded-lg border border-border bg-muted p-4 space-y-3">
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1">
                           <Plane className="size-4" /> Trecho 1 — Voo
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

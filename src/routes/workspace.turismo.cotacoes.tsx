@@ -209,17 +209,33 @@ export default function AgencyQuotesPage() {
  adultsCount: q.adults_count,
  childrenCount: q.children_count,
  initialNotes: [q.special_notes, q.agency_notes].filter(Boolean).join("\n") || undefined,
+ customFields: {
+ ...(q.origin_city ? { origin_city: q.origin_city } : {}),
+ ...(q.origin_iata ? { origin_iata: q.origin_iata } : {}),
+ ...(q.destination_iata ? { destination_iata: q.destination_iata } : {}),
+ ...(q.trip_type ? { trip_type: q.trip_type } : {}),
+ ...(q.budget_tier ? { budget_tier: q.budget_tier } : {}),
+ ...(typeof q.flexible_dates === "boolean" ? { flexible_dates: q.flexible_dates } : {}),
+ ...(q.rooms_count ? { rooms_count: q.rooms_count } : {}),
+ ...(q.source ? { source: q.source } : {}),
+ },
  rooms: Array.isArray(q.room_occupancies) && q.room_occupancies.length > 0
    ? q.room_occupancies.map((r: any, idx: number) => ({
        id: r.id || `room-${idx + 1}`,
        type: r.room_type || r.type || "Duplo",
        adults: Number(r.adults ?? 2),
-       children: Number(r.children ?? 0),
-       child_ages: Array.isArray(r.children_ages) ? r.children_ages : [],
+       children: Number(r.children ?? (Array.isArray(r.childrenAges) ? r.childrenAges.length : 0)),
+       child_ages: Array.isArray(r.children_ages)
+         ? r.children_ages
+         : Array.isArray(r.childrenAges)
+           ? r.childrenAges
+           : [],
      }))
    : undefined,
  pricing: q.quote_amount_cents && q.quote_amount_cents > 0
    ? {
+       base_price_cents: q.quote_amount_cents,
+       total_price_cents: q.quote_amount_cents,
        base_price_per_person: Math.round(q.quote_amount_cents / 100 / Math.max(1, q.adults_count || 1)),
        total_price: Math.round(q.quote_amount_cents / 100),
      }

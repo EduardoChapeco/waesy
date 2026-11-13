@@ -118,6 +118,8 @@ function ServicesIndexPage() {
  gender_target: form.gender_target || null,
  image_url: form.image_url || null,
  status: form.status,
+ guidelines: form.pre_care_notes.trim() || null,
+ cancellation_policy: form.post_care_notes.trim() || null,
  },
  });
  const targetServiceId = (res as any)?.data?.id || form.id;

@@ -8,7 +8,6 @@ import {
   Coffee,
   Waves,
   Utensils,
-  Sparkles,
   BedDouble,
   Users,
   Maximize2,
@@ -353,7 +352,7 @@ function PublicHotelDetailPage() {
                         </span>
                         {room.amenities && room.amenities.length > 0 && (
                           <span className="flex items-center gap-1 truncate">
-                            <Sparkles className="size-3.5 text-primary" />
+                            <Coffee className="size-3.5 text-primary" />
                             {room.amenities.length} comodidades
                           </span>
                         )}
@@ -393,7 +392,7 @@ function PublicHotelDetailPage() {
 
               <div className="rounded-lg border border-border/70 bg-card p-4 space-y-2">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Sparkles className="size-4 text-primary" />
+                  <ShieldCheck className="size-4 text-primary" />
                   Família, Crianças & Bem-Estar
                 </h3>
                 <p className="text-xs text-muted-foreground">

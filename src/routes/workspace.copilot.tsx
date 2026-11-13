@@ -520,13 +520,20 @@ function WorkspaceCopilotPage() {
               },
               ...prev.filter((t) => t.id !== DEFAULT_WORKSPACE_THREAD_ID),
             ]);
+          } else {
+            throw new Error("Não foi possível inicializar uma conversa autenticada.");
           }
-        } catch {
-          // Continua com fallback determinístico caso criação de thread falhe
+        } catch (threadErr: any) {
+          throw new Error(
+            threadErr?.message || "Falha ao criar thread persistida do Copilot no workspace.",
+          );
         }
       }
 
-      if (effectiveUserId && isUuid(targetThreadId) && targetThreadId !== DEFAULT_WORKSPACE_THREAD_ID) {
+      if (effectiveUserId) {
+        if (!isUuid(targetThreadId) || targetThreadId === DEFAULT_WORKSPACE_THREAD_ID) {
+          throw new Error("Conversa autenticada inválida. Crie ou selecione uma thread para continuar.");
+        }
         const uploadedAttachments = await uploadComposerAttachments(
           attachments,
           uploadCopilotMultimodalAttachment as any,

@@ -8,6 +8,8 @@
  * Invariantes: M01, M02, M07, M08 | Checks: C21, C26 | Prompts: P29, P30, P31
  */
 
+import { tryResolveUnifiedNicheId, UNIFIED_NICHE_SPECS } from "./niche-ssot";
+
 export type NicheId =
   | "generic"
   | "tourism"
@@ -647,72 +649,73 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
   },
 };
 
+const LEGACY_MANIFEST_MAP: Record<string, NicheId> = {
+  generic: "generic",
+  tourism: "tourism",
+  gastronomy: "gastronomy",
+  retail: "retail",
+  services: "services",
+  real_estate: "real_estate",
+  healthcare: "healthcare",
+  automotive: "automotive",
+  events: "events",
+  creator: "creator",
+  criador: "creator",
+  creators: "creator",
+  news: "creator",
+  noticias: "creator",
+  wholesale: "retail",
+  supermarket: "retail",
+  pharmacy: "retail",
+  legal: "services",
+  jobs: "services",
+  education: "services",
+  pet: "healthcare",
+  rental: "real_estate",
+  vehicles: "automotive",
+  tech_repair: "automotive",
+};
+
+const UNIFIED_TO_MANIFEST_ID: Record<string, NicheId> = {
+  tourism: "tourism",
+  gastronomy: "gastronomy",
+  retail: "retail",
+  market_perishables: "retail",
+  pharmacy: "retail",
+  beauty_salon: "services",
+  barbershop: "services",
+  services: "services",
+  law_firm: "services",
+  accounting: "services",
+  education: "services",
+  organizations: "services",
+  real_estate: "real_estate",
+  aesthetics_clinic: "healthcare",
+  healthcare: "healthcare",
+  dental: "healthcare",
+  psychology: "healthcare",
+  vet_petshop: "healthcare",
+  automotive: "automotive",
+  events: "events",
+  creator: "creator",
+  generic: "generic",
+};
+
 /**
- * Resolução Canônica do Manifesto de Nicho com fallback determinístico para "generic".
+ * Resolução Canônica do Manifesto de Nicho com fallback determinístico para "generic",
+ * operando sobre a SSOT word-boundary (`tryResolveUnifiedNicheId`) para evitar colisões.
  */
 export function getNicheManifest(nicheId?: string | null): NicheManifest {
   if (!nicheId) return NICHE_MANIFEST_REGISTRY.generic;
 
   const normalized = nicheId.toLowerCase().trim();
+  if (LEGACY_MANIFEST_MAP[normalized]) {
+    return NICHE_MANIFEST_REGISTRY[LEGACY_MANIFEST_MAP[normalized]];
+  }
 
-  // Mapeamentos de aliases e termos de CNAE comuns
-  if (normalized === "turismo" || normalized.includes("viag") || normalized.includes("turis") || normalized.includes("hotel")) {
-    return NICHE_MANIFEST_REGISTRY.tourism;
-  }
-  if (normalized === "gastronomia" || normalized.includes("restauran") || normalized.includes("pizz") || normalized.includes("bar") || normalized.includes("lanche")) {
-    return NICHE_MANIFEST_REGISTRY.gastronomy;
-  }
-  if (
-    normalized === "varejo" ||
-    normalized === "wholesale" ||
-    normalized === "supermarket" ||
-    normalized === "pharmacy" ||
-    normalized.includes("loja") ||
-    normalized.includes("moda") ||
-    normalized.includes("calcado") ||
-    normalized.includes("mercad") ||
-    normalized.includes("farma") ||
-    normalized.includes("atacad")
-  ) {
-    return NICHE_MANIFEST_REGISTRY.retail;
-  }
-  if (
-    normalized === "servicos" ||
-    normalized === "legal" ||
-    normalized === "jobs" ||
-    normalized === "education" ||
-    normalized === "pet" ||
-    normalized.includes("consult") ||
-    normalized.includes("advoc") ||
-    normalized.includes("agenc") ||
-    normalized.includes("educa") ||
-    normalized.includes("curso")
-  ) {
-    return NICHE_MANIFEST_REGISTRY.services;
-  }
-  if (normalized === "imobiliaria" || normalized === "rental" || normalized.includes("imove") || normalized.includes("locac")) {
-    return NICHE_MANIFEST_REGISTRY.real_estate;
-  }
-  if (normalized === "saude" || normalized.includes("clinic") || normalized.includes("medic") || normalized.includes("dent")) {
-    return NICHE_MANIFEST_REGISTRY.healthcare;
-  }
-  if (
-    normalized === "oficina" ||
-    normalized === "vehicles" ||
-    normalized === "tech_repair" ||
-    normalized.includes("auto") ||
-    normalized.includes("mecanic") ||
-    normalized.includes("peça") ||
-    normalized.includes("veicul") ||
-    normalized.includes("assist")
-  ) {
-    return NICHE_MANIFEST_REGISTRY.automotive;
-  }
-  if (normalized === "evento" || normalized.includes("casament") || normalized.includes("festa") || normalized.includes("show")) {
-    return NICHE_MANIFEST_REGISTRY.events;
-  }
-  if (normalized === "criador" || normalized === "news" || normalized.includes("influenc") || normalized.includes("creator") || normalized.includes("midia") || normalized.includes("notici")) {
-    return NICHE_MANIFEST_REGISTRY.creator;
+  const unified = tryResolveUnifiedNicheId(normalized);
+  if (unified && UNIFIED_TO_MANIFEST_ID[unified]) {
+    return NICHE_MANIFEST_REGISTRY[UNIFIED_TO_MANIFEST_ID[unified]];
   }
 
   return (NICHE_MANIFEST_REGISTRY as Record<string, NicheManifest>)[normalized] || NICHE_MANIFEST_REGISTRY.generic;
@@ -744,14 +747,34 @@ export function formatStoreCategory(category?: string | null): string {
     real_estate: "Imóveis & Hospedagem",
     healthcare: "Saúde & Bem-Estar",
     automotive: "Automotivo & Veículos",
+    vehicles: "Automotivo & Veículos",
     events: "Eventos & Festas",
     creator: "Criador de Conteúdo",
+    beauty_salon: "Salão de Beleza & Cabelo",
+    barbershop: "Barbearia & Grooming",
+    aesthetics_clinic: "Clínica de Estética",
+    dental: "Odontologia",
+    psychology: "Psicologia & Terapia",
+    vet_petshop: "Pet Shop & Veterinária",
+    market_perishables: "Mercado & Hortifrúti",
+    supermarket: "Supermercado & Hortifrúti",
+    pharmacy: "Farmácia & Saúde",
+    law_firm: "Advocacia & Jurídico",
+    legal: "Advocacia & Jurídico",
+    accounting: "Contabilidade & Fiscal",
+    education: "Educação & Cursos",
+    organizations: "Associações & Entidades",
     generic: "Comércio Local",
     commerce: "Comércio Local",
   };
 
   if (ENGLISH_TO_PT[normalized]) {
     return ENGLISH_TO_PT[normalized];
+  }
+
+  const unified = tryResolveUnifiedNicheId(normalized);
+  if (unified && unified !== "generic" && UNIFIED_NICHE_SPECS[unified]) {
+    return UNIFIED_NICHE_SPECS[unified].label;
   }
 
   const manifest = getNicheManifest(normalized);

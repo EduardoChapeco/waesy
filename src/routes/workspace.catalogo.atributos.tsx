@@ -21,6 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { listOptionGroups, upsertOptionGroup, deleteOptionGroup, quickUpdateOptionValue } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { resolveUnifiedNicheId } from "@/lib/niches/niche-ssot";
+import { ErrorState } from "@/components/state/states";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { cn } from "@/lib/utils";
@@ -62,28 +64,34 @@ export const Route = createFileRoute("/workspace/catalogo/atributos")({
  head: () => ({ meta: [{ title: "Adicionais | Workspace Waesy" }] }),
  loader: async () => {
  try {
+ let loadError: string | null = null;
  const [groupsRes, storeRes] = await Promise.all([
- listOptionGroups().catch(() => []),
+ listOptionGroups().catch((err: any) => {
+   loadError = err?.message || "Falha ao carregar atributos e adicionais.";
+   return [];
+ }),
  getStoreSettings().catch(() => null),
  ]);
  return {
  groups: groupsRes || [],
  store: storeRes || null,
+ loadError,
  };
- } catch {
- return { groups: [], store: null };
+ } catch (err: any) {
+ return { groups: [], store: null, loadError: err?.message || "Erro ao carregar adicionais." };
  }
  },
  component: OptionGroupsPage,
 });
 
 function OptionGroupsPage() {
- const { groups, store } = ((Route.useLoaderData?.() as any) || {});
+ const { groups, store, loadError } = ((Route.useLoaderData?.() as any) || {});
  const semantics = getNicheSemantics(store);
- const isTourism = semantics.nicheId === "tourism";
+ const unifiedNiche = resolveUnifiedNicheId(store);
+ const isTourism = unifiedNiche === "tourism";
  const isServices = semantics.nicheId === "services";
- const isRetail = semantics.nicheId === "retail" || semantics.nicheId === "supermarket" || semantics.nicheId === "wholesale";
- const isGastro = semantics.nicheId === "gastronomy";
+ const isRetail = ["retail", "supermarket", "wholesale", "market_perishables", "pharmacy"].includes(unifiedNiche);
+ const isGastro = unifiedNiche === "gastronomy";
 
  const activePresets = useMemo(() => getNicheOptionGroupPresets(semantics.nicheId), [semantics.nicheId]);
  const placeholders = useMemo(() => getNicheModifierPlaceholders(semantics.nicheId), [semantics.nicheId]);
@@ -307,6 +315,14 @@ function OptionGroupsPage() {
  <span>Catálogo Global de Presets</span>
  </button>
  </div>
+
+ {loadError && (
+ <ErrorState
+   title="Erro ao carregar grupos de adicionais"
+   description={loadError}
+   onRetry={() => router.invalidate()}
+ />
+ )}
 
  {activeTab === "my_groups" && (
  <>

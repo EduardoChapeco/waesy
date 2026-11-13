@@ -68,8 +68,8 @@ export function generateExperienceFromPrompt(
  autoPlay: true,
  banners: [
  {
- title: `Bem-vindo à ${storeName}`,
- subtitle: `Experiências exclusivas criadas para surpreender você.`,
+ title: storeName,
+ subtitle: `Seleção de produtos e serviços locais.`,
  ctaText: 'Ver Destaques',
  link: '#destaques',
  },

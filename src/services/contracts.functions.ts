@@ -10,6 +10,12 @@ import {
   interpolateContractVariables,
   autoPositionSignatureFieldsFromContent,
 } from "@/lib/contracts/contract-semantic-dictionary";
+import { buildGfmMarkdownTable, compileContractDocument } from "@/lib/contracts/contract-compiler";
+import {
+  formatDynamicFieldLabel,
+  formatFieldPrimitiveValue,
+  normalizeCustomFieldMap,
+} from "@/lib/niches/unified-field-bridge";
 import { assertUserKycVerified } from "./kyc.functions";
 
 async function rollbackGeneratedContract(
@@ -915,25 +921,39 @@ export const getContractById = createServerFn({ method: "GET" })
       (legacyTravelContract.created_by_profile_id === identity.id ||
         (identity.store_id && legacyTravelContract.store_id === identity.store_id))
     ) {
-      const formattedValue = new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format((legacyTravelContract.total_value_cents || 0) / 100);
-      const clauses = [
-        {
-          title: "CLÁUSULA 1ª - DO OBJETO E ROTEIRO CONTRATADO",
-          content: `O presente instrumento tem por objeto a intermediação e prestação de serviços de turismo para o destino ${legacyTravelContract.destination || "Não informado"}.\n\nResumo dos serviços inclusos:\n${legacyTravelContract.package_summary || ""}`,
+      const compiledLegacy = compileContractDocument({
+        title: legacyTravelContract.contract_title || "Contrato de Viagem",
+        nicheHint: "tourism",
+        customer: {
+          name: legacyTravelContract.client_name || "Cliente",
+          document: legacyTravelContract.client_document || undefined,
+          email: legacyTravelContract.client_email || undefined,
+          phone: legacyTravelContract.client_phone || undefined,
         },
-        {
-          title: "CLÁUSULA 2ª - DO VALOR E CONDIÇÕES DE PAGAMENTO",
-          content: `Pelos serviços descritos na Cláusula 1ª, o CONTRATANTE (${legacyTravelContract.client_name || "Cliente"}, CPF/CNPJ: ${legacyTravelContract.client_document || "Não informado"}) pagará à CONTRATADA o valor total de ${formattedValue}, sob a seguinte modalidade: ${legacyTravelContract.payment_conditions || "À vista"}.`,
-        },
-        {
-          title: "CLÁUSULA 3ª - DAS REGRAS DE ALTERAÇÃO, CANCELAMENTO E NO-SHOW",
-          content: `Eventuais pedidos de cancelamento, remarcação ou reembolso obedecerão às normas da EMBRATUR (Deliberação Normativa nº 161/85), Código de Defesa do Consumidor e políticas tarifárias dos fornecedores aéreos e hoteleiros.`,
-        },
-      ];
-      const contentMarkdown = clauses.map((c) => `### ${c.title}\n\n${c.content}`).join("\n\n");
+        items: [
+          {
+            title: legacyTravelContract.package_summary || legacyTravelContract.destination || "Pacote Turístico",
+            unit: "pacote",
+            quantity: 1,
+            unitPriceCents: Number(legacyTravelContract.total_value_cents || 0),
+            totalPriceCents: Number(legacyTravelContract.total_value_cents || 0),
+          },
+        ],
+        passengers: Array.isArray(legacyTravelContract.passengers)
+          ? legacyTravelContract.passengers.map((p: any) => ({
+              name: String(p?.name || p?.full_name || "Passageiro"),
+              document: p?.document || p?.cpf || undefined,
+            }))
+          : [],
+        summaryText: legacyTravelContract.package_summary || undefined,
+        totalValueCents: Number(legacyTravelContract.total_value_cents || 0),
+        paymentConditions: legacyTravelContract.payment_conditions || "À vista",
+        travelStartDate: legacyTravelContract.travel_start_date || null,
+        travelEndDate: legacyTravelContract.travel_end_date || null,
+        destination: legacyTravelContract.destination || undefined,
+      });
+      const clauses = compiledLegacy.clauses;
+      const contentMarkdown = compiledLegacy.contentMarkdown;
       const hashBuffer = await crypto.subtle.digest(
         "SHA-256",
         new TextEncoder().encode(contentMarkdown),
@@ -964,23 +984,39 @@ export const getContractById = createServerFn({ method: "GET" })
           destination: legacyTravelContract.destination,
           travel_start_date: legacyTravelContract.travel_start_date,
           travel_end_date: legacyTravelContract.travel_end_date,
-          package_summary: legacyTravelContract.package_summary,
+          package_summary: compiledLegacy.summaryText,
           total_value_cents: legacyTravelContract.total_value_cents,
           payment_conditions: legacyTravelContract.payment_conditions,
           passengers: legacyTravelContract.passengers || [],
         },
       });
 
-      await supabase.from("contract_versions").insert({
-        contract_id: legacyTravelContract.id,
-        version_number: 1,
-        title: legacyTravelContract.contract_title || "Contrato de Viagem",
-        content_markdown: contentMarkdown,
-        clauses,
-        variables: {},
-        hash_sha256: versionHashHex,
-        is_sealed: legacyTravelContract.status === "signed",
-      });
+      const { data: syncedVersion } = await supabase
+        .from("contract_versions")
+        .insert({
+          contract_id: legacyTravelContract.id,
+          version_number: 1,
+          title: legacyTravelContract.contract_title || "Contrato de Viagem",
+          content_markdown: contentMarkdown,
+          clauses,
+          variables: compiledLegacy.variablesApplied,
+          hash_sha256: versionHashHex,
+          is_sealed: legacyTravelContract.status === "signed",
+        })
+        .select("id")
+        .maybeSingle();
+
+      if (syncedVersion?.id) {
+        await supabase.from("signature_envelopes").insert({
+          contract_version_id: syncedVersion.id,
+          signer_name: legacyTravelContract.client_name || "Cliente",
+          signer_email: legacyTravelContract.client_email || "cliente@waesy.com",
+          signer_phone: legacyTravelContract.client_phone || null,
+          signer_cpf: legacyTravelContract.client_document || null,
+          dispatch_channel: legacyTravelContract.client_phone ? "whatsapp" : "email",
+          status: legacyTravelContract.status === "signed" ? "signed" : "pending",
+        });
+      }
 
       const { data: provisioned } = await supabase
         .from("contracts")
@@ -1040,7 +1076,7 @@ export const reconcileUserContractsByCpf = createServerFn({ method: "POST" }).ha
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, cpf, email")
+    .select("id, cpf")
     .eq("id", identity.id)
     .maybeSingle();
 
@@ -1057,11 +1093,12 @@ export const reconcileUserContractsByCpf = createServerFn({ method: "POST" }).ha
     updatedCount += byCpf?.length || 0;
   }
 
-  if (profile.email) {
+  const profileEmail = (identity as any)?.email || null;
+  if (profileEmail) {
     const { data: byEmail } = await supabase
       .from("signature_envelopes")
       .update({ signer_profile_id: identity.id })
-      .ilike("signer_email", profile.email)
+      .ilike("signer_email", profileEmail)
       .is("signer_profile_id", null)
       .select("id");
     updatedCount += byEmail?.length || 0;
@@ -1462,62 +1499,55 @@ export const generateContractFromOrder = createServerFn({ method: "POST" })
     const clientPhone = customer.phone || "";
     const clientEmail = customer.email || "";
 
-    // Formata tabela de itens a partir de items_snapshot
+    // Formata tabela GFM estruturada de itens a partir de items_snapshot
     const items = Array.isArray(order.items_snapshot) ? order.items_snapshot : [];
-    const itemsTable =
+    const compiledItems =
       items.length > 0
-        ? items
-            .map(
-              (it: any) =>
-                `• ${it.quantity || 1}x ${it.title || it.name || "Item"} — R$ ${(Number(it.price_cents || it.total_cents || 0) / 100).toFixed(2)}`,
-            )
-            .join("\n")
-        : "• Produtos e serviços descritos no pedido de venda.";
-
-    const valorTotalFormatado = `R$ ${(Number(order.total_cents || 0) / 100).toFixed(2)}`;
-    const dataExtenso = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
-
-    // Template com Variáveis Inteligentes e Campos Dinâmicos
-    const baseTemplate = `# {{titulo}}
-
-**CONTRATADA:** {{empresa_nome}}
-**CONTRATANTE:** {{cliente_nome}}, CPF/Documento: {{cpf}}
-**CONTATO:** {{telefone}} | {{email}}
-
----
-
-### CLÁUSULA 1ª — DO PEDIDO E OBJETO
-O presente instrumento formaliza a aquisição e o fornecimento dos seguintes itens discriminados no pedido nº ${order.id}:
-
-{{tabela_itens}}
-
-### CLÁUSULA 2ª — DO VALOR TOTAL E CONDIÇÕES DE PAGAMENTO
-O valor total ajustado entre as partes é de **{{valor_total}}**, liquidado e ajustado conforme as condições pactuadas na transação comercial.
-
-### CLÁUSULA 3ª — DA CONFISSÃO DE DÍVIDA E CONFORMIDADE LEGAL
-O presente instrumento constitui título executivo extrajudicial (Art. 784, III do Código de Processo Civil), respaldado pela Medida Provisória nº 2.200-2/2001 e Lei Federal nº 14.063/2020 para assinaturas eletrônicas avançadas.
-
-### CLÁUSULA 4ª — DA PRIVACIDADE E PROTEÇÃO DE DADOS (LGPD)
-As partes comprometem-se a proteger mutuamente os dados cadastrais trocados em estrita observância à Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
-
-### ELEIÇÃO DE FORO
-As partes elegem o foro de domicílio do consumidor para dirimir eventuais controvérsias decorrentes deste instrumento.
-
-Data de emissão: {{data_extenso}}`;
+        ? items.map((it: any) => {
+            const qty = Number(it.quantity || 1);
+            const unitCents = Number(it.unit_price_cents || it.price_cents || 0);
+            const totalCents = Number(it.total_cents ?? unitCents * qty);
+            return {
+              title: String(it.title || it.name || "Item"),
+              sku: it.sku || undefined,
+              unit: it.unit || "un",
+              quantity: qty,
+              unitPriceCents: unitCents || (qty > 0 ? Math.round(totalCents / qty) : totalCents),
+              totalPriceCents: totalCents,
+            };
+          })
+        : [
+            {
+              title: `Pedido Comercial #${order.id.slice(0, 8)}`,
+              unit: "pedido",
+              quantity: 1,
+              unitPriceCents: Number(order.total_cents || 0),
+              totalPriceCents: Number(order.total_cents || 0),
+            },
+          ];
 
     const title = input.templateTitle || `Contrato Comercial · Pedido #${order.id.slice(0, 8)}`;
-
-    const contentMarkdown = interpolateContractVariables(baseTemplate, {
-      titulo: title,
-      empresa_nome: (order.store as any)?.name || "Estabelecimento Parceiro Waesy",
-      cliente_nome: clientName,
-      cpf: clientCpf || "Identificado na assinatura",
-      telefone: clientPhone || "Não informado",
-      email: clientEmail || "Não informado",
-      tabela_itens: itemsTable,
-      valor_total: valorTotalFormatado,
-      data_extenso: dataExtenso,
+    const compiledOrderDoc = compileContractDocument({
+      title,
+      issuer: {
+        name: (order.store as any)?.name || "Estabelecimento Parceiro Waesy",
+      },
+      customer: {
+        name: clientName,
+        document: clientCpf || "Identificado na assinatura",
+        phone: clientPhone || "Não informado",
+        email: clientEmail || "Não informado",
+        address: customer.address || "",
+      },
+      items: compiledItems,
+      customFields:
+        customer.custom_fields && typeof customer.custom_fields === "object"
+          ? customer.custom_fields
+          : undefined,
+      totalValueCents: Number(order.total_cents || 0),
+      paymentConditions: String(customer.payment_method || "Conforme condições da compra"),
     });
+    const contentMarkdown = compiledOrderDoc.contentMarkdown;
 
     // Cria o contrato no banco
     const { data: contract, error: cErr } = await supabase
@@ -1641,6 +1671,18 @@ export const generateContractFromDeal = createServerFn({ method: "POST" })
   .validator(
     z.object({
       dealId: z.string().uuid(),
+      templateId: z.string().optional(),
+      sectionConfig: z
+        .object({
+          showItemsTable: z.boolean().optional(),
+          showSpecsTable: z.boolean().optional(),
+          showItineraryTable: z.boolean().optional(),
+          showPassengersTable: z.boolean().optional(),
+          showFinancialTable: z.boolean().optional(),
+          showCustomFieldsTable: z.boolean().optional(),
+          includeLegalClauses: z.boolean().optional(),
+        })
+        .optional(),
     }),
   )
   .handler(async ({ data: input }) => {
@@ -1654,7 +1696,7 @@ export const generateContractFromDeal = createServerFn({ method: "POST" })
         `
         id, classified_id, buyer_id, seller_id, proposed_price_cents, installments_count,
         deal_type, terms, start_date, end_date, nights_count,
-        classified:classified_id (id, title, category, location_name, attributes),
+        classified:classified_id (id, store_id, title, category, location_name, attributes),
         buyer:buyer_id (id, full_name, phone, email, document),
         seller:seller_id (id, full_name, phone, email, document)
       `,
@@ -1671,79 +1713,172 @@ export const generateContractFromDeal = createServerFn({ method: "POST" })
     const buyer = (deal.buyer as any) || {};
     const seller = (deal.seller as any) || {};
     const classified = (deal.classified as any) || {};
+    const attrs =
+      classified.attributes && typeof classified.attributes === "object"
+        ? (classified.attributes as Record<string, unknown>)
+        : {};
+
+    const [{ data: dealEvents }, { data: storeRow }] = await Promise.all([
+      supabase
+        .from("deal_events")
+        .select("event_type, payload, created_at")
+        .eq("deal_id", deal.id)
+        .order("created_at", { ascending: true })
+        .limit(20),
+      classified.store_id
+        ? supabase
+            .from("stores")
+            .select("id, name, cnpj, address, city, state, phone, email, primary_niche_id, settings")
+            .eq("id", classified.store_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    const rawEventCustom: Record<string, unknown> = {};
+    for (const ev of dealEvents || []) {
+      const payload =
+        ev.payload && typeof ev.payload === "object" ? (ev.payload as Record<string, any>) : {};
+      Object.assign(
+        rawEventCustom,
+        normalizeCustomFieldMap(payload.custom_answers || {}),
+        normalizeCustomFieldMap(payload.structured_selection || {}),
+      );
+    }
+
+    const scalarAttrs: Record<string, unknown> = {};
+    const specs: Array<{ label: string; value: string }> = [
+      { label: "Modalidade", value: deal.deal_type === "rental" ? "Locação / Reserva" : "Compra e Venda" },
+      { label: "Localização", value: String(classified.location_name || "Local acordado") },
+    ];
+    if (deal.start_date || deal.end_date) {
+      const startLabel = deal.start_date
+        ? new Date(deal.start_date).toLocaleDateString("pt-BR")
+        : "A definir";
+      const endLabel = deal.end_date
+        ? new Date(deal.end_date).toLocaleDateString("pt-BR")
+        : "A definir";
+      specs.push({
+        label: "Período",
+        value: `${startLabel} a ${endLabel}${deal.nights_count ? ` (${deal.nights_count} diária(s))` : ""}`,
+      });
+    }
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === null || v === undefined || v === "") continue;
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        scalarAttrs[k] = v;
+        specs.push({
+          label: formatDynamicFieldLabel(k),
+          value: formatFieldPrimitiveValue(v),
+        });
+      }
+    }
+
+    const mergedCustomFields = normalizeCustomFieldMap({
+      ...scalarAttrs,
+      ...rawEventCustom,
+    });
 
     const isRental = deal.deal_type === "rental";
-    const category = isRental ? "real_estate_rental" : "general_deal";
+    const resolvedNicheHint =
+      (storeRow as any)?.primary_niche_id ||
+      ((storeRow as any)?.settings && typeof (storeRow as any).settings === "object"
+        ? ((storeRow as any).settings as any).niche_id || ((storeRow as any).settings as any).niche
+        : undefined) ||
+      attrs.niche_id ||
+      (classified.category === "vehicle" || classified.category === "vehicles"
+        ? "automotive"
+        : isRental || classified.category === "real_estate"
+        ? "real_estate"
+        : classified.category || "general_deal");
+
     const title = isRental
       ? `Contrato de Locação — ${classified.title || "Imóvel"}`
       : `Contrato de Compra e Venda — ${classified.title || "Acordo"}`;
 
-    const valorFormatado = `R$ ${(Number(deal.proposed_price_cents || 0) / 100).toFixed(2)}`;
-    const dataExtenso = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
+    const totalCents = Number(deal.proposed_price_cents || 0);
+    const qty = isRental && Number(deal.nights_count || 0) > 1 ? Number(deal.nights_count) : 1;
+    const unitCents = qty > 1 ? Math.round(totalCents / qty) : totalCents;
+    const installmentsCount = Math.max(1, Number(deal.installments_count || 1));
+    const perInstallmentCents = Math.round(totalCents / installmentsCount);
+    const installments =
+      installmentsCount > 1 && installmentsCount <= 24
+        ? Array.from({ length: installmentsCount }, (_, idx) => ({
+            installmentNumber: `${idx + 1}/${installmentsCount}`,
+            dueDate: idx === 0 ? "Na assinatura" : `${idx * 30} dias`,
+            amountCents:
+              idx === installmentsCount - 1
+                ? totalCents - perInstallmentCents * (installmentsCount - 1)
+                : perInstallmentCents,
+            method: "Conforme negociação",
+          }))
+        : [];
 
-    let contentMarkdown = "";
-    if (isRental) {
-      contentMarkdown = `INSTRUMENTO PARTICULAR DE LOCAÇÃO E RESERVA
+    const compiledDeal = compileContractDocument({
+      title,
+      nicheHint: resolvedNicheHint,
+      templateId: input.templateId || undefined,
+      sectionConfig: input.sectionConfig,
+      issuer: {
+        name: (storeRow as any)?.name || seller.full_name || "Contratado / Vendedor",
+        document: (storeRow as any)?.cnpj || seller.document || "Não informado",
+        address: (storeRow as any)?.address || "",
+        cityState: [(storeRow as any)?.city, (storeRow as any)?.state].filter(Boolean).join(" / "),
+        phone: (storeRow as any)?.phone || seller.phone || "",
+        email: (storeRow as any)?.email || seller.email || "",
+      },
+      customer: {
+        name: buyer.full_name || "Comprador / Locatário",
+        document: buyer.document || "Não informado",
+        phone: buyer.phone || "",
+        email: buyer.email || "",
+      },
+      items: [
+        {
+          title: classified.title || (isRental ? "Locação / Reserva" : "Produto / Serviço"),
+          unit: isRental ? "diária/período" : "un",
+          quantity: qty,
+          unitPriceCents: unitCents,
+          totalPriceCents: totalCents,
+        },
+      ],
+      specs,
+      installments,
+      customFields: mergedCustomFields,
+      totalValueCents: totalCents,
+      paymentConditions:
+        deal.terms ||
+        `Valor ajustado em ${installmentsCount}x parcela(s) conforme aceite registrado no ecossistema Waesy.`,
+      travelStartDate: deal.start_date || null,
+      travelEndDate: deal.end_date || null,
+      destination: classified.location_name || null,
+    });
 
-1. PARTES CONTRATANTES
-LOCADOR (Proprietário): ${seller.full_name || "Proprietário"} — CPF/Doc: ${seller.document || "Não informado"}
-LOCATÁRIO (Hóspede/Inquilino): ${buyer.full_name || "Inquilino"} — CPF/Doc: ${buyer.document || "Não informado"}
-
-2. OBJETO DO CONTRATO
-Imóvel / Acomodação: ${classified.title || "Imóvel"}
-Localização: ${classified.location_name || "Conforme cadastro no anúncio"}
-Período: ${deal.start_date ? new Date(deal.start_date).toLocaleDateString("pt-BR") : "A definir"} a ${deal.end_date ? new Date(deal.end_date).toLocaleDateString("pt-BR") : "A definir"} (${deal.nights_count || 1} diária(s)/período)
-
-3. VALOR E FORMA DE PAGAMENTO
-Valor Total Ajustado: ${valorFormatado}
-Condições: ${deal.terms || "Pagamento acordado entre as partes na plataforma Waesy."}
-
-4. DISPOSIÇÕES GERAIS
-O Locatário declara que vistoriou o imóvel e se compromete a conservá-lo, respondendo por quaisquer danos.
-
-Data: ${dataExtenso}
-
-____________________________________
-Assinatura do Locatário: ${buyer.full_name || "Locatário"}
-
-____________________________________
-Assinatura do Locador: ${seller.full_name || "Locador"}`;
-    } else {
-      contentMarkdown = `INSTRUMENTO PARTICULAR DE COMPRA, VENDA E TRANSAÇÃO
-
-1. PARTES CONTRATANTES
-VENDEDOR: ${seller.full_name || "Vendedor"} — CPF/Doc: ${seller.document || "Não informado"}
-COMPRADOR: ${buyer.full_name || "Comprador"} — CPF/Doc: ${buyer.document || "Não informado"}
-
-2. OBJETO DO NEGÓCIO
-Item / Negócio: ${classified.title || "Produto / Serviço"}
-Localização: ${classified.location_name || "Local acordado"}
-
-3. PREÇO E CONDIÇÕES
-Valor Total: ${valorFormatado} em ${deal.installments_count || 1}x parcela(s).
-Termos Específicos: ${deal.terms || "Negociação formalizada e aceita através do ecossistema Waesy."}
-
-4. DECLARAÇÃO DE VONTADE
-As partes firmam o presente contrato de comum acordo, com plena eficácia legal nos termos do Art. 10 da MP 2.200-2/2001 e Lei 14.063/2020.
-
-Data: ${dataExtenso}
-
-____________________________________
-Assinatura do Comprador: ${buyer.full_name || "Comprador"}
-
-____________________________________
-Assinatura do Vendedor: ${seller.full_name || "Vendedor"}`;
-    }
+    const category = isRental
+      ? "real_estate_rental"
+      : compiledDeal.nicheId === "automotive"
+      ? "vehicle_sale"
+      : compiledDeal.nicheId === "tourism"
+      ? "tourism"
+      : "general_deal";
+    const contentMarkdown = compiledDeal.contentMarkdown;
 
     const { data: contract, error: cErr } = await supabase
       .from("contracts")
       .insert({
         creator_id: identity.id,
+        store_id: classified.store_id || null,
         deal_id: deal.id,
         title,
         category,
         status: "draft",
         current_version: 1,
+        metadata: {
+          source: "deal",
+          deal_id: deal.id,
+          classified_id: classified.id || null,
+          package_summary: compiledDeal.summaryText,
+          template_id: compiledDeal.templateIdUsed,
+        },
       })
       .select()
       .single();
@@ -1770,6 +1905,8 @@ Assinatura do Vendedor: ${seller.full_name || "Vendedor"}`;
           version_number: 1,
           title,
           content_markdown: contentMarkdown,
+          clauses: compiledDeal.clauses,
+          variables: compiledDeal.variablesApplied,
           hash_sha256: hashHex,
           signature_fields: autoFields,
           page_count: 1,

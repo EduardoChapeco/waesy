@@ -11,7 +11,6 @@ import {
   Users,
   Search,
   ArrowLeftRight,
-  Sparkles,
   CreditCard,
   Headphones,
   Tag,
@@ -236,7 +235,7 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
         <div className="text-center max-w-3xl mx-auto space-y-3">
           {badge && (
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-xs font-bold text-primary">
-              <Sparkles className="size-4" />
+              <Compass className="size-4" />
               <span>{badge}</span>
             </div>
           )}

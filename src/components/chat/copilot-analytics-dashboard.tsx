@@ -1,91 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   TrendingUp,
   Coins,
   CheckCircle2,
   Clock,
   Layers,
-  Zap,
-  BarChart3,
-  Calendar,
-  Filter,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  getCopilotUsageAnalytics,
+  type CopilotUsageAnalyticsDTO,
+} from "@/services/ai-scheduled-tasks.functions";
 
 export interface CopilotAnalyticsDashboardProps {
   className?: string;
 }
 
-interface MetricSummary {
-  label: string;
-  value: string;
-  delta: string;
-  isPositive: boolean;
-  subtext: string;
-  icon: any;
-}
-
 export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboardProps) {
-  const [period, setPeriod] = useState<"7d" | "30d" | "90d">("7d");
-  const [activeChartPoint, setActiveChartPoint] = useState<number | null>(null);
+  const [data, setData] = useState<CopilotUsageAnalyticsDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const metrics: MetricSummary[] = [
-    {
-      label: "Tarefas Executadas",
-      value: "128",
-      delta: "+18%",
-      isPositive: true,
-      subtext: "Últimos 7 dias",
-      icon: CheckCircle2,
-    },
-    {
-      label: "$WZ Consumidos",
-      value: "842",
-      delta: "-12%",
-      isPositive: true,
-      subtext: "Otimização por cache",
-      icon: Coins,
-    },
-    {
-      label: "Taxa de Sucesso",
-      value: "99.2%",
-      delta: "+0.8%",
-      isPositive: true,
-      subtext: "Zero falhas críticas",
-      icon: TrendingUp,
-    },
-    {
-      label: "Latência Média",
-      value: "420ms",
-      delta: "-35ms",
-      isPositive: true,
-      subtext: "Pipeline ReAct rápido",
-      icon: Clock,
-    },
-  ];
+  const loadAnalytics = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await getCopilotUsageAnalytics();
+      setData(res);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Não foi possível carregar os indicadores reais de uso.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const chartBars = [
-    { day: "Seg", value: 18, wz: 120 },
-    { day: "Ter", value: 24, wz: 165 },
-    { day: "Qua", value: 31, wz: 210 },
-    { day: "Qui", value: 22, wz: 145 },
-    { day: "Sex", value: 28, wz: 190 },
-    { day: "Sáb", value: 12, wz: 80 },
-    { day: "Dom", value: 9, wz: 62 },
-  ];
+  useEffect(() => {
+    void loadAnalytics();
+  }, [loadAnalytics]);
 
-  const topSkills = [
-    { name: "Modelagem Financeira & Planilhas", calls: 46, percent: 36 },
-    { name: "Pesquisa & Descoberta Local", calls: 38, percent: 30 },
-    { name: "Proposta Comercial Executiva", calls: 24, percent: 19 },
-    { name: "Logística & Roteiro de Viagem", calls: 20, percent: 15 },
-  ];
+  const successRate =
+    data && data.totalExecutions > 0
+      ? ((data.completedExecutions / data.totalExecutions) * 100).toFixed(1)
+      : "0.0";
+
+  const avgDurationMs =
+    data && data.recentExecutions.length > 0
+      ? Math.round(
+          data.recentExecutions.reduce((acc, item) => acc + item.durationMs, 0) /
+            data.recentExecutions.length
+        )
+      : 0;
 
   return (
     <div className={cn("space-y-6 max-w-5xl mx-auto p-4 sm:p-6", className)}>
-      {/* ── Cabeçalho de Métricas & Período ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <div className="flex items-center gap-2">
@@ -93,176 +64,182 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
               Métricas & Consumo
             </h2>
             <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
-              Telemetria
+              Telemetria Real
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Acompanhamento de eficiência, uso de tokens $WZ e volume de tarefas concluídas.
+            Indicadores reais consolidados das execuções do Copilot, conectores e servidores MCP.
           </p>
         </div>
 
-        {/* Seletor de Período com Touch Target de 44px */}
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-muted/40 border border-border/40 shrink-0">
-          {[
-            { id: "7d", label: "7 dias" },
-            { id: "30d", label: "30 dias" },
-            { id: "90d", label: "90 dias" },
-          ].map((item) => (
-            <Button
-              key={item.id}
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setPeriod(item.id as any)}
-              className={cn(
-                "h-11 min-h-11 px-4 rounded-lg text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                period === item.id
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              {item.label}
-            </Button>
-          ))}
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void loadAnalytics()}
+          disabled={isLoading}
+          className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          <RefreshCw className={cn("size-4", isLoading && "animate-spin motion-reduce:animate-none")} />
+          <span>Atualizar</span>
+        </Button>
       </div>
 
-      {/* ── Métricas Horizontais com Rolagem Suave ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
-        {metrics.map((m) => {
-          const Icon = m.icon;
-          return (
+      {isLoading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((idx) => (
             <div
-              key={m.label}
-              className="rounded-2xl border border-border/40 bg-card p-4 sm:p-5 flex flex-col justify-between space-y-3 transition-colors duration-200 hover:border-primary/30"
-            >
+              key={idx}
+              className="h-32 rounded-2xl border border-border/40 bg-muted/20 animate-pulse motion-reduce:animate-none"
+            />
+          ))}
+        </div>
+      ) : errorMsg ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="size-5 text-destructive shrink-0 mt-1" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Falha ao carregar telemetria</p>
+              <p className="text-xs text-muted-foreground mt-1">{errorMsg}</p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void loadAnalytics()}
+            className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            Tentar Novamente
+          </Button>
+        </div>
+      ) : !data || data.totalExecutions === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center space-y-3 bg-muted/10">
+          <Layers className="size-10 mx-auto text-muted-foreground/40" />
+          <h3 className="text-sm font-semibold text-foreground">
+            Nenhuma execução registrada ainda
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            Envie comandos no Copilot para acompanhar volume de execuções, consumo real de tokens e integrações ativas ({data?.activeConnectorsCount || 0} conectores, {data?.activeMcpServersCount || 0} servidores MCP).
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="rounded-2xl border border-border/40 bg-card p-4 sm:p-5 flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
+                <span className="text-xs font-medium text-muted-foreground">Execuções</span>
                 <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                  <Icon className="size-4" />
+                  <CheckCircle2 className="size-4" />
                 </div>
               </div>
-
               <div>
                 <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                  {m.value}
+                  {data.totalExecutions}
                 </div>
-                <div className="flex items-center gap-2 mt-1 text-2xs">
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    {m.delta}
-                  </span>
-                  <span className="text-muted-foreground">{m.subtext}</span>
-                </div>
+                <p className="text-2xs text-muted-foreground mt-1">
+                  {data.completedExecutions} concluídas • {data.failedExecutions} falhas
+                </p>
               </div>
             </div>
-          );
-        })}
-      </div>
 
-      {/* ── Gráfico Tátil de Volume e Atividade Semanal ── */}
-      <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
+            <div className="rounded-2xl border border-border/40 bg-card p-4 sm:p-5 flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">Taxa de Sucesso</span>
+                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <TrendingUp className="size-4" />
+                </div>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                  {successRate}%
+                </div>
+                <p className="text-2xs text-muted-foreground mt-1">
+                  {data.totalSteps} passos registrados
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/40 bg-card p-4 sm:p-5 flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">Tokens Apurados</span>
+                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <Coins className="size-4" />
+                </div>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                  {data.totalTokens.toLocaleString("pt-BR")}
+                </div>
+                <p className="text-2xs text-muted-foreground mt-1">
+                  Custo estimado: ${data.estimatedCostUsd.toFixed(4)}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/40 bg-card p-4 sm:p-5 flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">Latência & Ecossistema</span>
+                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <Clock className="size-4" />
+                </div>
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                  {avgDurationMs}ms
+                </div>
+                <p className="text-2xs text-muted-foreground mt-1">
+                  {data.activeConnectorsCount} conectores • {data.activeMcpServersCount} MCP ativos
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
             <h3 className="text-sm font-bold text-foreground">
-              Volume Diário de Execuções
+              Execuções Recentes Persistidas
             </h3>
-            <p className="text-2xs text-muted-foreground">
-              Distribuição de requisições resolvidas por motores determinísticos e IA
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 text-2xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-primary" />
-              <span>Tarefas</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-warning" />
-              <span>$WZ</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Barras de Atividade Interativas com Touch Scrub */}
-        <div className="pt-4 pb-2">
-          <div className="h-44 w-full flex items-end justify-between gap-2 sm:gap-4 px-2">
-            {chartBars.map((bar, idx) => {
-              const maxVal = 35;
-              const heightPercent = Math.round((bar.value / maxVal) * 100);
-              const isHovered = activeChartPoint === idx;
-
-              return (
-                <div
-                  key={bar.day}
-                  onMouseEnter={() => setActiveChartPoint(idx)}
-                  onMouseLeave={() => setActiveChartPoint(null)}
-                  onClick={() => setActiveChartPoint(idx)}
-                  className="flex-1 flex flex-col items-center gap-2 group cursor-pointer focus-visible:outline-none"
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${bar.day}: ${bar.value} tarefas`}
-                >
-                  {/* Tooltip Dinâmico */}
+            <div className="space-y-3">
+              {data.recentExecutions.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma execução recente registrada.
+                </p>
+              ) : (
+                data.recentExecutions.map((exec) => (
                   <div
-                    className={cn(
-                      "text-2xs font-mono font-semibold px-2 py-1 rounded-md transition-opacity pointer-events-none whitespace-nowrap",
-                      isHovered
-                        ? "opacity-100 bg-foreground text-background "
-                        : "opacity-0"
-                    )}
+                    key={exec.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-border/40 bg-muted/20"
                   >
-                    {bar.value} un • {bar.wz} $WZ
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">
+                        {exec.promptPreview || "Execução sem descrição"}
+                      </p>
+                      <p className="text-2xs text-muted-foreground mt-1">
+                        {new Date(exec.createdAt).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-2xs",
+                          exec.status === "failed"
+                            ? "bg-destructive/10 text-destructive border-destructive/30"
+                            : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                        )}
+                      >
+                        {exec.status}
+                      </Badge>
+                      <span className="text-2xs font-mono text-muted-foreground">
+                        {exec.durationMs}ms
+                      </span>
+                    </div>
                   </div>
-
-                  {/* Barra Visual */}
-                  <div className="w-full max-w-12 h-32 flex items-end justify-center rounded-xl bg-muted/30 p-1">
-                    <div
-                      className={cn(
-                        "w-full rounded-lg transition-colors duration-200 duration-300",
-                        isHovered ? "bg-primary" : "bg-primary/70 hover:bg-primary"
-                      )}
-                      style={{ height: `${heightPercent}%` }}
-                    />
-                  </div>
-
-                  {/* Rótulo do Dia */}
-                  <span className="text-2xs font-medium text-muted-foreground">
-                    {bar.day}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Habilidades Mais Acionadas (Breakdown) ── */}
-      <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
-        <h3 className="text-sm font-bold text-foreground">
-          Habilidades Mais Acionadas no Período
-        </h3>
-
-        <div className="space-y-3">
-          {topSkills.map((s) => (
-            <div key={s.name} className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-foreground truncate max-w-xs sm:max-w-md">
-                  {s.name}
-                </span>
-                <span className="font-mono text-muted-foreground text-2xs">
-                  {s.calls} execuções ({s.percent}%)
-                </span>
-              </div>
-              <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-colors duration-200 duration-200"
-                  style={{ width: `${s.percent}%` }}
-                />
-              </div>
+                ))
+              )}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   Bell,
   BellOff,
-  Sparkles,
+  Star,
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -64,15 +64,15 @@ export function CommunityJoinSheet({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[92vw] max-w-sm sm:max-w-md p-0 overflow-hidden rounded-3xl border border-border/60 bg-card text-foreground shadow-overlay z-50 pt-[max(1.25rem,env(safe-area-inset-top))]">
+      <DialogContent className="w-full max-w-sm sm:max-w-md p-0 overflow-hidden rounded-3xl border border-border bg-card text-foreground shadow-overlay z-50 pt-safe-modal">
         <DialogHeader className="sr-only">
           <DialogTitle>Participar da Comunidade {community.name}</DialogTitle>
         </DialogHeader>
 
-        {/* ─── Topo Visual com Capa Sutil ─────────────────────────────── */}
-        <div className="h-24 bg-linear-to-r from-primary/20 via-primary/10 to-muted/40 relative flex items-end p-4">
+        {/* ─── Topo Visual com Faixa Sólida ─────────────────────────────── */}
+        <div className="h-24 bg-muted border-b border-border relative flex items-end p-4">
           <div className="flex items-center gap-2">
-            <div className="size-12 rounded-xl bg-background border-2 border-border/60 shadow-overlay flex items-center justify-center font-bold text-lg text-primary overflow-hidden">
+            <div className="size-12 rounded-xl bg-background border-2 border-border flex items-center justify-center font-bold text-lg text-primary overflow-hidden">
               {community.avatarUrl ? (
                 <img
                   src={community.avatarUrl}
@@ -107,7 +107,7 @@ export function CommunityJoinSheet({
           {/* Regras de Convivência */}
           <div className="space-y-2 p-4 rounded-2xl bg-muted/30 border border-border/40">
             <span className="text-xs font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="size-3.5 text-primary" />
+              <ShieldCheck className="size-3.5 text-primary" />
               Regras de Convivência
             </span>
             <ul className="space-y-2 text-xs text-muted-foreground">
@@ -148,7 +148,7 @@ export function CommunityJoinSheet({
                 }`}
                 onClick={() => setNotificationLevel("highlights")}
               >
-                <Sparkles className="size-3.5" />
+                <Star className="size-3.5" />
                 <span>Destaques</span>
               </button>
 

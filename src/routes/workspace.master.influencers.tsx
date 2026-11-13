@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Award, Search, CheckCircle, XCircle, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,9 @@ import { toggleAmbassadorStatus } from "@/services/stories.functions";
 
 export const Route = createFileRoute("/workspace/master/influencers")({
   head: () => ({ meta: [{ title: "Influenciadores | Master" }] }),
+  beforeLoad: async () => {
+    throw redirect({ to: "/admin-master/curadoria" });
+  },
   loader: async () => {
     try {
       const res = await listCreatorProfiles();

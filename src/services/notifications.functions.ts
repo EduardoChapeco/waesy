@@ -256,7 +256,7 @@ export function formatNicheNotification(
       message: `Olá ${name}, seu acesso a ${item} foi liberado com sucesso. Bons estudos!`,
       emailSubject: `Seu acesso a ${item} está disponível!`,
       emailPreheader: `Comece a assistir às aulas agora mesmo.`,
-      whatsappMessage: `Boas-vindas ${name}! Seu acesso a ${item} está pronto. Aproveite o conteúdo!`,
+      whatsappMessage: `${name}, seu acesso a ${item} está liberado.`,
       actionLabel: "Acessar Área de Membros",
       actionUrl: "/conta/cursos",
     };

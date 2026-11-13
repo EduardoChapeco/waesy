@@ -313,6 +313,13 @@ export function useClassifiedDetail({
           installmentsCount: installments,
           dealType: classified.category === "real_estate" ? "rental" : "sale",
           terms: finalTerms || undefined,
+          customAnswers: Object.keys(customAnswers || {}).length > 0 ? customAnswers : undefined,
+          structuredSelection: {
+            payment_method: proposalPaymentMethod,
+            payment_method_label: paymentMethodLabel,
+            installments,
+            deposit_cents: depositCents,
+          },
         },
       });
 
@@ -368,6 +375,14 @@ export function useClassifiedDetail({
             endDate: retDate || undefined,
             isDirectBooking: true,
             terms: `Reserva de Pacote de Viagem: ${classified.title}\nSaída: ${selectedDeparture?.label || "Saída Confirmada"}${depDate ? ` (${depDate}${retDate ? ` até ${retDate}` : ""}${depTime})` : ""}\nLocal de Embarque: ${boarding}\nViajantes: ${travelPassengers} passageiro(s)\nValor por pessoa: ${formatMoney(effectiveTravelUnitPriceCents)}\nTotal: ${formatMoney(travelTotalCents)}`,
+            structuredSelection: {
+              departure_option: selectedDeparture || null,
+              departure_date: depDate || null,
+              return_date: retDate || null,
+              boarding_point: boarding,
+              unit_price_cents: effectiveTravelUnitPriceCents,
+              passengers_count: travelPassengers,
+            },
           },
         });
 

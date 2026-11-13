@@ -161,7 +161,7 @@ export const getAccountantFinancialSummary = createServerFn({ method: "GET" })
     // 2. Busca pedidos faturados / concluídos
     const { data: orders } = await supabase
       .from("orders")
-      .select("id, total_cents, payment_method, channel_origin, created_at, status")
+      .select("id, total_cents, channel_origin, created_at, status, payments(method)")
       .eq("store_id", targetStoreId)
       .in("status", ["completed", "delivered", "paid", "processing", "shipped"]);
 
@@ -176,10 +176,11 @@ export const getAccountantFinancialSummary = createServerFn({ method: "GET" })
       other: 0,
     };
 
-    ordersList.forEach((o) => {
+    ordersList.forEach((o: any) => {
       const amount = Number(o.total_cents) || 0;
       grossTotalCents += amount;
-      const method = o.payment_method || "other";
+      const firstPay = Array.isArray(o.payments) ? o.payments[0] : o.payments;
+      const method = firstPay?.method || "other";
       byMethod[method] = (byMethod[method] || 0) + amount;
       if (o.channel_origin && o.channel_origin !== "pos_counter") {
         marketplaceRevenueCents += amount;

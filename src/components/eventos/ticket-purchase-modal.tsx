@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Ticket, Calendar, MapPin, Copy, Check, QrCode, Sparkles, ExternalLink, Loader2 } from "lucide-react";
+import { Ticket, Calendar, MapPin, Copy, Check, QrCode, ExternalLink, Loader2 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { purchaseEventTicketsInstant } from "@/services/event-tickets.functions";
 import { useRouter } from "@tanstack/react-router";
@@ -298,12 +298,12 @@ export function TicketPurchaseModal({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-11 px-6 text-xs font-bold rounded-lg cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-primary shadow-xs"
+                className="h-11 px-6 text-xs font-bold rounded-lg cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {isSubmitting ? (
                   <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                 ) : (
-                  <Sparkles className="size-4" />
+                  <Ticket className="size-4" />
                 )}
                 <span>{isFree ? "Confirmar e Emitir" : "Avançar para Pix"}</span>
               </Button>

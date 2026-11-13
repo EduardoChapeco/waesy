@@ -20,11 +20,11 @@ export type { UniversalClassifiedShowcaseProps };
  * - Eventos, Shows, Congressos e Ingressos: <EventClassifiedShowcaseView />
  * - Varejo / Conveniência / Delivery Rápido (`template_style === "conveniencia"`): <ConvenienceShowcaseView />
  * - Pacotes de Viagem & Turismo no template Editorial (`niche === "viagem" && template === "editorial"`): <EditorialShowcaseView />
- * - Demais Classificados Mobile (< 1024px ou `previewViewport === "mobile"`): <ClassifiedDetailMobile />
- * - Demais Classificados Desktop (>= 1024px ou `previewViewport === "desktop"`): <ClassifiedDetailDesktop />
+ * - Demais Classificados Mobile (< 840px ou `previewViewport === "mobile"`): <ClassifiedDetailMobile />
+ * - Demais Classificados Desktop (>= 840px ou `previewViewport === "desktop"`): <ClassifiedDetailDesktop />
  */
 export function UniversalClassifiedShowcase(props: UniversalClassifiedShowcaseProps) {
-  const isDesktop = useIsDesktop(1024);
+  const isDesktop = useIsDesktop(840);
   const effectiveIsDesktop =
     props.previewViewport === "mobile"
       ? false

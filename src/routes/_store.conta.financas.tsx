@@ -734,8 +734,8 @@ function PersonalFinancePage() {
               </div>
 
               {combinedRecentActivities.length === 0 ? (
-                <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200/60 text-center space-y-1">
-                  <span className="text-xs font-bold text-zinc-800 block">
+                <div className="p-6 rounded-2xl bg-card border border-border text-center space-y-1">
+                  <span className="text-xs font-bold text-foreground block">
                     Nenhuma atividade recente
                   </span>
                   <span className="text-2xs text-muted-foreground block">
@@ -755,14 +755,14 @@ function PersonalFinancePage() {
                       onClick={() => {
                         if (act.rawFeedItem) setSelectedEventDetail(act.rawFeedItem);
                       }}
-                      className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                      className="w-full flex items-center justify-between p-4 rounded-2xl bg-card hover:bg-muted border border-border transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <div className="flex items-center gap-3 min-w-0 pr-2">
-                        <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
+                        <div className="size-11 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground shrink-0">
                           {act.direction === "INCOMING" ? (
                             <ArrowDownLeft className="size-5 text-warning-strong font-bold" />
                           ) : (
-                            <ArrowUpRight className="size-5 text-zinc-800" />
+                            <ArrowUpRight className="size-5 text-foreground" />
                           )}
                         </div>
                         <div className="min-w-0">
@@ -822,14 +822,14 @@ function PersonalFinancePage() {
       {/* VISTA 3: EXTRATO COMPLETO / HISTÓRICO                         */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "feed" && (
-        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4 animate-in fade-in duration-200">
+        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4">
           {/* Seletor de Período Mensal */}
-          <div className="flex items-center justify-between bg-zinc-50 border border-zinc-200/60 rounded-2xl p-2 shadow-2xs">
+          <div className="flex items-center justify-between bg-card border border-border rounded-2xl p-2">
             <button
               type="button"
               onClick={handlePrevMonth}
               disabled={isLoadingPeriod}
-              className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl hover:bg-zinc-200/60 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Mês Anterior"
             >
               <ChevronLeft className="size-5" />
@@ -847,7 +847,7 @@ function PersonalFinancePage() {
               type="button"
               onClick={handleNextMonth}
               disabled={isLoadingPeriod}
-              className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl hover:bg-zinc-200/60 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Próximo Mês"
             >
               <ChevronRight className="size-5" />
@@ -861,7 +861,7 @@ function PersonalFinancePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar no extrato..."
-              className="h-12 min-h-12 rounded-xl pl-10 text-xs sm:text-sm bg-zinc-50 border-zinc-200/80 focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-12 min-h-12 rounded-xl pl-10 text-xs sm:text-sm bg-card border-border focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
@@ -879,10 +879,10 @@ function PersonalFinancePage() {
                 type="button"
                 onClick={() => setFeedFilterDomain(tab.value)}
                 className={cn(
-                  "h-11 min-h-11 px-4 rounded-xl text-xs font-bold transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning",
+                  "h-11 min-h-11 px-4 rounded-xl text-xs font-bold transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   feedFilterDomain === tab.value
-                    ? "bg-warning text-zinc-950 shadow-2xs"
-                    : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted hover:bg-accent text-foreground border border-border"
                 )}
               >
                 {tab.label}
@@ -892,8 +892,8 @@ function PersonalFinancePage() {
 
           {/* Lista de Transações */}
           {filteredFeed.length === 0 ? (
-            <div className="bg-zinc-50 border border-zinc-200/60 rounded-3xl p-8 text-center space-y-2 shadow-2xs">
-              <div className="size-12 rounded-2xl bg-zinc-100 flex items-center justify-center mx-auto text-muted-foreground">
+            <div className="bg-card border border-border rounded-3xl p-8 text-center space-y-2">
+              <div className="size-12 rounded-2xl bg-muted border border-border flex items-center justify-center mx-auto text-muted-foreground">
                 <Receipt className="size-6" />
               </div>
               <h3 className="font-bold text-sm text-foreground">
@@ -910,22 +910,22 @@ function PersonalFinancePage() {
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedEventDetail(item)}
-                  className="w-full text-left flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="w-full text-left flex items-center justify-between p-4 rounded-2xl bg-card hover:bg-muted border border-border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
-                    <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
+                    <div className="size-11 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground shrink-0">
                       {item.direction === "INCOMING" ? (
                         <ArrowDownLeft className="size-5 text-warning-strong font-bold" />
                       ) : (
-                        <ArrowUpRight className="size-5 text-zinc-800" />
+                        <ArrowUpRight className="size-5 text-foreground" />
                       )}
                     </div>
 
                     <div className="min-w-0">
-                      <span className="font-bold text-xs sm:text-sm text-foreground truncate block">
+                      <span className="font-bold text-xs sm:text-sm text-foreground line-clamp-2 text-anti-truncate block">
                         {item.description}
                       </span>
-                      <span className="text-2xs text-muted-foreground block truncate mt-1">
+                      <span className="text-xs text-muted-foreground block truncate mt-1">
                         {item.sourceDomain} • {new Date(item.occurredAt).toLocaleDateString("pt-BR")}
                       </span>
                     </div>
@@ -953,15 +953,15 @@ function PersonalFinancePage() {
       {/* VISTA 4: MENU / FERRAMENTAS FINANCEIRAS                       */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "planning" && (
-        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4 animate-in fade-in duration-200">
+        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-base font-extrabold tracking-tight text-foreground">
-              Menu & Ferramentas
+              Menu Financeiro
             </h2>
             <button
               type="button"
               onClick={() => setIsNewEntryOpen(true)}
-              className="h-11 min-h-11 px-3 rounded-xl bg-warning hover:bg-warning text-zinc-950 font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-11 min-h-11 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="size-4" />
               <span>Novo Lançamento</span>
@@ -973,17 +973,17 @@ function PersonalFinancePage() {
             <button
               type="button"
               onClick={() => setIsCardSettingsOpen(true)}
-              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-card hover:bg-muted border border-border transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground">
                   <CreditCard className="size-5" />
                 </div>
                 <div>
                   <span className="text-xs font-bold text-foreground block">
                     Ajustes do Cartão
                   </span>
-                  <span className="text-2xs text-muted-foreground block">
+                  <span className="text-xs text-muted-foreground block">
                     Bloqueio, limite e cartão virtual
                   </span>
                 </div>
@@ -994,17 +994,17 @@ function PersonalFinancePage() {
             <button
               type="button"
               onClick={() => setIsLoanSimulationOpen(true)}
-              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-card hover:bg-muted border border-border transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground">
                   <Coins className="size-5" />
                 </div>
                 <div>
                   <span className="text-xs font-bold text-foreground block">
                     Simulação de Empréstimo
                   </span>
-                  <span className="text-2xs text-muted-foreground block">
+                  <span className="text-xs text-muted-foreground block">
                     Crédito pré-aprovado com saque instantâneo
                   </span>
                 </div>
@@ -1015,17 +1015,17 @@ function PersonalFinancePage() {
             <button
               type="button"
               onClick={() => setIsOfxModalOpen(true)}
-              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-card hover:bg-muted border border-border transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground">
                   <Upload className="size-5" />
                 </div>
                 <div>
                   <span className="text-xs font-bold text-foreground block">
                     Importar Extrato OFX
                   </span>
-                  <span className="text-2xs text-muted-foreground block">
+                  <span className="text-xs text-muted-foreground block">
                     Carregue faturas de outros bancos
                   </span>
                 </div>
@@ -1035,17 +1035,17 @@ function PersonalFinancePage() {
 
             <Link
               to="/conta/tokens"
-              className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-card hover:bg-muted border border-border transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground">
                   <Coins className="size-5" />
                 </div>
                 <div>
                   <span className="text-xs font-bold text-foreground block">
-                    Recompensas & Tokens $WZ
+                    Recompensas e Tokens $WZ
                   </span>
-                  <span className="text-2xs text-muted-foreground block">
+                  <span className="text-xs text-muted-foreground block">
                     {Number(tokenWallet?.balance || 0).toLocaleString()} $WZ disponíveis
                   </span>
                 </div>
@@ -1057,7 +1057,7 @@ function PersonalFinancePage() {
       )}
 
       {/* ── 3. Bottom Navigation Bar Fixa (Home, Cartão, Histórico, Menu) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 py-2 px-4">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border py-2 px-4">
         <div className="max-w-md mx-auto grid grid-cols-2 sm:grid-cols-4 gap-1">
           <button
             type="button"
@@ -1194,10 +1194,10 @@ function PersonalFinancePage() {
 
       {/* Modal / Diálogo: Rendimento da Conta (CDI Real) */}
       {isYieldModalOpen && (
-        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6  space-y-4">
+        <div className="fixed inset-0 z-50 bg-foreground/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="size-10 rounded-xl bg-warning/10 text-warning-strong flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex items-center justify-center">
                 <TrendingUp className="size-5" />
               </div>
               <button
@@ -1218,13 +1218,13 @@ function PersonalFinancePage() {
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 space-y-2">
+            <div className="p-4 rounded-2xl bg-muted border border-border space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Status atual:</span>
                 <span
                   className={cn(
                     "font-bold",
-                    overview?.yieldSettings?.isYieldEnabled ? "text-warning-strong" : "text-zinc-600"
+                    overview?.yieldSettings?.isYieldEnabled ? "text-warning-strong" : "text-muted-foreground"
                   )}
                 >
                   {overview?.yieldSettings?.isYieldEnabled ? "Ativado" : "Desativado"}
@@ -1246,10 +1246,10 @@ function PersonalFinancePage() {
               type="button"
               onClick={() => handleToggleYield(!overview?.yieldSettings?.isYieldEnabled)}
               className={cn(
-                "w-full h-12 min-h-12 rounded-xl font-bold text-xs flex items-center justify-center transition-colors cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning",
+                "w-full h-12 min-h-12 rounded-xl font-bold text-xs flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 overview?.yieldSettings?.isYieldEnabled
-                  ? "bg-zinc-100 hover:bg-zinc-200 text-rose-600 border border-rose-200"
-                  : "bg-warning hover:bg-warning text-zinc-950"
+                  ? "bg-rose-50 dark:bg-rose-950 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
               )}
             >
               {overview?.yieldSettings?.isYieldEnabled
@@ -1262,10 +1262,10 @@ function PersonalFinancePage() {
 
       {/* Modal: Cadastrar Nova Chave Pix Real */}
       {isRegisterPixKeyOpen && (
-        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+        <div className="fixed inset-0 z-50 bg-foreground/40 flex items-center justify-center p-4">
           <form
             onSubmit={handleRegisterPixKey}
-            className="w-full max-w-sm rounded-3xl bg-card border border-border p-6  space-y-4"
+            className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 space-y-4"
           >
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-foreground">
@@ -1274,7 +1274,7 @@ function PersonalFinancePage() {
               <button
                 type="button"
                 onClick={() => setIsRegisterPixKeyOpen(false)}
-                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
@@ -1303,10 +1303,10 @@ function PersonalFinancePage() {
                         }
                       }}
                       className={cn(
-                        "h-11 min-h-11 rounded-xl text-3xs font-extrabold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning",
+                        "h-11 min-h-11 rounded-xl text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         newPixKeyType === t
-                          ? "bg-warning text-zinc-950 shadow-2xs"
-                          : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-foreground border border-border hover:bg-accent"
                       )}
                     >
                       {t}
@@ -1323,7 +1323,7 @@ function PersonalFinancePage() {
                   value={newPixKeyValue}
                   onChange={(e) => setNewPixKeyValue(e.target.value)}
                   placeholder={newPixKeyType === "CPF" ? "000.000.000-00" : "Sua chave Pix"}
-                  className="h-12 min-h-12 rounded-xl text-xs sm:text-sm bg-zinc-50 border-zinc-200/80 font-mono"
+                  className="h-12 min-h-12 rounded-xl text-xs sm:text-sm bg-background border-border font-mono"
                   required
                 />
               </div>
@@ -1331,7 +1331,7 @@ function PersonalFinancePage() {
 
             <button
               type="submit"
-              className="w-full h-12 min-h-12 rounded-xl bg-warning hover:bg-warning text-zinc-950 font-bold text-xs flex items-center justify-center shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="w-full h-12 min-h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Salvar Chave Pix
             </button>
@@ -1341,8 +1341,8 @@ function PersonalFinancePage() {
 
       {/* Modal: Receber Pix (Cobrança Instantânea) */}
       {isReceivePixOpen && (
-        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6  space-y-4 text-center">
+        <div className="fixed inset-0 z-50 bg-foreground/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 space-y-4 text-center">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-foreground">
                 Receber com Pix
@@ -1350,18 +1350,18 @@ function PersonalFinancePage() {
               <button
                 type="button"
                 onClick={() => setIsReceivePixOpen(false)}
-                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
             </div>
 
-            <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200/60 flex flex-col items-center gap-3">
-              <div className="size-44 bg-card p-2 rounded-xl border border-zinc-200/80 flex items-center justify-center shadow-2xs">
-                <QrCode className="size-36 text-zinc-950" />
+            <div className="p-6 rounded-2xl bg-muted border border-border flex flex-col items-center gap-3">
+              <div className="size-44 bg-neutral-50 p-2 rounded-xl border border-border flex items-center justify-center">
+                <QrCode className="size-36 text-neutral-950" />
               </div>
               <div className="space-y-1">
-                <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
                   Chave Pix Principal
                 </span>
                 <span className="text-xs font-bold text-foreground font-mono block break-all">
@@ -1381,10 +1381,10 @@ function PersonalFinancePage() {
                 navigator.clipboard.writeText(val);
                 toast.success("Código Pix Copia e Cola copiado!");
               }}
-              className="w-full h-12 min-h-12 rounded-xl bg-warning hover:bg-warning text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="w-full h-12 min-h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Copy className="size-4" />
-              <span>Copiar Chave / Código Pix</span>
+              <span>Copiar Chave Pix</span>
             </button>
           </div>
         </div>
@@ -1392,7 +1392,7 @@ function PersonalFinancePage() {
 
       {/* Modal: Tela de Sucesso Transacional (Conforme Tela 2 do Design Anexo) */}
       {isSuccessReceiptOpen && lastPaymentSuccess && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-foreground/40 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-3xl w-full max-w-md  overflow-hidden">
             <PaymentSuccessReceipt
               title={lastPaymentSuccess.title}
@@ -1417,24 +1417,24 @@ function PersonalFinancePage() {
 
       {/* Modal: Adicionar Saldo / Depósito Pix */}
       {isDepositOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6  space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+          <div className="relative bg-card border border-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="size-10 rounded-xl bg-warning/20 text-zinc-950 flex items-center justify-center">
-                  <Plus className="size-5 text-warning-strong" />
+                <div className="size-10 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex items-center justify-center">
+                  <Plus className="size-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground tracking-tight">
                     Adicionar Saldo
                   </h3>
-                  <span className="text-2xs text-muted-foreground">Via Pix Instantâneo 24h</span>
+                  <span className="text-xs text-muted-foreground">Via Pix Instantâneo 24h</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsDepositOpen(false)}
-                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
@@ -1456,7 +1456,7 @@ function PersonalFinancePage() {
                     onChange={(e) => setDepositAmountStr(e.target.value)}
                     placeholder="0,00"
                     required
-                    className="h-14 min-h-14 pl-12 text-2xl font-black font-mono rounded-2xl bg-zinc-50 border-zinc-200/80 focus-visible:ring-2 focus-visible:ring-warning"
+                    className="h-14 min-h-14 pl-12 text-2xl font-black font-mono rounded-2xl bg-background border-border focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </div>
@@ -1469,10 +1469,10 @@ function PersonalFinancePage() {
                     type="button"
                     onClick={() => setDepositAmountStr(val)}
                     className={cn(
-                      "h-11 min-h-11 rounded-xl text-xs font-extrabold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning",
+                      "h-11 min-h-11 rounded-xl text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       depositAmountStr === val
-                        ? "bg-warning text-zinc-950 font-black shadow-2xs"
-                        : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted hover:bg-accent text-foreground border border-border"
                     )}
                   >
                     R$ {val.split(",")[0]}
@@ -1484,7 +1484,7 @@ function PersonalFinancePage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 min-h-12 rounded-xl bg-warning hover:bg-warning active:bg-warning text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="w-full h-12 min-h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {isSubmitting ? "Gerando Pix..." : "Confirmar Depósito"}
                 </button>
@@ -1496,24 +1496,24 @@ function PersonalFinancePage() {
 
       {/* Modal: Transferência P2P */}
       {isTransferOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6  space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+          <div className="relative bg-card border border-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="size-10 rounded-xl bg-warning/20 text-zinc-950 flex items-center justify-center">
-                  <ArrowLeftRight className="size-5 text-warning-strong" />
+                <div className="size-10 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex items-center justify-center">
+                  <ArrowLeftRight className="size-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground tracking-tight">
                     Transferir Dinheiro
                   </h3>
-                  <span className="text-2xs text-muted-foreground">Transferência instantânea sem taxas</span>
+                  <span className="text-xs text-muted-foreground">Transferência instantânea sem taxas</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsTransferOpen(false)}
-                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
@@ -1530,7 +1530,7 @@ function PersonalFinancePage() {
                   value={transferRecipientId}
                   onChange={(e) => setTransferRecipientId(e.target.value)}
                   required
-                  className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs sm:text-sm focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-12 min-h-12 rounded-xl bg-background border-border text-xs sm:text-sm focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -1549,7 +1549,7 @@ function PersonalFinancePage() {
                     value={transferAmountStr}
                     onChange={(e) => setTransferAmountStr(e.target.value)}
                     required
-                    className="h-14 min-h-14 pl-12 text-2xl font-black font-mono rounded-2xl bg-zinc-50 border-zinc-200/80 focus-visible:ring-2 focus-visible:ring-warning"
+                    className="h-14 min-h-14 pl-12 text-2xl font-black font-mono rounded-2xl bg-background border-border focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </div>
@@ -1563,7 +1563,7 @@ function PersonalFinancePage() {
                   placeholder="Ex: Almoço, Presente, Pagamento..."
                   value={transferDesc}
                   onChange={(e) => setTransferDesc(e.target.value)}
-                  className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-12 min-h-12 rounded-xl bg-background border-border text-xs focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -1571,7 +1571,7 @@ function PersonalFinancePage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 min-h-12 rounded-xl bg-warning hover:bg-warning active:bg-warning text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="w-full h-12 min-h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {isSubmitting ? "Enviando..." : "Confirmar Transferência"}
                 </button>
@@ -1583,9 +1583,9 @@ function PersonalFinancePage() {
 
       {/* Modal: Comprovante Oficial Inviolável com Assinatura HMAC */}
       {activeReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="relative bg-card border border-border/80 max-w-md w-full rounded-3xl p-5 sm:p-6  space-y-4">
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+          <div className="relative bg-card border border-border max-w-md w-full rounded-3xl p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
                 <h3 className="text-sm font-bold text-foreground">Comprovante de Transação</h3>
                 <span className="text-xs text-muted-foreground">{activeReceipt.emitterName}</span>
@@ -1593,13 +1593,13 @@ function PersonalFinancePage() {
               <button
                 type="button"
                 onClick={() => setActiveReceipt(null)}
-                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
             </div>
 
-            <div className="text-center py-2 border-b border-border/30">
+            <div className="text-center py-2 border-b border-border">
               <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                 Valor Transferido
               </span>
@@ -1609,17 +1609,17 @@ function PersonalFinancePage() {
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="flex justify-between py-1 border-b border-border/30">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Autenticação:</span>
                 <span className="font-mono font-semibold text-foreground">
                   {activeReceipt.authenticationCode}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-border/30">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Pagador:</span>
                 <span className="font-semibold text-foreground">{activeReceipt.payerName}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-border/30">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Recebedor:</span>
                 <span className="font-semibold text-foreground">{activeReceipt.payeeName}</span>
               </div>
@@ -1631,12 +1631,12 @@ function PersonalFinancePage() {
               </div>
             </div>
 
-            <div className="p-3 bg-zinc-50 rounded-2xl border border-zinc-200/60 space-y-1">
+            <div className="p-3 bg-muted rounded-2xl border border-border space-y-1">
               <div className="flex items-center gap-2 text-xs font-bold text-warning-strong">
                 <Shield className="size-4" />
                 <span>Assinatura Digital HMAC-SHA256</span>
               </div>
-              <div className="text-3xs font-mono text-muted-foreground break-all">
+              <div className="text-xs font-mono text-muted-foreground break-all">
                 {activeReceipt.hmacSignature.slice(0, 36)}...
               </div>
             </div>
@@ -1654,7 +1654,7 @@ function PersonalFinancePage() {
                     toast.success("Comprovante pronto para impressão.");
                   }
                 }}
-                className="w-full h-12 min-h-12 rounded-xl bg-warning hover:bg-warning text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="w-full h-12 min-h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span>Compartilhar Comprovante</span>
               </button>
@@ -1665,14 +1665,14 @@ function PersonalFinancePage() {
 
       {/* Modal: Detalhes do Evento do Extrato */}
       {selectedEventDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6  space-y-4">
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+          <div className="relative bg-card border border-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-base font-bold text-foreground">Detalhes do Lançamento</h3>
               <button
                 type="button"
                 onClick={() => setSelectedEventDetail(null)}
-                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
@@ -1692,19 +1692,19 @@ function PersonalFinancePage() {
               </p>
             </div>
 
-            <div className="bg-zinc-50 rounded-2xl p-4 space-y-2 text-xs border border-zinc-200/60">
-              <div className="flex justify-between py-1 border-b border-border/30">
+            <div className="bg-muted rounded-2xl p-4 space-y-2 text-xs border border-border">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Domínio:</span>
                 <span className="font-bold text-foreground">{selectedEventDetail.sourceDomain}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-border/30">
+              <div className="flex justify-between py-1 border-b border-border">
                 <span className="text-muted-foreground">Data e Hora:</span>
                 <span className="font-semibold text-foreground">
                   {new Date(selectedEventDetail.occurredAt).toLocaleString("pt-BR")}
                 </span>
               </div>
               {selectedEventDetail.counterpartyName && (
-                <div className="flex justify-between py-1 border-b border-border/30">
+                <div className="flex justify-between py-1 border-b border-border">
                   <span className="text-muted-foreground">Contraparte:</span>
                   <span className="font-semibold text-foreground">
                     {selectedEventDetail.counterpartyName}
@@ -1723,7 +1723,7 @@ function PersonalFinancePage() {
               <button
                 type="button"
                 onClick={() => setSelectedEventDetail(null)}
-                className="w-full h-12 min-h-12 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="w-full h-12 min-h-12 rounded-xl bg-muted hover:bg-accent text-foreground border border-border font-bold text-xs flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span>Fechar Detalhes</span>
               </button>
@@ -1734,14 +1734,14 @@ function PersonalFinancePage() {
 
       {/* Modal: Importar OFX */}
       {isOfxModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6  space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+          <div className="relative bg-card border border-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="text-base font-bold text-foreground">Importar Extrato OFX</h3>
               <button
                 type="button"
                 onClick={() => setIsOfxModalOpen(false)}
-                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
@@ -1753,21 +1753,21 @@ function PersonalFinancePage() {
                 onChange={(e) => setOfxContentInput(e.target.value)}
                 placeholder="Cole o conteúdo XML/OFX aqui..."
                 rows={6}
-                className="w-full p-3 rounded-2xl bg-zinc-50 border border-zinc-200/80 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="w-full p-3 rounded-2xl bg-background border border-border text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
 
               <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsOfxModalOpen(false)}
-                  className="h-11 min-h-11 px-4 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-11 min-h-11 px-4 rounded-xl border border-border bg-card text-xs font-semibold text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isImportingOfx}
-                  className="h-11 min-h-11 px-5 rounded-xl bg-warning hover:bg-warning text-zinc-950 font-bold text-xs flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-11 min-h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {isImportingOfx ? "Importando..." : "Confirmar Importação"}
                 </button>
@@ -1779,14 +1779,14 @@ function PersonalFinancePage() {
 
       {/* Modal: Novo Lançamento Manual */}
       {isNewEntryOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
-          <div className="relative bg-card border border-border/80 w-full max-w-md rounded-3xl p-5 sm:p-6  space-y-4 max-h-vh-92 overflow-y-auto no-scrollbar">
-            <div className="flex items-center justify-between pb-3 border-b border-border/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+          <div className="relative bg-card border border-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-4 max-h-vh-92 overflow-y-auto no-scrollbar">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="text-base font-bold text-foreground">Novo Lançamento</h3>
               <button
                 type="button"
                 onClick={() => setIsNewEntryOpen(false)}
-                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-5" />
               </button>
@@ -1835,7 +1835,7 @@ function PersonalFinancePage() {
                   value={amountStr}
                   onChange={(e) => setAmountStr(e.target.value)}
                   required
-                  className="h-14 min-h-14 rounded-2xl bg-zinc-50 border-zinc-200/80 text-2xl font-black font-mono focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-14 min-h-14 rounded-2xl bg-background border-border text-2xl font-black font-mono focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -1850,7 +1850,7 @@ function PersonalFinancePage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   required
-                  className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-12 min-h-12 rounded-xl bg-background border-border text-xs focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -1859,20 +1859,20 @@ function PersonalFinancePage() {
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Categoria
                 </label>
-                <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-1 border border-zinc-200/60 rounded-2xl bg-zinc-50">
+                <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-1 border border-border rounded-2xl bg-muted">
                   {availableCategories.map((cat: any) => (
                     <button
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategoryId(cat.id)}
                       className={cn(
-                        "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors text-left truncate cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning",
+                        "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selectedCategoryId === cat.id
-                          ? "bg-warning text-zinc-950 font-black shadow-2xs"
-                          : "bg-card text-zinc-800 hover:bg-zinc-100 border border-zinc-200/40"
+                          ? "bg-primary text-primary-foreground font-black"
+                          : "bg-card text-foreground hover:bg-secondary border border-border"
                       )}
                     >
-                      <span className="truncate">{cat.name}</span>
+                      <span className="line-clamp-2 text-anti-truncate">{cat.name}</span>
                     </button>
                   ))}
                 </div>
@@ -1889,7 +1889,7 @@ function PersonalFinancePage() {
                     value={entryDate}
                     onChange={(e) => setEntryDate(e.target.value)}
                     required
-                    className="h-12 min-h-12 rounded-xl bg-zinc-50 border-zinc-200/80 text-xs focus-visible:ring-2 focus-visible:ring-warning"
+                    className="h-12 min-h-12 rounded-xl bg-background border-border text-xs focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
 
@@ -1900,7 +1900,7 @@ function PersonalFinancePage() {
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as any)}
-                    className="w-full h-12 min-h-12 px-3 rounded-xl bg-zinc-50 border border-zinc-200/80 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-warning focus-visible:outline-none"
+                    className="w-full h-12 min-h-12 px-3 rounded-xl bg-background border border-border text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
                     <option value="pix">Pix</option>
                     <option value="credit_card">Cartão de Crédito</option>
@@ -1918,14 +1918,14 @@ function PersonalFinancePage() {
                 <button
                   type="button"
                   onClick={() => setIsNewEntryOpen(false)}
-                  className="h-11 min-h-11 px-4 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-11 min-h-11 px-4 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="h-11 min-h-11 px-5 rounded-xl bg-warning hover:bg-warning text-zinc-950 font-bold text-xs shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="h-11 min-h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {isSubmitting ? "Salvando..." : "Salvar Lançamento"}
                 </button>

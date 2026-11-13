@@ -1264,11 +1264,11 @@ function CustomerPaymentsCenterPage() {
             type="button"
             aria-label="Fechar diálogo de comprovante"
             onClick={() => setReceiptModalOpen(false)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer focus-visible:outline-none"
+            className="fixed inset-0 bg-foreground/60 cursor-pointer focus-visible:outline-none"
           />
 
-          <div className="relative w-full max-w-md rounded-3xl bg-card border border-border/80 p-6 space-y-4 z-10  animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+          <div className="relative w-full max-w-md rounded-3xl bg-card border border-border p-6 space-y-4 z-10 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="size-5 text-primary" weight="bold" />
                 <h3 className="text-base font-bold text-foreground">Comprovante Oficial</h3>
@@ -1276,15 +1276,16 @@ function CustomerPaymentsCenterPage() {
 
               <button
                 type="button"
+                aria-label="Fechar comprovante"
                 onClick={() => setReceiptModalOpen(false)}
-                className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <X className="size-5" />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 text-center space-y-1">
+              <div className="p-4 rounded-2xl bg-muted border border-border text-center space-y-1">
                 <span className="text-xs text-muted-foreground uppercase">{selectedReceipt.emitterName}</span>
                 <p className="text-3xl font-black font-mono text-foreground tracking-tight">
                   {formatMoney(selectedReceipt.amountCents)}
@@ -1292,7 +1293,7 @@ function CustomerPaymentsCenterPage() {
                 <p className="text-xs text-muted-foreground">{formatDate(selectedReceipt.issuedAt)}</p>
               </div>
 
-              <div className="space-y-2 text-xs divide-y divide-border/20">
+              <div className="space-y-2 text-xs divide-y divide-border">
                 <div className="py-2 flex justify-between">
                   <span className="text-muted-foreground">Pagador</span>
                   <span className="font-semibold text-foreground">{selectedReceipt.payerName}</span>
@@ -1311,7 +1312,7 @@ function CustomerPaymentsCenterPage() {
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg bg-muted/10 border border-border/20 text-xs font-mono text-muted-foreground break-all">
+              <div className="p-3 rounded-lg bg-muted border border-border text-xs font-mono text-muted-foreground break-all">
                 Assinatura Digital HMAC: {selectedReceipt.hmacSignature}
               </div>
 

@@ -1,6 +1,8 @@
 import { createFileRoute, Outlet, redirect, Link, isRedirect, useRouterState } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { getProfile, getUserSession } from "@/services/auth.functions";
+import { SidebarSimple, SquaresFour } from "@phosphor-icons/react";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import {
   Shield,
   ShieldAlert,
@@ -41,9 +43,18 @@ import {
   Zap,
   Search,
   Compass,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useMemo } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { useState, useMemo, useEffect } from "react";
 
 export const Route = createFileRoute("/admin-master")({
   beforeLoad: async () => {
@@ -121,78 +132,112 @@ export const Route = createFileRoute("/admin-master")({
 
 const NAV_SECTIONS = [
   {
-    title: "Centro de Comando",
+    title: "Comando",
     items: [
-      { to: "/admin-master", label: "Dashboard Executivo", icon: LayoutDashboard, exact: true },
-      { to: "/admin-master/crescimento", label: "Metas e Valuation", icon: Target },
-      { to: "/admin-master/modulos", label: "Módulos Globais", icon: Layers },
-      { to: "/admin-master/algoritmo", label: "Algoritmo & Ranking", icon: Sliders },
-      { to: "/admin-master/curadoria", label: "Curadoria Editorial", icon: Eye },
-      { to: "/admin-master/onboarding", label: "Onboarding da Rede", icon: Compass },
-      { to: "/admin-master/imprensa", label: "Imprensa & Notícias", icon: Newspaper },
+      { to: "/admin-master", label: "Visão Geral", icon: LayoutDashboard, exact: true },
+      { to: "/admin-master/crescimento", label: "Metas", icon: Target },
+      { to: "/admin-master/modulos", label: "Módulos", icon: Layers },
+      { to: "/admin-master/algoritmo", label: "Algoritmo", icon: Sliders },
+      { to: "/admin-master/curadoria", label: "Curadoria", icon: Eye },
+      { to: "/admin-master/onboarding", label: "Ativação", icon: Compass },
+      { to: "/admin-master/imprensa", label: "Imprensa", icon: Newspaper },
     ],
   },
   {
-    title: "Vitrines & Páginas CMS",
+    title: "Vitrines",
     items: [
-      { to: "/admin-master/home-editor", label: "Páginas & Seções", icon: Layout },
-      { to: "/admin-master/vitrines", label: "Vitrines Verticais", icon: Store },
-      { to: "/admin-master/banners", label: "Banners & Destaques", icon: ImageIcon },
-      { to: "/admin-master/botoes", label: "Categorias & Hotpages", icon: Layers },
-      { to: "/admin-master/hubs", label: "Hubs e Cidades", icon: Globe },
-      { to: "/admin-master/marca", label: "Identidade e Marca", icon: Palette },
-      { to: "/admin-master/portal-completo", label: "Portal Completo", icon: Building2 },
+      { to: "/admin-master/home-editor", label: "Páginas", icon: Layout },
+      { to: "/admin-master/vitrines", label: "Vitrines", icon: Store },
+      { to: "/admin-master/banners", label: "Banners", icon: ImageIcon },
+      { to: "/admin-master/botoes", label: "Atalhos", icon: Layers },
+      { to: "/admin-master/hubs", label: "Cidades", icon: Globe },
+      { to: "/admin-master/marca", label: "Marca", icon: Palette },
+      { to: "/admin-master/portal-completo", label: "Portal", icon: Building2 },
     ],
   },
   {
-    title: "Comércio, Rede & Logística",
+    title: "Operações",
     items: [
-      { to: "/admin-master/lojas", label: "Lojas & Credenciamento", icon: Store },
-      { to: "/admin-master/usuarios", label: "Usuários da Rede", icon: Users },
-      { to: "/admin-master/logistica", label: "Logística Urbana Waesy Go", icon: Truck },
-      { to: "/admin-master/entregadores/auditoria", label: "Auditoria Entregadores", icon: ShieldCheck },
-      { to: "/admin-master/carnes", label: "Carnês & Crediário", icon: Receipt },
-      { to: "/admin-master/ads-network", label: "Ad-Network Arbitrage", icon: Zap },
-      { to: "/admin-master/boost-payments", label: "Boost de Anúncios", icon: Flame },
+      { to: "/admin-master/lojas", label: "Lojas", icon: Store },
+      { to: "/admin-master/usuarios", label: "Usuários", icon: Users },
+      { to: "/admin-master/logistica", label: "Logística", icon: Truck },
+      { to: "/admin-master/entregadores/auditoria", label: "Entregadores", icon: ShieldCheck },
+      { to: "/admin-master/carnes", label: "Crediário", icon: Receipt },
+      { to: "/admin-master/ads-network", label: "Anúncios", icon: Zap },
+      { to: "/admin-master/boost-payments", label: "Impulsionar", icon: Flame },
     ],
   },
   {
-    title: "Marketing, Comunidade & Web3",
+    title: "Crescimento",
     items: [
-      { to: "/admin-master/pre-cadastro", label: "Pré-Cadastro e Lançamento", icon: Star },
-      { to: "/admin-master/convite", label: "Sorteios e Prêmios", icon: Gift },
-      { to: "/admin-master/tokens", label: "Tokens & Fidelidade", icon: Coins },
-      { to: "/admin-master/mining", label: "Mineração Comunitária", icon: Cpu },
-      { to: "/admin-master/simlabs", label: "SimLabs (Laboratório)", icon: FlaskConical },
+      { to: "/admin-master/pre-cadastro", label: "Pré-Cadastro", icon: Star },
+      { to: "/admin-master/convite", label: "Sorteios", icon: Gift },
+      { to: "/admin-master/tokens", label: "Tokens", icon: Coins },
+      { to: "/admin-master/mining", label: "Recompensas", icon: Cpu },
+      { to: "/admin-master/simlabs", label: "Simulações", icon: FlaskConical },
     ],
   },
   {
-    title: "Segurança, Finanças & Compliance",
+    title: "Governança",
     items: [
-      { to: "/admin-master/auditoria-forense", label: "Ledger Criptográfico (Bacen)", icon: Lock },
-      { to: "/admin-master/seguranca", label: "Segurança Forense", icon: ShieldAlert },
-      { to: "/admin-master/seguranca/certificados", label: "Certificados MCTU", icon: Fingerprint },
-      { to: "/admin-master/seguranca/telemetria", label: "Telemetria Live", icon: Radio },
-      { to: "/admin-master/kyc", label: "Verificação KYC", icon: UserCheck },
-      { to: "/admin-master/denuncias", label: "Moderação de Denúncias", icon: AlertTriangle },
-      { to: "/admin-master/faturas", label: "Faturas e Repasses", icon: DollarSign },
-      { to: "/admin-master/logs", label: "Logs de Sistema", icon: Server },
-      { to: "/admin-master/termos", label: "Termos e Legal", icon: Scale },
-      { to: "/admin-master/integracoes", label: "Integrações e Webhooks", icon: Plug },
+      { to: "/admin-master/auditoria-forense", label: "Ledger", icon: Lock },
+      { to: "/admin-master/seguranca", label: "Segurança", icon: ShieldAlert },
+      { to: "/admin-master/seguranca/certificados", label: "Certificados", icon: Fingerprint },
+      { to: "/admin-master/seguranca/telemetria", label: "Telemetria", icon: Radio },
+      { to: "/admin-master/kyc", label: "Identidade", icon: UserCheck },
+      { to: "/admin-master/denuncias", label: "Denúncias", icon: AlertTriangle },
+      { to: "/admin-master/faturas", label: "Faturas", icon: DollarSign },
+      { to: "/admin-master/logs", label: "Registros", icon: Server },
+      { to: "/admin-master/termos", label: "Termos", icon: Scale },
+      { to: "/admin-master/integracoes", label: "Integrações", icon: Plug },
     ],
   },
 ];
+
+const SECTION_ICONS: Record<string, any> = {
+  Comando: LayoutDashboard,
+  Vitrines: Store,
+  Operações: Truck,
+  Crescimento: Gift,
+  Governança: ShieldCheck,
+};
 
 function AdminMasterLayout() {
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSubSidebarOpen, setIsSubSidebarOpen] = useState(false);
 
-  // Filtro instantâneo por busca em tempo real
-  const filteredSections = useMemo(() => {
+  const currentBreadcrumb = useMemo(() => {
+    for (const sec of NAV_SECTIONS) {
+      for (const item of sec.items) {
+        if (item.exact ? pathname === item.to : pathname.startsWith(item.to)) {
+          return { sectionTitle: sec.title, itemLabel: item.label };
+        }
+      }
+    }
+    return { sectionTitle: "Comando", itemLabel: "Visão Geral" };
+  }, [pathname]);
+
+  const [selectedSectionTitle, setSelectedSectionTitle] = useState(
+    currentBreadcrumb.sectionTitle
+  );
+
+  useEffect(() => {
+    setSelectedSectionTitle(currentBreadcrumb.sectionTitle);
+  }, [currentBreadcrumb.sectionTitle]);
+
+  const activeSection = useMemo(
+    () =>
+      NAV_SECTIONS.find((sec) => sec.title === selectedSectionTitle) ||
+      NAV_SECTIONS[0],
+    [selectedSectionTitle]
+  );
+
+  const visibleSections = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    if (!term) return NAV_SECTIONS;
+    if (!term) return [activeSection];
     return NAV_SECTIONS.map((sec) => ({
       ...sec,
       items: sec.items.filter(
@@ -202,39 +247,45 @@ function AdminMasterLayout() {
           sec.title.toLowerCase().includes(term),
       ),
     })).filter((sec) => sec.items.length > 0);
-  }, [searchTerm]);
+  }, [searchTerm, activeSection]);
 
-  // Trilha contextual de navegação (Breadcrumb)
-  const currentBreadcrumb = useMemo(() => {
-    for (const sec of NAV_SECTIONS) {
-      for (const item of sec.items) {
-        if (item.exact ? pathname === item.to : pathname.startsWith(item.to)) {
-          return { sectionTitle: sec.title, itemLabel: item.label };
-        }
-      }
-    }
-    return { sectionTitle: "Governança", itemLabel: "Painel Master" };
-  }, [pathname]);
-
-  const renderNavLinks = (onItemClick?: () => void) => (
+  const renderNavLinks = (
+    sectionsToRender: typeof NAV_SECTIONS,
+    onItemClick?: () => void
+  ) => (
     <>
-      {filteredSections.map((section) => (
+      {sectionsToRender.map((section) => (
         <div key={section.title} className="space-y-1">
-          <span className="px-3 text-2xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70 block">
-            {section.title}
-          </span>
+          {sectionsToRender.length > 1 && (
+            <span className="px-3 text-xs font-medium text-muted-foreground block">
+              {section.title}
+            </span>
+          )}
           <div className="space-y-1 pt-1">
             {section.items.map((item) => {
               const Icon = item.icon;
+              const isItemActive = (item as any).exact
+                ? pathname === item.to
+                : pathname === item.to || pathname.startsWith(item.to + "/");
               return (
                 <Link
                   key={item.to}
                   to={item.to}
                   activeOptions={{ exact: (item as any).exact }}
                   onClick={onItemClick}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 [&.active]:bg-primary [&.active]:text-primary-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className={cn(
+                    "flex items-center gap-3 px-3 min-h-11 py-2 rounded-xl text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isItemActive
+                      ? "bg-sidebar-active text-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-sidebar-active/60 font-medium"
+                  )}
                 >
-                  <Icon className="size-4 shrink-0" />
+                  <StatefulNavIcon
+                    icon={Icon}
+                    active={isItemActive}
+                    size={18}
+                    className="size-4 shrink-0"
+                  />
                   <span className="truncate">{item.label}</span>
                 </Link>
               );
@@ -242,9 +293,9 @@ function AdminMasterLayout() {
           </div>
         </div>
       ))}
-      {filteredSections.length === 0 && (
+      {sectionsToRender.length === 0 && (
         <div className="p-4 text-center text-xs text-muted-foreground">
-          Nenhum módulo encontrado para &quot;{searchTerm}&quot;.
+          Nenhum item encontrado.
         </div>
       )}
     </>
@@ -252,134 +303,200 @@ function AdminMasterLayout() {
 
   return (
     <div className="h-dvh w-screen overflow-hidden bg-background text-foreground flex">
-      {/* Desktop Fixed Sidebar */}
-      <aside className="w-64 border-r border-border/50 bg-card/40 backdrop-blur-sm flex-col hidden md:flex shrink-0 h-full">
-        {/* Header */}
-        <div className="h-14 px-4 border-b border-border/40 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Shield className="size-4" />
+      {/* Desktop Dual-Rail Navigation (>= 840px): Slim Rail + Collapsible Slim Sidebar */}
+      <aside className="hidden waesy-expanded-flex flex-row shrink-0 h-dvh select-none z-30 border-r border-sidebar-border">
+        {/* Trilho Primário Somente Ícones com Tooltip */}
+        <TooltipProvider delayDuration={120}>
+          <div className="w-14 bg-rail border-r border-sidebar-border flex flex-col items-center justify-between py-2 shrink-0 h-dvh">
+            <div className="h-11 flex items-center justify-center shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setIsSubSidebarOpen((prev) => !prev)}
+                    aria-label={isSubSidebarOpen ? "Recolher menu" : "Expandir menu"}
+                    className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <SidebarSimple
+                      size={20}
+                      weight={isSubSidebarOpen ? "fill" : "regular"}
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  {isSubSidebarOpen ? "Recolher menu" : "Expandir menu"}
+                </TooltipContent>
+              </Tooltip>
             </div>
-            <div className="min-w-0">
-              <span className="font-bold text-xs tracking-tight block leading-tight truncate">
+
+            <nav
+              aria-label="Seções do painel"
+              className="flex-1 w-full overflow-y-auto no-scrollbar flex flex-col items-center gap-1 py-2"
+            >
+              {NAV_SECTIONS.map((sec) => {
+                const SecIcon = SECTION_ICONS[sec.title] || LayoutDashboard;
+                const isSelected = activeSection.title === sec.title;
+                return (
+                  <Tooltip key={sec.title}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setIsSubSidebarOpen((prev) => !prev);
+                          } else {
+                            setSelectedSectionTitle(sec.title);
+                            setSearchTerm("");
+                            if (!isSubSidebarOpen) setIsSubSidebarOpen(true);
+                          }
+                        }}
+                        aria-label={sec.title}
+                        aria-current={isSelected ? "page" : undefined}
+                        className={cn(
+                          "size-11 min-w-11 min-h-11 rounded-xl relative flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          isSelected
+                            ? "bg-rail-active text-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+                        )}
+                      >
+                        <StatefulNavIcon icon={SecIcon} active={isSelected} size={20} className="size-5 shrink-0" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>
+                      {sec.title}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </nav>
+
+            <div className="w-full pt-2 border-t border-sidebar-border flex flex-col items-center gap-1 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/workspace"
+                    aria-label="Workspace"
+                    className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <StatefulNavIcon icon={Store} active={false} size={20} className="size-5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  Workspace
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Vitrine"
+                    className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <StatefulNavIcon icon={Globe} active={false} size={20} className="size-5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  Vitrine
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        </TooltipProvider>
+
+        {/* Submenu Colapsável (Padrão recolhido; abre ao clicar na coluna 1) */}
+        {isSubSidebarOpen && (
+          <div className="w-56 bg-sidebar flex flex-col h-dvh shrink-0 overflow-hidden">
+            <div className="h-14 px-3 border-b border-sidebar-border flex items-center gap-3 shrink-0">
+              <div className="size-8 rounded-lg bg-foreground text-background flex items-center justify-center shrink-0">
+                <StatefulNavIcon icon={Shield} active={true} size={16} className="size-4" />
+              </div>
+              <span className="font-semibold text-sm tracking-tight truncate">
                 Waesy Master
               </span>
-              <span className="text-3xs text-muted-foreground font-medium block truncate">
-                Administração Global
-              </span>
             </div>
+
+            <div className="p-3 pb-2 shrink-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar..."
+                  className="w-full h-11 min-h-11 pl-9 pr-11 rounded-xl bg-background/60 text-xs text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Limpar busca"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <nav className="flex-1 p-3 space-y-3 overflow-y-auto no-scrollbar min-h-0">
+              {renderNavLinks(visibleSections)}
+            </nav>
           </div>
-          <span className="text-3xs font-mono font-bold px-2 py-1 rounded bg-muted text-muted-foreground border border-border/40 shrink-0">
-            ROOT
-          </span>
-        </div>
-
-        {/* Quick Filter Search */}
-        <div className="p-3 pb-1 shrink-0 border-b border-border/30">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar ferramenta (ex: KYC, Banners)..."
-              className="w-full h-8 pl-8 pr-8 rounded-lg bg-background border border-border/60 text-xs text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded"
-                title="Limpar busca"
-              >
-                <X className="size-3" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Navigation with Independent Internal Scroll */}
-        <nav className="flex-1 p-3 space-y-4 overflow-y-auto no-scrollbar min-h-0">
-          {renderNavLinks()}
-        </nav>
-
-        {/* Footer Quick Links */}
-        <div className="p-3 border-t border-border/40 space-y-1 shrink-0 bg-background/50">
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg bg-card border-border/60 cursor-pointer min-h-11 sm:min-h-0"
-          >
-            <Link to="/workspace">
-              <span className="flex items-center gap-2">
-                <Store className="size-3.5 text-primary" />
-                <span>Ir ao Workspace</span>
-              </span>
-              <ArrowUpRight className="size-3 text-muted-foreground" />
-            </Link>
-          </Button>
-
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="w-full justify-between h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
-          >
-            <Link to="/" target="_blank" rel="noopener noreferrer">
-              <span className="flex items-center gap-2">
-                <ExternalLink className="size-3.5 text-muted-foreground" />
-                <span>Abrir Vitrine Pública</span>
-              </span>
-            </Link>
-          </Button>
-        </div>
+        )}
       </aside>
 
-      {/* Mobile Drawer */}
+      {/* Mobile & Tablet Drawer (< 840px) */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
+        <div className="fixed inset-0 z-50 waesy-compact-medium-only flex">
           <div
             role="button"
             tabIndex={0}
+            aria-label="Fechar menu"
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 e.currentTarget.click();
               }
             }}
-            className="fixed inset-0 bg-foreground/60 backdrop-blur-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="fixed inset-0 bg-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => setIsMobileOpen(false)}
           />
-          <aside className="relative w-72 max-w-[85vw] bg-background border-r border-border h-full flex flex-col z-10">
-            <div className="h-14 px-4 border-b border-border/40 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2 text-primary font-bold text-sm">
-                <Shield className="size-5" />
+          <aside className="relative w-72 max-w-xs bg-sidebar border-r border-sidebar-border h-full flex flex-col z-10">
+            <div className="h-14 px-4 border-b border-sidebar-border flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2 text-foreground font-semibold text-sm">
+                <StatefulNavIcon icon={Shield} active={true} size={18} className="size-4" />
                 <span>Waesy Master</span>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="size-11 min-h-11 min-w-11 p-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Fechar menu"
+                className="size-11 min-h-11 min-w-11 p-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => setIsMobileOpen(false)}
               >
                 <X className="size-4" />
               </Button>
             </div>
-            <div className="p-3 pb-1 shrink-0 border-b border-border/30">
+            <div className="p-3 pb-2 shrink-0">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar ferramenta..."
-                  className="w-full h-9 pl-8 pr-8 rounded-lg bg-background border border-border/60 text-xs text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  placeholder="Buscar..."
+                  className="w-full h-11 min-h-11 pl-9 pr-8 rounded-xl bg-background text-xs text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
             </div>
             <nav className="flex-1 p-3 space-y-4 overflow-y-auto no-scrollbar min-h-0">
-              {renderNavLinks(() => setIsMobileOpen(false))}
+              {renderNavLinks(
+                searchTerm.trim() ? visibleSections : NAV_SECTIONS,
+                () => setIsMobileOpen(false)
+              )}
             </nav>
           </aside>
         </div>
@@ -388,12 +505,13 @@ function AdminMasterLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top Header */}
-        <header className="h-14 border-b border-border/40 bg-background px-4 md:px-8 flex items-center justify-between shrink-0 z-20">
+        <header className="h-14 border-b border-border/40 bg-background px-4 sm:px-6 flex items-center justify-between shrink-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
               size="sm"
-              className="size-11 min-h-11 min-w-11 p-0 md:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Abrir menu"
+              className="size-11 min-h-11 min-w-11 p-0 waesy-compact-medium-only cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => setIsMobileOpen(true)}
             >
               <Menu className="size-5" />
@@ -410,19 +528,14 @@ function AdminMasterLayout() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-full text-3xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:transition-none" />
-              <span>Produção Live</span>
-            </div>
-
             <Button
               asChild
               size="sm"
               variant="outline"
-              className="h-8 rounded-lg text-xs font-medium gap-2 bg-card hover:bg-muted border-border/60 cursor-pointer min-h-11 sm:min-h-0"
+              className="h-11 min-h-11 rounded-lg text-xs font-medium gap-2 bg-card hover:bg-muted border-border/60 cursor-pointer"
             >
               <Link to="/workspace">
-                <Store className="size-3.5 text-primary" />
+                <Store className="size-4 text-primary" />
                 <span className="hidden sm:inline">Workspace</span>
               </Link>
             </Button>
@@ -430,18 +543,18 @@ function AdminMasterLayout() {
               asChild
               size="sm"
               variant="ghost"
-              className="h-8 rounded-lg text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0"
+              className="h-11 min-h-11 rounded-lg text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <Link to="/" target="_blank" rel="noopener noreferrer">
                 <span>Vitrine</span>
-                <ExternalLink className="size-3 ml-1" />
+                <ExternalLink className="size-3.5 ml-1" />
               </Link>
             </Button>
           </div>
         </header>
 
         {/* Content Container with Independent Internal Scroll */}
-        <main className="flex-1 overflow-y-auto no-scrollbar min-h-0 p-4 sm:p-6 lg:p-8 bg-background">
+        <main className="flex-1 overflow-y-auto no-scrollbar min-h-0 p-4 sm:p-6 bg-background">
           <div className="w-full max-w-7xl 2xl:max-w-screen-2xl mx-auto space-y-6">
             <Outlet />
           </div>

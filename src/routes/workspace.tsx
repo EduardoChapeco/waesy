@@ -29,13 +29,11 @@ function isPlatformAdminUser(session: any): boolean {
     "admin@jah.com",
   ];
   return Boolean(
-    session.role === "admin" ||
     session.role === "superadmin" ||
     session.role === "platform_admin" ||
     session.role === "master" ||
     session.role === "admin_master" ||
     session.user?.role === "platform_admin" ||
-    session.user?.app_metadata?.role === "admin" ||
     session.user?.app_metadata?.role === "platform_admin" ||
     session.user?.app_metadata?.is_master ||
     session.user?.user_metadata?.is_admin_master ||
@@ -480,9 +478,11 @@ function WorkspaceLayout() {
   const isEmbeddedRequested = viewModeParam === "embedded" || viewModeParam === "sidebar";
   const isStandaloneRequested =
     viewModeParam === "standalone" || routeSearchParams.get("fullscreen") === "true";
+  const isChatFullPage =
+    pathname === "/workspace/atendimento/chat" ||
+    pathname.startsWith("/workspace/atendimento/chat/");
   const isNativeFullPageChatOrCopilot =
-    (pathname.startsWith("/workspace/atendimento") ||
-      pathname.startsWith("/workspace/copilot")) &&
+    (isChatFullPage || pathname.startsWith("/workspace/copilot")) &&
     !isEmbeddedRequested;
   const isStandaloneVerticalApp =
     isNativeFullPageChatOrCopilot ||

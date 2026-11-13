@@ -79,6 +79,13 @@ import {
   isBlockWithinSchedule,
 } from "@/lib/builder/block-data-resolver";
 import { CANONICAL_PLATFORM_SURFACES, openOrCreatePageExperienceDocument } from "@/services/surface-cms.functions";
+import { BuilderViewportFrame, type BuilderZoomMode } from "./BuilderViewportFrame";
+import { getNavigationMenus } from "@/services/cms.functions";
+import {
+  listStoreCmsDashboardData,
+  type CmsCollectionDTO,
+  type StoreCmsNativeCounts,
+} from "@/services/cms-collections.functions";
 
 import {
   Plus,
@@ -127,6 +134,7 @@ import {
   Menu as MenuIcon,
   History,
   RotateCcw,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -2505,6 +2513,9 @@ interface OmniEditorProps {
   banners?: any[];
   hotpages?: any[];
   storeData?: any;
+  navigationMenus?: any[];
+  cmsCollections?: CmsCollectionDTO[];
+  cmsNativeCounts?: StoreCmsNativeCounts;
 }
 
 export const OmniEditor: React.FC<OmniEditorProps> = ({
@@ -2524,6 +2535,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   banners = [],
   hotpages = [],
   storeData = null,
+  navigationMenus: initialNavigationMenus = [],
+  cmsCollections: initialCmsCollections = [],
+  cmsNativeCounts: initialCmsNativeCounts,
 }) => {
   const [document, setDocument] = useState<OmniPageDocument>(initialDocument);
   const [activeStudioManifest, setActiveStudioManifest] = useState<StudioTemplateManifest | null>(
@@ -2569,19 +2583,41 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     headingFont: (initialDocument.theme as any)?.headingFont || (initialDocument.theme as any)?.fontFamily || "Inter, sans-serif",
     bodyFont: (initialDocument.theme as any)?.bodyFont || (initialDocument.theme as any)?.fontFamily || "Inter, sans-serif",
     borderRadius: initialDocument.theme?.borderRadius || "xl",
-    surfaceStyle: "clean",
+    surfaceStyle: (initialDocument.theme as any)?.surfaceStyle || "clean",
   }));
-  const [appNavConfig, setAppNavConfig] = useState<WixAppNavConfig>({
-    barPosition: "bottom",
-    showLabelsUnderIcons: true,
-    tabs: ["Início", "Catálogo", "Reservas", "Ofertas", "Perfil"],
+  const [appNavConfig, setAppNavConfig] = useState<WixAppNavConfig>(() => {
+    const saved = (initialDocument.settings as any)?.appNavConfig;
+    return {
+      barPosition: saved?.barPosition || "bottom",
+      showLabelsUnderIcons:
+        typeof saved?.showLabelsUnderIcons === "boolean" ? saved.showLabelsUnderIcons : true,
+      tabs:
+        Array.isArray(saved?.tabs) && saved.tabs.length > 0
+          ? saved.tabs
+          : ["Início", "Catálogo", "Reservas", "Ofertas", "Perfil"],
+    };
   });
-  const [buttonStyler, setButtonStyler] = useState<WixButtonStylerConfig>({
-    activeRole: "primary",
-    shape: "squircle",
-    uppercase: false,
-    borderWidthPx: 1,
+  const [buttonStyler, setButtonStyler] = useState<WixButtonStylerConfig>(() => {
+    const saved = (initialDocument.settings as any)?.buttonStyler;
+    return {
+      activeRole: saved?.activeRole || "primary",
+      shape: saved?.shape || "squircle",
+      uppercase: typeof saved?.uppercase === "boolean" ? saved.uppercase : false,
+      borderWidthPx: typeof saved?.borderWidthPx === "number" ? saved.borderWidthPx : 1,
+    };
   });
+  const [liveNavigationMenus, setLiveNavigationMenus] = useState<any[]>(initialNavigationMenus);
+  const [liveCmsCollections, setLiveCmsCollections] = useState<CmsCollectionDTO[]>(
+    initialCmsCollections,
+  );
+  const [liveCmsNativeCounts, setLiveCmsNativeCounts] = useState<StoreCmsNativeCounts | undefined>(
+    initialCmsNativeCounts,
+  );
+  const [activeCmsCollectionSlug, setActiveCmsCollectionSlug] = useState<string | null>(null);
+  const [canvasZoomMode, setCanvasZoomMode] = useState<BuilderZoomMode>("fit");
+  const [draggedBlockIndex, setDraggedBlockIndex] = useState<number | null>(null);
+  const [dragOverBlockIndex, setDragOverBlockIndex] = useState<number | null>(null);
+  const [insertMenuAtIndex, setInsertMenuAtIndex] = useState<number | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -2772,18 +2808,28 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
   const handleUpdateSitePageSeo = async (
     pageId: string,
-    seo: { seo_title?: string; seo_description?: string },
+    seo: {
+      seo_title?: string;
+      seo_description?: string;
+      permission_mode?: string;
+      indexable?: boolean;
+      geo_enabled?: boolean;
+      geo_entity_summary?: string;
+    },
   ) => {
     try {
       await (updateExperienceDocumentSettings as any)({
         data: {
-          id: pageId,
-          settings: {
-            seo: {
-              title: seo.seo_title,
-              description: seo.seo_description,
-            },
+          document_id: pageId,
+          seo_metadata: {
+            title: seo.seo_title,
+            description: seo.seo_description,
+            permission_mode: seo.permission_mode,
+            indexable: seo.indexable,
+            geo_enabled: seo.geo_enabled,
+            geo_entity_summary: seo.geo_entity_summary,
           },
+          settings: {},
         },
       });
       setSitePages((prev) =>
@@ -2807,6 +2853,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           textColor: updated.textColor,
           headingFont: updated.headingFont,
           bodyFont: updated.bodyFont,
+          surfaceStyle: updated.surfaceStyle,
           fontFamily: updated.bodyFont || updated.headingFont || curr.theme?.fontFamily || "Inter, sans-serif",
           borderRadius: updated.borderRadius,
           customThemeEnabled: true,
@@ -2830,23 +2877,48 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
   useEffect(() => {
     let active = true;
-    if (document.store_id) {
-      listExperienceDocuments({ data: { store_id: document.store_id } })
-        .then((docs) => {
-          if (!active || !Array.isArray(docs) || docs.length === 0) return;
-          setSitePages(
-            docs.map((d: any) => ({
-              id: d.id,
-              title: d.title || "Página",
-              slug: d.slug?.startsWith("/") ? d.slug : `/${d.slug || ""}`,
-              is_home: d.slug === "/" || d.slug === "home" || d.id === document.id,
-              seo_title: d.settings?.seo?.title || `${d.title} | ${document.title || "Loja"}`,
-              seo_description: d.settings?.seo?.description || "Página oficial da loja.",
-            }))
-          );
-        })
-        .catch(() => undefined);
-    }
+    listStoreCmsDashboardData({ data: { storeId: document.store_id ?? null } })
+      .then((dashboard) => {
+        if (!active || !dashboard) return;
+        if (Array.isArray(dashboard.collections)) {
+          setLiveCmsCollections(dashboard.collections);
+        }
+        if (dashboard.nativeCounts) {
+          setLiveCmsNativeCounts(dashboard.nativeCounts);
+        }
+      })
+      .catch(() => undefined);
+    getNavigationMenus()
+      .then((menus) => {
+        if (active && Array.isArray(menus)) {
+          setLiveNavigationMenus(menus);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [document.store_id]);
+
+  useEffect(() => {
+    let active = true;
+    listExperienceDocuments({
+      data: document.store_id ? { store_id: document.store_id } : {},
+    })
+      .then((docs) => {
+        if (!active || !Array.isArray(docs) || docs.length === 0) return;
+        setSitePages(
+          docs.map((d: any) => ({
+            id: d.id,
+            title: d.title || "Página",
+            slug: d.slug?.startsWith("/") ? d.slug : `/${d.slug || ""}`,
+            is_home: d.slug === "/" || d.slug === "home" || d.id === document.id,
+            seo_title: d.settings?.seo?.title || `${d.title} | ${document.title || "Loja"}`,
+            seo_description: d.settings?.seo?.description || "Página oficial da loja.",
+          })),
+        );
+      })
+      .catch(() => undefined);
     return () => {
       active = false;
     };
@@ -3037,6 +3109,78 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
     }));
   };
 
+  const handleReorderDrop = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+    if (toIndex >= document.blocks.length) return;
+    const updated = moveBlockInPage(document, fromIndex, toIndex);
+    commitDocumentChange(updated);
+    toast.success("Ordem das seções atualizada.");
+  };
+
+  const handleAddBlockAt = (
+    blockType: string,
+    targetIndex?: number,
+    configOverride?: Record<string, any>,
+    bindingOverride?: any,
+  ) => {
+    const def = getSiteBlockById(blockType);
+    const mergedConfig = configOverride
+      ? { ...(def.defaultProps || {}), ...configOverride }
+      : def.defaultProps;
+    const updated = addBlockToPage(
+      document,
+      blockType,
+      mergedConfig,
+      def.defaultStyling,
+      targetIndex,
+    );
+    const insertedIdx =
+      typeof targetIndex === "number" &&
+      targetIndex >= 0 &&
+      targetIndex <= document.blocks.length
+        ? targetIndex
+        : updated.blocks.length - 1;
+    const newlyInserted = updated.blocks[insertedIdx];
+    const finalDoc =
+      bindingOverride && newlyInserted
+        ? {
+            ...updated,
+            blocks: updated.blocks.map((b) =>
+              b.id === newlyInserted.id ? { ...b, dataBinding: bindingOverride } : b,
+            ),
+          }
+        : updated;
+    commitDocumentChange(finalDoc);
+    if (newlyInserted) {
+      setSelectedBlockId(newlyInserted.id);
+    }
+    setIsMobileAddOpen(false);
+    setInsertMenuAtIndex(null);
+    toast.success(`Bloco "${def.name}" inserido!`);
+  };
+
+  const handleInsertDynamicCmsBlock = (
+    blockType: string,
+    bindingSource: string,
+    title?: string,
+    collectionSlug?: string,
+  ) => {
+    handleAddBlockAt(
+      blockType,
+      undefined,
+      {
+        ...(title ? { title } : {}),
+        ...(collectionSlug ? { collectionSlug } : {}),
+      },
+      {
+        entity: bindingSource as any,
+        limit: 8,
+        sort: "newest",
+        ...(collectionSlug ? { cmsCollectionSlug: collectionSlug } : {}),
+      },
+    );
+  };
+
   const handleMove = (index: number, direction: "up" | "down") => {
     const target = direction === "up" ? index - 1 : index + 1;
     const updated = moveBlockInPage(document, index, target);
@@ -3098,7 +3242,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
   return (
     <div className="relative w-full h-screen bg-background text-foreground flex flex-col overflow-hidden select-none font-sans">
       {/* ── TOPBAR DO EDITOR (UNIVERSAL - SOFTWARE PRO SILENCE) ── */}
-      <header className="h-14 border-b border-border/80 bg-background/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
+      <header className="h-14 border-b border-border bg-background px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {onBack && (
             <Button
@@ -3112,8 +3256,8 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             </Button>
           )}
 
-          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-tight shrink-0">
-            <Layers className="size-3.5" />
+          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-muted text-foreground border border-border text-xs font-bold tracking-tight shrink-0">
+            <Layers className="size-3.5 text-primary" />
             <span>Waesy Studio</span>
           </div>
 
@@ -3155,16 +3299,30 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           {/* Seletor Rápido de Página / Vitrine da Plataforma (Wix Studio Page Switcher) */}
           <div className="hidden md:flex items-center pl-2 border-l border-border/60">
             <select
-              aria-label="Alternar Página da Plataforma"
-              value={document.slug || "home"}
+              aria-label="Alternar Página do Site"
+              value={
+                document.store_id && sitePages.some((p) => p.id === document.id)
+                  ? document.id
+                  : document.slug || "home"
+              }
               onChange={async (e) => {
-                const nextSlug = e.target.value;
-                if (!nextSlug || nextSlug === document.slug) return;
-                const surf = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === nextSlug);
+                const nextValue = e.target.value;
+                if (!nextValue) return;
+                if (document.store_id && sitePages.some((p) => p.id === nextValue)) {
+                  await handleSelectSitePage(nextValue);
+                  return;
+                }
+                const pageMatch = sitePages.find((p) => p.id === nextValue);
+                if (pageMatch) {
+                  await handleSelectSitePage(pageMatch.id);
+                  return;
+                }
+                if (nextValue === document.slug) return;
+                const surf = CANONICAL_PLATFORM_SURFACES.find((s) => s.slug === nextValue);
                 try {
-                  toast.info(`Abrindo página ${surf?.title || nextSlug} no Omni Builder...`);
+                  toast.info(`Abrindo página ${surf?.title || nextValue} no Omni Builder...`);
                   const res = await openOrCreatePageExperienceDocument({
-                    data: { pageSlug: nextSlug, pageTitle: surf?.title || nextSlug },
+                    data: { pageSlug: nextValue, pageTitle: surf?.title || nextValue },
                   });
                   if (res?.documentId && typeof window !== "undefined") {
                     window.location.href = `/workspace/builder/${res.documentId}/editor`;
@@ -3174,13 +3332,35 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 }
               }}
               className="h-11 min-h-11 rounded-lg border border-border bg-muted/40 px-3 text-xs font-bold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary max-w-52"
-              title="Trocar de Página / Vitrine da Plataforma"
+              title="Trocar de Página do Site ou Plataforma"
             >
-              {CANONICAL_PLATFORM_SURFACES.filter((s) => s.slug !== "store_private").map((s) => (
-                <option key={s.slug} value={s.slug}>
-                  Página: {s.title}
-                </option>
-              ))}
+              {document.store_id && sitePages.length > 0 ? (
+                sitePages.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    Página: {p.title} ({p.slug})
+                  </option>
+                ))
+              ) : (
+                <>
+                  {CANONICAL_PLATFORM_SURFACES.filter((s) => s.slug !== "store_private").map((s) => (
+                    <option key={s.slug} value={s.slug}>
+                      Superfície: {s.title}
+                    </option>
+                  ))}
+                  {sitePages
+                    .filter(
+                      (p) =>
+                        !CANONICAL_PLATFORM_SURFACES.some(
+                          (s) => `/${s.slug}` === p.slug || s.slug === p.slug,
+                        ),
+                    )
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        Página: {p.title} ({p.slug})
+                      </option>
+                    ))}
+                </>
+              )}
             </select>
           </div>
 
@@ -3425,15 +3605,15 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
         {/* 1C. Gaveta Esquerda Dinâmica conforme Ícone Ativo na BuilderDockedRail */}
         {!isPreviewMode && dockedPanel === "add" && (
-          <aside className="w-80 border-r border-border/80 bg-card/60 backdrop-blur-md flex flex-col shrink-0">
+          <aside className="w-80 border-r border-border bg-sidebar flex flex-col shrink-0">
             {/* Abas Superiores: Blocos | Modelos + Gatilho 3 Colunas Wix */}
-            <div className="p-2 border-b border-border/60 space-y-2 bg-muted/20">
+            <div className="p-2 border-b border-border space-y-2 bg-muted">
               <div className="grid grid-cols-2 gap-1">
                 <button
                   type="button"
                   onClick={() => setLeftTab("blocks")}
                   className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
-                    leftTab === "blocks" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                    leftTab === "blocks" ? "bg-background text-foreground border border-border" : "text-muted-foreground hover:text-foreground"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Blocos
@@ -3442,7 +3622,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   type="button"
                   onClick={() => setLeftTab("templates")}
                   className={`py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
-                    leftTab === "templates" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                    leftTab === "templates" ? "bg-background text-foreground border border-border" : "text-muted-foreground hover:text-foreground"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                 >
                   Modelos
@@ -3453,10 +3633,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 size="sm"
                 variant="outline"
                 onClick={() => setIsAddPanel3ColOpen(!isAddPanel3ColOpen)}
-                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 border-primary/40 text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 border-border bg-card text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Plus className="size-3.5" />
-                <span>Catálogo 3 Colunas (Modo Wix +)</span>
+                <Plus className="size-3.5 text-primary" />
+                <span>Catálogo 3 Colunas</span>
               </Button>
             </div>
 
@@ -3475,8 +3655,8 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                           onClick={() => setActiveBlockCategory(cat.id)}
                           className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 transition-colors cursor-pointer ${
                             isActive
-                              ? "bg-foreground text-background shadow-xs"
-                              : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                              ? "bg-foreground text-background"
+                              : "bg-muted text-muted-foreground hover:text-foreground"
                           } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                         >
                           <CatIcon className="size-3" />
@@ -3492,7 +3672,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={block.id}
                         onClick={() => handleAddBlock(block.id)}
-                        className="p-3 rounded-lg border border-border/70 bg-card hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="p-3 rounded-lg border border-border bg-card hover:border-foreground transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
@@ -3584,37 +3764,76 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               {document.blocks.map((block, idx) => {
                 const def = getSiteBlockById(block.type);
                 const isSelected = selectedBlockId === block.id;
+                const isDropTarget = dragOverBlockIndex === idx && draggedBlockIndex !== idx;
                 return (
                   <div
                     key={block.id}
-                    className={`p-3 rounded-lg border transition-colors flex items-center justify-between gap-2 ${
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedBlockIndex(idx);
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", String(idx));
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dragOverBlockIndex !== idx) setDragOverBlockIndex(idx);
+                    }}
+                    onDragLeave={() => {
+                      if (dragOverBlockIndex === idx) setDragOverBlockIndex(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const raw = e.dataTransfer.getData("text/plain");
+                      const from = draggedBlockIndex ?? Number(raw);
+                      setDraggedBlockIndex(null);
+                      setDragOverBlockIndex(null);
+                      if (!Number.isNaN(from)) {
+                        handleReorderDrop(from, idx);
+                      }
+                    }}
+                    onDragEnd={() => {
+                      setDraggedBlockIndex(null);
+                      setDragOverBlockIndex(null);
+                    }}
+                    className={`p-3 rounded-lg border transition-colors flex flex-col gap-2 ${
                       isSelected ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-muted/40"
-                    } ${block.isHidden ? "opacity-60 border-dashed" : ""}`}
+                    } ${block.isHidden ? "opacity-60 border-dashed" : ""} ${
+                      isDropTarget ? "ring-2 ring-primary/40 border-primary" : ""
+                    }`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setSelectedBlockId(block.id)}
-                      className="flex-1 text-left min-w-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-muted-foreground block">
-                          #{idx + 1} • {block.sectionAnchorId ? `#${block.sectionAnchorId}` : def.category}
-                        </span>
-                        {block.isHidden && (
-                          <span className="text-2xs font-semibold px-1 rounded bg-muted text-muted-foreground">
-                            Oculto
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs font-bold text-foreground truncate block">
-                        {(block.config as any)?.title || def.name}
+                    <div className="flex items-start gap-2 min-w-0">
+                      <span
+                        className="pt-1 text-muted-foreground cursor-grab active:cursor-grabbing shrink-0"
+                        title="Arraste para reordenar"
+                      >
+                        <GripVertical className="size-4" />
                       </span>
-                    </button>
-                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBlockId(block.id)}
+                        className="flex-1 text-left min-w-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-mono text-muted-foreground">
+                            #{idx + 1} • {block.sectionAnchorId ? `#${block.sectionAnchorId}` : def.category}
+                          </span>
+                          {block.isHidden && (
+                            <span className="text-2xs font-semibold px-2 rounded bg-muted text-muted-foreground">
+                              Oculto
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs font-bold text-foreground line-clamp-2 block mt-1">
+                          {(block.config as any)?.title || def.name}
+                        </span>
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between gap-1 pt-1 border-t border-border/50">
                       <button
                         type="button"
                         onClick={() => handleToggleBlockHidden(block.id)}
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title={block.isHidden ? "Exibir seção" : "Ocultar seção"}
                       >
                         {block.isHidden ? <EyeOff className="size-3.5 text-warning" /> : <Eye className="size-3.5" />}
@@ -3623,7 +3842,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                         type="button"
                         disabled={idx === 0}
                         onClick={() => handleMove(idx, "up")}
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Subir seção"
                       >
                         <ChevronUp className="size-3.5" />
@@ -3632,15 +3851,23 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                         type="button"
                         disabled={idx === document.blocks.length - 1}
                         onClick={() => handleMove(idx, "down")}
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Descer seção"
                       >
                         <ChevronDown className="size-3.5" />
                       </button>
                       <button
                         type="button"
+                        onClick={() => setInsertMenuAtIndex(insertMenuAtIndex === idx + 1 ? null : idx + 1)}
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Inserir seção abaixo"
+                      >
+                        <Plus className="size-3.5" />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDuplicate(block.id)}
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Duplicar seção"
                       >
                         <Copy className="size-3.5" />
@@ -3648,7 +3875,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemove(block.id)}
-                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         title="Remover seção"
                       >
                         <Trash2 className="size-3.5" />
@@ -3702,13 +3929,33 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 selectedBlock={selectedBlock}
                 onUpdateBlockConfig={handleUpdateConfig}
                 appNavConfig={appNavConfig}
-                onChangeAppNavConfig={(patch) =>
-                  setAppNavConfig((prev) => ({ ...prev, ...patch }))
-                }
+                onChangeAppNavConfig={(patch) => {
+                  setAppNavConfig((prev) => {
+                    const updatedNav = { ...prev, ...patch };
+                    commitDocumentMutation((curr) => ({
+                      ...curr,
+                      settings: {
+                        ...(curr.settings || {}),
+                        appNavConfig: updatedNav,
+                      },
+                    }));
+                    return updatedNav;
+                  });
+                }}
                 buttonStyler={buttonStyler}
-                onChangeButtonStyler={(patch) =>
-                  setButtonStyler((prev) => ({ ...prev, ...patch }))
-                }
+                onChangeButtonStyler={(patch) => {
+                  setButtonStyler((prev) => {
+                    const updatedBtn = { ...prev, ...patch };
+                    commitDocumentMutation((curr) => ({
+                      ...curr,
+                      settings: {
+                        ...(curr.settings || {}),
+                        buttonStyler: updatedBtn,
+                      },
+                    }));
+                    return updatedBtn;
+                  });
+                }}
               />
             </div>
           </div>
@@ -3719,9 +3966,16 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           <div className="flex flex-col border-r border-border/80 bg-card shrink-0">
             <div className="flex-1 overflow-hidden flex">
               <BuilderCmsPanel
+                storeId={document.store_id}
                 productsCount={products.length}
                 collectionsCount={collections.length}
-                onInsertDynamicBlock={(blockType) => handleAddBlock(blockType)}
+                cmsCollections={liveCmsCollections}
+                nativeCounts={liveCmsNativeCounts}
+                onInsertDynamicBlock={handleInsertDynamicCmsBlock}
+                onOpenCollectionManager={(slug) => {
+                  setActiveCmsCollectionSlug(slug ?? null);
+                  setIsCmsTableModalOpen(true);
+                }}
                 onClose={() => setDockedPanel(null)}
               />
             </div>
@@ -3755,36 +4009,373 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
           />
         )}
 
-        {/* Canvas Central (Área de Visualização WYSIWYG — Desktop, Tablet, Mobile & Branded Native App) */}
-        <main className="flex-1 bg-muted/15 overflow-y-auto p-4 sm:p-8 flex justify-center">
+        {/* Canvas Central (Área de Visualização WYSIWYG Contida com Scroll Interno & Zoom) */}
+        <main className="flex-1 min-w-0 bg-muted/15 overflow-hidden flex flex-col">
           <BuilderViewportProvider
             viewport={viewport === "mobile" || viewport === "native_app" ? "mobile" : "desktop"}
             isEditorCanvas={true}
           >
-          <div
-            style={getDocumentThemeCanvasStyle(document.theme, { forceIsolate: true })}
-            className={`transition-colors duration-200 ${
-              viewport === "native_app"
-                ? "w-full max-w-sm min-h-dvh rounded-3xl border-4 border-foreground/20 overflow-hidden bg-background text-foreground my-auto flex flex-col"
-                : viewport === "mobile"
-                  ? "w-full max-w-sm min-h-dvh rounded-lg border border-border/80 overflow-hidden bg-background text-foreground my-auto"
-                  : viewport === "tablet"
-                    ? "w-full max-w-3xl bg-background text-foreground rounded-xl border border-border/70"
-                    : "w-full max-w-6xl bg-background text-foreground rounded-lg border border-border/60"
-            }`}
-          >
-            {/* Moldura Superior de App Nativo (Dynamic Island + Top Tab Bar opcional) */}
-            {viewport === "native_app" && (
-              <div className="bg-card border-b border-border px-4 py-2 space-y-2 shrink-0">
-                <div className="w-24 h-2 rounded-full bg-foreground/20 mx-auto" />
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground truncate">
-                    {document.title}
-                  </span>
-                  <span className="text-xs font-mono text-primary">PWA Nativo</span>
+            <BuilderViewportFrame
+              viewport={viewport}
+              onChangeViewport={setViewport}
+              zoomMode={canvasZoomMode}
+              onChangeZoomMode={setCanvasZoomMode}
+              themeStyle={getDocumentThemeCanvasStyle(document.theme, {
+                forceIsolate: true,
+                settings: { ...(document.settings || {}), buttonStyler },
+              })}
+            >
+              <div className="min-h-full flex flex-col bg-background text-foreground">
+                {/* Barra Rápida de Header Global ausente */}
+                {!isPreviewMode && !document.blocks.some((b) => b.type === "site_header") && (
+                  <div className="px-4 py-2 border-b border-dashed border-border/70 bg-muted/20 flex items-center justify-between gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground">
+                      Cabeçalho global da página ainda não adicionado.
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddBlockAt("site_header", 0)}
+                      className="h-11 min-h-11 text-xs font-semibold gap-2"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Adicionar Header Global</span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Moldura Superior de App Nativo (Dynamic Island + Top Tab Bar opcional) */}
+                {viewport === "native_app" && (
+                  <div className="bg-card border-b border-border px-4 py-2 space-y-2 shrink-0">
+                    <div className="w-24 h-2 rounded-full bg-foreground/20 mx-auto" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground truncate">
+                        {document.title}
+                      </span>
+                      <span className="text-xs font-mono text-primary">PWA Nativo</span>
+                    </div>
+                    {appNavConfig.barPosition === "top" && (
+                      <div className="flex items-center justify-around gap-1 pt-1 border-t border-border/60">
+                        {appNavConfig.tabs.map((tab, idx) => (
+                          <div
+                            key={tab}
+                            className={`py-1 px-2 rounded text-center text-xs font-semibold ${
+                              idx === 0 ? "bg-primary/15 text-primary font-bold" : "text-muted-foreground"
+                            }`}
+                          >
+                            {appNavConfig.showLabelsUnderIcons ? tab : "•"}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex-1">
+                  {document.blocks.length === 0 ? (
+                    <div className="py-24 text-center p-8 flex flex-col items-center gap-3">
+                      <LayoutTemplate className="size-8 text-muted-foreground/30 mb-1" />
+                      <p className="text-xs font-semibold text-foreground">Página vazia</p>
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <Button onClick={() => handleApplyTemplate("template_gastronomy")} size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs">
+                          Carregar Modelo Base
+                        </Button>
+                        <Button onClick={() => handleAddBlockAt("site_header", 0)} size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs">
+                          Adicionar Header
+                        </Button>
+                        <Button onClick={() => handleAddBlockAt("hero_minimal_split", 0)} size="sm" className="h-11 min-h-11 rounded-lg text-xs">
+                          Adicionar Hero
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    document.blocks.map((block, index) => {
+                      if (isPreviewMode && (block.isHidden || !isBlockWithinSchedule(block))) {
+                        return null;
+                      }
+                      const def = getSiteBlockById(block.type);
+                      const Component = def.component;
+                      const isSelected = selectedBlockId === block.id && !isPreviewMode;
+                      const visibilityClass = getBlockDeviceVisibilityClass(block, viewport);
+                      const isDropTarget = dragOverBlockIndex === index && draggedBlockIndex !== index;
+                      const boundData = resolveBlockBoundData(block, {
+                        products,
+                        categories,
+                        collections,
+                        classifieds,
+                        posts,
+                        flyers,
+                        events,
+                        jobs,
+                        stores,
+                        banners,
+                        hotpages,
+                        newsArticles: liveNewsArticles,
+                        cmsCollections: liveCmsCollections,
+                        navigationMenus: liveNavigationMenus,
+                      });
+
+                      return (
+                        <React.Fragment key={block.id}>
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            draggable={!isPreviewMode}
+                            onDragStart={(e) => {
+                              if (isPreviewMode) return;
+                              setDraggedBlockIndex(index);
+                              e.dataTransfer.effectAllowed = "move";
+                              e.dataTransfer.setData("text/plain", String(index));
+                            }}
+                            onDragOver={(e) => {
+                              if (isPreviewMode) return;
+                              e.preventDefault();
+                              e.dataTransfer.dropEffect = "move";
+                              if (dragOverBlockIndex !== index) setDragOverBlockIndex(index);
+                            }}
+                            onDragLeave={() => {
+                              if (dragOverBlockIndex === index) setDragOverBlockIndex(null);
+                            }}
+                            onDrop={(e) => {
+                              if (isPreviewMode) return;
+                              e.preventDefault();
+                              const raw = e.dataTransfer.getData("text/plain");
+                              const from = draggedBlockIndex ?? Number(raw);
+                              setDraggedBlockIndex(null);
+                              setDragOverBlockIndex(null);
+                              if (!Number.isNaN(from)) {
+                                handleReorderDrop(from, index);
+                              }
+                            }}
+                            onDragEnd={() => {
+                              setDraggedBlockIndex(null);
+                              setDragOverBlockIndex(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                if (!isPreviewMode) setSelectedBlockId(block.id);
+                              }
+                            }}
+                            onClick={() => !isPreviewMode && setSelectedBlockId(block.id)}
+                            className={`relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                              isSelected
+                                ? "ring-2 ring-foreground ring-offset-2 ring-offset-background z-20"
+                                : ""
+                            } ${block.isHidden ? "opacity-60 border-dashed border border-muted-foreground/40" : ""} ${
+                              isDropTarget ? "ring-2 ring-primary/60" : ""
+                            } ${visibilityClass}`}
+                          >
+                            {/* Barra Flutuante de Ações no Bloco (Desktop Hover) */}
+                            {!isPreviewMode && (
+                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg p-1 flex items-center gap-1 z-30">
+                                <span
+                                  className="px-2 text-muted-foreground cursor-grab active:cursor-grabbing flex items-center gap-1"
+                                  title="Arraste para reordenar"
+                                >
+                                  <GripVertical className="size-3.5" />
+                                  <span className="text-xs font-mono">{def.name}</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleBlockHidden(block.id);
+                                  }}
+                                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  title={block.isHidden ? "Exibir bloco" : "Ocultar bloco"}
+                                >
+                                  {block.isHidden ? <EyeOff className="size-3.5 text-warning-strong" /> : <Eye className="size-3.5" />}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedBlockId(block.id);
+                                    setActiveCmsCollectionSlug(
+                                      (block.config as any)?.collectionSlug ??
+                                        (block.config as any)?.cmsCollectionSlug ??
+                                        block.dataBinding?.cmsCollectionSlug ??
+                                        null,
+                                    );
+                                    setIsCmsTableModalOpen(true);
+                                  }}
+                                  className="h-11 min-h-11 px-3 rounded-lg bg-muted hover:bg-accent text-foreground border border-border text-2xs font-bold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  title="Editar itens desta seção em Planilha (Modo Sheet)"
+                                >
+                                  <Database className="size-3.5 text-primary" />
+                                  <span>Planilha</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={index === 0}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMove(index, "up");
+                                  }}
+                                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  title="Subir"
+                                >
+                                  <ChevronUp className="size-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={index === document.blocks.length - 1}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMove(index, "down");
+                                  }}
+                                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  title="Descer"
+                                >
+                                  <ChevronDown className="size-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDuplicate(block.id);
+                                  }}
+                                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  title="Duplicar"
+                                >
+                                  <Copy className="size-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemove(block.id);
+                                  }}
+                                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  title="Excluir"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </button>
+                              </div>
+                            )}
+
+                            <BlockErrorBoundary
+                              blockId={block.id}
+                              blockType={block.type}
+                              onRemoveBlock={handleRemove}
+                            >
+                              <Component
+                                id={block.id}
+                                data={block.config}
+                                styling={block.styling}
+                                isEditing={!isPreviewMode}
+                                products={boundData.products}
+                                categories={boundData.categories}
+                                collections={boundData.collections}
+                                classifieds={boundData.classifieds}
+                                posts={boundData.posts}
+                                flyers={boundData.flyers}
+                                events={boundData.events}
+                                jobs={boundData.jobs}
+                                stores={boundData.stores}
+                                banners={boundData.banners}
+                                hotpages={boundData.hotpages}
+                                storeData={storeData}
+                                newsArticles={boundData.newsArticles}
+                                navigationMenus={liveNavigationMenus}
+                                cmsCollections={liveCmsCollections}
+                                cmsItems={boundData.cmsItems}
+                                activeCmsCollection={boundData.activeCmsCollection}
+                                activeSubstate={block.activeSubstate}
+                                onUpdateInlineText={(fieldPath, newValue) => {
+                                  handleInlineTextUpdate(block.id, fieldPath, newValue);
+                                }}
+                              />
+                            </BlockErrorBoundary>
+                          </div>
+
+                          {/* Inserir seção entre blocos */}
+                          {!isPreviewMode && (
+                            <div className="relative py-1 px-4 flex flex-col items-center">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setInsertMenuAtIndex(
+                                    insertMenuAtIndex === index + 1 ? null : index + 1,
+                                  )
+                                }
+                                className="h-11 min-h-11 px-3 rounded-full border border-dashed border-border/80 bg-card/80 hover:bg-primary/10 hover:border-primary/50 text-xs font-semibold text-muted-foreground hover:text-primary flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              >
+                                <Plus className="size-3.5" />
+                                <span>Inserir Seção</span>
+                              </button>
+                              {insertMenuAtIndex === index + 1 && (
+                                <div className="mt-2 p-2 rounded-xl border border-border bg-card flex flex-wrap items-center justify-center gap-2 z-20">
+                                  {[
+                                    { id: "hero_minimal_split", label: "Hero" },
+                                    { id: "cms_collection_grid", label: "Grid CMS" },
+                                    { id: "mosaic_gallery", label: "Galeria" },
+                                    { id: "bento_asymmetric_grid", label: "Bento" },
+                                    { id: "vitrine_product_cards_shelf", label: "Ofertas" },
+                                    { id: "site_header", label: "Header" },
+                                    { id: "site_footer", label: "Rodapé" },
+                                  ].map((preset) => (
+                                    <Button
+                                      key={preset.id}
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleAddBlockAt(preset.id, index + 1)}
+                                      className="h-11 min-h-11 px-3 text-xs font-semibold"
+                                    >
+                                      + {preset.label}
+                                    </Button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </React.Fragment>
+                      );
+                    })
+                  )}
                 </div>
-                {appNavConfig.barPosition === "top" && (
-                  <div className="flex items-center justify-around gap-1 pt-1 border-t border-border/60">
+
+                {/* Barra Rápida de Rodapé Global ausente */}
+                {!isPreviewMode &&
+                  document.blocks.length > 0 &&
+                  !document.blocks.some(
+                    (b) => b.type === "site_footer" || b.type === "news_promethee_footer",
+                  ) && (
+                    <div className="px-4 py-3 border-t border-dashed border-border/70 bg-muted/20 flex items-center justify-between gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        Rodapé global conectado aos menus ainda não adicionado.
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddBlockAt("site_footer", document.blocks.length)}
+                        className="h-11 min-h-11 text-xs font-semibold gap-2"
+                      >
+                        <Plus className="size-3.5" />
+                        <span>Adicionar Rodapé Global</span>
+                      </Button>
+                    </div>
+                  )}
+
+                {/* Bottom Tab Bar do App Nativo (quando viewport === "native_app" e barPosition === "bottom") */}
+                {viewport === "native_app" && appNavConfig.barPosition === "bottom" && (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setIsMenuManagerOpen(true);
+                      }
+                    }}
+                    onClick={() => setIsMenuManagerOpen(true)}
+                    title="Clique para editar as 5 Abas da Barra Inferior Mobile"
+                    className="bg-card border-t border-border px-3 py-2 flex items-center justify-around gap-1 shrink-0 cursor-pointer hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
                     {appNavConfig.tabs.map((tab, idx) => (
                       <div
                         key={tab}
@@ -3798,197 +4389,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   </div>
                 )}
               </div>
-            )}
-
-            <div className="flex-1">
-              {document.blocks.length === 0 ? (
-                <div className="py-24 text-center p-8 flex flex-col items-center">
-                  <LayoutTemplate className="size-8 text-muted-foreground/30 mb-3" />
-                  <p className="text-xs font-semibold text-foreground mb-4">Página vazia</p>
-                  <Button onClick={() => handleApplyTemplate("template_gastronomy")} size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs">
-                    Carregar Modelo Base
-                  </Button>
-                </div>
-              ) : (
-                document.blocks.map((block, index) => {
-                  if (isPreviewMode && (block.isHidden || !isBlockWithinSchedule(block))) {
-                    return null;
-                  }
-                  const def = getSiteBlockById(block.type);
-                  const Component = def.component;
-                  const isSelected = selectedBlockId === block.id && !isPreviewMode;
-                  const visibilityClass = getBlockDeviceVisibilityClass(block);
-                  const boundData = resolveBlockBoundData(block, {
-                    products,
-                    categories,
-                    collections,
-                    classifieds,
-                    posts,
-                    flyers,
-                    events,
-                    jobs,
-                    stores,
-                    banners,
-                    hotpages,
-                    newsArticles: liveNewsArticles,
-                  });
-
-                  return (
-                    <div
-                      key={block.id}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          if (!isPreviewMode) setSelectedBlockId(block.id);
-                        }
-                      }}
-                      onClick={() => !isPreviewMode && setSelectedBlockId(block.id)}
-                      className={`relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                        isSelected
-                          ? "ring-2 ring-foreground ring-offset-2 ring-offset-background z-20"
-                          : ""
-                      } ${block.isHidden ? "opacity-60 border-dashed border border-muted-foreground/40" : ""} ${visibilityClass}`}
-                    >
-                      {/* Barra Flutuante de Ações no Bloco (Desktop Hover) */}
-                      {!isPreviewMode && (
-                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 backdrop-blur-md border border-border/80 rounded-lg p-1 shadow-xs flex items-center gap-1 z-30">
-                          <span className="text-xs text-muted-foreground/75 font-mono text-muted-foreground px-2">
-                            {def.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleBlockHidden(block.id);
-                            }}
-                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            title={block.isHidden ? "Exibir bloco" : "Ocultar bloco"}
-                          >
-                            {block.isHidden ? <EyeOff className="size-3.5 text-warning" /> : <Eye className="size-3.5" />}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedBlockId(block.id);
-                              setIsCmsTableModalOpen(true);
-                            }}
-                            className="h-11 min-h-11 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-2xs font-bold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            title="Editar itens desta seção em Planilha (Modo Sheet)"
-                          >
-                            <Database className="size-3.5" />
-                            <span>Planilha</span>
-                          </button>
-                          <button
-                            disabled={index === 0}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMove(index, "up");
-                            }}
-                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            title="Subir"
-                          >
-                            <ChevronUp className="size-3.5" />
-                          </button>
-                          <button
-                            disabled={index === document.blocks.length - 1}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMove(index, "down");
-                            }}
-                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            title="Descer"
-                          >
-                            <ChevronDown className="size-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDuplicate(block.id);
-                            }}
-                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            title="Duplicar"
-                          >
-                            <Copy className="size-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemove(block.id);
-                            }}
-                            className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            title="Excluir"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        </div>
-                      )}
-
-                      <BlockErrorBoundary
-                        blockId={block.id}
-                        blockType={block.type}
-                        onRemoveBlock={handleRemove}
-                      >
-                        <Component
-                          id={block.id}
-                          data={block.config}
-                          styling={block.styling}
-                          isEditing={!isPreviewMode}
-                          products={boundData.products}
-                          categories={boundData.categories}
-                          collections={boundData.collections}
-                          classifieds={boundData.classifieds}
-                          posts={boundData.posts}
-                          flyers={boundData.flyers}
-                          events={boundData.events}
-                          jobs={boundData.jobs}
-                          stores={boundData.stores}
-                          banners={boundData.banners}
-                          hotpages={boundData.hotpages}
-                          storeData={storeData}
-                          newsArticles={boundData.newsArticles}
-                          activeSubstate={block.activeSubstate}
-                          onUpdateInlineText={(fieldPath, newValue) => {
-                            handleInlineTextUpdate(block.id, fieldPath, newValue);
-                          }}
-                        />
-                      </BlockErrorBoundary>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            {/* Bottom Tab Bar do App Nativo (quando viewport === "native_app" e barPosition === "bottom") */}
-            {viewport === "native_app" && appNavConfig.barPosition === "bottom" && (
-              <div
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setIsMenuManagerOpen(true);
-                  }
-                }}
-                onClick={() => setIsMenuManagerOpen(true)}
-                title="Clique para editar as 5 Abas da Barra Inferior Mobile"
-                className="bg-card border-t border-border px-3 py-2 flex items-center justify-around gap-1 shrink-0 cursor-pointer hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {appNavConfig.tabs.map((tab, idx) => (
-                  <div
-                    key={tab}
-                    className={`py-1 px-2 rounded text-center text-xs font-semibold ${
-                      idx === 0 ? "bg-primary/15 text-primary font-bold" : "text-muted-foreground"
-                    }`}
-                  >
-                    {appNavConfig.showLabelsUnderIcons ? tab : "•"}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            </BuilderViewportFrame>
           </BuilderViewportProvider>
         </main>
 
@@ -4043,6 +4444,8 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
             products={products}
             categories={categories}
             collections={collections}
+            cmsCollections={liveCmsCollections}
+            navigationMenus={liveNavigationMenus}
             stores={stores}
           />
         )}
@@ -4051,7 +4454,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       {/* ── 2. EXPERIÊNCIA MOBILE (CANVAS CONSOME A TELA TODA + BARRA INFERIOR FLUTUANTE) ── */}
       <BuilderViewportProvider viewport="mobile" isEditorCanvas={true}>
       <div
-        style={getDocumentThemeCanvasStyle(document.theme, { forceIsolate: true })}
+        style={getDocumentThemeCanvasStyle(document.theme, {
+          forceIsolate: true,
+          settings: { ...(document.settings || {}), buttonStyler },
+        })}
         className="flex md:hidden flex-1 flex-col overflow-y-auto relative pb-28 bg-background text-foreground"
       >
         {document.blocks.length === 0 ? (
@@ -4076,7 +4482,7 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
               const def = getSiteBlockById(block.type);
               const Component = def.component;
               const isSelected = selectedBlockId === block.id && !isPreviewMode;
-              const visibilityClass = getBlockDeviceVisibilityClass(block);
+              const visibilityClass = getBlockDeviceVisibilityClass(block, "mobile");
               const boundData = resolveBlockBoundData(block, {
                 products,
                 categories,
@@ -4090,6 +4496,8 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 banners,
                 hotpages,
                 newsArticles: liveNewsArticles,
+                cmsCollections: liveCmsCollections,
+                navigationMenus: liveNavigationMenus,
               });
 
               return (
@@ -4106,9 +4514,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 >
                   {/* Tag do Bloco Ativo no Mobile */}
                   {isSelected && (
-                    <div className="absolute top-2 left-2 z-30 bg-background/95 backdrop-blur-md border border-border/80 rounded-lg px-2 py-1 shadow-xs flex items-center gap-2">
-                      <span className="size-1.5 rounded-full bg-primary animate-pulse motion-reduce:animate-none" />
-                      <span className="text-xs text-muted-foreground/75 font-bold text-foreground">{def.name}</span>
+                    <div className="absolute top-2 left-2 z-30 bg-background border border-border rounded-lg px-2 py-1 flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-primary" />
+                      <span className="text-xs font-semibold text-foreground">{def.name}</span>
                     </div>
                   )}
 
@@ -4135,6 +4543,10 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                       hotpages={boundData.hotpages}
                       storeData={storeData}
                       newsArticles={boundData.newsArticles}
+                      navigationMenus={liveNavigationMenus}
+                      cmsCollections={liveCmsCollections}
+                      cmsItems={boundData.cmsItems}
+                      activeCmsCollection={boundData.activeCmsCollection}
                       activeSubstate={block.activeSubstate}
                       onUpdateInlineText={(fieldPath, newValue) => {
                         handleInlineTextUpdate(block.id, fieldPath, newValue);
@@ -4149,13 +4561,13 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
 
         {/* Barra Inferior Flutuante (Floating Bottom Bar - 44px Touch Targets) */}
         {!isPreviewMode && (
-          <div className="fixed bottom-3 left-3 right-3 z-40 bg-card/95 backdrop-blur-xl border border-border/80 rounded-lg shadow-overlay p-2 flex items-center justify-around">
+          <div className="fixed bottom-3 left-3 right-3 z-30 bg-card border border-border rounded-lg shadow-overlay p-2 flex items-center justify-around">
             <button
               onClick={() => setIsMobileAddOpen(true)}
-              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 flex-1 flex flex-col items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="size-4" />
-              <span className="text-xs text-muted-foreground/75 font-semibold mt-1">Blocos</span>
+              <span className="text-xs text-muted-foreground font-semibold mt-1">Blocos</span>
             </button>
 
             <button
@@ -4291,6 +4703,8 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                 products={products}
                 categories={categories}
                 collections={collections}
+                cmsCollections={liveCmsCollections}
+                navigationMenus={liveNavigationMenus}
                 stores={stores}
                 contentSlot={
                   <BlockContentFields
@@ -4560,12 +4974,23 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       <WixMenuManagerDrawer
         isOpen={isMenuManagerOpen}
         onClose={() => setIsMenuManagerOpen(false)}
+        onMenusUpdated={(menus) => setLiveNavigationMenus(menus)}
         onApplyMenuToBlock={(items, menuType) => {
           if (menuType === "bottom_nav") {
-            setAppNavConfig((prev) => ({
-              ...prev,
-              tabs: items.map((it) => it.label || "Aba"),
-            }));
+            setAppNavConfig((prev) => {
+              const updatedNav = {
+                ...prev,
+                tabs: items.map((it) => it.label || "Aba"),
+              };
+              commitDocumentMutation((curr) => ({
+                ...curr,
+                settings: {
+                  ...(curr.settings || {}),
+                  appNavConfig: updatedNav,
+                },
+              }));
+              return updatedNav;
+            });
           }
           if (menuType === "explore_menu") {
             const updatedBlocks = document.blocks.map((blk) => {
@@ -4614,9 +5039,24 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
       {isCmsTableModalOpen && (
         <WixCmsCollectionManagerModal
           isOpen={isCmsTableModalOpen}
-          onClose={() => setIsCmsTableModalOpen(false)}
+          onClose={() => {
+            setIsCmsTableModalOpen(false);
+            setActiveCmsCollectionSlug(null);
+          }}
+          storeId={document.store_id}
           productsCount={products.length}
-          onInsertCollectionBlock={(blockType) => handleAddBlock(blockType)}
+          initialCmsCollections={liveCmsCollections}
+          nativeCounts={liveCmsNativeCounts}
+          initialCollectionSlug={activeCmsCollectionSlug}
+          onCollectionsChanged={(cols) => setLiveCmsCollections(cols)}
+          onInsertCollectionBlock={(blockType, collectionSlug) =>
+            handleInsertDynamicCmsBlock(
+              blockType,
+              "cms_collection",
+              undefined,
+              collectionSlug,
+            )
+          }
           selectedBlock={selectedBlock}
           allBlocks={document.blocks}
           onSelectBlock={(id) => setSelectedBlockId(id)}

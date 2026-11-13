@@ -230,7 +230,7 @@ export function JobDetailMobile({
       </div>
 
       {/* ── 9. Sticky Bottom Action Bar (Thumb Zone & Safe-Area) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-overlay">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border p-3 pb-4 pb-safe mobile-nav-hide-on-keyboard flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
             Salário Previsto

@@ -10,7 +10,6 @@ import {
   Lightbulb,
   Loader2,
   Layers,
-  Sparkles,
   MapPin,
   Clock,
   Zap,
@@ -587,7 +586,7 @@ export function ClassifiedAnalyticsSheet({
                       {rec.type === "warning" ? (
                         <AlertCircle className="size-3.5 text-warning-strong shrink-0" />
                       ) : (
-                        <Sparkles className="size-3.5 text-primary shrink-0" />
+                        <Lightbulb className="size-3.5 text-primary shrink-0" />
                       )}
                       <span>{rec.title}</span>
                     </span>

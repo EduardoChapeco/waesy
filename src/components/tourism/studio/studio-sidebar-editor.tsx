@@ -22,7 +22,8 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Sparkles, Users, LayoutTemplate, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette } from "lucide-react";
+import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Users, LayoutTemplate, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette } from "lucide-react";
+import { formatDynamicFieldLabel, normalizeCustomFieldMap } from "@/lib/niches/unified-field-bridge";
 
 const TEMPLATE_CATALOG = [
   { id: "editorial-flat", label: "Clean Apple", desc: "Design minimalista, foco em tipografia e fotos amplas", icon: LayoutTemplate },
@@ -107,6 +108,33 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  const cents = proposal.pricing?.total_price_cents || 0;
  return cents > 0 ? (cents / 100).toFixed(2) : "";
  });
+ const [newCustomFieldKey, setNewCustomFieldKey] = useState<string>("");
+ const [newCustomFieldVal, setNewCustomFieldVal] = useState<string>("");
+
+  const studioCustomFields = normalizeCustomFieldMap({
+    ...(proposal.custom_fields && typeof proposal.custom_fields === "object" ? proposal.custom_fields : {}),
+    ...((proposal.pricing as any)?.custom_fields && typeof (proposal.pricing as any).custom_fields === "object"
+      ? (proposal.pricing as any).custom_fields
+      : {}),
+  } as Record<string, unknown>);
+
+  const updateStudioCustomField = (key: string, value: string | null) => {
+    const cleanKey = key.trim();
+    if (!cleanKey) return;
+    const next = { ...studioCustomFields };
+    if (!value || !value.trim()) {
+      delete next[cleanKey];
+    } else {
+      next[cleanKey] = value.trim();
+    }
+    onChange({
+      custom_fields: next,
+      pricing: {
+        ...proposal.pricing,
+        custom_fields: next,
+      } as any,
+    });
+  };
 
  const handlePriceChange = (valStr: string) => {
  setPriceInputReais(valStr);
@@ -1237,13 +1265,13 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  
         {/* ── ABA 3.5: RODOVIÁRIO & TRANSPORTE TERRESTRE ── */}
         <TabsContent value="rodoviario" className="space-y-4">
-          <div className="p-3.5 rounded-lg border border-border/60 bg-card space-y-3">
+          <div className="p-4 rounded-lg border border-border bg-card space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Bus className="size-4 text-primary" />
-                <span>Transporte Rodoviário & Ônibus de Grupo</span>
+                <span>Transporte Rodoviário e Ônibus</span>
               </span>
-              <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-muted border border-border text-primary">
                 Multimodal
               </span>
             </div>
@@ -1618,7 +1646,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      onClick={handleSuggestIncludesExcludes}
      className="w-full h-11 rounded-lg text-xs font-bold gap-2 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer"
    >
-     <Sparkles className="size-3.5" />
+     <Zap className="size-3.5" />
      <span>Sincronizar Inclusões e Exclusões com o Pacote</span>
    </Button>
 
@@ -1974,6 +2002,108 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  ))}
  </div>
  )}
+ </div>
+
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">
+ <div className="flex items-center justify-between gap-2">
+ <span className="text-xs font-bold text-foreground flex items-center gap-2">
+ <Info className="size-3.5 text-primary" />
+ <span>Campos Extras & Regras CMS</span>
+ </span>
+ </div>
+
+ <div className="space-y-2">
+ <div className="space-y-1">
+ <Label className="text-xs text-muted-foreground">Regras de Embarque / Documentos</Label>
+ <Textarea
+ rows={2}
+ value={String(studioCustomFields.boarding_requirements || "")}
+ onChange={(e) => updateStudioCustomField("boarding_requirements", e.target.value)}
+ placeholder="Ex: Check-in 2h antes com RG ou CNH original."
+ className="text-xs rounded-lg resize-none"
+ />
+ </div>
+ <div className="space-y-1">
+ <Label className="text-xs text-muted-foreground">Política de Cancelamento / Remarcação</Label>
+ <Textarea
+ rows={2}
+ value={String(studioCustomFields.cancellation_policy || "")}
+ onChange={(e) => updateStudioCustomField("cancellation_policy", e.target.value)}
+ placeholder="Ex: Reembolso integral até 7 dias antes do embarque."
+ className="text-xs rounded-lg resize-none"
+ />
+ </div>
+ </div>
+
+ {Object.entries(studioCustomFields).filter(
+ ([k]) => k !== "boarding_requirements" && k !== "cancellation_policy",
+ ).length > 0 && (
+ <div className="space-y-2 pt-2 border-t border-border/40">
+ {Object.entries(studioCustomFields)
+ .filter(([k]) => k !== "boarding_requirements" && k !== "cancellation_policy")
+ .map(([fieldKey, fieldValue]) => (
+ <div key={fieldKey} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+ <span
+ className="col-span-5 text-2xs font-medium text-muted-foreground truncate"
+ title={fieldKey}
+ >
+ {formatDynamicFieldLabel(fieldKey)}
+ </span>
+ <Input
+ value={String(fieldValue ?? "")}
+ onChange={(e) => updateStudioCustomField(fieldKey, e.target.value)}
+ className="col-span-5 h-11 sm:h-9 text-xs rounded-lg"
+ />
+ <Button
+ type="button"
+ variant="ghost"
+ size="icon"
+ aria-label={`Remover campo ${formatDynamicFieldLabel(fieldKey)}`}
+ onClick={() => updateStudioCustomField(fieldKey, null)}
+ className="col-span-2 h-11 w-11 sm:h-9 sm:w-9 text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <X className="size-3.5" />
+ </Button>
+ </div>
+ ))}
+ </div>
+ )}
+
+ <div className="space-y-2 pt-2 border-t border-border/40">
+ <Label className="text-xs text-muted-foreground">Adicionar Campo Personalizado</Label>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+ <Input
+ value={newCustomFieldKey}
+ onChange={(e) => setNewCustomFieldKey(e.target.value)}
+ placeholder="Chave (ex: ponto_embarque)"
+ className="h-11 sm:h-9 text-xs rounded-lg"
+ />
+ <Input
+ value={newCustomFieldVal}
+ onChange={(e) => setNewCustomFieldVal(e.target.value)}
+ placeholder="Valor preenchido"
+ className="h-11 sm:h-9 text-xs rounded-lg"
+ />
+ </div>
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ onClick={() => {
+ if (!newCustomFieldKey.trim() || !newCustomFieldVal.trim()) {
+ toast.error("Informe chave e valor para adicionar o campo.");
+ return;
+ }
+ updateStudioCustomField(newCustomFieldKey.trim(), newCustomFieldVal.trim());
+ setNewCustomFieldKey("");
+ setNewCustomFieldVal("");
+ }}
+ className="w-full h-11 sm:h-9 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Plus className="size-3.5 mr-2" />
+ Adicionar Campo
+ </Button>
+ </div>
  </div>
  </TabsContent>
  </Tabs>

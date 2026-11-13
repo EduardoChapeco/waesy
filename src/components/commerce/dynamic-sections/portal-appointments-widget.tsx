@@ -57,7 +57,7 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  </h2>
  </div>
  <p className="text-sm text-muted-foreground mt-1">
- {content?.subtitle || "Acompanhe seus horários marcados, viagens e ordens de serviço em andamento."}
+ {content?.subtitle || "Horários e atendimentos confirmados."}
  </p>
  </div>
  </div>
@@ -66,18 +66,18 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  {appointments.map((apt) => (
  <div
  key={apt.id}
- className="p-5 rounded-lg border border-border bg-card  flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-primary/40 transition-colors duration-200"
+ className="p-5 rounded-lg border border-border bg-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors"
  >
  <div className="space-y-2 flex-1">
  <div className="flex items-center gap-3 flex-wrap">
  <span className="font-semibold text-base text-foreground">{apt.service_name}</span>
  {apt.status === "confirmed" && (
- <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs flex items-center gap-1">
+ <Badge variant="outline" className="bg-muted text-foreground border-border text-xs flex items-center gap-1">
  <CheckCircle2 className="w-3 h-3" /> Confirmado
  </Badge>
  )}
  {apt.status === "in_progress" && (
- <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 text-xs flex items-center gap-1">
+ <Badge variant="outline" className="bg-secondary text-secondary-foreground border-border text-xs flex items-center gap-1">
  <Clock className="w-3 h-3" /> Em Andamento
  </Badge>
  )}

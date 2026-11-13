@@ -1082,20 +1082,25 @@ export const getPublicHotelBySlug = createServerFn({ method: "GET" })
     const hotelNamePattern = "%" + hotel.name.split(" ")[0] + "%";
     const { data: pkgs } = await db
       .from("products")
-      .select("id, title, slug, price_cents, images, metadata, store_id, stores(name, logo_url, slug)")
+      .select("id, title, slug, price_cents, attributes, product_media(url, sort_order), store_id, stores(name, logo_url, slug)")
       .or("title.ilike." + hotelNamePattern + ",description.ilike." + hotelNamePattern)
       .limit(6);
 
     if (pkgs) {
-      relatedPackages = pkgs.map((p) => ({
-        id: p.id,
-        title: p.title,
-        slug: p.slug,
-        price_cents: p.price_cents,
-        cover_image: p.images?.[0] || hotel.cover_photo_url || null,
-        agency_name: (p.stores as any)?.name || "Agência Parceira",
-        agency_slug: (p.stores as any)?.slug || "",
-      }));
+      relatedPackages = pkgs.map((p: any) => {
+        const sortedMedia = Array.isArray(p.product_media)
+          ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          : [];
+        return {
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          price_cents: p.price_cents,
+          cover_image: sortedMedia[0]?.url || hotel.cover_photo_url || null,
+          agency_name: (p.stores as any)?.name || "Agência Parceira",
+          agency_slug: (p.stores as any)?.slug || "",
+        };
+      });
     }
 
     return {

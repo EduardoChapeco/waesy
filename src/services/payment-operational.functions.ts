@@ -153,14 +153,15 @@ export const listUserPaymentHistory = createServerFn({ method: "GET" }).handler(
     try {
       const { data: orders } = await db
         .from("orders")
-        .select("id, public_token, status, total_cents, created_at, paid_at, payment_method, store:stores(name)")
+        .select("id, public_token, status, total_cents, created_at, paid_at, payments(method), store:stores(name)")
         .eq("customer_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50);
 
       if (orders) {
-        for (const ord of orders) {
-          const storeName = (ord.store as any)?.name || "Loja Parceira";
+        for (const ord of orders as any[]) {
+          const storeName = ord.store?.name || "Loja Parceira";
+          const firstPay = Array.isArray(ord.payments) ? ord.payments[0] : ord.payments;
           const { normalized, label } = mapStatusToLabel(ord.status);
           items.push({
             id: ord.id,
@@ -171,7 +172,7 @@ export const listUserPaymentHistory = createServerFn({ method: "GET" }).handler(
             amount_cents: ord.total_cents,
             status: normalized,
             status_label: label,
-            payment_method: ord.payment_method || "pix",
+            payment_method: firstPay?.method || "pix",
             created_at: ord.created_at,
             paid_at: ord.paid_at,
             counterparty_name: storeName,

@@ -196,22 +196,37 @@ export async function readMcpResource(uri: string, storeId?: string): Promise<{ 
     if (uri.includes("/catalog")) {
       const { data } = await supabase
         .from("products")
-        .select("id, title, slug, price_cents, stock_quantity")
+        .select("id, title, slug, price_cents, product_variants(stock_on_hand, allow_backorder)")
         .eq("store_id", storeId)
-        .eq("status", "published")
+        .in("status", ["published", "active"])
         .limit(100);
+
+      const normalized = (data || []).map((p: any) => {
+        const variants = Array.isArray(p.product_variants) ? p.product_variants : [];
+        const stockQuantity = variants.reduce(
+          (sum: number, v: any) => sum + (v.allow_backorder ? 99 : Math.max(0, Number(v.stock_on_hand || 0))),
+          0,
+        );
+        return {
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          price_cents: p.price_cents,
+          stock_quantity: stockQuantity,
+        };
+      });
 
       return {
         uri,
         mimeType: "application/json",
-        content: { storeId, products: data || [] },
+        content: { storeId, products: normalized },
       };
     }
 
     if (uri.includes("/financial-summary")) {
       const { data: openRegister } = await supabase
         .from("cash_registers")
-        .select("status, current_cash_cents, opened_at")
+        .select("status, initial_balance_cents, expected_closing_balance_cents, opened_at")
         .eq("store_id", storeId)
         .eq("status", "open")
         .maybeSingle();
@@ -219,7 +234,15 @@ export async function readMcpResource(uri: string, storeId?: string): Promise<{ 
       return {
         uri,
         mimeType: "application/json",
-        content: { storeId, cashRegister: openRegister || null },
+        content: {
+          storeId,
+          cashRegister: openRegister
+            ? {
+                ...openRegister,
+                current_cash_cents: openRegister.expected_closing_balance_cents ?? openRegister.initial_balance_cents ?? 0,
+              }
+            : null,
+        },
       };
     }
   }
@@ -382,36 +405,32 @@ export async function executeMcpToolCall(data: McpToolCallRequest): Promise<McpT
     }
 
     try {
-      if (process.env.NODE_ENV === "test") {
-        tenantValidated = true;
-      } else {
-        const identity = await getServerIdentity();
+      const identity = await getServerIdentity();
 
-        if (!identity?.id) {
-          const durationMs = Date.now() - startTime;
-          await logMcpAudit(data.tool, targetStoreId, durationMs, toolEntry.tier, false, "error", "Unauthenticated");
+      if (!identity?.id) {
+        const durationMs = Date.now() - startTime;
+        await logMcpAudit(data.tool, targetStoreId, durationMs, toolEntry.tier, false, "error", "Unauthenticated");
 
-          return {
-            tool: data.tool,
-            status: "error",
-            content: [
-              {
-                type: "text",
-                text: `Acesso negado (401 Unauthorized): Chamada não autenticada para a ferramenta restrita "${data.tool}". Faça login ou forneça token de staff.`,
-              },
-            ],
-            executionMetrics: {
-              durationMs,
-              tier: toolEntry.tier,
-              tenantValidated: false,
+        return {
+          tool: data.tool,
+          status: "error",
+          content: [
+            {
+              type: "text",
+              text: `Acesso negado (401 Unauthorized): Chamada não autenticada para a ferramenta restrita "${data.tool}". Faça login ou forneça token de staff.`,
             },
-          };
-        }
-
-        // Validação estrita de isolamento de tenant
-        assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
-        tenantValidated = true;
+          ],
+          executionMetrics: {
+            durationMs,
+            tier: toolEntry.tier,
+            tenantValidated: false,
+          },
+        };
       }
+
+      // Validação estrita de isolamento de tenant
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
+      tenantValidated = true;
     } catch (authErr: any) {
       const durationMs = Date.now() - startTime;
       await logMcpAudit(data.tool, targetStoreId, durationMs, toolEntry.tier, false, "error", authErr.message);

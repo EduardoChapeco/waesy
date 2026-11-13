@@ -18,7 +18,6 @@ import {
   Search,
   SlidersHorizontal,
   Store,
-  Sparkles,
   ShoppingBag,
   Camera,
   X,
@@ -207,16 +206,16 @@ export function SupermarketCatalogGrid({
 
           <div className="space-y-4 pt-3">
             {/* Visual da Câmera / Mira do Scanner */}
-            <div className="relative aspect-video rounded-2xl bg-zinc-950 border border-zinc-800 flex flex-col items-center justify-center overflow-hidden text-center p-4">
+            <div className="relative aspect-video rounded-2xl bg-neutral-950 border border-neutral-800 flex flex-col items-center justify-center overflow-hidden text-center p-4">
               {/* Linha vermelha de leitura laser */}
-              <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-0.5 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] animate-pulse" />
+              <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-0.5 bg-rose-500 animate-pulse" />
 
               <div className="relative z-10 space-y-2">
-                <Camera className="size-8 text-zinc-400 mx-auto opacity-70" />
-                <span className="text-xs font-semibold text-zinc-200 block">
+                <Camera className="size-8 text-neutral-300 mx-auto" />
+                <span className="text-xs font-semibold text-neutral-100 block">
                   Aponte a câmera para o código de barras EAN-13
                 </span>
-                <span className="text-3xs text-zinc-500">
+                <span className="text-3xs text-neutral-400">
                   Compatível com produtos cadastrados nos supermercados locais
                 </span>
               </div>

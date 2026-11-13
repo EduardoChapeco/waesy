@@ -42,6 +42,49 @@ export interface WhatsAppQrConnectModalProps {
   onInstancesUpdated: (instances?: WhatsAppChannelInstanceDTO[]) => void;
   canManageConnection?: boolean;
   isPlatformMaster?: boolean;
+  targetInstanceId?: string | null;
+  initialMode?: "create" | "manage";
+}
+
+export function getNextFreeChannelKeyAndLabel(instances: WhatsAppChannelInstanceDTO[]) {
+  const existingKeys = new Set(
+    (instances || []).map((i) => String(i.instance_key || "").toLowerCase()),
+  );
+  let num = Math.max(1, (instances || []).length + 1);
+  while (existingKeys.has(`canal_${num}`)) {
+    num += 1;
+  }
+  return {
+    instanceKey: `canal_${num}`,
+    displayName: `WhatsApp Canal ${num}`,
+  };
+}
+
+export function resolveWhatsAppQrModalInitialSelection(params: {
+  instances: WhatsAppChannelInstanceDTO[];
+  targetInstanceId?: string | null;
+  initialMode?: "create" | "manage";
+}) {
+  const { instances, targetInstanceId, initialMode = "manage" } = params;
+  if (initialMode === "create" || (instances?.length ?? 0) === 0) {
+    const next = getNextFreeChannelKeyAndLabel(instances || []);
+    return {
+      isCreatingNew: true,
+      selectedInstanceId: null as string | null,
+      displayName: next.displayName,
+      instanceKey: next.instanceKey,
+    };
+  }
+  const explicitTarget = targetInstanceId
+    ? (instances || []).find((item) => item.id === targetInstanceId)
+    : null;
+  const resolved = explicitTarget || instances?.[0] || null;
+  return {
+    isCreatingNew: false,
+    selectedInstanceId: resolved?.id || null,
+    displayName: resolved?.display_name || "WhatsApp Principal",
+    instanceKey: resolved?.instance_key || "principal",
+  };
 }
 
 export function WhatsAppQrConnectModal({
@@ -51,43 +94,52 @@ export function WhatsAppQrConnectModal({
   onInstancesUpdated,
   canManageConnection = true,
   isPlatformMaster = false,
+  targetInstanceId = null,
+  initialMode = "manage",
 }: WhatsAppQrConnectModalProps) {
+  const initialSelection = resolveWhatsAppQrModalInitialSelection({
+    instances,
+    targetInstanceId,
+    initialMode,
+  });
+  const initialActiveInstance = !initialSelection.isCreatingNew
+    ? (instances || []).find((i) => i.id === initialSelection.selectedInstanceId) || instances[0] || null
+    : null;
+
   const [selectedMode, setSelectedMode] = useState<"qr_baileys" | "meta_official">("qr_baileys");
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(initialSelection.isCreatingNew);
   const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(
-    instances[0]?.id || null,
+    initialSelection.selectedInstanceId,
   );
-  const [displayName, setDisplayName] = useState(
-    instances[0]?.display_name || "WhatsApp Principal",
-  );
-  const [instanceKey, setInstanceKey] = useState(
-    instances[0]?.instance_key || "principal",
-  );
+  const [displayName, setDisplayName] = useState(initialSelection.displayName);
+  const [instanceKey, setInstanceKey] = useState(initialSelection.instanceKey);
   const [department, setDepartment] = useState(
-    String(instances[0]?.public_config?.department || "Atendimento Geral"),
+    String(initialActiveInstance?.public_config?.department || "Atendimento Geral"),
   );
   const [autoImportHistory, setAutoImportHistory] = useState(
-    Boolean((instances[0]?.public_config as any)?.auto_import_history),
+    Boolean((initialActiveInstance?.public_config as any)?.auto_import_history),
   );
   const [isGlobalMaster, setIsGlobalMaster] = useState(
-    Boolean(instances[0]?.public_config?.is_global_master),
+    Boolean(initialActiveInstance?.public_config?.is_global_master),
   );
 
   // Estado do QR Code ao vivo
   const [qrBase64, setQrBase64] = useState<string | null>(
-    (instances[0]?.public_config?.qr_code_url as string) || null,
+    (initialActiveInstance?.public_config?.qr_code_url as string) || null,
   );
   const [pairingCode, setPairingCode] = useState<string | null>(
-    (instances[0]?.public_config?.pairing_code as string) || null,
+    (initialActiveInstance?.public_config?.pairing_code as string) || null,
   );
   const [connectionStatus, setConnectionStatus] = useState<string>(
-    instances[0]?.status || "disconnected",
+    initialActiveInstance?.status || "disconnected",
   );
   const [lastErrorMessage, setLastErrorMessage] = useState<string | null>(
-    instances[0]?.last_error_message || (instances[0]?.public_config?.last_error_message as string) || null,
+    initialActiveInstance?.last_error_message ||
+      (initialActiveInstance?.public_config?.last_error_message as string) ||
+      null,
   );
   const [qrGeneratedAt, setQrGeneratedAt] = useState<string | null>(
-    (instances[0]?.public_config?.last_qr_generated_at as string) || null,
+    (initialActiveInstance?.public_config?.last_qr_generated_at as string) || null,
   );
   const [qrExpired, setQrExpired] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -100,8 +152,39 @@ export function WhatsAppQrConnectModal({
   const [metaAccessToken, setMetaAccessToken] = useState("");
   const [metaVerifyToken, setMetaVerifyToken] = useState("");
 
+  useEffect(() => {
+    if (!open) return;
+    const nextSel = resolveWhatsAppQrModalInitialSelection({
+      instances: instances || [],
+      targetInstanceId,
+      initialMode,
+    });
+    if (nextSel.isCreatingNew) {
+      setIsCreatingNew(true);
+      setSelectedInstanceId(null);
+      setDisplayName(nextSel.displayName);
+      setInstanceKey(nextSel.instanceKey);
+      setDepartment("Atendimento Geral");
+      setQrBase64(null);
+      setPairingCode(null);
+      setQrExpired(false);
+      setLastErrorMessage(null);
+      setConnectionStatus("disconnected");
+      setIsGlobalMaster(false);
+      setAutoImportHistory(false);
+      return;
+    }
+    if (nextSel.selectedInstanceId) {
+      setIsCreatingNew(false);
+      setSelectedInstanceId(nextSel.selectedInstanceId);
+    }
+  }, [open, targetInstanceId, initialMode, instances]);
+
   const activeInstance = !isCreatingNew
-    ? ((instances || []).find((item) => item.id === selectedInstanceId) || instances?.[0] || null)
+    ? ((instances || []).find((item) => item.id === selectedInstanceId) ||
+      (targetInstanceId
+        ? (instances || []).find((item) => item.id === targetInstanceId) || null
+        : instances?.[0] || null))
     : null;
 
   useEffect(() => {
@@ -119,7 +202,7 @@ export function WhatsAppQrConnectModal({
       setIsGlobalMaster(Boolean(activeInstance.public_config?.is_global_master));
       setAutoImportHistory(Boolean((activeInstance.public_config as any)?.auto_import_history));
     }
-  }, [activeInstance?.id, isCreatingNew]);
+  }, [activeInstance?.id, activeInstance?.status, activeInstance?.public_config?.qr_code_url, isCreatingNew]);
 
   // Verifica expiração do QR Code (60s sem leitura)
   useEffect(() => {
@@ -184,11 +267,15 @@ export function WhatsAppQrConnectModal({
     setLastErrorMessage(null);
     setQrExpired(false);
     try {
+      const nextFallbackKey = getNextFreeChannelKeyAndLabel(instances || []).instanceKey;
       const result = await connectWhatsAppQrCodeInstance({
         data: {
+          mode: isCreatingNew ? "create" : "reconnect",
           id: isCreatingNew ? undefined : selectedInstanceId || undefined,
           displayName: displayName.trim() || "WhatsApp Principal",
-          instanceKey: instanceKey.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_") || "principal",
+          instanceKey:
+            instanceKey.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_") ||
+            (isCreatingNew ? nextFallbackKey : "principal"),
           department: department.trim() || "Geral",
           isGlobalMaster: isPlatformMaster && isGlobalMaster,
           autoImportHistory,
@@ -276,10 +363,11 @@ export function WhatsAppQrConnectModal({
   };
 
   const handleStartNewNumber = () => {
+    const next = getNextFreeChannelKeyAndLabel(instances || []);
     setIsCreatingNew(true);
     setSelectedInstanceId(null);
-    setDisplayName(`WhatsApp Setor ${(instances?.length || 0) + 1}`);
-    setInstanceKey(`setor_${(instances?.length || 0) + 1}`);
+    setDisplayName(next.displayName);
+    setInstanceKey(next.instanceKey);
     setDepartment("Comercial");
     setQrBase64(null);
     setPairingCode(null);
@@ -348,16 +436,20 @@ export function WhatsAppQrConnectModal({
                 "text-xs px-3 py-1 font-semibold",
                 connectionStatus === "connected"
                   ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                  : connectionStatus === "error"
+                  : connectionStatus === "error" || connectionStatus === "revoked"
                     ? "bg-destructive/15 text-destructive border-destructive/30"
                     : "bg-warning/15 text-warning-strong border-warning/30",
               )}
             >
               {connectionStatus === "connected"
                 ? "Aparelho Conectado"
-                : connectionStatus === "error"
-                  ? "Falha de Conexão"
-                  : "Aguardando Pareamento"}
+                : connectionStatus === "revoked"
+                  ? "Sessão Revogada"
+                  : connectionStatus === "error"
+                    ? "Falha de Conexão"
+                    : connectionStatus === "disconnected"
+                      ? "Desconectado"
+                      : "Aguardando Pareamento"}
             </Badge>
           </div>
         </DialogHeader>

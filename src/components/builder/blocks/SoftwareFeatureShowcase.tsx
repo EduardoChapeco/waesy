@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   Check,
   ArrowRight,
-  Sparkles,
+  Layers,
   Calendar,
   Scissors,
   Truck,
@@ -41,7 +41,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Smartphone,
   Laptop,
   Flame,
-  Sparkles,
+  Sparkles: Layers,
 };
 
 export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = ({
@@ -57,7 +57,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
 
   if (!activeTab) return null;
 
-  const ActiveIcon = (activeTab.tabIconName && ICON_MAP[activeTab.tabIconName]) || Sparkles;
+  const ActiveIcon = (activeTab.tabIconName && ICON_MAP[activeTab.tabIconName]) || Layers;
   const ctaHref = activeTab.ctaHref ? getSafeBuilderHref(activeTab.ctaHref) ?? "#" : "#";
 
   return (
@@ -71,7 +71,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
         <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-14">
           {data.badgeText && (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-4">
-              <Sparkles className="size-3.5 text-primary" />
+              <Layers className="size-3.5 text-primary" />
               <span>{data.badgeText}</span>
             </div>
           )}

@@ -11,9 +11,9 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-lg text-center space-y-4">
-        <h1 className="text-5xl font-bold text-foreground">404 — Página não encontrada</h1>
+        <h1 className="text-5xl font-bold text-foreground">Página não encontrada</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          O endereço solicitado não existe ou foi movido no Waesy Local Marketplace. Consulte nosso mapa do site, documentação técnica para desenvolvedores ou guia para agentes de IA.
+          O endereço solicitado não existe ou foi movido.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Link

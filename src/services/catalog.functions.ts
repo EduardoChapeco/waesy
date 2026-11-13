@@ -1038,7 +1038,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
    const { data: linkedListing } = await db
     .from("directory_listings")
     .select("*")
-    .or(`store_id.eq.${store.id},id.eq.${store.id}${store.slug ? `,slug.eq.${store.slug}` : ""}`)
+    .or(`store_id.eq.${store.id},ghost_store_id.eq.${store.id},id.eq.${store.id}`)
     .limit(1)
     .maybeSingle();
 
@@ -1065,7 +1065,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
    try {
     const { data: byNameListing } = await db
      .from("directory_listings")
-     .select("avatar_url, image_url, logo_url, banner_url, photos, images, metadata")
+     .select("avatar_url, banner_url, photos, metadata")
      .ilike("business_name", store.name)
      .limit(1)
      .maybeSingle();
@@ -1155,14 +1155,19 @@ export const getPublicFaqs = createServerFn({ method: "GET" }).handler(async () 
  // 2. Check if active experience document has a faq_accordion block
  const { data: doc } = await db
  .from("experience_documents")
- .select("nodes")
+ .select("settings")
  .eq("store_id", storeId)
- .eq("status", "published")
+ .eq("is_active", true)
  .limit(1)
  .maybeSingle();
 
- if (doc?.nodes && Array.isArray(doc.nodes)) {
- const faqBlock = doc.nodes.find(
+ const docSettings = (doc?.settings || {}) as Record<string, any>;
+ if (Array.isArray(docSettings.faqs) && docSettings.faqs.length > 0) {
+ return docSettings.faqs;
+ }
+ const docNodes = docSettings.nodes;
+ if (Array.isArray(docNodes)) {
+ const faqBlock = docNodes.find(
  (n: any) => n.blockType === "faq_accordion" && n.props?.faqs?.length > 0,
  );
  if (faqBlock?.props?.faqs) {

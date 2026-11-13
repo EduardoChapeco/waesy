@@ -446,19 +446,33 @@ export const instantTypeaheadSearch = createServerFn({ method: "GET" })
  // Fallback gracioso com queries padrão
  const [storesRes, productsRes] = await Promise.all([
  db.from("stores").select("id, name, slug, settings").ilike("name", `%${q}%`).limit(4),
- db.from("products").select("id, title, slug, price_cents, cover_url, store_id").ilike("title", `%${q}%`).in("status", ["published", "active"]).limit(4),
+ db.from("products").select("id, title, slug, price_cents, store_id, product_media(url, sort_order)").ilike("title", `%${q}%`).in("status", ["published", "active"]).limit(4),
  ]);
+
+ const mappedFallbackProducts = (productsRes.data || []).map((p: any) => {
+ const sortedMedia = Array.isArray(p.product_media)
+ ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+ : [];
+ return {
+ id: p.id,
+ title: p.title,
+ slug: p.slug,
+ price_cents: p.price_cents,
+ cover_url: sortedMedia[0]?.url || null,
+ store_id: p.store_id,
+ };
+ });
 
  return {
  query: q,
- suggestions: (productsRes.data || []).map((p: any) => p.title).slice(0, 3),
+ suggestions: mappedFallbackProducts.map((p: any) => p.title).slice(0, 3),
  stores: (storesRes.data || []).map((s: any) => ({
  id: s.id,
  name: s.name,
  slug: s.slug,
  logo_url: s.settings?.logoUrl || s.settings?.logo_url || null,
  })),
- products: productsRes.data || [],
+ products: mappedFallbackProducts,
  };
  }
 
@@ -475,14 +489,14 @@ export const getSearchDiscoveryData = createServerFn({ method: "GET" }).handler(
     const [productsRes, storesRes, classifiedsRes, categoriesRes] = await Promise.all([
       db
         .from("products")
-        .select("id, title, slug, price_cents, cover_url, store_id, status")
+        .select("id, title, slug, price_cents, store_id, status, product_media(url, sort_order)")
         .in("status", ["published", "active"])
         .order("created_at", { ascending: false })
         .limit(12),
       db
         .from("stores")
-        .select("id, name, slug, settings, category")
-        .eq("status", "active")
+        .select("id, name, slug, settings")
+        .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(8),
       db
@@ -498,13 +512,28 @@ export const getSearchDiscoveryData = createServerFn({ method: "GET" }).handler(
         .limit(10),
     ]);
 
+    const mappedProducts = (productsRes.data || []).map((p: any) => {
+      const sortedMedia = Array.isArray(p.product_media)
+        ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        : [];
+      return {
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        price_cents: p.price_cents,
+        cover_url: sortedMedia[0]?.url || null,
+        store_id: p.store_id,
+        status: p.status,
+      };
+    });
+
     const mappedStores = (storesRes.data || []).map((s: any) => {
       const settings = s.settings || {};
       return {
         id: s.id,
         name: s.name,
         slug: s.slug,
-        category: s.category || "Comércio Local",
+        category: settings.category || settings.segment || "Comércio Local",
         logo_url: settings.logoUrl || settings.logo_url || null,
       };
     });
@@ -529,7 +558,7 @@ export const getSearchDiscoveryData = createServerFn({ method: "GET" }).handler(
 
     return {
       trendingTerms: Array.from(new Set(trendingTerms)).slice(0, 10),
-      products: productsRes.data || [],
+      products: mappedProducts,
       stores: mappedStores,
       classifieds: mappedClassifieds,
     };

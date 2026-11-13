@@ -10,7 +10,6 @@ import {
   Radio,
   Save,
   ShieldCheck,
-  Sparkles,
   X,
 } from "lucide-react";
 import {

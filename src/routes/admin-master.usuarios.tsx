@@ -29,7 +29,6 @@ import {
   Check,
   XCircle,
   AtSign,
-  Sparkles,
   History,
 } from "lucide-react";
 import {
@@ -1343,7 +1342,7 @@ function AdminUsuariosPage() {
             {reclaimSuggestions.length > 0 && (
               <div className="space-y-2 pt-1">
                 <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                  <Sparkles className="size-3 text-primary" />
+                  <AtSign className="size-3 text-primary" />
                   Sugestões atômicas disponíveis para o membro:
                 </span>
                 <div className="flex flex-wrap gap-2">

@@ -1,7 +1,20 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users, UserPlus, ShieldCheck, ShieldAlert, Trash2, Mail, User, CheckCircle2, Lock, ArrowRight, Layers, Info, RefreshCw, Building2, Briefcase, ExternalLink, Wallet, Plus, Edit3 } from 'lucide-react';
-import { listTeamMembers, inviteTeamMember, updateTeamMemberRole, removeTeamMember, listContractors, upsertContractor, deleteContractor } from "@/services/admin-team.functions";
+import { Users, UserPlus, ShieldCheck, ShieldAlert, Trash2, Mail, User, CheckCircle2, Lock, ArrowRight, Layers, Info, RefreshCw, Building2, Briefcase, ExternalLink, Wallet, Plus, Edit3, Phone, Sliders, Smartphone } from 'lucide-react';
+import {
+  listTeamMembers,
+  inviteTeamMember,
+  updateTeamMemberRole,
+  updateTeamMemberProfile,
+  removeTeamMember,
+  listContractors,
+  upsertContractor,
+  deleteContractor,
+} from "@/services/admin-team.functions";
+import {
+  listChatDepartments,
+  listWorkspaceWhatsAppInstances,
+} from "@/services/whatsapp-channel-instances.functions";
 import { listMyStoreJobs, createStoreJob } from "@/services/jobs.functions";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
@@ -12,6 +25,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SheetPage } from "@/components/ui/sheet-page";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Link } from "@tanstack/react-router";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -33,16 +54,32 @@ export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  }),
   loader: async () => {
     try {
-      const [members, jobs, contractors, storeRes] = await Promise.all([
+      const storeRes = await getStoreSettings().catch(() => null);
+      const storeId = (storeRes as any)?.store?.id || (storeRes as any)?.id || "";
+      const [members, jobs, contractors, departments, whatsappInstances] = await Promise.all([
         listTeamMembers().catch(() => []),
         listMyStoreJobs().catch(() => []),
         listContractors().catch(() => []),
-        getStoreSettings().catch(() => null),
+        listChatDepartments({ data: storeId ? { storeId } : undefined }).catch(() => []),
+        listWorkspaceWhatsAppInstances({ data: storeId ? { store_id: storeId } : undefined }).catch(() => []),
       ]);
-      const storeId = (storeRes as any)?.store?.id || (storeRes as any)?.id || "";
-      return { members: members || [], jobs: jobs || [], contractors: contractors || [], storeId };
+      return {
+        members: members || [],
+        jobs: jobs || [],
+        contractors: contractors || [],
+        departments: departments || [],
+        whatsappInstances: whatsappInstances || [],
+        storeId,
+      };
     } catch {
-      return { members: [], jobs: [], contractors: [], storeId: "" };
+      return {
+        members: [],
+        jobs: [],
+        contractors: [],
+        departments: [],
+        whatsappInstances: [],
+        storeId: "",
+      };
     }
   },
  component: WorkspaceTeamPage,
@@ -100,7 +137,14 @@ const ROLE_DEFINITIONS: Record<
 };
 
 export default function WorkspaceTeamPage() {
-  const { members, jobs, contractors, storeId } = ((Route.useLoaderData?.() as any) || {});
+  const {
+    members,
+    jobs,
+    contractors,
+    departments = [],
+    whatsappInstances = [],
+    storeId,
+  } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<"members" | "contractors" | "jobs" | "permissions" | "partner_agreement">("members");
@@ -127,15 +171,48 @@ export default function WorkspaceTeamPage() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
+  const [invitePhone, setInvitePhone] = useState("");
   const [inviteRole, setInviteRole] = useState<
     "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "stock" | "support"
   >("seller");
+  const [inviteDepartmentId, setInviteDepartmentId] = useState<string>("__none__");
+  const [inviteWhatsappInstanceId, setInviteWhatsappInstanceId] = useState<string>("__none__");
+  const [inviteIsAttendanceAgent, setInviteIsAttendanceAgent] = useState<boolean>(true);
+  const [inviteMaxConcurrentChats, setInviteMaxConcurrentChats] = useState<number>(10);
+  const [inviteCanTransferChats, setInviteCanTransferChats] = useState<boolean>(true);
+  const [inviteCanCloseChats, setInviteCanCloseChats] = useState<boolean>(true);
+  const [inviteCanManageWhatsappQr, setInviteCanManageWhatsappQr] = useState<boolean>(false);
+  const [inviteOnlyAssignedOrSector, setInviteOnlyAssignedOrSector] = useState<boolean>(false);
   const [inviteContractType, setInviteContractType] = useState<"clt" | "pj" | "partner_law">("partner_law");
   const [inviteCommissionPercent, setInviteCommissionPercent] = useState<number>(60);
   const [inviteFeeBearer, setInviteFeeBearer] = useState<"store_100" | "pro_100" | "split_50" | "proportional">("proportional");
   const [inviteCanViewContacts, setInviteCanViewContacts] = useState<boolean>(false);
   const [inviteAutoDeductSupplies, setInviteAutoDeductSupplies] = useState<boolean>(true);
   const [isInviting, setIsInviting] = useState(false);
+
+  // Estados de Edição de Vínculos Operacionais & RH
+  const [editingMember, setEditingMember] = useState<any | null>(null);
+  const [isSavingMember, setIsSavingMember] = useState(false);
+  const [editMemberForm, setEditMemberForm] = useState({
+    fullName: "",
+    phone: "",
+    role: "seller" as "admin" | "manager" | "seller" | "cashier" | "finance" | "content" | "stock" | "support",
+    isOwner: false,
+    departmentId: "__none__",
+    whatsappInstanceId: "__none__",
+    isAttendanceAgent: true,
+    attendancePresence: "online" as "online" | "busy" | "away" | "offline",
+    maxConcurrentChats: 10,
+    canTransferChats: true,
+    canCloseChats: true,
+    canManageWhatsappQr: false,
+    onlyAssignedOrSector: false,
+    contractType: "partner_law" as "clt" | "pj" | "partner_law",
+    commissionPercent: 60,
+    feeBearer: "proportional" as "store_100" | "pro_100" | "split_50" | "proportional",
+    canViewUnmaskedContacts: false,
+    autoDeductSupplies: true,
+  });
 
  // Estados do Modal de Criação de Vaga
  const [isJobOpen, setIsJobOpen] = useState(false);
@@ -165,6 +242,70 @@ export default function WorkspaceTeamPage() {
  const [memberToRemove, setMemberToRemove] = useState<any | null>(null);
  const [isRemoving, setIsRemoving] = useState(false);
 
+ const handleOpenEditMember = (member: any) => {
+  setEditingMember(member);
+  setEditMemberForm({
+   fullName: member.full_name || "",
+   phone: member.phone || "",
+   role: (member.role === "owner" ? "admin" : member.role || "seller") as any,
+   isOwner: member.role === "owner",
+   departmentId: member.department_id || "__none__",
+   whatsappInstanceId: member.whatsapp_instance_id || "__none__",
+   isAttendanceAgent: member.is_attendance_agent ?? true,
+   attendancePresence: (member.attendance_presence || "online") as any,
+   maxConcurrentChats: Number(member.max_concurrent_chats) || 10,
+   canTransferChats: member.can_transfer_chats ?? true,
+   canCloseChats: member.can_close_chats ?? true,
+   canManageWhatsappQr: Boolean(member.can_manage_whatsapp_qr),
+   onlyAssignedOrSector: Boolean(member.only_assigned_or_sector),
+   contractType: (member.contract_type || "partner_law") as any,
+   commissionPercent: Number(member.commission_percent ?? 60),
+   feeBearer: (member.fee_bearer || "proportional") as any,
+   canViewUnmaskedContacts: Boolean(member.can_view_unmasked_contacts),
+   autoDeductSupplies: member.auto_deduct_supplies ?? true,
+  });
+ };
+
+ const handleSaveEditMember = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!editingMember) return;
+  setIsSavingMember(true);
+  try {
+   const selectedDept = (departments || []).find((d: any) => d.id === editMemberForm.departmentId);
+   await updateTeamMemberProfile({
+    data: {
+     profileId: editingMember.id,
+     fullName: editMemberForm.fullName.trim() || undefined,
+     phone: editMemberForm.phone.trim() || null,
+     role: editMemberForm.isOwner ? undefined : editMemberForm.role,
+     departmentId: editMemberForm.departmentId !== "__none__" ? editMemberForm.departmentId : null,
+     defaultDepartmentSlug: selectedDept?.slug || null,
+     whatsappInstanceId:
+      editMemberForm.whatsappInstanceId !== "__none__" ? editMemberForm.whatsappInstanceId : null,
+     isAttendanceAgent: editMemberForm.isAttendanceAgent,
+     attendancePresence: editMemberForm.attendancePresence,
+     maxConcurrentChats: Math.max(1, Math.min(200, Number(editMemberForm.maxConcurrentChats) || 10)),
+     canTransferChats: editMemberForm.canTransferChats,
+     canCloseChats: editMemberForm.canCloseChats,
+     canManageWhatsappQr: editMemberForm.canManageWhatsappQr,
+     onlyAssignedOrSector: editMemberForm.onlyAssignedOrSector,
+     contractType: editMemberForm.contractType,
+     commissionPercent: Math.max(0, Math.min(100, Number(editMemberForm.commissionPercent) || 0)),
+     feeBearer: editMemberForm.feeBearer,
+     canViewUnmaskedContacts: editMemberForm.canViewUnmaskedContacts,
+     autoDeductSupplies: editMemberForm.autoDeductSupplies,
+    },
+   });
+   toast.success("Vínculos operacionais e contratuais atualizados.");
+   setEditingMember(null);
+   router.invalidate();
+  } catch (err: any) {
+   toast.error(err?.message || "Erro ao salvar vínculos do colaborador.");
+  } finally {
+   setIsSavingMember(false);
+  }
+ };
+
  const handleInviteSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
  if (!inviteEmail.trim() || !inviteName.trim()) {
@@ -174,11 +315,28 @@ export default function WorkspaceTeamPage() {
 
  setIsInviting(true);
  try {
+ const selectedDept = (departments || []).find((d: any) => d.id === inviteDepartmentId);
  await inviteTeamMember({
  data: {
  email: inviteEmail.trim(),
  fullName: inviteName.trim(),
+ phone: invitePhone.trim() || null,
  role: inviteRole,
+ departmentId: inviteDepartmentId !== "__none__" ? inviteDepartmentId : null,
+ defaultDepartmentSlug: selectedDept?.slug || null,
+ whatsappInstanceId:
+  inviteWhatsappInstanceId !== "__none__" ? inviteWhatsappInstanceId : null,
+ isAttendanceAgent: inviteIsAttendanceAgent,
+ maxConcurrentChats: Math.max(1, Math.min(200, Number(inviteMaxConcurrentChats) || 10)),
+ canTransferChats: inviteCanTransferChats,
+ canCloseChats: inviteCanCloseChats,
+ canManageWhatsappQr: inviteCanManageWhatsappQr,
+ onlyAssignedOrSector: inviteOnlyAssignedOrSector,
+ contractType: inviteContractType,
+ commissionPercent: Math.max(0, Math.min(100, Number(inviteCommissionPercent) || 0)),
+ feeBearer: inviteFeeBearer,
+ canViewUnmaskedContacts: inviteCanViewContacts,
+ autoDeductSupplies: inviteAutoDeductSupplies,
  },
  });
 
@@ -186,7 +344,21 @@ export default function WorkspaceTeamPage() {
  setIsInviteOpen(false);
  setInviteEmail("");
  setInviteName("");
+ setInvitePhone("");
  setInviteRole("seller");
+ setInviteDepartmentId("__none__");
+ setInviteWhatsappInstanceId("__none__");
+ setInviteIsAttendanceAgent(true);
+ setInviteMaxConcurrentChats(10);
+ setInviteCanTransferChats(true);
+ setInviteCanCloseChats(true);
+ setInviteCanManageWhatsappQr(false);
+ setInviteOnlyAssignedOrSector(false);
+ setInviteContractType("partner_law");
+ setInviteCommissionPercent(60);
+ setInviteFeeBearer("proportional");
+ setInviteCanViewContacts(false);
+ setInviteAutoDeductSupplies(true);
  router.invalidate();
  } catch (err: any) {
  toast.error(err?.message || "Erro ao convidar colaborador.");
@@ -439,6 +611,22 @@ export default function WorkspaceTeamPage() {
  color: "bg-muted text-muted-foreground border-border",
  };
  const isOwner = m.role === "owner";
+ const memberDept =
+  m.department ||
+  (departments || []).find((d: any) => d.id === m.department_id) ||
+  null;
+ const memberWhatsapp =
+  m.whatsapp_instance ||
+  (whatsappInstances || []).find((w: any) => w.id === m.whatsapp_instance_id) ||
+  null;
+ const presenceText =
+  m.attendance_presence === "busy"
+   ? "Ocupado"
+   : m.attendance_presence === "away"
+     ? "Pausa"
+     : m.attendance_presence === "offline"
+       ? "Offline"
+       : "Online";
 
  return (
  <div
@@ -454,7 +642,7 @@ export default function WorkspaceTeamPage() {
  )}
  </div>
  <div className="min-w-0 space-y-1">
- <div className="flex items-center gap-2">
+ <div className="flex flex-wrap items-center gap-2">
  <p className="text-xs font-bold text-foreground truncate">
  {m.full_name || "Colaborador sem nome"}
  </p>
@@ -464,21 +652,51 @@ export default function WorkspaceTeamPage() {
  >
  {roleInfo.label}
  </Badge>
+ {m.is_attendance_agent !== false && (
+  <Badge variant="secondary" className="text-xs px-2 py-1 font-medium rounded-lg">
+   {presenceText} · Limite {m.max_concurrent_chats ?? 10}
+  </Badge>
+ )}
+ {memberDept && (
+  <Badge variant="outline" className="text-xs px-2 py-1 font-medium rounded-lg gap-1">
+   <Layers className="size-3" />
+   <span>{memberDept.name}</span>
+  </Badge>
+ )}
+ {memberWhatsapp && (
+  <Badge variant="outline" className="text-xs px-2 py-1 font-medium rounded-lg gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+   <Smartphone className="size-3" />
+   <span>
+    {memberWhatsapp.display_phone_number || memberWhatsapp.display_name}
+   </span>
+  </Badge>
+ )}
  </div>
  <p className="text-xs text-muted-foreground truncate font-mono">
  {m.email || "E-mail não público"}
+ {m.phone ? ` · ${m.phone}` : ""}
  </p>
  </div>
  </div>
 
- <div className="flex items-center gap-2 self-end sm:self-center">
+ <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+ <Button
+  type="button"
+  variant="outline"
+  size="sm"
+  onClick={() => handleOpenEditMember(m)}
+  className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+ >
+  <Sliders className="size-3.5" />
+  <span>Vínculos</span>
+ </Button>
  {!isOwner ? (
  <>
  <Select
  defaultValue={m.role}
  onValueChange={(newVal) => handleRoleChange(m.id, newVal)}
  >
- <SelectTrigger className="h-11 min-h-11 sm:h-11 min-h-11 sm:h-9 text-xs font-semibold rounded-lg w-36 bg-background">
+ <SelectTrigger className="h-11 min-h-11 sm:h-9 text-xs font-semibold rounded-lg w-36 bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
@@ -496,7 +714,7 @@ export default function WorkspaceTeamPage() {
  variant="ghost"
  size="icon"
  onClick={() => setMemberToRemove(m)}
- className="size-8 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="size-11 min-h-11 min-w-11 sm:size-9 sm:min-h-0 sm:min-w-0 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
  title="Revogar Acesso"
  >
  <Trash2 className="size-4" />
@@ -922,14 +1140,14 @@ export default function WorkspaceTeamPage() {
 
  {/* ── Modal de Convite de Colaborador ── */}
  <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
- <DialogContent className="sm:max-w-md rounded-lg p-6">
+ <DialogContent className="sm:max-w-lg max-h-screen overflow-y-auto rounded-lg p-6 pt-safe-modal">
  <DialogHeader className="space-y-1 text-left">
  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2">
  <UserPlus className="size-5" />
  </div>
  <DialogTitle className="text-lg font-bold text-foreground">Convidar Colaborador</DialogTitle>
  <DialogDescription className="text-xs text-muted-foreground">
- Vincule um novo membro à equipe da sua loja definindo seu papel de atuação.
+ Vincule um novo membro à equipe definindo cargo, setor de atendimento, canal WhatsApp padrão e regime contratual.
  </DialogDescription>
  </DialogHeader>
 
@@ -948,7 +1166,8 @@ export default function WorkspaceTeamPage() {
  </div>
  </div>
 
- <div className="space-y-2 text-left">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+ <div className="space-y-2">
  <Label className="text-xs font-bold text-foreground">E-mail de Acesso</Label>
  <div className="relative">
  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -960,6 +1179,21 @@ export default function WorkspaceTeamPage() {
  onChange={(e) => setInviteEmail(e.target.value)}
  className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/30"
  />
+ </div>
+ </div>
+
+ <div className="space-y-2">
+ <Label className="text-xs font-bold text-foreground">Telefone / WhatsApp Pessoal</Label>
+ <div className="relative">
+ <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+ <Input
+ type="tel"
+ placeholder="(49) 99999-0000"
+ value={invitePhone}
+ onChange={(e) => setInvitePhone(e.target.value)}
+ className="pl-9 h-11 min-h-11 rounded-lg text-xs bg-muted/30"
+ />
+ </div>
  </div>
  </div>
 
@@ -985,6 +1219,85 @@ export default function WorkspaceTeamPage() {
  ))}
  </SelectContent>
  </Select>
+ </div>
+
+ <div className="border-t border-border/50 pt-4 space-y-3 text-left">
+ <p className="text-xs font-bold text-foreground">Vínculo Operacional de Atendimento</p>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-1">
+ <Label className="text-xs font-semibold text-foreground">Setor / Fila Padrão</Label>
+ <Select value={inviteDepartmentId} onValueChange={setInviteDepartmentId}>
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-muted/30">
+ <SelectValue placeholder="Selecione um setor" />
+ </SelectTrigger>
+ <SelectContent className="rounded-lg">
+ <SelectItem value="__none__">Sem setor fixo (Geral)</SelectItem>
+ {(departments || []).map((dept: any) => (
+ <SelectItem key={dept.id} value={dept.id}>
+ {dept.name}
+ </SelectItem>
+ ))}
+ </SelectContent>
+ </Select>
+ </div>
+
+ <div className="space-y-1">
+ <Label className="text-xs font-semibold text-foreground">Canal WhatsApp Padrão</Label>
+ <Select value={inviteWhatsappInstanceId} onValueChange={setInviteWhatsappInstanceId}>
+ <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs bg-muted/30">
+ <SelectValue placeholder="Canal padrão da loja" />
+ </SelectTrigger>
+ <SelectContent className="rounded-lg">
+ <SelectItem value="__none__">Usar canal padrão da loja</SelectItem>
+ {(whatsappInstances || []).map((inst: any) => (
+ <SelectItem key={inst.id} value={inst.id}>
+ {inst.display_name} ({inst.display_phone_number || inst.instance_key})
+ </SelectItem>
+ ))}
+ </SelectContent>
+ </Select>
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+ <div className="space-y-1">
+ <Label className="text-xs font-semibold text-foreground">Máx. Chats Simultâneos</Label>
+ <Input
+ type="number"
+ min={1}
+ max={200}
+ value={inviteMaxConcurrentChats}
+ onChange={(e) => setInviteMaxConcurrentChats(Math.max(1, Number(e.target.value) || 10))}
+ className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold bg-muted/30"
+ />
+ </div>
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 h-11 min-h-11">
+ <span className="text-xs font-semibold text-foreground">Atua como Atendente</span>
+ <Switch
+ checked={inviteIsAttendanceAgent}
+ onCheckedChange={setInviteIsAttendanceAgent}
+ />
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+ <span className="text-xs font-medium text-foreground">Transferir conversas</span>
+ <Switch checked={inviteCanTransferChats} onCheckedChange={setInviteCanTransferChats} />
+ </div>
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+ <span className="text-xs font-medium text-foreground">Encerrar tickets</span>
+ <Switch checked={inviteCanCloseChats} onCheckedChange={setInviteCanCloseChats} />
+ </div>
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+ <span className="text-xs font-medium text-foreground">Gerenciar QR / Canais</span>
+ <Switch checked={inviteCanManageWhatsappQr} onCheckedChange={setInviteCanManageWhatsappQr} />
+ </div>
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+ <span className="text-xs font-medium text-foreground">Restringir ao setor</span>
+ <Switch checked={inviteOnlyAssignedOrSector} onCheckedChange={setInviteOnlyAssignedOrSector} />
+ </div>
+ </div>
  </div>
 
  <div className="space-y-2 text-left">
@@ -1040,24 +1353,22 @@ export default function WorkspaceTeamPage() {
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
  <div className="space-y-1">
  <p className="text-xs font-bold text-foreground">Sigilo de Contatos (LGPD)</p>
- <p className="text-2xs text-muted-foreground">Exibe telefone com máscara ((49) 9****-**12) para proteger a carteira de clientes.</p>
+ <p className="text-xs text-muted-foreground">Exibe telefone com máscara ((49) 9****-**12) para proteger a carteira de clientes.</p>
  </div>
  <Switch
  checked={inviteCanViewContacts}
  onCheckedChange={setInviteCanViewContacts}
- className="h-6 w-11"
  />
  </div>
 
  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
  <div className="space-y-1">
  <p className="text-xs font-bold text-foreground">Dedução Automática de Insumos</p>
- <p className="text-2xs text-muted-foreground">Abate o custo da ficha técnica dos materiais consumidos no serviço.</p>
+ <p className="text-xs text-muted-foreground">Abate o custo da ficha técnica dos materiais consumidos no serviço.</p>
  </div>
  <Switch
  checked={inviteAutoDeductSupplies}
  onCheckedChange={setInviteAutoDeductSupplies}
- className="h-6 w-11"
  />
  </div>
  </div>
@@ -1274,6 +1585,282 @@ export default function WorkspaceTeamPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* ── Sheet de Edição Completa de Vínculos Operacionais & RH ── */}
+      <Sheet open={Boolean(editingMember)} onOpenChange={(open) => !open && !isSavingMember && setEditingMember(null)}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto pt-safe-modal p-6">
+          <SheetHeader className="space-y-1 text-left">
+            <SheetTitle className="text-base font-bold text-foreground">
+              Vínculos do Colaborador
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground">
+              {editingMember?.email || "Configure setor de atendimento, número WhatsApp padrão e regime contratual."}
+            </SheetDescription>
+          </SheetHeader>
+
+          <form onSubmit={handleSaveEditMember} className="space-y-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Nome Completo</Label>
+                <Input
+                  value={editMemberForm.fullName}
+                  onChange={(e) => setEditMemberForm({ ...editMemberForm, fullName: e.target.value })}
+                  className="h-11 min-h-11 rounded-lg text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-bold">Telefone / WhatsApp</Label>
+                <Input
+                  type="tel"
+                  value={editMemberForm.phone}
+                  onChange={(e) => setEditMemberForm({ ...editMemberForm, phone: e.target.value })}
+                  placeholder="(49) 99999-0000"
+                  className="h-11 min-h-11 rounded-lg text-xs"
+                />
+              </div>
+            </div>
+
+            {!editMemberForm.isOwner && (
+              <div className="space-y-1 text-left">
+                <Label className="text-xs font-bold">Cargo e Permissão</Label>
+                <Select
+                  value={editMemberForm.role}
+                  onValueChange={(v: any) => setEditMemberForm({ ...editMemberForm, role: v })}
+                >
+                  <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs font-semibold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg">
+                    {Object.entries(ROLE_DEFINITIONS)
+                      .filter(([k]) => k !== "owner")
+                      .map(([key, item]) => (
+                        <SelectItem key={key} value={key} className="text-xs">
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="border-t border-border/50 pt-4 space-y-3 text-left">
+              <p className="text-xs font-bold text-foreground">Operação de Atendimento & WhatsApp</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Setor / Fila Padrão</Label>
+                  <Select
+                    value={editMemberForm.departmentId}
+                    onValueChange={(v) => setEditMemberForm({ ...editMemberForm, departmentId: v })}
+                  >
+                    <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="__none__">Sem setor fixo</SelectItem>
+                      {(departments || []).map((dept: any) => (
+                        <SelectItem key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Canal WhatsApp Padrão</Label>
+                  <Select
+                    value={editMemberForm.whatsappInstanceId}
+                    onValueChange={(v) => setEditMemberForm({ ...editMemberForm, whatsappInstanceId: v })}
+                  >
+                    <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="__none__">Canal padrão da loja</SelectItem>
+                      {(whatsappInstances || []).map((inst: any) => (
+                        <SelectItem key={inst.id} value={inst.id}>
+                          {inst.display_name} ({inst.display_phone_number || inst.instance_key})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Presença no Chat</Label>
+                  <Select
+                    value={editMemberForm.attendancePresence}
+                    onValueChange={(v: any) => setEditMemberForm({ ...editMemberForm, attendancePresence: v })}
+                  >
+                    <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="online">Online</SelectItem>
+                      <SelectItem value="busy">Ocupado</SelectItem>
+                      <SelectItem value="away">Em pausa</SelectItem>
+                      <SelectItem value="offline">Offline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Máx. Chats Simultâneos</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={200}
+                    value={editMemberForm.maxConcurrentChats}
+                    onChange={(e) =>
+                      setEditMemberForm({
+                        ...editMemberForm,
+                        maxConcurrentChats: Math.max(1, Number(e.target.value) || 10),
+                      })
+                    }
+                    className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-xs font-medium">Atua no Atendimento</span>
+                  <Switch
+                    checked={editMemberForm.isAttendanceAgent}
+                    onCheckedChange={(v) => setEditMemberForm({ ...editMemberForm, isAttendanceAgent: v })}
+                  />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-xs font-medium">Transferir conversas</span>
+                  <Switch
+                    checked={editMemberForm.canTransferChats}
+                    onCheckedChange={(v) => setEditMemberForm({ ...editMemberForm, canTransferChats: v })}
+                  />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-xs font-medium">Encerrar tickets</span>
+                  <Switch
+                    checked={editMemberForm.canCloseChats}
+                    onCheckedChange={(v) => setEditMemberForm({ ...editMemberForm, canCloseChats: v })}
+                  />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-xs font-medium">Gerenciar QR WhatsApp</span>
+                  <Switch
+                    checked={editMemberForm.canManageWhatsappQr}
+                    onCheckedChange={(v) => setEditMemberForm({ ...editMemberForm, canManageWhatsappQr: v })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                <span className="text-xs font-medium">Restringir visualização ao próprio setor / atribuídos</span>
+                <Switch
+                  checked={editMemberForm.onlyAssignedOrSector}
+                  onCheckedChange={(v) => setEditMemberForm({ ...editMemberForm, onlyAssignedOrSector: v })}
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-border/50 pt-4 space-y-3 text-left">
+              <p className="text-xs font-bold text-foreground">Regime Contratual & Comissionamento</p>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Tipo de Contrato</Label>
+                <Select
+                  value={editMemberForm.contractType}
+                  onValueChange={(v: any) => setEditMemberForm({ ...editMemberForm, contractType: v })}
+                >
+                  <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg">
+                    <SelectItem value="partner_law">Salão Parceiro (Lei 13.352/2016)</SelectItem>
+                    <SelectItem value="clt">CLT</SelectItem>
+                    <SelectItem value="pj">PJ / Autônomo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Comissão (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={editMemberForm.commissionPercent}
+                    onChange={(e) =>
+                      setEditMemberForm({
+                        ...editMemberForm,
+                        commissionPercent: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
+                      })
+                    }
+                    className="h-11 min-h-11 rounded-lg text-xs font-mono font-bold"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Taxas de Cartão</Label>
+                  <Select
+                    value={editMemberForm.feeBearer}
+                    onValueChange={(v: any) => setEditMemberForm({ ...editMemberForm, feeBearer: v })}
+                  >
+                    <SelectTrigger className="h-11 min-h-11 rounded-lg text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-lg">
+                      <SelectItem value="proportional">Proporcional às cotas</SelectItem>
+                      <SelectItem value="store_100">Loja 100%</SelectItem>
+                      <SelectItem value="pro_100">Profissional 100%</SelectItem>
+                      <SelectItem value="split_50">Meio a Meio (50/50)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-xs font-medium">Ver contatos sem máscara</span>
+                  <Switch
+                    checked={editMemberForm.canViewUnmaskedContacts}
+                    onCheckedChange={(v) =>
+                      setEditMemberForm({ ...editMemberForm, canViewUnmaskedContacts: v })
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-xs font-medium">Deduzir insumos auto</span>
+                  <Switch
+                    checked={editMemberForm.autoDeductSupplies}
+                    onCheckedChange={(v) =>
+                      setEditMemberForm({ ...editMemberForm, autoDeductSupplies: v })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <SheetFooter className="pt-4 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditingMember(null)}
+                disabled={isSavingMember}
+                className="h-11 min-h-11 rounded-lg text-xs"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSavingMember}
+                className="h-11 min-h-11 rounded-lg text-xs font-bold"
+              >
+                {isSavingMember ? "Salvando..." : "Salvar Vínculos"}
+              </Button>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </Sheet>
  </div>
  );
 }

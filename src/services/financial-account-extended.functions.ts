@@ -134,7 +134,7 @@ export const getUserFinancialOverview = createServerFn({ method: "GET" }).handle
     // 1. Carrega perfil real
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("id, full_name, avatar_url, cpf, email")
+      .select("id, full_name, avatar_url, cpf")
       .eq("id", identity.id)
       .maybeSingle();
 
@@ -143,7 +143,7 @@ export const getUserFinancialOverview = createServerFn({ method: "GET" }).handle
       fullName: profileData?.full_name || "Usuário Waesy",
       avatarUrl: profileData?.avatar_url || null,
       cpf: profileData?.cpf || null,
-      email: profileData?.email || null,
+      email: (identity as any)?.email || null,
     };
 
     // 2. Carrega saldo real do ledger

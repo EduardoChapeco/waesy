@@ -66,8 +66,8 @@ export function SupermarketCategoryCircleDock({
                 className={cn(
                   "size-14 rounded-full flex items-center justify-center transition duration-200 border-2 overflow-hidden relative group-focus-visible:ring-2 group-focus-visible:ring-primary",
                   isSelected
-                    ? "border-primary bg-primary/10 text-primary  scale-105"
-                    : "border-border/60 bg-muted/60 text-muted-foreground group-hover:border-border group-hover:text-foreground",
+                    ? "border-primary bg-muted text-primary scale-105"
+                    : "border-border bg-muted text-muted-foreground group-hover:border-foreground group-hover:text-foreground",
                 )}
               >
                 {cat.imageUrl ? (
@@ -82,7 +82,7 @@ export function SupermarketCategoryCircleDock({
                 )}
 
                 {cat.badge ? (
-                  <span className="absolute -top-0.5 -right-0.5 px-1 py-0.2 text-3xs font-extrabold rounded-full bg-primary text-primary-foreground">
+                  <span className="absolute -top-1 -right-1 px-1 py-1 text-3xs font-extrabold rounded-full bg-primary text-primary-foreground">
                     %
                   </span>
                 ) : null}
@@ -90,8 +90,8 @@ export function SupermarketCategoryCircleDock({
 
               <span
                 className={cn(
-                  "text-xs font-semibold leading-tight text-center truncate max-w-18",
-                  isSelected ? "text-primary font-bold" : "text-foreground/80 group-hover:text-foreground",
+                  "text-xs font-semibold leading-tight text-center line-clamp-2 text-anti-truncate max-w-18",
+                  isSelected ? "text-primary font-bold" : "text-foreground group-hover:text-foreground",
                 )}
               >
                 {cat.label}

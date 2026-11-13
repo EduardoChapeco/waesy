@@ -75,17 +75,20 @@ export async function toolCheckInventory(input: StockCheckInput): Promise<StockI
 
   const { data: products } = await db
     .from("products")
-    .select("id, title, price_cents, stock_quantity, sku, status, is_archived")
+    .select("id, title, price_cents, status, product_variants(sku, stock_on_hand, allow_backorder)")
     .eq("store_id", input.storeId)
-    .eq("status", "published")
-    .neq("is_archived", true)
+    .in("status", ["published", "active"])
     .ilike("title", `%${q}%`)
     .limit(input.limit || 5);
 
   if (!products || products.length === 0) return [];
 
-  return products.map((p) => {
-    const qty = Number(p.stock_quantity ?? 0);
+  return products.map((p: any) => {
+    const variants = Array.isArray(p.product_variants) ? p.product_variants : [];
+    const qty =
+      variants.length > 0
+        ? variants.reduce((sum: number, v: any) => sum + (v.allow_backorder ? 99 : Math.max(0, Number(v.stock_on_hand ?? 0))), 0)
+        : 0;
     const priceCents = Number(p.price_cents ?? 0);
     return {
       productId: p.id,
@@ -93,8 +96,8 @@ export async function toolCheckInventory(input: StockCheckInput): Promise<StockI
       priceCents,
       priceDisplay: formatMoney(priceCents),
       stockQuantity: qty,
-      inStock: qty > 0,
-      sku: p.sku || undefined,
+      inStock: qty > 0 || p.status === "published" || p.status === "active",
+      sku: variants[0]?.sku || undefined,
     };
   });
 }
@@ -190,9 +193,9 @@ export async function toolGetOrderStatus(input: OrderStatusInput): Promise<Order
 
   const { data: orders } = await db
     .from("orders")
-    .select("id, display_id, status, total_cents, created_at, order_items(title, quantity)")
+    .select("id, order_number, status, total_cents, created_at, customer_snapshot, order_items(product_title, qty)")
     .eq("store_id", input.storeId)
-    .or(`customer_phone.ilike.%${cleanPhone}%,metadata->>customer_phone.ilike.%${cleanPhone}%`)
+    .or(`customer_snapshot->>phone.ilike.%${cleanPhone}%,custom_fields->>customer_phone.ilike.%${cleanPhone}%`)
     .order("created_at", { ascending: false })
     .limit(3);
 
@@ -207,12 +210,12 @@ export async function toolGetOrderStatus(input: OrderStatusInput): Promise<Order
 
   const formatted = (orders || []).map((o: any) => {
     const items = (o.order_items || [])
-      .map((it: any) => `${it.quantity}x ${it.title}`)
+      .map((it: any) => `${it.qty ?? it.quantity ?? 1}x ${it.product_title || it.title || "Item"}`)
       .join(", ");
 
     return {
       orderId: o.id,
-      displayId: `#${o.display_id || o.id.slice(0, 6)}`,
+      displayId: `#${o.order_number || o.id.slice(0, 6)}`,
       status: o.status,
       statusLabel: STATUS_LABELS[o.status] || o.status,
       totalDisplay: formatMoney(Number(o.total_cents || 0)),
@@ -294,7 +297,7 @@ export async function toolLookupTourismPackages(input: PackageLookupInput): Prom
   // 1. Busca em tourism_trips (viagens e pacotes próprios da agência)
   let tripsQuery = db
     .from("tourism_trips")
-    .select("id, title, destination_city, total_cents, travel_start_date, travel_end_date, status, metadata")
+    .select("id, title, destination_city, total_cents, travel_start_date, travel_end_date, status, itinerary, includes, financial_details, notes")
     .eq("store_id", input.storeId)
     .neq("status", "cancelled")
     .order("created_at", { ascending: false })
@@ -309,7 +312,7 @@ export async function toolLookupTourismPackages(input: PackageLookupInput): Prom
   if (trips && trips.length > 0) {
     return trips.map((t: any) => {
       const priceCents = Number(t.total_cents || 0);
-      const meta = (t.metadata && typeof t.metadata === "object" ? t.metadata : {}) as Record<string, any>;
+      const meta = (t.financial_details && typeof t.financial_details === "object" ? t.financial_details : {}) as Record<string, any>;
       const maxInstallments = Number(meta.max_installments || 10);
       const installmentVal = priceCents > 0 ? formatMoney(Math.round(priceCents / maxInstallments)) : "";
       const installmentTerms = priceCents > 0
@@ -326,8 +329,8 @@ export async function toolLookupTourismPackages(input: PackageLookupInput): Prom
         datesDescription: t.travel_start_date
           ? `Saída: ${new Date(t.travel_start_date).toLocaleDateString("pt-BR")}${t.travel_end_date ? ` até ${new Date(t.travel_end_date).toLocaleDateString("pt-BR")}` : ""}`
           : "Datas flexíveis",
-        itinerarySummary: meta.itinerary_summary || meta.description || "Roteiro completo com passeios inclusos",
-        includedItems: Array.isArray(meta.included_items) ? meta.included_items : ["Hospedagem", "Transfer", "Seguro viagem"],
+        itinerarySummary: t.notes || meta.itinerary_summary || "Roteiro completo com passeios inclusos",
+        includedItems: Array.isArray(t.includes) && t.includes.length > 0 ? t.includes : ["Hospedagem", "Transfer", "Seguro viagem"],
         status: t.status || "active",
       };
     });
@@ -336,7 +339,7 @@ export async function toolLookupTourismPackages(input: PackageLookupInput): Prom
   // 2. Fallback para tourism_experiences (passeios, tours e vivências)
   const { data: experiences } = await db
     .from("tourism_experiences")
-    .select("id, title, destination, price_cents, duration_hours, included_items, status")
+    .select("id, title, destination, price_cents, duration, included_items, status")
     .eq("store_id", input.storeId)
     .eq("status", "active")
     .ilike("title", `%${q}%`)
@@ -351,7 +354,7 @@ export async function toolLookupTourismPackages(input: PackageLookupInput): Prom
       priceCents,
       priceDisplay: formatMoney(priceCents),
       installmentTerms: priceCents > 0 ? "Pagamento à vista com desconto via PIX ou em até 6x no cartão" : "Sob consulta",
-      datesDescription: exp.duration_hours ? `Duração: ${exp.duration_hours} horas` : "Passeio regular",
+      datesDescription: exp.duration ? `Duração: ${exp.duration}` : "Passeio regular",
       itinerarySummary: "Experiência turística guiada com guias credenciados",
       includedItems: Array.isArray(exp.included_items) ? exp.included_items : ["Ingresso", "Guia turístico"],
       status: exp.status || "active",

@@ -1,5 +1,25 @@
 # DECISIONS.md — Registro Canônico de Decisões e Divergências de Design
 
+## DEC-496: Saneamento de Logs Runtime (Cloudflare & Supabase), Deploy Completo de Banco/Secrets e Liberação em Produção
+- **Data:** 2026-11-13
+- **Contexto:** Inspeção dos logs de produção identificou falha de auto-build em `wrangler.toml` (`limits.cpu_ms`), ambiente `preview` sem variáveis no Cloudflare Pages (`usewaesy`), cascata de 504/503 na zona `waesy.com.br` (`listChatThreads` sem limite carregando histórico completo, stalls em `/token` do GoTrue bloqueando `IDENTITY_INFLIGHT_MAP`), além de erros Postgres `23514` (`chat_threads_thread_type_check` rejeitando `'group'`) e `42703` (`directory_listings.slug`, `leads_crm.estimated_budget`, `copilot_executions.created_at`).
+- **Decisão Adotada:**
+  1. **Banco & Supabase (`jfuebqmltksyznovhlwa`):** Aplicadas migrations `20270402`..`20270409` (incluindo correção condicional de `copilot_executions` em `20270407` e `chat_threads_thread_type_check` em `20270409`), deploy da Edge Function `infotravel-connector` e recarregamento do schema PostgREST (`NOTIFY pgrst, 'reload schema'`).
+  2. **Runtime BFF & Identidade:** Remoção de colunas inexistentes em `catalog.functions.ts` (`ghost_store_id`), `mcp-tool-registry.ts` (`leads_crm`) e `whatsapp-provider-webhook.server.ts`; limitação de `listChatThreads` em `src/services/chat.functions.ts`; e `withAuthTimeout` + lookup por `organization_id` em `src/lib/identity.server.ts`.
+  3. **Cloudflare Pages (`usewaesy`) & Git:** Remoção de `[limits]` incompleto em `wrangler.toml`, sincronização das variáveis Supabase/App para `preview` e `production` preservando secrets existentes, build de produção (`npm run build`), deploy via Wrangler e merge `release/prod-20261113-fullpage-chat-copilot` -> `main`.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1, B.9, B.11, B.25 e estabilidade de execução dentro dos limites de Worker Cloudflare e Postgres/GoTrue.
+- **Consequências:** Schema e runtime alinhados em produção, build automático GitHub/Cloudflare destravado e eliminação das causas raiz de 504/42703/23514 identificadas nos logs.
+
+## DEC-495: Ponte Semântica Multi-Nicho E2E & Compilador Canônico de Contratos Tabulados (GFM)
+- **Data:** 2026-11-13
+- **Contexto:** Campos dinâmicos de roteiros/anúncios CMS, formulários omnichannel, CRM Kanban (`leads_crm`/`customers_crm`), editor de propostas/orçamentos e geradores de contratos operavam em silos separados, causando perda de `custom_fields`, rotas de orçamento chamando RPC exclusiva de turismo e minutas sem tabelas Markdown GFM nem renderização semântica `<table>`.
+- **Decisão Adotada:**
+  1. Unificar a ponte de campos e contextos em `src/lib/niches/unified-field-bridge.ts` com normalização de `custom_fields`, `source_listing_id`, catálogo real CMS -> Studio e bifurcação por nicho no CRM (`workspace.comercial.tsx`, `workspace.turismo.index.tsx`).
+  2. Centralizar ingestão omnichannel (`omnichannel-lead-ingestion.ts`) garantindo criação/atualização consistente em `leads_crm` + `customers_crm` para builders, lead forms, turismo, deals e detalhe de classificados/produtos.
+  3. Unificar a compilação contratual tabulada em `src/lib/contracts/contract-compiler.ts` + `src/services/contract-compiler.functions.ts` (+ suporte de template/seções em `/workspace/orcamentos/$id` e `/workspace/turismo/propostas/$id`, além de `generateContractFromDeal`, `commercial-invoices.functions.ts` e RPC `20270405000000`), com renderização GFM canônica via `<ContractMarkdownRenderer />` nos 4 visualizadores de contrato.
+- **Fundamentação Teórica:** Preservar SSOT multi-nicho e integridade ponta a ponta (`CMS ⇄ Vitrine ⇄ CRM ⇄ Proposta/Orçamento ⇄ Contrato`) sem duplicação de mapeadores nem regressão visual (`design-lint --ratchet` em `746` vs `747`, `0` P0) ou de segurança P0.
+- **Consequências:** Zero erros TypeScript nos arquivos do escopo e build de produção aprovado (`exit 0`); migration aditiva `20270405000000_e2e_multiniche_sync_tabular_contracts.sql` aguarda aprovação humana explícita para push remoto no Supabase.
+
 ## DEC-494: Imersão Full Page Canônica (`100dvh`) por Padrão para Chat & Copilot (Workspace & SuperApp Civil)
 - **Data:** 2026-11-13
 - **Contexto:**
@@ -9610,3 +9630,29 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   4. **Gestão Master de Planos & Add-ons (`src/routes/admin-master.modulos.tsx` e `src/routes/admin-master.lojas.tsx`):** Aba "Planos & Verticais" e modal com matriz de ativação direta por loja para módulos comerciais avulsos com sincronização reativa.
 - **Fundamentação Teórica:** AGENTS.md Regras B.1-B.11, B.25; Invariante de Bilateralidade e Governança Multi-Tenant.
 - **Consequências:** Flexibilidade comercial com precificação modular (R$ 89 a R$ 599/mês), modo operacional limpo para operadores de SAC sem poluição visual do shell global, e controle centralizado no Admin Master com persistência transacional.
+
+---
+
+### DEC-492: Desacoplamento End-to-End do Chat Full-Page, Gestão de Atendimento, Multi-Números WhatsApp e Vínculos de Equipe (2026-11-13)
+- **Data (ISO):** 2026-11-13
+- **Contexto:** O módulo de Atendimento misturava a tela imersiva de Inbox em `/workspace/atendimento` com o CRUD de canais WhatsApp, filas, horários e métricas, além de possuir colisão em conexões multi-número (upsert cego), bloqueio de exclusão por `ON DELETE RESTRICT` em `whatsapp_outbox` + ausência de `'revoked'` na constraint SQL de status, e desconexão entre cadastro de colaboradores (`/workspace/configuracoes/equipe`) e perfil operacional/RH (setor, instância WhatsApp padrão, presença e contrato).
+- **Decisão Adotada:** Refatoração integral em 4 camadas conforme `docs/specs/SPEC-20261113-ATENDIMENTO-WHATSAPP-EQUIPE-DECOUPLING.md`:
+  1. **SQL & RLS:** Migration `supabase/migrations/20270403000000_attendance_whatsapp_team_consolidation.sql` incluindo `'revoked'` em `whatsapp_channel_instances_status_check`, alterando `whatsapp_outbox.channel_instance_id` para `ON DELETE SET NULL`, adicionando índice parcial `uq_whatsapp_active_phone_per_store` e colunas/tabelas 1:1 de vínculo operacional + RH em `workspace_members`.
+  2. **BFF & Webhook:** Proteção contra colisão e criação/reconexão explícita em `src/services/whatsapp-channel-instances.functions.ts`, correção de exclusão Master cross-tenant em `_deleteWhatsAppInstance`, guarda de telefone duplicado ativo em `src/services/whatsapp-provider-webhook.server.ts`, roteamento de saída em `src/services/chat.functions.ts`, vínculos completos em `src/services/admin-team.functions.ts` e agregação BI honesta (`csatAvg: null` quando `csatCount === 0`) em `src/services/whatsapp-operations-metrics.functions.ts`.
+  3. **Roteamento & Shell:** Separação do Chat Full-Page em `/workspace/atendimento/chat` (`isImmersiveEditor = true` apenas em `/workspace/atendimento/chat` e `/workspace/copilot`) com retorno do Shell/Sidebar completo em `/workspace/atendimento` (Visão Geral & BI) e submódulos `/whatsapp`, `/filas`, `/atendentes` e `/horarios`.
+  4. **UI & Equipe:** Extração de `AtendimentoChatWorkspace`, `AtendimentoOverviewView` e `AtendimentoSubmoduleHeader`; inicialização determinística em `whatsapp-qr-connect-modal.tsx`; aba/sheet `"Vínculos"` e campos operacionais/RH em `workspace.configuracoes.equipe.tsx`; exclusão real no Admin Master (`admin-master.integracoes.tsx`).
+- **Fundamentação Teórica:** AGENTS.md Regras B.1-B.11, B.25, B.31, DESIGN.md, Design Lint DL-01..DL-32, Zero-Trust Multi-Tenant RLS.
+- **Consequências:** Navegação previsível com sidebar preservada nos submódulos de gestão, inbox fullscreen dedicado sem vazamento visual, múltiplas conexões WhatsApp por loja sem sobrescrita acidental e exclusão limpa ponta a ponta.
+
+---
+
+### DEC-493: Auditoria Forense Multi-Nicho, SSOT Taxonômico Unificado, SKUs Verticais e Correções Tipadas E2E (2026-11-13)
+- **Data (ISO):** 2026-11-13
+- **Contexto:** Diagnóstico forense descrito em `docs/specs/SPEC-20261113-FORENSIC-NICHE-SSOT-VERTICAL-PLANS.md` identificou colisões de nicho por substring, divergência de taxonomia entre manifesto/navegação/onboarding, falhas de enforcement comercial/cotas em BFFs, rotas mascarando erros de carregamento com `catch(() => [])`, lacunas de serialização/tipagem no pipeline TanStack Start e violações `DL-01`/`DL-03` introduzidas em formulários de OS, pacotes e provisionamento.
+- **Decisão Adotada:** Consolidação em 4 camadas orientada ao SSOT:
+  1. **SQL & RLS (`supabase/migrations/20270404000000_unified_niche_systems_vertical_plans_and_entitlements.sql`):** Normalização das constraints de `stores.plan_tier`/`subscription_status`/`billing_cycle`, colunas de governança vertical (`primary_niche_id`, `enabled_niches`, `vertical_sku`, `trial_ends_at`, `quota_overrides`), catálogo `platform_vertical_plans` e helper `check_store_vertical_quota`.
+  2. **SSOT & Governança (`src/lib/niches/niche-ssot.ts`, `src/lib/architecture/module-plan-governance.ts`, `src/lib/workspace-navigation.ts`):** Unificação dos nichos e SKUs (`VerticalPlanSkuId` exportado), correção de `resolveWorkspaceNavigation` para ler `storeCaps.capabilities` via `Set` e `activeModules.includes("module_financial_erp")`, desbloqueando `/workspace/ordens-servico` e `/workspace/agenda`.
+  3. **BFF, Onboarding & Contratos Tipados (`src/services/ai-sdr.functions.ts`, `src/services/booking.functions.ts`, `src/services/company-mvp.functions.ts`, `src/services/onboarding.functions.ts`, `src/services/builder.functions.ts`, `src/services/travel-proposal.functions.ts`, `src/lib/niches/unified-field-bridge.ts`, `src/types/travel-package.ts`, `src/lib/contracts/contract-compiler.ts`):** Enforcement de cota mensal de IA em lojas, checagem de entitlement por `appt.store_id` em `rescheduleAppointment`, provisionamento de `chat_departments` a partir de `{ slug, name }` sem hex hardcoded, exportação de `TravelFlightLeg`/`TravelHotelStay`/`ContractTemplateDefinition` e tipos serializáveis para propostas e catálogo.
+  4. **Rotas, UI & Gates (`src/routes/workspace.ordens-servico.index.tsx`, `workspace.configuracoes.planos.tsx`, `admin-master.lojas.tsx`, `workspace.onboarding.index.tsx`, `workspace.clientes.index.tsx`, `workspace.pedidos.index.tsx`, `workspace.catalogo.atributos.tsx`, `workspace.orcamentos.novo.tsx`, `workspace.index.tsx`, `_store.produto.$slug.tsx`, `NewClientWizard.tsx`, `niche-operational-guard.tsx`, `fast-company-onboarding.tsx`):** Alinhamento de OS com `client_name`/`reported_issue`/`getStoreSettings`, substituição de estados mudos por `<ErrorState>`, remoção de `space-y-1.5` (`DL-03`) e tipagem estrita sem casts inseguros.
+- **Fundamentação Teórica:** AGENTS.md Regras B.1-B.11, B.25, DESIGN.md, Design Lint DL-01/DL-03/DL-14/DL-15, Zero-Trust Multi-Tenant.
+- **Consequências:** Cobertura completa de `typecheck` (0 erros), `build` Cloudflare Worker (exit 0), 10 suítes Vitest (63 testes passando), catraca `lint:design` em 746 violações (teto 747, P0 = 0) e integridade estrita entre schema SQL, BFF e rotas por nicho/vertical.

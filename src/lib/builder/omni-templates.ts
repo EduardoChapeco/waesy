@@ -288,7 +288,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
           items: [
             { id: "wsv-b1", label: "Ofertas", badge: "Hoje", iconName: "Tag", tone: "primary", href: "#ofertas" },
             { id: "wsv-b2", label: "Catálogo", iconName: "ShoppingBag", tone: "default", href: "#ofertas" },
-            { id: "wsv-b3", label: "Reels", iconName: "Sparkles", tone: "accent", href: "#encartes" },
+            { id: "wsv-b3", label: "Reels", iconName: "Star", tone: "accent", href: "#encartes" },
             { id: "wsv-b4", label: "Anúncios", iconName: "Car", tone: "default", href: "#anuncios" },
             { id: "wsv-b5", label: "Mural", iconName: "MessageCircle", tone: "default", href: "#novidades" },
             { id: "wsv-b6", label: "Agenda", iconName: "Calendar", tone: "default", href: "#eventos" },
@@ -827,7 +827,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               id: "scs-a2",
               label: "Reels & Vídeos",
               subtitle: "Bastidores em 9:16",
-              iconName: "Sparkles",
+              iconName: "Star",
               tone: "accent",
               href: "#bastidores",
             },
@@ -2332,7 +2332,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
             {
               id: "tab-assinaturas",
               tabLabel: "Clube de Assinaturas",
-              tabIconName: "Sparkles",
+              tabIconName: "Layers",
               title: "Faturamento recorrente garantido todo mês com planos e pacotes",
               description:
                 "Crie planos de barba, cabelo ou manicure com cobrança mensal automática no cartão e aumente a retenção de clientes.",

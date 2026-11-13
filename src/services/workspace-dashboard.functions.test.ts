@@ -42,9 +42,9 @@ const mockOrdersGte = vi.fn().mockResolvedValue({
 
 const mockProductsEq = vi.fn().mockResolvedValue({
   data: [
-    { id: "prod-1", status: "active", stock_quantity: 10 },
-    { id: "prod-2", status: "published", stock_quantity: 0 },
-    { id: "prod-3", status: "draft", stock_quantity: 5 },
+    { id: "prod-1", status: "active", product_variants: [{ allow_backorder: false, stock_on_hand: 10 }] },
+    { id: "prod-2", status: "published", product_variants: [{ allow_backorder: false, stock_on_hand: 0 }] },
+    { id: "prod-3", status: "draft", product_variants: [{ allow_backorder: true, stock_on_hand: 0 }] },
   ],
 });
 

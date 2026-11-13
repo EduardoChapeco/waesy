@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InstagramLogo, WhatsappLogo, DownloadSimple, Copy, Star, Image as ImageIcon, ShareNetwork } from "@phosphor-icons/react";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
+import { downloadCanvasAsPng, renderElementToCanvasSafe } from "@/lib/canvas/html2canvas-safe";
 
 export interface SocialStudioModalProps {
   isOpen: boolean;
@@ -61,16 +62,12 @@ export function SocialStudioModal({
 
     setIsDownloading(true);
     try {
-      const { default: html2canvas } = await import("html2canvas");
-      const canvas = await html2canvas(frameRef.current, {
+      const canvas = await renderElementToCanvasSafe(frameRef.current, {
         backgroundColor: null,
-        useCORS: true,
         scale: 2,
       });
-      const link = document.createElement("a");
-      link.download = `${product.title.toLowerCase().replace(/[^a-z0-9]+/gi, "-") || "waesy-post"}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      const filename = `${product.title.toLowerCase().replace(/[^a-z0-9]+/gi, "-") || "waesy-post"}.png`;
+      downloadCanvasAsPng(canvas, filename);
       toast.success("Imagem HD baixada.");
     } catch (error) {
       console.error("[SocialStudio] Falha ao exportar imagem:", error);
@@ -151,7 +148,7 @@ export function SocialStudioModal({
               </div>
 
               {/* Bottom Details Overlay */}
-              <div className="z-10 bg-black/70 -mx-5 -mb-5 p-5 space-y-2 pt-8">
+              <div className="z-10 bg-zinc-950/75 -mx-5 -mb-5 p-5 space-y-2 pt-8">
                 <h4 className="font-bold text-sm sm:text-base leading-tight shadow-overlay line-clamp-2">
                   {product.title}
                 </h4>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowUp, ArrowDown, Eye, EyeOff, RotateCcw, Check, Sparkles, Plus, Trash2, Clock } from "lucide-react";
+import { ArrowUp, ArrowDown, Eye, EyeOff, RotateCcw, Check, Plus, Trash2, Clock } from "lucide-react";
 import {
   type KanbanStageDTO,
   type KanbanPurpose,
@@ -186,7 +186,6 @@ export function KanbanColumnCustomizerModal({
         {/* Seletor Rápido de Presets por Nicho / Setor */}
         <div className="px-5 py-3 border-b border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="size-3.5 text-primary shrink-0" />
             <span className="text-2xs text-muted-foreground">
               <strong className="text-foreground">Modelos do Setor:</strong> Carregue um preset pré-configurado
             </span>

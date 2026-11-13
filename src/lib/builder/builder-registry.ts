@@ -2587,20 +2587,20 @@ export const builderRegistry: Record<string, BlockManifest> = {
  allowedChildTypes: [],
  contentSchema: z.object({
  title: z.string().default("Contratos"),
- subtitle: z.string().default("Gerencie suas minutas jurídicas e termos assinados."),
+ subtitle: z.string().default("Minutas e termos assinados."),
  }),
  inspector: {
  content: [
  { name: "title", label: "Título Principal", type: "text" },
- { name: "subtitle", label: "Subtítulo / Descrição", type: "text" },
+ { name: "subtitle", label: "Subtítulo", type: "text" },
  ],
  },
  defaultProps: {
  node_type: "block",
  block_type: "portal_contracts",
  content: {
- title: "Meus Contratos e Documentos",
- subtitle: "Gerencie suas minutas jurídicas e termos assinados.",
+ title: "Contratos e Documentos",
+ subtitle: "Minutas e termos assinados.",
  },
  design_tokens: {},
  layout_rules: {},
@@ -2610,8 +2610,8 @@ export const builderRegistry: Record<string, BlockManifest> = {
  portal_carnes_bills: {
  type: "portal_carnes_bills",
  version: "1.0.0",
- name: "Carnê Digital & Parcelas PIX",
- description: "Gestão de parcelas, faturas e pagamento instantâneo por PIX Copia e Cola",
+ name: "Carnê Digital",
+ description: "Gestão de parcelas, faturas e pagamento PIX",
  category: "content",
  icon: "QrCode",
  allowedBuilderProfiles: "all",
@@ -2619,7 +2619,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  allowedChildTypes: [],
  contentSchema: z.object({
  title: z.string().default("Carnê Digital"),
- subtitle: z.string().default("Consulte faturas em aberto e pague com PIX sem taxas."),
+ subtitle: z.string().default("Faturas em aberto e PIX."),
  }),
  inspector: {
  content: [
@@ -2631,8 +2631,8 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "block",
  block_type: "portal_carnes_bills",
  content: {
- title: "Carnê Digital e Parcelas",
- subtitle: "Consulte faturas em aberto e pague com PIX sem taxas.",
+ title: "Carnê Digital",
+ subtitle: "Faturas em aberto e PIX.",
  },
  design_tokens: {},
  layout_rules: {},
@@ -2642,8 +2642,8 @@ export const builderRegistry: Record<string, BlockManifest> = {
  portal_appointments: {
  type: "portal_appointments",
  version: "1.0.0",
- name: "Agendamentos & Linha do Tempo",
- description: "Acompanhamento de horários, revisões e ordens de serviço",
+ name: "Agendamentos",
+ description: "Horários, revisões e ordens de serviço",
  category: "content",
  icon: "Calendar",
  allowedBuilderProfiles: "all",
@@ -2651,7 +2651,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  allowedChildTypes: [],
  contentSchema: z.object({
  title: z.string().default("Agendamentos"),
- subtitle: z.string().default("Acompanhe seus horários e serviços marcados."),
+ subtitle: z.string().default("Horários e serviços marcados."),
  }),
  inspector: {
  content: [
@@ -2663,8 +2663,8 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "block",
  block_type: "portal_appointments",
  content: {
- title: "Meus Agendamentos e Serviços",
- subtitle: "Acompanhe seus horários e serviços marcados.",
+ title: "Agendamentos e Serviços",
+ subtitle: "Horários e serviços marcados.",
  },
  design_tokens: {},
  layout_rules: {},

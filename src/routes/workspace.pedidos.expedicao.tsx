@@ -502,12 +502,12 @@ function WmsExpedicaoPage() {
                     <p className="text-xs font-semibold text-foreground">{formatMoney(ord.total_amount_cents)}</p>
                     <p className="text-xs text-muted-foreground">Taxa: {formatMoney(ord.marketplace_fee_cents)}</p>
                   </div>
-                  {ord.id && (
+                  {(ord.order_id || ord.id) && (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-11 sm:h-8 px-4 sm:px-3 text-xs rounded-lg sm:rounded-lg gap-2 cursor-pointer shrink-0 font-semibold sm:font-normal"
-                      onClick={() => setSelectedShippingLabelOrderId(ord.id)}
+                      className="h-11 sm:h-9 px-4 sm:px-3 text-xs rounded-lg gap-2 cursor-pointer shrink-0 font-semibold sm:font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => setSelectedShippingLabelOrderId(ord.order_id || ord.id)}
                     >
                       <Printer className="size-3.5 text-primary" /> Etiqueta
                     </Button>

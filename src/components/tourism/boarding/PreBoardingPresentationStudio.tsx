@@ -12,7 +12,6 @@ import {
   Send,
   ShieldCheck,
   AlertTriangle,
-  Sparkles,
   Train,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

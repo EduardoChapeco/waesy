@@ -53,7 +53,7 @@ export function IFoodStoreFeedCard({
     return (
       <div
         className={cn(
-          "w-60 sm:w-68 rounded-2xl bg-card border border-border/70 overflow-hidden shrink-0 snap-start flex flex-col shadow-xs group transition-transform active:scale-98 select-none",
+          "w-60 sm:w-68 rounded-2xl bg-card border border-border overflow-hidden shrink-0 snap-start flex flex-col group transition-transform active:scale-98 select-none",
           className,
         )}
         data-testid="ifood-store-spotlight-card"
@@ -71,7 +71,7 @@ export function IFoodStoreFeedCard({
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center bg-muted text-primary">
               <span className="text-2xl font-black">{initial}</span>
-              <span className="text-3xs font-bold text-muted-foreground mt-1 max-w-4/5 truncate">
+              <span className="text-3xs font-bold text-muted-foreground mt-1 max-w-4/5 text-center line-clamp-2 text-anti-truncate">
                 {store.name}
               </span>
             </div>
@@ -79,7 +79,7 @@ export function IFoodStoreFeedCard({
 
           {/* Badge de Nota e Coroa Superior Esquerda (Apenas se houver avaliação real) */}
           {hasRealRating && (
-            <div className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-background/75 backdrop-blur-xs text-primary-foreground text-xs font-black flex items-center gap-1 shadow-xs">
+            <div className="absolute top-2.5 left-2.5 px-2 py-1 rounded-full bg-card border border-border text-foreground text-xs font-black flex items-center gap-1">
               <Star size={13} weight="fill" className="text-warning-strong" />
               <span>{store.rating!.toFixed(1)}</span>
               {store.hasHighlightCrown && (
@@ -97,7 +97,7 @@ export function IFoodStoreFeedCard({
               onFavoriteToggle?.(store.id);
             }}
             aria-label="Favoritar loja"
-            className="absolute top-2.5 right-2.5 size-8 rounded-full bg-background/60 hover:bg-background/80 backdrop-blur-xs text-primary-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+            className="absolute top-2.5 right-2.5 size-11 min-h-11 min-w-11 sm:size-9 sm:min-h-0 sm:min-w-0 rounded-full bg-card hover:bg-muted border border-border text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Heart size={16} weight={store.isFavorite ? "fill" : "bold"} className={store.isFavorite ? "text-destructive" : ""} />
           </button>
@@ -106,17 +106,17 @@ export function IFoodStoreFeedCard({
         {/* Informações da Loja */}
         <Link
           to={`/loja/${store.slug}` as any}
-          className="p-3 flex flex-col gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="p-3 flex flex-col gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <div className="flex items-center gap-2">
-            <div className="size-6 rounded-full overflow-hidden border border-border/60 shrink-0 bg-muted flex items-center justify-center">
+            <div className="size-6 rounded-full overflow-hidden border border-border shrink-0 bg-muted flex items-center justify-center">
               {displayLogo ? (
                 <img src={displayLogo} alt="" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-3xs font-black text-primary">{initial}</span>
               )}
             </div>
-            <span className="text-sm font-bold text-foreground leading-tight truncate">
+            <span className="text-sm font-bold text-foreground leading-tight line-clamp-2 text-anti-truncate">
               {store.name}
             </span>
           </div>
@@ -127,7 +127,7 @@ export function IFoodStoreFeedCard({
               {store.deliveryTime && <span>{store.deliveryTime}</span>}
               {store.deliveryTime && store.deliveryFee && <span>•</span>}
               {store.deliveryFee && (
-                <span className={cn(store.deliveryFee === "Grátis" && "text-emerald-600 dark:text-emerald-400 font-bold")}>
+                <span className={cn(store.deliveryFee === "Grátis" && "text-success font-bold")}>
                   {store.deliveryFee}
                 </span>
               )}
@@ -135,7 +135,7 @@ export function IFoodStoreFeedCard({
           )}
 
           {store.couponBadge && (
-            <div className="inline-flex items-center gap-1 text-2xs text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-1 rounded-md leading-none mt-1 self-start">
+            <div className="inline-flex items-center gap-1 text-2xs text-foreground font-bold bg-muted border border-border px-2 py-1 rounded-md leading-none mt-1 self-start">
               <Tag size={12} weight="bold" />
               <span>{store.couponBadge}</span>
             </div>
@@ -149,17 +149,17 @@ export function IFoodStoreFeedCard({
   return (
     <div
       className={cn(
-        "w-full p-3 rounded-2xl bg-card hover:bg-muted/30 border border-border/60 flex items-center justify-between gap-3 transition-colors select-none shadow-xs group",
+        "w-full p-3 rounded-2xl bg-card hover:bg-muted border border-border flex items-center justify-between gap-3 transition-colors select-none group",
         className,
       )}
       data-testid="ifood-store-list-card"
     >
       <Link
         to={`/loja/${store.slug}` as any}
-        className="flex items-center gap-3 min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="flex items-center gap-3 min-w-0 flex-1 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {/* Logo Redondo da Loja */}
-        <div className="size-14 sm:size-16 rounded-full overflow-hidden border border-border/80 bg-background flex items-center justify-center shrink-0 shadow-2xs relative">
+        <div className="size-14 sm:size-16 rounded-full overflow-hidden border border-border bg-background flex items-center justify-center shrink-0 relative">
           {displayLogo ? (
             <img
               src={displayLogo}
@@ -169,7 +169,7 @@ export function IFoodStoreFeedCard({
               onError={() => setLogoFailed(true)}
             />
           ) : (
-            <div className="size-full bg-primary/10 flex items-center justify-center text-primary font-black text-base">
+            <div className="size-full bg-muted flex items-center justify-center text-foreground font-black text-base">
               {initial}
             </div>
           )}
@@ -178,11 +178,11 @@ export function IFoodStoreFeedCard({
         {/* Detalhes da Loja */}
         <div className="flex flex-col min-w-0 gap-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-bold text-foreground leading-tight break-words">
+            <span className="text-sm font-bold text-foreground leading-tight break-words line-clamp-2 text-anti-truncate">
               {store.name}
             </span>
             {store.isAd && (
-              <span className="px-2 py-1 rounded-xs border border-border/80 text-3xs font-semibold text-muted-foreground uppercase">
+              <span className="px-2 py-1 rounded-xs border border-border text-3xs font-semibold text-muted-foreground uppercase">
                 Ad
               </span>
             )}
@@ -213,7 +213,7 @@ export function IFoodStoreFeedCard({
           {(store.couponBadge || (store.secondaryBadges && store.secondaryBadges.length > 0)) && (
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {store.couponBadge && (
-                <span className="px-2 py-1 rounded-sm bg-primary/10 text-primary text-3xs font-extrabold flex items-center gap-1">
+                <span className="px-2 py-1 rounded-sm bg-muted border border-border text-foreground text-3xs font-extrabold flex items-center gap-1">
                   <Tag size={10} weight="bold" />
                   <span>{store.couponBadge}</span>
                 </span>
@@ -240,7 +240,7 @@ export function IFoodStoreFeedCard({
           onFavoriteToggle?.(store.id);
         }}
         aria-label="Favoritar"
-        className="size-11 min-w-11 min-h-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted/40 transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="size-11 min-w-11 min-h-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-muted transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Heart size={20} weight={store.isFavorite ? "fill" : "bold"} className={store.isFavorite ? "text-destructive" : ""} />
       </button>

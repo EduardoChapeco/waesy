@@ -585,7 +585,7 @@ export function ConvenienceShowcaseView({
 
       {/* Ação de Vinculação para o Dono do Anúncio (Owner Action) */}
       {isOwner && !isCompany && classified?.id && (
-        <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+        <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground">
             Anuncia como empresa?
           </span>
@@ -594,7 +594,7 @@ export function ConvenienceShowcaseView({
             variant="outline"
             size="sm"
             onClick={handleOpenLinkStoreModal}
-            className="h-11 min-h-11 px-3 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 gap-2 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-11 min-h-11 px-3 text-xs font-semibold text-foreground border-border bg-card hover:bg-muted gap-2 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Building2 className="size-3.5" />
             <span>Vincular a Loja</span>
@@ -825,8 +825,8 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "p-3 min-h-11 rounded-lg text-center border transition-colors duration-150 cursor-pointer flex flex-col items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       isSelected
-                        ? "border-primary bg-primary/10 text-primary font-bold  ring-1 ring-primary/30"
-                        : "border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                        ? "border-primary bg-muted text-primary font-bold ring-1 ring-primary"
+                        : "border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
                     <span className="text-xs">{info.title}</span>
@@ -1007,38 +1007,38 @@ export function ConvenienceShowcaseView({
             {/* Box da Foto: Grande, proporção controlada e cantos suaves */}
             <div className="space-y-2 sm:space-y-3">
               <div
-                className="relative aspect-square w-full max-h-128 rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="relative aspect-square w-full max-h-128 rounded-none sm:rounded-2xl overflow-hidden bg-muted border-b sm:border border-border flex items-center justify-center group cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
                 {/* Badges Flutuantes Dinâmicas e Contextuais */}
                 <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 pointer-events-none select-none">
                   {(temperature === "gelada" || temperature === "gelado") && (
-                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-sky-600 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-sky-700 text-sky-50 border border-sky-800">
                       Gelado
                     </span>
                   )}
                   {Boolean(attrs.is_featured || attrs.is_boosted || classified?.is_featured) && (
-                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground">
                       Destaque
                     </span>
                   )}
                   {Boolean(attrs.is_club_exclusive || attrs.club_price_cents) && (
-                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-blue-600 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-blue-700 text-blue-50 border border-blue-800">
                       Exclusivo Clube
                     </span>
                   )}
                   {progressiveDiscountTiers.length > 0 && (
-                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-warning text-warning-foreground shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-amber-600 text-amber-50 border border-amber-700">
                       Leve Mais Por Menos
                     </span>
                   )}
                   {readyDelivery && (
-                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-700 text-emerald-50 border border-emerald-800">
                       Pronta Entrega
                     </span>
                   )}
                   {isOrganic && (
-                    <span className="px-3 py-1 rounded-md text-3xs font-extrabold uppercase tracking-wider bg-emerald-700 text-white shadow-xs">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-800 text-emerald-50 border border-emerald-900">
                       Orgânico
                     </span>
                   )}
@@ -1052,14 +1052,14 @@ export function ConvenienceShowcaseView({
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground p-8 text-center">
-                    <ShoppingBag className="size-12 stroke-1 text-primary/40" />
+                    <ShoppingBag className="size-12 stroke-1 text-muted-foreground" />
                     <p className="text-xs">Foto do produto</p>
                   </div>
                 )}
                 {images.length > 0 && (
                   <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="px-3 py-1 rounded-lg bg-background text-xs font-semibold text-foreground border border-border/50 flex items-center gap-2">
-                      <Maximize2 className="size-3.5" />
+                    <span className="px-3 py-1 rounded-lg bg-card text-xs font-semibold text-foreground border border-border flex items-center gap-2">
+                      <Maximize2 className="size-4" />
                       Expandir
                     </span>
                   </div>
@@ -1075,10 +1075,10 @@ export function ConvenienceShowcaseView({
                       type="button"
                       onClick={() => setActivePhotoIdx(idx)}
                       className={cn(
-                        "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted/20 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+                        "size-14 rounded-lg overflow-hidden border shrink-0 bg-muted transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         activePhotoIdx === idx
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-border/60 opacity-60 hover:opacity-100"
+                          ? "border-primary border-2"
+                          : "border-border opacity-70 hover:opacity-100"
                       )}
                     >
                       <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
@@ -1095,7 +1095,7 @@ export function ConvenienceShowcaseView({
             {isMobile && (
             <div className="px-4 space-y-3">
               {/* Card Canônico de Resumo do Produto (Identificação + Preço Integrados Padrão Apple HIG) */}
-              <div className="p-4 sm:p-5 rounded-lg bg-card border border-border/60 space-y-3 shadow-xs">
+              <div className="p-4 sm:p-5 rounded-lg bg-card border border-border space-y-3">
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground/90">{advertiserName}</span>
@@ -1639,8 +1639,8 @@ export function ConvenienceShowcaseView({
                         className={cn(
                           "p-2 min-h-11 rounded-lg text-xs font-medium border text-left cursor-pointer transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                           orderScheduledWindow === win.id
-                            ? "bg-primary/10 border-primary text-primary font-bold"
-                            : "bg-background border-border/60 text-foreground/80 hover:bg-muted/40"
+                            ? "bg-secondary border-primary text-foreground font-bold"
+                            : "bg-background border-border text-foreground hover:bg-muted"
                         )}
                       >
                         {win.label}
@@ -1651,12 +1651,12 @@ export function ConvenienceShowcaseView({
               )}
 
               {orderDeliveryMode === "pickup" && (
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1 text-emerald-800 dark:text-emerald-300">
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-xs space-y-1 text-emerald-800 dark:text-emerald-200">
                   <p className="font-semibold flex items-center gap-2">
-                    <Store className="size-3.5" />
+                    <Store className="size-4" />
                     <span>Retirada no Balcão da Loja (Taxa Grátis)</span>
                   </p>
-                  <p className="text-xs opacity-90">
+                  <p className="text-xs">
                     O pedido fica reservado para você retirar em: <strong>{locationName}</strong>.
                   </p>
                 </div>
@@ -1665,7 +1665,7 @@ export function ConvenienceShowcaseView({
               {orderDeliveryMode !== "pickup" && (
                 <div className="space-y-2 pt-1">
                   <Label className="text-xs font-semibold text-foreground">
-                    Endereço de Entrega & Referência *
+                    Endereço e Referência *
                   </Label>
                   <Input
                     value={orderAddress}
@@ -1690,14 +1690,14 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "pix"
-                        ? "border-emerald-600 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold"
-                        : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
+                        ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 font-bold"
+                        : "border-border bg-background text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <QrCode className="size-4" />
                     <span className="text-xs">Pix</span>
                     {pixDiscountPercent > 0 && (
-                      <span className="text-xs font-bold text-emerald-600 bg-emerald-500/20 px-1 rounded">
+                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900 border border-emerald-200 dark:border-emerald-800 px-1 rounded">
                         -{pixDiscountPercent}%
                       </span>
                     )}
@@ -1711,8 +1711,8 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "card"
-                        ? "border-primary bg-primary/10 text-primary font-bold"
-                        : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
+                        ? "border-primary bg-secondary text-foreground font-bold"
+                        : "border-border bg-background text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <CreditCard className="size-4" />
@@ -1728,8 +1728,8 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "cash"
-                        ? "border-warning bg-warning/10 text-warning-strong  font-bold"
-                        : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
+                        ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 font-bold"
+                        : "border-border bg-background text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <Banknote className="size-4" />
@@ -1913,12 +1913,12 @@ export function ConvenienceShowcaseView({
       </Dialog>
       {/* Modal de Foto em Tela Cheia (Lightbox) */}
       <Dialog open={!!fullscreenImage} onOpenChange={(open) => !open && setFullscreenImage(null)}>
-        <DialogContent className="max-w-4xl p-2 bg-background/95 backdrop-blur-xl border-border/80 rounded-lg overflow-hidden">
+        <DialogContent className="max-w-4xl p-2 bg-background border-border rounded-lg overflow-hidden">
           <DialogHeader className="sr-only">
             <DialogTitle>Foto do Produto</DialogTitle>
           </DialogHeader>
           {fullscreenImage && (
-            <div className="relative aspect-square sm:aspect-4/3 w-full max-h-screen rounded-lg overflow-hidden flex items-center justify-center bg-muted/40">
+            <div className="relative aspect-square sm:aspect-4/3 w-full max-h-screen rounded-lg overflow-hidden flex items-center justify-center bg-muted">
               <img
                 src={fullscreenImage}
                 alt={title}

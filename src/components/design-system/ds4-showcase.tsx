@@ -52,7 +52,6 @@ import {
   DashboardGrid,
 } from "@/design-system";
 import {
-  Sparkles,
   Plane,
   Users,
   Briefcase,
@@ -187,7 +186,7 @@ export function DS4Showcase() {
               <Button variant="ghost" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Fantasma</Button>
               <Button variant="destructive" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Excluir Item</Button>
               <Button isLoading loadingText="Processando" data-action-intent="preview-only" data-action-reason="Especime do catalogo de componentes">Carregando</Button>
-              <IconButton icon={<Sparkles className="size-4 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0" />} aria-label="Copilot IA" />
+              <IconButton icon={<Layers className="size-4 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0" />} aria-label="Copilot" />
             </div>
           </div>
 

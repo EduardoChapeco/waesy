@@ -41,7 +41,7 @@ import {
   Plus,
   ShieldCheck,
   Building2,
-  Sparkles, ArrowRight,
+  ArrowRight,
   ArrowUp,
   ArrowDown,
   Store,
@@ -597,7 +597,7 @@ export function ProfileInPageEditor({
             <div className="flex items-start gap-3 min-w-0">
               <div className="size-9 rounded-lg bg-card border border-border/50 text-foreground flex items-center justify-center shrink-0 mt-1 shadow-2xs">
                 {isBrandPersonaView ? (
-                  <Sparkles className="size-5 text-primary" />
+                  <Store className="size-5 text-primary" />
                 ) : (
                   <ShieldCheck className="size-5 text-primary" />
                 )}
@@ -743,7 +743,7 @@ export function ProfileInPageEditor({
                   {/* Informação BrandKit para Empresas / Marcas */}
                   <div className="rounded-xl bg-muted/20 border border-border/40 p-4 space-y-2 text-xs">
                     <div className="flex items-center gap-2 font-semibold text-foreground">
-                      <Sparkles className="size-4 text-primary shrink-0" />
+                      <Building2 className="size-4 text-primary shrink-0" />
                       <span>Capa dos Feeds & Vitrines</span>
                     </div>
                     <p className="text-muted-foreground leading-relaxed">
@@ -938,7 +938,7 @@ export function ProfileInPageEditor({
                 <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center justify-between pb-3 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                      <Sparkles className="size-4 text-primary shrink-0" />
+                      <Building2 className="size-4 text-primary shrink-0" />
                       <span>Banner Promocional da Vitrine</span>
                     </div>
                     <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">

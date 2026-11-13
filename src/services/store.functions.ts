@@ -261,6 +261,18 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
      ? effectiveOrderTypes.takeout
      : currentStore?.settings?.allow_pickup ?? true;
 
+ const isPlatformAdminCaller = Boolean(
+   identity?.isPlatformAdmin ||
+   identity?.role === "platform_admin" ||
+   identity?.role === "master"
+ );
+ const hasExistingSegment = Boolean(
+   currentStore?.settings?.segment ||
+   currentStore?.settings?.type ||
+   currentStore?.settings?.niche
+ );
+ const canMutateNicheAndModules = isPlatformAdminCaller || !hasExistingSegment;
+
  const settings = {
  ...(currentStore?.settings || {}),
  ...(latitude !== undefined ? { latitude } : {}),
@@ -279,10 +291,10 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
   ...((custom_checkout_fields ?? customCheckoutFields) !== undefined ? { custom_checkout_fields: custom_checkout_fields ?? customCheckoutFields } : {}),
   ...((holiday_exceptions ?? holidayExceptions) !== undefined ? { holiday_exceptions: holiday_exceptions ?? holidayExceptions } : {}),
   ...((emergency_pause_until ?? emergencyPauseUntil) !== undefined ? { emergency_pause_until: emergency_pause_until ?? emergencyPauseUntil } : {}),
- ...(segment ? { segment, type: segment, niche: segment } : {}),
- ...(type && !segment ? { type, segment: type, niche: type } : {}),
- ...(niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),
- ...(enabled_modules !== undefined ? { enabled_modules } : {}),
+ ...(canMutateNicheAndModules && segment ? { segment, type: segment, niche: segment } : {}),
+ ...(canMutateNicheAndModules && type && !segment ? { type, segment: type, niche: type } : {}),
+ ...(canMutateNicheAndModules && niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),
+ ...(canMutateNicheAndModules && enabled_modules !== undefined ? { enabled_modules } : {}),
  ...(wholesale_enabled !== undefined ? { wholesale_enabled } : {}),
  ...(payment_processing_mode !== undefined ? { payment_processing_mode } : {}),
  logoUrl,
@@ -415,7 +427,7 @@ export async function _getPolicies() {
  const db = getServerClient();
  const { data: store, error } = await db
  .from("stores")
- .select("id, policies")
+ .select("id, settings")
  .eq("id", identity.store_id)
  .single();
 
@@ -423,7 +435,11 @@ export async function _getPolicies() {
  throw new Error("Loja não encontrada ou erro ao carregar políticas");
  }
 
- return store;
+ const settings = (store.settings || {}) as Record<string, any>;
+ return {
+ id: store.id,
+ policies: (settings.policies || {}) as Record<string, any>,
+ };
 }
 
 export const getPolicies = createServerFn({ method: "GET" }).handler(_getPolicies);
@@ -443,7 +459,22 @@ export async function _savePolicies(data: z.infer<typeof savePoliciesSchema>) {
  assertStoreAccess(identity, ["owner", "admin"]);
 
  const db = getServerClient();
- const { error } = await db.from("stores").update({ policies: data }).eq("id", identity.store_id);
+ const { data: currentStore, error: readErr } = await db
+ .from("stores")
+ .select("settings")
+ .eq("id", identity.store_id)
+ .single();
+
+ if (readErr) {
+ throw new Error("Erro ao carregar configurações da loja: " + readErr.message);
+ }
+
+ const nextSettings = {
+ ...((currentStore?.settings as Record<string, any>) || {}),
+ policies: data,
+ };
+
+ const { error } = await db.from("stores").update({ settings: nextSettings }).eq("id", identity.store_id);
 
  if (error) {
  throw new Error("Erro ao salvar políticas: " + error.message);

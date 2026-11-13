@@ -138,19 +138,19 @@ function IntegrationCard({
   };
 
   return (
-    <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
+    <Card className="bg-card rounded-lg border border-border shadow-none flex flex-col justify-between">
       <div>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+              <div className="p-3 bg-muted border border-border rounded-lg text-primary shrink-0">
                 <Icon className="size-5" />
               </div>
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
                   {title}
                   {existingSetting?.is_active ? (
-                    <Badge variant="outline" className="text-xs border-success/40 bg-success/10 text-success">
+                    <Badge variant="outline" className="text-xs border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                       Ativo
                     </Badge>
                   ) : (
@@ -341,7 +341,7 @@ function SecretVaultCard({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+              <div className="p-3 bg-muted border border-border rounded-lg text-primary shrink-0">
                 <Icon className="size-5" />
               </div>
               <div>
@@ -349,7 +349,7 @@ function SecretVaultCard({
                   {title}
                   {existingSecret ? (
                     <Badge variant="default" className="text-xs">
-                      BYOK Ativo
+                      Chave Ativa
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-xs text-muted-foreground">
@@ -365,13 +365,13 @@ function SecretVaultCard({
         </CardHeader>
 
         <CardContent className="space-y-3 pt-1">
-          <div className="text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/50 flex items-center justify-between">
-            <span>Recursos / Modelos:</span>
+          <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg border border-border flex items-center justify-between">
+            <span>Modelos Suportados:</span>
             <span className="font-semibold text-foreground">{modelsLabel}</span>
           </div>
 
           {existingSecret && (
-            <div className="bg-primary/10 text-primary p-3 rounded-lg text-xs flex items-center justify-between border border-primary/20">
+            <div className="bg-muted text-foreground p-3 rounded-lg text-xs flex items-center justify-between border border-border">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 shrink-0 text-primary" />
                 <span className="font-medium">Chave Pessoal Salva:</span>
@@ -840,49 +840,49 @@ function UnifiedIntegrationsHubPage() {
 
       {/* TABS NAVEGAÇÃO DO HUB */}
       <Tabs defaultValue="payments_gateways" className="w-full space-y-6">
-        <TabsList className="flex flex-wrap items-center h-auto p-2 gap-2 bg-muted/60 rounded-lg border border-border/70">
-          <TabsTrigger value="payments_gateways" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <CreditCard className="size-3.5 text-emerald-500" />
+        <TabsList className="flex flex-wrap items-center h-auto p-2 gap-2 bg-muted rounded-lg border border-border">
+          <TabsTrigger value="payments_gateways" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <CreditCard className="size-4 text-emerald-600 dark:text-emerald-400" />
             Pagamentos
           </TabsTrigger>
 
-          <TabsTrigger value="travel_gds" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Plane className="size-3.5 text-sky-500" />
+          <TabsTrigger value="travel_gds" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Plane className="size-4 text-sky-600 dark:text-sky-400" />
             GDS Turismo
           </TabsTrigger>
 
-          <TabsTrigger value="ai_vault" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Bot className="size-3.5 text-primary" />
-            Cofre IA (BYOK)
+          <TabsTrigger value="ai_vault" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Bot className="size-4 text-primary" />
+            Cofre IA
           </TabsTrigger>
 
-          <TabsTrigger value="marketplaces" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Store className="size-3.5 text-emerald-500" />
+          <TabsTrigger value="marketplaces" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Store className="size-4 text-emerald-600 dark:text-emerald-400" />
             Marketplaces
           </TabsTrigger>
 
-          <TabsTrigger value="erp_fiscal" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <FileText className="size-3.5 text-blue-500" />
+          <TabsTrigger value="erp_fiscal" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <FileText className="size-4 text-sky-600 dark:text-sky-400" />
             Fiscal
           </TabsTrigger>
 
-          <TabsTrigger value="logistics" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Truck className="size-3.5 text-warning-strong" />
+          <TabsTrigger value="logistics" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Truck className="size-4 text-warning-strong" />
             Logística
           </TabsTrigger>
 
-          <TabsTrigger value="messaging" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <MessageCircle className="size-3.5 text-purple-500" />
+          <TabsTrigger value="messaging" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <MessageCircle className="size-4 text-violet-600 dark:text-violet-400" />
             Mensageria
           </TabsTrigger>
 
-          <TabsTrigger value="growth_pixels" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <BarChart className="size-3.5 text-pink-500" />
+          <TabsTrigger value="growth_pixels" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <BarChart className="size-4 text-rose-600 dark:text-rose-400" />
             Pixels
           </TabsTrigger>
 
-          <TabsTrigger value="maps" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <MapPin className="size-3.5 text-teal-500" />
+          <TabsTrigger value="maps" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <MapPin className="size-4 text-teal-600 dark:text-teal-400" />
             Mapas
           </TabsTrigger>
         </TabsList>
@@ -1096,12 +1096,12 @@ function UnifiedIntegrationsHubPage() {
         {/* 1. ABA COFRE DE IA & BYOK */}
         <TabsContent value="ai_vault" className="space-y-4 outline-none">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
-            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-              Pool Ativo (Gemini / Groq / OpenAI)
+            <Badge variant="outline" className="text-xs border-border bg-muted text-foreground">
+              Pool de IA Ativo
             </Badge>
-            <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-primary/30 text-primary hover:bg-primary/10 min-h-11 sm:min-h-0">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-border text-foreground hover:bg-muted">
               <Link to="/workspace/configuracoes/inteligencia-artificial">
-                <Bot className="size-3.5 text-primary" />
+                <Bot className="size-4 text-primary" />
                 Modelos de IA
                 <ExternalLink className="size-3 text-muted-foreground" />
               </Link>
@@ -1529,18 +1529,18 @@ function UnifiedIntegrationsHubPage() {
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+                    <div className="p-3 bg-muted border border-border rounded-lg text-foreground shrink-0">
                       <Zap className="size-5" />
                     </div>
                     <div>
                       <CardTitle className="text-base flex items-center gap-2">
-                        Google Ads & Meta Ads (Facebook / Instagram) — Protocolo MCP
+                        Meta Ads e Google Ads
                         <Badge variant="secondary" className="text-xs">
-                          OAuth 2.0 + GAQL + CAPI
+                          OAuth 2.0
                         </Badge>
                       </CardTitle>
                       <CardDescription className="text-xs mt-1">
-                        Conexão rápida em 1 clique com autodescoberta de Contas (`act_...` / Customer ID), Pixels, sincronização de gasto real e Skill de Diagnóstico IA.
+                        Conexão rápida em 1 clique com descoberta automática de contas, pixels e métricas de gasto real.
                       </CardDescription>
                     </div>
                   </div>
@@ -1565,7 +1565,7 @@ function UnifiedIntegrationsHubPage() {
                       }}
                       className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 focus-visible:ring-2"
                     >
-                      Conectar Meta Ads (1-Clique)
+                      Conectar Meta Ads
                     </Button>
                     <Button
                       type="button"
@@ -1587,11 +1587,11 @@ function UnifiedIntegrationsHubPage() {
                       }}
                       className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 focus-visible:ring-2"
                     >
-                      Conectar Google Ads (1-Clique)
+                      Conectar Google Ads
                     </Button>
                     <Button asChild size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs font-semibold px-4 focus-visible:ring-2">
                       <Link to="/workspace/marketing/anuncios">
-                        Abrir Painel MCP de Anúncios
+                        Abrir Painel de Anúncios
                       </Link>
                     </Button>
                   </div>
@@ -1600,19 +1600,19 @@ function UnifiedIntegrationsHubPage() {
             </Card>
 
             {/* LinkedIn Company Page Integration Card */}
-            <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
+            <Card className="bg-card rounded-lg border border-border shadow-none flex flex-col justify-between">
               <div>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+                      <div className="p-3 bg-muted border border-border rounded-lg text-foreground shrink-0">
                         <Linkedin className="size-5 fill-current" />
                       </div>
                       <div>
                         <CardTitle className="text-base flex items-center gap-2">
                           LinkedIn Company Page
                           {linkedInStatus?.isConnected ? (
-                            <Badge variant="outline" className="text-xs bg-emerald-600 hover:bg-emerald-600">
+                            <Badge variant="outline" className="text-xs bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200">
                               Conectado Ativo
                             </Badge>
                           ) : (
@@ -1670,7 +1670,7 @@ function UnifiedIntegrationsHubPage() {
                         type="button"
                         onClick={handleConnectLinkedIn}
                         disabled={isConnectingLinkedIn}
-                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {isConnectingLinkedIn ? (
                           <>

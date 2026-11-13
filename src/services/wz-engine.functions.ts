@@ -392,7 +392,7 @@ export const chargeAiUsageWz = createServerFn({ method: "POST" })
 
     if (bucketErr || !eligibleBuckets || eligibleBuckets.length === 0) {
       throw new Error(
-        "Saldo insuficiente de $WZ Global para utilizar Inteligência Artificial. Créditos promocionais emitidos por lojas não podem ser utilizados para IA da plataforma."
+        "Saldo insuficiente de $WZ Global. Créditos promocionais de lojas não cobrem este recurso."
       );
     }
 

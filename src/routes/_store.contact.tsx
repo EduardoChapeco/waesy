@@ -91,7 +91,7 @@ function ContactTrustAnchorPage() {
         <div className="p-6 rounded-lg border border-border bg-card space-y-3">
           <div className="flex items-center gap-2 text-primary">
             <Mail className="size-5" />
-            <h2 className="text-base font-bold text-foreground">E-mail de Atendimento & Ouvidoria</h2>
+            <h2 className="text-base font-bold text-foreground">Atendimento e Ouvidoria</h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Canal oficial para consumidores, lojistas parceiros, solicitações comerciais e verificação de
@@ -105,7 +105,7 @@ function ContactTrustAnchorPage() {
         <div className="p-6 rounded-lg border border-border bg-card space-y-3">
           <div className="flex items-center gap-2 text-primary">
             <Code2 className="size-5" />
-            <h2 className="text-base font-bold text-foreground">Engenharia, API & Encarregado LGPD (DPO)</h2>
+            <h2 className="text-base font-bold text-foreground">Engenharia e LGPD</h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Suporte técnico para integrações OpenAPI 3.1, protocolo WebMCP, webhooks transacionais e exercício
@@ -119,7 +119,7 @@ function ContactTrustAnchorPage() {
         <div className="p-6 rounded-lg border border-border bg-card space-y-3">
           <div className="flex items-center gap-2 text-primary">
             <MapPin className="size-5" />
-            <h2 className="text-base font-bold text-foreground">Endereço Físico & Sede Regional</h2>
+            <h2 className="text-base font-bold text-foreground">Endereço Regional</h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Av. Getúlio Vargas, Centro, Chapecó — Santa Catarina (SC), CEP 89801-000, Brasil.
@@ -133,7 +133,7 @@ function ContactTrustAnchorPage() {
         <div className="p-6 rounded-lg border border-border bg-card space-y-3">
           <div className="flex items-center gap-2 text-primary">
             <Clock className="size-5" />
-            <h2 className="text-base font-bold text-foreground">Horário de Operação & SLA</h2>
+            <h2 className="text-base font-bold text-foreground">Horário de Operação</h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Atendimento humano de Segunda a Sexta-feira, das 08h00 às 18h00 (Horário de Brasília — BRT).

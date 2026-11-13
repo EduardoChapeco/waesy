@@ -227,7 +227,7 @@ function CopilotPage() {
     stableClientMessageId?: string,
   ) => {
     if (!text.trim() || isSending) return;
-    if (effectiveUserId && !isUuid(activeThreadId)) {
+    if (effectiveUserId && !isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
       toast.error(
         "A conversa ainda não está disponível. Tente recarregar ou criar uma nova thread.",
       );
@@ -258,14 +258,50 @@ function CopilotPage() {
     setIsSending(true);
 
     try {
-      if (effectiveUserId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
+      let targetThreadId = requestThreadId;
+      if (effectiveUserId && (!isUuid(targetThreadId) || targetThreadId === DEFAULT_GUEST_THREAD_ID)) {
+        try {
+          const created = await createAiConversationThread({
+            data: {
+              type: "ai_assistant",
+              title: text.slice(0, 48) || "Assessor Local",
+              metadata: { source: "store_copilot" },
+              workingMemory: {},
+            },
+          });
+          if (runId !== activeRunRef.current) return;
+          if (created?.id) {
+            targetThreadId = created.id;
+            activeThreadRef.current = created.id;
+            setActiveThreadId(created.id);
+            setThreads((prev) => [
+              {
+                id: created.id,
+                type: (created.thread_type as any) || "ai_assistant",
+                title: created.subject || "Assessor Local",
+                isPinned: true,
+              },
+              ...prev.filter((t) => t.id !== DEFAULT_GUEST_THREAD_ID),
+            ]);
+          } else {
+            throw new Error("Não foi possível iniciar sua conversa persistida.");
+          }
+        } catch (threadErr: any) {
+          throw new Error(threadErr?.message || "Falha ao criar conversa autenticada do Copilot.");
+        }
+      }
+
+      if (effectiveUserId) {
+        if (!isUuid(targetThreadId) || targetThreadId === DEFAULT_GUEST_THREAD_ID) {
+          throw new Error("Conversa autenticada inválida. Tente novamente ou recarregue a página.");
+        }
         const uploadedAttachments = await uploadComposerAttachments(
           attachments,
           uploadCopilotMultimodalAttachment as any,
         );
         const result = await sendAiConversationMessage({
           data: {
-            threadId: requestThreadId,
+            threadId: targetThreadId,
             clientMessageId: userMessageItem.id,
             message: text,
             replyToId,
@@ -274,7 +310,11 @@ function CopilotPage() {
             userLng: userCoords.lng,
           },
         });
-        if (runId !== activeRunRef.current || activeThreadRef.current !== requestThreadId) return;
+        const threadSwitched =
+          targetThreadId === requestThreadId
+            ? activeThreadRef.current !== requestThreadId
+            : activeThreadRef.current !== targetThreadId;
+        if (runId !== activeRunRef.current || threadSwitched) return;
         setMessages((prev) => {
           const executionFailed =
             result?.aiMessage?.status === "failed" ||
@@ -314,7 +354,7 @@ function CopilotPage() {
         if (result?.updatedWorkingMemory) {
           setThreads((prev) =>
             prev.map((thread) =>
-              thread.id === requestThreadId
+              thread.id === targetThreadId
                 ? { ...thread, workingMemory: result.updatedWorkingMemory }
                 : thread,
             ),

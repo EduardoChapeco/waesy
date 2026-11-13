@@ -193,7 +193,7 @@ export const generateAiBmcFromStore = createServerFn({ method: "POST" })
     // Carrega contexto da loja
     const { data: store } = await supabase
       .from("stores")
-      .select("name, description, category, city, state")
+      .select("name, description, settings, city, state")
       .eq("id", targetStoreId)
       .maybeSingle();
 
@@ -203,17 +203,18 @@ export const generateAiBmcFromStore = createServerFn({ method: "POST" })
     // Carrega principais produtos
     const { data: topProducts } = await supabase
       .from("products")
-      .select("title, name, price_cents, category")
+      .select("title, price_cents")
       .eq("store_id", targetStoreId)
       .limit(6);
 
+    const storeSettings = ((store as any)?.settings || {}) as Record<string, any>;
     const storeContext = {
       name: store?.name || "",
-      category: data.niche || store?.category || "",
+      category: data.niche || storeSettings.category || storeSettings.segment || "",
       location: store?.city && store?.state ? `${store.city} - ${store.state}` : "",
       description: data.businessDescription || store?.description || "",
       archetype: brandDna?.archetype || "",
-      topProducts: (topProducts || []).map((p) => p.title || p.name).filter(Boolean),
+      topProducts: (topProducts || []).map((p: any) => p.title).filter(Boolean),
       targetAudience: data.targetAudience || "",
     };
 
@@ -319,7 +320,7 @@ export const generateAiSwotAnalysis = createServerFn({ method: "POST" })
 
     const { data: store, error: storeError } = await supabase
       .from("stores")
-      .select("name, description, category, city, state")
+      .select("name, description, settings, city, state")
       .eq("id", targetStoreId)
       .maybeSingle();
     if (storeError) throw new Error(`Falha ao ler dados da loja para SWOT: ${storeError.message}`);
@@ -327,8 +328,9 @@ export const generateAiSwotAnalysis = createServerFn({ method: "POST" })
 
     const brandDna = await getStoreBrandDna({ data: { storeId: targetStoreId } });
 
+    const swotSettings = ((store as any)?.settings || {}) as Record<string, any>;
     const storeName = store?.name || "";
-    const storeCategory = store?.category || "";
+    const storeCategory = swotSettings.category || swotSettings.segment || "";
     const storeLocation = store?.city && store?.state ? `${store.city} - ${store.state}` : "";
     const storeDesc = store?.description || "";
 

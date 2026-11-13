@@ -700,7 +700,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
               <li><a href="/classificados" className="hover:text-foreground underline-offset-4 hover:underline">Classificados e Ofertas</a></li>
               <li><a href="/eventos" className="hover:text-foreground underline-offset-4 hover:underline">Agenda de Eventos</a></li>
               <li><a href="/receitas" className="hover:text-foreground underline-offset-4 hover:underline">Receitas da Comunidade</a></li>
-              <li><a href="/vagas" className="hover:text-foreground underline-offset-4 hover:underline">Vagas de Emprego</a></li>
+              <li><a href="/empregos" className="hover:text-foreground underline-offset-4 hover:underline">Vagas de Emprego</a></li>
             </ul>
           </div>
           <div className="space-y-2">

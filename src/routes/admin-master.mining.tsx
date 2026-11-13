@@ -793,12 +793,12 @@ function AdminMiningHubPage() {
                   {filteredSources.map((source) => {
                     const isTriggering = triggeringSourceId === source.id;
                     const typeBadgeColors: Record<string, string> = {
-                      rss: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-                      jobs_portal: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-                      tenders: "bg-violet-500/10 text-violet-500 border-violet-500/20",
-                      auctions: "bg-warning/10 text-warning-strong border-warning/20",
-                      real_estate: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
-                      news: "bg-primary/10 text-primary border-primary/20",
+                      rss: "bg-muted text-foreground border-border",
+                      jobs_portal: "bg-muted text-foreground border-border",
+                      tenders: "bg-muted text-foreground border-border",
+                      auctions: "bg-muted text-warning-strong border-border",
+                      real_estate: "bg-muted text-foreground border-border",
+                      news: "bg-muted text-primary border-border",
                     };
 
                     return (
@@ -1742,12 +1742,12 @@ function AdminMiningHubPage() {
   className={cn(
   "text-2xs px-2 py-0 font-medium rounded-md",
   item.modalidadeNome.toLowerCase().includes("pregão")
-  ? "bg-primary/10 text-primary border-primary/20"
+  ? "bg-secondary text-foreground border-border"
   : item.modalidadeNome.toLowerCase().includes("dispensa") || item.modalidadeNome.toLowerCase().includes("inexigibilidade")
-  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+  ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800"
   : item.modalidadeNome.toLowerCase().includes("concorrência") || item.modalidadeNome.toLowerCase().includes("tomada")
-  ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-  : "bg-warning/10 text-warning-strong  border-warning/20"
+  ? "bg-muted text-foreground border-border"
+  : "bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800"
   )}
   >
   {item.modalidadeNome}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Hotel as HotelIcon, Check, ChevronsUpDown, Search, X, Star, MapPin, Sparkles, Sliders } from "lucide-react";
+import { Hotel as HotelIcon, Check, ChevronsUpDown, Search, X, Star, MapPin, Sliders } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -347,7 +347,7 @@ function HotelPickerPanel({
                 }}
                 className="inline-flex items-center gap-2 h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold cursor-pointer hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <Sparkles className="size-3.5" />
+                <HotelIcon className="size-3.5" />
                 Usar &ldquo;{searchQuery.trim()}&rdquo; como hospedagem personalizada
               </button>
             )}

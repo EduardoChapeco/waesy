@@ -88,12 +88,12 @@ function WorkspaceRHPontoPage() {
       {/* ── Barra Superior de Ações de Ponto & Banco de Horas ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-4 rounded-lg border border-border">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/20">
+          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0 border border-border">
             <Clock className="size-5" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-foreground">Ponto Eletrônico & Banco de Horas</h1>
-            <p className="text-xs text-muted-foreground">Conforme Portaria MTE 671/2021 com auditoria geolocalizada e assinatura mensal.</p>
+            <h1 className="text-base font-bold text-foreground">Ponto Eletrônico</h1>
+            <p className="text-xs text-muted-foreground">Registros conforme Portaria MTE 671/2021.</p>
           </div>
         </div>
 

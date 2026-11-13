@@ -224,10 +224,10 @@ function GrowthValuationDashboard() {
           {/* Cards de Métricas Principais (Real vs Meta) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Lojas */}
-            <Card className="border-border/50 bg-card/40">
+            <Card className="border-border bg-card">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Lojas / Empresas</CardTitle>
-                <Store className="w-4 h-4 text-emerald-600" />
+                <CardTitle className="text-sm font-medium text-muted-foreground">Lojas</CardTitle>
+                <Store className="w-4 h-4 text-success" />
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-baseline justify-between">
@@ -243,9 +243,9 @@ function GrowthValuationDashboard() {
             </Card>
 
             {/* Clientes */}
-            <Card className="border-border/50 bg-card/40">
+            <Card className="border-border bg-card">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Clientes / Cidadãos</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Clientes</CardTitle>
                 <Users className="w-4 h-4 text-primary" />
               </CardHeader>
               <CardContent className="space-y-3">
@@ -352,9 +352,9 @@ function GrowthValuationDashboard() {
 
         {/* TAB 2: ESCALAS & M&A */}
         <TabsContent value="scales" className="space-y-6">
-          <Card className="border-border/50 bg-card/40">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-xl font-bold">Quadro Comparativo de Hiperescala (500 a 5.000 Empresas)</CardTitle>
+              <CardTitle className="text-xl font-bold">Projeções de Escala</CardTitle>
               <CardDescription>
                 Projeção auditada de DRE, geração de caixa e potencial de liquidez em cada estágio de expansão no Sul do Brasil.
               </CardDescription>
@@ -435,9 +435,9 @@ function GrowthValuationDashboard() {
         {/* TAB 3: LIVRO-CAIXA CORPORATIVO */}
         <TabsContent value="ledger" className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="border-border/50 bg-card/40">
+            <Card className="border-border bg-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs uppercase font-medium text-muted-foreground">Total de Aportes / Investimento</CardTitle>
+                <CardTitle className="text-xs uppercase font-medium text-muted-foreground">Total de Investimento</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold font-mono text-emerald-600">
@@ -591,15 +591,15 @@ function GrowthValuationDashboard() {
             </Card>
           </div>
 
-          <Card className="border-border/50 bg-card/40">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-base font-bold">Custo de Reposição de Software (COCOMO II Method)</CardTitle>
+              <CardTitle className="text-base font-bold">Custo de Reposição de Software</CardTitle>
               <CardDescription>
-                Auditoria de esforço para justificar contábil e juridicamente o valor patrimonial intangível da Waesy.
+                Estimativa contábil de esforço para o valor patrimonial do software.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 rounded-lg border border-border/50 bg-background/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="p-4 rounded-lg border border-border bg-muted flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h4 className="font-semibold text-foreground text-sm">Equipe Equivalente Mínima de Engenharia:</h4>
                   <p className="text-xs text-muted-foreground mt-1">

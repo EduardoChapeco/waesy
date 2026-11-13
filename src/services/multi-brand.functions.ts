@@ -11,7 +11,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertManagerAccess, requireAdmin } from "@/lib/server-access";
+import { getServerIdentity, assertManagerAccess, requireAdmin, requirePlatformAdmin } from "@/lib/server-access";
 import {
   type BrandVerticalId,
   type SubscriptionTierId,
@@ -141,7 +141,7 @@ export const getStoreMultiBrandGovernanceFn = createServerFn({ method: "GET" })
 
     const { data: products } = await db
       .from("products")
-      .select("id, is_published_to_marketplace, metadata")
+      .select("id, is_published_to_marketplace, attributes")
       .eq("store_id", targetStoreId);
 
     const allProducts = products ?? [];
@@ -244,6 +244,7 @@ export const updateStoreMarketplaceOptInFn = createServerFn({ method: "POST" })
 export const updateStoreBrandAndTierFn = createServerFn({ method: "POST" })
   .validator((input: unknown) => UpdateBrandAndTierSchema.parse(input))
   .handler(async ({ data }) => {
+    const admin = await requirePlatformAdmin();
     const {
       storeId: requestedStoreId,
       brandOrigin,
@@ -252,7 +253,7 @@ export const updateStoreBrandAndTierFn = createServerFn({ method: "POST" })
       customDomain,
     } = data;
 
-    const targetStoreId = await resolveAuthorizedStoreId(requestedStoreId);
+    const targetStoreId = requestedStoreId || admin.store_id || (await resolveAuthorizedStoreId(requestedStoreId));
     if (!targetStoreId) {
       throw new Error("Loja não identificada para atualizar marca vertical e plano.");
     }

@@ -239,16 +239,16 @@ export function CardSettingsDrawer({
 
             <div className="space-y-2">
               {/* Item 1: Bloqueio Temporário com Switch */}
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-muted border border-border">
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                  <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground shrink-0">
                     <Lock className="size-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block line-clamp-2 text-anti-truncate">
                       Bloqueio temporário
                     </span>
-                    <span className="text-2xs text-muted-foreground block truncate">
+                    <span className="text-2xs text-muted-foreground block line-clamp-2 text-anti-truncate">
                       Inativa o cartão imediatamente
                     </span>
                     <span className="sr-only">Bloqueio Temporário</span>
@@ -260,7 +260,7 @@ export function CardSettingsDrawer({
                   onCheckedChange={handleToggleLock}
                   disabled={isSaving}
                   aria-label="Ativar bloqueio temporário"
-                  className="data-[state=checked]:bg-rose-500 focus-visible:ring-2 focus-visible:ring-warning"
+                  className="data-[state=checked]:bg-rose-500 focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -271,17 +271,17 @@ export function CardSettingsDrawer({
                   onVirtualCardClick?.();
                   if (!onVirtualCardClick) setShowSensitiveData(true);
                 }}
-                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-muted hover:bg-secondary border border-border transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                  <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground shrink-0">
                     <CreditCard className="size-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block line-clamp-2 text-anti-truncate">
                       Cartão Virtual
                     </span>
-                    <span className="text-2xs text-muted-foreground block truncate">
+                    <span className="text-2xs text-muted-foreground block line-clamp-2 text-anti-truncate">
                       Para compras online seguras
                     </span>
                   </div>
@@ -290,21 +290,21 @@ export function CardSettingsDrawer({
               </button>
 
               {/* Item 3: Ajuste de limite (com expand/slider) */}
-              <div className="rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs overflow-hidden">
+              <div className="rounded-2xl bg-muted border border-border overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setShowLimitSlider((prev) => !prev)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                  className="w-full flex items-center justify-between p-4 hover:bg-secondary transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
-                    <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                    <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground shrink-0">
                       <Sliders className="size-5" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                      <span className="text-xs sm:text-sm font-bold text-foreground block line-clamp-2 text-anti-truncate">
                         Ajuste de limite
                       </span>
-                      <span className="text-2xs text-muted-foreground block truncate">
+                      <span className="text-2xs text-muted-foreground block line-clamp-2 text-anti-truncate">
                         Defina seu teto de gastos
                       </span>
                       <span className="sr-only">Limite do Cartão</span>
@@ -363,14 +363,14 @@ export function CardSettingsDrawer({
                 type="button"
                 onClick={onReplacementRequest}
                 disabled={!onReplacementRequest}
-                className="w-full flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/60 shadow-2xs transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-muted hover:bg-accent border border-border transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800 shrink-0">
+                  <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground shrink-0">
                     <FileText className="size-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block line-clamp-2 text-anti-truncate">
                       Pedir segunda via
                     </span>
                     <span className="text-2xs text-muted-foreground block">
@@ -392,9 +392,9 @@ export function CardSettingsDrawer({
             </h3>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-muted border border-border">
                 <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                  <div className="size-9 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                     <Radio className="size-4" />
                   </div>
                   <div>
@@ -410,13 +410,13 @@ export function CardSettingsDrawer({
                   checked={contactlessEnabled}
                   onCheckedChange={setContactlessEnabled}
                   aria-label="Compras por Aproximação"
-                  className="data-[state=checked]:bg-warning focus-visible:ring-2 focus-visible:ring-warning"
+                  className="data-[state=checked]:bg-primary focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-muted border border-border">
                 <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-800">
+                  <div className="size-9 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                     <Globe className="size-4" />
                   </div>
                   <div>
@@ -430,7 +430,7 @@ export function CardSettingsDrawer({
                   checked={onlinePurchasesEnabled}
                   onCheckedChange={setOnlinePurchasesEnabled}
                   aria-label="Compras Online"
-                  className="data-[state=checked]:bg-warning focus-visible:ring-2 focus-visible:ring-warning"
+                  className="data-[state=checked]:bg-primary focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
             </div>

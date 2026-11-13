@@ -113,14 +113,20 @@ describe("Anti-Jank & Runtime Performance Suite (Prompt 16)", () => {
         path.resolve("src/components/studio/carousel-studio-editor.tsx"),
         "utf8"
       );
+      const safeEngine = fs.readFileSync(
+        path.resolve("src/lib/canvas/html2canvas-safe.ts"),
+        "utf8"
+      );
 
       // Proibido import estático de topo
       expect(recipeModal).not.toMatch(/^import html2canvas from/m);
       expect(studioEditor).not.toMatch(/^import html2canvas from/m);
+      expect(safeEngine).not.toMatch(/^import html2canvas from/m);
 
-      // Obrigatório dynamic import
-      expect(recipeModal).toContain("await import(\"html2canvas\")");
-      expect(studioEditor).toContain("await import(\"html2canvas\")");
+      // Obrigatório passar pelo motor seguro com dynamic import de html2canvas
+      expect(recipeModal).toContain("@/lib/canvas/html2canvas-safe");
+      expect(studioEditor).toContain("@/lib/canvas/html2canvas-safe");
+      expect(safeEngine).toContain("await import(\"html2canvas\")");
     });
 
     it("garante aspecto quadrado no skeleton de card de produto para CLS = 0", () => {
@@ -130,7 +136,7 @@ describe("Anti-Jank & Runtime Performance Suite (Prompt 16)", () => {
       );
 
       expect(loadingContent).toContain("aspect-square");
-      expect(loadingContent).not.toContain("aspect-[4/5]");
+      expect(loadingContent).not.toContain("aspect-[4/5]"); // design-lint-ignore DL-02 reason:"Teste de regressao que afirma a AUSENCIA da classe arbitraria em loading" expiry:"2027-12-31"
     });
 
     it("garante zero ocorrências de !important em rotas e views de interface", () => { // design-lint-ignore DL-04 reason:"Teste de regressao que afirma a AUSENCIA de !important; nao ha uso real" expiry:"2027-12-31"

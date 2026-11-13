@@ -15,7 +15,6 @@
 import React, { useState, useMemo } from "react";
 import {
   Banknote,
-  Sparkles,
   Calendar,
   CheckCircle2,
   ChevronRight,
@@ -183,7 +182,7 @@ export function LoanSimulationSheet({
           {/* ── Oferta somente quando fornecida pelo backend ── */}
           {preApprovedLimitCents ? <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <ShieldCheck className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
                 <span className="text-2xs text-muted-foreground uppercase tracking-wider block">
                   Limite Pré-Aprovado

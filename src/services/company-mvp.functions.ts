@@ -6,6 +6,8 @@ import { getSSRClient, getServerIdentity, assertStoreAccess, clearIdentityCache,
 import { getIdentity } from "./identity.functions";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 import { generateSlug, resolveUniqueStoreSlug } from "@/lib/slug-utils";
+import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
+import { VERTICAL_PLAN_CATALOG } from "@/lib/architecture/module-plan-governance";
 
 // ---------------------------------------------------------------------------
 // 1. FAST 1-PAGE COMPANY ONBOARDING
@@ -15,6 +17,8 @@ export const FastRegisterCompanySchema = z.object({
   name: z.string().min(2, "Nome da empresa é obrigatório"),
   category: z.string().default("servicos"),
   niche: z.string().optional(),
+  primary_niche_id: z.string().optional(),
+  vertical_sku: z.string().optional(),
   phone: z.string().min(8, "Telefone/WhatsApp de atendimento é obrigatório"),
   email: z.string().optional(),
   city: z.string().min(2, "Cidade é obrigatória"),
@@ -106,30 +110,16 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       throw new Error("Erro ao criar organização: " + orgError.message);
     }
 
-    // 1.1 Mapeamento Canônico de Nicho
-    const NICHE_MAP: Record<string, string> = {
-      events: "events",
-      eventos: "events",
-      event_producer: "events",
-      turismo: "tourism",
-      tourism: "tourism",
-      gastronomia: "gastronomy",
-      gastronomy: "gastronomy",
-      servicos: "services",
-      services: "services",
-      equipamentos: "rental_events",
-      rental_events: "rental_events",
-      hospedagem: "tourism",
-      comercio: "retail",
-      varejo: "retail",
-      retail: "retail",
-      saude: "services",
-      automotivo: "vehicles",
-      vehicles: "vehicles",
-      outros: "retail",
-    };
-    const rawCat = (data.niche || data.category || "servicos").toLowerCase();
-    const resolvedNiche = NICHE_MAP[rawCat] || data.niche || data.category || "services";
+    // 1.1 Mapeamento Canônico de Nicho & Sistema Vertical via SSOT
+    const nicheSpec = getUnifiedNicheSpec(data.niche || data.category || "services");
+    const resolvedNiche = nicheSpec.id;
+    const requestedSku = (data as Record<string, unknown>).vertical_sku as string | undefined;
+    const resolvedSku =
+      requestedSku && requestedSku in VERTICAL_PLAN_CATALOG
+        ? (requestedSku as keyof typeof VERTICAL_PLAN_CATALOG)
+        : nicheSpec.defaultVerticalSku;
+    const verticalPlan = VERTICAL_PLAN_CATALOG[resolvedSku];
+    const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
     // 1.2 Formatar Endereço Estruturado Completo
     const formattedAddress = data.address || (
@@ -144,6 +134,9 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       segment: resolvedNiche,
       niche: resolvedNiche,
       type: resolvedNiche,
+      primary_niche_id: resolvedNiche,
+      macro_vertical: nicheSpec.macroVertical,
+      vertical_sku: verticalPlan.sku,
       user_id: userId,
       created_by: userId,
       bio: data.bio || (enrichedData?.cnae_principal?.descricao ? `Atividade: ${enrichedData.cnae_principal.descricao}` : ""),
@@ -162,13 +155,13 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       is_address_public: true,
       coverage_cities: [data.city],
       working_hours: null,
-      enabled_modules: resolvedNiche === "events" ? ["events", "marketing", "finance", "team"] : undefined,
+      enabled_modules: verticalPlan.includedModules,
       created_via: "mvp_fast_onboarding",
       cnae: enrichedData?.cnae_principal?.codigo || null,
       socios: enrichedData?.socios || [],
     };
 
-    // 3. Criar Loja
+    // 3. Criar Loja com SKU vertical, plano e trial automático
     const storePayload = {
       organization_id: org.id,
       name: resolvedName,
@@ -182,6 +175,15 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       cnpj: enrichedData?.cnpj || data.cnpj || null,
       logo_url: data.logoUrl || null,
       banner_url: data.bannerUrl || null,
+      primary_niche_id: resolvedNiche,
+      enabled_niches: [resolvedNiche],
+      vertical_sku: verticalPlan.sku,
+      plan_tier: verticalPlan.baseTier,
+      subscription_tier: verticalPlan.baseTier,
+      subscription_status: "trialing",
+      trial_ends_at: trialEndsAt,
+      billing_cycle: "monthly",
+      enabled_modules: verticalPlan.includedModules,
       settings,
       context_profile_id: userId,
       is_active: true,
@@ -215,16 +217,12 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       throw new Error("A loja não foi ativada porque o vínculo seguro do proprietário falhou: " + membershipError.message);
     }
 
-    // 4.1 Categorias Iniciais do Nicho
+    // 4.1 Categorias & Setores Iniciais do Nicho via SSOT
     try {
-      let defaultCategories: string[] = ["Destaques", "Mais Vendidos", "Novidades"];
-      if (resolvedNiche === "events") {
-        defaultCategories = ["Ingressos & Lotes", "Área VIP & Camarotes", "Mesas & Lounges", "Estacionamento & Estruturas"];
-      } else if (resolvedNiche === "tourism") {
-        defaultCategories = ["Pacotes Nacionais", "Viagens Internacionais", "Passeios & Ecoturismo", "Excursões Regionais"];
-      } else if (resolvedNiche === "gastronomy") {
-        defaultCategories = ["Lanches & Burgers", "Porções & Entradas", "Bebidas", "Sobremesas"];
-      }
+      const defaultCategories =
+        nicheSpec.onboardingBlueprint.defaultCategories.length > 0
+          ? nicheSpec.onboardingBlueprint.defaultCategories
+          : ["Destaques", "Mais Vendidos", "Novidades"];
 
       const catPayload = defaultCategories.map((catName, idx) => ({
         store_id: store.id,
@@ -234,8 +232,23 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
         is_active: true,
       }));
       await db.from("categories").insert(catPayload);
+
+      const defaultDepartments = nicheSpec.onboardingBlueprint.defaultDepartments || [];
+      if (defaultDepartments.length > 0) {
+        const deptPayload = defaultDepartments.map((dept) => ({
+          store_id: store.id,
+          slug: dept.slug || generateSlug(dept.name),
+          name: dept.name,
+          description: `Fila automática provisionada para ${nicheSpec.label}`,
+          sla_minutes: 15,
+          is_active: true,
+        }));
+        await db
+          .from("chat_departments")
+          .upsert(deptPayload, { onConflict: "store_id,slug", ignoreDuplicates: true });
+      }
     } catch (catErr: any) {
-      console.warn("[fastRegisterCompany] Categorias default:", catErr?.message);
+      console.warn("[fastRegisterCompany] Blueprint inicial:", catErr?.message);
     }
 
     // 5. Cadastrar no Guia / Diretório Oficial (Single Source of Truth)
@@ -607,6 +620,7 @@ export const RegisterClassifiedLeadSchema = z.object({
   buyerPhone: z.string().optional(),
   message: z.string().optional(),
   proposedPriceCents: z.number().int().min(0).optional(),
+  customAnswers: z.record(z.any()).optional(),
 });
 
 export const registerClassifiedLead = createServerFn({ method: "POST" })
@@ -670,10 +684,45 @@ export const registerClassifiedLead = createServerFn({ method: "POST" })
       console.warn("[company-mvp] Aviso ao registrar deal_event:", e?.message);
     }
 
-    // 5. Inserir notificação para o lojista/anunciante
+    // 5. Espelhar lead no CRM Kanban (leads_crm + customers_crm) quando pertence a uma loja
+    let crmLeadId: string | null = null;
+    if (classified.store_id) {
+      try {
+        const { data: buyerProfile } = await supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .eq("id", buyerId)
+          .maybeSingle();
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        const ingested = await ingestOmnichannelLead(supabase, {
+          storeId: classified.store_id,
+          source: "classified_quick_lead",
+          sourceDetail: classified.title,
+          fullName: data.buyerName || buyerProfile?.full_name || "Cliente Interessado",
+          phone: data.buyerPhone || buyerProfile?.phone || null,
+          email: null,
+          estimatedValueCents: price,
+          message: data.message || null,
+          sourceDealId: deal.id,
+          sourceListingId: classified.id,
+          sourceListingOrigin: "classified",
+          sourceListingTitle: classified.title,
+          customFields: {
+            ...(data.customAnswers || {}),
+          },
+        });
+        crmLeadId = ingested.leadId;
+      } catch (crmSyncErr: any) {
+        console.warn("[company-mvp] Aviso ao espelhar em leads_crm:", crmSyncErr?.message);
+      }
+    }
+
+    // 6. Inserir notificação para o lojista/anunciante
     try {
       const destinationUrl = classified.store_id
-        ? `/workspace/comercial?dealId=${deal.id}`
+        ? crmLeadId
+          ? `/workspace/comercial?leadId=${crmLeadId}&dealId=${deal.id}`
+          : `/workspace/comercial?dealId=${deal.id}`
         : `/conta/negociacoes`;
 
       await supabase.from("notifications").insert({
@@ -691,6 +740,7 @@ export const registerClassifiedLead = createServerFn({ method: "POST" })
     return {
       success: true,
       dealId: deal.id,
+      leadId: crmLeadId,
       deal,
     };
   });

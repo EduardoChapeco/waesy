@@ -38,6 +38,7 @@ import {
   CheckCircle2,
   Send,
   ArrowRight,
+  Trash2,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -62,6 +63,18 @@ import { SeoGeoOptimizationPanel } from "@/components/seo";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { VITRINE_BUTTON_ICON_OPTIONS } from "@/design-system/vitrine";
 import { getNavigationMenus, upsertNavigationMenu } from "@/services/cms.functions";
+import {
+  listStoreCmsDashboardData,
+  createCmsCollection,
+  deleteCmsCollection,
+  upsertCmsCollectionField,
+  deleteCmsCollectionField,
+  upsertCmsCollectionItem,
+  deleteCmsCollectionItem,
+  type CmsCollectionDTO,
+  type CmsFieldType,
+  type StoreCmsNativeCounts,
+} from "@/services/cms-collections.functions";
 
 // ── 1. VISUAL SITEMAP & SEO / GEO (GENERATIVE ENGINE OPTIMIZATION) MODAL ──
 
@@ -76,7 +89,14 @@ export interface WixVisualSitemapModalProps {
   onDeletePage?: (pageId: string) => void;
   onUpdatePageSeo: (
     pageId: string,
-    seo: { seo_title?: string; seo_description?: string },
+    seo: {
+      seo_title?: string;
+      seo_description?: string;
+      permission_mode?: "public" | "members" | "password";
+      indexable?: boolean;
+      geo_enabled?: boolean;
+      geo_entity_summary?: string;
+    },
   ) => void;
   currentDocumentBlocks?: OmniBlockInstance[];
 }
@@ -131,12 +151,25 @@ export function WixVisualSitemapModal({
       page.seo_description ||
         "Confira catálogo atualizado, ofertas especiais e atendimento rápido na plataforma Waesy.",
     );
+    const meta = page as any;
+    if (meta.permission_mode === "public" || meta.permission_mode === "members" || meta.permission_mode === "password") {
+      setPermissionMode(meta.permission_mode);
+    }
+    if (typeof meta.indexable === "boolean") setIndexable(meta.indexable);
+    if (typeof meta.geo_enabled === "boolean") setGeoEnabled(meta.geo_enabled);
+    if (typeof meta.geo_entity_summary === "string" && meta.geo_entity_summary.trim()) {
+      setGeoEntitySummary(meta.geo_entity_summary);
+    }
   };
 
   const handleSaveSeoSettings = () => {
     onUpdatePageSeo(selectedPage.id, {
       seo_title: seoTitleDraft,
       seo_description: seoDescDraft,
+      permission_mode: permissionMode,
+      indexable,
+      geo_enabled: geoEnabled,
+      geo_entity_summary: geoEntitySummary,
     });
     toast.success(`Configurações de SEO e GEO salvas para "${selectedPage.title}"!`);
   };
@@ -689,12 +722,15 @@ export interface WixMenuManagerDrawerProps {
   onClose: () => void;
   initialMenuType?: string;
   onApplyMenuToBlock?: (items: WixMenuItem[], menuType: string) => void;
+  onMenusUpdated?: (menus: any[]) => void;
 }
 
 const MENU_LOCATIONS = [
   { id: "bottom_nav", label: "Barra Inferior Mobile (5 Abas Principais)" },
   { id: "explore_menu", label: "Menu Lateral Hambúrguer (Drawer & Explorar)" },
-  { id: "header_nav", label: "Menu Principal do Topo Desktop" },
+  { id: "header_nav", label: "Menu Principal do Topo Desktop (Header Global)" },
+  { id: "footer_menu", label: "Menu do Rodapé Global (Footer)" },
+  { id: "main-menu", label: "Menu Institucional Principal (main-menu)" },
   { id: "noor_dock", label: "Bloco de Botões / Dock Selecionado no Canvas" },
 ];
 
@@ -703,6 +739,7 @@ export function WixMenuManagerDrawer({
   onClose,
   initialMenuType,
   onApplyMenuToBlock,
+  onMenusUpdated,
 }: WixMenuManagerDrawerProps) {
   const [selectedMenuType, setSelectedMenuType] = useState(initialMenuType || "bottom_nav");
   const [dbMenus, setDbMenus] = useState<any[]>([]);
@@ -711,7 +748,7 @@ export function WixMenuManagerDrawer({
   const [menuItems, setMenuItems] = useState<WixMenuItem[]>([
     { id: "m1", label: "Início", href: "/", icon: "Home", show_text: true },
     { id: "m2", label: "Explorar", href: "/explorar", icon: "Compass", show_text: true },
-    { id: "m3", label: "Noor IA", href: "/chats", icon: "Sparkles", badge: "IA", show_text: true },
+    { id: "m3", label: "Noor IA", href: "/chats", icon: "MessageCircle", badge: "IA", show_text: true },
     { id: "m4", label: "Feed", href: "/feed", icon: "LayoutGrid", show_text: true },
     { id: "m5", label: "Comunidades", href: "/comunidades", icon: "Users", show_text: true },
   ]);
@@ -802,6 +839,11 @@ export function WixMenuManagerDrawer({
           },
         });
       }
+      const freshMenus = await getNavigationMenus().catch(() => null);
+      if (freshMenus) {
+        setDbMenus(freshMenus);
+        onMenusUpdated?.(freshMenus);
+      }
       onApplyMenuToBlock?.(menuItems, selectedMenuType);
       toast.success("Menu salvo no banco e sincronizado em tempo real com a vitrine!");
       onClose();
@@ -857,7 +899,7 @@ export function WixMenuManagerDrawer({
                         id: `m_${Date.now()}`,
                         label: `Novo Atalho ${prev.length + 1}`,
                         href: "/explorar",
-                        icon: "Sparkles",
+                        icon: "Compass",
                         show_text: true,
                       },
                     ]);
@@ -1066,8 +1108,13 @@ export function WixMenuManagerDrawer({
 export interface WixCmsCollectionManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  storeId?: string | null;
   productsCount?: number;
-  onInsertCollectionBlock?: (blockType: string, collectionName: string) => void;
+  initialCmsCollections?: CmsCollectionDTO[];
+  nativeCounts?: Partial<StoreCmsNativeCounts>;
+  initialCollectionSlug?: string | null;
+  onCollectionsChanged?: (collections: CmsCollectionDTO[]) => void;
+  onInsertCollectionBlock?: (blockType: string, collectionSlug: string) => void;
   selectedBlock?: OmniBlockInstance | null;
   allBlocks?: OmniBlockInstance[];
   onSelectBlock?: (blockId: string) => void;
@@ -1096,7 +1143,12 @@ function resolveEditableArrayForBlock(block?: OmniBlockInstance | null): {
 export function WixCmsCollectionManagerModal({
   isOpen,
   onClose,
+  storeId,
   productsCount = 0,
+  initialCmsCollections = [],
+  nativeCounts,
+  initialCollectionSlug,
+  onCollectionsChanged,
   onInsertCollectionBlock,
   selectedBlock,
   allBlocks = [],
@@ -1104,60 +1156,232 @@ export function WixCmsCollectionManagerModal({
   onUpdateBlockConfig,
 }: WixCmsCollectionManagerModalProps) {
   const [sheetScope, setSheetScope] = useState<"active_block" | "cms_collections">(
-    selectedBlock ? "active_block" : "cms_collections",
+    initialCollectionSlug ? "cms_collections" : selectedBlock ? "active_block" : "cms_collections",
   );
-  const [selectedCollection, setSelectedCollection] = useState("catalog_products");
+  const [cmsCollections, setCmsCollections] = useState<CmsCollectionDTO[]>(initialCmsCollections);
+  const [liveNativeCounts, setLiveNativeCounts] = useState<StoreCmsNativeCounts>({
+    products: nativeCounts?.products ?? productsCount,
+    categories: nativeCounts?.categories ?? 0,
+    classifieds: nativeCounts?.classifieds ?? 0,
+    events: nativeCounts?.events ?? 0,
+    jobs: nativeCounts?.jobs ?? 0,
+    posts: nativeCounts?.posts ?? 0,
+    reviews: nativeCounts?.reviews ?? 0,
+    banners: nativeCounts?.banners ?? 0,
+    hotpages: nativeCounts?.hotpages ?? 0,
+  });
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string>(
+    initialCollectionSlug || initialCmsCollections[0]?.id || "",
+  );
+  const [isLoadingCollections, setIsLoadingCollections] = useState(false);
+  const [isMutatingCms, setIsMutatingCms] = useState(false);
   const [showManageFields, setShowManageFields] = useState(false);
+  const [showNewCollectionForm, setShowNewCollectionForm] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [newFieldLabel, setNewFieldLabel] = useState("");
+  const [newFieldType, setNewFieldType] = useState<CmsFieldType>("text");
+
+  const activeCmsCol =
+    cmsCollections.find(
+      (c) => c.id === selectedCollectionId || c.slug === selectedCollectionId,
+    ) ||
+    cmsCollections[0] ||
+    null;
+
+  const refreshCmsCollections = React.useCallback(async () => {
+    setIsLoadingCollections(true);
+    try {
+      const res = await listStoreCmsDashboardData({
+        data: { storeId: storeId ?? undefined },
+      });
+      setCmsCollections(res.collections || []);
+      setLiveNativeCounts(res.nativeCounts);
+      onCollectionsChanged?.(res.collections || []);
+      setSelectedCollectionId((prev) => {
+        if (prev && res.collections.some((c) => c.id === prev || c.slug === prev)) {
+          return prev;
+        }
+        return res.collections[0]?.id || "";
+      });
+    } catch {
+      // Preserva lista local em caso de erro temporário
+    } finally {
+      setIsLoadingCollections(false);
+    }
+  }, [storeId, onCollectionsChanged]);
 
   React.useEffect(() => {
-    if (selectedBlock) {
+    if (initialCollectionSlug) {
+      setSheetScope("cms_collections");
+      setSelectedCollectionId(initialCollectionSlug);
+    } else if (selectedBlock) {
       setSheetScope("active_block");
     }
-  }, [selectedBlock?.id]);
+  }, [selectedBlock?.id, initialCollectionSlug]);
 
-  const [fields, setFields] = useState([
-    { id: "f_title", name: "Title (PRIMARY)", type: "Text", enabled: true },
-    { id: "f_media", name: "Mídia / Ícone (Bucket)", type: "Image / Video", enabled: true },
-    { id: "f_badge", name: "Badge / Selo", type: "Tag", enabled: true },
-    { id: "f_colors", name: "Cores & Formato", type: "Style Token", enabled: true },
-    { id: "f_route", name: "Destino / Rota", type: "URL", enabled: true },
-    { id: "f_schedule", name: "Cidade & Agendamento", type: "Datetime / Geo", enabled: true },
-  ]);
+  React.useEffect(() => {
+    if (isOpen) {
+      refreshCmsCollections();
+    }
+  }, [isOpen, refreshCmsCollections]);
 
-  const [rows, setRows] = useState([
-    {
-      id: "row_1",
-      title: "SUV Automático Completo (Locação)",
-      price: "R$ 189/dia",
-      rule: "Mín. 3 diárias",
-      location: "Centro / Aeroporto",
-      category: "Aluguel de Carros",
-    },
-    {
-      id: "row_2",
-      title: "Pacote Resort All-Inclusive 7 Dias",
-      price: "R$ 3.490",
-      rule: "10x sem juros",
-      location: "Maceió - AL",
-      category: "Turismo & Viagens",
-    },
-    {
-      id: "row_3",
-      title: "Combo Supermercado Clube K",
-      price: "R$ 89,90",
-      rule: "Entrega Rápida",
-      location: "Loja Matriz",
-      category: "Supermercado",
-    },
-    {
-      id: "row_4",
-      title: "Cobertura Duplex Vista Parque",
-      price: "R$ 1.250.000",
-      rule: "Visita Agendada",
-      location: "Bairro Nobre",
-      category: "Imóveis",
-    },
-  ]);
+  const handleCreateRealCollection = async () => {
+    if (!newCollectionName.trim()) {
+      toast.error("Informe um nome para a coleção CMS.");
+      return;
+    }
+    setIsMutatingCms(true);
+    try {
+      const created = await createCmsCollection({
+        data: {
+          storeId: storeId ?? undefined,
+          name: newCollectionName.trim(),
+          is_public: true,
+        },
+      });
+      setNewCollectionName("");
+      setShowNewCollectionForm(false);
+      setSelectedCollectionId(created.id);
+      await refreshCmsCollections();
+      toast.success(`Coleção "${created.name}" criada no Supabase!`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar coleção CMS.");
+    } finally {
+      setIsMutatingCms(false);
+    }
+  };
+
+  const handleDeleteRealCollection = async (collectionId: string) => {
+    setIsMutatingCms(true);
+    try {
+      await deleteCmsCollection({ data: { id: collectionId, storeId: storeId ?? undefined } });
+      await refreshCmsCollections();
+      toast.success("Coleção removida do banco de dados.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao excluir coleção.");
+    } finally {
+      setIsMutatingCms(false);
+    }
+  };
+
+  const handleAddRealCmsItem = async () => {
+    if (!activeCmsCol) return;
+    setIsMutatingCms(true);
+    try {
+      await upsertCmsCollectionItem({
+        data: {
+          collection_id: activeCmsCol.id,
+          storeId: storeId ?? undefined,
+          title: `Registro #${(activeCmsCol.items?.length || 0) + 1}`,
+          data: {},
+          status: "published",
+          sort_order: activeCmsCol.items?.length || 0,
+        },
+      });
+      await refreshCmsCollections();
+      toast.success("Novo item salvo no banco CMS!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar item na coleção.");
+    } finally {
+      setIsMutatingCms(false);
+    }
+  };
+
+  const handleUpdateRealCmsItem = async (
+    item: any,
+    patch: { title?: string; status?: "draft" | "published" | "archived"; dataPatch?: Record<string, any> },
+  ) => {
+    if (!activeCmsCol) return;
+    const nextTitle = patch.title ?? item.title;
+    const nextStatus = patch.status ?? item.status ?? "published";
+    const nextData = { ...(item.data || {}), ...(patch.dataPatch || {}), title: nextTitle };
+    // Atualização otimista para fluidez na edição tabular
+    setCmsCollections((prev) =>
+      prev.map((c) =>
+        c.id !== activeCmsCol.id
+          ? c
+          : {
+              ...c,
+              items: c.items.map((it) =>
+                it.id !== item.id
+                  ? it
+                  : { ...it, title: nextTitle, status: nextStatus, data: nextData },
+              ),
+            },
+      ),
+    );
+    try {
+      await upsertCmsCollectionItem({
+        data: {
+          id: item.id,
+          collection_id: activeCmsCol.id,
+          storeId: storeId ?? undefined,
+          title: nextTitle || "Sem título",
+          data: nextData,
+          status: nextStatus,
+          city_filter: item.city_filter ?? null,
+          starts_at: item.starts_at ?? null,
+          ends_at: item.ends_at ?? null,
+          sort_order: item.sort_order ?? 0,
+        },
+      });
+      onCollectionsChanged?.(cmsCollections);
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao sincronizar alteração no banco.");
+    }
+  };
+
+  const handleDeleteRealCmsItem = async (itemId: string) => {
+    setIsMutatingCms(true);
+    try {
+      await deleteCmsCollectionItem({ data: { id: itemId, storeId: storeId ?? undefined } });
+      await refreshCmsCollections();
+      toast.success("Registro removido.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao remover registro.");
+    } finally {
+      setIsMutatingCms(false);
+    }
+  };
+
+  const handleAddRealField = async () => {
+    if (!activeCmsCol || !newFieldLabel.trim()) {
+      toast.error("Informe o nome da coluna.");
+      return;
+    }
+    setIsMutatingCms(true);
+    try {
+      await upsertCmsCollectionField({
+        data: {
+          collection_id: activeCmsCol.id,
+          storeId: storeId ?? undefined,
+          label: newFieldLabel.trim(),
+          field_type: newFieldType,
+          sort_order: activeCmsCol.fields?.length || 0,
+        },
+      });
+      setNewFieldLabel("");
+      await refreshCmsCollections();
+      toast.success("Coluna adicionada ao schema da coleção!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao adicionar coluna.");
+    } finally {
+      setIsMutatingCms(false);
+    }
+  };
+
+  const handleDeleteRealField = async (fieldId: string) => {
+    setIsMutatingCms(true);
+    try {
+      await deleteCmsCollectionField({ data: { id: fieldId, storeId: storeId ?? undefined } });
+      await refreshCmsCollections();
+      toast.success("Coluna removida.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao remover coluna.");
+    } finally {
+      setIsMutatingCms(false);
+    }
+  };
 
   const { arrayKey, items: blockRows } = resolveEditableArrayForBlock(selectedBlock);
 
@@ -1213,7 +1437,7 @@ export function WixCmsCollectionManagerModal({
           title: "Novo Botão",
           subtitle: "",
           badge: "",
-          iconName: "Sparkles",
+          iconName: "Star",
           shape: "squircle",
           showLabel: true,
           href: "/ofertas",
@@ -1237,7 +1461,7 @@ export function WixCmsCollectionManagerModal({
                 <Badge variant="outline" className="text-xs font-mono">
                   {sheetScope === "active_block"
                     ? `${blockRows.length} itens na seção`
-                    : `${productsCount + rows.length} registros`}
+                    : `${activeCmsCol ? activeCmsCol.items.length : liveNativeCounts.products} registros`}
                 </Badge>
               </DialogTitle>
               <p className="text-xs text-muted-foreground">
@@ -1333,58 +1557,134 @@ export function WixCmsCollectionManagerModal({
               </Button>
             </>
           ) : (
-            <>
-              <div className="flex items-center gap-2">
-                <select
-                  value={selectedCollection}
-                  onChange={(e) => setSelectedCollection(e.target.value)}
-                  className="h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <option value="catalog_products">Coleção: Catálogo de Produtos & Ofertas</option>
-                  <option value="car_rental_3days">Coleção: Locadora & Carros (Mín. 3 Diárias)</option>
-                  <option value="real_estate_properties">Coleção: Imóveis & Propriedades</option>
-                  <option value="supermarket_club">Coleção: Supermercado & Clube</option>
-                  <option value="news_articles">Coleção: Artigos & Notícias</option>
-                </select>
+            <div className="w-full flex flex-col gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    aria-label="Selecionar Coleção CMS"
+                    value={activeCmsCol?.id || ""}
+                    onChange={(e) => setSelectedCollectionId(e.target.value)}
+                    disabled={cmsCollections.length === 0 || isLoadingCollections}
+                    className="h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {cmsCollections.length === 0 ? (
+                      <option value="">Nenhuma coleção customizada criada</option>
+                    ) : (
+                      cmsCollections.map((col) => (
+                        <option key={col.id} value={col.id}>
+                          {col.name} (/{col.slug} · {col.items?.length ?? 0} itens)
+                        </option>
+                      ))
+                    )}
+                  </select>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowNewCollectionForm((v) => !v)}
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>Nova Coleção</span>
+                  </Button>
+
+                  {activeCmsCol && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      disabled={isMutatingCms}
+                      onClick={() => handleDeleteRealCollection(activeCmsCol.id)}
+                      aria-label="Excluir coleção ativa"
+                      className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {activeCmsCol && (
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={isMutatingCms}
+                        onClick={handleAddRealCmsItem}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Plus className="size-3.5" />
+                        <span>Adicionar Registro</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          onInsertCollectionBlock?.("cms_collection_grid", activeCmsCol.slug);
+                          onClose();
+                        }}
+                        className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Plus className="size-3.5" />
+                        <span>Inserir Grid CMS na Página</span>
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setRows((prev) => [
-                      ...prev,
-                      {
-                        id: `row_${Date.now()}`,
-                        title: `Novo Item da Coleção #${prev.length + 1}`,
-                        price: "R$ 199,00",
-                        rule: "Disponível",
-                        location: "Online / Loja",
-                        category: "Destaque",
-                      },
-                    ]);
-                    toast.success("Nova linha adicionada à coleção CMS!");
-                  }}
-                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Plus className="size-3.5" />
-                  <span>Adicionar Linha</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    onInsertCollectionBlock?.("product_grid", selectedCollection);
-                    onClose();
-                  }}
-                  className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Plus className="size-3.5" />
-                  <span>Inserir Coleção na Página</span>
-                </Button>
+
+              {showNewCollectionForm && (
+                <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border bg-muted/20">
+                  <Input
+                    value={newCollectionName}
+                    onChange={(e) => setNewCollectionName(e.target.value)}
+                    placeholder="Nome da coleção (ex: Imóveis, Equipe Médica, Cardápio VIP)"
+                    className="h-11 min-h-11 flex-1 min-w-60 text-xs bg-background"
+                  />
+                  <Button
+                    type="button"
+                    disabled={isMutatingCms}
+                    onClick={handleCreateRealCollection}
+                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Criar Coleção no Banco
+                  </Button>
+                </div>
+              )}
+
+              {/* Contagens Reais das Tabelas Nativas do Ecossistema */}
+              <div className="flex flex-wrap items-center gap-2 text-2xs text-muted-foreground">
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Produtos: {liveNativeCounts.products}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Categorias: {liveNativeCounts.categories}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Classificados: {liveNativeCounts.classifieds}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Eventos: {liveNativeCounts.events}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Vagas: {liveNativeCounts.jobs}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Posts: {liveNativeCounts.posts}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Avaliações: {liveNativeCounts.reviews}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Banners: {liveNativeCounts.banners}
+                </Badge>
+                <Badge variant="outline" className="text-2xs font-mono">
+                  Hotpages: {liveNativeCounts.hotpages}
+                </Badge>
               </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -1644,53 +1944,131 @@ export function WixCmsCollectionManagerModal({
                   </table>
                 </div>
               )
+            ) : !activeCmsCol ? (
+              <div className="p-12 rounded-2xl border border-dashed border-border text-center space-y-3">
+                <Database className="size-8 mx-auto text-muted-foreground" />
+                <p className="text-sm font-bold text-foreground">
+                  {isLoadingCollections
+                    ? "Carregando coleções reais do Supabase..."
+                    : "Nenhuma coleção CMS customizada criada ainda"}
+                </p>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                  Crie sua primeira tabela dinâmica acima para gerenciar registros próprios e conectar blocos de Grid CMS em tempo real.
+                </p>
+                {!showNewCollectionForm && (
+                  <Button
+                    type="button"
+                    onClick={() => setShowNewCollectionForm(true)}
+                    className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Plus className="size-4" />
+                    <span>Criar Primeira Coleção CMS</span>
+                  </Button>
+                )}
+              </div>
+            ) : activeCmsCol.items.length === 0 ? (
+              <div className="p-12 rounded-2xl border border-dashed border-border text-center space-y-3">
+                <p className="text-sm font-bold text-foreground">
+                  Coleção &ldquo;{activeCmsCol.name}&rdquo; sem registros cadastrados
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Adicione o primeiro registro ou configure colunas adicionais em &ldquo;Colunas&rdquo;.
+                </p>
+                <Button
+                  type="button"
+                  disabled={isMutatingCms}
+                  onClick={handleAddRealCmsItem}
+                  className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Plus className="size-4" />
+                  <span>Criar Primeiro Registro</span>
+                </Button>
+              </div>
             ) : (
-              <div className="rounded-xl border border-border overflow-hidden">
+              <div className="rounded-xl border border-border scroll-area-table overflow-x-auto bg-card">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-muted/50 border-b border-border text-muted-foreground font-bold">
-                      <th className="p-3">T Title (PRIMARY)</th>
-                      <th className="p-3"># Preço / Diária</th>
-                      <th className="p-3">Regra / Condição</th>
-                      <th className="p-3">Localização</th>
-                      <th className="p-3">Categoria</th>
+                      <th className="p-3 min-w-48">Título (Primário)</th>
+                      <th className="p-3 w-36">Status</th>
+                      {activeCmsCol.fields
+                        .filter((f) => f.key !== "title")
+                        .map((field) => (
+                          <th key={field.id} className="p-3 min-w-44">
+                            {field.label}
+                          </th>
+                        ))}
+                      <th className="p-3 w-20 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {rows.map((row, idx) => (
-                      <tr key={row.id} className="hover:bg-muted/20">
+                    {activeCmsCol.items.map((item) => (
+                      <tr key={item.id} className="hover:bg-muted/20">
                         <td className="p-2">
                           <Input
-                            value={row.title}
-                            onChange={(e) => {
-                              const next = [...rows];
-                              next[idx] = { ...row, title: e.target.value };
-                              setRows(next);
-                            }}
+                            value={item.title}
+                            onChange={(e) =>
+                              handleUpdateRealCmsItem(item, { title: e.target.value })
+                            }
                             className="h-11 min-h-11 text-xs font-semibold bg-background"
                           />
                         </td>
                         <td className="p-2">
-                          <Input
-                            value={row.price}
-                            onChange={(e) => {
-                              const next = [...rows];
-                              next[idx] = { ...row, price: e.target.value };
-                              setRows(next);
-                            }}
-                            className="h-11 min-h-11 text-xs font-mono bg-background"
-                          />
+                          <select
+                            aria-label="Status do registro"
+                            value={item.status || "published"}
+                            onChange={(e) =>
+                              handleUpdateRealCmsItem(item, {
+                                status: e.target.value as "draft" | "published" | "archived",
+                              })
+                            }
+                            className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <option value="published">Publicado</option>
+                            <option value="draft">Rascunho</option>
+                            <option value="archived">Arquivado</option>
+                          </select>
                         </td>
-                        <td className="p-2">
-                          <Badge variant="outline" className="text-xs">
-                            {row.rule}
-                          </Badge>
-                        </td>
-                        <td className="p-2 text-muted-foreground">{row.location}</td>
-                        <td className="p-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {row.category}
-                          </Badge>
+                        {activeCmsCol.fields
+                          .filter((f) => f.key !== "title")
+                          .map((field) => (
+                            <td key={field.id} className="p-2">
+                              {field.field_type === "image" ? (
+                                <MediaUploader
+                                  value={String(item.data?.[field.key] || "")}
+                                  onChange={(urls) =>
+                                    handleUpdateRealCmsItem(item, {
+                                      dataPatch: { [field.key]: urls[0] || "" },
+                                    })
+                                  }
+                                />
+                              ) : (
+                                <Input
+                                  type={field.field_type === "number" ? "number" : "text"}
+                                  value={String(item.data?.[field.key] ?? "")}
+                                  onChange={(e) =>
+                                    handleUpdateRealCmsItem(item, {
+                                      dataPatch: { [field.key]: e.target.value },
+                                    })
+                                  }
+                                  placeholder={field.label}
+                                  className="h-11 min-h-11 text-xs bg-background"
+                                />
+                              )}
+                            </td>
+                          ))}
+                        <td className="p-2 text-right">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            disabled={isMutatingCms}
+                            onClick={() => handleDeleteRealCmsItem(item.id)}
+                            aria-label="Remover registro CMS"
+                            className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -1706,56 +2084,81 @@ export function WixCmsCollectionManagerModal({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    Colunas da Planilha
+                    {activeCmsCol ? `Schema: ${activeCmsCol.name}` : "Colunas da Planilha"}
                   </h4>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setFields((prev) => [
-                        ...prev,
-                        {
-                          id: `f_${Date.now()}`,
-                          name: `Campo Customizado ${prev.length + 1}`,
-                          type: "Text",
-                          enabled: true,
-                        },
-                      ]);
-                      toast.success("Novo campo adicionado ao schema da coleção!");
-                    }}
-                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <Plus className="size-3.5" />
-                    <span>+ Campo</span>
-                  </Button>
                 </div>
 
-                <div className="space-y-2">
-                  {fields.map((field, idx) => (
-                    <label
-                      key={field.id}
-                      className="flex items-center justify-between p-3 rounded-lg border border-border bg-background cursor-pointer min-h-11"
-                    >
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={field.enabled}
-                          onChange={(e) => {
-                            const next = [...fields];
-                            next[idx] = { ...field, enabled: e.target.checked };
-                            setFields(next);
-                          }}
-                          className="size-4"
-                        />
-                        <span className="text-xs font-bold text-foreground">{field.name}</span>
-                      </div>
-                      <Badge variant="outline" className="text-xs font-mono">
-                        {field.type}
-                      </Badge>
-                    </label>
-                  ))}
-                </div>
+                {activeCmsCol ? (
+                  <>
+                    <div className="space-y-2 p-3 rounded-lg border border-border bg-card">
+                      <Label className="text-2xs font-bold">Nova Coluna no Banco</Label>
+                      <Input
+                        value={newFieldLabel}
+                        onChange={(e) => setNewFieldLabel(e.target.value)}
+                        placeholder="Ex: Preço, Cor, Localização"
+                        className="h-11 min-h-11 text-xs bg-background"
+                      />
+                      <select
+                        aria-label="Tipo do campo CMS"
+                        value={newFieldType}
+                        onChange={(e) => setNewFieldType(e.target.value as CmsFieldType)}
+                        className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <option value="text">Texto (Text)</option>
+                        <option value="richtext">Texto Longo (RichText)</option>
+                        <option value="number">Número</option>
+                        <option value="currency">Preço / Moeda</option>
+                        <option value="image">Imagem (Bucket)</option>
+                        <option value="url">URL / Link</option>
+                        <option value="date">Data</option>
+                      </select>
+                      <Button
+                        type="button"
+                        disabled={isMutatingCms}
+                        onClick={handleAddRealField}
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Plus className="size-3.5" />
+                        <span>Adicionar Coluna</span>
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {activeCmsCol.fields.map((field) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center justify-between p-3 rounded-lg border border-border bg-background min-h-11 gap-2"
+                        >
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-foreground block truncate">
+                              {field.label}
+                            </span>
+                            <span className="text-2xs font-mono text-muted-foreground">
+                              {field.key} · {field.field_type}
+                            </span>
+                          </div>
+                          {!field.is_primary && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              disabled={isMutatingCms}
+                              onClick={() => handleDeleteRealField(field.id)}
+                              aria-label="Excluir coluna"
+                              className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Selecione ou crie uma coleção CMS para gerenciar suas colunas de banco de dados.
+                  </p>
+                )}
               </div>
             </ScrollArea>
           )}

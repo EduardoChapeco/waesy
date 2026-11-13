@@ -71,13 +71,10 @@ export function EventDetailMobile({
           </div>
         )}
 
-        {/* Gradiente superior para contraste dos botões */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-black/40 pointer-events-none z-10" />
-
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agenda"
-          className="absolute top-3 left-3 size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform z-20 "
+          className="absolute top-3 left-3 size-11 min-h-11 min-w-11 rounded-full bg-card hover:bg-muted text-foreground flex items-center justify-center border border-border transition-colors z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Voltar para Agenda"
         >
           <ArrowLeft size={20} weight="bold" />
@@ -88,13 +85,13 @@ export function EventDetailMobile({
           {isOwner && (
             <Link
               to="/workspace/eventos"
-              className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-warning-strong flex items-center justify-center border border-foreground/20 active:scale-95 transition-transform "
+              className="size-11 min-h-11 min-w-11 rounded-full bg-amber-50 dark:bg-amber-950 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 flex items-center justify-center border border-amber-200 dark:border-amber-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Editar Evento"
             >
               <PencilSimple size={20} weight="bold" />
             </Link>
           )}
-          <div className="size-11 rounded-full bg-foreground/50 backdrop-blur-md text-foreground flex items-center justify-center border border-foreground/20 ">
+          <div className="size-11 min-h-11 min-w-11 rounded-full bg-card hover:bg-muted text-foreground flex items-center justify-center border border-border">
             <ContentActionsMenu
               entityType="event"
               entityId={event.id}
@@ -111,7 +108,7 @@ export function EventDetailMobile({
           <button
             type="button"
             onClick={onOpenStory}
-            className="absolute bottom-3 right-3 z-20 h-11 min-h-11 px-4 rounded-full bg-purple-600/90 text-foreground text-xs font-bold flex items-center gap-2  backdrop-blur-md active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute bottom-3 right-3 z-20 h-11 min-h-11 px-4 rounded-full bg-card hover:bg-muted text-foreground border border-border text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span>Ver Story</span>
           </button>
@@ -120,7 +117,7 @@ export function EventDetailMobile({
         {/* Badge de Evento Externo sobre a mídia */}
         {event.is_external && (
           <div className="absolute bottom-3 left-3 z-20">
-            <Badge className="bg-background/90 text-foreground text-xs font-bold border border-border/50 uppercase tracking-wider backdrop-blur-md">
+            <Badge className="bg-card text-foreground text-xs font-bold border border-border uppercase tracking-wider">
               {event.external_source ? `Via ${event.external_source}` : "Evento Externo"}
             </Badge>
           </div>
@@ -129,9 +126,9 @@ export function EventDetailMobile({
 
       {/* ── 2. Owner Mode Banner (se aplicável) ── */}
       {isOwner && (
-        <div className="bg-warning/10 border-b border-warning/25 px-4 py-2 flex items-center justify-between text-xs text-warning-strong ">
+        <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
           <div className="flex items-center gap-2">
-            <span className="inline-block size-2 rounded-full bg-warning" />
+            <span className="inline-block size-2 rounded-full bg-amber-600 dark:bg-amber-400" />
             <span className="font-semibold">Modo Organizador Ativo</span>
           </div>
           <Link
@@ -467,12 +464,12 @@ export function EventDetailMobile({
               {partners.map((partner: any) => {
                 const badgeClass =
                   partner.nivel === "diamante"
-                    ? "border-purple-500/30 text-purple-600 bg-purple-500/10"
+                    ? "border-violet-200 dark:border-violet-800 text-violet-800 dark:text-violet-200 bg-violet-50 dark:bg-violet-950"
                     : partner.nivel === "ouro"
-                    ? "border-warning/30 text-warning-strong bg-warning/10"
+                    ? "border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950"
                     : partner.nivel === "bronze"
-                    ? "border-orange-500/30 text-orange-600 bg-orange-500/10"
-                    : "border-slate-500/30 text-slate-600 bg-slate-500/10";
+                    ? "border-orange-200 dark:border-orange-800 text-orange-800 dark:text-orange-200 bg-orange-50 dark:bg-orange-950"
+                    : "border-border text-foreground bg-muted";
 
                 const nivelLabel =
                   partner.nivel === "diamante"
@@ -488,7 +485,7 @@ export function EventDetailMobile({
                 return (
                   <div
                     key={partner.id}
-                    className="p-3 rounded-lg border border-border/70 bg-card space-y-2 flex flex-col justify-between"
+                    className="p-3 rounded-lg border border-border bg-card space-y-2 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between gap-1">
                       <span className={`text-xs px-2 py-1 rounded font-bold border uppercase tracking-wider ${badgeClass}`}>
@@ -499,17 +496,17 @@ export function EventDetailMobile({
                           href={partner.site_url || partner.siteUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-foreground p-1 rounded focus-visible:ring-2 focus-visible:ring-primary"
+                          className="text-muted-foreground hover:text-foreground size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded focus-visible:ring-2 focus-visible:ring-primary"
                           aria-label={`Visitar site de ${partner.nome}`}
                         >
-                          <ArrowSquareOut size={12} weight="bold" />
+                          <ArrowSquareOut size={14} weight="bold" />
                         </a>
                       )}
                     </div>
 
                     <div className="flex items-center gap-2 pt-1">
                       {(partner.logo_url || partner.logoUrl) ? (
-                        <div className="size-8 rounded overflow-hidden bg-muted border border-border/40 shrink-0">
+                        <div className="size-8 rounded overflow-hidden bg-muted border border-border shrink-0">
                           <img
                             src={partner.logo_url || partner.logoUrl}
                             alt={partner.nome}
@@ -517,11 +514,11 @@ export function EventDetailMobile({
                           />
                         </div>
                       ) : (
-                        <div className="size-8 rounded bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border/40 font-bold text-xs uppercase">
+                        <div className="size-8 rounded bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border font-bold text-xs uppercase">
                           {partner.nome?.slice(0, 2) || "AP"}
                         </div>
                       )}
-                      <span className="font-bold text-xs text-foreground truncate">{partner.nome}</span>
+                      <span className="font-bold text-xs text-foreground line-clamp-2 text-anti-truncate">{partner.nome}</span>
                     </div>
                   </div>
                 );
@@ -545,7 +542,7 @@ export function EventDetailMobile({
       </div>
 
       {/* ── 9. Sticky Bottom Bar Anti-Jank (Safe-Area & Thumb Zone) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-overlay">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border p-3 pb-4 pb-safe mobile-nav-hide-on-keyboard flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           {lowestLotPrice !== null ? (
             <div>

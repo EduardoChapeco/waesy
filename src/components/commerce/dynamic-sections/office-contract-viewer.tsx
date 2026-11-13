@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileText, ShieldCheck, Download, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContractSignPad, SignatureData } from '@/components/office/contract-sign-pad';
+import { ContractMarkdownRenderer } from '@/components/contracts/contract-markdown-renderer';
 
 interface OfficeContractViewerProps {
  title?: string;
@@ -83,8 +84,8 @@ export function OfficeContractViewer({
  </div>
  </div>
 
- <div className="p-6 rounded-lg bg-muted/20 border border-border/50 text-xs leading-relaxed whitespace-pre-wrap font-serif text-foreground/90 max-h-88 overflow-y-auto no-scrollbar">
- {content}
+ <div className="p-6 rounded-lg bg-muted/20 border border-border/50 text-xs leading-relaxed font-serif text-foreground/90 max-h-88 overflow-y-auto no-scrollbar">
+   <ContractMarkdownRenderer content={content} />
  </div>
 
  {signature && (

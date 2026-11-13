@@ -79,15 +79,12 @@ export function DynamicMediaChip({
  const getTextureStyle = () => {
  switch (bg_texture) {
  case "noise":
- return "bg-muted/50";
  case "dots":
- return "bg-muted/30";
  case "grid":
- return "bg-muted/40";
  case "mesh":
- return "bg-primary/10";
+ return "bg-muted";
  case "glass":
- return "backdrop-blur-md bg-background/60";
+ return "bg-card border-border";
  default:
  return "";
  }
@@ -187,12 +184,10 @@ export function DynamicMediaChip({
  {/* Label de Texto com Contraste Automático */}
  <span
  className={`font-bold truncate tracking-tight transition-colors min-w-0 ${
- show_shadow ? "drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]" : ""
- } ${
  text_color
  ? ""
  : hasMedia
- ? "text-foreground  group-hover:text-warning-strong"
+ ? "text-foreground"
  : isActive
  ? "text-background"
  : "text-foreground"
@@ -205,11 +200,11 @@ export function DynamicMediaChip({
  {/* Contador Opcional */}
  {typeof count === "number" && (
  <span
- className={`text-2xs font-mono px-2 py-0.2 rounded-full font-bold shrink-0 ${
+ className={`text-2xs font-mono px-2 py-1 rounded-full font-bold shrink-0 ${
  hasMedia
- ? "bg-foreground/40 text-foreground border border-white/20"
+ ? "bg-background text-foreground border border-border"
  : isActive
- ? "bg-background/20 text-background"
+ ? "bg-background text-foreground"
  : "bg-muted text-muted-foreground"
  }`}
  >

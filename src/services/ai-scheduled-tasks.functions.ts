@@ -8,7 +8,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
-import { createDurableAiTask } from "./ai-tasks-durability.functions";
+import { executeAiCoreGateway } from "./ai-core-gateway.functions";
+import { completeDurableAiTask, createDurableAiTask } from "./ai-tasks-durability.functions";
 
 export const createScheduledTaskSchema = z.object({
   title: z.string().min(2),
@@ -150,6 +151,51 @@ export const triggerScheduledTaskRun = createServerFn({ method: "POST" })
       },
     });
 
+    // Executa de fato o prompt da tarefa agendada no Gateway de IA e registra o desfecho real
+    const execResult = await executeAiCoreGateway({
+      task: "geracao_texto",
+      prompt: String(scheduled.prompt),
+      systemPrompt:
+        "Você está executando uma rotina agendada automática do usuário no Waesy Copilot. Responda de forma objetiva e estruturada.",
+      module: "ai_scheduled_task",
+      authContext: {
+        userId: identity.id,
+        storeId: scheduled.workspace_id || (identity as any).store_id || undefined,
+        userRole: (identity as any).role,
+      },
+    });
+
+    if (execResult.success === false) {
+      const errorMsg = execResult.error?.message || "Falha ao executar rotina agendada.";
+      await db
+        .from("ai_tasks")
+        .update({
+          status: "failed",
+          current_step: errorMsg,
+          output_payload: { error: errorMsg },
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", durableTask.id)
+        .eq("user_id", identity.id);
+
+      throw new Error(errorMsg);
+    }
+
+    await completeDurableAiTask({
+      data: {
+        taskId: durableTask.id,
+        actualTokens: Number(execResult.metadata.usage.totalTokens || 0),
+        costWz: 0,
+        outputPayload: {
+          outputText: execResult.result.text,
+          provider: execResult.metadata.provider,
+          model: execResult.metadata.model,
+          totalTokens: execResult.metadata.usage.totalTokens,
+        },
+      },
+    }).catch(() => null);
+
     // Atualiza contadores na tarefa agendada
     await db
       .from("ai_scheduled_tasks")
@@ -164,5 +210,105 @@ export const triggerScheduledTaskRun = createServerFn({ method: "POST" })
       success: true,
       durableTaskId: durableTask.id,
       scheduledTaskId: scheduled.id,
+      outputPreview: execResult.result.text.slice(0, 400),
+      provider: execResult.metadata.provider,
     };
   });
+
+export interface CopilotUsageAnalyticsDTO {
+  totalExecutions: number;
+  completedExecutions: number;
+  failedExecutions: number;
+  totalSteps: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+  activeConnectorsCount: number;
+  activeMcpServersCount: number;
+  recentExecutions: Array<{
+    id: string;
+    promptPreview: string;
+    status: string;
+    durationMs: number;
+    createdAt: string;
+  }>;
+}
+
+export const getCopilotUsageAnalytics = createServerFn({ method: "GET" }).handler(
+  async (): Promise<CopilotUsageAnalyticsDTO> => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      return {
+        totalExecutions: 0,
+        completedExecutions: 0,
+        failedExecutions: 0,
+        totalSteps: 0,
+        totalTokens: 0,
+        estimatedCostUsd: 0,
+        activeConnectorsCount: 0,
+        activeMcpServersCount: 0,
+        recentExecutions: [],
+      };
+    }
+
+    const db = getServerClient();
+
+    const [executionsRes, telemetryRes, connectorsRes, mcpRes] = await Promise.all([
+      (db as any)
+        .from("copilot_executions")
+        .select("id, domain, status, started_at, completed_at, metadata")
+        .eq("user_id", identity.id)
+        .order("started_at", { ascending: false })
+        .limit(30),
+      (db as any)
+        .from("ai_telemetry_logs")
+        .select("total_tokens, cost_usd")
+        .eq("user_id", identity.id)
+        .limit(100),
+      (db as any)
+        .from("ai_connectors")
+        .select("id")
+        .eq("user_id", identity.id)
+        .eq("status", "connected"),
+      (db as any)
+        .from("ai_mcp_servers")
+        .select("id")
+        .eq("user_id", identity.id)
+        .eq("is_active", true),
+    ]);
+
+    const executions = Array.isArray(executionsRes?.data) ? executionsRes.data : [];
+    const telemetry = Array.isArray(telemetryRes?.data) ? telemetryRes.data : [];
+    const connectors = Array.isArray(connectorsRes?.data) ? connectorsRes.data : [];
+    const mcpServers = Array.isArray(mcpRes?.data) ? mcpRes.data : [];
+
+    const completedExecutions = executions.filter((e: any) => e.status === "completed").length;
+    const failedExecutions = executions.filter((e: any) => e.status === "failed").length;
+    const totalSteps = executions.reduce((acc: number, e: any) => acc + Number(e.metadata?.steps_count || 0), 0);
+    const totalTokens = telemetry.reduce((acc: number, t: any) => acc + Number(t.total_tokens || 0), 0);
+    const estimatedCostUsd = telemetry.reduce((acc: number, t: any) => acc + Number(t.cost_usd || 0), 0);
+
+    return {
+      totalExecutions: executions.length,
+      completedExecutions,
+      failedExecutions,
+      totalSteps,
+      totalTokens,
+      estimatedCostUsd,
+      activeConnectorsCount: connectors.length,
+      activeMcpServersCount: mcpServers.length,
+      recentExecutions: executions.slice(0, 8).map((e: any) => {
+        const startedMs = e.started_at ? new Date(e.started_at).getTime() : 0;
+        const completedMs = e.completed_at ? new Date(e.completed_at).getTime() : 0;
+        const durationMs = startedMs && completedMs && completedMs >= startedMs ? completedMs - startedMs : 0;
+        const prompt = e.metadata?.user_prompt || e.metadata?.prompt || e.domain || "";
+        return {
+          id: e.id,
+          promptPreview: String(prompt).slice(0, 90),
+          status: String(e.status || "completed"),
+          durationMs,
+          createdAt: String(e.started_at || new Date().toISOString()),
+        };
+      }),
+    };
+  }
+);

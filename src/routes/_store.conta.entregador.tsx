@@ -1082,9 +1082,9 @@ function CourierDriverHubPage() {
 
         {/* ── ABA 3: MINHAS TARIFAS E PREFERÊNCIAS AUTÔNOMAS ── */}
         <TabsContent value="tarifas" className="space-y-4">
-          <form onSubmit={handleSavePreferences} className="bg-card rounded-lg border border-border/70 p-5 space-y-5 shadow-2xs">
+          <form onSubmit={handleSavePreferences} className="bg-card rounded-lg border border-border p-5 space-y-5">
             <div className="space-y-1">
-              <h2 className="text-sm font-bold text-foreground">Definição Autônoma de Tarifas & Regras</h2>
+              <h2 className="text-sm font-bold text-foreground">Tarifas e Regras</h2>
               <p className="text-xs text-muted-foreground">
                 Você decide quanto cobrar por quilômetro, adicionais de condomínio, escada, equipe de ajudantes e filtro de piso mínimo.
               </p>
@@ -1545,9 +1545,9 @@ function CourierDriverHubPage() {
       <Dialog open={ratingModalOpen} onOpenChange={setRatingModalOpen}>
         <DialogContent className="sm:max-w-md rounded-lg">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold">Avaliar Passageiro / Cliente</DialogTitle>
+            <DialogTitle className="text-base font-bold">Avaliar Passageiro</DialogTitle>
             <DialogDescription className="text-xs">
-              Sua avaliação ajuda a manter a comunidade Waesy Go segura e respeitosa para todos os condutores.
+              Avalie sua experiência nesta corrida.
             </DialogDescription>
           </DialogHeader>
 

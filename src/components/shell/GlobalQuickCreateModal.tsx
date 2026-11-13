@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import {
   MessageSquarePlus,
-  Sparkles,
+  Flame,
   Tag,
   Users,
   CalendarPlus,
@@ -37,14 +37,14 @@ export const CANONICAL_QUICK_CREATE_ACTIONS: QuickCreateActionItem[] = [
     label: "Publicar no feed",
     description: "Compartilhar atualização ou foto no mural",
     href: "/feed",
-    icon: Sparkles,
+    icon: Flame,
     contextMatch: ["/feed", "/mural"],
   },
   {
     id: "anunciar-classificado",
     label: "Anunciar classificado",
     description: "Publicar veículo, imóvel, produto ou serviço",
-    href: "/conta/anuncios/novo",
+    href: "/conta/classificados/novo",
     icon: Tag,
     contextMatch: ["/classificados", "/marketplace", "/ofertas"],
   },

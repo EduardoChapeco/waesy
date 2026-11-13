@@ -115,7 +115,7 @@ export function PixHubDrawer({
             title="Ajuda Pix"
             aria-label="Ajuda Pix"
             onClick={() => toast.info("Central de Ajuda Pix — Atendimento 24h")}
-            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <HelpCircle className="size-5" />
           </button>
@@ -123,18 +123,18 @@ export function PixHubDrawer({
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 no-scrollbar pb-12 pb-safe">
-          {/* 6 Ações Principais em Grade Squircle 3x2 idêntica ao design anexo */}
+          {/* 6 Ações Principais em Grade Squircle 3x2 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* 1. Transferir */}
             <button
               type="button"
               onClick={() => handleAction("transfer")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-24 min-h-24 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
+              <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                 <ArrowLeftRight className="size-5" />
               </div>
-              <span className="text-xs font-semibold text-zinc-800 truncate block w-full">
+              <span className="text-xs font-semibold text-foreground line-clamp-2 text-anti-truncate block w-full">
                 Transferir
               </span>
             </button>
@@ -143,12 +143,12 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("qrcode")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-24 min-h-24 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
+              <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                 <QrCode className="size-5" />
               </div>
-              <span className="text-xs font-semibold text-zinc-800 truncate block w-full">
+              <span className="text-xs font-semibold text-foreground line-clamp-2 text-anti-truncate block w-full">
                 Pagar QR Code
               </span>
             </button>
@@ -157,12 +157,12 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("receive")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-24 min-h-24 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
+              <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                 <ArrowDownLeft className="size-5" />
               </div>
-              <span className="text-xs font-semibold text-zinc-800 truncate block w-full">
+              <span className="text-xs font-semibold text-foreground line-clamp-2 text-anti-truncate block w-full">
                 Receber
               </span>
             </button>
@@ -171,12 +171,12 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("schedule")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-24 min-h-24 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
+              <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                 <Calendar className="size-5" />
               </div>
-              <span className="text-xs font-semibold text-zinc-800 truncate block w-full">
+              <span className="text-xs font-semibold text-foreground line-clamp-2 text-anti-truncate block w-full">
                 Agendar Pix
               </span>
             </button>
@@ -185,12 +185,12 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("copy_paste")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-24 min-h-24 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
+              <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                 <Copy className="size-5" />
               </div>
-              <span className="text-xs font-semibold text-zinc-800 truncate block w-full">
+              <span className="text-xs font-semibold text-foreground line-clamp-2 text-anti-truncate block w-full">
                 Pix Copia e Cola
               </span>
             </button>
@@ -199,12 +199,12 @@ export function PixHubDrawer({
             <button
               type="button"
               onClick={() => handleAction("card_pix")}
-              className="h-24 min-h-24 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              className="h-24 min-h-24 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="size-10 rounded-xl bg-zinc-200/70 flex items-center justify-center text-zinc-900">
+              <div className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground">
                 <CreditCard className="size-5" />
               </div>
-              <span className="text-xs font-semibold text-zinc-800 truncate block w-full">
+              <span className="text-xs font-semibold text-foreground line-clamp-2 text-anti-truncate block w-full">
                 Fazer Pix com cartão
               </span>
             </button>
@@ -217,8 +217,8 @@ export function PixHubDrawer({
             </h3>
 
             {myKeys.length === 0 ? (
-              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 text-center space-y-1">
-                <span className="text-xs font-bold text-zinc-800 block">
+              <div className="p-4 rounded-2xl bg-muted border border-border text-center space-y-1">
+                <span className="text-xs font-bold text-foreground block">
                   Nenhuma chave Pix ativa
                 </span>
                 <span className="text-2xs text-muted-foreground block">
@@ -230,14 +230,14 @@ export function PixHubDrawer({
                 {myKeys.map((key) => (
                   <div
                     key={key.id}
-                    className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs"
+                    className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="size-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 shrink-0">
+                      <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground shrink-0">
                         <Key className="size-5" />
                       </div>
                       <div className="min-w-0">
-                        <span className="text-xs font-bold text-zinc-900 block truncate">
+                        <span className="text-xs font-bold text-foreground block line-clamp-2 text-anti-truncate">
                           {key.label}
                         </span>
                         <span className="text-xs text-muted-foreground font-mono truncate block">
@@ -250,10 +250,10 @@ export function PixHubDrawer({
                       type="button"
                       onClick={() => handleCopyKey(key)}
                       aria-label={`Copiar chave ${key.label}`}
-                      className="size-11 min-h-11 min-w-11 rounded-xl flex items-center justify-center hover:bg-zinc-200/60 active:scale-95 text-zinc-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+                      className="size-11 min-h-11 min-w-11 rounded-xl flex items-center justify-center hover:bg-muted active:scale-95 text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {copiedKeyId === key.id ? (
-                        <Check className="size-5 text-emerald-600 font-bold" />
+                        <Check className="size-5 text-emerald-600 dark:text-emerald-400 font-bold" />
                       ) : (
                         <Copy className="size-5" />
                       )}

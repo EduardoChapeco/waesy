@@ -81,11 +81,11 @@ export function BuilderCanvas({
  onClick={(e) => e.stopPropagation()}
  >
  {/* Régua de Precisão Superior Studio (Sem Mac dots, sem cartoonismo) */}
- <div className="h-8 px-4 bg-muted/40 dark:bg-muted/20 border-b border-border/60 flex items-center justify-between select-none shrink-0 text-2xs font-mono text-muted-foreground">
+ <div className="h-8 px-4 bg-muted border-b border-border flex items-center justify-between select-none shrink-0 text-2xs font-mono text-muted-foreground">
  <div className="flex items-center gap-2">
- <Monitor className="size-3.5 text-primary/70" />
- <span className="font-sans font-semibold text-foreground/80">Desktop Canvas</span>
- <span className="text-2xs px-2 py-0.2 bg-muted rounded">1440px</span>
+ <Monitor className="size-3.5 text-primary" />
+ <span className="font-sans font-semibold text-foreground">Desktop Canvas</span>
+ <span className="text-2xs px-2 py-1 bg-card border border-border rounded">1440px</span>
  </div>
 
  <div className="text-2xs text-muted-foreground font-sans truncate max-w-xs">

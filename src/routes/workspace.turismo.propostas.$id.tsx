@@ -1,15 +1,21 @@
 import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal-share-whatsapp-modal";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getTravelProposalById, updateTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
 import { createContractFromProposal } from "@/services/travel-contract.functions";
+import { issueCustomizedContractFromProposal } from "@/services/contract-compiler.functions";
+import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templates";
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { StudioFrame, CANVAS_DIMENSIONS } from "@/components/tourism/studio/studio-frame";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
@@ -48,10 +54,26 @@ export const Route = createFileRoute("/workspace/turismo/propostas/$id")({
 
 function WorkspaceProposalStudioPage() {
   const { proposal: initialProposal } = ((Route.useLoaderData?.() as any) || {});
+  const navigate = useNavigate();
   const [proposal, setProposal] = useState<TravelProposalDTO | null>(initialProposal || null);
  const [isExportingPdf, setIsExportingPdf] = useState(false);
  const [isExportingImage, setIsExportingImage] = useState(false);
  const [isCreatingContract, setIsCreatingContract] = useState(false);
+ const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
+ const [contractTemplateId, setContractTemplateId] = useState<string>("template-turismo-pacote-viagem");
+ const [contractCustomTitle, setContractCustomTitle] = useState<string>("");
+ const [contractClientDocument, setContractClientDocument] = useState<string>(
+   String(((initialProposal as any)?.pricing?.client_document as string) || ""),
+ );
+ const [contractSections, setContractSections] = useState({
+   showItemsTable: true,
+   showSpecsTable: true,
+   showItineraryTable: true,
+   showPassengersTable: true,
+   showFinancialTable: true,
+   showCustomFieldsTable: true,
+   includeLegalClauses: true,
+ });
  const [isConvertingTrip, setIsConvertingTrip] = useState(false);
  const [isSaving, setIsSaving] = useState(false);
  const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
@@ -117,6 +139,7 @@ function WorkspaceProposalStudioPage() {
  },
  });
  if (res?.success) {
+ setIsContractDialogOpen(false);
  toast.success("Contrato oficial gerado com sucesso! Redirecionando para contratos...");
  if (typeof window !== "undefined") {
  window.location.href = `/workspace/turismo/contratos`;
@@ -127,6 +150,31 @@ function WorkspaceProposalStudioPage() {
  } finally {
  setIsCreatingContract(false);
  }
+ };
+
+ const handleGenerateCustomizedContract = async () => {
+   if (!proposal) return;
+   setIsCreatingContract(true);
+   try {
+     const res = await issueCustomizedContractFromProposal({
+       data: {
+         proposalId: proposal.id,
+         templateId: contractTemplateId || undefined,
+         customTitle: contractCustomTitle.trim() || undefined,
+         clientDocument: contractClientDocument.trim() || undefined,
+         sectionConfig: contractSections,
+       },
+     });
+     if (res?.success) {
+       setIsContractDialogOpen(false);
+       toast.success(`Contrato tabular gerado (${res.templateTitle})! Abrindo editor...`);
+       navigate({ to: "/workspace/contratos/$id/editor", params: { id: res.contractId } });
+     }
+   } catch (err: any) {
+     toast.error(err?.message || "Erro ao personalizar e emitir contrato da proposta.");
+   } finally {
+     setIsCreatingContract(false);
+   }
  };
 
  const handleConvertToTrip = async () => {
@@ -333,9 +381,9 @@ function WorkspaceProposalStudioPage() {
  size="sm"
  variant="outline"
  disabled={isCreatingContract}
- onClick={handleGenerateContract}
+ onClick={() => setIsContractDialogOpen(true)}
  className="rounded-lg text-xs font-bold gap-2 h-11 px-3 cursor-pointer"
- title="Emitir Contrato Oficial"
+ title="Configurar e Emitir Contrato Tabular"
  >
  {isCreatingContract ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none motion-reduce:transition-none" /> : <FileCheck2 className="size-3.5" />}
  <span className="hidden waesy-expanded-flex">Contrato</span>
@@ -414,6 +462,111 @@ function WorkspaceProposalStudioPage() {
    onClose={() => setWhatsappModalOpen(false)}
    proposal={proposal}
  />
+ <Dialog open={isContractDialogOpen} onOpenChange={setIsContractDialogOpen}>
+   <DialogContent size="lg">
+     <DialogHeader>
+       <DialogTitle>Emitir Contrato da Proposta</DialogTitle>
+       <DialogDescription>
+         Personalize o modelo jurídico e as tabelas incluídas antes de abrir o editor oficial.
+       </DialogDescription>
+     </DialogHeader>
+
+     <div className="space-y-4 py-2">
+       <div className="space-y-2">
+         <Label htmlFor="proposal-contract-template">Modelo de Minuta</Label>
+         <select
+           id="proposal-contract-template"
+           value={contractTemplateId}
+           onChange={(e) => setContractTemplateId(e.target.value)}
+           className="w-full h-11 min-h-11 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+         >
+           {ADVANCED_CONTRACT_TEMPLATES.map((tpl) => (
+             <option key={tpl.id} value={tpl.id}>
+               {tpl.title}
+             </option>
+           ))}
+         </select>
+       </div>
+
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+         <div className="space-y-2">
+           <Label htmlFor="proposal-contract-title">Título do Contrato (opcional)</Label>
+           <Input
+             id="proposal-contract-title"
+             value={contractCustomTitle}
+             onChange={(e) => setContractCustomTitle(e.target.value)}
+             placeholder={proposal.title}
+             className="h-11 min-h-11"
+           />
+         </div>
+         <div className="space-y-2">
+           <Label htmlFor="proposal-contract-doc">CPF / CNPJ do Contratante (opcional)</Label>
+           <Input
+             id="proposal-contract-doc"
+             value={contractClientDocument}
+             onChange={(e) => setContractClientDocument(e.target.value)}
+             placeholder="Somente números ou deixe em branco"
+             className="h-11 min-h-11"
+           />
+         </div>
+       </div>
+
+       <div className="space-y-2 pt-2 border-t border-border/60">
+         <span className="text-xs font-semibold text-foreground block">
+           Tabelas e Seções Incluídas
+         </span>
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+           {[
+             { key: "showItemsTable", label: "Itens, Voos e Hospedagens" },
+             { key: "showSpecsTable", label: "Ficha Técnica e Inclusões" },
+             { key: "showItineraryTable", label: "Roteiro Dia a Dia" },
+             { key: "showPassengersTable", label: "Manifesto de Passageiros" },
+             { key: "showFinancialTable", label: "Cronograma Financeiro" },
+             { key: "showCustomFieldsTable", label: "Campos Personalizados" },
+             { key: "includeLegalClauses", label: "Cláusulas Jurídicas Completas" },
+           ].map((item) => {
+             const k = item.key as keyof typeof contractSections;
+             return (
+               <div key={item.key} className="flex items-center justify-between gap-2 py-1">
+                 <Label htmlFor={`prop-sec-${item.key}`} className="text-xs font-medium cursor-pointer">
+                   {item.label}
+                 </Label>
+                 <Switch
+                   id={`prop-sec-${item.key}`}
+                   checked={contractSections[k]}
+                   onCheckedChange={(checked) =>
+                     setContractSections((prev) => ({ ...prev, [k]: checked }))
+                   }
+                 />
+               </div>
+             );
+           })}
+         </div>
+       </div>
+     </div>
+
+     <DialogFooter className="gap-2 flex-wrap">
+       <Button
+         type="button"
+         variant="outline"
+         disabled={isCreatingContract}
+         onClick={handleGenerateContract}
+         className="h-11 min-h-11"
+       >
+         Emissão Rápida Padrão
+       </Button>
+       <Button
+         type="button"
+         disabled={isCreatingContract}
+         onClick={handleGenerateCustomizedContract}
+         className="h-11 min-h-11 gap-2"
+       >
+         {isCreatingContract && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />}
+         <span>Gerar Contrato Tabular</span>
+       </Button>
+     </DialogFooter>
+   </DialogContent>
+ </Dialog>
  </div>
  </div>
  );

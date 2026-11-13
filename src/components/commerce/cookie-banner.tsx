@@ -77,15 +77,15 @@ export function CookieBanner() {
  aria-label="Aviso de Privacidade e Cookies"
  className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-5 pb-safe pb-24 sm:pb-6 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-300"
  >
- <div className="mx-auto max-w-4xl bg-card/95 backdrop-blur-md rounded-lg sm:rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pointer-events-auto ">
+ <div className="mx-auto max-w-4xl bg-card border border-border rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pointer-events-auto shadow-overlay">
  <div className="flex items-start gap-3 flex-1 min-w-0">
- <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 mt-1">
+ <div className="size-9 rounded-lg bg-muted text-primary flex items-center justify-center shrink-0 border border-border mt-1">
  <Cookie className="size-4" />
  </div>
  <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
  <div className="flex items-center gap-2 mb-1">
  <span className="font-bold text-foreground text-xs sm:text-sm">Privacidade e Cookies LGPD</span>
- <span className="inline-flex items-center gap-1 text-2xs font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.2 rounded-md">
+ <span className="inline-flex items-center gap-1 text-2xs font-mono font-bold uppercase tracking-wider text-primary bg-muted border border-border px-2 py-1 rounded-md">
  <ShieldCheck className="size-3" /> Seguro
  </span>
  </div>

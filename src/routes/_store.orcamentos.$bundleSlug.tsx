@@ -6,7 +6,6 @@ import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Sparkles,
   CheckCircle2,
   Users,
   Building2,
@@ -240,7 +239,7 @@ function QuoteBundleComparisonPage() {
           {/* Nota do Consultor para a Opção Ativa */}
           {(activeItem?.advisor_notes || bundle.intro_notes) && (
             <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-2 text-xs text-foreground">
-              <Sparkles className="size-4 text-primary shrink-0 mt-1" />
+              <Plane className="size-4 text-primary shrink-0 mt-1" />
               <div>
                 <span className="font-bold text-primary mr-2">
                   Nota do Consultor ({activeItem?.option_label || `Opção ${selectedIndex + 1}`}):

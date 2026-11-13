@@ -108,8 +108,7 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
           id,
           name,
           slug,
-          settings,
-          is_physical_location
+          settings
         )
       `
       )
@@ -184,7 +183,6 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
           name,
           slug,
           settings,
-          is_physical_location,
           created_at
         `
         )
@@ -232,7 +230,7 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
     if (storeId) {
       const { data: reviewsData } = await supabase
         .from("reviews")
-        .select("id, rating, comment, author_name, created_at")
+        .select("id, rating, comment, reviewer_name, created_at")
         .eq("store_id", storeId)
         .order("created_at", { ascending: false })
         .limit(10);
@@ -240,7 +238,7 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
       if (reviewsData && reviewsData.length > 0) {
         placeDetail.reviews = reviewsData.map((r) => ({
           id: r.id,
-          authorName: r.author_name || "Cliente Verificado",
+          authorName: r.reviewer_name || "Cliente Verificado",
           rating: Number(r.rating || 5),
           comment: r.comment || "",
           createdAt: r.created_at,

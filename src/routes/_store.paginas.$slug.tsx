@@ -1,7 +1,10 @@
 import { createFileRoute, notFound, Link, isRedirect, isNotFound } from "@tanstack/react-router";
 import { getPublicExperienceDocumentBySlug } from "@/services/builder.functions";
+import { getNavigationMenus } from "@/services/cms.functions";
+import { getPublicCmsCollectionsForStore } from "@/services/cms-collections.functions";
 import { ExperienceRenderer } from "@/components/commerce/experience-renderer";
 import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
+import { PublicFooter } from "@/components/commerce/public-footer";
 import { Surface } from "@/components/ui/surface";
 import { AlertCircle, Loader2, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,13 +13,14 @@ import { generateOmniPageSeo } from "@/lib/builder/omni-page-seo";
 export const Route = createFileRoute("/_store/paginas/$slug")({
   loader: async ({ params }) => {
     try {
-      const [res, catalogRes] = await Promise.all([
+      const [res, catalogRes, navigationMenus] = await Promise.all([
         getPublicExperienceDocumentBySlug({
           data: { slug: params.slug },
         }),
         import("@/services/catalog.functions")
           .then((m) => m.listPublishedProducts({ data: { limit: 20 } }))
           .catch(() => ({ status: "error", data: [] })),
+        getNavigationMenus().catch(() => []),
       ]);
 
       if (res.status === "not_found" || res.status === "unconfigured") {
@@ -26,6 +30,16 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
       if (res.status !== "ok") {
         throw new Error("Erro ao carregar a página.");
       }
+
+      const effectiveStoreId =
+        (res.data as any)?.document?.store_id ||
+        (res.data as any)?.storeData?.id ||
+        null;
+      const cmsCollections = effectiveStoreId
+        ? await getPublicCmsCollectionsForStore({
+            data: { storeId: String(effectiveStoreId) },
+          }).catch(() => [])
+        : [];
 
       const storeProducts =
         Array.isArray((res.data as any)?.products) && (res.data as any).products.length > 0 ? (res.data as any).products : null;
@@ -63,6 +77,8 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         stores,
         banners,
         hotpages,
+        navigationMenus: Array.isArray(navigationMenus) ? navigationMenus : [],
+        cmsCollections: Array.isArray(cmsCollections) ? cmsCollections : [],
       };
     } catch (err) {
       if (isNotFound(err) || isRedirect(err)) {
@@ -85,6 +101,8 @@ export const Route = createFileRoute("/_store/paginas/$slug")({
         stores: [],
         banners: [],
         hotpages: [],
+        navigationMenus: [],
+        cmsCollections: [],
       };
     }
   },
@@ -152,6 +170,8 @@ function PublicPage() {
     stores,
     banners,
     hotpages,
+    navigationMenus,
+    cmsCollections,
   } =
     (Route.useLoaderData?.() as any) || {};
 
@@ -172,8 +192,23 @@ function PublicPage() {
     );
   }
 
+  // Public route strictly serves published or canonical pages (unpublished drafts are excluded)
   const omniDoc =
-    document?.settings?.omni_page_published || document?.settings?.omni_page || document?.settings?.omni_page_draft || null;
+    document?.settings?.omni_page_published || document?.settings?.omni_page || null;
+
+  const safeMenus = Array.isArray(navigationMenus) ? navigationMenus : [];
+  const safeCmsCollections = Array.isArray(cmsCollections) ? cmsCollections : [];
+  const hasFooterBlock = Boolean(
+    omniDoc?.blocks?.some(
+      (b: any) =>
+        b?.type === "site_footer" ||
+        b?.type === "news_promethee_footer",
+    ),
+  );
+  const footerMenuRecord = safeMenus.find(
+    (m: any) => m?.location === "footer_menu" || m?.handle === "footer_menu",
+  );
+  const footerMenuItems = Array.isArray(footerMenuRecord?.items) ? footerMenuRecord.items : [];
 
   if (
     omniDoc?.blocks &&
@@ -197,7 +232,12 @@ function PublicPage() {
           stores={stores}
           banners={banners}
           hotpages={hotpages}
+          navigationMenus={safeMenus}
+          cmsCollections={safeCmsCollections}
         />
+        {!hasFooterBlock && footerMenuItems.length > 0 ? (
+          <PublicFooter menuItems={footerMenuItems} store={storeData} />
+        ) : null}
       </main>
     );
   }

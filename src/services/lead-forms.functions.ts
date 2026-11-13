@@ -321,78 +321,32 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       }
     }
 
-    // 2.1 Atualização Atômica do Lead e Cliente se leadId foi fornecido ou por matching de telefone
-    let matchedLeadId = data.leadId || null;
-    if (!matchedLeadId && cleanPhone) {
-      try {
-        const { data: matchedLeads } = await supabase
-          .from("leads_crm")
-          .select("id")
-          .eq("store_id", formRow.store_id)
-          .eq("phone", cleanPhone)
-          .order("created_at", { ascending: false })
-          .limit(1);
-        if (matchedLeads && matchedLeads.length > 0) {
-          matchedLeadId = matchedLeads[0].id;
-        }
-      } catch (err) {
-        console.warn("[lead-forms] notice matching lead by phone:", err);
-      }
-    }
-
-    if (matchedLeadId) {
-      try {
-        const answers = data.answers || {};
-        const dest = answers.destino || answers.destination || answers.cidade_destino;
-        const start = answers.data_embarque || answers.data_ida || answers.data_viagem || answers.travel_start;
-        const end = answers.data_retorno || answers.data_volta || answers.travel_end;
-        const paxRaw = answers.passageiros || answers.pax;
-        let paxCount: number | undefined = undefined;
-        if (paxRaw) {
-          const num = parseInt(String(paxRaw), 10);
-          if (!isNaN(num) && num > 0) paxCount = num;
-          else if (String(paxRaw).toLowerCase().includes("casal")) paxCount = 2;
-          else if (String(paxRaw).toLowerCase().includes("familia")) paxCount = 4;
-          else if (String(paxRaw).toLowerCase().includes("grupo")) paxCount = 6;
-        }
-
-        const leadPatch: Record<string, any> = {
-          updated_at: new Date().toISOString(),
-        };
-        if (dest && typeof dest === "string") leadPatch.destination = dest.trim();
-        if (start && typeof start === "string") leadPatch.travel_start = start.trim();
-        if (end && typeof end === "string") leadPatch.travel_end = end.trim();
-        if (paxCount) leadPatch.pax_count = paxCount;
-
-        await supabase
-          .from("leads_crm")
-          .update(leadPatch)
-          .eq("id", matchedLeadId);
-
-        const { data: leadRow } = await supabase
-          .from("leads_crm")
-          .select("customer_id")
-          .eq("id", matchedLeadId)
-          .single();
-
-        if (leadRow?.customer_id) {
-          const custPatch: Record<string, any> = {
-            updated_at: new Date().toISOString(),
-          };
-          if (answers.cpf || answers.documento) {
-            custPatch.document = String(answers.cpf || answers.documento).trim();
-          }
-          if (answers.endereco) {
-            custPatch.address = String(answers.endereco).trim();
-          }
-          await supabase
-            .from("customers_crm")
-            .update(custPatch)
-            .eq("id", leadRow.customer_id);
-        }
-      } catch (patchErr) {
-        console.warn("[lead-forms] notice updating lead from onboarding submission:", patchErr);
-      }
+    // 2.1 Ingestao ou atualizacao canonica no CRM (leads_crm + customers_crm com todas raw_answers)
+    let ingestedLeadId: string | null = data.leadId || null;
+    let ingestedCustomerId: string | null = null;
+    try {
+      const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+      const ingested = await ingestOmnichannelLead(supabase, {
+        storeId: formRow.store_id,
+        leadId: data.leadId || null,
+        source: "lead_form",
+        sourceDetail: formRow.title || formRow.slug,
+        fullName: data.contactName.trim(),
+        phone: data.contactPhone.trim(),
+        email: cleanEmail,
+        sourceFormId: formRow.id,
+        sourceListingId: data.classifiedId || null,
+        sourceListingOrigin: data.classifiedId ? "classified" : "form",
+        customFields: {
+          ...(data.answers || {}),
+          ...(data.utmSource ? { utm_source: data.utmSource } : {}),
+          ...(data.utmCampaign ? { utm_campaign: data.utmCampaign } : {}),
+        },
+      });
+      if (ingested.leadId) ingestedLeadId = ingested.leadId;
+      if (ingested.customerId) ingestedCustomerId = ingested.customerId;
+    } catch (patchErr) {
+      console.warn("[lead-forms] notice ingesting omnichannel lead:", patchErr);
     }
 
     // 3. Salva a submissão com Telemetria Completa de Borda Cloudflare
@@ -492,6 +446,8 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
 
     return {
       submissionId: submissionRow.id,
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
       afterSubmitAction: formRow.after_submit_action,
       whatsappUrl,
       redirectUrl: formRow.redirect_url,
@@ -1127,6 +1083,36 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       console.warn("[lead-forms] Aviso ao gravar submission civil:", insertErr);
     }
 
+    // 3.1 Espelhar no Kanban CRM (leads_crm + customers_crm) quando anuncio pertence a uma loja
+    let ingestedLeadId: string | null = null;
+    let ingestedCustomerId: string | null = null;
+    if (classified.store_id) {
+      try {
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        const ingested = await ingestOmnichannelLead(supabase, {
+          storeId: classified.store_id,
+          source: "classified_form",
+          sourceDetail: classified.title,
+          fullName: data.contactName.trim(),
+          phone: data.contactPhone.trim(),
+          email: data.contactEmail?.trim() || null,
+          sourceListingId: classified.id,
+          sourceListingOrigin: "classified",
+          sourceListingTitle: classified.title,
+          sourceFormId: (classified.attributes as any)?.lead_form_id || null,
+          sourceSubmissionId: submissionId,
+          customFields: {
+            ...(data.answers || {}),
+            ...(data.utmSource ? { utm_source: data.utmSource } : {}),
+          },
+        });
+        ingestedLeadId = ingested.leadId;
+        ingestedCustomerId = ingested.customerId;
+      } catch (ingestErr) {
+        console.warn("[lead-forms] Aviso ao espelhar lead civil no CRM:", ingestErr);
+      }
+    }
+
     // 4. Prepara link do WhatsApp como fallback
     let whatsappUrl: string | null = null;
     const targetPhone = (classified as any).contact_whatsapp || (classified as any).whatsapp || null;
@@ -1149,6 +1135,8 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
     return {
       success: true,
       submissionId,
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
       classifiedId: classified.id,
       sellerProfileId: classified.author_profile_id,
       storeId: classified.store_id || undefined,

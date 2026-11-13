@@ -683,22 +683,22 @@ export default function WorkspaceMarketingPixelsPage() {
           </div>
         </div>
 
-        {/* ── Bloco 5: Closed-Loop CRM (Sincronização de Leads e Funil com Meta CAPI & Google Ads) ── */}
-        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-border/40">
+        {/* ── Bloco 5: Closed-Loop CRM ── */}
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <div className="size-8 rounded-lg bg-muted text-success flex items-center justify-center">
                 <ShieldCheck className="size-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-foreground">Retroalimentação do CRM</h2>
+                <h2 className="text-sm font-bold text-foreground">Conversões do CRM</h2>
                 <p className="text-xs text-muted-foreground">
-                  Quando uma oportunidade avança no CRM, os estágios de qualificação treinam a IA da Meta e Google Ads em tempo real.
+                  Eventos de qualificação enviados automaticamente para Meta e Google Ads.
                 </p>
               </div>
             </div>
-            <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
-              Otimização de 28 Dias
+            <Badge variant="outline" className="text-xs font-mono text-success border-border">
+              Janela de 28 Dias
             </Badge>
           </div>
 

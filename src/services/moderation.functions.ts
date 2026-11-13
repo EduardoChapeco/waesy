@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "@/services/identity.functions";
-import { requireAdmin } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
 
 // ---------------------------------------------------------------------------
 // 1. SUBMIT REPORT (Público / Usuário autenticado)
@@ -65,7 +65,7 @@ const listReportsInput = z.object({
 export const listModerationReports = createServerFn({ method: "GET" })
  .validator(listReportsInput.optional())
  .handler(async ({ data: input }) => {
- await requireAdmin();
+ await requirePlatformAdmin();
  const supabase = getServerClient();
  const limit = input?.limit || 50;
 
@@ -113,7 +113,7 @@ const resolveReportInput = z.object({
 export const resolveModerationReport = createServerFn({ method: "POST" })
  .validator(resolveReportInput)
  .handler(async ({ data: input }) => {
- const admin = await requireAdmin();
+ const admin = await requirePlatformAdmin();
  const supabase = getServerClient();
 
  // 1. Busca os detalhes da denúncia

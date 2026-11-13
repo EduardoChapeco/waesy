@@ -233,11 +233,11 @@ function BookingIndexPage() {
         />
       </div>
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between pt-2 pb-4 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pt-2 pb-4 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Serviços & Agendamentos</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Agendamentos</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Reserve horários em barbearias, salões, clínicas, estética e bem-estar na sua cidade
+            Horários em barbearias, salões, clínicas e bem-estar
           </p>
         </div>
       </div>

@@ -310,11 +310,12 @@ export async function resolveMerchantForCategory(
     }
   }
 
-  // Resolução semântica por segmento; ausência de correspondência é explícita.
+  // Resolução semântica por segmento via settings JSONB; ausência de correspondência é explícita.
   const { data: categoryStore } = await db
     .from("stores")
-    .select("id, name, segment")
-    .ilike("segment", `%${category}%`)
+    .select("id, name, settings")
+    .eq("is_active", true)
+    .filter("settings->>segment", "ilike", `%${category}%`)
     .limit(1)
     .maybeSingle();
 
@@ -336,8 +337,8 @@ export const searchChatCommerceProducts = createServerFn({ method: "GET" })
 
     let query = db
       .from("products")
-      .select("id, title, price_cents, images, category, store_id, in_stock, slug, description, stores(name)")
-      .eq("status", "active")
+      .select("id, title, price_cents, attributes, store_id, slug, description, stores(name), product_media(url, sort_order), product_variants(stock_on_hand, allow_backorder)")
+      .in("status", ["active", "published"])
       .limit(filter.limit);
 
     if (Boolean(filter.storeId)) {
@@ -345,7 +346,7 @@ export const searchChatCommerceProducts = createServerFn({ method: "GET" })
     }
 
     if (Boolean(filter.category)) {
-      query = query.ilike("category", `%${filter.category}%`);
+      query = query.filter("attributes->>category", "ilike", `%${filter.category}%`);
     }
 
     if (Boolean(filter.query)) {
@@ -359,17 +360,24 @@ export const searchChatCommerceProducts = createServerFn({ method: "GET" })
 
     return rows.map((p: any) => {
       const storeName = Array.isArray(p.stores) ? p.stores[0]?.name : p.stores?.name || "Loja Oficial";
-      const imageUrl = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : undefined;
+      const media = Array.isArray(p.product_media)
+        ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        : [];
+      const imageUrl = media.length > 0 ? media[0].url : undefined;
+      const variants = Array.isArray(p.product_variants) ? p.product_variants : [];
+      const inStock =
+        variants.length === 0 ||
+        variants.some((v: any) => Boolean(v.allow_backorder) || (Number(v.stock_on_hand) || 0) > 0);
 
       return {
         id: p.id,
         title: p.title,
         priceCents: p.price_cents || 0,
         imageUrl,
-        category: p.category || undefined,
+        category: p.attributes?.category || undefined,
         storeId: p.store_id,
         storeName,
-        inStock: Boolean(p.in_stock ?? true),
+        inStock,
         slug: p.slug || undefined,
         description: p.description || undefined,
       };
@@ -401,24 +409,49 @@ export const getChatCartSummary = createServerFn({ method: "GET" })
       return null;
     }
 
-    // Carregar itens do carrinho
+    // Carregar itens do carrinho usando colunas reais (qty, price_snapshot_cents, item_id)
     const { data: items } = await db
       .from("cart_items")
-      .select("id, product_id, variant_id, quantity, unit_price_cents, total_price_cents, products(title, images)")
+      .select("id, variant_id, qty, price_snapshot_cents, item_type, item_id, product_variants(product_id, products(id, title, product_media(url, sort_order)))")
       .eq("cart_id", cart.id);
 
+    const directProductIds = Array.from(
+      new Set(
+        (items || [])
+          .filter((it: any) => !it.product_variants?.products && it.item_id)
+          .map((it: any) => it.item_id as string),
+      ),
+    );
+    const directProductsMap: Record<string, any> = {};
+    if (directProductIds.length > 0) {
+      const { data: directProds } = await db
+        .from("products")
+        .select("id, title, product_media(url, sort_order)")
+        .in("id", directProductIds);
+      for (const dp of directProds || []) {
+        directProductsMap[dp.id] = dp;
+      }
+    }
+
     const itemsDTO: ChatCartItemDTO[] = (items || []).map((it: any) => {
-      const prod = Array.isArray(it.products) ? it.products[0] : it.products;
-      const imageUrl = Array.isArray(prod?.images) && prod.images.length > 0 ? prod.images[0] : undefined;
+      const pv = Array.isArray(it.product_variants) ? it.product_variants[0] : it.product_variants;
+      const joinedProd = Array.isArray(pv?.products) ? pv.products[0] : pv?.products;
+      const prod = joinedProd || (it.item_id ? directProductsMap[it.item_id] : null);
+      const media = Array.isArray(prod?.product_media)
+        ? [...prod.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        : [];
+      const imageUrl = media.length > 0 ? media[0].url : undefined;
+      const qty = Number(it.qty) || 1;
+      const unitPriceCents = Number(it.price_snapshot_cents) || 0;
 
       return {
         id: it.id,
-        productId: it.product_id,
+        productId: it.item_id || prod?.id || "",
         variantId: it.variant_id || undefined,
         title: prod?.title || "Item do Carrinho",
-        quantity: it.quantity,
-        unitPriceCents: it.unit_price_cents,
-        totalPriceCents: it.total_price_cents || it.unit_price_cents * it.quantity,
+        quantity: qty,
+        unitPriceCents,
+        totalPriceCents: unitPriceCents * qty,
         imageUrl,
       };
     });
@@ -449,12 +482,15 @@ export const addChatCartItem = createServerFn({ method: "POST" })
     // 1. Obter ou criar carrinho ativo
     let resolvedCartId = data.cartId;
     if (Boolean(resolvedCartId) === false) {
-      const { data: existingCart } = await db
+      let existingCartQuery = db
         .from("carts")
         .select("id")
         .eq("store_id", data.storeId)
-        .eq("status", "active")
-        .eq("customer_id", identity?.id || null)
+        .eq("status", "active");
+      existingCartQuery = identity?.id
+        ? existingCartQuery.eq("customer_id", identity.id)
+        : existingCartQuery.is("customer_id", null);
+      const { data: existingCart } = await existingCartQuery
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -490,32 +526,35 @@ export const addChatCartItem = createServerFn({ method: "POST" })
       unitPriceCents = product?.price_cents || 0;
     }
 
-    // 3. Inserir ou incrementar no carrinho
-    const { data: existingItem } = await db
+    // 3. Inserir ou incrementar no carrinho (colunas canônicas item_id, item_type, qty, price_snapshot_cents)
+    let existingItemQuery = db
       .from("cart_items")
-      .select("id, quantity")
+      .select("id, qty")
       .eq("cart_id", resolvedCartId as string)
-      .eq("product_id", data.productId)
-      .maybeSingle();
+      .eq("item_id", data.productId);
+    existingItemQuery = data.variantId
+      ? existingItemQuery.eq("variant_id", data.variantId)
+      : existingItemQuery.is("variant_id", null);
+    const { data: existingItem } = await existingItemQuery.maybeSingle();
 
     if (existingItem !== null && existingItem !== undefined) {
-      const newQty = existingItem.quantity + data.quantity;
+      const newQty = (Number(existingItem.qty) || 0) + data.quantity;
       await db
         .from("cart_items")
         .update({
-          quantity: newQty,
-          total_price_cents: newQty * (unitPriceCents || 0),
+          qty: newQty,
+          price_snapshot_cents: unitPriceCents || 0,
           updated_at: new Date().toISOString(),
         })
         .eq("id", existingItem.id);
     } else {
       await db.from("cart_items").insert({
         cart_id: resolvedCartId as string,
-        product_id: data.productId,
+        item_type: "product",
+        item_id: data.productId,
         variant_id: data.variantId || null,
-        quantity: data.quantity,
-        unit_price_cents: unitPriceCents || 0,
-        total_price_cents: data.quantity * (unitPriceCents || 0),
+        qty: data.quantity,
+        price_snapshot_cents: unitPriceCents || 0,
       });
     }
 
@@ -534,7 +573,7 @@ export const updateChatCartItemQuantity = createServerFn({ method: "POST" })
 
     const { data: item } = await db
       .from("cart_items")
-      .select("id, cart_id, unit_price_cents")
+      .select("id, cart_id, price_snapshot_cents")
       .eq("id", data.cartItemId)
       .single();
 
@@ -548,8 +587,7 @@ export const updateChatCartItemQuantity = createServerFn({ method: "POST" })
       await db
         .from("cart_items")
         .update({
-          quantity: data.quantity,
-          total_price_cents: data.quantity * item.unit_price_cents,
+          qty: data.quantity,
           updated_at: new Date().toISOString(),
         })
         .eq("id", data.cartItemId);
@@ -844,23 +882,42 @@ export async function executeChatOrderPaymentCore(
 
   const { data: cartItems } = await db
     .from("cart_items")
-    .select("id, product_id, variant_id, quantity, unit_price_cents, total_price_cents, products(title)")
+    .select("id, variant_id, qty, price_snapshot_cents, item_type, item_id, product_variants(product_id, products(title))")
     .eq("cart_id", data.cartId);
 
   if (Boolean(cartItems) === false || (cartItems as any[]).length === 0) {
     throw new Error("O carrinho está vazio. Adicione itens antes de realizar o pagamento.");
   }
 
+  const missingProdIds = Array.from(
+    new Set(
+      (cartItems as any[])
+        .filter((it) => !it.product_variants?.products && it.item_id)
+        .map((it) => it.item_id as string),
+    ),
+  );
+  const directProdTitleMap: Record<string, string> = {};
+  if (missingProdIds.length > 0) {
+    const { data: prods } = await db.from("products").select("id, title").in("id", missingProdIds);
+    for (const p of prods || []) {
+      directProdTitleMap[p.id] = p.title;
+    }
+  }
+
   // 3. Recálculo Mandatório no Servidor (Zero Trust do Cliente)
   const itemsSnapshot = (cartItems as any[]).map((it) => {
-    const prod = Array.isArray(it.products) ? it.products[0] : it.products;
+    const pv = Array.isArray(it.product_variants) ? it.product_variants[0] : it.product_variants;
+    const prod = Array.isArray(pv?.products) ? pv.products[0] : pv?.products;
+    const qty = Number(it.qty) || 1;
+    const unitPriceCents = Number(it.price_snapshot_cents) || 0;
+    const productId = it.item_id || pv?.product_id || null;
     return {
-      product_id: it.product_id,
+      product_id: productId,
       variant_id: it.variant_id,
-      title: prod?.title || "Item do Pedido",
-      quantity: it.quantity,
-      unit_price_cents: it.unit_price_cents,
-      total_cents: it.total_price_cents || it.unit_price_cents * it.quantity,
+      title: prod?.title || (it.item_id ? directProdTitleMap[it.item_id] : null) || "Item do Pedido",
+      quantity: qty,
+      unit_price_cents: unitPriceCents,
+      total_cents: unitPriceCents * qty,
     };
   });
 

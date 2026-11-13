@@ -128,7 +128,7 @@ async function _getDashboardData(targetStoreId?: string | null): Promise<Dashboa
  const { data: ordersData } = await db
  .from("orders")
  .select(
- "id, status, total_cents, created_at, customer_name, customer_email, payments(status, amount_cents), order_items(product_variants(allow_backorder, stock_on_hand))",
+ "id, status, total_cents, created_at, customer_snapshot, payments(status, amount_cents), order_items(product_variants(allow_backorder, stock_on_hand))",
  )
  .eq("store_id", storeId);
 
@@ -227,7 +227,13 @@ async function _getDashboardData(targetStoreId?: string | null): Promise<Dashboa
  ? `Hoje às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
  : date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 
- const customerLabel = o.customer_name || o.customer_email || "Cliente da Loja";
+ const customerSnapshot = (o as any).customer_snapshot as Record<string, any> | null;
+      const customerLabel =
+        (o as any).customer_name ||
+        customerSnapshot?.name ||
+        (o as any).customer_email ||
+        customerSnapshot?.email ||
+        "Cliente da Loja";
 
  let statusLabel = "Pedido Criado";
  if (o.status === "paid" || o.status === "processing") statusLabel = "Venda Confirmada (Pago)";

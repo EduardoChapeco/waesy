@@ -8,7 +8,7 @@ import getCroppedImg, {
   type TargetPlatform,
   type CanonicalDimensions,
 } from "@/lib/crop-image";
-import { Crop, ZoomIn, ZoomOut, RotateCw, Check, Maximize, Minimize, Info, Sparkles } from "lucide-react";
+import { Crop, ZoomIn, ZoomOut, RotateCw, Check, Maximize, Minimize, Info } from "lucide-react";
 
 const Cropper = lazy(() => import("react-easy-crop"));
 
@@ -202,7 +202,7 @@ export function ImageCropperDialog({
             {/* Indicador de Máscara Canônica e Resolução Física de Saída (Zero-Drift) */}
             <div className="flex items-center justify-between px-1 flex-wrap gap-2">
               <span className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
-                <Sparkles className="size-3.5 text-primary" />
+                <Crop className="size-3.5 text-primary" />
                 Máscara Canônica:
                 <strong className="text-foreground ml-1 font-mono">
                   {getAspectLabel(selectedAspect, isRound)}

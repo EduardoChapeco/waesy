@@ -29,7 +29,7 @@ export const listScheduledPosts = createServerFn({ method: "GET" }).handler(asyn
  .order("created_at", { ascending: false }),
  supabase
  .from("events")
- .select("id, store_id, title, description, date, created_at")
+ .select("id, store_id, title, description, event_date, created_at")
  .eq("store_id", identity.store_id)
  .order("created_at", { ascending: false }),
  ]);
@@ -56,7 +56,7 @@ export const listScheduledPosts = createServerFn({ method: "GET" }).handler(asyn
  title: e.title || "Evento Oficial",
  content: e.description,
  type: "flyer",
- scheduled_for: e.date || e.created_at,
+ scheduled_for: e.event_date || e.created_at,
  status: "scheduled",
  created_at: e.created_at,
  });

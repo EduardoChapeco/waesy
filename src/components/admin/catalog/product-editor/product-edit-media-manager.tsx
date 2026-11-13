@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Settings, Trash2, Sparkles, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, Settings, Trash2, Layers, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -155,7 +155,7 @@ export function ProductEditMediaManager({ product }: ProductEditMediaManagerProp
           <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
+                <Layers className="size-4 text-primary" />
                 <span className="text-xs font-bold text-foreground">
                   Fotos de Variações Detectadas ({missingVariantImages.length})
                 </span>

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Kanban, Bus, MessageSquare, Pencil, Users, Plus, Search, DollarSign, Phone, Mail, UserCheck, CheckCircle2, Clock, MoreVertical, Plane, Edit3, Calendar, MapPin, Tag, CheckSquare, Square, AlertTriangle, ChevronRight, ChevronLeft, X, Trash2, Layers, Upload, Calculator, FileText, ExternalLink, BarChart3, Settings2, Brain, FileSignature, History, Copy, Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,10 +33,19 @@ import { Customer360PrintableDossier } from "@/components/dossier/customer-360-p
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { TourismPipeCardDossier } from "@/components/tourism/crm/TourismPipeCardDossier";
+import { UniversalKanbanCard } from "@/components/workspace/kanban/universal-kanban-card";
 import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
 import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
+import {
+  getNicheContractBlueprint,
+  buildStructuredCustomFieldsSummaryRows,
+} from "@/lib/niches/unified-field-bridge";
 
 export const Route = createFileRoute("/workspace/comercial")({
+  validateSearch: (search: Record<string, unknown>): { dealId?: string; leadId?: string } => ({
+    dealId: typeof search.dealId === "string" && search.dealId.trim() ? search.dealId.trim() : undefined,
+    leadId: typeof search.leadId === "string" && search.leadId.trim() ? search.leadId.trim() : undefined,
+  }),
   head: () => ({ meta: [{ title: "Pipeline Comercial e Funil de Oportunidades | Workspace" }] }),
   loader: async () => {
     try {
@@ -249,12 +258,16 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
 function WorkspaceComercialPage() {
   const { leads: initialLeads = [], team = [], store = null, proposals: initialProposals = [], kanbanStages = [], loadError = null } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
+  const routeSearch = Route.useSearch();
   const storeId = store?.id || "";
+  const nicheBlueprint = useMemo(() => getNicheContractBlueprint(store), [store]);
 
   const [leads, setLeads] = useState<any[]>(initialLeads);
   useEffect(() => {
     setLeads(initialLeads);
   }, [initialLeads]);
+  const handledDeepLinkRef = useRef<string>("");
+  const [budgetPadTargetLead, setBudgetPadTargetLead] = useState<any | null>(null);
 
   // Modal de Agendamento Direto de Reuniões (lead_meetings)
   const [meetingModalOpen, setMeetingModalOpen] = useState(false);
@@ -502,6 +515,70 @@ function WorkspaceComercialPage() {
     } finally {
       setIsLoading360(false);
     }
+  };
+
+  useEffect(() => {
+    const targetLeadId = routeSearch.leadId;
+    const targetDealId = routeSearch.dealId;
+    const deepKey = `${targetLeadId || ""}:${targetDealId || ""}`;
+    if (!targetLeadId && !targetDealId) return;
+    if (handledDeepLinkRef.current === deepKey || leads.length === 0) return;
+
+    const matched = leads.find((l: any) => {
+      if (targetLeadId && l.id === targetLeadId) return true;
+      const cf = l.custom_fields && typeof l.custom_fields === "object" ? l.custom_fields : {};
+      if (targetDealId && cf.source_deal_id === targetDealId) return true;
+      return false;
+    });
+    if (matched) {
+      handledDeepLinkRef.current = deepKey;
+      openLeadDetails(matched);
+    }
+  }, [routeSearch.leadId, routeSearch.dealId, leads]);
+
+  const buildKanbanProposalPayload = (leadObj: any) => {
+    const cf = leadObj?.customFields && typeof leadObj.customFields === "object"
+      ? leadObj.customFields
+      : leadObj?.custom_fields && typeof leadObj.custom_fields === "object"
+      ? leadObj.custom_fields
+      : {};
+    return {
+      id: leadObj.id,
+      fullName: leadObj.fullName || leadObj.full_name || leadObj.name || "",
+      phone: leadObj.phone || "",
+      email: leadObj.email || "",
+      clientDocument: String(
+        leadObj.clientDocument || leadObj.document || leadObj.cpf_cnpj || cf.document || "",
+      ),
+      destination: leadObj.destination || cf.source_listing_title || "",
+      estimated_value_cents: leadObj.estimated_value_cents || 0,
+      passenger_count:
+        leadObj.passenger_count ||
+        ((Number(leadObj.adultsCount ?? leadObj.pax_adults) || 2) +
+          (Number(leadObj.childrenCount ?? leadObj.pax_children) || 0)),
+      departureDate: leadObj.departureDate || leadObj.travel_start || undefined,
+      returnDate: leadObj.returnDate || leadObj.travel_end || undefined,
+      adultsCount: leadObj.adultsCount ?? leadObj.pax_adults ?? 2,
+      childrenCount: leadObj.childrenCount ?? leadObj.pax_children ?? 0,
+      notes: leadObj.notes || leadObj.message || "",
+      customFields: cf,
+      sourceListingId: leadObj.sourceListingId || leadObj.source_listing_id || cf.source_listing_id || "",
+      sourceListingOrigin:
+        leadObj.sourceListingOrigin || leadObj.source_listing_origin || cf.source_listing_origin || "",
+      paxList: leadObj.paxList || (Array.isArray(leadObj.pax_list) ? leadObj.pax_list : undefined),
+      boardingPoint: leadObj.boardingPoint || (cf.boarding_point ? String(cf.boarding_point) : undefined),
+      departureOption: leadObj.departureOption || cf.departure_option || undefined,
+    };
+  };
+
+  const handleOpenProposalOrBudget = (leadObj: any) => {
+    const payload = buildKanbanProposalPayload(leadObj);
+    if (nicheBlueprint.isTourism) {
+      setProposalLead(payload);
+      return;
+    }
+    setBudgetPadTargetLead(payload);
+    setBudgetPadLeadOpen(true);
   };
 
   const filteredLeads = useMemo(() => {
@@ -876,7 +953,7 @@ function WorkspaceComercialPage() {
     <div className="w-full flex-1 flex flex-col gap-4 min-h-0 pb-6 overflow-x-hidden">
       {loadError && <div role="alert" className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{loadError}</div>}
       <div className="flex items-center justify-between px-1 shrink-0">
-        <p className="text-xs font-medium text-muted-foreground">Pipeline de oportunidades, CRM e propostas comerciais</p>
+        <p className="text-xs font-medium text-muted-foreground">{nicheBlueprint.kanbanTitle}</p>
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
       </div>
 
@@ -1005,24 +1082,66 @@ function WorkspaceComercialPage() {
                     </Button>
                   </div>
                 ) : (
-                  stageLeads.map((lead: any) => (
-                    <LeadCard
-                      key={lead.id}
-                      lead={lead}
-                      currentStageId={stage.id}
-                      stages={visibleStages.map((s: any) => ({ id: s.id, title: s.title }))}
-                      team={team}
-                      onOpenDetails={openLeadDetails}
-                      onGenerateProposal={setProposalLead}
-                      onCalculateCommission={setCalculatorLead}
-                      onOpenFlightGrid={setFlightLead}
-                      onStageChange={(leadId, newStage) => handleMoveStage(leadId, newStage as any)}
-                      onPromote={handlePromoteToCustomer}
-                      onDelete={handleDeleteLead}
-                      prevStageId={prevStage?.id}
-                      nextStageId={nextStage?.id}
-                    />
-                  ))
+                  stageLeads.map((lead: any) =>
+                    nicheBlueprint.isTourism ? (
+                      <LeadCard
+                        key={lead.id}
+                        lead={lead}
+                        currentStageId={stage.id}
+                        stages={visibleStages.map((s: any) => ({ id: s.id, title: s.title }))}
+                        team={team}
+                        onOpenDetails={openLeadDetails}
+                        onGenerateProposal={handleOpenProposalOrBudget}
+                        onCalculateCommission={setCalculatorLead}
+                        onOpenFlightGrid={setFlightLead}
+                        onStageChange={(leadId, newStage) => handleMoveStage(leadId, newStage as any)}
+                        onPromote={handlePromoteToCustomer}
+                        onDelete={handleDeleteLead}
+                        prevStageId={prevStage?.id}
+                        nextStageId={nextStage?.id}
+                      />
+                    ) : (
+                      <UniversalKanbanCard
+                        key={lead.id}
+                        id={lead.id}
+                        variant="standard"
+                        title={lead.full_name || "Cliente sem nome"}
+                        subtitle={
+                          lead.destination ||
+                          lead.custom_fields?.source_listing_title ||
+                          lead.source_detail ||
+                          lead.phone ||
+                          nicheBlueprint.specsSectionTitle
+                        }
+                        description={lead.notes || lead.message || undefined}
+                        valueCents={lead.estimated_value_cents || undefined}
+                        assigneeName={
+                          team.find((m: any) => (m.profile_id || m.id) === lead.assigned_to)?.full_name ||
+                          team.find((m: any) => (m.profile_id || m.id) === lead.assigned_to)?.name
+                        }
+                        checklistTotal={Array.isArray(lead.checklist) ? lead.checklist.length : 0}
+                        checklistDone={
+                          Array.isArray(lead.checklist)
+                            ? lead.checklist.filter((it: any) => it?.done).length
+                            : 0
+                        }
+                        tags={(() => {
+                          const dynamicTags = buildStructuredCustomFieldsSummaryRows(lead.custom_fields)
+                            .slice(0, 2)
+                            .map((row) => `${row.label}: ${row.value}`);
+                          const baseTags = Array.isArray(lead.tags) ? lead.tags : [];
+                          return [...baseTags, ...dynamicTags].slice(0, 4);
+                        })()}
+                        onSelect={() => openLeadDetails(lead)}
+                        onAdvance={
+                          nextStage
+                            ? () => handleMoveStage(lead.id, nextStage.id as any)
+                            : undefined
+                        }
+                        advanceLabel={nextStage ? `Mover: ${nextStage.title}` : undefined}
+                      />
+                    ),
+                  )
                 )}
               </div>
             </div>
@@ -1348,7 +1467,7 @@ function WorkspaceComercialPage() {
               onPromoteToCustomer={(leadId) => handlePromoteToCustomer(leadId)}
               onGenerateProposal={(leadData) => {
                 setSelectedLead(null);
-                setProposalLead(leadData);
+                handleOpenProposalOrBudget(leadData);
               }}
               onScheduleMeeting={async (data) => {
                 await addLeadMeeting({ data });
@@ -1479,14 +1598,49 @@ function WorkspaceComercialPage() {
 
       <CommercialBudgetPadSheet
         open={budgetPadLeadOpen}
-        onOpenChange={setBudgetPadLeadOpen}
-        initialLeadId={selectedLead?.id}
-        initialClientData={{
-          name: selectedLead?.name,
-          phone: selectedLead?.phone,
-          email: selectedLead?.email,
-          cityState: selectedLead?.destination,
+        onOpenChange={(isOpen) => {
+          setBudgetPadLeadOpen(isOpen);
+          if (!isOpen) setBudgetPadTargetLead(null);
         }}
+        initialLeadId={budgetPadTargetLead?.id || selectedLead?.id}
+        initialClientData={{
+          name: budgetPadTargetLead?.fullName || selectedLead?.full_name || selectedLead?.name || "",
+          cpfOrCnpj:
+            budgetPadTargetLead?.clientDocument ||
+            selectedLead?.document ||
+            selectedLead?.cpf_cnpj ||
+            selectedLead?.custom_fields?.document ||
+            "",
+          phone: budgetPadTargetLead?.phone || selectedLead?.phone || "",
+          email: budgetPadTargetLead?.email || selectedLead?.email || "",
+          cityState: budgetPadTargetLead?.destination || selectedLead?.destination || "",
+        }}
+        initialNotes={(() => {
+          const cf = budgetPadTargetLead?.customFields || selectedLead?.custom_fields || {};
+          const rows = buildStructuredCustomFieldsSummaryRows(cf);
+          const cfLines = rows.map((r) => `• ${r.label}: ${r.value}`).join("\n");
+          const baseNotes = String(budgetPadTargetLead?.notes || selectedLead?.notes || "").trim();
+          return [baseNotes, cfLines].filter(Boolean).join("\n\n");
+        })()}
+        initialItems={(() => {
+          const target = budgetPadTargetLead || selectedLead;
+          if (!target) return undefined;
+          const itemTitle =
+            target.customFields?.source_listing_title ||
+            target.custom_fields?.source_listing_title ||
+            target.destination ||
+            "";
+          const amount = Number(target.estimated_value_cents || 0);
+          if (!itemTitle && amount <= 0) return undefined;
+          return [
+            {
+              title: String(itemTitle || "Item / Serviço Solicitado"),
+              unit: "un",
+              quantity: 1,
+              unitPriceCents: amount > 0 ? amount : 0,
+            },
+          ];
+        })()}
       />
 
       <LeadCommissionCalculatorSheet

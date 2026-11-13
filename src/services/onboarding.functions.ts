@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie } from "@tanstack/start-server-core";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, clearIdentityCache } from "@/lib/server-access";
+import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
+import { VERTICAL_PLAN_CATALOG } from "@/lib/architecture/module-plan-governance";
 
 export type OnboardingStepStatus =
  "unconfigured" | "partially_configured" | "completed" | "locked" | "technical_error";
@@ -49,7 +51,7 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  const { data, error } = await db
  .from("stores")
  .select(
- "id, name, category, email, phone, cnpj, address, city, state, zip_code, logo_url, policies, seo_title, seo_description, pix_key, settings",
+ "id, name, email, phone, cnpj, address, city, state, zip_code, logo_url, seo_title, seo_description, pix_key, settings",
  )
  .eq("id", storeId)
  .single();
@@ -115,10 +117,28 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  }
  };
 
+ const fetchShippingRatesCount = async () => {
+ try {
+ const { count, error } = await db
+ .from("shipping_rates")
+ .select("id, shipping_zones!inner(store_id)", { count: "exact", head: true })
+ .eq("shipping_zones.store_id", storeId);
+ if (error)
+ return {
+ status: "error" as const,
+ error: error instanceof Error ? error.message : String(error),
+ };
+ return { status: "ok" as const, count: count ?? 0 };
+ } catch (e: unknown) {
+ const err = e as Error;
+ return { status: "error" as const, error: err?.message || "Erro inesperado" };
+ }
+ };
+
  const [storeRes, shippingRes, categoriesRes, productsRes, stockRes, ordersRes, couponsRes] =
  await Promise.all([
  fetchStore(),
- fetchCount("shipping_rates"),
+ fetchShippingRatesCount(),
  fetchCount("categories"),
  fetchCount("products"),
  fetchStockVariants(),
@@ -356,8 +376,9 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  targetRoute: "/workspace/configuracoes/privacidade-loja",
  });
  } else {
- const p = storeRes.data?.policies as any;
- const hasReturns = Boolean(p?.returns || p?.terms);
+ const storeSettings = (storeRes.data?.settings || {}) as Record<string, any>;
+ const p = (storeSettings.policies || {}) as Record<string, any>;
+ const hasReturns = Boolean(p?.returns || p?.return_policy || p?.privacy_policy || p?.terms);
 
  steps.push({
  id: "policies",
@@ -473,7 +494,7 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  const isStoreReadyToSell = Boolean(hasProduct && hasPayment);
 
  const storeData = storeRes.status === "ok" ? storeRes.data : null;
- const storeCategory = storeData?.category || storeData?.settings?.category || "retail";
+ const storeCategory = (storeData?.settings as any)?.category || (storeData?.settings as any)?.niche || "retail";
  const storeName = storeData?.name || "Sua Loja";
 
  return {
@@ -603,11 +624,23 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  .single();
  if (orgError) throw new Error("Erro ao criar organização: " + orgError.message);
 
- // 2. Montar objeto settings estruturado e persistido com type, segment, logoUrl e configurações
+ // 2. Montar objeto settings estruturado e persistido com SSOT de nicho e sistema vertical
+ const nicheSpec = getUnifiedNicheSpec(data.type || "gastronomy");
+ const requestedSku = (data as Record<string, unknown>).verticalSku as string | undefined;
+ const resolvedSku =
+   requestedSku && requestedSku in VERTICAL_PLAN_CATALOG
+     ? (requestedSku as keyof typeof VERTICAL_PLAN_CATALOG)
+     : nicheSpec.defaultVerticalSku;
+ const verticalPlan = VERTICAL_PLAN_CATALOG[resolvedSku];
+ const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+
  const settings: Record<string, any> = {
- type: data.type || "gastronomy",
- segment: data.type || "gastronomy",
- niche: data.type || "gastronomy",
+ type: nicheSpec.id,
+ segment: nicheSpec.id,
+ niche: nicheSpec.id,
+ primary_niche_id: nicheSpec.id,
+ macro_vertical: nicheSpec.macroVertical,
+ vertical_sku: verticalPlan.sku,
  logoUrl: data.logoUrl || null,
  bannerUrl: data.bannerUrl || null,
  business_model: data.businessModel || "physical_and_delivery",
@@ -647,6 +680,15 @@ export const provisionBusiness = createServerFn({ method: "POST" })
     email: data.email || null,
     logo_url: data.logoUrl || null,
     banner_url: data.bannerUrl || null,
+    primary_niche_id: nicheSpec.id,
+    enabled_niches: [nicheSpec.id],
+    vertical_sku: verticalPlan.sku,
+    plan_tier: verticalPlan.baseTier,
+    subscription_tier: verticalPlan.baseTier,
+    subscription_status: "trialing",
+    trial_ends_at: trialEndsAt,
+    billing_cycle: "monthly",
+    enabled_modules: verticalPlan.includedModules,
     settings,
     context_profile_id: userId,
     is_active: true,
@@ -736,36 +778,12 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  // Ignora erro não impeditivo de log
  }
 
- // 4.0 SILENT BACKGROUND TRIGGER: Provisionar categorias iniciais do nicho
+ // 4.0 SILENT BACKGROUND TRIGGER: Provisionar categorias e setores iniciais pelo SSOT do nicho
  try {
- const niche = (data.type || "gastronomy").toLowerCase();
- let defaultCategories: string[] = ["Destaques", "Mais Vendidos", "Novidades"];
-
- if (niche.includes("turis") || niche.includes("viage") || niche.includes("tour") || niche.includes("passeio")) {
- defaultCategories = ["Pacotes Nacionais", "Viagens Internacionais", "Cruzeiros Marítimos", "Ecoturismo & Passeios", "Passagens Aéreas", "Assessoria de Vistos"];
- } else if (niche.includes("gastro") || niche.includes("lanche") || niche.includes("restaurante") || niche.includes("marmita") || niche.includes("doce")) {
- defaultCategories = ["Burgers & Lanches", "Porções & Entradas", "Bebidas & Sucos", "Sobremesas"];
- } else if (niche.includes("mercado") || niche.includes("hortifruti")) {
- defaultCategories = ["Hortifrúti & Orgânicos", "Padaria & Frios", "Bebidas", "Mercearia"];
- } else if (niche.includes("moda") || niche.includes("vestuario") || niche.includes("boutique")) {
- defaultCategories = ["Novidades da Semana", "Feminino", "Masculino", "Calçados & Acessórios"];
- } else if (niche.includes("pet")) {
- defaultCategories = ["Rações & Alimentos", "Petiscos & Bifinhos", "Brinquedos & Acessórios", "Higiene & Farmácia"];
- } else if (niche.includes("farmacia") || niche.includes("saude")) {
- defaultCategories = ["Medicamentos & OTC", "Higiene Pessoal", "Dermocosméticos", "Suplementos & Vitaminas"];
- } else if (niche.includes("eletronico") || niche.includes("tech")) {
- defaultCategories = ["Smartphones & Acessórios", "Informática & Áudio", "Cabos & Carregadores", "Gamer"];
- } else if (niche.includes("beleza") || niche.includes("salao") || niche.includes("barber") || niche.includes("estetica")) {
- defaultCategories = ["Cabelo & Barba", "Estética Facial", "Tratamentos Corporais", "Pacotes & Sessões"];
- } else if (niche.includes("legal") || niche.includes("advoca") || niche.includes("jurid")) {
- defaultCategories = ["Consultoria & Pareceres", "Direito Civil & Família", "Trabalhista & Previdenciário", "Contratos Comerciais"];
- } else if (niche.includes("imove") || niche.includes("imobili")) {
- defaultCategories = ["Imóveis para Venda", "Locação Residencial", "Salas Comerciais", "Terrenos & Lançamentos"];
- } else if (niche.includes("evento") || niche.includes("ingresso") || niche.includes("locacao")) {
- defaultCategories = ["Ingressos & Lotes", "Área VIP & Mesas", "Locação de Estruturas", "Equipamentos de Som & Luz"];
- } else if (niche.includes("educa") || niche.includes("curso") || niche.includes("escola")) {
- defaultCategories = ["Cursos Presenciais", "Workshops & Imersões", "Aulas Particulares", "Materiais Didáticos"];
- }
+ const defaultCategories =
+   nicheSpec.onboardingBlueprint.defaultCategories.length > 0
+     ? nicheSpec.onboardingBlueprint.defaultCategories
+     : ["Destaques", "Mais Vendidos", "Novidades"];
 
  const categoriesPayload = defaultCategories.map((catName, idx) => ({
  store_id: store.id,
@@ -776,8 +794,23 @@ export const provisionBusiness = createServerFn({ method: "POST" })
  }));
 
  await db.from("categories").insert(categoriesPayload);
+
+ const defaultDepartments = nicheSpec.onboardingBlueprint.defaultDepartments || [];
+ if (defaultDepartments.length > 0) {
+   const deptPayload = defaultDepartments.map((dept) => ({
+     store_id: store.id,
+     slug: dept.slug || generateSlug(dept.name),
+     name: dept.name,
+     description: `Fila automática provisionada para ${nicheSpec.label}`,
+     sla_minutes: 15,
+     is_active: true,
+   }));
+   await db
+     .from("chat_departments")
+     .upsert(deptPayload, { onConflict: "store_id,slug", ignoreDuplicates: true });
+ }
  } catch (catErr) {
- console.warn("[onboarding] Falha silenciosa ao criar categorias iniciais:", catErr);
+ console.warn("[onboarding] Falha silenciosa ao criar blueprint inicial do nicho:", catErr);
  }
 
  // 4.1 Definir o cookie do novo tenant ativo imediatamente

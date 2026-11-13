@@ -142,10 +142,10 @@ describe("Microfases 2, 3 e 4: Multi-Páginas, Bifurcação Estrita e Marketing 
     it("deve garantir navegação clara e sem sufixos (Omni) inflados em admin-master", () => {
       const adminMasterCode = fs.readFileSync(path.resolve(process.cwd(), "src/routes/admin-master.tsx"), "utf8");
       
-      expect(adminMasterCode).toContain('label: "Páginas & Seções"');
-      expect(adminMasterCode).toContain('label: "Vitrines Verticais"');
-      expect(adminMasterCode).toContain('label: "Banners & Destaques"');
-      expect(adminMasterCode).toContain('label: "Categorias & Hotpages"');
+      expect(adminMasterCode).toContain('label: "Páginas"');
+      expect(adminMasterCode).toContain('label: "Vitrines"');
+      expect(adminMasterCode).toContain('label: "Banners"');
+      expect(adminMasterCode).toContain('label: "Atalhos"');
       expect(adminMasterCode).not.toContain('label: "Editor Visual de Páginas (Omni)"');
       expect(adminMasterCode).not.toContain('label: "Vitrines e Superfícies (Omni)"');
     });

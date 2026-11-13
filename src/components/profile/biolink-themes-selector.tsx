@@ -40,40 +40,40 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
   },
   {
     key: "glass",
-    label: "Indigo Glass",
-    description: "Vidro fosco translúcido com gradiente noturno índigo e púrpura.",
-    previewBg: "bg-primary/20 border-primary/30",
-    cardStyle: "bg-card/40 backdrop-blur-md border-border text-foreground",
+    label: "Índigo Fosco",
+    description: "Superfície limpa com contraste suave e destaque índigo.",
+    previewBg: "bg-secondary border-border",
+    cardStyle: "bg-card border-border text-foreground",
     buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
   },
   {
     key: "sunset",
-    label: "Sunset Glow",
-    description: "Vibração calorosa inspirada no pôr-do-sol, com energia e destaque.",
-    previewBg: "bg-warning/20 border-rose-500/30",
-    cardStyle: "bg-card/40 backdrop-blur-md border-border text-foreground",
-    buttonClass: "bg-background text-foreground hover:bg-background/90 font-bold",
+    label: "Calor Editorial",
+    description: "Tons quentes inspirados no pôr-do-sol com contraste equilibrado.",
+    previewBg: "bg-amber-50 dark:bg-amber-950 border-rose-200 dark:border-rose-800",
+    cardStyle: "bg-card border-border text-foreground",
+    buttonClass: "bg-background text-foreground hover:bg-muted font-bold border border-border",
   },
   {
     key: "emerald",
-    label: "Emerald Prestige",
-    description: "Tons de esmeralda e floresta tropical para marcas orgânicas e premium.",
-    previewBg: "bg-emerald-500/20 border-emerald-600/30",
-    cardStyle: "bg-card/60 border-border text-foreground",
+    label: "Esmeralda Fosco",
+    description: "Tons de esmeralda e floresta tropical para marcas orgânicas.",
+    previewBg: "bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800",
+    cardStyle: "bg-card border-border text-foreground",
     buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90 font-semibold",
   },
   {
     key: "cyber",
-    label: "Cyber Violet",
-    description: "Visual futurista com gradientes elétricos e alto impacto de conversão.",
-    previewBg: "bg-purple-500/20 border-indigo-600/30",
-    cardStyle: "bg-card/40 border-border text-foreground",
+    label: "Violeta Urbano",
+    description: "Visual moderno em violeta fosco com alta legibilidade.",
+    previewBg: "bg-violet-50 dark:bg-violet-950 border-violet-200 dark:border-violet-800",
+    cardStyle: "bg-card border-border text-foreground",
     buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90 font-semibold",
   },
   {
     key: "zine",
     label: "Editorial Zine",
-    description: "Estética brutalista editorial com bordas marcadas e sombra sólida.",
+    description: "Estética editorial nítida com bordas marcadas em duas camadas.",
     previewBg: "bg-secondary border-border",
     cardStyle: "bg-card border-2 border-border text-foreground",
     buttonClass: "bg-foreground text-background hover:bg-foreground/90 border border-border font-bold",
@@ -82,8 +82,8 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     key: "tourism",
     label: "Boutique Sky",
     description: "Visual leve, arejado e elegante para agências, viagens e serviços.",
-    previewBg: "bg-sky-500/20 border-blue-600/30",
-    cardStyle: "bg-card/95 border-border text-foreground",
+    previewBg: "bg-sky-50 dark:bg-sky-950 border-sky-200 dark:border-sky-800",
+    cardStyle: "bg-card border-border text-foreground",
     buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90 font-bold",
   },
 ];
@@ -91,8 +91,8 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
 const BUTTON_STYLES = [
   { id: "rounded", label: "Arredondado Suave", desc: "Bordas arredondadas clean", classSample: "rounded-lg" },
   { id: "pill", label: "Cápsula (Pill)", desc: "Totalmente arredondado", classSample: "rounded-full" },
-  { id: "outline", label: "Minimal Outline", desc: "Borda fina com fundo transparente", classSample: "rounded-lg border border-border bg-transparent" },
-  { id: "glass", label: "Vidro Translúcido", desc: "Efeito glass com desfoque de fundo", classSample: "rounded-lg bg-card/40 backdrop-blur-md border border-border" },
+  { id: "outline", label: "Minimal Outline", desc: "Borda fina com fundo limpo", classSample: "rounded-lg border border-border bg-transparent" },
+  { id: "glass", label: "Fosco Elevado", desc: "Superfície fosca discreta com borda nítida", classSample: "rounded-lg bg-card border border-border" },
 ];
 
 interface BiolinkThemesSelectorProps {
@@ -146,9 +146,9 @@ export function BiolinkThemesSelector({ value, onChange }: BiolinkThemesSelector
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <div className="size-4 rounded-full bg-card/60 backdrop-blur-xs border border-border" />
+                  <div className="size-4 rounded-full bg-card border border-border" />
                   {theme.badgeText && (
-                    <span className="text-xs font-bold px-2 py-1 rounded-full bg-background/80 text-foreground backdrop-blur-xs">
+                    <span className="text-xs font-bold px-2 py-1 rounded-full bg-background border border-border text-foreground">
                       {theme.badgeText}
                     </span>
                   )}

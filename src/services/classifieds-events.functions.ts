@@ -136,7 +136,7 @@ export const registerClassifiedEventLead = createServerFn({ method: "POST" })
         name: input.name.trim(),
         phone: input.whatsapp.trim(),
         email: input.email?.trim() || null,
-        candidate_role: roleLabel,
+        feedback_notes: roleLabel,
         cover_letter: [
           roleLabel,
           `Código WCTS-1: ${signedTicket.humanCode}`,
@@ -230,20 +230,24 @@ export const exportClassifiedEventLeadsCsv = createServerFn({ method: "POST" })
       throw new Error("Você não possui permissão para exportar os inscritos deste evento.");
     }
 
-    // 2. Busca todos os inscritos reais (desconsiderando votos de enquetes)
+    // 2. Busca todos os inscritos reais (desconsiderando votos de enquetes e depoimentos)
     const { data: rows, error: rowsErr } = await supabase
       .from("classified_applications")
-      .select("id, name, phone, email, candidate_role, cover_letter, status, created_at")
+      .select("id, name, phone, email, feedback_notes, cover_letter, status, applied_at")
       .eq("classified_id", input.classifiedId)
-      .not("candidate_role", "like", "survey_vote:%")
-      .order("created_at", { ascending: false });
+      .neq("status", "vote_cast")
+      .order("applied_at", { ascending: false });
 
     if (rowsErr) {
       console.error("[classifieds-events] Erro ao buscar inscritos:", rowsErr);
       throw new Error("Falha ao buscar dados de inscritos.");
     }
 
-    const list = rows || [];
+    const list = (rows || []).filter(
+      (r: any) =>
+        !String(r.feedback_notes || "").startsWith("survey_vote:") &&
+        !String(r.feedback_notes || "").startsWith("testimonial:")
+    );
 
     // 3. Monta CSV com formatação segura contra injeção de fórmulas
     const sanitizeCsvCell = (val: any) => {
@@ -268,15 +272,15 @@ export const exportClassifiedEventLeadsCsv = createServerFn({ method: "POST" })
     const csvLines = [headers.join(",")];
 
     for (const r of list) {
-      const dateStr = r.created_at
-        ? new Date(r.created_at).toLocaleString("pt-BR")
+      const dateStr = r.applied_at
+        ? new Date(r.applied_at).toLocaleString("pt-BR")
         : "";
       const line = [
         sanitizeCsvCell(dateStr),
         sanitizeCsvCell(r.name),
         sanitizeCsvCell(r.phone),
         sanitizeCsvCell(r.email),
-        sanitizeCsvCell(r.candidate_role),
+        sanitizeCsvCell(r.feedback_notes),
         sanitizeCsvCell(r.cover_letter),
         sanitizeCsvCell(r.status),
       ].join(",");
@@ -304,7 +308,7 @@ export const getClassifiedEventAttendeesCount = createServerFn({ method: "GET" }
       .from("classified_applications")
       .select("id", { count: "exact", head: true })
       .eq("classified_id", input.classifiedId)
-      .not("candidate_role", "like", "survey_vote:%");
+      .neq("status", "vote_cast");
 
     if (error) {
       return { count: 0 };
@@ -351,7 +355,7 @@ export const submitClassifiedEventSurveyVote = createServerFn({ method: "POST" }
       applicant_id: identity?.id || classified?.author_profile_id,
       name: displayName,
       phone: isAnon ? null : (input.voterPhone?.trim() || null),
-      candidate_role: `survey_vote:${input.surveyId}`,
+      feedback_notes: `survey_vote:${input.surveyId}`,
       cover_letter: JSON.stringify(votePayload),
       status: "vote_cast",
     });
@@ -399,10 +403,10 @@ export const getClassifiedEventSurveyResults = createServerFn({ method: "GET" })
 
     const { data: votes, error } = await supabase
       .from("classified_applications")
-      .select("id, name, created_at, cover_letter")
+      .select("id, name, applied_at, cover_letter")
       .eq("classified_id", input.classifiedId)
-      .eq("candidate_role", `survey_vote:${input.surveyId}`)
-      .order("created_at", { ascending: false });
+      .eq("feedback_notes", `survey_vote:${input.surveyId}`)
+      .order("applied_at", { ascending: false });
 
     if (error || !votes) {
       return {
@@ -435,7 +439,7 @@ export const getClassifiedEventSurveyResults = createServerFn({ method: "GET" })
               optionIndex: idx,
               optionLabel: String(parsed.option_label || ""),
               isAnonymous: Boolean(parsed.is_anonymous),
-              createdAt: v.created_at,
+              createdAt: v.applied_at,
             });
           }
         }
@@ -515,7 +519,7 @@ export const checkoutClassifiedEventTicket = createServerFn({ method: "POST" })
             name: input.buyerName.trim(),
             phone: input.buyerWhatsapp.trim(),
             email: input.buyerEmail?.trim() || null,
-            candidate_role: `Ingresso: ${input.tierName}`,
+            feedback_notes: `Ingresso: ${input.tierName}`,
             cover_letter: `Código WCTS-1: ${signed.humanCode} | QR: ${signed.qrPayload}`,
             status: totalAmountCents > 0 ? "pending_payment" : "confirmed",
           })
@@ -625,17 +629,18 @@ export const getClassifiedEventPublicWall = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const { data: rows } = await supabase
       .from("classified_applications")
-      .select("id, name, candidate_role, cover_letter, status, created_at")
+      .select("id, name, feedback_notes, cover_letter, status, applied_at")
       .eq("classified_id", input.classifiedId)
-      .order("created_at", { ascending: false })
+      .order("applied_at", { ascending: false })
       .limit(40);
 
     const list = rows || [];
     const attendees = list
       .filter(
         (r: any) =>
-          !String(r.candidate_role || "").startsWith("survey_vote:") &&
-          !String(r.candidate_role || "").startsWith("testimonial:")
+          r.status !== "vote_cast" &&
+          !String(r.feedback_notes || "").startsWith("survey_vote:") &&
+          !String(r.feedback_notes || "").startsWith("testimonial:")
       )
       .map((r: any) => ({
         id: r.id,
@@ -643,9 +648,9 @@ export const getClassifiedEventPublicWall = createServerFn({ method: "GET" })
       }));
 
     const testimonials = list
-      .filter((r: any) => String(r.candidate_role || "").startsWith("testimonial:"))
+      .filter((r: any) => String(r.feedback_notes || "").startsWith("testimonial:"))
       .map((r: any) => {
-        const ratingMatch = String(r.candidate_role || "").split(":")[1];
+        const ratingMatch = String(r.feedback_notes || "").split(":")[1];
         return {
           id: r.id,
           authorName: r.name || "Participante",
@@ -683,7 +688,7 @@ export const submitClassifiedEventTestimonial = createServerFn({ method: "POST" 
       classified_id: input.classifiedId,
       applicant_id: identity?.id || classified?.author_profile_id,
       name: input.authorName.trim(),
-      candidate_role: `testimonial:${input.rating}`,
+      feedback_notes: `testimonial:${input.rating}`,
       cover_letter: input.comment.trim(),
       status: "published",
     });
@@ -704,7 +709,7 @@ export const verifyClassifiedTicketByCode = createServerFn({ method: "POST" })
 
     const { data: row } = await supabase
       .from("classified_applications")
-      .select("id, name, candidate_role, cover_letter, status")
+      .select("id, name, feedback_notes, cover_letter, status")
       .ilike("cover_letter", `%${cleanCode}%`)
       .maybeSingle();
 
@@ -723,11 +728,19 @@ export const verifyClassifiedTicketByCode = createServerFn({ method: "POST" })
         .eq("id", row.id);
     }
 
+    let parsedTier = "";
+    try {
+      const parsedCover = JSON.parse(String(row.cover_letter || "{}"));
+      parsedTier = String(parsedCover?.tierName || parsedCover?.roleLabel || "");
+    } catch {
+      parsedTier = "";
+    }
+
     return {
       valid: true,
       checkedInNow: input.markAsCheckedIn,
       buyerName: row.name || "Participante",
-      tierName: String(row.candidate_role || "Ingresso Geral").replace(/^Ingresso:\s*/i, ""),
+      tierName: String(parsedTier || row.feedback_notes || "Ingresso Geral").replace(/^Ingresso:\s*/i, ""),
       message:
         row.status === "checked_in" && !input.markAsCheckedIn
           ? "Credencial autêntica (Check-in já registrado anteriormente)."

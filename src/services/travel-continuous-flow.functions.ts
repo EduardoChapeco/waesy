@@ -510,13 +510,21 @@ export const signContractAsPayer = createServerFn({ method: "POST" })
           if (storeId && totalValueCents > 0) {
             const { data: tripData } = await supabase
               .from("travel_trips")
-              .select("cost_cents, operator, primary_supplier, agent_id")
+              .select("id, estimated_budget_cents, notes")
               .eq("id", tripId)
               .maybeSingle();
 
-            const supplierNetCents = Number(tripData?.cost_cents) > 0 ? Number(tripData?.cost_cents) : 0;
+            let parsedNotes: Record<string, any> = {};
+            if (typeof tripData?.notes === "string" && tripData.notes.trim().startsWith("{")) {
+              try {
+                parsedNotes = JSON.parse(tripData.notes);
+              } catch {
+                parsedNotes = {};
+              }
+            }
+            const supplierNetCents = Number(parsedNotes.cost_cents || 0) > 0 ? Number(parsedNotes.cost_cents) : 0;
             const agencyCommissionCents = supplierNetCents > 0 ? Math.max(0, totalValueCents - supplierNetCents) : 0;
-            const operatorName = tripData?.operator || tripData?.primary_supplier || "Operadora Não Informada";
+            const operatorName = parsedNotes.operator || parsedNotes.primary_supplier || "Operadora Não Informada";
 
             const { data: recordedCommission, error: commissionError } = await supabase.from("travel_sales_spreadsheet_rows").insert({
               store_id: storeId,

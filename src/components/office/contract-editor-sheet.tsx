@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ContractClauseLibrary, OfficeContractClause, replaceContractVariables, DEFAULT_CLAUSES } from './contract-clause-library';
 import { ContractSignPad, SignatureData } from './contract-sign-pad';
+import { ContractMarkdownRenderer } from '@/components/contracts/contract-markdown-renderer';
 
 interface ContractEditorSheetProps {
  initialTitle?: string;
@@ -210,8 +211,8 @@ export function ContractEditorSheet({
  <p className="text-xs text-muted-foreground mt-1">{storeName}</p>
  </div>
 
- <div className="text-xs leading-relaxed whitespace-pre-wrap font-serif space-y-4">
- {previewContent}
+ <div className="text-xs leading-relaxed font-serif space-y-4">
+   <ContractMarkdownRenderer content={previewContent} />
  </div>
 
  {signatures.length > 0 && (

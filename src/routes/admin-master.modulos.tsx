@@ -51,14 +51,22 @@ import {
 } from "@/services/extensions-distributor.functions";
 import { createPlatformInvoice, getPlatformStoresList } from "@/services/master.functions";
 import { ExtensionWebStoreModal } from "@/components/extensions/ExtensionWebStoreModal";
-import { toggleStoreModuleAddon, updateStorePlanTier } from "@/services/store-modules.functions";
+import { ErrorState } from "@/components/state/states";
+import {
+  toggleStoreModuleAddon,
+  updateStorePlanTier,
+  updateStoreVerticalSubscription,
+} from "@/services/store-modules.functions";
 import {
   COMMERCIAL_MODULE_CATALOG,
   STORE_PLANS,
+  VERTICAL_PLAN_CATALOG,
+  resolveStoreWorkspaceCapabilities,
   calculateStoreMonthlyPlanTotalCents,
   isStorePlanExempt,
   type CommercialModuleId,
   type StorePlanTier,
+  type VerticalPlanSkuId,
 } from "@/lib/architecture/module-plan-governance";
 import { formatMoney, parseMoney } from "@/lib/money";
 
@@ -68,17 +76,24 @@ export const Route = createFileRoute("/admin-master/modulos")({
     try {
       const [modules, requests, stores] = await Promise.all([
         adminListPlatformModules(),
-        adminListExtensionRequestsFn().catch(() => []),
-        getPlatformStoresList().catch(() => []),
+        adminListExtensionRequestsFn(),
+        getPlatformStoresList(),
       ]);
       return {
         modules: modules || [],
         requests: (requests || []) as ExtensionRequestItemDTO[],
         stores: stores || [],
+        loadError: null as string | null,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[admin-master.modulos] Loader error:", err);
-      return { modules: [], requests: [], stores: [] };
+      return {
+        modules: [],
+        requests: [],
+        stores: [],
+        loadError:
+          err instanceof Error ? err.message : "Erro ao carregar governança de módulos.",
+      };
     }
   },
   component: AdminMasterModulosPage,
@@ -89,6 +104,7 @@ function AdminMasterModulosPage() {
   const initialModules = loaderData.modules || [];
   const initialRequests = loaderData.requests || [];
   const initialStores = loaderData.stores || [];
+  const loadError = loaderData.loadError as string | null;
   const router = useRouter();
 
   const [modules, setModules] = useState<PlatformModuleDTO[]>(initialModules);
@@ -297,6 +313,35 @@ function AdminMasterModulosPage() {
       toast.success(`Plano atualizado para ${STORE_PLANS[newTier].name}.`);
     } catch (err: any) {
       toast.error(err?.message || "Erro ao atualizar plano da loja.");
+    } finally {
+      setChangingStorePlanId(null);
+    }
+  };
+
+  const handleChangeStoreVerticalSku = async (storeId: string, verticalSku: VerticalPlanSkuId) => {
+    setChangingStorePlanId(storeId);
+    try {
+      await updateStoreVerticalSubscription({ data: { storeId, verticalSku } });
+      const skuDef = VERTICAL_PLAN_CATALOG[verticalSku];
+      setPlatformStores((prev) =>
+        prev.map((s) =>
+          s.id === storeId
+            ? {
+                ...s,
+                vertical_sku: verticalSku,
+                plan_tier: skuDef.baseTier,
+                settings: {
+                  ...(s.settings || {}),
+                  vertical_sku: verticalSku,
+                  plan_tier: skuDef.baseTier,
+                },
+              }
+            : s
+        )
+      );
+      toast.success(`Sistema vertical atualizado para ${skuDef.name}.`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erro ao atualizar sistema vertical da loja.");
     } finally {
       setChangingStorePlanId(null);
     }
@@ -527,6 +572,18 @@ function AdminMasterModulosPage() {
       setIsSaving(false);
     }
   };
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <ErrorState
+          title="Governança de Módulos Indisponível"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto py-4 px-0 sm:px-4 md:px-0">
@@ -1384,6 +1441,28 @@ function AdminMasterModulosPage() {
                             <td className="p-3">
                               <div className="font-semibold text-foreground">{store.name}</div>
                               <div className="text-2xs font-mono text-muted-foreground">/{store.slug}</div>
+                              {!isExempt && (
+                                <div className="mt-1">
+                                  <Select
+                                    value={resolveStoreWorkspaceCapabilities(store).verticalSku}
+                                    disabled={changingStorePlanId === store.id}
+                                    onValueChange={(val) =>
+                                      void handleChangeStoreVerticalSku(store.id, val as VerticalPlanSkuId)
+                                    }
+                                  >
+                                    <SelectTrigger className="h-8 w-44 text-3xs font-mono">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {Object.values(VERTICAL_PLAN_CATALOG).map((vp) => (
+                                        <SelectItem key={vp.sku} value={vp.sku} className="text-xs">
+                                          {vp.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
                             </td>
                             <td className="p-3 text-center">
                               {isExempt ? (

@@ -435,7 +435,7 @@ function TourismMasterPage() {
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-border/60 bg-card overflow-hidden animate-pulse motion-reduce:animate-none"
+                  className="rounded-2xl border border-border bg-card overflow-hidden animate-pulse motion-reduce:animate-none"
                 >
                   <div className="aspect-video w-full bg-muted" />
                   <div className="p-4 space-y-3">
@@ -447,8 +447,8 @@ function TourismMasterPage() {
               ))}
             </div>
           ) : tourismList.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/70 p-10 text-center bg-card space-y-3">
-              <Compass size={40} className="mx-auto text-muted-foreground/40" />
+            <div className="rounded-2xl border border-dashed border-border p-10 text-center bg-card space-y-3">
+              <Compass size={40} className="mx-auto text-muted-foreground" />
               <p className="text-sm font-bold text-foreground">Nenhum pacote encontrado para estes filtros</p>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                 Tente ajustar a cidade de saída ou buscar por outro termo.
@@ -486,12 +486,12 @@ function TourismMasterPage() {
                 return (
                   <div
                     key={item.id}
-                    className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-36 pl-32 sm:pl-44 p-4 hover:border-foreground/30 transition-colors flex items-center justify-between gap-4 w-full"
+                    className="group relative overflow-hidden rounded-2xl border border-border bg-card min-h-36 pl-32 sm:pl-44 p-4 hover:border-ring transition-colors flex items-center justify-between gap-4 w-full"
                   >
                     <Link
                       to="/turismo/$id"
                       params={{ id: item.id }}
-                      className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted border-r border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted border-r border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {item.cover_image || item.image_url ? (
                         <img
@@ -502,14 +502,14 @@ function TourismMasterPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-muted">
-                          <AirplaneTilt size={24} className="opacity-40" />
+                          <AirplaneTilt size={24} className="text-muted-foreground" />
                         </div>
                       )}
                     </Link>
 
                     <div className="flex-1 min-w-0 pl-1 space-y-2 flex flex-col justify-between">
                       <div>
-                        <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block truncate">
+                        <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground block line-clamp-2 text-anti-truncate">
                           {item.location_name || item.destination || "Regional"}
                         </span>
                         <Link
@@ -517,14 +517,14 @@ function TourismMasterPage() {
                           params={{ id: item.id }}
                           className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                         >
-                          <h3 className="font-bold text-xs sm:text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                          <h3 className="font-bold text-xs sm:text-sm text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
                             {item.title}
                           </h3>
                         </Link>
                       </div>
 
                       <div className="pt-1 flex items-center justify-between gap-2">
-                        <span className="font-mono text-sm sm:text-base font-black text-foreground truncate">
+                        <span className="font-mono text-sm sm:text-base font-black text-foreground tabular-nums">
                           {item.price_display || (priceCents > 0 ? formatMoney(priceCents) : "Consulte")}
                         </span>
                         <Button

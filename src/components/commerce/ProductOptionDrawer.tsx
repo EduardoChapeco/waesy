@@ -15,7 +15,6 @@ import {
   Minus,
   ShoppingBag,
   ArrowRight,
-  Sparkles,
   Check,
   Package,
 } from "lucide-react";
@@ -172,9 +171,8 @@ export function ProductOptionDrawer({
 
           {/* Observações do Pedido */}
           <div className="space-y-2 pt-2 border-t border-border/40">
-            <Label htmlFor="instructions" className="text-xs font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="size-3.5 text-primary" />
-              Alguma observação especial?
+            <Label htmlFor="instructions" className="text-xs font-bold text-foreground">
+              Observações
             </Label>
             <Input
               id="instructions"

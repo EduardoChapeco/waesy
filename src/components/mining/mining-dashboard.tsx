@@ -1767,8 +1767,8 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
         <TabsContent value="market" className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Séries Oficiais do Banco Central</h3>
-              <p className="text-xs text-muted-foreground">Agendado no pg_cron: 2x ao dia às 08h e 18h BRT</p>
+              <h3 className="text-sm font-semibold text-foreground">Indicadores do Banco Central</h3>
+              <p className="text-xs text-muted-foreground">Atualização programada às 08h e 18h BRT</p>
             </div>
 
             <div className="flex items-center gap-2">

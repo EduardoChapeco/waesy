@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Calendar,
   Clock,
@@ -9,7 +9,6 @@ import {
   RotateCw,
   SlidersHorizontal,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
+  listAiScheduledTasks,
   createAiScheduledTask,
   toggleAiScheduledTask,
   triggerScheduledTaskRun,
@@ -62,11 +62,35 @@ export function CopilotScheduledTasksView({
 }: CopilotScheduledTasksViewProps) {
   const [activeTab, setActiveTab] = useState<"scheduled" | "history">("scheduled");
   const [taskList, setTaskList] = useState<ScheduledTaskItem[]>(tasks);
+  const [isLoadingTasks, setIsLoadingTasks] = useState<boolean>(tasks.length === 0);
   const [isCreatingModal, setIsCreatingModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newPrompt, setNewPrompt] = useState("");
   const [newSchedule, setNewSchedule] = useState("0 8 * * 1");
   const [runningTaskId, setRunningTaskId] = useState<string | null>(null);
+
+  const loadTasksFromServer = useCallback(async () => {
+    setIsLoadingTasks(true);
+    try {
+      const rows = await listAiScheduledTasks();
+      if (Array.isArray(rows)) {
+        setTaskList(rows as ScheduledTaskItem[]);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível carregar suas tarefas agendadas.");
+    } finally {
+      setIsLoadingTasks(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      setTaskList(tasks);
+      setIsLoadingTasks(false);
+    } else {
+      void loadTasksFromServer();
+    }
+  }, [tasks, loadTasksFromServer]);
 
   const handleToggle = async (taskId: string, currentState: boolean) => {
     // Atualização otimista
@@ -76,6 +100,7 @@ export function CopilotScheduledTasksView({
     try {
       await toggleAiScheduledTask({ data: { taskId, isActive: !currentState } });
       toast.success(currentState ? "Automação pausada." : "Automação ativada.");
+      onRefresh?.();
     } catch (err: any) {
       // Rollback defensivo
       setTaskList((prev) =>
@@ -89,13 +114,36 @@ export function CopilotScheduledTasksView({
     setRunningTaskId(task.id);
     try {
       await triggerScheduledTaskRun({ data: { taskId: task.id } });
-      toast.success(`Execução imediata de "${task.title}" iniciada em segundo plano!`);
-    } catch {
-      toast.success(`Execução de teste de "${task.title}" despachada para o worker.`);
+      const nowIso = new Date().toISOString();
+      setTaskList((prev) =>
+        prev.map((item) =>
+          item.id === task.id
+            ? {
+                ...item,
+                last_run_at: nowIso,
+                run_count: (item.run_count || 0) + 1,
+              }
+            : item
+        )
+      );
+      toast.success(`Execução de "${task.title}" concluída e registrada.`);
+      onRefresh?.();
+    } catch (err: any) {
+      toast.error(err?.message || `Falha ao executar "${task.title}". Verifique sua conexão ou saldo de tokens.`);
     } finally {
-      setTimeout(() => setRunningTaskId(null), 1500);
+      setRunningTaskId(null);
     }
   };
+
+  const displayedTasks =
+    activeTab === "history"
+      ? taskList
+          .filter((t) => Boolean(t.last_run_at) || (t.run_count || 0) > 0)
+          .sort(
+            (a, b) =>
+              new Date(b.last_run_at || 0).getTime() - new Date(a.last_run_at || 0).getTime()
+          )
+      : taskList;
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,17 +233,27 @@ export function CopilotScheduledTasksView({
       </div>
 
       {/* ── Lista de Automações Agendadas ── */}
-      {taskList.length === 0 ? (
+      {isLoadingTasks ? (
+        <div className="space-y-4">
+          {[1, 2].map((item) => (
+            <div key={item} className="h-24 rounded-2xl border border-border/40 bg-muted/20 animate-pulse motion-reduce:animate-none" />
+          ))}
+        </div>
+      ) : displayedTasks.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/60 p-12 text-center space-y-3 bg-muted/10">
           <Calendar className="size-10 mx-auto text-muted-foreground/40" />
-          <h3 className="text-sm font-semibold text-foreground">Nenhuma tarefa agendada</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            {activeTab === "history" ? "Nenhuma execução registrada" : "Nenhuma tarefa agendada"}
+          </h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Crie rotinas para que o Copilot pesquise, compile relatórios e organize dados automaticamente.
+            {activeTab === "history"
+              ? "Execute manualmente uma automação ou aguarde o próximo ciclo programado para acompanhar o histórico."
+              : "Crie rotinas para que o Copilot pesquise, compile relatórios e organize dados automaticamente."}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {taskList.map((task) => (
+          {displayedTasks.map((task) => (
             <div
               key={task.id}
               className={cn(

@@ -25,48 +25,48 @@ export const Route = createFileRoute("/_store/bio/$slug")({
 });
 
 const THEME_STYLES: Record<string, { bg: string; card: string; text: string; buttonClass: string }> = {
- clean: {
- bg: "bg-zinc-50 dark:bg-zinc-950",
- card: "bg-card border border-zinc-200/80 dark:border-zinc-800  hover:border-zinc-400 dark:hover:border-zinc-600 text-zinc-900 dark:text-zinc-100",
- text: "text-zinc-900 dark:text-zinc-100",
- buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
- },
- dark: {
- bg: "bg-card",
- card: "bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 text-primary-foreground",
- text: "text-primary-foreground",
- buttonClass: "bg-card text-foreground hover:bg-zinc-200",
- },
- glass: {
- bg: "bg-linear-to-br from-indigo-950 via-slate-900 to-black",
- card: "bg-card/10 backdrop-blur-md border border-white/20 hover:bg-card/15 text-primary-foreground",
- text: "text-primary-foreground",
- buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
- },
- sunset: {
- bg: "bg-linear-to-b from-orange-500 via-rose-600 to-purple-900",
- card: "bg-card/15 backdrop-blur-md border border-white/30 hover:bg-card/25 text-primary-foreground",
- text: "text-primary-foreground",
- buttonClass: "bg-card text-rose-900 hover:bg-card/90 font-bold",
- },
- emerald: {
- bg: "bg-linear-to-b from-emerald-950 via-teal-900 to-black",
- card: "bg-emerald-900/40 backdrop-blur-md border border-emerald-700/50 hover:bg-emerald-800/40 text-emerald-100",
- text: "text-primary-foreground",
- buttonClass: "bg-emerald-500 text-primary-foreground hover:bg-emerald-600",
- },
- zine: {
-    bg: "bg-muted/40",
+  clean: {
+    bg: "bg-background",
+    card: "bg-card border border-border hover:border-ring text-foreground",
+    text: "text-foreground",
+    buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
+  },
+  dark: {
+    bg: "bg-zinc-950",
+    card: "bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-100",
+    text: "text-zinc-100",
+    buttonClass: "bg-zinc-100 text-zinc-950 hover:bg-zinc-200",
+  },
+  glass: {
+    bg: "bg-slate-950",
+    card: "bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-100",
+    text: "text-slate-100",
+    buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
+  },
+  sunset: {
+    bg: "bg-rose-950",
+    card: "bg-rose-900 border border-rose-800 hover:border-rose-700 text-rose-50",
+    text: "text-rose-50",
+    buttonClass: "bg-rose-50 text-rose-950 hover:bg-rose-100 font-bold",
+  },
+  emerald: {
+    bg: "bg-emerald-950",
+    card: "bg-emerald-900 border border-emerald-800 hover:border-emerald-700 text-emerald-50",
+    text: "text-emerald-50",
+    buttonClass: "bg-emerald-600 text-emerald-50 hover:bg-emerald-500",
+  },
+  zine: {
+    bg: "bg-muted",
     card: "bg-card border-2 border-border text-foreground hover:translate-x-0.5 hover:translate-y-0.5",
     text: "text-foreground",
     buttonClass: "bg-foreground text-background hover:bg-foreground/90 border-2 border-border",
   },
- tourism_boutique: {
- bg: "bg-linear-to-b from-sky-50 via-blue-50/50 to-slate-100 dark:from-slate-950 dark:via-sky-950/40 dark:to-zinc-950",
- card: "bg-card/95 dark:bg-zinc-900/90 backdrop-blur-sm border border-sky-200/70 dark:border-sky-800/40  hover:border-sky-400 text-slate-900 dark:text-slate-100",
- text: "text-slate-900 dark:text-slate-100",
- buttonClass: "bg-sky-600 text-primary-foreground hover:bg-sky-700 font-bold ",
- },
+  tourism_boutique: {
+    bg: "bg-background",
+    card: "bg-card border border-border hover:border-sky-500 text-foreground",
+    text: "text-foreground",
+    buttonClass: "bg-sky-600 text-sky-50 hover:bg-sky-700 font-bold",
+  },
 };
 
 const SERVICE_ICON_MAP: Record<string, any> = {

@@ -1219,9 +1219,9 @@ function HrPayrollPage() {
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-4 rounded-lg border border-border">
             <div>
-              <h2 className="text-sm font-bold text-foreground">Dossiês Digitais & Benefícios por Setor</h2>
+              <h2 className="text-sm font-bold text-foreground">Benefícios por Setor</h2>
               <p className="text-xs text-muted-foreground">
-                Cadastros completos com ASO, CBO, dependentes e aplicação de benefícios em lote por departamento.
+                Cadastros de ASO, CBO, dependentes e regras por departamento.
               </p>
             </div>
             <div className="flex items-center gap-2">

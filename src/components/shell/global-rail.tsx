@@ -1,157 +1,154 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { GLOBAL_DESTINATIONS, type NavigationItem } from "@/lib/navigation-registry";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { User, LayoutDashboard, LogIn, Gift } from "lucide-react";
+import { Gift, House, SignIn, Storefront, UserCircle } from "@phosphor-icons/react";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
+import { cn } from "@/lib/utils";
 
 export interface GlobalRailProps {
- session?: any;
+  session?: any;
 }
 
 export function GlobalRail({ session }: GlobalRailProps) {
- const location = useLocation();
- const isAuthenticated = Boolean(session?.user || session?.id);
+  const location = useLocation();
+  const isAuthenticated = Boolean(session?.user || session?.id);
 
- const isCurrentActive = (item: NavigationItem) => {
- if (item.exact) {
- return location.pathname === item.to;
- }
- return location.pathname.startsWith(item.to);
- };
+  const isCurrentActive = (item: NavigationItem) => {
+    if (item.exact) {
+      return location.pathname === item.to;
+    }
+    return location.pathname.startsWith(item.to);
+  };
 
- const isAccountActive = location.pathname.startsWith("/conta");
- const isWorkspaceActive = location.pathname.startsWith("/workspace");
+  const isAccountActive = location.pathname.startsWith("/conta");
+  const isWorkspaceActive = location.pathname.startsWith("/workspace");
+  const isInviteActive = location.pathname.startsWith("/convite");
 
- return (
- <TooltipProvider delayDuration={150}>
- <aside className="hidden md:flex flex-col items-center justify-between w-17 shrink-0 h-dvh sticky top-0 py-4 bg-background z-30 select-none">
- {/* 1. Topo: Logo Waesy */}
- <div className="flex flex-col items-center gap-3">
- <Link
- to="/"
- className="size-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-display font-black text-xl tracking-tighter hover:scale-105 transition-transform min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
- aria-label="Waesy — Início"
- >
- W
- </Link>
- </div>
+  return (
+    <TooltipProvider delayDuration={120}>
+      <aside className="hidden md:flex flex-col items-center justify-between w-14 shrink-0 h-dvh sticky top-0 py-3 bg-rail border-r border-sidebar-border z-30 select-none">
+        {/* 1. Topo: Logo Waesy */}
+        <div className="flex flex-col items-center gap-2">
+          <Link
+            to="/"
+            className="size-11 min-w-11 min-h-11 rounded-xl bg-foreground text-background flex items-center justify-center font-display font-black text-lg tracking-tighter transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Waesy — Início"
+          >
+            <House size={20} weight={location.pathname === "/" ? "fill" : "regular"} />
+          </Link>
+        </div>
 
- {/* 2. Centro: Destinos Globais */}
- <nav className="flex flex-col items-center gap-2 my-auto">
- {GLOBAL_DESTINATIONS.map((item) => {
- const Icon = item.icon;
- const active = isCurrentActive(item);
+        {/* 2. Centro: Destinos Globais */}
+        <nav className="flex flex-col items-center gap-1 my-auto">
+          {GLOBAL_DESTINATIONS.map((item) => {
+            const active = isCurrentActive(item);
 
- return (
- <Tooltip key={item.to}>
- <TooltipTrigger asChild>
- <Link
- to={item.to}
- className={`size-11 rounded-lg flex items-center justify-center transition-colors duration-200 relative ${
- active
- ? "bg-primary/10 text-primary font-bold "
- : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
- }`}
- aria-label={item.label}
- >
- <Icon className="size-5" />
- {active && (
- <span className="absolute -left-1 w-1 h-5 bg-primary rounded-r-full" />
- )}
- </Link>
- </TooltipTrigger>
- <TooltipContent side="right" className="font-semibold text-xs rounded-lg">
- {item.label}
- </TooltipContent>
- </Tooltip>
- );
- })}
+            return (
+              <Tooltip key={item.to}>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={item.to}
+                    className={cn(
+                      "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      active
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+                    )}
+                    aria-label={item.label}
+                  >
+                    <StatefulNavIcon icon={item.icon} active={active} size={20} />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8} className="font-medium text-xs rounded-lg">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
 
- {/* 2.1 Atalho do Módulo Convite / Embaixador */}
- <Tooltip>
-   <TooltipTrigger asChild>
-     <Link
-       to="/convite"
-       className={`size-11 rounded-lg flex items-center justify-center transition-colors duration-200 relative ${
-         location.pathname.startsWith("/convite")
-           ? "bg-warning/15 text-warning-strong font-bold"
-           : "text-muted-foreground hover:text-warning-strong hover:bg-warning/10"
-       }`}
-       aria-label="Programa de Convite"
-     >
-       <Gift className="size-5" />
-       {location.pathname.startsWith("/convite") && (
-         <span className="absolute -left-1 w-1 h-5 bg-warning rounded-r-full" />
-       )}
-     </Link>
-   </TooltipTrigger>
-   <TooltipContent side="right" className="font-semibold text-xs rounded-lg">
-     Ganhe Prêmios (Convite)
-   </TooltipContent>
- </Tooltip>
- </nav>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to="/convite"
+                className={cn(
+                  "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isInviteActive
+                    ? "bg-rail-active text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+                )}
+                aria-label="Convite"
+              >
+                <Gift size={20} weight={isInviteActive ? "fill" : "regular"} />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8} className="font-medium text-xs rounded-lg">
+              Convites
+            </TooltipContent>
+          </Tooltip>
+        </nav>
 
- {/* 3. Rodapé: Atalhos de Conta ou Entrar */}
- <div className="flex flex-col items-center gap-2 pt-3 w-full px-2">
- {isAuthenticated ? (
- <>
- {/* Workspace Shortcut */}
- <Tooltip>
- <TooltipTrigger asChild>
- <Link
- to="/workspace"
- className={`size-10 rounded-lg flex items-center justify-center transition-colors duration-200 ${
- isWorkspaceActive
- ? "bg-primary text-primary-foreground font-bold "
- : "text-muted-foreground hover:text-foreground hover:bg-muted"
- } min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
- aria-label="Workspace Operacional"
- >
- <LayoutDashboard className="size-4" />
- </Link>
- </TooltipTrigger>
- <TooltipContent side="right" className="font-semibold text-xs rounded-lg">
- Workspace da Loja
- </TooltipContent>
- </Tooltip>
+        {/* 3. Rodapé: Workspace e Conta */}
+        <div className="flex flex-col items-center gap-1 pt-2 border-t border-sidebar-border w-full px-1">
+          {isAuthenticated ? (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/workspace"
+                    className={cn(
+                      "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isWorkspaceActive
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+                    )}
+                    aria-label="Workspace"
+                  >
+                    <Storefront size={20} weight={isWorkspaceActive ? "fill" : "regular"} />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8} className="font-medium text-xs rounded-lg">
+                  Workspace
+                </TooltipContent>
+              </Tooltip>
 
- {/* Account Shortcut */}
- <Tooltip>
- <TooltipTrigger asChild>
- <Link
- to="/conta"
- className={`size-10 rounded-lg flex items-center justify-center transition-colors duration-200 ${
- isAccountActive
- ? "bg-primary/10 text-primary font-bold "
- : "text-muted-foreground hover:text-foreground hover:bg-muted"
- } min-h-11 sm:min-h-0 min-w-11 sm:min-w-0`}
- aria-label="Minha Conta"
- >
- <User className="size-4" />
- </Link>
- </TooltipTrigger>
- <TooltipContent side="right" className="font-semibold text-xs rounded-lg">
- Minha Conta
- </TooltipContent>
- </Tooltip>
- </>
- ) : (
- <Tooltip>
- <TooltipTrigger asChild>
- <Link
- to="/entrar"
- className="size-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-200 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
- aria-label="Entrar / Cadastrar"
- >
- <LogIn className="size-4" />
- </Link>
- </TooltipTrigger>
- <TooltipContent side="right" className="font-semibold text-xs rounded-lg">
- Entrar / Cadastrar
- </TooltipContent>
- </Tooltip>
- )}
- </div>
- </aside>
- </TooltipProvider>
- );
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/conta"
+                    className={cn(
+                      "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isAccountActive
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+                    )}
+                    aria-label="Minha Conta"
+                  >
+                    <UserCircle size={20} weight={isAccountActive ? "fill" : "regular"} />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8} className="font-medium text-xs rounded-lg">
+                  Minha Conta
+                </TooltipContent>
+              </Tooltip>
+            </>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/entrar"
+                  className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Entrar"
+                >
+                  <SignIn size={20} weight="regular" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8} className="font-medium text-xs rounded-lg">
+                Entrar
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </aside>
+    </TooltipProvider>
+  );
 }

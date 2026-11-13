@@ -9,7 +9,6 @@ import {
   Trash2,
   Paperclip,
   FileText,
-  Sparkles,
   UserCheck,
   UserPlus,
   MessageSquare,
@@ -307,6 +306,33 @@ export function TourismPipeCardDossier({
 
   const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("form");
+
+  const buildProposalLeadPayload = (overrides: Record<string, any> = {}) => {
+    const customFields =
+      lead?.custom_fields && typeof lead.custom_fields === "object" ? lead.custom_fields : {};
+    return {
+      id: lead.id,
+      fullName: formData.name,
+      phone: formData.phone,
+      email: formData.email,
+      clientDocument: String(lead.document || lead.cpf_cnpj || customFields.document || ""),
+      destination: formData.destination,
+      estimated_value_cents: formData.estimated_value_cents,
+      passenger_count: (formData.pax_adults || 2) + (formData.pax_children || 0),
+      departureDate: formData.travel_start,
+      returnDate: formData.travel_end,
+      adultsCount: formData.pax_adults || 2,
+      childrenCount: formData.pax_children || 0,
+      notes: formData.notes || "",
+      customFields,
+      sourceListingId: lead.source_listing_id || customFields.source_listing_id || "",
+      sourceListingOrigin: lead.source_listing_origin || customFields.source_listing_origin || "",
+      paxList: Array.isArray(lead.pax_list) ? lead.pax_list : undefined,
+      boardingPoint: customFields.boarding_point ? String(customFields.boarding_point) : undefined,
+      departureOption: customFields.departure_option || undefined,
+      ...overrides,
+    };
+  };
 
   // Dynamic Checklists state (Pipefy style)
   const initialChecklistGroups = useMemo<DynamicChecklistGroup[]>(() => {
@@ -1730,20 +1756,7 @@ export function TourismPipeCardDossier({
               type="button"
               onClick={() => {
                 onClose();
-                onGenerateProposal({
-                  id: lead.id,
-                  fullName: formData.name,
-                  phone: formData.phone,
-                  email: formData.email,
-                  destination: formData.destination,
-                  estimated_value_cents: formData.estimated_value_cents,
-                  passenger_count: (formData.pax_adults || 2) + (formData.pax_children || 0),
-                  departureDate: formData.travel_start,
-                  returnDate: formData.travel_end,
-                  adultsCount: formData.pax_adults || 2,
-                  childrenCount: formData.pax_children || 0,
-                  notes: formData.notes || "",
-                });
+                onGenerateProposal(buildProposalLeadPayload());
               }}
               className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
             >
@@ -1780,7 +1793,7 @@ export function TourismPipeCardDossier({
             },
             { id: "lgpd", label: `Termos & LGPD (${consentRecords.length})`, icon: ShieldCheck },
             { id: "meeting", label: "Agenda & Reunião", icon: Calendar },
-            { id: "presentation", label: "Apresentação IA", icon: Sparkles },
+            { id: "presentation", label: "Apresentação Comercial", icon: FileText },
             { id: "comments", label: `Histórico (${internalComments.length})`, icon: Clock },
             { id: "all", label: "Ver Todos", icon: BookOpen },
           ].map((item) => {
@@ -2581,16 +2594,16 @@ export function TourismPipeCardDossier({
                             variant="outline"
                             onClick={() => {
                               onClose();
-                              onGenerateProposal({
-                                id: lead.id,
-                                fullName: formData.name,
-                                destination: cap.destination || formData.destination,
-                                estimated_value_cents: cap.total_amount_cents || formData.estimated_value_cents,
-                                passenger_count: (cap.adults_count || formData.pax_adults || 2) + (cap.children_count || formData.pax_children || 0),
-                                departureDate: cap.checkin_date || formData.travel_start,
-                                returnDate: cap.checkout_date || formData.travel_end,
-                                notes: `Tarifa capturada via ${cap.source_provider || "InfoTravel"} (${cap.hotel_name || cap.destination})`,
-                              });
+                              onGenerateProposal(
+                                buildProposalLeadPayload({
+                                  destination: cap.destination || formData.destination,
+                                  estimated_value_cents: cap.total_amount_cents || formData.estimated_value_cents,
+                                  passenger_count: (cap.adults_count || formData.pax_adults || 2) + (cap.children_count || formData.pax_children || 0),
+                                  departureDate: cap.checkin_date || formData.travel_start,
+                                  returnDate: cap.checkout_date || formData.travel_end,
+                                  notes: `Tarifa capturada via ${cap.source_provider || "InfoTravel"} (${cap.hotel_name || cap.destination})`,
+                                }),
+                              );
                             }}
                             className="h-11 min-h-11 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                           >
@@ -2632,19 +2645,19 @@ export function TourismPipeCardDossier({
                             variant="outline"
                             onClick={() => {
                               onClose();
-                              onGenerateProposal({
-                                id: lead.id,
-                                fullName: formData.name,
-                                destination: opp.destination || formData.destination,
-                                estimated_value_cents: opp.price_cents || formData.estimated_value_cents,
-                                departureDate: opp.departure_date || formData.travel_start,
-                                returnDate: opp.return_date || formData.travel_end,
-                                notes: `Oportunidade do Radar aplicada: ${opp.title || opp.destination}`,
-                              });
+                              onGenerateProposal(
+                                buildProposalLeadPayload({
+                                  destination: opp.destination || formData.destination,
+                                  estimated_value_cents: opp.price_cents || formData.estimated_value_cents,
+                                  departureDate: opp.departure_date || formData.travel_start,
+                                  returnDate: opp.return_date || formData.travel_end,
+                                  notes: `Oportunidade do Radar aplicada: ${opp.title || opp.destination}`,
+                                }),
+                              );
                             }}
                             className="h-11 min-h-11 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                           >
-                            <Sparkles className="size-3.5 text-primary" />
+                            <Plane className="size-3.5 text-primary" />
                             <span>Ofertar Pacote do Radar</span>
                           </Button>
                         </div>
@@ -2687,18 +2700,17 @@ export function TourismPipeCardDossier({
                               variant="outline"
                               onClick={() => {
                                 onClose();
-                                onGenerateProposal({
-                                  id: lead.id,
-                                  fullName: formData.name,
-                                  destination: prop.destination_city || formData.destination,
-                                  estimated_value_cents: totalCents || formData.estimated_value_cents,
-                                  passenger_count: (formData.pax_adults || 2) + (formData.pax_children || 0),
-                                  notes: `Estrutura importada da cotação de referência (${prop.title || prop.destination_city})`,
-                                });
+                                onGenerateProposal(
+                                  buildProposalLeadPayload({
+                                    destination: prop.destination_city || formData.destination,
+                                    estimated_value_cents: totalCents || formData.estimated_value_cents,
+                                    notes: `Estrutura importada da cotação de referência (${prop.title || prop.destination_city})`,
+                                  }),
+                                );
                               }}
                               className="h-11 min-h-11 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                              <Sparkles className="size-3.5 text-primary" />
+                              <FileText className="size-3.5 text-primary" />
                               <span>Aproveitar Estrutura em Nova Proposta</span>
                             </Button>
                           </div>
@@ -2728,20 +2740,7 @@ export function TourismPipeCardDossier({
                     type="button"
                     onClick={() => {
                       onClose();
-                      onGenerateProposal({
-                        id: lead.id,
-                        fullName: formData.name,
-                        phone: formData.phone,
-                        email: formData.email,
-                        destination: formData.destination,
-                        estimated_value_cents: formData.estimated_value_cents,
-                        passenger_count: (formData.pax_adults || 2) + (formData.pax_children || 0),
-                        departureDate: formData.travel_start,
-                        returnDate: formData.travel_end,
-                        adultsCount: formData.pax_adults || 2,
-                        childrenCount: formData.pax_children || 0,
-                        notes: formData.notes || "",
-                      });
+                      onGenerateProposal(buildProposalLeadPayload());
                     }}
                     className="h-11 min-h-11 px-4 text-xs font-bold gap-2 bg-primary text-primary-foreground rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                   >
@@ -4237,16 +4236,16 @@ export function TourismPipeCardDossier({
               </div>
             </div>
 
-            {/* APRESENTAÇÃO COMERCIAL IA (SLIDE 16:9) */}
+            {/* APRESENTAÇÃO COMERCIAL (SLIDE 16:9) */}
             <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
               <div className="flex items-center gap-2 pb-1 border-b border-border/40">
-                <Sparkles className="size-4 text-primary" />
+                <FileText className="size-4 text-primary" />
                 <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">
-                  Apresentação Comercial IA
+                  Apresentação Comercial
                 </h4>
               </div>
               <p className="text-2xs text-muted-foreground leading-relaxed">
-                Transforma as informações deste lead em uma apresentação visual executiva (clima, câmbio, atrações, visto e valores) para encantar o cliente.
+                Gera uma apresentação executiva com clima, câmbio, atrações, visto e valores para o cliente.
               </p>
               <Button
                 type="button"
@@ -4254,8 +4253,8 @@ export function TourismPipeCardDossier({
                 className="w-full h-11 min-h-11 text-xs font-bold rounded-lg border border-border/60 hover:bg-muted text-foreground cursor-pointer flex items-center justify-center gap-2"
                 variant="outline"
               >
-                <Sparkles className="size-3.5 text-primary" />
-                <span>Visualizar Apresentação IA</span>
+                <FileText className="size-3.5 text-primary" />
+                <span>Visualizar Apresentação</span>
               </Button>
             </div>
 
@@ -4848,9 +4847,9 @@ export function TourismPipeCardDossier({
             {/* Header da Apresentação */}
             <div className="p-4 border-b border-border/50 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
+                <FileText className="size-4 text-primary" />
                 <span className="font-bold text-sm text-foreground">
-                  Apresentação Comercial IA · Slide {activeSlideIndex + 1} de {generatedPresentation.pages.length}
+                  Apresentação Comercial · Slide {activeSlideIndex + 1} de {generatedPresentation.pages.length}
                 </span>
               </div>
               <button

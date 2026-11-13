@@ -72,7 +72,7 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
   ai_generation: {
     windowMs: 60 * 1000, // 1 minuto
     maxAllowed: 10,
-    message: "Limite de requisições de Inteligência Artificial atingido. Aguarde alguns segundos para continuar gerando conteúdo.",
+    message: "Limite de requisições atingido. Aguarde alguns segundos para continuar.",
   },
   ai_mining_crawler: {
     windowMs: 60 * 1000,

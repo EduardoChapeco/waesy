@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, requirePlatformAdmin } from "@/lib/server-access";
 import { encryptSecret, decryptSecret, maskSecret, cleanApiKey } from "@/lib/crypto-vault.server";
 import {
   getActiveSecretForProvider,
@@ -89,7 +89,7 @@ export interface ImportedProductData {
  */
 export const listApiKeyPools = createServerFn({ method: "GET" }).handler(
   async (): Promise<ApiKeyPoolDTO[]> => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { data, error } = await supabase
@@ -124,7 +124,7 @@ export const saveApiKeyToPool = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const rawKey = cleanApiKey(data.apiKey);
@@ -178,7 +178,7 @@ export const saveApiKeyToPool = createServerFn({ method: "POST" })
 export const toggleApiKeyStatus = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid(), isActive: z.boolean() }))
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { error } = await supabase
@@ -196,7 +196,7 @@ export const toggleApiKeyStatus = createServerFn({ method: "POST" })
 export const deleteApiKeyFromPool = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: { id } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { error } = await supabase.from("api_key_pools").delete().eq("id", id);
@@ -235,7 +235,7 @@ export async function internalTestPoolKeyConnection(
 export const testPoolKeyConnection = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: { id } }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     return internalTestPoolKeyConnection(id);
   });
 
@@ -253,7 +253,7 @@ export const batchSaveApiKeysToPool = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const rawList = data.rawKeysText
@@ -348,7 +348,7 @@ export const resetProviderPoolCooldowns = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
     clearInMemoryKeyCooldowns(data.provider);
 
@@ -413,7 +413,7 @@ export const saveMasterPrompt = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const payload = {

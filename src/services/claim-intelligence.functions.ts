@@ -190,7 +190,7 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
     if (isUuid) {
       const { data: company } = await db
         .from('companies')
-        .select('id, name, cnpj, phone, email, category, address_city, address_state, description, logo_url')
+        .select('id, name, cnpj, phone, email, settings, city, state, description, logo_url')
         .eq('id', entityId)
         .maybeSingle();
 
@@ -203,8 +203,8 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
           phone: company.phone,
           email: company.email,
           address: null,
-          city: company.address_city || null,
-          state: company.address_state || null,
+          city: company.city || null,
+          state: company.state || null,
           description: company.description,
           logoUrl: company.logo_url,
           type: 'company' as const,

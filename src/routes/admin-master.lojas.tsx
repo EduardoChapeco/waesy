@@ -2,7 +2,7 @@ import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { getPlatformStoresList, toggleStoreStatus } from "@/services/master.functions";
 import { setTenantContext } from "@/services/identity.functions";
 import { setClientContextCookies } from "@/lib/context-auth";
-import { Store, Search, Download, ExternalLink, Sliders, ShieldCheck, Check, Sparkles, Loader2 } from "lucide-react";
+import { Store, Search, Download, ExternalLink, Sliders, ShieldCheck, Check, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +25,20 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
   STORE_PLANS,
+  VERTICAL_PLAN_CATALOG,
   COMMERCIAL_MODULE_CATALOG,
+  resolveStoreWorkspaceCapabilities,
   CommercialModuleId,
   StorePlanTier,
+  VerticalPlanSkuId,
 } from "@/lib/architecture/module-plan-governance";
 import {
   updateStorePlanTier,
+  updateStoreVerticalSubscription,
   toggleStoreModuleAddon,
 } from "@/services/store-modules.functions";
+import { ErrorState } from "@/components/state/states";
+import { MultiBrandEcosystemGovernanceCard } from "@/components/workspace/multi-brand-ecosystem-governance-card";
 import { toast } from "sonner";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -44,10 +50,13 @@ export const Route = createFileRoute("/admin-master/lojas")({
   loader: async () => {
     try {
       const stores = await getPlatformStoresList();
-      return { stores: stores || [] };
-    } catch (err) {
+      return { stores: stores || [], loadError: null as string | null };
+    } catch (err: unknown) {
       console.error("[loader:admin-master.lojas] Unhandled loader error:", err);
-      return { stores: [] };
+      return {
+        stores: [],
+        loadError: err instanceof Error ? err.message : "Falha ao carregar lojas da plataforma.",
+      };
     }
   },
   component: MasterLojasPage,
@@ -56,21 +65,58 @@ export const Route = createFileRoute("/admin-master/lojas")({
 function MasterLojasPage() {
   const loaderData = (Route.useLoaderData() as any) || {};
   const stores = loaderData.stores || [];
+  const loadError = loaderData.loadError as string | null;
  const router = useRouter();
  const [loadingId, setLoadingId] = useState<string | null>(null);
  const [searchTerm, setSearchTerm] = useState("");
  const [selectedStoreForPlan, setSelectedStoreForPlan] = useState<any | null>(null);
  const [planDialogOpen, setPlanDialogOpen] = useState(false);
  const [selectedTier, setSelectedTier] = useState<StorePlanTier>("free");
+ const [selectedVerticalSku, setSelectedVerticalSku] = useState<VerticalPlanSkuId>("waesy_retail_commerce");
  const [activeAddons, setActiveAddons] = useState<string[]>([]);
  const [isUpdatingPlan, setIsUpdatingPlan] = useState(false);
 
+ if (loadError) {
+   return (
+     <div className="mx-auto max-w-xl px-4 py-16">
+       <ErrorState
+         title="Erro ao carregar Lojas"
+         description={loadError}
+         onRetry={() => router.invalidate()}
+       />
+     </div>
+   );
+ }
+
  const handleOpenPlanModal = (store: any) => {
    setSelectedStoreForPlan(store);
-   const tier = (store.plan_tier || store.settings?.plan_tier || "free").toLowerCase() as StorePlanTier;
+   const caps = resolveStoreWorkspaceCapabilities(store);
+   const tier = (store.plan_tier || store.settings?.plan_tier || caps.tier || "free").toLowerCase() as StorePlanTier;
    setSelectedTier(STORE_PLANS[tier] ? tier : "free");
+   setSelectedVerticalSku(caps.verticalSku);
    setActiveAddons(Array.isArray(store.settings?.active_modules) ? store.settings.active_modules : []);
    setPlanDialogOpen(true);
+ };
+
+ const handleSaveVerticalSku = async (verticalSku: VerticalPlanSkuId) => {
+   if (!selectedStoreForPlan) return;
+   setIsUpdatingPlan(true);
+   try {
+     await updateStoreVerticalSubscription({
+       data: {
+         storeId: selectedStoreForPlan.id,
+         verticalSku,
+       },
+     });
+     setSelectedVerticalSku(verticalSku);
+     setSelectedTier(VERTICAL_PLAN_CATALOG[verticalSku].baseTier);
+     toast.success(`Sistema vertical atualizado para ${VERTICAL_PLAN_CATALOG[verticalSku].name}.`);
+     router.invalidate();
+   } catch (e: unknown) {
+     toast.error(e instanceof Error ? e.message : "Erro ao atualizar sistema vertical.");
+   } finally {
+     setIsUpdatingPlan(false);
+   }
  };
 
  const handleSaveTier = async (newTier: StorePlanTier) => {
@@ -335,7 +381,7 @@ function MasterLojasPage() {
 
  {/* Modal de Gestão de Plano e Módulos Comerciais da Loja */}
  <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
-   <DialogContent className="max-w-xl max-h-screen overflow-y-auto">
+   <DialogContent className="max-w-3xl max-h-screen overflow-y-auto">
      <DialogHeader>
        <DialogTitle className="flex items-center gap-2 text-base font-bold">
          <Sliders className="size-5 text-primary" />
@@ -347,6 +393,27 @@ function MasterLojasPage() {
      </DialogHeader>
 
      <div className="space-y-5 py-2">
+       {/* Seletor de Sistema Vertical / SKU */}
+       <div className="space-y-2">
+         <Label className="text-xs font-bold text-foreground">Sistema Vertical / SKU</Label>
+         <Select
+           value={selectedVerticalSku}
+           onValueChange={(val) => handleSaveVerticalSku(val as VerticalPlanSkuId)}
+           disabled={isUpdatingPlan}
+         >
+           <SelectTrigger className="w-full h-11 min-h-11 text-xs">
+             <SelectValue placeholder="Selecione o sistema vertical" />
+           </SelectTrigger>
+           <SelectContent>
+             {Object.values(VERTICAL_PLAN_CATALOG).map((skuDef) => (
+               <SelectItem key={skuDef.sku} value={skuDef.sku} className="text-xs py-2">
+                 {skuDef.name} — R$ {(skuDef.monthlyPriceCents / 100).toFixed(0)}/mês
+               </SelectItem>
+             ))}
+           </SelectContent>
+         </Select>
+       </div>
+
        {/* Seletor de Tier */}
        <div className="space-y-2">
          <Label className="text-xs font-bold text-foreground">Tier do Plano da Empresa</Label>
@@ -450,6 +517,16 @@ function MasterLojasPage() {
            })}
          </div>
        </div>
+
+       {selectedStoreForPlan?.id && (
+         <div className="pt-4 border-t border-border/40">
+           <MultiBrandEcosystemGovernanceCard
+             storeId={selectedStoreForPlan.id}
+             mode="admin-master"
+             onUpdated={() => router.invalidate()}
+           />
+         </div>
+       )}
      </div>
 
      <DialogFooter className="flex items-center justify-between sm:justify-between pt-3 border-t border-border/40">

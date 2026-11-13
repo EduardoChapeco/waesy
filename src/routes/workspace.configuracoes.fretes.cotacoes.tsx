@@ -16,7 +16,6 @@ import {
   Store,
   Trash2,
   Clock,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   Navigation,
@@ -756,13 +755,13 @@ function FretesCotacoesPage() {
         )}
       </div>
 
-      {/* Modal para Criação de Zona / Tabela Própria */}
+      {/* Modal para Criação de Zona */}
       <Dialog open={isCreateZoneOpen} onOpenChange={setIsCreateZoneOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Nova Zona / Tabela Própria</DialogTitle>
+            <DialogTitle>Nova Zona de Entrega</DialogTitle>
             <DialogDescription>
-              Cadastre uma região de atendimento com tarifas personalizadas para entregas locais.
+              Cadastre uma região com tarifas para entregas locais.
             </DialogDescription>
           </DialogHeader>
 

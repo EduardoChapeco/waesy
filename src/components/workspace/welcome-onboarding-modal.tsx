@@ -31,7 +31,7 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
     try {
       await completeSystemOnboarding();
       setIsOpen(false);
-      toast.success("Tudo pronto! Bem-vindo(a) à plataforma.");
+      toast.success("Configuração inicial concluída.");
       router.invalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao finalizar onboarding");
@@ -41,13 +41,13 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background p-4 sm:p-6 animate-in fade-in duration-200">
       <div
         key={currentStep.id}
-        className="relative w-full max-w-4xl bg-card overflow-hidden rounded-2xl flex flex-col md:flex-row min-h-128 transition-colors duration-200 animate-in zoom-in-95"
+        className="relative w-full max-w-4xl bg-card border border-border overflow-hidden rounded-2xl flex flex-col md:flex-row min-h-128 transition-colors animate-in zoom-in-95"
       >
         {/* Lado Esquerdo: Mídia (Vídeo ou Imagem) */}
-        <div className="w-full md:w-1/2 bg-muted/30 relative overflow-hidden flex items-center justify-center min-h-64 md:min-h-full">
+        <div className="w-full md:w-1/2 bg-muted relative overflow-hidden flex items-center justify-center min-h-64 md:min-h-full">
           {currentStep.media_url ? (
             currentStep.media_type === "video" ? (
               <video

@@ -157,7 +157,7 @@ export const reconcileExternalIFoodOrder = createServerFn({ method: "POST" })
       // 2. Buscar perfis e endereços desses clientes
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, phone, document, resume_data")
+        .select("id, full_name, phone, cpf, tax_id, resume_data")
         .in("id", customerIds);
 
       const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
@@ -174,13 +174,13 @@ export const reconcileExternalIFoodOrder = createServerFn({ method: "POST" })
         // Buscar últimas mensagens da conversa
         const { data: messages } = await supabase
           .from("chat_messages")
-          .select("content, created_at")
-          .eq("conversation_id", conv.id)
+          .select("message, created_at")
+          .eq("thread_id", conv.id)
           .order("created_at", { ascending: false })
           .limit(5);
 
         const recentChatActivity = (messages || []).map((m) => ({
-          text: String(m.content || ""),
+          text: String(m.message || ""),
           createdAt: String(m.created_at || ""),
         }));
 
@@ -188,7 +188,7 @@ export const reconcileExternalIFoodOrder = createServerFn({ method: "POST" })
           customerId: profile.id,
           customerName: profile.full_name || "",
           customerPhone: profile.phone || undefined,
-          customerDocument: profile.document || undefined,
+          customerDocument: profile.cpf || profile.tax_id || undefined,
           chatConversationId: conv.id,
           address: primaryAddr
             ? {
@@ -289,25 +289,25 @@ export const getChatLinkedExternalOrders = createServerFn({ method: "GET" })
     // Buscar mensagens de sistema ou eventos de pedidos externos nessa conversa
     const { data: messages, error } = await supabase
       .from("chat_messages")
-      .select("id, content, metadata, created_at")
-      .eq("conversation_id", conversationId)
-      .eq("sender_type", "system")
+      .select("id, message, payload, message_type, created_at")
+      .eq("thread_id", conversationId)
+      .in("message_type", ["system", "system_event"])
       .order("created_at", { ascending: false })
       .limit(10);
 
     if (error || !messages) return [];
 
     const externalOrderMessages = messages.filter(
-      (m) => (m.metadata as any)?.is_external_order === true,
+      (m: any) => (m.payload as any)?.is_external_order === true,
     );
 
-    return externalOrderMessages.map((m) => ({
+    return externalOrderMessages.map((m: any) => ({
       messageId: m.id,
-      content: m.content,
-      provider: (m.metadata as any)?.provider || "ifood",
-      externalOrderId: (m.metadata as any)?.external_order_id,
-      confidenceScore: (m.metadata as any)?.confidence_score,
-      matchedReasons: (m.metadata as any)?.matched_reasons || [],
+      content: m.message,
+      provider: (m.payload as any)?.provider || "ifood",
+      externalOrderId: (m.payload as any)?.external_order_id,
+      confidenceScore: (m.payload as any)?.confidence_score,
+      matchedReasons: (m.payload as any)?.matched_reasons || [],
       linkedAt: m.created_at,
     }));
   });

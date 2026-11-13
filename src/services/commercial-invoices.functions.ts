@@ -13,6 +13,8 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { requireStaff, getServerIdentity } from "@/lib/server-access";
 import { interpolateContractVariables } from "@/lib/contracts/contract-semantic-dictionary";
+import { compileContractDocument } from "@/lib/contracts/contract-compiler";
+import { normalizeCustomFieldMap } from "@/lib/niches/unified-field-bridge";
 import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templates";
 import { formatMoney } from "@/lib/money";
 
@@ -514,90 +516,83 @@ export const convertInvoiceToContract = createServerFn({ method: "POST" })
     const issuer = (invoice.issuer_snapshot as Record<string, any>) || {};
     const items = (Array.isArray(invoice.items) ? invoice.items : []) as Array<Record<string, any>>;
 
-    // 2. Localizar template jurídico
-    const template =
-      ADVANCED_CONTRACT_TEMPLATES.find((t) => t.id === data.templateId) ||
-      ADVANCED_CONTRACT_TEMPLATES[0];
+    const [storeRes, leadRes] = await Promise.all([
+      supabase.from("stores").select("id, primary_niche_id, settings").eq("id", storeId).maybeSingle(),
+      (invoice as any).lead_id
+        ? supabase
+            .from("leads_crm")
+            .select("id, custom_fields, destination, travel_start, travel_end, pax_list")
+            .eq("id", (invoice as any).lead_id)
+            .eq("store_id", storeId)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    const storeRow = storeRes?.data ?? null;
+    const leadRow = leadRes?.data ?? null;
 
-    // 3. Montar descrição dos itens e tabela Markdown
-    const itemsDescription = items
-      .map(
-        (it) =>
-          `• ${it.quantity || 1}x ${it.title || "Item"} (${it.unit || "un"}) — ${formatMoney(Number(it.unitPriceCents || 0))} cada (Total: ${formatMoney(Number(it.totalPriceCents || 0))})`,
-      )
-      .join("\n");
-
-    const itemsTable = [
-      "| Item / Descrição | Qtd | Un | Valor Unit. | Total |",
-      "| :--- | :---: | :---: | :---: | :---: |",
-      ...items.map(
-        (it) =>
-          `| ${it.title || "Item"} | ${it.quantity || 1} | ${it.unit || "un"} | ${formatMoney(Number(it.unitPriceCents || 0))} | ${formatMoney(Number(it.totalPriceCents || 0))} |`,
-      ),
-    ].join("\n");
-
-    const totalMoneyStr = formatMoney(Number(invoice.total_cents || 0));
-    const dataExtenso = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
+    const mergedCustomFields = normalizeCustomFieldMap({
+      ...(customer.custom_fields && typeof customer.custom_fields === "object"
+        ? customer.custom_fields
+        : {}),
+      ...((leadRow as any)?.custom_fields || {}),
+    });
 
     const paymentTerms = (invoice.payment_terms as Record<string, any>) || {};
     const paymentStr = `${(paymentTerms.method || "PIX").toUpperCase()} — ${paymentTerms.notes || `${paymentTerms.installmentsCount || 1}x de ${formatMoney(Number(paymentTerms.installmentValueCents || invoice.total_cents || 0))}`}`;
 
-    // 4. Montar conteúdo completo com cláusulas do template
-    const headerMarkdown = `# ${data.customTitle || `Contrato Comercial · Ref: ${invoice.invoice_code}`}
-
-**CONTRATADA:** ${issuer.companyName || "Empresa"} — CNPJ/CPF: ${issuer.cnpjOrCpf || "Não informado"}
-**ENDEREÇO:** ${issuer.address || "Endereço comercial da contratada"} • ${issuer.cityState || ""}
-**CONTATO:** ${issuer.phoneOrWhatsapp || ""} • ${issuer.email || ""}
-
-**CONTRATANTE:** ${customer.name || "Cliente"} — CPF/CNPJ: ${customer.cpfOrCnpj || "Identificado no ato da assinatura"}
-**ENDEREÇO:** ${customer.address || "Não informado"} • ${customer.cityState || ""}
-**CONTATO:** ${customer.phone || ""} • ${customer.email || ""}
-
----
-
-### OBJETO E DISCRIMINAÇÃO DOS ITENS
-Conforme ajustado na fatura comercial nº ${invoice.invoice_code}:
-
-${itemsTable}
-
----
-`;
-
-    const clausesMarkdown = template.clauses
-      .sort((a, b) => a.order - b.order)
-      .map((c) => `### ${c.title}\n${c.content}`)
-      .join("\n\n");
-
-    const footerMarkdown = `\n\n---
-### CONDIÇÕES FINANCEIRAS & RESUMO
-- **Valor Total do Instrumento:** ${totalMoneyStr}
-- **Condições de Pagamento:** ${paymentStr}
-- **Vigência / Validade:** ${invoice.valid_until ? `Até ${invoice.valid_until}` : "Imediata"}
-- **Data de Emissão:** ${dataExtenso}
-
-O presente instrumento constitui título executivo extrajudicial (Art. 784, III do Código de Processo Civil), respaldado pela MP 2.200-2/2001 e Lei Federal nº 14.063/2020.
-`;
-
-    const rawContent = `${headerMarkdown}\n${clausesMarkdown}\n${footerMarkdown}`;
-
-    // Interpolação semântica com fallback
-    const interpolatedContent = interpolateContractVariables(rawContent, {
-      contratante_nome: customer.name || "Cliente",
-      contratante_documento: customer.cpfOrCnpj || "",
-      contratante_endereco: customer.address || "",
-      contratado_nome: issuer.companyName || "Empresa",
-      contratado_documento: issuer.cnpjOrCpf || "",
-      contratado_endereco: issuer.address || "",
-      descricao_servicos: itemsDescription,
-      tabela_itens: itemsTable,
-      valor_total: totalMoneyStr,
-      forma_pagamento: paymentStr,
-      data_extenso: dataExtenso,
-      foro_cidade: issuer.cityState || "São Miguel do Oeste - SC",
+    const contractTitle = data.customTitle || `Contrato Comercial · Ref: ${invoice.invoice_code}`;
+    const compiled = compileContractDocument({
+      title: contractTitle,
+      nicheHint:
+        (storeRow as any)?.primary_niche_id ||
+        ((storeRow as any)?.settings as any)?.niche_id ||
+        ((storeRow as any)?.settings as any)?.niche,
+      templateId: data.templateId,
+      issuer: {
+        name: issuer.companyName || "Empresa",
+        document: issuer.cnpjOrCpf || "",
+        address: issuer.address || "",
+        cityState: issuer.cityState || "",
+        phone: issuer.phoneOrWhatsapp || "",
+        email: issuer.email || "",
+      },
+      customer: {
+        name: customer.name || "Cliente",
+        document: customer.cpfOrCnpj || "",
+        address: customer.address || "",
+        cityState: customer.cityState || "",
+        phone: customer.phone || "",
+        email: customer.email || "",
+      },
+      items: items.map((it) => ({
+        title: String(it.title || "Item"),
+        sku: it.sku ? String(it.sku) : undefined,
+        unit: String(it.unit || "un"),
+        quantity: Number(it.quantity || 1),
+        unitPriceCents: Number(it.unitPriceCents || 0),
+        totalPriceCents: Number(it.totalPriceCents || 0),
+      })),
+      passengers: Array.isArray((leadRow as any)?.pax_list)
+        ? (leadRow as any).pax_list.map((p: any) => ({
+            name: String(p?.name || p?.full_name || customer.name || "Participante"),
+            document: p?.document || p?.cpf || undefined,
+          }))
+        : [],
+      customFields: mergedCustomFields,
+      totalValueCents: Number(invoice.total_cents || 0),
+      discountCents: Number(invoice.discount_cents || 0),
+      paymentConditions: paymentStr,
+      paymentMethod: String(paymentTerms.method || "PIX"),
+      validUntil: invoice.valid_until || null,
+      travelStartDate: (leadRow as any)?.travel_start || null,
+      travelEndDate: (leadRow as any)?.travel_end || null,
+      destination: (leadRow as any)?.destination || null,
     });
 
+    const interpolatedContent = compiled.contentMarkdown;
+    const template = { clauses: compiled.clauses };
+
     // 5. Inserir em contracts
-    const contractTitle = data.customTitle || `Contrato Comercial · Ref: ${invoice.invoice_code}`;
     const categoryMapping: Record<string, any> = {
       "template-prestacao-servicos": "service_agreement",
       "template-pacote-turistico": "tourism_package",

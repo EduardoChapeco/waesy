@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { List, CaretDown, Bell, Diamond, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { useSuperAppDrawer } from "@/lib/drawer-store";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import { getStoredLocation } from "@/components/location/location-master-pill";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,7 @@ export function IFoodHeader({
     return "Boa noite";
   })();
 
+  const { isMobile, isForcedViewport } = useEffectiveViewport();
   const displayName = userName?.trim() ? userName.trim().split(" ")[0] : "Visitante";
 
   const resolvedAddress = (() => {
@@ -57,10 +59,17 @@ export function IFoodHeader({
     return "Escolher localização";
   })();
 
+  const visibilityClass = isForcedViewport
+    ? isMobile
+      ? "flex"
+      : "hidden"
+    : "flex md:hidden";
+
   return (
     <header
       className={cn(
-        "w-full bg-background/95 backdrop-blur-md py-2 px-3 sm:px-4 flex flex-col gap-2 sticky top-0 z-30 border-b border-border/40 md:hidden pt-safe",
+        "w-full bg-background/95 backdrop-blur-md py-2 px-3 sm:px-4 flex-col gap-2 sticky top-0 z-30 border-b border-border/40 pt-safe",
+        visibilityClass,
         className,
       )}
       data-testid="ifood-canonical-header"

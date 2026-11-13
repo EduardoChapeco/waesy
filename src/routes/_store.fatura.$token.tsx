@@ -220,17 +220,27 @@ function PublicCommercialInvoicePage() {
               Falar com a Empresa
             </Button>
 
-            {invoice.contract_id && (
+            {contractSigningToken ? (
               <Button
                 asChild
                 className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2"
               >
-                <Link to="/workspace/contratos/$id/editor" params={{ id: invoice.contract_id }}>
+                <Link to="/assinar/$token" params={{ token: contractSigningToken }}>
+                  <FileSignature className="size-4 mr-2" />
+                  Assinar Contrato
+                </Link>
+              </Button>
+            ) : contractVerificationCode ? (
+              <Button
+                asChild
+                className="h-11 min-h-11 px-4 text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2"
+              >
+                <Link to="/verify/document/$code" params={{ code: contractVerificationCode }}>
                   <FileSignature className="size-4 mr-2" />
                   Ver Contrato
                 </Link>
               </Button>
-            )}
+            ) : null}
           </div>
         </div>
 

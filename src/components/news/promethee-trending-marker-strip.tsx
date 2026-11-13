@@ -1,5 +1,5 @@
 import React from "react";
-import { Flame, Hash, Sparkles, TrendingUp } from "lucide-react";
+import { Flame, Hash, TrendingUp } from "lucide-react";
 
 export interface TrendingTopicItem {
   id: string;

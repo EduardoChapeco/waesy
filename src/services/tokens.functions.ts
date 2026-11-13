@@ -478,19 +478,24 @@ export const getUserTokenWallet = createServerFn({ method: "GET" })
     // Wallet canônica: user_token_wallets
     const { data: walletRow } = await db
       .from("user_token_wallets")
-      .select("balance, lifetime_earned, lifetime_redeemed, balance_pending_maturity, vesting_unlock_date, is_locked, created_at")
+      .select("balance, lifetime_earned, lifetime_redeemed, balance_pending_maturity, vesting_unlock_date, created_at")
       .eq("user_id", identity.id)
       .maybeSingle();
 
-    const userTokens = walletRow || {
-      balance: 0,
-      lifetime_earned: 0,
-      lifetime_redeemed: 0,
-      balance_pending_maturity: 0,
-      vesting_unlock_date: null,
-      is_locked: false,
-      created_at: new Date().toISOString(),
-    };
+    const userTokens = walletRow
+      ? {
+          ...walletRow,
+          is_locked: Boolean(walletRow.vesting_unlock_date && new Date(walletRow.vesting_unlock_date) > new Date()),
+        }
+      : {
+          balance: 0,
+          lifetime_earned: 0,
+          lifetime_redeemed: 0,
+          balance_pending_maturity: 0,
+          vesting_unlock_date: null,
+          is_locked: false,
+          created_at: new Date().toISOString(),
+        };
 
     // Buscar histórico de transações reais emitidas por lojas
     let query = db
@@ -624,21 +629,29 @@ export const emitStoreLoyaltyTokens = createServerFn({ method: "POST" })
 
  await db.from("stores").update({ settings }).eq("id", store.id);
 
- // 2. Creditar na carteira do usuário
- const { data: userProfile } = await db
- .from("profiles")
- .select("id, preferences")
- .eq("id", data.recipient_user_id)
- .single();
+ // 2. Creditar na carteira do usuário (user_token_wallets)
+ const { data: userWallet } = await db
+ .from("user_token_wallets")
+ .select("id, balance, lifetime_earned")
+ .eq("user_id", data.recipient_user_id)
+ .maybeSingle();
 
- if (userProfile) {
- const userPrefs = userProfile.preferences || {};
- const userWallet = userPrefs.token_wallet || { balance: 0, lifetime_earned: 0, lifetime_redeemed: 0 };
- const newUserBalance = (userWallet.balance || 0) + data.tokens;
- userWallet.balance = newUserBalance;
- userWallet.lifetime_earned = (userWallet.lifetime_earned || 0) + data.tokens;
- userPrefs.token_wallet = userWallet;
- await db.from("profiles").update({ preferences: userPrefs }).eq("id", data.recipient_user_id);
+ if (userWallet) {
+ await db
+ .from("user_token_wallets")
+ .update({
+ balance: Number(userWallet.balance || 0) + data.tokens,
+ lifetime_earned: Number(userWallet.lifetime_earned || 0) + data.tokens,
+ updated_at: new Date().toISOString(),
+ })
+ .eq("id", userWallet.id);
+ } else {
+ await db.from("user_token_wallets").insert({
+ user_id: data.recipient_user_id,
+ balance: data.tokens,
+ lifetime_earned: data.tokens,
+ lifetime_redeemed: 0,
+ });
  }
 
  // 3. Registrar nos ledgers com rastreabilidade da loja emissora

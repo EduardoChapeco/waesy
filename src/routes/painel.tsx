@@ -394,26 +394,26 @@ function PainelAuthPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm">
-              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-1">
+            <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card">
+              <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0 mt-1">
                 <TrendingUp className="size-4" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-foreground">Gestão Financeira & Caixa</h2>
+                <h2 className="text-sm font-semibold text-foreground">Finanças e Caixa</h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Controle faturamento, contas a receber, comissões de equipe e relatórios fiscais em um único lugar.
+                  Controle faturamento, contas a receber, comissões e relatórios fiscais.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm">
-              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-1">
+            <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card">
+              <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0 mt-1">
                 <ShieldCheck className="size-4" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-foreground">Segurança & Governança Zero-Trust</h2>
+                <h2 className="text-sm font-semibold text-foreground">Controle de Acessos</h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Permissões por perfil de colaborador (vendedor, gerente, financeiro) com rastreio de auditoria.
+                  Permissões por função da equipe com registro de auditoria.
                 </p>
               </div>
             </div>

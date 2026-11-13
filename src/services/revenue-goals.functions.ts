@@ -99,7 +99,7 @@ export const getRevenueGoalsAndForecast = createServerFn({ method: "GET" })
     // Buscar faturamento real dos pedidos no mês
     const { data: orders, error: ordersError } = await supabase
       .from("orders")
-      .select("id, total_cents, channel, status, created_at")
+      .select("id, total_cents, channel_origin, origin_channel, status, created_at")
       .eq("store_id", targetStoreId)
       .neq("status", "cancelled")
       .gte("created_at", startOfMonth.toISOString())
@@ -113,11 +113,11 @@ export const getRevenueGoalsAndForecast = createServerFn({ method: "GET" })
     let realizedCents = 0;
     const channelSales: Record<string, { cents: number; count: number }> = {};
 
-    validOrders.forEach((ord) => {
+    validOrders.forEach((ord: any) => {
       const cents = Number(ord.total_cents) || 0;
       realizedCents += cents;
 
-      const rawChannel = ord.channel || "balcao_pos";
+      const rawChannel = ord.channel_origin || ord.origin_channel || "balcao_pos";
       const chKey = Object.keys(CHANNEL_LABELS).includes(rawChannel) ? rawChannel : "outros";
       if (!channelSales[chKey]) {
         channelSales[chKey] = { cents: 0, count: 0 };

@@ -100,25 +100,40 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     capturedCookie.includes("waesy-auth-token") ||
     capturedCookie.includes("-auth-token");
 
+  const withAuthTimeout = <T>(p: Promise<T>, ms = 4500): Promise<T | null> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    return Promise.race([
+      p.catch(() => null),
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), ms);
+      }),
+    ]).finally(() => {
+      if (timer !== undefined) clearTimeout(timer);
+    });
+  };
+
   const resolutionPromise = (async (): Promise<ServerIdentity> => {
     let user: any = null;
     try {
-      const authRes = await ssrClient.auth.getUser();
+      const authRes = await withAuthTimeout(ssrClient.auth.getUser(), 4500);
       user = authRes?.data?.user || null;
 
       // Se getUser retornou null (ex: token de acesso de 1h expirou ou storage foi limpo por _removeSession),
       // tenta refresh automático passando explicitamente o refresh_token extraído do cookie canônico.
       if (!user && hasAnyAuthCookie) {
         try {
-          const refreshRes = cookieSessionMeta?.refreshToken
-            ? await ssrClient.auth.refreshSession({
-                refresh_token: cookieSessionMeta.refreshToken,
-              })
-            : await ssrClient.auth.refreshSession();
+          const refreshRes = await withAuthTimeout(
+            cookieSessionMeta?.refreshToken
+              ? ssrClient.auth.refreshSession({
+                  refresh_token: cookieSessionMeta.refreshToken,
+                })
+              : ssrClient.auth.refreshSession(),
+            4500,
+          );
           if (refreshRes?.data?.user) {
             user = refreshRes.data.user;
           } else if (typeof ssrClient.auth.getSession === "function") {
-            const sessionRes = await ssrClient.auth.getSession();
+            const sessionRes = await withAuthTimeout(ssrClient.auth.getSession(), 2500);
             if (sessionRes?.data?.session?.user) {
               user = sessionRes.data.session.user;
             }
@@ -227,13 +242,13 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
         memberRows = [{ store_id: (userProfile as any).store_id, role: userProfileRole || "owner" }];
       }
 
-      // Fallback secundário: verifica se o usuário é proprietário direto cadastrado na tabela stores
+      // Fallback secundário: verifica se o usuário é organizador proprietário cadastrado na tabela stores
       if (!memberRows || memberRows.length === 0) {
         try {
           const { data: ownedStores } = await serverClient
             .from("stores")
             .select("id")
-            .eq("owner_id", user.id)
+            .eq("organization_id", user.id)
             .limit(5);
           if (ownedStores && ownedStores.length > 0) {
             memberRows = ownedStores.map((s: any) => ({ store_id: s.id, role: "owner" }));

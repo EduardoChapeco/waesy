@@ -1427,14 +1427,14 @@ export function CheckoutPage() {
         {activeStep === 2 && isTourismNiche && (
           <Surface className="p-5 sm:p-6 rounded-lg space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="size-10 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
                   <Plane size={20} />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-foreground">Reserva de Viagem & Turismo</h3>
-                  <p className="text-xs text-muted-foreground">Emissão de Voucher Digital com validade legal Embratur e Cadastur</p>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">Reserva de Viagem</h3>
+                  <p className="text-xs text-muted-foreground">Emissão de voucher digital Cadastur</p>
                 </div>
               </div>
               <Badge variant="outline" className="font-mono text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-2 w-fit">

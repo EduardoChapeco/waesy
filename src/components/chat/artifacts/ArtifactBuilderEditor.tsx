@@ -56,17 +56,13 @@ export function ArtifactBuilderEditor({
       setErrorMsg(null);
       setIsSaving(true);
       if (documentId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(documentId)) {
-        try {
-          await updateBuilderDocumentFn({
-            data: {
-              documentId,
-              title,
-              contentSchema: parsed,
-            },
-          });
-        } catch {
-          // Fallback resiliente caso offline ou em mock
-        }
+        await updateBuilderDocumentFn({
+          data: {
+            documentId,
+            title,
+            contentSchema: parsed,
+          },
+        });
       }
       if (onSave) {
         onSave(parsed);
@@ -74,9 +70,14 @@ export function ArtifactBuilderEditor({
       setIsSaving(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
+    } catch (err: any) {
       setIsSaving(false);
-      setErrorMsg("Formato com erro: verifique a estrutura antes de salvar.");
+      setSaved(false);
+      setErrorMsg(
+        err instanceof SyntaxError
+          ? "Formato JSON inválido: verifique a estrutura antes de salvar."
+          : err?.message || "Não foi possível salvar alterações no servidor."
+      );
     }
   };
 

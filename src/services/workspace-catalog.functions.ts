@@ -123,7 +123,7 @@ export const listWorkspaceProductsFn = createServerFn({ method: "POST" })
         cost_cents,
         status,
         created_at,
-        category_id,
+        product_categories (category_id),
         product_media (url, alt, sort_order),
         product_variants (id, sku, price_override_cents, stock_on_hand, allow_backorder)
       `,
@@ -418,8 +418,8 @@ export const getWorkspaceProductDetailFn = createServerFn({ method: "POST" })
         compare_at_cents,
         cost_cents,
         status,
-        category_id,
         created_at,
+        product_categories (category_id),
         product_media (id, url, sort_order),
         product_variants (id, sku, price_override_cents, stock_on_hand, allow_backorder, attributes)
       `,
@@ -448,7 +448,7 @@ export const getWorkspaceProductDetailFn = createServerFn({ method: "POST" })
       compareAtCents: rowData.compare_at_cents ? Number(rowData.compare_at_cents) : null,
       costCents: rowData.cost_cents ? Number(rowData.cost_cents) : null,
       status: rowData.status,
-      categoryId: rowData.category_id,
+      categoryId: Array.isArray(rowData.product_categories) ? (rowData.product_categories[0]?.category_id ?? null) : null,
       createdAt: rowData.created_at,
       mediaUrls: media.map((m: any) => m.url),
       variants: (Array.isArray(rowData.product_variants) ? rowData.product_variants : []).map(

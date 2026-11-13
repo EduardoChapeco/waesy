@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import type { MinedRecipeDTO } from "@/services/mining.functions";
+import { generateQrCodeDataUri } from "@/lib/qr-code";
+import { downloadCanvasAsPng, renderElementToCanvasSafe } from "@/lib/canvas/html2canvas-safe";
 
 interface RecipeStoryModalProps {
   recipe: MinedRecipeDTO;
@@ -20,7 +22,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
     ? `${window.location.origin}/receitas/${recipe.id}`
     : `https://usewaesy.com/receitas/${recipe.id}`;
 
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(recipeUrl)}`;
+  const qrImageUrl = generateQrCodeDataUri(recipeUrl, { border: 1 });
 
   const handleCopyLink = async () => {
     try {
@@ -39,25 +41,21 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
       setIsGenerating(true);
       toast.info("Renderizando Story 9:16...");
 
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, {
+      const computedBg =
+        typeof window !== "undefined"
+          ? window.getComputedStyle(cardRef.current).backgroundColor
+          : undefined;
+      const canvas = await renderElementToCanvasSafe(cardRef.current, {
         scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#09090b",
-        logging: false,
+        backgroundColor: computedBg && computedBg !== "rgba(0, 0, 0, 0)" ? computedBg : undefined, // design-lint-ignore DL-01 reason:"Verifica transparencia padrao computada antes de capturar story canvas" expiry:"2027-12-31"
       });
 
-      const image = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
       const safeTitle = recipe.title
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "-")
         .replace(/-+/g, "-")
         .slice(0, 30);
-      link.download = `receita-story-${safeTitle}.png`;
-      link.href = image;
-      link.click();
+      downloadCanvasAsPng(canvas, `receita-story-${safeTitle}.png`);
 
       toast.success("Story baixado com sucesso!");
     } catch (err) {
@@ -114,7 +112,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
                 crossOrigin="anonymous"
                 className="size-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/50" />
+              <div className="absolute inset-0 bg-zinc-950/60" />
               {recipe.total_time && (
                 <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-zinc-900/90 px-2 py-1 rounded-md text-2xs font-mono text-zinc-200">
                   <Clock className="size-3 text-warning-strong" />

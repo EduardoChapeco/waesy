@@ -599,6 +599,49 @@ export const CANONICAL_PLATFORM_MENUS = [
       },
     ],
   },
+  {
+    id: "canonical-menu-footer_menu",
+    handle: "footer_menu",
+    name: "Rodapé Global (Footer)",
+    items: [
+      {
+        id: "nav-ftr-1",
+        label: "Início",
+        url: "/",
+        icon: "Home",
+        image_url: "",
+        badge_text: "",
+        is_active: true,
+      },
+      {
+        id: "nav-ftr-2",
+        label: "Ofertas",
+        url: "/ofertas",
+        icon: "Zap",
+        image_url: "",
+        badge_text: "",
+        is_active: true,
+      },
+      {
+        id: "nav-ftr-3",
+        label: "Diretório",
+        url: "/diretorio",
+        icon: "MapPin",
+        image_url: "",
+        badge_text: "",
+        is_active: true,
+      },
+      {
+        id: "nav-ftr-4",
+        label: "Sobre a Plataforma",
+        url: "/about",
+        icon: "ShieldCheck",
+        image_url: "",
+        badge_text: "",
+        is_active: true,
+      },
+    ],
+  },
 ];
 
 export const getNavigationMenus = createServerFn({ method: "GET" }).handler(async () => {

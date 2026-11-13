@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Plus, Trash2, Package, Sliders, DollarSign, TrendingUp, Percent, CheckCircle2, Layers, Utensils, Box, AlertTriangle, ChefHat, Sparkles } from 'lucide-react';
+import { Boxes, Plus, Trash2, Package, Sliders, DollarSign, TrendingUp, Percent, CheckCircle2, Layers, Utensils, Box, AlertTriangle, ChefHat } from 'lucide-react';
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

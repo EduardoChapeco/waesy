@@ -1095,40 +1095,40 @@ function AdminMasterMarcaPage() {
  alt="Mobile Login"
  className="absolute inset-0 size-full object-cover"
  />
- ) : (
- <div className="absolute inset-0 size-full bg-zinc-950 flex items-center justify-center p-4">
- <span className="text-2xs text-foreground/50 text-center">
- Background padrão ativo (Envie uma foto para customizar)
- </span>
- </div>
- )}
+                ) : (
+                  <div className="absolute inset-0 size-full bg-muted flex items-center justify-center p-4">
+                    <span className="text-2xs text-muted-foreground text-center">
+                      Background padrão ativo (Envie uma foto para customizar)
+                    </span>
+                  </div>
+                )}
 
- {/* Overlay Escuro */}
- <div className="absolute inset-0 bg-foreground/40 backdrop-blur-xs" />
+                {/* Overlay Escuro Sólido Sutil */}
+                <div className="absolute inset-0 bg-foreground/30" />
 
- {/* Topo do Login */}
- <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
- <div className="px-2 py-1 rounded-lg bg-foreground/60 backdrop-blur-md text-foreground text-3xs font-bold">
- {platformName || "WAESY"}
- </div>
- <div className="px-2 py-1 rounded-lg bg-foreground/60 backdrop-blur-md text-foreground/80 text-3xs">
- Voltar
- </div>
- </div>
+                {/* Topo do Login */}
+                <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
+                  <div className="px-2 py-1 rounded-lg bg-card border border-border text-foreground text-3xs font-bold">
+                    {platformName || "WAESY"}
+                  </div>
+                  <div className="px-2 py-1 rounded-lg bg-card border border-border text-muted-foreground text-3xs">
+                    Voltar
+                  </div>
+                </div>
 
- {/* Card de Autenticação no Canto */}
- <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-3 rounded-lg bg-foreground/85 backdrop-blur-xl z-10 space-y-2">
- <div className="flex items-center justify-between">
- <span className="text-2xs font-bold text-foreground">Acessar Conta</span>
- <Badge className="bg-primary text-primary-foreground text-3xs px-2 py-0">
- {platformName || "Waesy"}
- </Badge>
- </div>
- <div className="h-6 rounded-md bg-card/10 px-2 flex items-center justify-between text-3xs text-foreground/60">
- <span>E-mail ou CPF...</span>
- <ArrowRight className="size-2.5 text-foreground" />
- </div>
- </div>
+                {/* Card de Autenticação no Canto */}
+                <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-3 rounded-lg bg-card border border-border z-10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xs font-bold text-foreground">Acessar Conta</span>
+                    <Badge className="bg-primary text-primary-foreground text-3xs px-2 py-0">
+                      {platformName || "Waesy"}
+                    </Badge>
+                  </div>
+                  <div className="h-6 rounded-md bg-muted px-2 flex items-center justify-between text-3xs text-muted-foreground">
+                    <span>E-mail ou CPF...</span>
+                    <ArrowRight className="size-2.5 text-foreground" />
+                  </div>
+                </div>
  </div>
  </TabsContent>
 

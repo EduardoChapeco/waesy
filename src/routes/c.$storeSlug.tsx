@@ -19,7 +19,6 @@ import {
   ExternalLink,
   Users,
   Search,
-  Sparkles,
   Share2,
   CheckCircle2,
   MessageSquare,
@@ -215,7 +214,7 @@ function CommunityAndPortalWhitelabelPage() {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
-              <Sparkles className="size-16" />
+              <Building2 className="size-16" />
             </div>
           )}
         </div>

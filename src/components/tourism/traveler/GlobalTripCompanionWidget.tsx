@@ -15,7 +15,6 @@ import {
   MessageCircle,
   ExternalLink,
   Luggage,
-  Sparkles,
   ChevronRight,
 } from "lucide-react";
 import {
@@ -102,7 +101,7 @@ export function GlobalTripCompanionWidget() {
         <SheetContent side="right" className="w-full sm:max-w-md p-6 space-y-6 overflow-y-auto">
           <SheetHeader className="text-left space-y-1">
             <div className="flex items-center gap-2 text-2xs font-bold uppercase tracking-wider text-primary">
-              <Sparkles className="size-3.5" /> Assistente de Bolso do Viajante
+              <Luggage className="size-3.5" /> Resumo da Viagem
             </div>
             <SheetTitle className="text-lg font-bold text-foreground">
               {trip.title}

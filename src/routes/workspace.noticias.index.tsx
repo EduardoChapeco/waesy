@@ -812,7 +812,7 @@ function WorkspaceNoticiasIndexPage() {
 
           {/* Fila de Postagens e Histórico */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-foreground">Fila de Agendamentos & Postagens Recentes</h3>
+            <h3 className="text-sm font-bold text-foreground">Agendamentos Recentes</h3>
             {schedules.length === 0 ? (
               <EmptyState
                 title="Nenhum agendamento social na fila"

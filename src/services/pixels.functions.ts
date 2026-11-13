@@ -100,7 +100,7 @@ export const getStorePixelConfig = createServerFn({ method: "GET" })
 
     const { data: config, error } = await supabase
       .from("store_pixel_configs")
-      .select("id, store_id, meta_pixel_id, meta_capi_token, meta_test_event_code, google_ads_id, google_analytics_id, tiktok_pixel_id, track_page_view, track_view_content, track_add_to_cart, track_initiate_checkout, track_lead, track_whatsapp_click, updated_at")
+      .select("id, store_id, meta_pixel_id, meta_capi_token, meta_test_event_code, google_ads_id, ga4_measurement_id, track_page_views, track_whatsapp_leads, track_catalog_views, track_quotes, track_purchases, updated_at")
       .eq("store_id", targetStoreId)
       .maybeSingle();
 
@@ -145,6 +145,14 @@ export const getStorePixelConfig = createServerFn({ method: "GET" })
     const publicConfig = Object.fromEntries(Object.entries(config as Record<string, any>).filter(([key]) => !["meta_capi_token", "meta_test_event_code"].includes(key)));
     return {
       ...(publicConfig as StorePixelConfigDTO),
+      google_analytics_id: config.ga4_measurement_id || null,
+      tiktok_pixel_id: null,
+      track_page_view: config.track_page_views ?? true,
+      track_view_content: config.track_catalog_views ?? true,
+      track_add_to_cart: config.track_purchases ?? true,
+      track_initiate_checkout: config.track_purchases ?? true,
+      track_lead: config.track_quotes ?? true,
+      track_whatsapp_click: config.track_whatsapp_leads ?? true,
       meta_capi_token: null,
       meta_capi_configured: Boolean(metaPayload?.access_token || (config as any).meta_capi_token),
       meta_test_event_code_configured: Boolean(metaPayload?.test_event_code || (config as any).meta_test_event_code),
@@ -228,14 +236,12 @@ export const saveStorePixelConfig = createServerFn({ method: "POST" })
       meta_capi_token: null,
       meta_test_event_code: null,
       google_ads_id: conversionId.trim() || null,
-      google_analytics_id: data.google_analytics_id?.trim() || null,
-      tiktok_pixel_id: data.tiktok_pixel_id?.trim() || null,
-      track_page_view: data.track_page_view,
-      track_view_content: data.track_view_content,
-      track_add_to_cart: data.track_add_to_cart,
-      track_initiate_checkout: data.track_initiate_checkout,
-      track_lead: data.track_lead,
-      track_whatsapp_click: data.track_whatsapp_click,
+      ga4_measurement_id: data.google_analytics_id?.trim() || null,
+      track_page_views: data.track_page_view,
+      track_catalog_views: data.track_view_content,
+      track_purchases: data.track_add_to_cart || data.track_initiate_checkout,
+      track_quotes: data.track_lead,
+      track_whatsapp_leads: data.track_whatsapp_click,
       updated_at: new Date().toISOString(),
     };
 
@@ -270,14 +276,25 @@ export const getPublicStorePixels = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("store_pixel_configs")
       .select(
-        "meta_pixel_id, google_ads_id, google_analytics_id, tiktok_pixel_id, track_page_view, track_view_content, track_add_to_cart, track_initiate_checkout, track_lead, track_whatsapp_click"
+        "meta_pixel_id, google_ads_id, ga4_measurement_id, track_page_views, track_catalog_views, track_purchases, track_quotes, track_whatsapp_leads"
       )
       .eq("store_id", storeId)
       .maybeSingle();
 
     if (error || !data) return null;
 
-    return data;
+    return {
+      meta_pixel_id: data.meta_pixel_id,
+      google_ads_id: data.google_ads_id,
+      google_analytics_id: data.ga4_measurement_id || null,
+      tiktok_pixel_id: null,
+      track_page_view: data.track_page_views ?? true,
+      track_view_content: data.track_catalog_views ?? true,
+      track_add_to_cart: data.track_purchases ?? true,
+      track_initiate_checkout: data.track_purchases ?? true,
+      track_lead: data.track_quotes ?? true,
+      track_whatsapp_click: data.track_whatsapp_leads ?? true,
+    };
   });
 
 /**
@@ -330,20 +347,30 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
       }
       const { data: publicStore, error: publicStoreError } = await supabase
         .from("stores")
-        .select("id, status")
+        .select("id, is_active")
         .eq("id", data.storeId)
-        .eq("status", "active")
+        .eq("is_active", true)
         .maybeSingle();
       if (publicStoreError || !publicStore) {
         throw new Error("Loja pública não está ativa para telemetria CAPI.");
       }
     }
 
-    const { data: config, error } = await supabase
+    const { data: rawConfig, error } = await supabase
       .from("store_pixel_configs")
-      .select("meta_pixel_id, meta_capi_token, meta_test_event_code, track_lead, track_whatsapp_click, track_add_to_cart, track_initiate_checkout, track_view_content")
+      .select("meta_pixel_id, meta_capi_token, meta_test_event_code, track_whatsapp_leads, track_catalog_views, track_quotes, track_purchases")
       .eq("store_id", data.storeId)
       .maybeSingle();
+    const config = rawConfig
+      ? {
+          ...rawConfig,
+          track_lead: rawConfig.track_quotes,
+          track_whatsapp_click: rawConfig.track_whatsapp_leads,
+          track_add_to_cart: rawConfig.track_purchases,
+          track_initiate_checkout: rawConfig.track_purchases,
+          track_view_content: rawConfig.track_catalog_views,
+        }
+      : null;
 
     if (error || !config || !config.meta_pixel_id) {
       return { sent: false, reason: "CAPI não configurado para esta loja" };
@@ -456,13 +483,13 @@ async function dispatchGoogleAdsConversion(params: {
 }): Promise<{ sent: boolean; error?: string }> {
   const { data: config } = await params.supabase
     .from("store_pixel_configs")
-    .select("google_analytics_id, google_ads_id")
+    .select("ga4_measurement_id, google_ads_id")
     .eq("store_id", params.storeId)
     .maybeSingle();
 
   // Requer o GA4 Measurement ID (G-XXXX) e o API Secret do GA4 Data Stream
   const googleSecrets = await getActiveIntegrationPayload(params.storeId, "google_analytics");
-  const measurementId = String(googleSecrets?.measurement_id || config?.google_analytics_id || "").trim();
+  const measurementId = String(googleSecrets?.measurement_id || config?.ga4_measurement_id || "").trim();
   if (!measurementId) {
     return { sent: false, error: "Google Analytics ID não configurado" };
   }

@@ -456,7 +456,7 @@ export function EventClassifiedShowcaseView({
               <div className="space-y-3 flex-1 min-w-0">
                 {/* Category & Metadata Badges (Separated from Schedule Times!) */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="bg-primary/10 text-primary border border-primary/20 font-bold text-xs px-3 py-1 rounded-md">
+                  <Badge className="bg-muted text-foreground border border-border font-bold text-xs px-3 py-1 rounded-md">
                     {event.modality_label}
                   </Badge>
                   <Badge variant="outline" className="text-xs font-semibold px-3 py-1 rounded-md">
@@ -465,7 +465,7 @@ export function EventClassifiedShowcaseView({
                   {event.visibility === "unlisted" && (
                     <Badge
                       variant="outline"
-                      className="text-xs font-semibold px-3 py-1 rounded-md border-warning/40 text-warning-strong "
+                      className="text-xs font-semibold px-3 py-1 rounded-md border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
                     >
                       Evento Exclusivo (Link Direto)
                     </Badge>
@@ -609,7 +609,7 @@ export function EventClassifiedShowcaseView({
       </div>
 
       {/* 3. STICKY DYNAMIC ANCHOR NAVIGATION WITH SCROLLSPY (RULE B.39 SINGLE CONTINUOUS ROW) */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/60 mt-6">
+      <div className="sticky top-0 z-20 bg-background border-b border-border mt-6">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-2 overflow-x-auto flex-nowrap no-scrollbar py-2 tab-list" role="tablist">
           {event.available_sections.map((sec) => {
             const isActive = activeSection === sec.id;
@@ -621,7 +621,7 @@ export function EventClassifiedShowcaseView({
                 className={`px-4 h-11 min-h-11 rounded-lg text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   isActive
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 <span>{sec.label}</span>
@@ -661,7 +661,7 @@ export function EventClassifiedShowcaseView({
                     key={card.id}
                     type="button"
                     onClick={() => scrollToSection(card.target_section)}
-                    className="p-4 rounded-lg border border-border/60 bg-card hover:border-primary/40 transition-colors text-left flex items-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="p-4 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left flex items-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {card.image_url ? (
                       <img
@@ -670,10 +670,10 @@ export function EventClassifiedShowcaseView({
                         onError={(e) => {
                           (e.currentTarget as HTMLElement).style.display = "none";
                         }}
-                        className="size-12 rounded-lg object-cover shrink-0 border border-border/50"
+                        className="size-12 rounded-lg object-cover shrink-0 border border-border"
                       />
                     ) : (
-                      <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <div className="size-12 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
                         <Ticket className="size-5" />
                       </div>
                     )}
@@ -935,11 +935,11 @@ export function EventClassifiedShowcaseView({
                     {(activeDayGroup?.items || event.schedule).map((item) => (
                       <div
                         key={item.id}
-                        className="rounded-lg border border-border/60 bg-background p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:border-primary/40 transition-colors"
+                        className="rounded-lg border border-border bg-background p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:border-ring transition-colors"
                       >
                         {/* Time Pill */}
                         <div className="shrink-0 flex sm:flex-col items-center sm:items-start gap-2 sm:w-28">
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-primary/10 text-primary font-mono text-xs font-black tabular-nums">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md bg-muted border border-border text-foreground font-mono text-xs font-black tabular-nums">
                             {item.time}
                             {item.end_time ? ` - ${item.end_time}` : ""}
                           </span>
@@ -977,7 +977,7 @@ export function EventClassifiedShowcaseView({
                                   className="size-9 rounded-full object-cover border border-border shrink-0"
                                 />
                               ) : (
-                                <div className="size-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                                <div className="size-9 rounded-full bg-muted border border-border text-foreground flex items-center justify-center font-bold text-xs shrink-0">
                                   {item.linked_speaker.name.charAt(0).toUpperCase()}
                                 </div>
                               )}
@@ -1011,11 +1011,11 @@ export function EventClassifiedShowcaseView({
             {/* SECTION: PALESTRANTES, CONVIDADOS & ATRAÇÕES (ZERO BIO TRUNCATION) */}
             {event.speakers.length > 0 && (
               <section id="section-palestrantes" className="scroll-mt-20 space-y-4">
-                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+                <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border sm:p-6 space-y-5">
                   <div className="flex items-center gap-2">
                     <Mic className="size-5 text-primary shrink-0" />
                     <h2 className="text-xl font-black tracking-tight text-foreground">
-                      Palestrantes e Atrações Confirmadas
+                      Palestrantes e Atrações
                     </h2>
                   </div>
 
@@ -1023,7 +1023,7 @@ export function EventClassifiedShowcaseView({
                     {event.speakers.map((speaker) => (
                       <div
                         key={speaker.id}
-                        className="rounded-lg border border-border/60 bg-background p-5 flex flex-col justify-between gap-4 hover:border-primary/40 transition-colors"
+                        className="rounded-lg border border-border bg-background p-5 flex flex-col justify-between gap-4 hover:border-ring transition-colors"
                       >
                         <div className="space-y-3">
                           <div className="flex items-start gap-4">
@@ -1215,12 +1215,12 @@ export function EventClassifiedShowcaseView({
                                   }
                                   className={`relative w-full min-h-11 p-3 rounded-lg border text-left overflow-hidden transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                     isVoted
-                                      ? "border-primary bg-primary/5"
-                                      : "border-border/60 hover:border-primary/40 bg-card"
+                                      ? "border-primary bg-muted"
+                                      : "border-border hover:border-ring bg-card"
                                   }`}
                                 >
                                   <div
-                                    className="absolute inset-y-0 left-0 bg-primary/10 transition-transform duration-200 motion-reduce:transition-none"
+                                    className="absolute inset-y-0 left-0 bg-muted transition-transform duration-200 motion-reduce:transition-none"
                                     style={{ width: `${pct}%` }}
                                   />
                                   <div className="relative flex items-center justify-between gap-3 text-xs sm:text-sm">
@@ -1248,27 +1248,27 @@ export function EventClassifiedShowcaseView({
 
             {/* SECTION: LOCALIZAÇÃO, MAPA & MÚLTIPLOS PONTOS DE ACESSO */}
             <section id="section-local" className="scroll-mt-20 space-y-4">
-              <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border/60 sm:p-6 space-y-5">
+              <div className="py-2 sm:bg-card sm:rounded-lg sm:border sm:border-border sm:p-6 space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <MapPin className="size-5 text-primary shrink-0" />
                     <h2 className="text-xl font-black tracking-tight text-foreground">
-                      Localização e Pontos de Acesso
+                      Localização e Acesso
                     </h2>
                   </div>
                   <a
                     href={event.primary_map_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 h-11 min-h-11 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-colors w-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="inline-flex items-center gap-2 h-11 min-h-11 px-4 rounded-lg bg-muted border border-border text-foreground hover:bg-secondary text-xs font-bold transition-colors w-fit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Navigation className="size-4" />
-                    <span>Como Chegar (Google Maps)</span>
+                    <span>Como Chegar</span>
                   </a>
                 </div>
 
                 {/* Primary Venue Card */}
-                <div className="py-3 border-t border-border/40 sm:p-4 sm:rounded-lg sm:border sm:border-border/60 sm:bg-background space-y-2">
+                <div className="py-3 border-t border-border sm:p-4 sm:rounded-lg sm:border sm:border-border sm:bg-background space-y-2">
                   <Badge variant="secondary" className="text-xs font-bold">
                     Local Principal
                   </Badge>
@@ -1605,7 +1605,7 @@ export function EventClassifiedShowcaseView({
                     </p>
                   )}
                 </div>
-                <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="size-11 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
                   <Ticket className="size-5" />
                 </div>
               </div>
@@ -1614,7 +1614,7 @@ export function EventClassifiedShowcaseView({
               {event.ticket_tiers.length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Selecione o Ingresso / Lote
+                    Selecione o Ingresso
                   </Label>
                   <div className="space-y-2">
                     {event.ticket_tiers.map((tier) => {
@@ -1711,7 +1711,7 @@ export function EventClassifiedShowcaseView({
                         }`}
                       />
                     ) : (
-                      <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-base shrink-0">
+                      <div className="size-12 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center font-black text-base shrink-0">
                         {org.name.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -1724,7 +1724,7 @@ export function EventClassifiedShowcaseView({
                         {org.name}
                       </p>
                       {org.is_verified && (
-                        <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-1 font-medium">
+                        <p className="text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-1 mt-1 font-medium">
                           <CheckCircle2 className="size-3 shrink-0" />
                           <span>Organizador Verificado</span>
                         </p>
@@ -1741,9 +1741,9 @@ export function EventClassifiedShowcaseView({
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full h-11 min-h-11 rounded-lg border border-border/60 hover:bg-muted/50 text-xs font-bold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="flex items-center justify-center gap-2 w-full h-11 min-h-11 rounded-lg border border-border hover:bg-muted text-xs font-bold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  <MessageCircle className="size-4 text-emerald-500" />
+                  <MessageCircle className="size-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Falar com a Organização</span>
                 </a>
               )}
@@ -1754,7 +1754,7 @@ export function EventClassifiedShowcaseView({
 
       {/* MOBILE STICKY BOTTOM BAR (Z-30 PER RULE B.34) */}
       {!effectiveIsDesktop && (
-        <div className="fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 flex items-center justify-between gap-3">
+        <div className="fixed bottom-0 inset-x-0 z-30 bg-background border-t border-border p-3 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <span className="text-xs font-semibold text-muted-foreground block">
               {selectedTier ? selectedTier.name : "Inscrição"}

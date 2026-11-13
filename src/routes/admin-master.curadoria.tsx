@@ -20,27 +20,31 @@ import {
   listAirportsForAdminCuration,
   saveAirportCmsOverrideAdmin,
 } from "@/services/curadoria.functions";
-import { Plane, ExternalLink, Globe, Phone, Clock, Sparkles } from "lucide-react";
+import { listCreatorProfiles, type CreatorProfileDTO } from "@/services/creators.functions";
+import { toggleAmbassadorStatus } from "@/services/stories.functions";
+import { Plane, ExternalLink, Globe, Phone, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/admin-master/curadoria")({
  head: () => ({ meta: [{ title: "Curadoria e Auditoria | Waesy Master" }] }),
  loader: async () => {
  try {
- const [stores, audits, aiSquads, airportsData] = await Promise.all([
+ const [stores, audits, aiSquads, airportsData, creators] = await Promise.all([
     listStoresForCuration(),
     listMysteryShopperAuditsAdmin(),
     listAiSquadsAndAgentsAdmin().catch(() => ({ curation_squads: [], squad_templates: [], agents: [] })),
     listAirportsForAdminCuration().catch(() => ({ customProfiles: [] })),
+    listCreatorProfiles().catch(() => []),
   ]);
   return {
     stores: stores || [],
     audits: audits || [],
     aiSquads: aiSquads || { curation_squads: [], squad_templates: [], agents: [] },
     airports: airportsData?.customProfiles || [],
+    creators: Array.isArray(creators) ? creators : [],
   };
  } catch (e) {
  console.error("[curadoria.loader] error:", e);
- return { stores: [], audits: [], aiSquads: { curation_squads: [], squad_templates: [], agents: [] }, airports: [] };
+ return { stores: [], audits: [], aiSquads: { curation_squads: [], squad_templates: [], agents: [] }, airports: [], creators: [] };
  }
  },
  component: CuradoriaAdminPage,
@@ -52,6 +56,8 @@ function CuradoriaAdminPage() {
   const [audits, setAudits] = useState(loaderData.audits);
   const [aiSquads] = useState(loaderData.aiSquads || { curation_squads: [], squad_templates: [], agents: [] });
   const [airports, setAirports] = useState(loaderData.airports || []);
+  const [creators, setCreators] = useState<CreatorProfileDTO[]>(loaderData.creators || []);
+  const [busyCreatorId, setBusyCreatorId] = useState<string | null>(null);
   const [airportSearch, setAirportSearch] = useState("");
   const [airportModalOpen, setAirportModalOpen] = useState(false);
   const [isSavingAirport, setIsSavingAirport] = useState(false);
@@ -80,6 +86,30 @@ function CuradoriaAdminPage() {
  const [boostDays, setBoostDays] = useState(30);
  const [adminNotes, setAdminNotes] = useState("");
  const [isResolving, setIsResolving] = useState(false);
+
+ const handleToggleCreatorAmbassador = async (creator: CreatorProfileDTO) => {
+   setBusyCreatorId(creator.id);
+   const nextStatus = !creator.is_official_ambassador;
+   try {
+     await toggleAmbassadorStatus({
+       data: {
+         creatorId: creator.id,
+         isOfficialAmbassador: nextStatus,
+         ambassadorBadgeLabel: creator.ambassador_badge_label || "Embaixador Oficial",
+       },
+     });
+     setCreators((prev) =>
+       prev.map((c) =>
+         c.id === creator.id ? { ...c, is_official_ambassador: nextStatus } : c,
+       ),
+     );
+     toast.success(nextStatus ? "Selo de embaixador concedido." : "Selo de embaixador removido.");
+   } catch (err: unknown) {
+     toast.error(err instanceof Error ? err.message : "Erro ao atualizar embaixador.");
+   } finally {
+     setBusyCreatorId(null);
+   }
+ };
 
  const handleOpenEditAirport = (item?: any) => {
     if (item) {
@@ -284,6 +314,7 @@ function CuradoriaAdminPage() {
  <TabsTrigger value="apoio" className="text-xs">Apoio</TabsTrigger>
           <TabsTrigger value="squads" className="text-xs">Squads & IA ({(aiSquads.curation_squads?.length || 0) + (aiSquads.squad_templates?.length || 0)})</TabsTrigger>
           <TabsTrigger value="aeroportos" className="text-xs">Aeroportos CMS ({airports.length})</TabsTrigger>
+          <TabsTrigger value="embaixadores" className="text-xs">Embaixadores ({creators.length})</TabsTrigger>
  </TabsList>
 
  {/* Tab 1: Lojas */}
@@ -536,11 +567,65 @@ function CuradoriaAdminPage() {
             </Table>
           </div>
         </TabsContent>
+
+        {/* Tab 6: Embaixadores & Influenciadores */}
+        <TabsContent value="embaixadores" className="space-y-3">
+          <div className="rounded-lg border border-border/60 bg-card overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="text-xs">Criador</TableHead>
+                  <TableHead className="text-xs">Handle</TableHead>
+                  <TableHead className="text-xs">Nicho</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
+                  <TableHead className="text-xs text-right">Ação</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {creators.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-xs text-muted-foreground">
+                      Nenhum perfil de criador cadastrado.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  creators.map((creator) => (
+                    <TableRow key={creator.id}>
+                      <TableCell className="font-semibold text-xs">{creator.name}</TableCell>
+                      <TableCell className="text-xs font-mono text-muted-foreground">@{creator.handle}</TableCell>
+                      <TableCell className="text-xs">{creator.niche || "Geral"}</TableCell>
+                      <TableCell>
+                        <Badge variant={creator.is_official_ambassador ? "default" : "outline"} className="text-3xs">
+                          {creator.is_official_ambassador ? "Embaixador Oficial" : "Criador"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant={creator.is_official_ambassador ? "outline" : "default"}
+                          size="sm"
+                          disabled={busyCreatorId === creator.id}
+                          onClick={() => void handleToggleCreatorAmbassador(creator)}
+                          className="h-11 min-h-11 px-4 text-xs"
+                        >
+                          {busyCreatorId === creator.id ? (
+                            <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none mr-1" />
+                          ) : null}
+                          <span>{creator.is_official_ambassador ? "Revogar Selo" : "Conceder Selo"}</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
       </Tabs>
 
  {/* Modal Nova Missão */}
  <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
- <DialogContent className="sm:max-w-sm w-[calc(100vw-32px)]">
+ <DialogContent className="sm:max-w-sm w-full">
  <DialogHeader>
  <DialogTitle className="text-base font-bold">Nova Missão de Cliente Oculto</DialogTitle>
  <DialogDescription className="text-xs">

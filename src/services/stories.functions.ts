@@ -326,7 +326,7 @@ export const toggleAmbassadorStatus = createServerFn({ method: "POST" })
  const supabase = getServerClient();
  const identity = await getServerIdentity();
 
- if (identity.role !== "master") {
+ if (!identity || (!identity.isPlatformAdmin && !["master", "platform_admin", "admin_master", "superadmin"].includes(identity.role))) {
  throw new Error("Apenas o Administrador Master pode conceder selos oficiais de embaixador.");
  }
 

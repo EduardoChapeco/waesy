@@ -458,7 +458,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
             <Input
               value={config.greetingTitle || ""}
               onChange={(e) => onUpdateConfig("greetingTitle", e.target.value)}
-              placeholder="Ex: Aproveite o Waesy!"
+              placeholder="Ex: Menu"
               className={INPUT_CLASS}
             />
           </div>
@@ -1888,7 +1888,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                       Ícone Vetorial
                     </label>
                     <select
-                      value={tile.iconName || "Sparkles"}
+                      value={tile.iconName || "Star"}
                       onChange={(e) => updateTile({ iconName: e.target.value })}
                       className={SELECT_CLASS}
                     >
@@ -2013,7 +2013,7 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
                     { id: "cvc-6", label: "Seguros", iconName: "ShieldCheck", href: "/turismo?tab=seguros", badge: "", shape: "squircle", showLabel: true },
                     { id: "cvc-7", label: "Ingressos", iconName: "Ticket", href: "/turismo?tab=passeios", badge: "", shape: "squircle", showLabel: true },
                     { id: "cvc-8", label: "Ônibus", iconName: "Bus", href: "/turismo?tab=onibus", badge: "Fretamento", shape: "squircle", showLabel: true },
-                    { id: "cvc-9", label: "Corporativo", iconName: "Sparkles", href: "/turismo?tab=corporativo", badge: "VOLL", shape: "squircle", showLabel: true },
+                    { id: "cvc-9", label: "Corporativo", iconName: "Briefcase", href: "/turismo?tab=corporativo", badge: "VOLL", shape: "squircle", showLabel: true },
                   ]);
                 }}
                 className="h-11 min-h-11 px-3 rounded-lg text-2xs font-bold gap-1"

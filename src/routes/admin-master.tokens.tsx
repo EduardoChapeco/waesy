@@ -489,7 +489,7 @@ function AdminTokensPage() {
                           variant="outline"
                           disabled={isProcessingDiscount === disc.id}
                           onClick={() => handleConciliateDiscount(disc.id, false)}
-                          className="h-8 px-3 rounded-lg text-xs text-destructive hover:bg-destructive/10 min-h-11 sm:min-h-0"
+                          className="h-8 px-3 rounded-lg text-xs text-destructive hover:bg-muted min-h-11 sm:min-h-0"
                         >
                           Recusar
                         </Button>
@@ -505,7 +505,7 @@ function AdminTokensPage() {
 
  {/* Modal Bônus */}
  <Dialog open={bonusModalOpen} onOpenChange={setBonusModalOpen}>
- <DialogContent className="sm:max-w-sm w-[calc(100vw-32px)]">
+ <DialogContent className="sm:max-w-sm w-full">
  <DialogHeader>
  <DialogTitle className="text-base font-bold">
  Conceder Bônus de Tokens

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 
 import { getServerIdentity, requireAdmin } from "@/lib/server-access";
-import { dispatchMarketplaceChannelSync } from "./marketplace-hub.functions";
+import { _syncStockToMarketplacesInternal } from "./marketplace-hub.functions";
 
 // ---------------------------------------------------------------------------
 // Handlers (decoupled for unit testing)
@@ -154,26 +154,19 @@ export async function _adjustStock(
 
   // Disparo assíncrono defensivo de sincronização de estoque com canais de marketplace
   try {
-    const { data: connectors } = await db
-      .from("marketplace_connectors")
-      .select("id, platform, settings")
-      .eq("store_id", store_id)
-      .eq("status", "connected");
-
-    if (connectors && connectors.length > 0) {
-      for (const conn of connectors) {
-        const settings = (conn.settings as Record<string, any>) || {};
-        if (settings.sync_stock !== false) {
-          dispatchMarketplaceChannelSync({
-            storeId: store_id,
-            connectorId: conn.id,
-            platform: conn.platform,
-            syncType: "stock",
-            settings,
-            itemCount: 1,
-          }).catch((syncErr) => console.warn(`[stock] Falha no sync com ${conn.platform}:`, syncErr));
-        }
-      }
+    const productId = (variant as any).products?.id as string | undefined;
+    if (productId) {
+      const { data: prodVariants } = await db
+        .from("product_variants")
+        .select("stock_on_hand")
+        .eq("product_id", productId);
+      const totalProductStock = (prodVariants || []).reduce(
+        (acc: number, row: any) => acc + Math.max(0, Number(row.stock_on_hand) || 0),
+        0,
+      );
+      void _syncStockToMarketplacesInternal(store_id, productId, totalProductStock).catch((syncErr) =>
+        console.warn("[stock] Falha no sync multi-canal de estoque:", syncErr),
+      );
     }
   } catch (syncErr) {
     console.warn("[stock] Falha não impeditiva ao consultar conectores de marketplace:", syncErr);

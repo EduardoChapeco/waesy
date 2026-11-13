@@ -6,6 +6,10 @@
  * suporte a paginação multi-folhas estruturada para documentos editoriais e A4.
  */
 import { sanitizeElementImagesForCanvas } from "@/lib/canvas/cors-safe-image";
+import {
+  downloadCanvasAsPng,
+  renderElementToCanvasSafe,
+} from "@/lib/canvas/html2canvas-safe";
 
 interface TransformBackup {
   element: HTMLElement;
@@ -95,26 +99,14 @@ export async function exportElementAsImage(
   const restoreTransforms = neutralizeTransforms(element);
 
   try {
-    const html2canvas = (await import("html2canvas")).default;
-
-    const canvas = await html2canvas(element, {
+    const canvas = await renderElementToCanvasSafe(element, {
       scale:
         customScale ||
         Math.max(2, Math.min(3, typeof window !== "undefined" ? window.devicePixelRatio || 2 : 2)),
-      useCORS: true,
-      allowTaint: false,
       backgroundColor: customBg,
-      logging: false,
-      imageTimeout: 15000,
     });
 
-    const imgData = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = imgData;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCanvasAsPng(canvas, filename);
   } finally {
     restoreTransforms();
   }
@@ -156,7 +148,6 @@ export async function exportElementAsPdf(
   const restoreTransforms = neutralizeTransforms(element);
 
   try {
-    const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
     // Verifica se o documento é composto por páginas estruturadas explícitas
@@ -176,14 +167,10 @@ export async function exportElementAsPdf(
           pageEl.offsetWidth > pageEl.offsetHeight;
 
         const orientation = isLandscape ? "l" : "p";
-        const pageCanvas = await html2canvas(pageEl, {
+        const pageCanvas = await renderElementToCanvasSafe(pageEl, {
           scale: 2,
-          useCORS: true,
-          allowTaint: false,
           // design-lint-ignore DL-01 reason:"HTML2Canvas print media requires pure white background" expiry:"2030-01-01"
           backgroundColor: "#ffffff",
-          logging: false,
-          imageTimeout: 15000,
         });
 
         const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
@@ -204,14 +191,10 @@ export async function exportElementAsPdf(
     }
 
     // ── MODO DOCUMENTO CONTÍNUO / LÂMINA ÚNICA ──
-    const canvas = await html2canvas(element, {
+    const canvas = await renderElementToCanvasSafe(element, {
       scale: 2,
-      useCORS: true,
-      allowTaint: false,
       // design-lint-ignore DL-01 reason:"HTML2Canvas print media requires pure white background" expiry:"2030-01-01"
       backgroundColor: "#ffffff",
-      logging: false,
-      imageTimeout: 15000,
     });
 
     const isCanvasLandscape = canvas.width > canvas.height;
@@ -247,4 +230,51 @@ export async function exportElementAsPdf(
       el.style.display = display;
     });
   }
+}
+
+/**
+ * Captura múltiplos elementos DOM (ex: todas as lâminas de um carrossel ou deck)
+ * e compila em um único PDF multipágina preservando a proporção exata de cada lâmina.
+ */
+export async function exportMultipleElementsAsPdf(
+  elements: HTMLElement[],
+  filename = "carrossel-waesy.pdf"
+): Promise<Blob> {
+  const validElements = elements.filter((el): el is HTMLElement => Boolean(el));
+  if (validElements.length === 0) {
+    throw new Error("Nenhuma lâmina encontrada para gerar PDF multipágina.");
+  }
+
+  const { jsPDF } = await import("jspdf");
+  let pdf: any = null;
+
+  for (let i = 0; i < validElements.length; i++) {
+    const el = validElements[i];
+    const restoreTransforms = neutralizeTransforms(el);
+    try {
+      const canvas = await renderElementToCanvasSafe(el, {
+        scale: 2,
+        backgroundColor: null,
+      });
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.96);
+      const pxToMm = 25.4 / 96;
+      const pageW = Math.max(80, (canvas.width / 2) * pxToMm);
+      const pageH = Math.max(80, (canvas.height / 2) * pxToMm);
+      const orientation = pageW > pageH ? "l" : "p";
+
+      if (i === 0) {
+        pdf = new jsPDF({ orientation, unit: "mm", format: [pageW, pageH] });
+      } else {
+        pdf.addPage([pageW, pageH], orientation);
+      }
+
+      pdf.addImage(imgData, "JPEG", 0, 0, pageW, pageH);
+    } finally {
+      restoreTransforms();
+    }
+  }
+
+  pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
+  return pdf.output("blob");
 }

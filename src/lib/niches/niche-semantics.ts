@@ -3,8 +3,21 @@
  *
  * Fornece a identidade semântica completa para adaptar títulos, botões de ação,
  * labels, placeholders, tipos de pedidos e termos operacionais de acordo com
- * o segmento comercial ativo da loja.
+ * o segmento comercial ativo da loja, integrada à SSOT `niche-ssot.ts`.
  */
+
+import type { CanonicalVerticalId } from "@/lib/architecture/vertical-manifest";
+import {
+  resolveUnifiedNicheId,
+  UNIFIED_NICHE_SPECS,
+  type NicheCapabilities,
+  type NicheCopilotProfile,
+  type NicheDynamicFieldsConfig,
+  type NicheOnboardingBlueprint,
+  type NicheSeoProfile,
+  type UnifiedNicheId,
+  type VerticalPlanSkuId,
+} from "./niche-ssot";
 
 export interface NicheQuickAction {
  label: string;
@@ -21,7 +34,15 @@ export interface NicheKpiMetric {
 
 export interface NicheSemantics {
  nicheId: string;
+ unifiedNicheId?: UnifiedNicheId;
+ macroVertical?: CanonicalVerticalId;
+ defaultVerticalSku?: VerticalPlanSkuId;
  isFoodBusiness?: boolean;
+ capabilities?: NicheCapabilities;
+ dynamicFields?: NicheDynamicFieldsConfig;
+ copilotProfile?: NicheCopilotProfile;
+ seoProfile?: NicheSeoProfile;
+ onboardingBlueprint?: NicheOnboardingBlueprint;
  name: string;
  itemSingular: string;
  itemPlural: string;
@@ -837,267 +858,534 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  "Mantenha o estoque mínimo de segurança no galpão para os SKUs de maior giro industrial.",
  ],
  },
-};
+
+ // 18. SALÃO DE BELEZA, CABELO & UNHAS
+ beauty_salon: {
+ nicheId: "beauty_salon",
+ name: "Salão de Beleza & Cabelo",
+ itemSingular: "Procedimento / Serviço",
+ itemPlural: "Serviços & Homecare",
+ catalogTitle: "Serviços & Homecare",
+ newItemAction: "Novo Serviço / Homecare",
+ editItemAction: "Editar Procedimento",
+ categoriesLabel: "Categorias de Beleza",
+ newCategoryAction: "Nova Categoria",
+ modifiersLabel: "Protocolos & Adicionais",
+ newModifierAction: "Novo Protocolo",
+ ordersLabel: "Comandas & Atendimentos",
+ kdsLabel: "Agenda do Dia",
+ customerLabel: "Clientes",
+ stockLabel: "Insumos & Homecare",
+ searchItemPlaceholder: "Buscar corte, coloração, escova ou produto...",
+ emptyCatalogText: "Nenhum serviço de beleza cadastrado ainda.",
+ priceLabel: "Valor do Serviço",
+ skuLabel: "Código / Tempo (min)",
+ preparationOrDurationLabel: "Duração (min)",
+ primaryQuickAction: { label: "Abrir Agenda", path: "/workspace/agenda" },
+ secondaryQuickAction: { label: "Catálogo de Serviços", path: "/workspace/agenda/servicos" },
+ posServiceModes: [
+ { id: "comanda", label: "Comanda de Atendimento", placeholder: "Nome da Cliente / Profissional" },
+ { id: "homecare", label: "Venda Homecare Balcão", placeholder: "Nome do Cliente" },
+ ],
+ suggestedPresets: [
+ { name: "Comprimento / Volume do Fio (Curto, Médio, Longo)", type: "single", desc: "Variação por tamanho de cabelo" },
+ { name: "Tratamento Extra (Hidratação, Reconstrução)", type: "multiple", desc: "Up-sell na cadeira" },
+ ],
+ kpiMetrics: [
+ { id: "taxa_retorno_30d", label: "Taxa de Retorno (30 dias)", description: "Clientes que retornaram para manutenção dentro do ciclo ideal", format: "percent" },
+ { id: "ticket_medio_comanda", label: "Ticket Médio por Comanda", description: "Valor médio somando serviço + produto homecare", format: "currency" },
+ { id: "ocupacao_cadeiras", label: "Ocupação da Agenda", description: "Horas produtivas ocupadas pelos profissionais", format: "percent" },
+ ],
+ operationalTips: [
+ "Registre a fórmula exata de coloração (oxidante + mistura + pausa) no agendamento.",
+ "Configure o lembrete de retorno automático para coloração, progressiva e alongamento.",
+ "Ative baixa automática de insumos na ficha dos profissionais parceiros.",
+ ],
+ },
+
+ // 19. BARBEARIA & CUIDADOS MASCULINOS
+ barbershop: {
+ nicheId: "barbershop",
+ name: "Barbearia & Grooming",
+ itemSingular: "Serviço / Corte",
+ itemPlural: "Serviços & Assinaturas",
+ catalogTitle: "Serviços, Combos & Barba",
+ newItemAction: "Novo Serviço de Barbearia",
+ editItemAction: "Editar Serviço",
+ categoriesLabel: "Categorias da Barbearia",
+ newCategoryAction: "Nova Categoria",
+ modifiersLabel: "Acabamentos & Combos",
+ newModifierAction: "Novo Adicional",
+ ordersLabel: "Comandas & Assinaturas",
+ kdsLabel: "Agenda da Barbearia",
+ customerLabel: "Clientes",
+ stockLabel: "Produtos & Pomadas",
+ searchItemPlaceholder: "Buscar corte degradê, barba, combo ou plano...",
+ emptyCatalogText: "Nenhum serviço de barbearia cadastrado ainda.",
+ priceLabel: "Valor do Serviço",
+ skuLabel: "Código / Duração",
+ preparationOrDurationLabel: "Duração (min)",
+ primaryQuickAction: { label: "Agenda da Barbearia", path: "/workspace/agenda" },
+ secondaryQuickAction: { label: "Serviços & Combos", path: "/workspace/agenda/servicos" },
+ posServiceModes: [
+ { id: "chair", label: "Comanda da Cadeira", placeholder: "Cliente / Barbeiro" },
+ { id: "club", label: "Plano Clube Mensal", placeholder: "Nome do Assinante" },
+ ],
+ suggestedPresets: [
+ { name: "Combo Adicional (Sobrancelha, Hidratação Barba)", type: "multiple", desc: "Complementos rápidos na cadeira" },
+ ],
+ kpiMetrics: [
+ { id: "assinantes_clube", label: "Assinantes do Clube", description: "Clientes com plano recorrente ativo", format: "number" },
+ { id: "ticket_medio_barbearia", label: "Ticket Médio", description: "Valor médio de serviço e pomadas/óleos", format: "currency" },
+ ],
+ operationalTips: [
+ "Crie planos recorrentes de corte ilimitado para garantir previsibilidade de caixa.",
+ "Dispare lembrete automático após 14 ou 21 dias da última visita.",
+ ],
+ },
+
+ // 20. CLÍNICA DE ESTÉTICA & HARMONIZAÇÃO
+ aesthetics_clinic: {
+ nicheId: "aesthetics_clinic",
+ name: "Clínica de Estética",
+ itemSingular: "Protocolo / Procedimento",
+ itemPlural: "Protocolos & Sessões",
+ catalogTitle: "Protocolos & Tratamentos",
+ newItemAction: "Novo Protocolo Estético",
+ editItemAction: "Editar Protocolo",
+ categoriesLabel: "Áreas de Tratamento",
+ newCategoryAction: "Nova Área",
+ modifiersLabel: "Sessões & Zonas de Aplicação",
+ newModifierAction: "Novo Pacote / Zona",
+ ordersLabel: "Atendimentos & Pacotes",
+ kdsLabel: "Agenda de Cabines",
+ customerLabel: "Pacientes",
+ stockLabel: "Insumos & Toxinas",
+ searchItemPlaceholder: "Buscar botox, laser, bioestimulador ou limpeza...",
+ emptyCatalogText: "Nenhum protocolo estético cadastrado ainda.",
+ priceLabel: "Valor da Sessão / Pacote",
+ skuLabel: "Código do Protocolo",
+ preparationOrDurationLabel: "Duração (min)",
+ primaryQuickAction: { label: "Agenda Clínica", path: "/workspace/agenda" },
+ secondaryQuickAction: { label: "Protocolos", path: "/workspace/agenda/servicos" },
+ posServiceModes: [
+ { id: "session", label: "Sessão / Avaliação", placeholder: "Nome do Paciente" },
+ { id: "package", label: "Pacote Multi-Sessões", placeholder: "Nome do Paciente" },
+ ],
+ suggestedPresets: [
+ { name: "Quantidade de Sessões (Avulsa, Pacote 5x, Pacote 10x)", type: "single", desc: "Ciclo do protocolo" },
+ ],
+ operationalTips: [
+ "Documente anamnese completa, alergias e retorno previsto antes de iniciar o pacote.",
+ ],
+ },
+
+ // 21. SAÚDE & CLÍNICAS MÉDICAS
+ healthcare: {
+ nicheId: "healthcare",
+ name: "Clínicas & Saúde",
+ itemSingular: "Consulta / Exame",
+ itemPlural: "Consultas & Procedimentos",
+ catalogTitle: "Especialidades & Exames",
+ newItemAction: "Nova Especialidade / Consulta",
+ editItemAction: "Editar Consulta",
+ categoriesLabel: "Especialidades Clínicas",
+ newCategoryAction: "Nova Especialidade",
+ modifiersLabel: "Convênios & Preparos",
+ newModifierAction: "Novo Convênio / Preparo",
+ ordersLabel: "Consultas & Recepção",
+ kdsLabel: "Sala de Espera & Agenda",
+ customerLabel: "Pacientes",
+ stockLabel: "Materiais & Insumos",
+ searchItemPlaceholder: "Buscar consulta, exame ou especialidade...",
+ emptyCatalogText: "Nenhuma consulta ou procedimento cadastrado.",
+ priceLabel: "Valor da Consulta",
+ skuLabel: "Código TUSS / Interno",
+ preparationOrDurationLabel: "Duração (min)",
+ primaryQuickAction: { label: "Agenda Médica", path: "/workspace/agenda" },
+ secondaryQuickAction: { label: "Consultas & Exames", path: "/workspace/agenda/servicos" },
+ posServiceModes: [
+ { id: "appointment", label: "Recepção / Consulta", placeholder: "Nome do Paciente" },
+ { id: "insurance", label: "Atendimento Convênio", placeholder: "Carteirinha / Convênio" },
+ ],
+ suggestedPresets: [
+ { name: "Modalidade (Presencial, Telemedicina, Retorno)", type: "single", desc: "Tipo de consulta" },
+ ],
+ operationalTips: [
+ "Confirme consultas com 24h de antecedência via WhatsApp para reduzir faltas.",
+ ],
+ },
+
+ // 22. ODONTOLOGIA & CLÍNICAS ODONTOLÓGICAS
+ dental: {
+ nicheId: "dental",
+ name: "Odontologia",
+ itemSingular: "Tratamento / Procedimento",
+ itemPlural: "Tratamentos Odontológicos",
+ catalogTitle: "Procedimentos & Orçamentos",
+ newItemAction: "Novo Tratamento",
+ editItemAction: "Editar Tratamento",
+ categoriesLabel: "Especialidades Odontológicas",
+ newCategoryAction: "Nova Especialidade",
+ modifiersLabel: "Planos & Materiais",
+ newModifierAction: "Novo Opcional",
+ ordersLabel: "Atendimentos & Orçamentos",
+ kdsLabel: "Agenda Odontológica",
+ customerLabel: "Pacientes",
+ stockLabel: "Materiais Odontológicos",
+ searchItemPlaceholder: "Buscar profilaxia, clareamento, implante...",
+ emptyCatalogText: "Nenhum procedimento odontológico cadastrado.",
+ priceLabel: "Valor do Procedimento",
+ skuLabel: "Código / Dente",
+ preparationOrDurationLabel: "Duração (min)",
+ primaryQuickAction: { label: "Agenda do Consultório", path: "/workspace/agenda" },
+ secondaryQuickAction: { label: "Procedimentos", path: "/workspace/agenda/servicos" },
+ posServiceModes: [
+ { id: "eval", label: "Avaliação / Orçamento", placeholder: "Nome do Paciente" },
+ ],
+ suggestedPresets: [
+ { name: "Arcada / Região (Superior, Inferior, Completa)", type: "single", desc: "Área do tratamento" },
+ ],
+ },
+
+ // 23. PSICOLOGIA & TERAPIA
+ psychology: {
+ nicheId: "psychology",
+ name: "Psicologia & Terapia",
+ itemSingular: "Sessão / Acompanhamento",
+ itemPlural: "Sessões & Terapias",
+ catalogTitle: "Atendimentos & Modalidades",
+ newItemAction: "Nova Modalidade de Sessão",
+ editItemAction: "Editar Modalidade",
+ categoriesLabel: "Abordagens & Públicos",
+ newCategoryAction: "Nova Abordagem",
+ modifiersLabel: "Formatos (Online / Presencial)",
+ newModifierAction: "Novo Formato",
+ ordersLabel: "Sessões & Pacotes",
+ kdsLabel: "Agenda Terapêutica",
+ customerLabel: "Pacientes",
+ stockLabel: "Recursos Terapêuticos",
+ searchItemPlaceholder: "Buscar sessão individual, casal, avaliação...",
+ emptyCatalogText: "Nenhuma modalidade terapêutica cadastrada.",
+ priceLabel: "Valor da Sessão",
+ skuLabel: "Código CRP",
+ preparationOrDurationLabel: "Duração (min)",
+ primaryQuickAction: { label: "Agenda de Sessões", path: "/workspace/agenda" },
+ secondaryQuickAction: { label: "Modalidades", path: "/workspace/agenda/servicos" },
+ posServiceModes: [
+ { id: "session", label: "Sessão Avulsa / Pacote", placeholder: "Nome do Paciente" },
+ ],
+ suggestedPresets: [
+ { name: "Modalidade (Online Vídeo, Presencial)", type: "single", desc: "Formato do atendimento" },
+ ],
+ },
+
+ // 24. PET SHOP & VETERINÁRIA
+ vet_petshop: {
+ nicheId: "vet_petshop",
+ name: "Pet Shop & Veterinária",
+ itemSingular: "Serviço / Produto Pet",
+ itemPlural: "Serviços Vet, Banho & Produtos",
+ catalogTitle: "Banho, Tosa & Loja Pet",
+ newItemAction: "Novo Item / Serviço Pet",
+ editItemAction: "Editar Item Pet",
+ categoriesLabel: "Categorias Pet",
+ newCategoryAction: "Nova Categoria Pet",
+ modifiersLabel: "Porte & Adicionais",
+ newModifierAction: "Novo Adicional Pet",
+ ordersLabel: "Agendamentos & Pedidos",
+ kdsLabel: "Agenda & Banho e Tosa",
+ customerLabel: "Tutores & Pets",
+ stockLabel: "Rações & Medicamentos",
+ searchItemPlaceholder: "Buscar banho, tosa, consulta vet ou ração...",
+ emptyCatalogText: "Nenhum serviço ou item pet cadastrado.",
+ priceLabel: "Valor",
+ skuLabel: "Código",
+ preparationOrDurationLabel: "Duração (min)",
+ primaryQuickAction: { label: "Agenda Pet", path: "/workspace/agenda" },
+ secondaryQuickAction: { label: "Catálogo Pet", path: "/workspace/agenda/servicos" },
+ posServiceModes: [
+ { id: "bath", label: "Banho & Tosa / Consulta", placeholder: "Nome do Tutor / Pet" },
+ { id: "store", label: "Venda Loja / Ração", placeholder: "Nome do Tutor" },
+ ],
+ suggestedPresets: [
+ { name: "Porte do Pet (Pequeno, Médio, Grande, Gigante)", type: "single", desc: "Define tempo e valor do serviço" },
+ ],
+ },
+
+ // 25. AUTOMOTIVO, OFICINAS & VEÍCULOS
+ automotive: {
+ nicheId: "automotive",
+ name: "Oficina Mecânica & Automotivo",
+ itemSingular: "Serviço / Peça / Veículo",
+ itemPlural: "Serviços, Peças & Estoque",
+ catalogTitle: "Serviços, Revisões & Peças",
+ newItemAction: "Novo Serviço / Peça",
+ editItemAction: "Editar Item Automotivo",
+ categoriesLabel: "Especialidades & Sistemas",
+ newCategoryAction: "Nova Especialidade",
+ modifiersLabel: "Especificações & Combos",
+ newModifierAction: "Novo Combo",
+ ordersLabel: "Ordens de Serviço (OS)",
+ kdsLabel: "Box & Pátio da Oficina",
+ customerLabel: "Proprietários & Frotas",
+ stockLabel: "Peças & Lubrificantes",
+ searchItemPlaceholder: "Buscar revisão, freios, óleo, placa ou peça...",
+ emptyCatalogText: "Nenhum serviço ou peça automotiva cadastrada.",
+ priceLabel: "Valor / Mão de Obra",
+ skuLabel: "Código / Part Number",
+ preparationOrDurationLabel: "Tempo Estimado (min)",
+ primaryQuickAction: { label: "Abrir Ordens de Serviço", path: "/workspace/ordens-servico" },
+ secondaryQuickAction: { label: "Orçamentos de Box", path: "/workspace/orcamentos" },
+ posServiceModes: [
+ { id: "os", label: "Ordem de Serviço (OS)", placeholder: "Placa / Veículo / Cliente" },
+ { id: "parts", label: "Balcão de Peças", placeholder: "Nome do Cliente" },
+ ],
+ suggestedPresets: [
+ { name: "Viscosidade / Linha (Sintético 5W30, Semissintético 10W40)", type: "single", desc: "Especificação técnica" },
+ ],
+ },
+
+ // 26. CONTABILIDADE & CONSULTORIA FISCAL
+ accounting: {
+ nicheId: "accounting",
+ name: "Contabilidade & Fiscal",
+ itemSingular: "Plano / Serviço Contábil",
+ itemPlural: "Planos & Obrigações",
+ catalogTitle: "Serviços & Honorários",
+ newItemAction: "Novo Plano Contábil",
+ editItemAction: "Editar Plano",
+ categoriesLabel: "Regimes & Departamentos",
+ newCategoryAction: "Novo Departamento",
+ modifiersLabel: "Adicionais Fiscais & Folha",
+ newModifierAction: "Novo Adicional",
+ ordersLabel: "Honorários & Solicitações",
+ kdsLabel: "Painel Contábil",
+ customerLabel: "Empresas Clientes",
+ stockLabel: "Competências Ativas",
+ searchItemPlaceholder: "Buscar abertura de CNPJ, Simples Nacional, BPO...",
+ emptyCatalogText: "Nenhum plano ou serviço contábil cadastrado.",
+ priceLabel: "Honorário Mensal",
+ skuLabel: "Código",
+ primaryQuickAction: { label: "Módulo Contador", path: "/workspace/contador" },
+ secondaryQuickAction: { label: "Clientes PJ", path: "/workspace/clientes" },
+ posServiceModes: [
+ { id: "honorario", label: "Honorário / Serviço Avulso", placeholder: "CNPJ / Empresa" },
+ ],
+ suggestedPresets: [
+ { name: "Regime Tributário (MEI, Simples Nacional, Lucro Presumido)", type: "single", desc: "Enquadramento do cliente" },
+ ],
+ },
+
+ // 27. ADVOCACIA & SERVIÇOS JURÍDICOS (CANÔNICO SSOT)
+ law_firm: {
+ nicheId: "law_firm",
+ name: "Advocacia & Serviços Jurídicos",
+ itemSingular: "Honorário / Serviço",
+ itemPlural: "Serviços & Áreas de Atuação",
+ catalogTitle: "Áreas de Atuação & Honorários",
+ newItemAction: "Novo Serviço Jurídico",
+ editItemAction: "Editar Serviço Jurídico",
+ categoriesLabel: "Áreas do Direito",
+ newCategoryAction: "Nova Área Jurídica",
+ modifiersLabel: "Fases Processuais & Diligências",
+ newModifierAction: "Nova Fase",
+ ordersLabel: "Contratos & Prazos",
+ kdsLabel: "Controle de Prazos & Agenda",
+ customerLabel: "Clientes / Representados",
+ stockLabel: "Processos em Andamento",
+ searchItemPlaceholder: "Buscar área, contrato ou consulta...",
+ emptyCatalogText: "Nenhum serviço jurídico cadastrado.",
+ priceLabel: "Honorários",
+ skuLabel: "Código OAB / Interno",
+ primaryQuickAction: { label: "Painel Jurídico", path: "/workspace/advocacia" },
+ secondaryQuickAction: { label: "Agenda", path: "/workspace/agenda" },
+ posServiceModes: [
+ { id: "consult", label: "Consulta Jurídica", placeholder: "Nome do Cliente" },
+ { id: "retainer", label: "Contrato Mensal", placeholder: "Empresa / Cliente" },
+ ],
+ suggestedPresets: [],
+ },
+
+ // 28. MERCADO, HORTIFRUTI & AÇOUGUE
+ market_perishables: {
+ nicheId: "market_perishables",
+ name: "Mercado, Hortifruti & Açougue",
+ itemSingular: "Produto / Corte",
+ itemPlural: "Produtos & Hortifruti",
+ catalogTitle: "Catálogo & Seções do Mercado",
+ newItemAction: "Novo Produto / Corte",
+ editItemAction: "Editar Produto",
+ categoriesLabel: "Corredores & Seções",
+ newCategoryAction: "Nova Seção",
+ modifiersLabel: "Cortes & Pesagem (Kg)",
+ newModifierAction: "Novo Corte / Peso",
+ ordersLabel: "Pedidos & Separação",
+ kdsLabel: "Separação de Compras",
+ customerLabel: "Clientes",
+ stockLabel: "Estoque & Gôndola",
+ searchItemPlaceholder: "Buscar por nome, código de barras ou corte...",
+ emptyCatalogText: "Nenhum produto cadastrado no mercado ainda.",
+ priceLabel: "Preço (Un / Kg)",
+ skuLabel: "Código de Barras / PLU",
+ primaryQuickAction: { label: "PDV / Caixa Rápido", path: "/workspace/pdv" },
+ secondaryQuickAction: { label: "Catálogo do Mercado", path: "/workspace/catalogo/produtos" },
+ posServiceModes: [
+ { id: "delivery", label: "Entrega Mercado", placeholder: "Endereço / Cliente" },
+ { id: "pickup", label: "Retirada na Loja", placeholder: "Nome do Cliente" },
+ ],
+ suggestedPresets: [
+ { name: "Peso / Embalagem (500g, 1Kg, Bandeja)", type: "single", desc: "Unidade de pesagem" },
+ ],
+ },
+
+ // 29. CRIADORES & INFOPRODUTOS
+ creator: {
+ nicheId: "creator",
+ name: "Criadores & Infoprodutos",
+ itemSingular: "Curso / Infoproduto",
+ itemPlural: "Cursos & Mentorias",
+ catalogTitle: "Cursos, Mentorias & Produtos",
+ newItemAction: "Novo Infoproduto",
+ editItemAction: "Editar Infoproduto",
+ categoriesLabel: "Trilhas & Coleções",
+ newCategoryAction: "Nova Trilha",
+ modifiersLabel: "Módulos & Bônus",
+ newModifierAction: "Novo Bônus",
+ ordersLabel: "Matrículas & Assinaturas",
+ kdsLabel: "Área de Membros",
+ customerLabel: "Alunos & Seguidores",
+ stockLabel: "Vagas / Turmas",
+ searchItemPlaceholder: "Buscar curso, e-book ou mentoria...",
+ emptyCatalogText: "Nenhum infoproduto publicado ainda.",
+ priceLabel: "Investimento",
+ skuLabel: "Código",
+ primaryQuickAction: { label: "Catálogo de Conteúdo", path: "/workspace/catalogo/produtos" },
+ posServiceModes: [
+ { id: "enrollment", label: "Matrícula / Acesso", placeholder: "Nome do Aluno" },
+ ],
+ suggestedPresets: [],
+ },
+
+ // 30. ORGANIZAÇÕES, ASSOCIAÇÕES & ENTIDADES
+ organizations: {
+ nicheId: "organizations",
+ name: "Organizações, Associações & Entidades",
+ itemSingular: "Benefício / Serviço",
+ itemPlural: "Serviços & Benefícios",
+ catalogTitle: "Serviços & Convênios",
+ newItemAction: "Novo Benefício / Pauta",
+ editItemAction: "Editar Benefício",
+ categoriesLabel: "Comissões & Áreas",
+ newCategoryAction: "Nova Comissão",
+ modifiersLabel: "Modalidades",
+ newModifierAction: "Nova Modalidade",
+ ordersLabel: "Solicitações & Associados",
+ kdsLabel: "Atendimento Institucional",
+ customerLabel: "Associados & Membros",
+ stockLabel: "Vagas / Cotas",
+ searchItemPlaceholder: "Buscar benefício, vaga ou comunicado...",
+ emptyCatalogText: "Nenhum serviço institucional cadastrado ainda.",
+ priceLabel: "Contribuição / Valor",
+ skuLabel: "Código",
+ primaryQuickAction: { label: "Gestão de Associados", path: "/workspace/clientes" },
+ posServiceModes: [
+ { id: "member", label: "Protocolo Associado", placeholder: "Nome do Associado" },
+ ],
+ suggestedPresets: [],
+ },
+ };
+
+const LEGACY_EXACT_SEMANTICS_KEYS = new Set<string>([
+ "legal",
+ "vehicles",
+ "supermarket",
+ "pet",
+ "tech_repair",
+ "rental",
+ "jobs",
+ "news",
+ "wholesale",
+ "creator",
+]);
 
 /**
- * Identifica o nicho bruto a partir do texto combinado do segmento, tipo e nome da loja.
+ * Identifica o nicho bruto usando a SSOT word-boundary (`resolveUnifiedNicheId`),
+ * erradicando colisões por substring ("bar" -> "barbearia", "som" -> "ultrassom", etc.)
+ * e preservando chaves legadas quando explicitamente informadas.
  */
-function resolveRegistryEntry(segment: string): NicheSemantics {
- // 1. TURISMO, AGÊNCIAS DE VIAGEM, HOTÉIS & ROTEIROS (PT & EN)
+function resolveRegistryEntry(segmentOrData: unknown): {
+ base: NicheSemantics;
+ unifiedNicheId: UnifiedNicheId;
+} {
+ const unifiedNicheId = resolveUnifiedNicheId(segmentOrData);
 
- if (
- segment.includes("tourism") ||
- segment.includes("tour") ||
- segment.includes("turis") ||
- segment.includes("viag") ||
- segment.includes("travel") ||
- segment.includes("hotel") ||
- segment.includes("pousad") ||
- segment.includes("guia") ||
- segment.includes("excurs") ||
- segment.includes("passeio") ||
- segment.includes("roteir") ||
- segment.includes("passag") ||
- segment.includes("aereo") ||
- segment.includes("antt") ||
- segment.includes("cruzeir") ||
- segment.includes("resort")
- ) {
- return NICHE_SEMANTICS_REGISTRY.tourism;
+ if (typeof segmentOrData === "string") {
+ const rawKey = segmentOrData.toLowerCase().trim();
+ if (LEGACY_EXACT_SEMANTICS_KEYS.has(rawKey) && NICHE_SEMANTICS_REGISTRY[rawKey]) {
+ return {
+ base: NICHE_SEMANTICS_REGISTRY[rawKey],
+ unifiedNicheId,
+ };
+ }
+ } else if (segmentOrData && typeof segmentOrData === "object") {
+ const obj = segmentOrData as Record<string, any>;
+ const rawExplicit = String(
+ obj.segment ||
+ obj.type ||
+ obj.category ||
+ obj.niche ||
+ obj.stores?.segment ||
+ obj.stores?.type ||
+ obj.stores?.category ||
+ obj.stores?.niche ||
+ ""
+ ).toLowerCase().trim();
+ if (LEGACY_EXACT_SEMANTICS_KEYS.has(rawExplicit) && NICHE_SEMANTICS_REGISTRY[rawExplicit]) {
+ return {
+ base: NICHE_SEMANTICS_REGISTRY[rawExplicit],
+ unifiedNicheId,
+ };
+ }
  }
 
- // 2. GASTRONOMIA, RESTAURANTES & DELIVERY
- if (
- segment.includes("gastro") ||
- segment.includes("restauran") ||
- segment.includes("pizz") ||
- segment.includes("burg") ||
- segment.includes("lanch") ||
- segment.includes("bar") ||
- segment.includes("caf") ||
- segment.includes("comida") ||
- segment.includes("alimento") ||
- segment.includes("bebida") ||
- segment.includes("food") ||
- segment.includes("marmit") ||
- segment.includes("doce") ||
- segment.includes("padar")
- ) {
- return NICHE_SEMANTICS_REGISTRY.gastronomy;
- }
+ const matchedEntry =
+ NICHE_SEMANTICS_REGISTRY[unifiedNicheId] ||
+ NICHE_SEMANTICS_REGISTRY.retail;
 
- // 3. ADVOCACIA & JURÍDICO
- if (
- segment.includes("advoc") ||
- segment.includes("jurid") ||
- segment.includes("direito") ||
- segment.includes("legal") ||
- segment.includes("law") ||
- segment.includes("oab")
- ) {
- return NICHE_SEMANTICS_REGISTRY.legal;
- }
-
- // 4. EMPREGOS & RECRUTAMENTO
- if (
- segment.includes("job") ||
- segment.includes("emprego") ||
- segment.includes("vaga") ||
- segment.includes("recrut") ||
- segment.includes("talento") ||
- segment.includes("rh") ||
- segment.includes("estagio")
- ) {
- return NICHE_SEMANTICS_REGISTRY.jobs;
- }
-
- // 5. FARMÁCIA & SAÚDE
- if (
- segment.includes("farma") ||
- segment.includes("drogari") ||
- segment.includes("medicament") ||
- segment.includes("suplement") ||
- segment.includes("pharmacy") ||
- segment.includes("droga")
- ) {
- return NICHE_SEMANTICS_REGISTRY.pharmacy;
- }
-
- // 6. ATACADO, INDÚSTRIA & B2B
- if (
- segment.includes("atacado") ||
- segment.includes("distribuidora") ||
- segment.includes("industria") ||
- segment.includes("b2b") ||
- segment.includes("fabrica") ||
- segment.includes("wholesale")
- ) {
- return NICHE_SEMANTICS_REGISTRY.wholesale;
- }
-
- // 7. SERVIÇOS, BELEZA & ESTÉTICA
- if (
- segment.includes("servi") ||
- segment.includes("belez") ||
- segment.includes("salao") ||
- segment.includes("barbear") ||
- segment.includes("estetic") ||
- segment.includes("manicur") ||
- segment.includes("cabel") ||
- segment.includes("spa") ||
- segment.includes("terapia") ||
- segment.includes("tatto") ||
- segment.includes("beauty") ||
- segment.includes("clinic")
- ) {
- return NICHE_SEMANTICS_REGISTRY.services;
- }
-
- // 8. LOCAÇÃO DE EQUIPAMENTOS & ESTRUTURAS
- if (
- segment.includes("loca") ||
- segment.includes("alug") ||
- segment.includes("estrutur") ||
- segment.includes("tenda") ||
- segment.includes("equipament") ||
- segment.includes("som") ||
- segment.includes("ilumina") ||
- segment.includes("gerador") ||
- segment.includes("blaster") ||
- segment.includes("rental")
- ) {
- return NICHE_SEMANTICS_REGISTRY.rental;
- }
-
- // 9. ASSISTÊNCIA TÉCNICA & REPAROS
- if (
- segment.includes("assist") ||
- segment.includes("celular") ||
- segment.includes("repar") ||
- segment.includes("conserto") ||
- segment.includes("eletron") ||
- segment.includes("informat") ||
- segment.includes("tech_repair") ||
- segment.includes("oficin") ||
- segment.includes("mecanic")
- ) {
- return NICHE_SEMANTICS_REGISTRY.tech_repair;
- }
-
- // 10. PET SHOP & VETERINÁRIA
- if (
- segment.includes("pet") ||
- segment.includes("veterin") ||
- segment.includes("banho") ||
- segment.includes("tosa") ||
- segment.includes("racao") ||
- segment.includes("agro")
- ) {
- return NICHE_SEMANTICS_REGISTRY.pet;
- }
-
- // 11. SUPERMERCADO, AÇOUGUE & HORTIFRÚTI
- if (
- segment.includes("super") ||
- segment.includes("mercad") ||
- segment.includes("acougue") ||
- segment.includes("horti") ||
- segment.includes("fruti") ||
- segment.includes("sacol") ||
- segment.includes("mercear") ||
- segment.includes("supermarket") ||
- segment.includes("grocery")
- ) {
- return NICHE_SEMANTICS_REGISTRY.supermarket;
- }
-
- // 12. EVENTOS, SHOWS & INGRESSOS
- if (
- segment.includes("event") ||
- segment.includes("show") ||
- segment.includes("ingress") ||
- segment.includes("festa") ||
- segment.includes("balada") ||
- segment.includes("teatro") ||
- segment.includes("produt") ||
- segment.includes("ticket")
- ) {
- return NICHE_SEMANTICS_REGISTRY.events;
- }
-
- // 13. AUTOMÓVEIS & VEÍCULOS
- if (
- segment.includes("veicul") ||
- segment.includes("carro") ||
- segment.includes("moto") ||
- segment.includes("automot") ||
- segment.includes("concessionar") ||
- segment.includes("garagem") ||
- segment.includes("vehicle") ||
- segment.includes("auto")
- ) {
- return NICHE_SEMANTICS_REGISTRY.vehicles;
- }
-
- // 14. IMÓVEIS & IMOBILIÁRIA
- if (
- segment.includes("imove") ||
- segment.includes("imobili") ||
- segment.includes("apartament") ||
- segment.includes("aluguel") ||
- segment.includes("corretor") ||
- segment.includes("real_estate") ||
- segment.includes("realtor")
- ) {
- return NICHE_SEMANTICS_REGISTRY.real_estate;
- }
-
- // 15. EDUCAÇÃO, CURSOS & WORKSHOPS
- if (
- segment.includes("educa") ||
- segment.includes("curso") ||
- segment.includes("escola") ||
- segment.includes("turma") ||
- segment.includes("treina") ||
- segment.includes("workshop") ||
- segment.includes("education") ||
- segment.includes("escola")
- ) {
- return NICHE_SEMANTICS_REGISTRY.education;
- }
-
- // 16. NOTÍCIAS & PORTAIS DE MÍDIA
- if (
- segment.includes("notici") ||
- segment.includes("jornal") ||
- segment.includes("redac") ||
- segment.includes("portal") ||
- segment.includes("revist") ||
- segment.includes("news")
- ) {
- return NICHE_SEMANTICS_REGISTRY.news;
- }
-
- // 17. PADRÃO: VAREJO & COMÉRCIO GERAL (Moda, Calçados, Presentes, etc.)
- return NICHE_SEMANTICS_REGISTRY.retail;
+ return {
+ base: matchedEntry,
+ unifiedNicheId,
+ };
 }
 
 /**
  * Enriquece o registro de semântica com fallbacks inteligentes e campos canônicos
  * de compartilhamento, QR Code, departamentos de atendimento e status de pedido.
  */
-export function enrichNicheSemantics(base: NicheSemantics): NicheSemantics {
+export function enrichNicheSemantics(
+ base: NicheSemantics,
+ unifiedOverride?: UnifiedNicheId,
+): NicheSemantics {
  const nicheId = base.nicheId;
+ const unifiedNicheId = unifiedOverride || resolveUnifiedNicheId(nicheId);
+ const ssotSpec = UNIFIED_NICHE_SPECS[unifiedNicheId] || UNIFIED_NICHE_SPECS.retail;
 
  const shareTitle = base.shareTitle || (
  nicheId === "gastronomy" ? "Cardápio Digital & QR Code" :
  nicheId === "tourism" ? "Roteiros & QR Code Oficial" :
+ nicheId === "beauty_salon" ? "Agendamento & Serviços do Salão" :
+ nicheId === "barbershop" ? "Agenda da Barbearia & Clube" :
+ nicheId === "aesthetics_clinic" ? "Protocolos Estéticos & Agenda" :
+ nicheId === "healthcare" || nicheId === "dental" || nicheId === "psychology" ? "Agendamento de Consultas & QR Code" :
+ nicheId === "vet_petshop" ? "Banho, Tosa, Vet & Loja Pet" :
+ nicheId === "automotive" || nicheId === "vehicles" ? "Serviços Automotivos & Estoque" :
  nicheId === "services" ? "Catálogo de Serviços & QR Code" :
- nicheId === "legal" ? "Escritório & QR Code Oficial" :
+ nicheId === "legal" || nicheId === "law_firm" ? "Escritório & QR Code Oficial" :
+ nicheId === "accounting" ? "Contabilidade & QR Code Oficial" :
  nicheId === "real_estate" ? "Catálogo de Imóveis & QR Code" :
  nicheId === "jobs" ? "Mural de Vagas & QR Code" :
  nicheId === "events" ? "Eventos, Ingressos & QR Code" :
- nicheId === "vehicles" ? "Estoque de Veículos & QR Code" :
  nicheId === "education" ? "Cursos, Turmas & QR Code" :
  "Catálogo Digital & QR Code"
  );
@@ -1224,13 +1512,36 @@ export function enrichNicheSemantics(base: NicheSemantics): NicheSemantics {
  "Observações (opcional)"
  );
 
- const isFoodBusiness = [
- "restaurante", "pizzaria", "hamburgueria", "cafeteria",
- "confeitaria", "gastronomia", "acougue", "bebidas", "delivery", "food"
- ].includes(nicheId) || nicheId.includes("food") || nicheId.includes("restaurante") || nicheId.includes("gastro");
+ const isFoodBusiness =
+ Boolean(ssotSpec.capabilities.hasKitchenKds) ||
+ unifiedNicheId === "gastronomy" ||
+ unifiedNicheId === "market_perishables" ||
+ [
+ "restaurante",
+ "pizzaria",
+ "hamburgueria",
+ "cafeteria",
+ "confeitaria",
+ "gastronomia",
+ "gastronomy",
+ "supermarket",
+ "market_perishables",
+ "acougue",
+ "bebidas",
+ "delivery",
+ "food",
+ ].includes(nicheId);
 
  return {
  ...base,
+ unifiedNicheId: base.unifiedNicheId || ssotSpec.id,
+ macroVertical: base.macroVertical || ssotSpec.macroVertical,
+ defaultVerticalSku: base.defaultVerticalSku || ssotSpec.defaultVerticalSku,
+ capabilities: base.capabilities || ssotSpec.capabilities,
+ dynamicFields: base.dynamicFields || ssotSpec.dynamicFields,
+ copilotProfile: base.copilotProfile || ssotSpec.copilotProfile,
+ seoProfile: base.seoProfile || ssotSpec.seoProfile,
+ onboardingBlueprint: base.onboardingBlueprint || ssotSpec.onboardingBlueprint,
  isFoodBusiness,
  shareTitle,
  shareSubtitle,
@@ -1247,12 +1558,19 @@ export function enrichNicheSemantics(base: NicheSemantics): NicheSemantics {
 }
 
 /**
- * Normaliza e retorna o mapa semântico refinado para uma determinada loja.
- * Analisa os campos `segment`, `type`, `category`, `niche` e `name` com suporte bilíngue (PT/EN).
+ * Normaliza e retorna o mapa semântico completo para uma determinada loja.
+ * Utiliza a SSOT `niche-ssot.ts` (word-boundary), priorizando segmento explícito
+ * sobre nome fantasia para impedir sequestro inter-vertical.
  */
 export function getNicheSemantics(storeData: any): NicheSemantics {
- const storeName = (storeData?.name || storeData?.stores?.name || "").toLowerCase();
- const explicitSegment = (
+ if (!storeData) {
+ return enrichNicheSemantics(NICHE_SEMANTICS_REGISTRY.retail, "retail");
+ }
+
+ const storeName = String(storeData?.name || storeData?.stores?.name || "").toLowerCase();
+ const explicitSegment = String(
+ storeData?.primary_niche_id ||
+ storeData?.stores?.primary_niche_id ||
  storeData?.segment ||
  storeData?.type ||
  storeData?.category ||
@@ -1261,17 +1579,22 @@ export function getNicheSemantics(storeData: any): NicheSemantics {
  storeData?.stores?.type ||
  storeData?.stores?.category ||
  storeData?.stores?.niche ||
+ storeData?.settings?.primary_niche_id ||
  storeData?.settings?.segment ||
  storeData?.settings?.type ||
  storeData?.settings?.niche ||
+ storeData?.stores?.settings?.primary_niche_id ||
  storeData?.stores?.settings?.segment ||
  storeData?.stores?.settings?.type ||
  storeData?.stores?.settings?.niche ||
  ""
- ).toLowerCase();
- const description = (storeData?.description || "").toLowerCase();
+ ).toLowerCase().trim();
 
- // Salvaguarda Canônica Anti-Vazamento de Nichos (Invariante B.37)
+ const { base, unifiedNicheId } = resolveRegistryEntry(storeData);
+
+ // Especialização visual de Moda apenas quando o nicho resolvido for Varejo Geral
+ // e o segmento explícito não tiver definido outro nicho vertical.
+ if (unifiedNicheId === "retail" && (!explicitSegment || explicitSegment === "retail" || explicitSegment === "varejo")) {
  const hasFashionKeyword =
  storeName.includes("moda") ||
  storeName.includes("roupa") ||
@@ -1299,13 +1622,10 @@ export function getNicheSemantics(storeData: any): NicheSemantics {
  retailBase.itemPlural = "Peças & Produtos";
  retailBase.newItemAction = "Adicionar Produto";
  retailBase.modifiersLabel = "Grades, Cores & Tamanhos";
- return enrichNicheSemantics(retailBase);
+ return enrichNicheSemantics(retailBase, "retail");
+ }
  }
 
- const combined = `${explicitSegment} ${storeName} ${description}`.trim();
- const segment = combined || "retail";
-
- const rawEntry = resolveRegistryEntry(segment);
- return enrichNicheSemantics(rawEntry);
+ return enrichNicheSemantics(base, unifiedNicheId);
 }
 

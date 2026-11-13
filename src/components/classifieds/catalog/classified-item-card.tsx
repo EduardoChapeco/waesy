@@ -67,11 +67,11 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
 
   if (variant === "list") {
     return (
-      <div className="group relative overflow-hidden rounded-lg border-0 bg-card hover:bg-muted/30 transition-colors min-h-36 pl-32 sm:pl-48 w-full">
+      <div className="group relative overflow-hidden rounded-lg border border-border bg-card hover:bg-muted transition-colors min-h-36 pl-32 sm:pl-48 w-full">
         <Link
           to="/classificados/$id"
           params={{ id: item.id }}
-          className="absolute inset-y-0 left-0 w-32 sm:w-48 overflow-hidden rounded-l-lg bg-muted/40 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute inset-y-0 left-0 w-32 sm:w-48 overflow-hidden rounded-l-lg bg-muted flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {img ? (
             <img
@@ -81,16 +81,16 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full bg-muted/40 flex items-center justify-center">
-              <Tag className="size-7 text-muted-foreground/30" />
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <Tag className="size-7 text-muted-foreground" />
             </div>
           )}
           <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-10">
-            <Badge className="bg-background/95 text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md">
+            <Badge className="bg-background text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md border border-border">
               {itemNiche.shortLabel}
             </Badge>
             {(item.is_boosted || item.attributes?.is_boosted) && (
-              <Badge variant="outline" className="border-border/60 text-foreground font-mono text-xs font-bold px-2 py-1 rounded-md">
+              <Badge variant="outline" className="border-border text-foreground font-mono text-xs font-bold px-2 py-1 rounded-md bg-card">
                 Destaque
               </Badge>
             )}
@@ -134,7 +134,7 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
             </div>
           </Link>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
             <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono truncate">
               <MapPin className="size-3 shrink-0 text-primary" />
               <span className="truncate">{item.location_name || item.location_text || "Regional"}</span>
@@ -147,7 +147,7 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
                   variant="outline"
                   size="sm"
                   onClick={handleWhatsApp} /* focus-visible: */
-                  className="h-11 px-3 rounded-lg text-xs gap-2 text-foreground border-border/50 hover:bg-muted/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-11 px-3 rounded-lg text-xs gap-2 text-foreground border-border hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <WhatsappLogo size={16} weight="fill" />
                   <span className="hidden sm:inline">WhatsApp</span>

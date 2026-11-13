@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   Zap,
@@ -23,6 +23,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AI_SKILLS_REGISTRY, type AiSkillDefinition } from "@/registries/ai-skills-registry";
+import {
+  listUserSkillsCatalog,
+  toggleUserSkillActivation,
+} from "@/services/ai-skills-router.functions";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -68,17 +72,41 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
   const [selectedSkill, setSelectedSkill] = useState<AiSkillDefinition | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
 
-  // Estado local de ativação de skills (persistido por sessão)
-  const [enabledSkills, setEnabledSkills] = useState<Record<string, boolean>>({
-    research_and_discovery: true,
-    spreadsheet_financial_modeling: true,
-    travel_tourism_logistics: true,
-    commercial_proposal_closing: true,
-    omnibuilder_web_composition: true,
-    cnpj_corporate_investigation: true,
-    datajud_legal_mining: true,
-    email_orchestration_and_dispatch: true,
+  const [enabledSkills, setEnabledSkills] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const skill of Object.values(AI_SKILLS_REGISTRY)) {
+      initial[skill.slug] = true;
+    }
+    return initial;
   });
+  const [runsBySlug, setRunsBySlug] = useState<Record<string, number>>({});
+  const [isLoadingPrefs, setIsLoadingPrefs] = useState(true);
+  const [savingSlug, setSavingSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    listUserSkillsCatalog()
+      .then((catalog) => {
+        if (!active || !Array.isArray(catalog) || catalog.length === 0) return;
+        const nextEnabled: Record<string, boolean> = {};
+        const nextRuns: Record<string, number> = {};
+        for (const item of catalog) {
+          nextEnabled[item.slug] = item.isActive;
+          nextRuns[item.slug] = item.runsCount;
+        }
+        setEnabledSkills((prev) => ({ ...prev, ...nextEnabled }));
+        setRunsBySlug(nextRuns);
+      })
+      .catch(() => {
+        // Visitante ou ambiente offline preserva catálogo oficial ativo
+      })
+      .finally(() => {
+        if (active) setIsLoadingPrefs(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const skillsList = useMemo(() => {
     return Object.values(AI_SKILLS_REGISTRY) as AiSkillDefinition[];
@@ -102,13 +130,24 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
     });
   }, [skillsList, activeTab, searchQuery]);
 
-  const handleToggleSkill = (slug: string, nextState: boolean) => {
+  const handleToggleSkill = async (slug: string, nextState: boolean) => {
+    const prevValue = Boolean(enabledSkills[slug]);
+    setSavingSlug(slug);
     setEnabledSkills((prev) => ({ ...prev, [slug]: nextState }));
-    toast.success(
-      nextState
-        ? `Habilidade "${AI_SKILLS_REGISTRY[slug]?.name || slug}" ativada.`
-        : `Habilidade "${AI_SKILLS_REGISTRY[slug]?.name || slug}" desativada.`
-    );
+
+    try {
+      await toggleUserSkillActivation({ data: { skillSlug: slug, isActive: nextState } });
+      toast.success(
+        nextState
+          ? `Habilidade "${AI_SKILLS_REGISTRY[slug]?.name || slug}" ativada no servidor.`
+          : `Habilidade "${AI_SKILLS_REGISTRY[slug]?.name || slug}" desativada no servidor.`
+      );
+    } catch (err: any) {
+      setEnabledSkills((prev) => ({ ...prev, [slug]: prevValue }));
+      toast.error(err?.message || "Erro ao salvar preferência da habilidade.");
+    } finally {
+      setSavingSlug(null);
+    }
   };
 
   const openSkillDetail = (skill: AiSkillDefinition) => {
@@ -228,7 +267,8 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
                     <div className="flex items-center justify-center size-11 shrink-0">
                       <Switch
                         checked={isEnabled}
-                        onCheckedChange={(checked) => handleToggleSkill(skill.slug, checked)}
+                        disabled={isLoadingPrefs || savingSlug === skill.slug}
+                        onCheckedChange={(checked) => void handleToggleSkill(skill.slug, checked)}
                         aria-label={`Ativar ou desativar ${skill.name}`}
                         className="data-[state=checked]:bg-primary"
                       />
@@ -261,7 +301,8 @@ export function CopilotSkillsCenter({ onSelectSkill, className }: CopilotSkillsC
                 {/* Rodapé do Card: Ação para Inspecionar */}
                 <div className="pt-3 border-t border-border/30 flex items-center justify-between text-xs">
                   <span className="text-2xs text-muted-foreground">
-                    {skill.defaultTools.length} ferramentas integradas
+                    {skill.defaultTools.length} ferramentas
+                    {(runsBySlug[skill.slug] || 0) > 0 ? ` • ${runsBySlug[skill.slug]} execuções` : ""}
                   </span>
                   <Button
                     type="button"

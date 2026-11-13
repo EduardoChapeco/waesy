@@ -22,7 +22,7 @@ import {
   Users,
   ShoppingBag,
   User,
-  Sparkles,
+  Star,
   Store,
   Tag,
   Newspaper,
@@ -58,8 +58,8 @@ const ICON_LOOKUP: Record<string, React.ComponentType<{ className?: string; stro
   bag: ShoppingBag,
   user: User,
   perfil: User,
-  sparkles: Sparkles,
-  destaque: Sparkles,
+  sparkles: Star,
+  destaque: Star,
   store: Store,
   loja: Store,
   tag: Tag,
@@ -314,7 +314,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
           onPointerCancel={clearLongPressTimer}
           onContextMenu={handleContextMenu}
           className={cn(
-            "md:hidden fixed bottom-0 inset-x-0 z-30 pb-safe select-none mobile-nav-hide-on-keyboard bg-background border-t border-border/80 transition-transform duration-300",
+            "waesy-compact-block fixed bottom-0 inset-x-0 z-30 pb-safe select-none mobile-nav-hide-on-keyboard bg-background border-t border-border transition-transform duration-300",
             isNavHiddenByScroll
               ? "translate-y-full opacity-0 pointer-events-none"
               : "translate-y-0 opacity-100 pointer-events-auto",
@@ -323,9 +323,9 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
           <div className="max-w-lg mx-auto">
             {/* ── 1. BARRA FLUTUANTE DE SACOLA (Acima das 5 Tabs quando há itens) ── */}
             {hasCartItems && (
-              <div className="px-4 py-2 border-b border-border/60 bg-card flex items-center justify-between gap-3">
+              <div className="px-4 py-2 border-b border-border bg-card flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="size-10 rounded-full overflow-hidden border border-border/80 bg-muted flex items-center justify-center shrink-0">
+                  <div className="size-10 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center shrink-0">
                     {activeCartStoreLogo ? (
                       <img src={activeCartStoreLogo} alt="" className="size-full object-cover" />
                     ) : (

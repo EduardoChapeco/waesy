@@ -535,11 +535,11 @@ function ClassificadosIndex() {
       />
 
             {/* ── Desktop Inpage Header (Bento Grid & Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between pb-4 pt-2 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pb-4 pt-2 border-b border-border">
         <div className="flex items-center gap-3">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">Meus Anúncios</h1>
-            <p className="text-xs text-muted-foreground mt-1">Gerencie suas publicações, telemetria de acessos e impulsionamentos</p>
+            <p className="text-xs text-muted-foreground mt-1">Publicações, acessos e impulsionamentos</p>
           </div>
           {(classifieds?.length ?? 0) > 0 && (
             <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
@@ -556,7 +556,7 @@ function ClassificadosIndex() {
           >
             <Link to="/conta/classificados/performance">
               <TrendingUp className="size-4 text-primary" />
-              <span>Cockpit Geral</span>
+              <span>Desempenho</span>
             </Link>
           </Button>
           <Button

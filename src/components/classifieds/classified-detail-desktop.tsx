@@ -485,9 +485,9 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-11 min-h-11 px-3 rounded-lg border-warning/40 bg-warning/10 text-warning-strong  text-xs font-bold flex items-center gap-2"
+              className="h-11 min-h-11 px-3 rounded-lg border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2"
             >
-              <Edit3 className="size-3.5 text-warning-strong" />
+              <Edit3 className="size-4" />
               <span>Editar Anúncio</span>
             </Button>
           )}
@@ -497,12 +497,12 @@ export function ClassifiedDetailDesktop({
       {/* ── MOSAICO BENTO DE MÍDIA (Desktop Airbnb Layout) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 mb-8">
         {images.length === 0 ? (
-          <div className="w-full aspect-banner-hero max-h-105 rounded-lg bg-muted/20 border border-border/40 flex flex-col items-center justify-center text-muted-foreground gap-2">
+          <div className="w-full aspect-banner-hero max-h-105 rounded-lg bg-muted border border-border flex flex-col items-center justify-center text-muted-foreground gap-2">
             <Package className="size-12 stroke-1" />
             <span className="text-sm">Nenhuma foto cadastrada para este anúncio</span>
           </div>
         ) : images.length === 1 ? (
-          <div className="w-full aspect-banner-cinema max-h-120 rounded-lg overflow-hidden bg-muted/20 border border-border/40 relative group">
+          <div className="w-full aspect-banner-cinema max-h-120 rounded-lg overflow-hidden bg-muted border border-border relative group">
             <img
     src={images[0]}
     alt={classified.title}
@@ -515,16 +515,16 @@ export function ClassifiedDetailDesktop({
   <button
     type="button"
     onClick={() => setFullscreenImage(images[0])}
-    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/90 hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="absolute bottom-4 right-4 h-11 min-h-11 px-4 rounded-lg bg-card hover:bg-muted text-foreground text-xs font-semibold border border-border flex items-center gap-2 transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
               <Maximize2 className="size-4" />
               <span>Ver em tela cheia</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 aspect-banner-cinema max-h-125 rounded-lg overflow-hidden border border-border/40 bg-muted/20 relative group">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 aspect-banner-cinema max-h-125 rounded-lg overflow-hidden border border-border bg-muted relative group">
             {/* Foto Principal Hero (8 colunas) */}
-            <div className="col-span-8 relative overflow-hidden bg-muted/30 h-full">
+            <div className="col-span-8 relative overflow-hidden bg-muted h-full">
               <img
     src={images[0]}
     alt={classified.title}
@@ -537,7 +537,7 @@ export function ClassifiedDetailDesktop({
             </div>
             {/* Fotos Secundárias (4 colunas) */}
             <div className="col-span-4 grid grid-rows-2 gap-3 h-full">
-              <div className="relative overflow-hidden bg-muted/30 h-full">
+              <div className="relative overflow-hidden bg-muted h-full">
                 <img
     src={images[1] || images[0]}
     alt=""
@@ -548,7 +548,7 @@ export function ClassifiedDetailDesktop({
     onClick={() => setFullscreenImage(images[1] || images[0])}
   />
               </div>
-              <div className="relative overflow-hidden bg-muted/30 h-full">
+              <div className="relative overflow-hidden bg-muted h-full">
                 <img
     src={images[2] || images[0]}
     alt=""
@@ -561,9 +561,9 @@ export function ClassifiedDetailDesktop({
   <button
     type="button"
     onClick={() => setFullscreenImage(images[0])}
-    className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-background/95 border border-border/50 text-foreground text-xs font-semibold flex items-center gap-2 hover:bg-background cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    className="absolute bottom-4 right-4 h-11 min-h-11 px-4 rounded-lg bg-card hover:bg-muted border border-border text-foreground text-xs font-semibold flex items-center gap-2 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   >
-                  <Maximize2 className="size-3.5" />
+                  <Maximize2 className="size-4" />
                   <span>Ver todas ({images.length})</span>
                 </button>
               </div>
@@ -577,9 +577,9 @@ export function ClassifiedDetailDesktop({
         {/* ══ COLUNA ESQUERDA: Detalhes, Especificações, Vendedor, Mapa (7 Colunas) ══ */}
         <div className="col-span-7 space-y-6">
           {/* Cabeçalho do Anúncio */}
-          <div className="space-y-2 pb-4 border-b border-border/50">
+          <div className="space-y-2 pb-4 border-b border-border">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10">
+              <Badge variant="secondary" className="text-xs font-bold text-foreground border-border bg-secondary">
                 {niche.shortLabel || niche.title}
               </Badge>
               <Badge variant="secondary" data-template-badge={templateStyle} className="text-xs font-semibold">
@@ -588,9 +588,9 @@ export function ClassifiedDetailDesktop({
                   : templateStyle === "imobiliario"
                   ? "Ficha Patrimonial"
                   : templateStyle === "resort_hotel"
-                  ? "Estadia & Hospitalidade"
+                  ? "Estadia e Hospitalidade"
                   : templateStyle === "servicos_agenda"
-                  ? "Agenda & Serviços"
+                  ? "Agenda e Serviços"
                   : templateStyle === "editorial"
                   ? "Dossiê Editorial"
                   : "Vitrine Padrão"}
@@ -601,8 +601,8 @@ export function ClassifiedDetailDesktop({
                 </Badge>
               )}
               {attrs.delivery_available && niche.showDeliveryBadges && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-md">
-                  <Truck className="size-3.5" /> Envio Disponível
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 px-3 py-1 rounded-md">
+                  <Truck className="size-4" /> Envio Disponível
                 </span>
               )}
             </div>
@@ -697,7 +697,7 @@ export function ClassifiedDetailDesktop({
                       variant="outline"
                       size="sm"
                       onClick={() => onOpenBookingModal()}
-                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-border bg-card text-foreground hover:bg-muted shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       Consultar Datas
                     </Button>
@@ -706,14 +706,14 @@ export function ClassifiedDetailDesktop({
               )}
 
               {templateStyle === "servicos_agenda" && (
-                <div data-template-strip="servicos_agenda" className="rounded-lg border border-border/70 bg-muted/20 p-5 flex items-center justify-between gap-4">
+                <div data-template-strip="servicos_agenda" className="rounded-lg border border-border bg-muted p-5 flex items-center justify-between gap-4">
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <Briefcase className="size-4 text-primary" />
-                      <span className="text-xs font-bold text-foreground block">Agenda Profissional & Escopo de Atendimento</span>
+                      <span className="text-xs font-bold text-foreground block">Agenda Profissional e Escopo</span>
                     </div>
                     <p className="text-xs text-muted-foreground break-words">
-                      Modalidade: {attrs.modality === "online" ? "Remoto / Online" : attrs.modality === "domicilio" ? "Em Domicílio" : "Presencial"} {attrs.availability ? `• ${attrs.availability}` : ""}
+                      Modalidade: {attrs.modality === "online" ? "Remoto" : attrs.modality === "domicilio" ? "Em Domicílio" : "Presencial"} {attrs.availability ? `• ${attrs.availability}` : ""}
                     </p>
                   </div>
                   <Button
@@ -721,7 +721,7 @@ export function ClassifiedDetailDesktop({
                     variant="outline"
                     size="sm"
                     onClick={() => handleStartNativeChat("Olá, gostaria de consultar disponibilidade na agenda.")}
-                    className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-border bg-card text-foreground hover:bg-muted shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Agendar Horário
                   </Button>
@@ -729,20 +729,20 @@ export function ClassifiedDetailDesktop({
               )}
 
               {templateStyle === "editorial" && (
-                <div data-template-strip="editorial" className="rounded-lg border border-primary/25 bg-primary/5 p-5 space-y-2">
+                <div data-template-strip="editorial" className="rounded-lg border border-border bg-muted p-5 space-y-2">
                   <div className="flex items-center gap-2">
                     <Compass className="size-4 text-primary" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary">Dossiê Curatorial Editorial</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary">Dossiê Editorial</span>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed break-words">
-                    Apresentação expandida com narrativa completa, especificações verificadas e atendimento direto com o anunciante.
+                    Apresentação expandida com especificações verificadas e atendimento direto com o anunciante.
                   </p>
                 </div>
               )}
 
               {/* Ações Comerciais Específicas: Propostas, Troca e Visitas */}
               {templateStyle === "automotivo" && (attrs.accepts_trade || attrs.accepts_financing || attrs.negotiable) && (
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-5 flex items-center justify-between gap-4">
+                <div className="rounded-lg border border-border bg-muted p-5 flex items-center justify-between gap-4">
                   <div className="space-y-1 min-w-0">
                     <span className="text-xs font-bold text-foreground block">Condições Especiais de Negociação</span>
                     <p className="text-xs text-muted-foreground">
@@ -755,16 +755,16 @@ export function ClassifiedDetailDesktop({
                       variant="outline"
                       size="sm"
                       onClick={onOpenProposalModal}
-                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-border bg-card text-foreground hover:bg-muted shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      Enviar Proposta / Troca
+                      Enviar Proposta
                     </Button>
                   )}
                 </div>
               )}
 
               {templateStyle === "imobiliario" && (
-                <div className="rounded-lg border border-border/60 bg-muted/20 p-5 flex items-center justify-between gap-4">
+                <div className="rounded-lg border border-border bg-muted p-5 flex items-center justify-between gap-4">
                   <div className="space-y-1 min-w-0">
                     <span className="text-xs font-bold text-foreground block">Agendamento de Visita Presencial</span>
                     <p className="text-xs text-muted-foreground">Conheça o imóvel presencialmente ou solicite um tour com o anunciante.</p>
@@ -774,7 +774,7 @@ export function ClassifiedDetailDesktop({
                     variant="outline"
                     size="sm"
                     onClick={() => handleStartNativeChat("Olá, gostaria de agendar uma visita para este imóvel.")}
-                    className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-primary/40 text-primary hover:bg-primary/10 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg border-border bg-card text-foreground hover:bg-muted shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Agendar Visita
                   </Button>
@@ -1043,31 +1043,31 @@ export function ClassifiedDetailDesktop({
           {/* Descrição Detalhada */}
           {(displayMode === "continuous_list" || activeTab === "overview") && classified.content && (
             <div className="space-y-3 pt-2">
-              <h2 className="text-sm font-bold text-foreground">Descrição do Anúncio</h2>
-              <div className="rounded-lg border border-border/50 bg-card p-5 text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+              <h2 className="text-sm font-bold text-foreground">Descrição</h2>
+              <div className="rounded-lg border border-border bg-card p-5 text-sm text-foreground leading-relaxed whitespace-pre-line">
                 {classified.content}
               </div>
             </div>
           )}
 
 
-          {/* Pagamentos & Financiamento */}
+          {/* Pagamentos */}
           {(displayMode === "continuous_list" || activeTab === "overview") && isPaymentAllowed && (acceptsPix || acceptsCard || acceptsBoleto || acceptsCarne || paymentMethodsList.length > 0) && (
-            <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-border/40 pb-3">
+            <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-border pb-3">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="size-4 text-primary" />
-                  <h2 className="text-sm font-bold text-foreground">Pagamento & Financiamento</h2>
+                  <CreditCard className="size-4 text-foreground" />
+                  <h2 className="text-sm font-bold text-foreground">Formas de Pagamento</h2>
                 </div>
               </div>
 
               {/* Formas aceitas */}
               <div className="space-y-3">
-                <span className="text-xs font-semibold text-foreground block">Meios de Pagamento Aceitos</span>
+                <span className="text-xs font-semibold text-foreground block">Meios Aceitos</span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {acceptsPix && (
-                    <div className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-1">
-                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                    <div className="p-3 rounded-lg border border-border bg-muted space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-bold text-success">
                         <QrCode className="size-3.5" />
                         <span>PIX</span>
                       </div>
@@ -1280,13 +1280,13 @@ export function ClassifiedDetailDesktop({
                 </div>
               </div>
 
-              {/* Grade de Anúncios Similares / Relacionados */}
+              {/* Grade de Anúncios Relacionados */}
               {similarAds && similarAds.length > 0 && (
-                <div className="rounded-lg border border-border/60 bg-card p-5 space-y-4">
+                <div className="rounded-lg border border-border bg-card p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-bold text-foreground">Anúncios Similares / Relacionados</h3>
-                      <p className="text-xs text-muted-foreground">Outras ofertas ativas deste anunciante e categoria</p>
+                      <h3 className="text-sm font-bold text-foreground">Anúncios Relacionados</h3>
+                      <p className="text-xs text-muted-foreground">Outras ofertas ativas deste anunciante</p>
                     </div>
                     <span className="text-xs text-muted-foreground font-mono">
                       {similarAds.length} {similarAds.length === 1 ? "item" : "itens"}
@@ -1352,10 +1352,10 @@ export function ClassifiedDetailDesktop({
               {isDonation ? (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-3xl font-extrabold text-emerald-600 font-mono">
+                    <span className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300 font-mono">
                       Gratuito (R$ 0)
                     </span>
-                    <Badge variant="outline" className="text-xs font-bold text-emerald-600 border-none bg-emerald-500/10">
+                    <Badge variant="outline" className="text-xs font-bold text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950">
                       Doação
                     </Badge>
                   </div>
@@ -1373,7 +1373,7 @@ export function ClassifiedDetailDesktop({
                       {targetInvestment > 0 ? formatMoney(targetInvestment) : (priceCents > 0 ? formatMoney(priceCents) : "A combinar")}
                     </span>
                     {offeredEquity && (
-                      <Badge variant="outline" className="text-xs font-semibold text-primary bg-primary/10">
+                      <Badge variant="secondary" className="text-xs font-semibold text-foreground border-border bg-secondary">
                         {offeredEquity}
                       </Badge>
                     )}
@@ -1393,7 +1393,7 @@ export function ClassifiedDetailDesktop({
                       )}
                     </div>
                     {classified?.negotiable !== false && priceCents > 0 && (
-                      <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-none bg-muted/40">
+                      <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-border bg-muted">
                         Aceita Proposta
                       </Badge>
                     )}
@@ -1411,20 +1411,20 @@ export function ClassifiedDetailDesktop({
               {isPaymentAllowed && displayMode === "tabs" && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {acceptsPix && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                      <QrCode className="size-3.5 text-emerald-600" />
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200">
+                      <QrCode className="size-4" />
                       PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : "à vista"}
                     </span>
                   )}
                   {acceptsCard && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300">
-                      <CreditCard className="size-3.5 text-blue-600" />
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-sky-50 dark:bg-sky-950 border border-sky-200 dark:border-sky-800 text-sky-800 dark:text-sky-200">
+                      <CreditCard className="size-4" />
                       Cartão até {maxInstallments}x
                     </span>
                   )}
                   {acceptsBoleto && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-muted text-foreground">
-                      <Receipt className="size-3.5 text-muted-foreground" />
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-muted border border-border text-foreground">
+                      <Receipt className="size-4 text-muted-foreground" />
                       Boleto
                     </span>
                   )}
@@ -1438,7 +1438,7 @@ export function ClassifiedDetailDesktop({
                 <Button
                   type="button"
                   onClick={() => setIsLeadFormModalOpen(true)}
-                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground hover:opacity-95 active:scale-95 transition-transform duration-200 cursor-pointer flex items-center justify-center gap-2"
+                  className="h-12 w-full rounded-lg text-sm font-bold bg-primary text-primary-foreground transition-colors cursor-pointer flex items-center justify-center gap-2"
                 >
                   <FileText className="size-4" />
                   <span>{attrs?.inquiry_config?.title || "Tenho Interesse neste Anúncio"}</span>
@@ -1450,9 +1450,9 @@ export function ClassifiedDetailDesktop({
                 onClick={primaryCta.action}
                 disabled={isBooking || isBuyingDirect || isDownloadingDigital}
                 className={cn(
-                  "h-12 w-full rounded-lg text-sm font-bold hover:opacity-95 active:scale-95 transition-transform duration-200 cursor-pointer",
+                  "h-12 w-full rounded-lg text-sm font-bold transition-colors cursor-pointer",
                   classified.lead_form || classified.form_id
-                    ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    ? "bg-secondary text-secondary-foreground hover:bg-accent"
                     : "bg-primary text-primary-foreground"
                 )}
               >
@@ -1465,7 +1465,7 @@ export function ClassifiedDetailDesktop({
                   variant="outline"
                   onClick={handleStartNativeChat}
                   disabled={isStartingChat}
-                  className="h-11 w-full rounded-lg text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/15 flex items-center justify-center gap-2 cursor-pointer"
+                  className="h-11 min-h-11 w-full rounded-lg text-xs font-bold border-border text-foreground bg-card hover:bg-muted flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <MessageCircle className="size-4 text-primary" />
                   <span>{isStartingChat ? "Iniciando Chat..." : "Conversar no App"}</span>
@@ -1477,7 +1477,7 @@ export function ClassifiedDetailDesktop({
                   type="button"
                   variant="outline"
                   onClick={onOpenProposalModal}
-                  className="h-11 w-full rounded-lg text-xs font-semibold border-border/70 text-foreground hover:bg-muted/40 cursor-pointer"
+                  className="h-11 min-h-11 w-full rounded-lg text-xs font-semibold border-border text-foreground hover:bg-muted cursor-pointer"
                 >
                   Enviar Proposta
                 </Button>
@@ -1488,9 +1488,9 @@ export function ClassifiedDetailDesktop({
                   type="button"
                   variant="outline"
                   onClick={handleWhatsApp}
-                  className="h-11 w-full rounded-lg text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                  className="h-11 min-h-11 w-full rounded-lg text-xs font-bold border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Phone className="size-4 text-emerald-600" />
+                  <Phone className="size-4" />
                   <span>WhatsApp</span>
                 </Button>
               )}

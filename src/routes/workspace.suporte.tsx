@@ -599,7 +599,7 @@ function WorkspaceSupportPage() {
                     variant="outline"
                     className="h-11 min-h-11 px-3 text-xs font-semibold gap-1 text-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <Link to="/workspace/atendimento" search={{ search: activeTicket.customer_name || undefined, threadId: undefined }}>
+                    <Link to={"/workspace/atendimento/chat" as any} search={{ search: activeTicket.customer_name || undefined, threadId: undefined } as any}>
                       <Headphones className="size-3.5" />
                       <span>Atender no SAC</span>
                     </Link>

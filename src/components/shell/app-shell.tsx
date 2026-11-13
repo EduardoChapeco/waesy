@@ -1,6 +1,11 @@
 import { type ReactNode, useEffect, useRef } from "react";
 import { useLocation } from "@tanstack/react-router";
-import { resolveContextNavigation } from "@/lib/navigation-registry";
+import {
+  resolveContextNavigation,
+  resolveCleanMobileTitle,
+  checkHasCustomPageMobileHeader,
+  isFullBleedStoreRoute,
+} from "@/lib/navigation-registry";
 import { TopBar } from "./top-bar";
 import { ContextSidebar } from "./context-sidebar";
 import { MobileNav } from "./mobile-nav";
@@ -17,161 +22,7 @@ import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useSuperAppDrawer } from "@/lib/drawer-store";
 import { cn } from "@/lib/utils";
 
-function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string): string {
-  const map: Record<string, string> = {
-    "/marketplace": "Marketplace",
-    "/copilot": "Waesy Copilot",
-    "/buscar": "Buscar",
-    "/carrinho": "Carrinho",
-    "/checkout": "Finalizar Pedido",
-    "/notificacoes": "Notificações",
-    "/afiliados": "Programa de Afiliados",
-    "/agenda": "Agenda Cultural",
-    "/agendar": "Agendamentos",
-    "/servicos": "Serviços",
-    "/classificados": "Classificados",
-    "/diretorio": "Guia Local",
-    "/empregos": "Vagas e Carreiras",
-    "/eventos": "Eventos",
-    "/noticias": "Notícias",
-    "/imoveis": "Imóveis",
-    "/turismo": "Turismo e Viagens",
-    "/hospedagem": "Hospedagem",
-    "/gastronomia": "Gastronomia",
-    "/moda": "Moda",
-    "/eletronicos": "Eletrônicos",
-    "/pet": "Pet Shop",
-    "/farmacia": "Farmácia",
-    "/limpeza": "Limpeza",
-    "/livros": "Livros",
-    "/mercado": "Mercado",
-    "/casa": "Casa e Decoração",
-    "/acougue": "Açougue",
-    "/bebidas": "Bebidas",
-    "/construcao": "Construção",
-    "/beleza": "Beleza e Estética",
-    "/receitas": "Receitas",
-    "/explorar": "Explorar",
-    "/mural": "Comunidade",
-    "/criar-negocio": "Criar Negócio",
-    "/contato": "Atendimento",
-    "/conta/pedidos": "Meus Pedidos",
-    "/conta/enderecos": "Endereços",
-    "/conta/financas": "Carteira Digital",
-    "/conta/seguranca": "Segurança",
-    "/conta/salvos": "Itens Salvos",
-    "/conta/notificacoes": "Notificações",
-    "/conta/classificados": "Meus Anúncios",
-    "/conta/creditos": "Créditos",
-    "/conta/tokens": "Tokens",
-    "/conta/contratos": "Contratos",
-    "/conta/curriculo": "Currículo",
-    "/conta/candidaturas": "Candidaturas",
-    "/conta/pacotes": "Pacotes",
-    "/conta/pagamentos": "Pagamentos",
-    "/conta/ingressos": "Ingressos",
-    "/conta/gift-cards": "Gift Cards",
-    "/conta/lojas": "Minhas Lojas",
-    "/conta/metricas": "Métricas",
-    "/conta/mobilidade": "Mobilidade",
-    "/conta/negociacoes": "Negociações",
-    "/conta/processos": "Processos",
-    "/conta/suporte": "Suporte",
-    "/conta/trocas": "Trocas e Devoluções",
-    "/conta/verificacao": "Verificação Civil",
-    "/conta/viagens": "Minhas Viagens",
-    "/comunidades": "Comunidades",
-  };
-  const cleanPath = pathname.replace(/\/+$/, "") || "/";
-  if (map[cleanPath]) return map[cleanPath];
-  if (fallbackTitle) return fallbackTitle.replace(/\s+&\s+/g, " e ");
-  const seg = cleanPath.split("/").filter(Boolean).pop() || "Waesy";
-  return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
-}
-
-/**
- * Determina se a rota ativa renderiza seu próprio NativeMobileHeader ou cabeçalho dedicado,
- * impedindo a renderização duplicada de cabeçalho global pelo AppShell.
- */
-export function checkHasCustomPageMobileHeader(pathname: string): boolean {
-  const clean = pathname.replace(/\/+$/, "") || "/";
-
-  const exactCustomRoutes = new Set([
-    "/",
-    "/gastronomia",
-    "/mercado",
-    "/farmacia",
-    "/bebidas",
-    "/acougue",
-    "/pet",
-    "/conta",
-    "/agenda",
-    "/afiliados",
-    "/classificados",
-    "/marketplace",
-    "/diretorio",
-    "/imoveis",
-    "/servicos",
-    "/eventos",
-    "/empregos",
-    "/agendar",
-    "/turismo",
-    "/faq",
-    "/moda",
-    "/eletronicos",
-    "/casa",
-    "/construcao",
-    "/beleza",
-    "/limpeza",
-    "/livros",
-    "/comunidades",
-  ]);
-
-  if (exactCustomRoutes.has(clean)) return true;
-
-  const prefixCustomRoutes = [
-    "/eventos",
-    "/doacoes",
-    "/ofertas",
-    "/recuperar-senha",
-    "/redefinir-senha",
-    "/destaques",
-    "/admin-master",
-    "/conta/atividade",
-    "/conta/avaliacoes",
-    "/conta/candidaturas",
-    "/conta/carnes",
-    "/conta/creditos",
-    "/conta/enderecos",
-    "/conta/entregador",
-    "/conta/eventos",
-    "/conta/financas",
-    "/conta/gift-cards",
-    "/conta/lojas",
-    "/conta/pacotes",
-    "/conta/pagamentos",
-    "/conta/salvos",
-    "/conta/seguranca",
-    "/conta/suporte",
-    "/conta/tokens",
-    "/conta/trocas",
-    "/conta/viagens",
-    "/conta/conversas",
-    "/conta/agendamentos",
-    "/conta/classificados",
-    "/conta/negociacoes",
-    "/conta/comissoes",
-    "/conta/curriculo",
-    "/conta/empresa",
-    "/conta/ingressos",
-    "/conta/contratos",
-    "/conta/notificacoes",
-    "/conta/pedidos",
-    "/c",
-  ];
-
-  return prefixCustomRoutes.some((prefix) => clean === prefix || clean.startsWith(`${prefix}/`));
-}
+export { resolveCleanMobileTitle, checkHasCustomPageMobileHeader };
 
 export interface AppShellProps {
  children: ReactNode;
@@ -223,11 +74,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
   }
 
  const contextConfig = resolveContextNavigation(location.pathname, session);
- const isFullBleedPage =
- location.pathname.startsWith("/mapa") ||
- location.pathname.startsWith("/mobilidade") ||
- location.pathname.startsWith("/copilot") ||
- location.pathname.startsWith("/conta/conversas");
+ const isFullBleedPage = isFullBleedStoreRoute(location.pathname);
 
   const isProfilePage =
     location.pathname.startsWith("/membro/") ||
@@ -363,11 +210,11 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         className={cn(
           "size-full flex flex-col relative canvas-push-transition",
           isSuperAppOpen &&
-            "max-md:canvas-pushed max-md:rounded-l-2xl max-md:overflow-hidden max-md:pointer-events-none max-md:border-l max-md:border-border/40"
+            "max-md:canvas-pushed max-md:rounded-l-2xl max-md:overflow-hidden max-md:pointer-events-none max-md:border-l max-md:border-border"
         )}
       >
-        {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário, Copilot e Afiliados) ── */}
-      <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage || isCopilotPage ? "hidden md:block" : ""}>
+        {/* ── Barra de Topo Horizontal (Ocultada no Compact Mobile <600px em Telas Nativas) ── */}
+      <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage || isCopilotPage ? "waesy-rail-block" : ""}>
         <TopBar
           session={session}
           brandSettings={brandSettings}

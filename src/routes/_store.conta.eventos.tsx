@@ -14,7 +14,6 @@ import {
   EyeOff,
   Video,
   Image as ImageIcon,
-  Sparkles,
   MapPin,
   Clock,
   Search,
@@ -341,9 +340,9 @@ function CivilianEventsPage() {
         {/* ── Desktop Header ── */}
         <div className="hidden md:flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Meus Eventos & Produções</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Meus Eventos</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Crie, gerencie bilheterias, stories e listas de presença para seus eventos.
+              Bilheterias, stories e listas de presença.
             </p>
           </div>
           <Button
@@ -498,7 +497,7 @@ function CivilianEventsPage() {
 
                         {hasStory && (
                           <Badge variant="outline" className="text-xs text-purple-600 border-purple-500/30 flex items-center gap-1">
-                            <Sparkles className="size-3" />
+                            <Video className="size-3" />
                             Story 9:16
                           </Badge>
                         )}
@@ -809,7 +808,7 @@ function CivilianEventsPage() {
             {/* Story 9:16 (GAP-04) */}
             <div className="space-y-2 p-3 bg-muted/40 rounded-2xl">
               <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="size-3.5 text-purple-600" />
+                <Video className="size-3.5 text-purple-600" />
                 Story Imersivo 9:16 (Auto-Abertura)
               </Label>
               <MediaUploader

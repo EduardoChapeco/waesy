@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, Lock, Save, PenTool, Settings2, FileText, UserCheck, Layers, Copy, Folder, Bell, Eye, Calendar, ExternalLink, QrCode, Loader2 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
+import { ContractMarkdownRenderer } from "@/components/contracts/contract-markdown-renderer";
 
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -466,9 +466,10 @@ function ContractEditorPage() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Prévia de Leitura
                 </h3>
-                <div className="max-h-125 overflow-y-auto pr-2 text-xs font-serif leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert">
-                  <ReactMarkdown>{contentMarkdown}</ReactMarkdown>
-                </div>
+                <ContractMarkdownRenderer
+                  content={contentMarkdown}
+                  className="max-h-125 overflow-y-auto pr-2 text-xs font-serif leading-relaxed text-foreground/90"
+                />
               </div>
             </div>
           )}

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { getOnboardingStatus } from "@/services/onboarding.functions";
 import { MagicOnboardingCard } from "@/components/onboarding/magic-onboarding-card";
+import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
 
 export const Route = createFileRoute("/workspace/onboarding/")({
   head: () => ({
@@ -61,57 +62,14 @@ const NICHE_COPIES: Record<string, NicheCopy> = {
     multimodalDescription: "Envie uma foto do seu cardápio físico para importar pratos, combos e adicionais automaticamente.",
     stepsSectionTitle: "Etapas de Ativação da Cozinha & Entregas",
   },
-  services: {
-    badgeLabel: "Ativação de Escritório & Serviços",
-    title: "Ativação do Escritório e Serviços Profissionais",
-    subtitle: "Defina sua grade de atendimento, tabela de honorários e canais seguros de cobrança e agendamento.",
-    multimodalTitle: "Importação de Portfólio & Tabela de Serviços",
-    multimodalDescription: "Digitalize sua tabela de serviços ou converta propostas em itens contratáveis com 1 clique.",
-    stepsSectionTitle: "Etapas de Fundamentação da Consultoria / Escritório",
-  },
-  retail: {
-    badgeLabel: "Ativação Comercial & Catálogo",
-    title: "Ativação da Vitrine e Catálogo Comercial",
-    subtitle: "Complete os passos essenciais para liberar pagamentos online, cálculo de frete automático e vitrine ativa.",
-    multimodalTitle: "Configuração Rápida & Catálogo da Loja",
-    multimodalDescription: "Fotografe seus produtos ou importe itens validados do catálogo comunitário sem digitação manual.",
-    stepsSectionTitle: "Etapas de Fundamentação da Loja",
-  },
 };
 
 function getNicheCopy(category?: string): NicheCopy {
-  const normalized = (category || "").toLowerCase().trim();
-  if (
-    normalized.includes("turis") ||
-    normalized.includes("viage") ||
-    normalized.includes("hotel") ||
-    normalized.includes("pousada") ||
-    normalized.includes("experien") ||
-    normalized.includes("chale")
-  ) {
-    return NICHE_COPIES.tourism;
-  }
-  if (
-    normalized.includes("rest") ||
-    normalized.includes("gastro") ||
-    normalized.includes("aliment") ||
-    normalized.includes("bar") ||
-    normalized.includes("lanche") ||
-    normalized.includes("pizz")
-  ) {
-    return NICHE_COPIES.restaurant;
-  }
-  if (
-    normalized.includes("serv") ||
-    normalized.includes("advoc") ||
-    normalized.includes("jus") ||
-    normalized.includes("consult") ||
-    normalized.includes("saude") ||
-    normalized.includes("imove")
-  ) {
-    return NICHE_COPIES.services;
-  }
-  return NICHE_COPIES.retail;
+  const spec = getUnifiedNicheSpec(category);
+  if (spec.id === "tourism") return NICHE_COPIES.tourism;
+  if (spec.id === "gastronomy") return NICHE_COPIES.restaurant;
+
+  return spec.onboardingBlueprint;
 }
 
 export default function WorkspaceOnboardingPage() {

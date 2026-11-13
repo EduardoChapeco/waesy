@@ -42,7 +42,7 @@ export function SupermarketProductCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col justify-between p-3 rounded-2xl bg-card border border-border/60 hover:border-border transition select-none overflow-hidden",
+        "group relative flex flex-col justify-between p-3 rounded-2xl bg-card border border-border transition select-none overflow-hidden",
         className,
       )}
       data-testid="supermarket-product-card"
@@ -64,7 +64,7 @@ export function SupermarketProductCard({
             e.stopPropagation();
             onAddToCart?.(product);
           }}
-          className="size-11 min-w-11 min-h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center pointer-events-auto  hover:scale-105 active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ml-auto"
+          className="size-11 min-w-11 min-h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center pointer-events-auto hover:scale-105 active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ml-auto"
           aria-label={`Adicionar ${product.title} ao carrinho`}
         >
           <Plus size={20} weight="bold" />
@@ -74,7 +74,7 @@ export function SupermarketProductCard({
       {/* ── Mídia do Produto ── */}
       <div
         onClick={() => onProductClick?.(product)}
-        className="w-full aspect-square rounded-xl overflow-hidden bg-muted/40 flex items-center justify-center cursor-pointer pt-6 pb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="w-full aspect-square rounded-xl overflow-hidden bg-muted flex items-center justify-center cursor-pointer pt-6 pb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -93,7 +93,7 @@ export function SupermarketProductCard({
             loading="lazy"
           />
         ) : (
-          <ShoppingBag size={48} weight="duotone" className="text-muted-foreground/40" />
+          <ShoppingBag size={48} weight="duotone" className="text-muted-foreground" />
         )}
       </div>
 
@@ -105,7 +105,7 @@ export function SupermarketProductCard({
             <div className="flex items-center gap-2 text-2xs text-muted-foreground">
               <span className="line-through">R$ {formattedComparePrice}</span>
               {discountPercent > 0 ? (
-                <span className="px-1 py-0.2 rounded text-3xs font-extrabold bg-destructive/15 text-destructive">
+                <span className="px-2 py-1 rounded text-3xs font-extrabold bg-destructive text-destructive-foreground">
                   -{discountPercent}%
                 </span>
               ) : null}

@@ -1,5 +1,5 @@
 import React from "react";
-import { SlidersHorizontal, ArrowUpDown, Sparkles, Tag, Bike, Clock, Award, ShieldCheck } from "lucide-react";
+import { SlidersHorizontal, ArrowUpDown, Percent, Tag, Bike, Clock, Award, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface DualLineFilterPillsProps {
@@ -13,8 +13,8 @@ export interface DualLineFilterPillsProps {
 const ROW_1_OPTIONS = [
   { id: "relevance", label: "Ordenar", icon: ArrowUpDown },
   { id: "promo", label: "Promoções", icon: Tag },
-  { id: "coupons", label: "Com Cupons", icon: Sparkles },
-  { id: "top_rated", label: "Destaques Locais", icon: Award },
+  { id: "coupons", label: "Com Cupons", icon: Percent },
+  { id: "top_rated", label: "Destaques", icon: Award },
 ];
 
 const ROW_2_OPTIONS = [

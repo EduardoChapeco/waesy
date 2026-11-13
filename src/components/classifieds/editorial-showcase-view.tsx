@@ -691,11 +691,11 @@ export function EditorialShowcaseView({
       className="min-h-dvh bg-background text-foreground pb-28 font-sans select-none"
     >
       {/* ── Top Bar Fixo de Navegação (Apenas Mobile) ── */}
-      <div className={cn(isForcedMobile ? "flex" : isForcedDesktop ? "hidden" : "md:hidden flex", "sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 px-3 py-2 items-center justify-between")}>
+      <div className={cn(isForcedMobile ? "flex" : isForcedDesktop ? "hidden" : "md:hidden flex", "sticky top-0 z-40 bg-background border-b border-border px-3 py-2 items-center justify-between")}>
         <button
           type="button"
           onClick={() => navigate({ to: "/classificados", search: {} as any })}
-          className="p-2 -ml-1 text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="size-11 min-h-11 min-w-11 -ml-1 flex items-center justify-center text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
@@ -713,7 +713,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={handleEditClick}
-              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 min-h-11 min-w-11 flex items-center justify-center text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Editar Anúncio"
               aria-label="Editar Anúncio"
             >
@@ -725,7 +725,7 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={onOpenCompanionCard}
-              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 min-h-11 min-w-11 flex items-center justify-center text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Guia Digital 9:16 (WhatsApp)"
               aria-label="Guia Digital 9:16"
             >
@@ -738,8 +738,8 @@ export function EditorialShowcaseView({
             <button
               type="button"
               onClick={() => setIsPromoFlyerOpen(true)}
-              className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Gerar Story 9:16 com IA"
+              className="size-11 min-h-11 min-w-11 flex items-center justify-center text-foreground hover:bg-muted rounded-lg transition-colors active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              title="Gerar Story 9:16"
               aria-label="Gerar Story 9:16"
             >
               <Star className="size-4.5" />
@@ -796,9 +796,9 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={handleEditClick}
-                className="h-11 min-h-11 sm:h-9 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-11 min-h-11 gap-2 rounded-lg border-border bg-card text-foreground hover:bg-muted font-semibold text-xs cursor-pointer"
               >
-                <Edit3 className="size-3.5" />
+                <Edit3 className="size-4" />
                 <span>Editar Anúncio</span>
               </Button>
             )}
@@ -808,10 +808,10 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={onOpenCompanionCard}
-                className="h-11 min-h-11 sm:h-9 gap-2 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
+                className="h-11 min-h-11 gap-2 rounded-lg border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900 font-semibold text-xs cursor-pointer"
                 title="Guia Digital WhatsApp"
               >
-                <Smartphone className="size-3.5" />
+                <Smartphone className="size-4" />
                 <span>Guia 9:16</span>
               </Button>
             )}
@@ -821,10 +821,10 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPromoFlyerOpen(true)}
-                className="h-11 min-h-11 sm:h-9 gap-2 rounded-lg border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
+                className="h-11 min-h-11 gap-2 rounded-lg border-border bg-card text-foreground hover:bg-muted font-semibold text-xs cursor-pointer"
                 title="Gerar Flyer 9:16"
               >
-                <Star className="size-3.5" />
+                <Star className="size-4" />
                 <span>Gerar Story 9:16</span>
               </Button>
             )}
@@ -856,7 +856,7 @@ export function EditorialShowcaseView({
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
-                <div className="relative w-full aspect-banner-classic sm:aspect-post-card rounded-none sm:rounded-lg overflow-hidden bg-muted/30 border-0 sm:border sm:border-border/40 group">
+                <div className="relative w-full aspect-banner-classic sm:aspect-post-card rounded-none sm:rounded-lg overflow-hidden bg-muted border-0 sm:border sm:border-border group">
                   <img role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
@@ -864,14 +864,14 @@ export function EditorialShowcaseView({
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-md bg-foreground/60 backdrop-blur-sm text-foreground text-xs font-mono font-medium">
+                    <span className="px-3 py-1 rounded-md bg-card border border-border text-foreground text-xs font-mono font-medium">
                       {images.length} {images.length === 1 ? "foto" : "fotos"}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
-                    className="absolute bottom-4 right-4 px-3 py-2 rounded-lg bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute bottom-4 right-4 min-h-11 px-3 py-2 rounded-lg bg-card hover:bg-accent text-foreground text-xs font-semibold border border-border flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Expandir</span>
@@ -1089,7 +1089,7 @@ export function EditorialShowcaseView({
                     return (
                       <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                         key={i}
-                        className="relative aspect-square bg-muted/60 rounded-lg overflow-hidden group cursor-pointer border border-border/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="relative aspect-square bg-muted rounded-lg overflow-hidden group cursor-pointer border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         onClick={() => {
                           if (isVideo) {
                             setSelectedVideoUrl(rawUrl);
@@ -1099,20 +1099,20 @@ export function EditorialShowcaseView({
                         }}
                       >
                         {isVideo ? (
-                          <div className="size-full relative flex items-center justify-center bg-foreground/90">
+                          <div className="size-full relative flex items-center justify-center bg-foreground">
                             <video
                               src={rawUrl}
-                              className="size-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-colors duration-300 pointer-events-none"
+                              className="size-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                               muted
                               playsInline
                               preload="metadata"
                             />
-                            <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center">
-                              <div className="size-9 rounded-lg bg-card/20 backdrop-blur-md border border-white/40 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <Play className="size-4 fill-white text-foreground ml-1" />
+                            <div className="absolute inset-0 bg-foreground/30 flex items-center justify-center">
+                              <div className="size-10 rounded-lg bg-card border border-border flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Play className="size-4 fill-foreground text-foreground ml-1" />
                               </div>
                             </div>
-                            <span className="absolute top-2 right-2 px-2 py-1 rounded-md bg-foreground/70 text-xs font-bold text-foreground uppercase tracking-wider backdrop-blur-xs font-mono">
+                            <span className="absolute top-2 right-2 px-2 py-1 rounded-md bg-card border border-border text-xs font-bold text-foreground uppercase tracking-wider font-mono">
                               Vídeo
                             </span>
                           </div>
@@ -1125,12 +1125,12 @@ export function EditorialShowcaseView({
                               loading="lazy"
                             />
                             {isGif && (
-                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-foreground/80 text-background text-xs font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
+                              <span className="absolute top-2 right-1.5 px-2 py-1 rounded-md bg-card border border-border text-foreground text-xs font-bold uppercase tracking-wider font-mono">
                                 GIF
                               </span>
                             )}
                             <div className="absolute inset-0 bg-foreground/15 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <Maximize2 className="size-4 text-foreground" />
+                              <Maximize2 className="size-4 text-primary-foreground" />
                             </div>
                           </div>
                         )}
@@ -1139,8 +1139,8 @@ export function EditorialShowcaseView({
                   })}
                 </div>
               ) : (
-                <div className="py-10 px-4 rounded-lg bg-muted/20 border border-border/40 text-center space-y-2">
-                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                <div className="py-10 px-4 rounded-lg bg-muted border border-border text-center space-y-2">
+                  <div className="size-10 rounded-lg bg-card border border-border text-primary flex items-center justify-center mx-auto">
                     <ImagePlus className="size-5" />
                   </div>
                   <h4 className="text-xs font-bold text-foreground">Carrossel de Destaques</h4>
@@ -1230,7 +1230,7 @@ export function EditorialShowcaseView({
                           <span>Hospedagem & Acomodação ({travelLodgings.length} {travelLodgings.length > 1 ? "opções" : "hotel"})</span>
                         </span>
                         {attrs.meal_plan && (
-                          <Badge variant="outline" className="text-xs font-bold text-primary border-primary/25 bg-primary/5">
+                          <Badge variant="secondary" className="text-xs font-bold text-foreground border-border bg-secondary">
                             {attrs.meal_plan}
                           </Badge>
                         )}
@@ -1251,11 +1251,11 @@ export function EditorialShowcaseView({
                           return (
                             <div
                               key={lodging.id || lIdx}
-                              className="p-4 rounded-lg bg-background border border-border/60 space-y-3 shadow-xs"
+                              className="p-4 rounded-lg bg-background border border-border space-y-3"
                             >
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border">
                                 <div className="flex items-center gap-2">
-                                  <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                  <div className="size-8 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
                                     <Building2 className="size-4" />
                                   </div>
                                   <div>
@@ -1270,7 +1270,7 @@ export function EditorialShowcaseView({
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {lodging.stars ? (
-                                    <span className="text-xs font-bold text-warning-strong  bg-warning/10 px-2 py-1 rounded-md border border-warning/20">
+                                    <span className="text-xs font-bold text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800">
                                       {lodging.stars} estrelas
                                     </span>
                                   ) : null}
@@ -1290,7 +1290,7 @@ export function EditorialShowcaseView({
                                       key={pIdx}
                                       type="button"
                                       onClick={() => setFullscreenImage(photoUrl)}
-                                      className="relative shrink-0 w-40 sm:w-48 aspect-video rounded-lg overflow-hidden border border-border/50 bg-muted group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                      className="relative shrink-0 w-40 sm:w-48 aspect-video rounded-lg overflow-hidden border border-border bg-muted group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     >
                                       <img
                                         src={photoUrl}
@@ -1298,7 +1298,7 @@ export function EditorialShowcaseView({
                                         className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                                         loading="lazy"
                                       />
-                                      <span className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-neutral-950/70 text-foreground text-xs font-mono">
+                                      <span className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-card border border-border text-foreground text-xs font-mono">
                                         {pIdx + 1}/{lodgingPhotos.length}
                                       </span>
                                     </button>
@@ -1308,20 +1308,20 @@ export function EditorialShowcaseView({
 
                               {/* Informações Rápidas: Regime, Check-in, Check-out, Voucher */}
                               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <div className="p-2 rounded-lg bg-muted border border-border">
                                   <span className="text-muted-foreground block text-xs">Regime</span>
                                   <strong className="text-foreground text-xs">{lodging.regime || attrs.meal_plan || "Café da Manhã"}</strong>
                                 </div>
-                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <div className="p-2 rounded-lg bg-muted border border-border">
                                   <span className="text-muted-foreground block text-xs">Check-in</span>
                                   <strong className="text-foreground text-xs font-mono">{lodging.checkin_time || "14:00"}</strong>
                                 </div>
-                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                                <div className="p-2 rounded-lg bg-muted border border-border">
                                   <span className="text-muted-foreground block text-xs">Check-out</span>
                                   <strong className="text-foreground text-xs font-mono">{lodging.checkout_time || "11:00"}</strong>
                                 </div>
-                                <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
-                                  <span className="text-muted-foreground block text-xs">Reserva / Status</span>
+                                <div className="p-2 rounded-lg bg-muted border border-border">
+                                  <span className="text-muted-foreground block text-xs">Reserva</span>
                                   <strong className="text-foreground text-xs">{lodging.booking_code ? `Cód: ${lodging.booking_code}` : "Incluso no Pacote"}</strong>
                                 </div>
                               </div>
@@ -1334,7 +1334,7 @@ export function EditorialShowcaseView({
                               )}
 
                               {lodging.description && (
-                                <p className="text-xs text-foreground/80 leading-relaxed pt-1 whitespace-pre-line bg-muted/20 p-3 rounded-lg border border-border/30">
+                                <p className="text-xs text-foreground leading-relaxed pt-1 whitespace-pre-line bg-muted p-3 rounded-lg border border-border">
                                   {lodging.description}
                                 </p>
                               )}
@@ -1344,9 +1344,9 @@ export function EditorialShowcaseView({
                                   {lodging.amenities.map((am: string, aIdx: number) => (
                                     <span
                                       key={aIdx}
-                                      className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-muted/60 text-foreground border border-border/40"
+                                      className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-secondary text-foreground border border-border"
                                     >
-                                      <Check className="size-3 text-emerald-600 shrink-0" />
+                                      <Check className="size-3 text-emerald-700 dark:text-emerald-300 shrink-0" />
                                       <span>{am}</span>
                                     </span>
                                   ))}
@@ -1363,7 +1363,7 @@ export function EditorialShowcaseView({
                         <Building2 className="size-4 text-primary" />
                         <span>Hospedagem</span>
                       </span>
-                      <div className="p-3 rounded-lg bg-background/50 border border-border/40 text-xs text-muted-foreground flex items-center justify-between">
+                      <div className="p-3 rounded-lg bg-background border border-border text-xs text-muted-foreground flex items-center justify-between">
                         <span>Acomodação selecionada e homologada pela agência.</span>
                         <strong className="text-foreground">{attrs.meal_plan || "Inclusa no pacote"}</strong>
                       </div>
@@ -1372,7 +1372,7 @@ export function EditorialShowcaseView({
 
                   {/* Transfers, Receptivos e Passeios do Pacote */}
                   {Array.isArray(attrs.transfers_and_tours) && attrs.transfers_and_tours.length > 0 && (
-                    <div className="pt-3 border-t border-border/30 space-y-3">
+                    <div className="pt-3 border-t border-border space-y-3">
                       <span className="font-bold text-foreground block text-sm flex items-center gap-2">
                         <Bus className="size-4 text-primary" />
                         <span>Transfers, Receptivos e Passeios ({attrs.transfers_and_tours.length})</span>
@@ -1381,7 +1381,7 @@ export function EditorialShowcaseView({
                         {attrs.transfers_and_tours.map((tr: any, tIdx: number) => (
                           <div
                             key={tr.id || tIdx}
-                            className="p-4 rounded-lg bg-background border border-border/60 space-y-2"
+                            className="p-4 rounded-lg bg-background border border-border space-y-2"
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="text-xs font-bold text-foreground">{tr.title || tr.name || "Serviço Receptivo"}</span>
@@ -1405,12 +1405,12 @@ export function EditorialShowcaseView({
                 <div className="space-y-4">
                   <NicheSpecificationsDisplay
                     items={featureList}
-                    title="Ficha Técnica & Especificações"
+                    title="Especificações Técnicas"
                   />
 
                   {/* Regras da Hospedagem (quando preenchidas) */}
                   {attrs.house_rules && (
-                    <div className="rounded-lg border border-border/50 bg-card p-4 space-y-2 text-xs">
+                    <div className="rounded-lg border border-border bg-card p-4 space-y-2 text-xs">
                       <span className="font-bold text-foreground uppercase tracking-wider block">Regras da Hospedagem</span>
                       <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{attrs.house_rules}</p>
                     </div>
@@ -1418,9 +1418,9 @@ export function EditorialShowcaseView({
 
                   {/* Produto Digital — Ação de Download Seguro */}
                   {(nicheId.includes("digit") || attrs.is_digital || attrs.digital_file_url) && (
-                    <div className="p-4 rounded-lg bg-card border border-border/60 flex items-center justify-between gap-3 shadow-xs">
+                    <div className="p-4 rounded-lg bg-card border border-border flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <div className="size-9 rounded-lg bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                           <FileArchive className="size-4" />
                         </div>
                         <div>
@@ -1454,7 +1454,7 @@ export function EditorialShowcaseView({
 
               {/* Descrição Completa do Anúncio */}
               {classified.content && (
-                <div className="rounded-lg border border-border/60 bg-card p-4 sm:p-5 space-y-3">
+                <div className="rounded-lg border border-border bg-card p-4 sm:p-5 space-y-3">
                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Sobre o Anúncio
                   </h3>
@@ -1470,10 +1470,10 @@ export function EditorialShowcaseView({
           {activeTab === "itinerary" && (
             <div className="pt-4 space-y-4">
               {itineraryDays.length > 0 ? (
-                <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-border/80">
+                <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-0.5 before:bg-border">
                     {itineraryDays.map((item: any, idx: number) => (
                     <div key={idx} className="relative space-y-3">
-                      <div className="absolute -left-7 top-0.5 size-7 rounded-lg bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
+                      <div className="absolute -left-7 top-0.5 size-7 rounded-lg bg-card border-2 border-primary flex items-center justify-center text-xs font-bold text-foreground">
                         {item.day_number || idx + 1}
                       </div>
                       <div className="space-y-2">
@@ -1482,7 +1482,7 @@ export function EditorialShowcaseView({
                             {item.title || `Dia ${item.day_number || idx + 1}`}
                           </h4>
                           {item.date && (
-                            <span className="text-xs font-mono font-medium text-muted-foreground shrink-0 bg-muted/60 px-2 py-1 rounded-md">
+                            <span className="text-xs font-mono font-medium text-muted-foreground shrink-0 bg-muted border border-border px-2 py-1 rounded-md">
                               {item.date}
                             </span>
                           )}
@@ -1496,7 +1496,7 @@ export function EditorialShowcaseView({
                           return (
                             <div className={cn("gap-2 pt-1", imgs.length === 1 ? "block" : "grid grid-cols-2")}>
                               {imgs.map((src: string, imgIdx: number) => (
-                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-32 sm:h-36 object-cover rounded-lg border border-border/40" loading="lazy" />
+                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-32 sm:h-36 object-cover rounded-lg border border-border" loading="lazy" />
                               ))}
                             </div>
                           );
@@ -1508,7 +1508,7 @@ export function EditorialShowcaseView({
                         {Array.isArray(item.meals_included) && item.meals_included.length > 0 && (
                           <div className="flex gap-2 flex-wrap pt-1">
                             {item.meals_included.map((m: string) => (
-                              <span key={m} className="text-xs px-3 py-1 rounded-lg bg-warning/10 border border-warning/30 text-warning-strong  font-semibold flex items-center gap-1">
+                              <span key={m} className="text-xs px-3 py-1 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-semibold flex items-center gap-1">
                                 {m === "breakfast" ? "Café da Manhã" : m === "lunch" ? "Almoço" : "Jantar"}
                               </span>
                             ))}
@@ -1532,7 +1532,7 @@ export function EditorialShowcaseView({
                         {Array.isArray(item.activities) && item.activities.length > 0 && (
                           <div className="flex flex-wrap gap-2 pt-1">
                             {item.activities.map((act: string, ai: number) => (
-                              <span key={ai} className="text-xs px-3 py-1 rounded-lg bg-muted border border-border/50 text-foreground/80 font-medium">
+                              <span key={ai} className="text-xs px-3 py-1 rounded-lg bg-muted border border-border text-foreground font-medium">
                                 {act}
                               </span>
                             ))}
@@ -1543,8 +1543,8 @@ export function EditorialShowcaseView({
                   ))}
                 </div>
               ) : isTravel ? (
-                <div className="p-6 rounded-lg bg-card border border-border/60 text-center space-y-3 shadow-2xs">
-                  <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                <div className="p-6 rounded-lg bg-card border border-border text-center space-y-3">
+                  <div className="size-10 rounded-lg bg-muted border border-border text-primary flex items-center justify-center mx-auto">
                     <Calendar className="size-5" />
                   </div>
                   <div className="space-y-1">
@@ -2567,7 +2567,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
-      <div className={cn(isForcedMobile ? "hidden" : "md:hidden", "fixed bottom-0 inset-x-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-3 pb-safe")}>
+      <div className={cn(isForcedMobile ? "hidden" : "md:hidden", "fixed bottom-0 inset-x-0 z-30 bg-background border-t border-border pb-3 pb-safe")}>
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button
@@ -2626,7 +2626,7 @@ export function EditorialShowcaseView({
                     <span>À vista</span>
                   )}
                   {pixDiscountPercent > 0 && (
-                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded-md text-xs">
+                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-muted border border-border px-2 py-1 rounded-md text-xs">
                       -{pixDiscountPercent}% PIX
                     </span>
                   )}
@@ -2644,7 +2644,7 @@ export function EditorialShowcaseView({
           <Button
             type="button"
             onClick={handlePrimaryCtaClick}
-            className="h-11 px-5 sm:px-7 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
+            className="h-11 px-5 sm:px-7 rounded-lg bg-foreground text-background hover:opacity-90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
           >
             {getPrimaryCtaLabel()}
           </Button>
@@ -2654,7 +2654,7 @@ export function EditorialShowcaseView({
       {/* ── Modal de Story Individual ── */}
       {activeStoryModal && (
         <Dialog open={!!activeStoryModal} onOpenChange={() => setActiveStoryModal(null)}>
-          <DialogContent className="max-w-sm p-4 rounded-lg bg-background/95 backdrop-blur-xl">
+          <DialogContent className="max-w-sm p-4 rounded-lg bg-background border border-border">
             <DialogHeader>
               <DialogTitle className="text-sm font-bold text-foreground">
                 {activeStoryModal.title}
@@ -2674,16 +2674,16 @@ export function EditorialShowcaseView({
       {/* ── Modal de Imagem em Tela Cheia (Padrão Apple & Airbnb com Navegação Completa) ── */}
       {fullscreenImage && (
         <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
-          <DialogContent className="max-w-4xl p-0 bg-foreground/95 border-none overflow-hidden sm:rounded-lg text-foreground select-none">
+          <DialogContent className="max-w-4xl p-0 bg-foreground border-none overflow-hidden sm:rounded-lg text-background select-none">
             {/* Topbar do Modal: Contador e Botão Fechar */}
             <div className="absolute top-3 left-3 right-3 z-50 flex items-center justify-between pointer-events-none">
-              <span className="px-3 py-2 rounded-md bg-foreground/70 backdrop-blur-md text-foreground text-xs font-mono font-medium border border-white/10 pointer-events-auto">
+              <span className="px-3 py-2 rounded-md bg-card text-foreground text-xs font-mono font-medium border border-border pointer-events-auto">
                 Foto {activeImageIndex + 1} de {images.length}
               </span>
               <button
                 type="button"
                 onClick={() => setFullscreenImage(null)}
-                className="size-11 rounded-lg bg-foreground/70 hover:bg-foreground/90 text-foreground flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-11 rounded-lg bg-card hover:bg-muted text-foreground flex items-center justify-center border border-border transition-colors pointer-events-auto cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Fechar (Esc)"
                 aria-label="Fechar ampliação"
               >
@@ -2710,7 +2710,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(prevIdx);
                       setFullscreenImage(images[prevIdx]);
                     }}
-                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-foreground/60 hover:bg-foreground/85 text-foreground flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-card hover:bg-muted text-foreground flex items-center justify-center border border-border transition-colors cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Foto anterior (Seta esquerda)"
                     aria-label="Foto anterior"
                   >
@@ -2725,7 +2725,7 @@ export function EditorialShowcaseView({
                       setActiveImageIndex(nextIdx);
                       setFullscreenImage(images[nextIdx]);
                     }}
-                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-foreground/60 hover:bg-foreground/85 text-foreground flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-lg bg-card hover:bg-muted text-foreground flex items-center justify-center border border-border transition-colors cursor-pointer hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     title="Próxima foto (Seta direita)"
                     aria-label="Próxima foto"
                   >
@@ -2737,7 +2737,7 @@ export function EditorialShowcaseView({
 
             {/* Miniaturas na Base do Modal */}
             {images.length > 1 && (
-              <div className="p-3 bg-foreground/80 border-t border-white/10 flex items-center justify-center gap-2 overflow-x-auto carousel no-scrollbar">
+              <div className="p-3 bg-foreground border-t border-border flex items-center justify-center gap-2 overflow-x-auto carousel no-scrollbar">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
@@ -2750,7 +2750,7 @@ export function EditorialShowcaseView({
                       "size-12 rounded-lg overflow-hidden border shrink-0 transition-colors cursor-pointer",
                       activeImageIndex === idx
                         ? "border-primary ring-2 ring-primary scale-105 opacity-100"
-                        : "border-white/20 opacity-60 hover:opacity-90"
+                        : "border-border opacity-60 hover:opacity-90"
                     )}
                   >
                     <img src={img} alt={`Miniatura ${idx + 1}`} className="size-full object-cover" />
@@ -2764,7 +2764,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Opções de Pagamento, Atendimento & Negociação (Apple HIG List Format) ── */}
       <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
-        <DialogContent className="max-w-md p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60 max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
+        <DialogContent className="max-w-md p-5 rounded-lg bg-background border border-border max-h-(--spacing-screen-90,90vh) overflow-y-auto no-scrollbar">
           <DialogHeader className="pb-1">
             <DialogTitle className="text-base font-bold text-foreground">
               {classified.title || "Opções & Atendimento"}
@@ -3038,7 +3038,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Pagamento Rápido via PIX ── */}
       <Dialog open={isPixPaymentModalOpen} onOpenChange={setIsPixPaymentModalOpen}>
-        <DialogContent className="max-w-sm p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60">
+        <DialogContent className="max-w-sm p-5 rounded-lg bg-background border border-border">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <QrCode className="size-5 text-emerald-600" />
@@ -3048,7 +3048,7 @@ export function EditorialShowcaseView({
 
           <div className="space-y-4 pt-2">
             {priceCents > 0 && (
-              <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
+              <div className="p-4 rounded-lg bg-muted border border-border text-center">
                 <span className="text-xs text-muted-foreground font-medium">Valor Total</span>
                 <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-display">
                   {formatMoney(priceCents)}
@@ -3063,7 +3063,7 @@ export function EditorialShowcaseView({
 
             <div className="space-y-2">
               <Label className="text-xs font-semibold text-foreground">Chave PIX do Anunciante</Label>
-              <div className="p-3 rounded-lg bg-muted/40 border border-border/60 font-mono text-xs text-foreground break-all select-all flex items-center justify-between gap-2">
+              <div className="p-3 rounded-lg bg-muted border border-border font-mono text-xs text-foreground break-all select-all flex items-center justify-between gap-2">
                 <span>{effectivePixKey || "Chave PIX sob consulta"}</span>
               </div>
               <Button
@@ -3074,14 +3074,14 @@ export function EditorialShowcaseView({
                     toast.success("Chave PIX copiada para a área de transferência!");
                   }
                 }}
-                className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold text-xs gap-2"
+                className="w-full h-11 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-primary-foreground font-bold text-xs gap-2"
               >
                 <Check className="size-4" />
                 <span>Copiar Chave PIX</span>
               </Button>
             </div>
 
-            <div className="p-3 rounded-lg bg-muted/20 border border-border/40 text-xs text-muted-foreground space-y-1">
+            <div className="p-3 rounded-lg bg-muted border border-border text-xs text-muted-foreground space-y-1">
               <p className="font-semibold text-foreground">Instruções:</p>
               <p>1. Abra o app do seu banco e selecione a opção PIX Copia e Cola / Chave.</p>
               <p>2. Confirme o valor e o nome do beneficiário.</p>
@@ -3096,7 +3096,7 @@ export function EditorialShowcaseView({
                   setIsPixPaymentModalOpen(false);
                   handleWhatsAppDirect();
                 }}
-                className="w-full h-11 min-h-11 rounded-lg border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-2"
+                className="w-full h-11 min-h-11 rounded-lg border-border text-foreground font-semibold text-xs gap-2"
               >
                 <MessageCircle className="size-4" />
                 <span>Enviar Comprovante pelo WhatsApp</span>
@@ -3109,7 +3109,7 @@ export function EditorialShowcaseView({
 
       {/* ── Modal de Detalhamento de Parcelas ── */}
       <Dialog open={isInstallmentsModalOpen} onOpenChange={setIsInstallmentsModalOpen}>
-        <DialogContent className="max-w-sm p-5 rounded-lg bg-background/98 backdrop-blur-xl border border-border/60">
+        <DialogContent className="max-w-sm p-5 rounded-lg bg-background border border-border">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <CreditCard className="size-5 text-primary" />
@@ -3118,7 +3118,7 @@ export function EditorialShowcaseView({
           </DialogHeader>
 
           <div className="space-y-3 pt-2">
-            <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-center">
+            <div className="p-3 rounded-lg bg-muted border border-border text-center">
               <span className="text-xs text-muted-foreground font-medium">Valor Total</span>
               <p className="text-xl font-black text-foreground font-display">{formatMoney(priceCents)}</p>
               {pixDiscountPercent > 0 && (

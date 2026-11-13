@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronRight, ArrowRight, Sparkles } from "lucide-react";
+import { ChevronRight, ArrowRight, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* -------------------------------------------------------------------------- */
@@ -58,7 +58,7 @@ function CategoryBubbleButton({
           />
         ) : (
           <div className="w-full h-full rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-            {item.icon ?? <Sparkles className="size-5" />}
+            {item.icon ?? <Tag className="size-5" />}
           </div>
         )}
       </div>

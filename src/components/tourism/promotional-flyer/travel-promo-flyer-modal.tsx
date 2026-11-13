@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { renderElementToCanvasSafe } from "@/lib/canvas/html2canvas-safe";
 import {
   Download,
   ImagePlus,
@@ -27,7 +28,6 @@ import {
   ShieldCheck,
   Maximize2,
   Dices,
-  Sparkles,
   Film,
   Copy,
   MessageCircle,
@@ -734,14 +734,9 @@ export function TravelPromoFlyerModal({
     const el = document.getElementById("travel-promo-canvas-artboard");
     if (!el) throw new Error("Elemento de arte promocional não encontrado no DOM.");
 
-    const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(el, {
+    const canvas = await renderElementToCanvasSafe(el, {
       scale: 2,
-      useCORS: true,
-      allowTaint: false,
       backgroundColor: "#0a192f",
-      logging: false,
-      imageTimeout: 15000,
     });
 
     return new Promise((resolve, reject) => {
@@ -770,13 +765,9 @@ export function TravelPromoFlyerModal({
       const el = document.getElementById("travel-promo-canvas-artboard");
       if (!el) throw new Error("Elemento de arte promocional não encontrado.");
 
-      const html2canvas = (await import("html2canvas")).default;
-      const baseCanvas = await html2canvas(el, {
+      const baseCanvas = await renderElementToCanvasSafe(el, {
         scale: 1.5,
-        useCORS: true,
-        allowTaint: false,
         backgroundColor: "#0a192f",
-        logging: false,
       });
 
       const videoWidth = baseCanvas.width;
@@ -1172,7 +1163,6 @@ export function TravelPromoFlyerModal({
                     value="vidro"
                     className="h-9 px-3 text-xs font-semibold gap-1 shrink-0"
                   >
-                    <Sparkles className="size-3" />
                     <span>Liquid Glass</span>
                   </TabsTrigger>
                   <TabsTrigger

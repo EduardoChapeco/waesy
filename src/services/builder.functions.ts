@@ -2516,7 +2516,7 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
           effectiveDocStoreId
             ? db
                 .from("stores")
-                .select("id, name, slug, logo_url, cover_url, phone, description, city, state, settings")
+                .select("id, name, slug, logo_url, banner_url, phone, description, city, state, settings")
                 .eq("id", effectiveDocStoreId)
                 .maybeSingle()
             : Promise.resolve({ data: null }),
@@ -2556,7 +2556,19 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
             newsArticles: hydratedNewsArticles,
             sponsors: hydratedSponsors,
             ...(omniDoc.blocks.some(
-              (b: any) => typeof b?.type === "string" && b.type.startsWith("vitrine_"),
+              (b: any) =>
+                (typeof b?.type === "string" &&
+                  (b.type.startsWith("vitrine_") ||
+                    b.type.startsWith("careers_") ||
+                    b.type.startsWith("community_") ||
+                    b.type.startsWith("stories_") ||
+                    b.type.startsWith("mosaic_") ||
+                    b.type === "cms_collection_grid" ||
+                    b.type === "event_rail" ||
+                    b.type === "site_header" ||
+                    b.type === "site_footer")) ||
+                Boolean(b?.dataBinding?.entity) ||
+                b?.dataBinding?.mode === "dynamic",
             )
               ? await hydrateOmniVitrineCollections(db, effectiveDocStoreId)
               : {}),
@@ -4225,6 +4237,7 @@ export const submitOmniPageLeadFn = createServerFn({ method: "POST" })
       success: boolean;
       leadId: string | null;
       quoteRequestId: string | null;
+      customerId: string | null;
     }> => {
       const db = getServerClient();
       let resolvedStoreId = data.storeId || null;
@@ -4249,63 +4262,43 @@ export const submitOmniPageLeadFn = createServerFn({ method: "POST" })
 
       const now = new Date().toISOString();
       let leadId: string | null = null;
+      let customerId: string | null = null;
       let quoteRequestId: string | null = null;
 
       if (resolvedStoreId) {
-        // 1. Gravar no CRM canônico da loja (leads_crm / crm_leads)
+        // 1. Ingestao canonica unificada no CRM da loja (leads_crm + customers_crm)
         try {
-          const { data: createdLead } = await db
-            .from("leads_crm")
-            .insert({
-              store_id: resolvedStoreId,
-              name: data.name.trim(),
-              phone: data.phone?.trim() || null,
-              email: data.email?.trim() || null,
-              source: `omni_builder:${data.blockType}`,
-              status: "new",
-              notes: data.message?.trim() || null,
-              metadata: {
-                page_slug: data.pageSlug || null,
-                block_id: data.blockId || null,
-                block_type: data.blockType,
-                ...(data.metadata || {}),
-              },
-              created_at: now,
-              updated_at: now,
-            })
-            .select("id")
-            .maybeSingle();
+          const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+          const rawMeta = (data.metadata && typeof data.metadata === "object" ? data.metadata : {}) as Record<string, any>;
+          const quizOrFormAnswers =
+            (rawMeta.quizAnswers && typeof rawMeta.quizAnswers === "object" ? rawMeta.quizAnswers : null) ||
+            (rawMeta.answers && typeof rawMeta.answers === "object" ? rawMeta.answers : null) ||
+            rawMeta;
 
-          if (createdLead?.id) {
-            leadId = createdLead.id;
-          }
-        } catch {
-          // Fallback para tabela crm_leads caso o alias seja utilizado no ambiente
-        }
+          const ingested = await ingestOmnichannelLead(db, {
+            storeId: resolvedStoreId,
+            source: `omni_builder:${data.blockType}`,
+            sourceDetail: data.pageSlug ? `Pagina ${data.pageSlug}` : data.blockType,
+            fullName: data.name.trim(),
+            phone: data.phone?.trim() || null,
+            email: data.email?.trim() || null,
+            destination: data.destination?.trim() || null,
+            message: data.message?.trim() || null,
+            sourceListingId: rawMeta.listingId || rawMeta.classifiedId || rawMeta.productId || null,
+            sourceListingOrigin: rawMeta.listingId || rawMeta.classifiedId ? "classified" : "builder",
+            sourceListingTitle: rawMeta.listingTitle || rawMeta.packageTitle || null,
+            customFields: {
+              ...quizOrFormAnswers,
+              page_slug: data.pageSlug || null,
+              block_id: data.blockId || null,
+              block_type: data.blockType,
+            },
+          });
 
-        if (!leadId) {
-          try {
-            const { data: fallbackLead } = await db
-              .from("crm_leads")
-              .insert({
-                store_id: resolvedStoreId,
-                name: data.name.trim(),
-                phone: data.phone?.trim() || null,
-                email: data.email?.trim() || null,
-                source: `omni_builder:${data.blockType}`,
-                status: "new",
-                notes: data.message?.trim() || null,
-                created_at: now,
-              })
-              .select("id")
-              .maybeSingle();
-
-            if (fallbackLead?.id) {
-              leadId = fallbackLead.id;
-            }
-          } catch {
-            // Segue para cotação caso aplicável
-          }
+          if (ingested.leadId) leadId = ingested.leadId;
+          if (ingested.customerId) customerId = ingested.customerId;
+        } catch (err) {
+          console.warn("[builder.functions] Falha na ingestao omnichannel:", err);
         }
 
         // 2. Se for formulário de cotação ou contiver destino turístico, gravar no Kanban de Cotações (travel_quote_requests)
@@ -4316,22 +4309,34 @@ export const submitOmniPageLeadFn = createServerFn({ method: "POST" })
 
         if (isQuoteBlock) {
           try {
-            const { data: createdQuote } = await db
+            const quotePayload: Record<string, any> = {
+              store_id: resolvedStoreId,
+              client_name: data.name.trim(),
+              client_phone: data.phone?.trim() || "",
+              client_email: data.email?.trim() || null,
+              destination: data.destination?.trim() || "Cotação via Vitrine Builder",
+              status: "new",
+              notes: data.message?.trim() || null,
+              source: "omni_builder_vitrine",
+              created_at: now,
+              updated_at: now,
+              ...(leadId ? { lead_id: leadId } : {}),
+            };
+            let { data: createdQuote, error: qErr } = await db
               .from("travel_quote_requests")
-              .insert({
-                store_id: resolvedStoreId,
-                client_name: data.name.trim(),
-                client_phone: data.phone?.trim() || "",
-                client_email: data.email?.trim() || null,
-                destination: data.destination?.trim() || "Cotação via Vitrine Builder",
-                status: "new",
-                notes: data.message?.trim() || null,
-                source: "omni_builder_vitrine",
-                created_at: now,
-                updated_at: now,
-              })
+              .insert(quotePayload)
               .select("id")
               .maybeSingle();
+
+            if (qErr && leadId) {
+              delete quotePayload.lead_id;
+              const retryRes = await db
+                .from("travel_quote_requests")
+                .insert(quotePayload)
+                .select("id")
+                .maybeSingle();
+              createdQuote = retryRes.data;
+            }
 
             if (createdQuote?.id) {
               quoteRequestId = createdQuote.id;
@@ -4346,6 +4351,7 @@ export const submitOmniPageLeadFn = createServerFn({ method: "POST" })
         success: true,
         leadId,
         quoteRequestId,
+        customerId,
       };
     },
   );

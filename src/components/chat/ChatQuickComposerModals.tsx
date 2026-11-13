@@ -54,8 +54,9 @@ import { toast } from "sonner";
 
 export interface StructuredDispatchPayload {
   message: string;
-  message_type: "text" | "structured_blocks" | "order_card";
+  message_type: "text" | "structured_blocks" | "order_card" | "image";
   payload: Record<string, any>;
+  attachments?: string[];
 }
 
 export interface ChatQuickComposerModalsProps {
@@ -66,7 +67,7 @@ export interface ChatQuickComposerModalsProps {
   storeId?: string;
   storeName?: string;
   storeSlug?: string;
-  activeModalOverride?: "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | null;
+  activeModalOverride?: "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null;
   onClearModalOverride?: () => void;
 }
 
@@ -118,13 +119,145 @@ export function ChatQuickComposerModals({
   onClearModalOverride,
 }: ChatQuickComposerModalsProps) {
   const [activeModal, setActiveModal] = useState<
-    "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | null
+    "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null
   >(null);
 
   const currentModal = activeModalOverride || activeModal;
   const closeAllModals = () => {
     setActiveModal(null);
     onClearModalOverride?.();
+  };
+
+  // Estado Modal 5: Gerador de Imagem / Card Visual para o Cliente
+  const [imgTemplate, setImgTemplate] = useState<"offer_quote" | "travel_voucher" | "pix_invoice" | "status_notice">("offer_quote");
+  const [imgHeadline, setImgHeadline] = useState("");
+  const [imgSubtitle, setImgSubtitle] = useState("");
+  const [imgHighlight, setImgHighlight] = useState("");
+  const [imgDetails, setImgDetails] = useState("");
+
+  const handleDispatchImageCard = async () => {
+    const templateLabelMap = {
+      offer_quote: "COTAÇÃO & OFERTA EXCLUSIVA",
+      travel_voucher: "VOUCHER & LOCALIZADOR DE VIAGEM",
+      pix_invoice: "FATURA & COBRANÇA PIX",
+      status_notice: "COMUNICADO DE ATENDIMENTO",
+    };
+    const titleText =
+      imgHeadline.trim() ||
+      (imgTemplate === "travel_voucher"
+        ? "Reserva Confirmada • Aéreo + Hotel"
+        : imgTemplate === "pix_invoice"
+          ? "Fatura Disponível para Pagamento"
+          : imgTemplate === "status_notice"
+            ? "Atualização Importante do seu Pedido"
+            : "Proposta Especial Preparada para Você");
+    const subText = imgSubtitle.trim() || storeName;
+    const highlightText =
+      imgHighlight.trim() ||
+      (imgTemplate === "travel_voucher" ? "PNR: CONFIRMED" : "Condição Confirmada");
+    const detailsText =
+      imgDetails.trim() ||
+      "Atendimento personalizado e suporte dedicado durante toda a sua jornada.";
+
+    let dataUrl = "";
+    if (typeof document !== "undefined") {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 680;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = imgTemplate === "travel_voucher" ? "midnightblue" : imgTemplate === "pix_invoice" ? "darkslategray" : "navy";
+        ctx.fillRect(0, 0, 1080, 680);
+
+        ctx.fillStyle = "whitesmoke";
+        ctx.fillRect(36, 36, 1008, 608);
+
+        ctx.fillStyle = imgTemplate === "travel_voucher" ? "darkslateblue" : imgTemplate === "pix_invoice" ? "teal" : "royalblue";
+        ctx.fillRect(36, 36, 1008, 96);
+
+        ctx.fillStyle = "white";
+        ctx.font = "bold 24px sans-serif";
+        ctx.fillText(`${templateLabelMap[imgTemplate]} • ${storeName.toUpperCase()}`, 72, 94);
+
+        ctx.fillStyle = "black";
+        ctx.font = "bold 44px sans-serif";
+        ctx.fillText(titleText.slice(0, 42), 72, 215);
+
+        ctx.fillStyle = "dimgray";
+        ctx.font = "600 28px sans-serif";
+        ctx.fillText(subText.slice(0, 58), 72, 270);
+
+        ctx.fillStyle = "gainsboro";
+        ctx.fillRect(72, 315, 936, 130);
+
+        ctx.fillStyle = "midnightblue";
+        ctx.font = "bold 46px monospace";
+        ctx.fillText(highlightText.slice(0, 36), 104, 396);
+
+        ctx.fillStyle = "darkslategray";
+        ctx.font = "500 26px sans-serif";
+        const words = detailsText.split(" ");
+        let line1 = "";
+        let line2 = "";
+        for (const w of words) {
+          if ((line1 + " " + w).trim().length <= 64) {
+            line1 = (line1 + " " + w).trim();
+          } else if ((line2 + " " + w).trim().length <= 64) {
+            line2 = (line2 + " " + w).trim();
+          }
+        }
+        ctx.fillText(line1, 72, 515);
+        if (line2) ctx.fillText(line2, 72, 555);
+
+        ctx.fillStyle = "slategray";
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillText(`Emitido por ${storeName} • ${new Date().toLocaleDateString("pt-BR")}`, 72, 612);
+
+        dataUrl = canvas.toDataURL("image/png");
+      }
+    }
+
+    await onDispatchMessage({
+      message: `${titleText} — ${highlightText}${imgDetails.trim() ? `\n${imgDetails.trim()}` : ""}`,
+      message_type: dataUrl ? "image" : "structured_blocks",
+      attachments: dataUrl ? [dataUrl] : undefined,
+      payload: {
+        ...(dataUrl
+          ? {
+              media: {
+                type: "image",
+                url: dataUrl,
+                mimetype: "image/png",
+                caption: `${titleText} • ${highlightText}`,
+              },
+            }
+          : {}),
+        card_meta: {
+          template: imgTemplate,
+          headline: titleText,
+          subtitle: subText,
+          highlight: highlightText,
+          details: detailsText,
+        },
+        blocks: [
+          {
+            type: "summary_card",
+            data: {
+              title: titleText,
+              subtitle: `${highlightText} • ${detailsText}`,
+              badge: templateLabelMap[imgTemplate],
+            },
+          },
+        ],
+      },
+    });
+
+    toast.success("Card visual em imagem gerado e enviado para o cliente!");
+    setImgHeadline("");
+    setImgSubtitle("");
+    setImgHighlight("");
+    setImgDetails("");
+    closeAllModals();
   };
 
   // Estado Modal 1: Formulário Rápido / Anônimo / Secreto
@@ -479,15 +612,15 @@ export function ChatQuickComposerModals({
               type="button"
               onClick={() => {
                 onTrayOpenChange(false);
-                toast.info("Seletor de câmera e galeria pronto.");
+                setActiveModal("image_card");
               }}
               className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <div className="size-12 rounded-2xl bg-muted text-foreground flex items-center justify-center border border-border/60">
+              <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
                 <Camera className="size-5" />
               </div>
               <span className="text-xs font-semibold text-foreground text-center">
-                Fotos
+                Gerar Imagem
               </span>
             </button>
 
@@ -945,6 +1078,139 @@ export function ChatQuickComposerModals({
               <Send className="size-3.5" />
               <span>Enviar Planilha no Chat</span>
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 5: GERADOR DE CARD VISUAL EM IMAGEM PARA O CLIENTE */}
+      <Dialog
+        open={currentModal === "image_card"}
+        onOpenChange={(open) => !open && closeAllModals()}
+      >
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-border/80 rounded-xl">
+          <DialogHeader className="p-4 border-b border-border/50">
+            <DialogTitle className="text-base font-bold text-foreground">
+              Gerar Card em Imagem p/ Cliente
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="p-4 space-y-3 max-h-96 overflow-y-auto no-scrollbar">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { id: "offer_quote", label: "Cotação / Oferta" },
+                { id: "travel_voucher", label: "Voucher / PNR" },
+                { id: "pix_invoice", label: "Fatura / PIX" },
+                { id: "status_notice", label: "Comunicado" },
+              ].map((tpl) => {
+                const active = imgTemplate === tpl.id;
+                return (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => setImgTemplate(tpl.id as any)}
+                    className={cn(
+                      "px-2 py-2 rounded-lg border text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/60",
+                    )}
+                  >
+                    {tpl.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground block">
+                Título Principal do Card
+              </label>
+              <Input
+                value={imgHeadline}
+                onChange={(e) => setImgHeadline(e.target.value)}
+                placeholder={
+                  imgTemplate === "travel_voucher"
+                    ? "Ex: Passagem Aérea São Paulo (GRU) • Confirmada"
+                    : "Ex: Pacote Gramado & Canela • 5 Dias"
+                }
+                className="text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground block">
+                  Destaque (Valor, PNR ou Código)
+                </label>
+                <Input
+                  value={imgHighlight}
+                  onChange={(e) => setImgHighlight(e.target.value)}
+                  placeholder={imgTemplate === "travel_voucher" ? "Ex: PNR: K8M4QX" : "Ex: 10x de R$ 289,00"}
+                  className="text-xs font-mono"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground block">
+                  Subtítulo / Passageiro / Cia
+                </label>
+                <Input
+                  value={imgSubtitle}
+                  onChange={(e) => setImgSubtitle(e.target.value)}
+                  placeholder="Ex: LATAM • Embarque 18/11 às 09:40"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground block">
+                Detalhes Inclusos / Observações no Card
+              </label>
+              <Textarea
+                value={imgDetails}
+                onChange={(e) => setImgDetails(e.target.value)}
+                placeholder="Ex: Bagagem de mão 10kg inclusa • Apresentar documento com foto 2h antes do voo."
+                rows={2}
+                className="text-xs resize-none"
+              />
+            </div>
+
+            {/* Preview Visual Rápido */}
+            <div className="rounded-xl border border-border/80 bg-muted/40 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-2xs font-bold uppercase tracking-wider text-primary">
+                  Prévia do Card Visual ({storeName})
+                </span>
+                <Badge variant="outline" className="text-2xs">PNG 1080x680</Badge>
+              </div>
+              <p className="text-sm font-bold text-foreground truncate">
+                {imgHeadline || "Título da Proposta / Voucher"}
+              </p>
+              <div className="px-3 py-2 rounded-lg bg-card border border-border/60 font-mono text-xs font-bold text-primary">
+                {imgHighlight || "DESTAQUE / VALOR / PNR"}
+              </div>
+              <p className="text-2xs text-muted-foreground line-clamp-2">
+                {imgDetails || "Os detalhes preenchidos acima serão renderizados na imagem enviada ao cliente."}
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-border/50 flex items-center justify-end gap-2 bg-muted/20">
+            <button
+              type="button"
+              onClick={closeAllModals}
+              className="px-4 py-2 rounded-lg border border-border/70 bg-background text-xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleDispatchImageCard}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Camera className="size-3.5" />
+              <span>Gerar e Enviar Imagem</span>
+            </button>
           </div>
         </DialogContent>
       </Dialog>

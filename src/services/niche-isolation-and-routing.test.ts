@@ -185,9 +185,9 @@ describe("Omni-Niche Semantic Isolation & Dynamic Sidebar Engine (V136)", () => 
       expect(tourismPaths).not.toContain("/workspace/pedidos/entregadores");
       expect(tourismPaths).toContain("/workspace/turismo/vouchers");
       expect(tourismPaths).toContain("/workspace/turismo/embarques");
-      expect(tourismPillars.find((p) => p.id === "comercial")?.label).toBe("Comercial & Cotação");
-      expect(tourismPillars.find((p) => p.id === "catalogo")?.label).toBe("Catálogo & Tarifários");
-      expect(tourismPillars.find((p) => p.id === "logistica")?.label).toBe("Operações & Embarques");
+      expect(tourismPillars.find((p) => p.id === "comercial")?.label).toBe("Cotações");
+      expect(tourismPillars.find((p) => p.id === "catalogo")?.label).toBe("Roteiros");
+      expect(tourismPillars.find((p) => p.id === "logistica")?.label).toBe("Embarques");
 
       const gastroPillars = getMasterSidebarPillars(getSidebarConfig("gastronomy"), "gastronomy");
       const gastroPaths = gastroPillars.flatMap((p) => p.items.map((i) => i.path));

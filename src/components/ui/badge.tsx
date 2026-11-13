@@ -9,18 +9,18 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-muted text-foreground hover:bg-muted/80",
+          "bg-muted text-foreground hover:bg-accent",
         secondary:
-          "bg-muted text-muted-foreground hover:bg-muted/80",
+          "bg-secondary text-secondary-foreground hover:bg-accent",
         destructive:
-          "bg-destructive/15 text-destructive hover:bg-destructive/20",
-        outline: "bg-muted/60 text-foreground hover:bg-muted",
+          "bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-200 border border-rose-200 dark:border-rose-800",
+        outline: "bg-card text-foreground border border-border hover:bg-muted",
         /** Informational status (e.g. "Approved", "Processing") */
-        info: "bg-info/15 text-info hover:bg-info/20",
+        info: "bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-200 border border-sky-200 dark:border-sky-800",
         /** Success status (e.g. "Refunded", "Delivered") */
-        success: "bg-success/15 text-success hover:bg-success/20",
+        success: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800",
         /** Warning status (e.g. "Pending review") */
-        warning: "bg-warning/15 text-warning-strong hover:bg-warning/20",
+        warning: "bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-200 dark:border-amber-800",
       },
     },
     defaultVariants: {

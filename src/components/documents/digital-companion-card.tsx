@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { generateQrCodeDataUri } from "@/lib/qr-code";
 import { exportElementAsImage } from "@/lib/pdf-export";
+import { renderElementToCanvasSafe } from "@/lib/canvas/html2canvas-safe";
 
 import type {
   CompanionCardNiche,
@@ -198,17 +199,14 @@ export function DigitalCompanionCard({
     try {
       setIsExporting(true);
       setExportMessage("Compilando PDF de bolso...");
-      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
       const pages = ref.current.querySelectorAll<HTMLElement>(".companion-story-page");
       let pdf: any = null;
 
       for (let i = 0; i < pages.length; i++) {
-        const canvas = await html2canvas(pages[i], {
+        const canvas = await renderElementToCanvasSafe(pages[i], {
           scale: 2.5,
-          useCORS: true,
           backgroundColor: null,
-          scrollY: -window.scrollY,
         });
         const imgData = canvas.toDataURL("image/jpeg", 0.95);
         const pdfWidth = 400;

@@ -637,7 +637,7 @@ export default function AgencyCorporateCockpitPage() {
                     </span>
                   </div>
                   <Link
-                    to={"/workspace/atendimento" as any}
+                    to={"/workspace/atendimento/chat" as any}
                     search={{ search: "Carlos Eduardo" } as any}
                     className="inline-flex h-11 min-h-11 items-center justify-center rounded-lg px-4 text-xs font-semibold shrink-0 text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >

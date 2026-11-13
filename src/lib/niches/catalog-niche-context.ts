@@ -40,7 +40,36 @@ export function getNicheCatalogContext(storeOrSegment?: any): NicheCatalogContex
  ? getNicheSemantics(storeOrSegment)
  : getNicheSemantics({ segment: storeOrSegment });
 
+ const switchKey = (() => {
  switch (semantics.nicheId) {
+ case "automotive":
+ case "vehicles":
+ return "vehicles";
+ case "beauty_salon":
+ case "barbershop":
+ case "aesthetics_clinic":
+ case "healthcare":
+ case "dental":
+ case "psychology":
+ case "organizations":
+ case "services":
+ return "services";
+ case "vet_petshop":
+ case "pet":
+ return "pet";
+ case "market_perishables":
+ case "supermarket":
+ return "supermarket";
+ case "law_firm":
+ case "accounting":
+ case "legal":
+ return "legal";
+ default:
+ return semantics.nicheId;
+ }
+ })();
+
+ switch (switchKey) {
  // 1. TURISMO, AGÊNCIAS DE VIAGENS & ROTEIROS
  case "tourism":
  return {

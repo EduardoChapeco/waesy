@@ -8,7 +8,6 @@ import {
   Car,
   Ticket,
   Ship,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +54,7 @@ export const CategoryIconGrid: React.FC<CategoryIconGridProps> = ({
       case "cruise":
         return <Ship className="size-6 text-cyan-500" />;
       default:
-        return <Sparkles className="size-6 text-primary" />;
+        return <Compass className="size-6 text-primary" />;
     }
   };
 

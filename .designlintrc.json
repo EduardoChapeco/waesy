@@ -243,6 +243,22 @@
       "date": "2026-10-27",
       "expiry": "2027-12-31",
       "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/lib/canvas/html2canvas-safe.ts",
+      "reason": "Motor conversor de espaco de cor OKLCH/OKLab/color-mix para RGB/RGBA compativel com html2canvas",
+      "date": "2026-11-13",
+      "expiry": "2028-12-31",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/lib/canvas/html2canvas-safe.test.ts",
+      "reason": "Testes unitarios de assercao literal RGB/RGBA do conversor CSS html2canvas-safe",
+      "date": "2026-11-13",
+      "expiry": "2028-12-31",
+      "approvedBy": "design-system-architect"
     }
   ]
 }

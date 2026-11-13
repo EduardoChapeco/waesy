@@ -105,7 +105,7 @@ export function IFoodSubcategoryPillRail({
 
             {/* Badge de Destaque */}
             {item.badge && (
-              <span className="absolute -top-1 -right-1 px-2 py-0.2 rounded-full bg-red-600 text-primary-foreground text-3xs font-black uppercase tracking-wider shadow-xs">
+              <span className="absolute -top-1 -right-1 px-2 py-1 rounded-full bg-red-600 text-red-50 text-3xs font-black uppercase tracking-wider">
                 {item.badge}
               </span>
             )}

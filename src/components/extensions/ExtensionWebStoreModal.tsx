@@ -25,7 +25,7 @@ import {
   Loader2,
   ExternalLink,
   Layers,
-  Sparkles,
+  Zap,
   Info,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -73,7 +73,7 @@ const EXTENSION_CATALOG: Record<
       {
         title: "Qualquer Portal Infotravel",
         desc: "Compatível nativamente com Orinter, FRT, Incomum, Schultz e qualquer subdomínio white-label via botão Ativar neste Portal.",
-        icon: Sparkles,
+        icon: Zap,
       },
       {
         title: "Sincronização em Nuvem & CRM",
@@ -127,7 +127,7 @@ const EXTENSION_CATALOG: Record<
       {
         title: "Varredura com Auto-Scroll",
         desc: "Percorre automaticamente listas virtualizadas de participantes, atributos JID (@c.us) e subtítulos de grupos grandes.",
-        icon: Sparkles,
+        icon: Zap,
       },
       {
         title: "Sanitização E.164 Brasil",
@@ -181,7 +181,7 @@ const EXTENSION_CATALOG: Record<
       {
         title: "Extração Paginada Playwright",
         desc: "O script miner.mjs navega automaticamente pelas páginas de reservas com jitter randômico anti-bloqueio e retomada via progresso.json.",
-        icon: Sparkles,
+        icon: Zap,
       },
       {
         title: "Coletor Local Porta 3333",
@@ -487,15 +487,13 @@ export function ExtensionWebStoreModal({
                   <span>Baixar Extensão (.zip)</span>
                 </Button>
               ) : isPending ? (
-                <Button
-                  variant="outline"
-                  size="default"
-                  disabled
-                  className="h-11 min-h-11 px-6 font-semibold gap-2 opacity-80 cursor-not-allowed"
+                <div
+                  role="status"
+                  className="inline-flex items-center justify-center h-11 min-h-11 px-5 rounded-xl border border-border bg-muted/50 text-sm font-semibold text-foreground gap-2"
                 >
-                  <Clock className="size-4 text-warning-strong" />
+                  <Clock className="size-4 text-warning-strong shrink-0" />
                   <span>Aguardando Liberação</span>
-                </Button>
+                </div>
               ) : (
                 <Button
                   variant="outline"
@@ -699,14 +697,14 @@ export function ExtensionWebStoreModal({
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-sm font-bold text-foreground">Passo a Passo de Instalação no Navegador</h3>
+                <h3 className="text-sm font-bold text-foreground">Instalação no Navegador</h3>
                 <div className="space-y-2">
                   {meta.steps.map((step, idx) => (
                     <div
                       key={idx}
                       className="p-3 rounded-lg border border-border bg-card flex items-start gap-3 text-xs"
                     >
-                      <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0">
+                      <span className="size-6 rounded-full bg-muted text-foreground font-bold flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
                       <span className="text-foreground leading-relaxed pt-1">

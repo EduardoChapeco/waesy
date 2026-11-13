@@ -19,25 +19,25 @@ export interface AiCurationUpgradeModalProps {
 export function AiCurationUpgradeModal({
   isOpen,
   onClose,
-  featureTitle = "Curadoria Editorial com Inteligência Artificial",
+  featureTitle = "Curadoria Editorial",
 }: AiCurationUpgradeModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border/60 p-5 sm:p-6 space-y-4">
+      <DialogContent className="sm:max-w-md rounded-lg bg-card border border-border p-5 sm:p-6 space-y-4">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-primary/10 text-primary">
+            <span className="p-2 rounded-lg bg-muted text-foreground">
               <Star className="size-5" />
             </span>
-            <Badge variant="outline" className="text-2xs font-mono border-primary/40 text-primary">
-              RECURSO PREMIUM / BYOK
+            <Badge variant="outline" className="text-2xs font-mono border-border text-muted-foreground">
+              PLANO PRO OU CHAVE PRÓPRIA
             </Badge>
           </div>
           <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
-            Desbloquear {featureTitle}
+            Ativar {featureTitle}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-            A extração mecânica de dados estruturados é 100% gratuita. Para transformar dados brutos em redações refinadas, títulos atrativos e sínteses para celular, escolha uma das opções abaixo:
+            Assine um plano ou conecte sua chave de API para gerar descrições e títulos editoriais automaticamente:
           </DialogDescription>
         </DialogHeader>
 
@@ -47,20 +47,20 @@ export function AiCurationUpgradeModal({
           <Link
             to="/workspace/configuracoes/inteligencia-artificial"
             onClick={onClose}
-            className="flex items-start gap-3 p-4 rounded-lg border border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-muted transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 mt-1">
+            <div className="size-8 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0 mt-1">
               <Key className="size-4" />
             </div>
             <div className="space-y-1 min-w-0 flex-1">
               <div className="text-xs font-bold text-foreground flex items-center justify-between">
-                <span>Inserir Minha Chave de API (BYOK)</span>
-                <span className="text-2xs text-emerald-500 font-mono font-bold bg-emerald-500/10 px-2 py-0.2 rounded">
+                <span>Minha Chave de API</span>
+                <span className="text-2xs text-foreground font-mono font-bold bg-secondary px-2 py-1 rounded">
                   Grátis
                 </span>
               </div>
               <p className="text-2xs text-muted-foreground">
-                Conecte sua própria chave da OpenAI, Anthropic ou Google Gemini sem pagar mensalidade adicional.
+                Conecte sua chave OpenAI, Anthropic ou Google Gemini sem mensalidade extra.
               </p>
             </div>
           </Link>

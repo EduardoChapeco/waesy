@@ -17,6 +17,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { ingestOmnichannelLead } from "./omnichannel-lead-ingestion";
 
 // ============================================================
 // Schemas de I/O
@@ -54,6 +55,11 @@ export const quoteItemInputSchema = z.object({
 
 export const createQuoteInputSchema = z.object({
  customer_id: z.string().uuid().optional(),
+ lead_id: z.string().uuid().optional(),
+ source_listing_id: z.string().optional(),
+ source_listing_origin: z.string().optional(),
+ niche_id: z.string().optional(),
+ custom_fields: z.record(z.unknown()).optional(),
  guest_name: z.string().optional(),
  guest_email: z.string().email().optional(),
  guest_phone: z.string().optional(),
@@ -86,6 +92,11 @@ export interface QuoteDetailDTO {
  status: string;
  version: number;
  customer_id: string | null;
+ lead_id?: string | null;
+ source_listing_id?: string | null;
+ source_listing_origin?: string | null;
+ niche_id?: string | null;
+ custom_fields?: Record<string, any> | null;
  customer_name: string | null;
  customer_email: string | null;
  customer_phone: string | null;
@@ -255,7 +266,7 @@ export const createQuote = createServerFn({ method: "POST" })
 
  const db = getServerClient();
 
- // 1. Criar o quote via RPC (gera número sequencial atomicamente)
+ // 1. Criar o quote via RPC (gera número sequencial e vincula CRM/catálogo atomicamente)
  const { data: quoteId, error: rpcError } = await db.rpc("create_quote", {
  p_store_id: identity.store_id,
  p_customer_id: data.customer_id ?? null,
@@ -265,6 +276,11 @@ export const createQuote = createServerFn({ method: "POST" })
  p_valid_until: data.valid_until ?? null,
  p_conditions: data.conditions ?? null,
  p_internal_notes: data.internal_notes ?? null,
+ p_lead_id: data.lead_id ?? null,
+ p_source_listing_id: data.source_listing_id ?? null,
+ p_source_listing_origin: data.source_listing_origin ?? null,
+ p_niche_id: data.niche_id ?? null,
+ p_custom_fields: (data.custom_fields ?? {}) as any,
  });
 
  if (rpcError || !quoteId) {
@@ -391,29 +407,73 @@ export const publicQuoteRequestSchema = z.object({
  preferred_date: z.string().optional(),
  location_address: z.string().optional(),
  estimated_budget_cents: z.number().int().min(0).optional(),
+ source_listing_id: z.string().optional(),
+ source_listing_origin: z.string().optional(),
+ niche_id: z.string().optional(),
+ custom_fields: z.record(z.unknown()).optional(),
 });
 
 export type PublicQuoteRequestInput = z.infer<typeof publicQuoteRequestSchema>;
 
 /**
  * Solicitação pública de orçamento feita pelo cliente na vitrine da loja ou no Hub de Serviços.
- * Grava na tabela quotes com status 'sent' e cria o item descritivo em quote_items.
+ * Grava na tabela quotes com status 'sent', cria o item descritivo em quote_items
+ * e espelha automaticamente no CRM Kanban (leads_crm + customers_crm) via ingestOmnichannelLead.
  */
 export const requestPublicQuote = createServerFn({ method: "POST" })
  .validator(withDataPayload(publicQuoteRequestSchema))
  .handler(async ({ data }) => {
  const db = getServerClient();
 
- // 1. Criar o orçamento via RPC nativa
+ const rawCustomFields: Record<string, unknown> = {
+  ...(data.custom_fields || {}),
+  ...(data.service_category ? { categoria_servico: data.service_category } : {}),
+  ...(data.urgency ? { urgencia: data.urgency } : {}),
+  ...(data.preferred_date ? { data_desejada: data.preferred_date } : {}),
+  ...(data.location_address ? { endereco_atendimento: data.location_address } : {}),
+  ...(data.project_description ? { escopo_solicitado: data.project_description } : {}),
+ };
+
+ let leadId: string | null = null;
+ let customerId: string | null = null;
+ try {
+  const crmResult = await ingestOmnichannelLead(db, {
+   storeId: data.store_id,
+   fullName: data.customer_name,
+   email: data.customer_email || null,
+   phone: data.customer_phone,
+   source: "public_quote_request",
+   title: data.service_category ? `Orçamento: ${data.service_category}` : "Solicitação de Orçamento",
+   destination: data.service_category || undefined,
+   travelStart: data.preferred_date || undefined,
+   estimatedValueCents: data.estimated_budget_cents ?? 0,
+   notes: data.project_description,
+   sourceListingId: data.source_listing_id || null,
+   sourceListingOrigin: (data.source_listing_origin as "product" | "classified" | "form" | "experience" | "builder" | null) || "form",
+   nicheId: data.niche_id || undefined,
+   customFields: rawCustomFields,
+  });
+  leadId = crmResult.leadId;
+  customerId = crmResult.customerId;
+ } catch (crmErr: any) {
+  console.warn("[quotes:requestPublicQuote] Aviso ao espelhar CRM:", crmErr?.message);
+ }
+
+ // 1. Criar o orçamento via RPC nativa com vínculos CRM/catálogo
  const { data: quoteId, error: rpcError } = await db.rpc("create_quote", {
  p_store_id: data.store_id,
- p_customer_id: null,
+ p_customer_id: customerId,
  p_guest_name: data.customer_name,
  p_guest_email: data.customer_email || null,
  p_guest_phone: data.customer_phone,
  p_valid_until: null,
  p_conditions: `Solicitação via Super App Waesy - Categoria: ${data.service_category || "Geral"}. Endereço: ${data.location_address || "Não informado"}. Urgência: ${data.urgency}. Data preferencial: ${data.preferred_date || "A combinar"}`,
  p_internal_notes: `Orçamento solicitado pelo cliente através da vitrine pública.`,
+ p_lead_id: leadId,
+ p_source_listing_id: data.source_listing_id || null,
+ p_source_listing_origin: data.source_listing_origin || "quote",
+ p_niche_id: data.niche_id || null,
+ p_custom_fields: rawCustomFields as any,
  });
 
  if (rpcError || !quoteId) {
@@ -434,6 +494,8 @@ export const requestPublicQuote = createServerFn({ method: "POST" })
  urgency: data.urgency,
  preferred_date: data.preferred_date,
  location_address: data.location_address,
+ custom_fields: rawCustomFields,
+ lead_id: leadId,
  source: "public_super_app",
  },
  position: 0,
@@ -446,6 +508,7 @@ export const requestPublicQuote = createServerFn({ method: "POST" })
  return {
  success: true,
  quote_id: quoteId as string,
+ lead_id: leadId,
  message: "Orçamento enviado com sucesso! O prestador entrará em contato em breve.",
  };
  });

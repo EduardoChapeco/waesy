@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { BookOpen, Plus, Trash2, Edit2, Copy, Check, Search, Tag, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { interpolateContractVariables } from '@/lib/contracts/contract-semantic-dictionary';
 
 export interface OfficeContractClause {
  id: string;
@@ -66,9 +67,20 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export function replaceContractVariables(template: string, vars: Record<string, string>): string {
- let result = template;
+ const normalizedVars: Record<string, string | undefined> = {
+ cliente_nome: vars['cliente_nome'] ?? vars['cliente.nome'],
+ cliente_cpf: vars['cliente_cpf'] ?? vars['cliente.cpf'],
+ cliente_documento: vars['cliente_documento'] ?? vars['cliente.cpf'],
+ contratada_nome: vars['contratada_nome'] ?? vars['loja.nome'] ?? vars['loja_nome'],
+ contratada_cnpj: vars['contratada_cnpj'] ?? vars['loja.cnpj'],
+ valor_total: vars['valor_total'],
+ data_vencimento: vars['data_vencimento'],
+ ...vars,
+ };
+ let result = interpolateContractVariables(template, normalizedVars);
  for (const [k, v] of Object.entries(vars)) {
- const pattern = new RegExp(`\\{\\{\\s*${k}\\s*\\}\\}`, 'g');
+ const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+ const pattern = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g');
  result = result.replace(pattern, v || '');
  }
  return result;

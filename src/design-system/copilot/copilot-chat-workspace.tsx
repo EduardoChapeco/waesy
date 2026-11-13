@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Send, Bot, User, Sparkles, Paperclip } from "lucide-react";
+import { Send, Bot, User, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { renderCopilotWidget, type StructuredWidgetPayload } from "./widget-registry";
 
@@ -21,6 +21,9 @@ export interface CopilotChatWorkspaceProps {
   className?: string;
 }
 
+/**
+ * @deprecated Superficial prototype superseded by `@/components/chat/ai-chat-shell` (`AIChatShell`).
+ */
 export function CopilotChatWorkspace({
   messages,
   onSendMessage,
@@ -78,7 +81,7 @@ export function CopilotChatWorkspace({
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-12 max-w-md mx-auto space-y-4">
             <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-              <Sparkles className="size-6" />
+              <Bot className="size-6" />
             </div>
             <div className="space-y-1">
               <h4 className="text-base font-semibold text-foreground">Como posso ajudar?</h4>

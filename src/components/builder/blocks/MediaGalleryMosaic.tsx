@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MediaGalleryBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import { Image as ImageIcon, X, ZoomIn } from "lucide-react";
 
 export interface MediaGalleryMosaicProps {
@@ -16,7 +17,17 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
   styling,
   className = "",
 }) => {
+  const { isMobile } = useEffectiveViewport();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedImage) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedImage(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedImage]);
 
   const paddingYClasses = {
     none: "py-0",
@@ -75,7 +86,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className={isMobile ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"}>
           {items.map((item, index) => {
             const isFeatured = index === 0;
             return (
@@ -85,7 +96,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
                 onClick={() => setSelectedImage(item.imageUrl)}
                 aria-label={item.title || "Ampliar imagem da galeria"}
                 className={`group relative overflow-hidden ${radiusClass} border border-border/60 bg-muted/20 cursor-pointer transition-colors duration-300 hover:border-foreground/20 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none ${
-                  isFeatured ? "sm:col-span-2 lg:col-span-2 aspect-16/10" : "aspect-square"
+                  isFeatured && !isMobile ? "sm:col-span-2 lg:col-span-2 aspect-16/10" : "aspect-square"
                 }`}
               >
                 <img

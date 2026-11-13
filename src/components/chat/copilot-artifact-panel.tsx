@@ -218,8 +218,12 @@ export function CopilotArtifactPanel({
             headline={data.headline}
             subheadline={data.subheadline}
             bullets={data.bullets}
+            quoteAuthor={data.quoteAuthor}
             ctaText={data.ctaText}
             storeName={data.storeName}
+            brandHandle={data.brandHandle}
+            logoUrl={data.logoUrl}
+            imageUrl={data.imageUrl}
             caption={data.caption}
             hashtags={data.hashtags}
             offerPrice={data.offerPrice}

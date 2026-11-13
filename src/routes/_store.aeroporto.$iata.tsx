@@ -128,25 +128,25 @@ function AirportDetailPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* ── Breadcrumb ── */}
-      <div className="border-b border-border/50 bg-card/60 backdrop-blur-md">
-        <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto scroll-area-carousel no-scrollbar">
+      <div className="border-b border-border bg-card">
+        <div className="container max-w-6xl mx-auto px-2 sm:px-4 py-3 flex items-center gap-2 text-xs text-muted-foreground overflow-x-auto scroll-area-carousel no-scrollbar">
           <Link to="/" className="hover:text-foreground transition-colors shrink-0">
             Início
           </Link>
           <ChevronRight className="size-3.5 shrink-0" />
           <Link to="/classificados" className="hover:text-foreground transition-colors shrink-0">
-            Turismo & Aéreo
+            Turismo e Aéreo
           </Link>
           <ChevronRight className="size-3.5 shrink-0" />
-          <span className="text-foreground font-semibold truncate shrink-0">
+          <span className="text-foreground font-semibold line-clamp-1 shrink-0">
             {profile.city} ({profile.iata_code})
           </span>
         </div>
       </div>
 
       {/* ── Hero Principal do Aeroporto ── */}
-      <section className="relative bg-linear-to-b from-primary/10 via-background to-background border-b border-border/60 py-8 md:py-12">
-        <div className="container max-w-6xl mx-auto px-4 space-y-6">
+      <section className="relative bg-card border-b border-border py-8 md:py-12">
+        <div className="container max-w-6xl mx-auto px-2 sm:px-4 space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 max-w-3xl">
               <div className="flex flex-wrap items-center gap-2">
@@ -155,15 +155,15 @@ function AirportDetailPage() {
                   {profile.iata_code}
                 </span>
                 {profile.icao_code && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-muted font-mono font-bold text-xs text-muted-foreground border border-border/60">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-muted font-mono font-bold text-xs text-muted-foreground border border-border">
                     ICAO: {profile.icao_code}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold text-xs border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold text-xs border border-emerald-200 dark:border-emerald-800">
                   <Clock className="size-3.5" />
                   {profile.operating_hours}
                 </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-card text-foreground font-medium text-xs border border-border/60">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-background text-foreground font-medium text-xs border border-border">
                   {profile.operator_name}
                 </span>
               </div>
@@ -194,7 +194,7 @@ function AirportDetailPage() {
                     className="inline-flex items-center gap-2 hover:text-foreground transition-colors"
                   >
                     <Globe className="size-4 text-primary" />
-                    Site Oficial Concessionária
+                    Site Oficial
                     <ExternalLink className="size-3" />
                   </a>
                 )}
@@ -203,7 +203,7 @@ function AirportDetailPage() {
 
             {/* CTAs de Ação Rápida */}
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
-              <Button asChild className="h-11 min-h-11 px-5 font-semibold shadow-xs">
+              <Button asChild className="h-11 min-h-11 px-5 font-semibold">
                 <Link to={"/classificados" as any}>
                   Ver Ofertas com Voo ({profile.iata_code})
                   <ArrowRight className="size-4 ml-2" />
@@ -220,9 +220,9 @@ function AirportDetailPage() {
                   key={n.id}
                   className={cn(
                     "rounded-lg p-4 flex items-start gap-3 border text-sm",
-                    n.severity === "alert" && "bg-destructive/10 border-destructive/30 text-destructive",
-                    n.severity === "warning" && "bg-warning/10 border-warning/30 text-warning-strong ",
-                    n.severity === "info" && "bg-primary/10 border-primary/20 text-foreground",
+                    n.severity === "alert" && "bg-rose-50 dark:bg-rose-950 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200",
+                    n.severity === "warning" && "bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300",
+                    n.severity === "info" && "bg-muted border-border text-foreground",
                   )}
                 >
                   <AlertTriangle className="size-5 shrink-0 mt-1" />
@@ -238,17 +238,17 @@ function AirportDetailPage() {
       </section>
 
       {/* ── Régua de Abas Canônica (Linha Única Horizontal Contínua B.39) ── */}
-      <section className="sticky top-11 sm:top-14 z-30 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container max-w-6xl mx-auto px-4">
+      <section className="sticky top-11 sm:top-14 z-30 bg-background border-b border-border">
+        <div className="container max-w-6xl mx-auto px-2 sm:px-4">
           <div className="flex flex-nowrap overflow-x-auto scroll-area-carousel no-scrollbar gap-2 py-2">
             {[
-              { id: "geral", label: "Visão Geral & Terminais", icon: Building2 },
-              { id: "orgaos", label: "Órgãos & Segurança (PF/RF)", icon: ShieldCheck },
-              { id: "taxas", label: "Taxas & Trânsito", icon: Receipt },
-              { id: "comodidades", label: "Salas VIP & Serviços", icon: Coffee },
-              { id: "transporte", label: "Táxis & Acesso", icon: Car },
-              { id: "anac", label: "Direitos do Passageiro (ANAC)", icon: Scale },
-              { id: "mapa", label: "Mapa & Proximidades", icon: MapPin },
+              { id: "geral", label: "Visão Geral", icon: Building2 },
+              { id: "orgaos", label: "Órgãos e Segurança", icon: ShieldCheck },
+              { id: "taxas", label: "Taxas e Trânsito", icon: Receipt },
+              { id: "comodidades", label: "Salas VIP", icon: Coffee },
+              { id: "transporte", label: "Táxis e Acesso", icon: Car },
+              { id: "anac", label: "Direitos ANAC", icon: Scale },
+              { id: "mapa", label: "Mapa e Entorno", icon: MapPin },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -260,8 +260,8 @@ function AirportDetailPage() {
                   className={cn(
                     "shrink-0 h-11 min-h-11 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-xs"
-                      : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-secondary hover:text-foreground",
                   )}
                 >
                   <Icon className="size-4 shrink-0" />
@@ -274,13 +274,13 @@ function AirportDetailPage() {
       </section>
 
       {/* ── Conteúdo das Abas ── */}
-      <main className="container max-w-6xl mx-auto px-4 py-8">
+      <main className="container max-w-6xl mx-auto px-2 sm:px-4 py-8">
         {/* ── ABA 1: VISÃO GERAL & TERMINAIS ── */}
         {activeTab === "geral" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-card border border-border/70 rounded-lg p-5 space-y-2">
-                <div className="text-xs text-muted-foreground font-medium">Administração & Concessão</div>
+              <div className="bg-card border border-border rounded-lg p-5 space-y-2">
+                <div className="text-xs text-muted-foreground font-medium">Administração e Concessão</div>
                 <div className="text-base font-bold text-foreground">{profile.operator_name}</div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Responsável pela manutenção de pistas, terminais de passageiros, raio-x e infraestrutura de solo.

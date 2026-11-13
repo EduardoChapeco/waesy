@@ -176,13 +176,13 @@ export const syncGmbStoreProfile = createServerFn({ method: "POST" }).handler(
       // Busca avaliações reais associadas à loja no banco
       const { data: realReviews } = await supabase
         .from("reviews")
-        .select("author_name, rating, comment, created_at")
+        .select("reviewer_name, rating, comment, created_at")
         .eq("store_id", identity.store_id)
         .order("created_at", { ascending: false })
         .limit(10);
 
       const reviewsList = (realReviews || []).map((r: any) => ({
-        authorName: r.author_name || "Cliente Verificado",
+        authorName: r.reviewer_name || "Cliente Verificado",
         rating: Number(r.rating) || 5,
         comment: r.comment || "",
         relativeTime: r.created_at ? new Date(r.created_at).toLocaleDateString("pt-BR") : "",

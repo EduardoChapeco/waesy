@@ -2027,7 +2027,7 @@ export function MemberPublicProfileView({
  <ShoppingBag className="size-11 min-size-11" />
  </div>
  )}
- <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-extrabold text-primary">
+ <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-card border border-border text-xs font-extrabold text-primary">
  {formatMoney(price)}
  </div>
  </div>
@@ -2046,7 +2046,7 @@ export function MemberPublicProfileView({
  </div>
 
  <div className="p-4 pt-0">
- <div className="w-full h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted text-xs font-semibold flex items-center justify-center gap-2 text-foreground">
+ <div className="w-full h-11 min-h-11 rounded-lg bg-muted hover:bg-accent border border-border text-xs font-semibold flex items-center justify-center gap-2 text-foreground">
  <span>Ver Oferta</span>
  <ArrowRight className="size-4" />
  </div>
@@ -2076,9 +2076,9 @@ export function MemberPublicProfileView({
  {creatorEvents.map((evt: any) => (
  <div
  key={evt.id}
- className="p-4 rounded-lg border border-border/60 bg-card flex items-start gap-4"
+ className="p-4 rounded-lg border border-border bg-card flex items-start gap-4"
  >
- <div className="size-16 rounded-lg bg-muted/60 overflow-hidden shrink-0 border border-border/40">
+ <div className="size-16 rounded-lg bg-muted overflow-hidden shrink-0 border border-border">
  {evt.cover_image ? (
  <img src={evt.cover_image} alt={evt.title} className="size-full object-cover" />
  ) : (
@@ -2111,7 +2111,7 @@ export function MemberPublicProfileView({
  <div className="pt-4 space-y-6">
  <h2 className="text-lg font-bold text-foreground tracking-tight">Classificados e Desapegos</h2>
  {classifieds.length === 0 ? (
- <div className="py-12 text-center text-muted-foreground space-y-2 rounded-lg border border-dashed border-border/50 bg-muted/10">
+ <div className="py-12 text-center text-muted-foreground space-y-2 rounded-lg border border-dashed border-border bg-muted">
  <ShoppingBag className="size-11 min-size-11 mx-auto text-muted-foreground/40" />
  <p className="text-sm">Nenhum anúncio ativo no momento.</p>
  </div>
@@ -2122,10 +2122,10 @@ export function MemberPublicProfileView({
  key={item.id}
  to="/classificados/$id"
  params={{ id: item.id }}
- className="group rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors motion-reduce:transition-none overflow-hidden flex flex-col justify-between"
+ className="group rounded-lg bg-card border border-border hover:bg-muted transition-colors motion-reduce:transition-none overflow-hidden flex flex-col justify-between"
  >
  <div>
- <div className="aspect-4/3 bg-muted/40 relative overflow-hidden">
+ <div className="aspect-4/3 bg-muted relative overflow-hidden">
  {item.images?.[0] ? (
  <img
  src={item.images[0]}
@@ -2137,7 +2137,7 @@ export function MemberPublicProfileView({
  <ShoppingBag className="size-11 min-size-11" />
  </div>
  )}
- <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-background/90 backdrop-blur-md text-xs font-extrabold text-foreground">
+ <div className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-card border border-border text-xs font-extrabold text-foreground">
  {formatMoney(item.price)}
  </div>
  </div>
@@ -2563,8 +2563,8 @@ function AvailabilityEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-end gap-3">
+ <Button type="button" variant="outline" className="rounded-lg h-11 min-h-11" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
  <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
@@ -2631,8 +2631,8 @@ function AboutEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-end gap-3">
+ <Button type="button" variant="outline" className="rounded-lg h-11 min-h-11" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
  <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
@@ -3562,8 +3562,8 @@ function CausesEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-end gap-3">
+ <Button type="button" variant="outline" className="rounded-lg h-11 min-h-11" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
  <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>
@@ -3676,8 +3676,8 @@ function LanguagesEditModal({
  </Button>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-end gap-3">
- <Button type="button" variant="outline" className="rounded-lg" onClick={() => onOpenChange(false)}>
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-end gap-3">
+ <Button type="button" variant="outline" className="rounded-lg h-11 min-h-11" onClick={() => onOpenChange(false)}>
  Cancelar
  </Button>
  <Button type="submit" className="rounded-lg font-bold bg-primary text-primary-foreground" disabled={isSaving}>

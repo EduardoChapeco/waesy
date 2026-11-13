@@ -10,18 +10,23 @@ const routeTree = fs.readFileSync(path.join(root, "src/routeTree.gen.ts"), "utf8
 
 describe("Integridade de rotas e navegação — W10", () => {
   const orphanRoutes = [
-    "/workspace/design-system",
     "/workspace/financeiro",
     "/workspace/turismo/comissoes",
     "/workspace/turismo/documentos-ocr",
     "/workspace/whatsapp/automacoes",
   ];
 
-  it("mantém cada rota anteriormente órfã no catálogo e na navegação", () => {
+  it("mantém cada rota operacional no catálogo e na navegação e isola rotas Admin Master", () => {
     for (const route of orphanRoutes) {
       expect(routes).toContain(`path: "${route}"`);
       expect(navigation).toContain(`path: "${route}"`);
     }
+    expect(navigation).toContain("ADMIN_MASTER_ISOLATED_ROUTES");
+    expect(navigation).not.toContain('label: "Design System"');
+    expect(navigation).not.toContain('label: "Moderação"');
+    expect(navigation).not.toContain('label: "Auditoria KYC"');
+    expect(navigation).not.toContain('label: "Influenciadores"');
+    expect(navigation).not.toContain('label: "Plano e Módulos"');
   });
 
   it("mantém o layout workspace como boundary único de sessão e negócio", () => {

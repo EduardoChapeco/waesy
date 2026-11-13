@@ -1045,14 +1045,14 @@ export const listCustomerAgencyTrips = createServerFn({ method: "GET" }).handler
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, email, phone, document_number, full_name")
+      .select("id, phone, cpf, full_name")
       .eq("id", identity.id)
       .maybeSingle();
 
-    const cleanEmail = String(profile?.email || identity.email || "")
+    const cleanEmail = String(identity.email || "")
       .trim()
       .toLowerCase();
-    const cleanDoc = String((profile as any)?.document_number || "")
+    const cleanDoc = String((profile as any)?.cpf || "")
       .replace(/\D/g, "");
     const cleanPhone = String(profile?.phone || "").replace(/\D/g, "");
     const phoneSuffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : "";
@@ -1155,14 +1155,14 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, email, phone, document_number, full_name")
+      .select("id, phone, cpf, full_name")
       .eq("id", identity.id)
       .maybeSingle();
 
-    const cleanEmail = String(profile?.email || identity.email || "")
+    const cleanEmail = String(identity.email || "")
       .trim()
       .toLowerCase();
-    const cleanDoc = String((profile as any)?.document_number || "")
+    const cleanDoc = String((profile as any)?.cpf || "")
       .replace(/\D/g, "");
     const cleanPhone = String(profile?.phone || "").replace(/\D/g, "");
     const phoneSuffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : "";
@@ -1190,7 +1190,7 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
         ? supabase
             .from("travel_proposals")
             .select(
-              "id, store_id, agency_name, agency_logo_url, agency_whatsapp, public_token, title, subtitle, cover_image_url, destination_city, travel_start_date, travel_end_date, adults_count, children_count, pricing, status, acceptance_status, valid_until, created_at"
+              "id, store_id, public_token, title, subtitle, hero_image_url, destination_city, travel_start_date, travel_end_date, adults_count, children_count, pricing, status, acceptance_status, valid_until, created_at, stores(name, logo_url, phone, settings)"
             )
             .or(proposalClauses.join(","))
             .order("created_at", { ascending: false })
@@ -1210,7 +1210,7 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
         ? supabase
             .from("travel_contracts")
             .select(
-              "id, store_id, agency_name, agency_whatsapp, public_token, proposal_id, contract_title, destination, travel_start_date, travel_end_date, total_value_cents, payment_conditions, status, signed_at, pdf_url, created_at"
+              "id, store_id, public_token, proposal_id, contract_title, destination, travel_start_date, travel_end_date, total_value_cents, payment_conditions, status, signed_at, pdf_url, created_at, stores(name, phone, settings)"
             )
             .or(contractClauses.join(","))
             .order("created_at", { ascending: false })
@@ -1219,9 +1219,27 @@ export const listCustomerTravelDossierFn = createServerFn({ method: "GET" }).han
     ]);
 
     return {
-      proposals: proposalsRes.data || [],
+      proposals: (proposalsRes.data || []).map((p: any) => {
+        const s = p.stores || {};
+        const st = s.settings && typeof s.settings === "object" ? s.settings : {};
+        return {
+          ...p,
+          cover_image_url: p.hero_image_url || null,
+          agency_name: s.name || null,
+          agency_logo_url: s.logo_url || null,
+          agency_whatsapp: st.whatsapp_phone || s.phone || null,
+        };
+      }),
       quotes: quotesRes.data || [],
-      contracts: contractsRes.data || [],
+      contracts: (contractsRes.data || []).map((c: any) => {
+        const s = c.stores || {};
+        const st = s.settings && typeof s.settings === "object" ? s.settings : {};
+        return {
+          ...c,
+          agency_name: s.name || null,
+          agency_whatsapp: st.whatsapp_phone || s.phone || null,
+        };
+      }),
     };
   }
 );
@@ -1429,11 +1447,11 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
         };
       }
 
-      // 3. Tentar buscar em travel_proposals (por id ou conditions com public_token)
+      // 3. Tentar buscar em travel_proposals (por id ou public_token)
       const { data: proposal } = await supabase
         .from("travel_proposals")
-        .select("id, title, destination, start_date, end_date, client_name, client_email, client_phone, stores(name, logo_url, settings)")
-        .or(`id.eq.${token.length === 36 ? token : '00000000-0000-0000-0000-000000000000'},conditions.ilike.%"public_token":"${token}"%`)
+        .select("id, title, destination_city, travel_start_date, travel_end_date, client_name, client_email, client_whatsapp, stores(name, logo_url, phone, settings)")
+        .or(`id.eq.${token.length === 36 ? token : '00000000-0000-0000-0000-000000000000'},public_token.eq.${token}`)
         .maybeSingle();
 
       if (proposal) {
@@ -1441,18 +1459,18 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
         const settings = store.settings || {};
         return {
           success: true,
-          tripTitle: proposal.title || `Proposta para ${proposal.destination}`,
-          destination: proposal.destination || "Destino Turístico",
-          departureDate: proposal.start_date || null,
-          returnDate: proposal.end_date || null,
+          tripTitle: proposal.title || `Proposta para ${proposal.destination_city}`,
+          destination: proposal.destination_city || "Destino Turístico",
+          departureDate: proposal.travel_start_date || null,
+          returnDate: proposal.travel_end_date || null,
           agencyName: store.name || "",
           agencyLogo: store.logo_url || null,
-          agencyPhone: settings.whatsapp_phone || settings.phone || null,
+          agencyPhone: settings.whatsapp_phone || settings.phone || store.phone || null,
           tokenType: "proposal",
           passengerData: {
             fullName: proposal.client_name || undefined,
             email: proposal.client_email || undefined,
-            phone: proposal.client_phone || undefined,
+            phone: proposal.client_whatsapp || undefined,
           },
         };
       }
@@ -1624,11 +1642,11 @@ export const submitTravelerRegistrationForm = createServerFn({ method: "POST" })
     if (!tripId) {
       const { data: prop } = await supabase
         .from("travel_proposals")
-        .select("id, store_id, agency_id")
-        .or(`id.eq.${token.length === 36 ? token : '00000000-0000-0000-0000-000000000000'},conditions.ilike.%"public_token":"${token}"%`)
+        .select("id, store_id")
+        .or(`id.eq.${token.length === 36 ? token : '00000000-0000-0000-0000-000000000000'},public_token.eq.${token}`)
         .maybeSingle();
       if (prop) {
-        storeId = prop.store_id || prop.agency_id;
+        storeId = prop.store_id;
       }
     }
 

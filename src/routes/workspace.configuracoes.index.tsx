@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Search, Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks, Package, UtensilsCrossed, Plane, ClipboardList, Truck, Boxes, Palette, Link2, Megaphone, Newspaper, Ticket, Briefcase, Car, GraduationCap, Bus, Bike, Users } from 'lucide-react';
+import { Search, Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Plus, Trash2, HelpCircle, Package, Truck, Bike, Users, CreditCard, ListChecks } from 'lucide-react';
 import { getStoreSettings, saveStoreSettings, getWorkingHours, saveWorkingHours, getPolicies, savePolicies } from "@/services/store.functions";
 import { lookupCnpj, lookupCep } from "@/services/public-apis.functions";
 import { listManualPaymentMethods, saveManualPaymentMethod, deleteManualPaymentMethod } from "@/services/payment.functions";
@@ -132,8 +132,13 @@ export default function WorkspaceConfiguracoesPage() {
   const [email, setEmail] = useState(store?.email || "");
   const [cnpj, setCnpj] = useState(store?.cnpj || "");
   const [address, setAddress] = useState(store?.address || "");
-  const [segment, setSegment] = useState(
-    store?.settings?.segment || store?.settings?.type || store?.settings?.niche || (store?.name?.toLowerCase()?.includes("tour") ? "tourism" : "gastronomy")
+  const [segment] = useState(
+    (store as any)?.primary_niche_id ||
+      store?.settings?.primary_niche_id ||
+      store?.settings?.segment ||
+      store?.settings?.type ||
+      store?.settings?.niche ||
+      (store?.name?.toLowerCase()?.includes("tour") ? "tourism" : "gastronomy")
   );
 
   const initialResolvedModules = (() => {
@@ -147,7 +152,7 @@ export default function WorkspaceConfiguracoesPage() {
     return existing;
   })();
 
-  const [enabledModules, setEnabledModules] = useState<string[]>(initialResolvedModules);
+  const [enabledModules] = useState<string[]>(initialResolvedModules);
   const [city, setCity] = useState(store?.city || "");
   const [state, setState] = useState(store?.state || "");
   const [zipCode, setZipCode] = useState(store?.zip_code || "");
@@ -428,12 +433,6 @@ export default function WorkspaceConfiguracoesPage() {
  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
 
- const handleToggleModule = (moduleId: string) => {
- setEnabledModules((prev) =>
- prev.includes(moduleId) ? prev.filter((m) => m !== moduleId) : [...prev, moduleId]
- );
- };
-
  const handleFileUpload = async (
  e: React.ChangeEvent<HTMLInputElement>,
  type: "logo" | "banner",
@@ -483,12 +482,10 @@ export default function WorkspaceConfiguracoesPage() {
 
     setIsSaving(true);
     try {
-      // 1. Salva Dados da Loja, Nicho, Módulos, Bairros e Matriz de Entrega
+      // 1. Salva Dados da Loja, Bairros e Matriz de Entrega (Nicho/Módulos/Vertical são governados exclusivamente pelo Admin Master)
       await saveStoreSettings({
         data: {
           name: name.trim(),
-          segment,
-          enabled_modules: enabledModules,
           description: description.trim() || undefined,
           logoUrl: logoUrl.trim() || undefined,
           bannerUrl: bannerUrl.trim() || undefined,
@@ -571,7 +568,7 @@ export default function WorkspaceConfiguracoesPage() {
     }
   };
 
- const currentNiche = getNicheSemantics(segment);
+ const currentNiche = getNicheSemantics({ ...(store || {}), segment });
  const isPhysicalDeliveryNiche = [
  "gastronomy",
  "gastronomia",
@@ -627,13 +624,6 @@ export default function WorkspaceConfiguracoesPage() {
               </Link>
             </Button>
 
-            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
-              <Link to="/workspace/configuracoes/planos">
-                <CreditCard className="size-4 text-primary" />
-                <span>Plano e Módulos</span>
-              </Link>
-            </Button>
-
  <Button
  onClick={handleSaveAll}
  disabled={isSaving}
@@ -661,9 +651,6 @@ export default function WorkspaceConfiguracoesPage() {
  <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x bg-muted/60 p-1 rounded-lg w-full gap-1">
  <TabsTrigger value="geral" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Vitrine
- </TabsTrigger>
- <TabsTrigger value="nicho" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
- Nicho
  </TabsTrigger>
  <TabsTrigger value="contato" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
  Contato
@@ -913,6 +900,11 @@ export default function WorkspaceConfiguracoesPage() {
  )}
  </Card>
 
+ {/* Canal de Distribuição no Marketplace */}
+ <Card className="p-6 rounded-lg border-border bg-card space-y-5">
+   <MultiBrandEcosystemGovernanceCard storeId={store?.id} mode="workspace" onUpdated={() => router.invalidate()} />
+ </Card>
+
  {/* Tema do Workspace */}
  <Card className="p-6 rounded-lg border-border bg-card space-y-4">
  <div>
@@ -922,342 +914,6 @@ export default function WorkspaceConfiguracoesPage() {
  </p>
  </div>
  <ThemeSelector />
- </Card>
- </TabsContent>
-
- {/* ABA: Nicho & Recursos da Loja */}
- <TabsContent value="nicho" className="space-y-6">
- <Card className="p-6 rounded-lg border-border bg-card space-y-5">
- <div className="pb-2">
- <h2 className="text-base font-bold text-foreground">Modelo de Operação</h2>
- <p className="text-xs text-muted-foreground">
- Ajusta automaticamente os módulos, menus e ferramentas da barra lateral para a realidade do seu negócio.
- </p>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
- {[
- {
- id: "gastronomy",
- title: "Gastronomia e Delivery",
- desc: "Restaurantes, pizzarias, hamburguerias e cafés. Inclui KDS, comandas e taxa de entrega.",
- },
- {
- id: "ecommerce",
- title: "Varejo e Moda",
- desc: "Roupas, calçados e comércio geral. Inclui variações de grade, estoque e fretes.",
- },
- {
- id: "services",
- title: "Serviços, Saúde e Beleza",
- desc: "Salões, barbearias, clínicas e estética. Inclui agenda de profissionais, salas e passes.",
- },
- {
- id: "jobs",
- title: "Empregos e Recrutamento",
- desc: "Agências de RH, consultorias e empresas. Inclui vagas, candidaturas e banco de talentos.",
- },
- {
- id: "events",
- title: "Eventos e Ingressos",
- desc: "Casas de show, baladas, festivais e teatro. Inclui lotes de ingressos, check-in e flyers.",
- },
- {
- id: "automotive",
- title: "Automóveis e Veículos",
- desc: "Lojas de carros, motos e garagens. Inclui estoque de veículos, propostas e financiamento.",
- },
- {
- id: "pet",
- title: "Pet Shop e Veterinária",
- desc: "Banho & tosa, clínicas e agropecuária. Inclui agenda de procedimentos, rações e vacinas.",
- },
- {
- id: "supermarket",
- title: "Supermercado e Hortifrúti",
- desc: "Mercados, empórios e açougues. Inclui itens por KG/unidade, validades e separação de pedidos.",
- },
- {
- id: "pharmacy",
- title: "Farmácia e Cosméticos",
- desc: "Drogarias, farmácias e suplementos. Inclui balcão de medicamentos e tele-entrega express.",
- },
- {
- id: "news",
- title: "Jornalismo e Notícias",
- desc: "Portais de notícias, jornais e revistas. Inclui redação de matérias e banners de anunciantes.",
- },
- {
- id: "rental_events",
- title: "Locação e Estruturas",
- desc: "Aluguel de som, luz, tendas e palcos. Inclui inventário de bens, agenda de locação e contratos.",
- },
- {
- id: "tech_repair",
- title: "Assistência e Mecânica",
- desc: "Conserto de celular, oficinas e informática. Inclui Ordens de Serviço (OS) e peças.",
- },
- {
- id: "legal",
- title: "Advocacia e Jurídico",
- desc: "Escritórios de advocacia. Inclui controle de processos, prazos, audiências e honorários.",
- },
- {
- id: "real_estate",
- title: "Imobiliária e Imóveis",
- desc: "Corretores e imobiliárias. Inclui catálogo de imóveis, vistorias e contratos de aluguel.",
- },
- {
- id: "tourism",
- title: "Turismo e Viagens",
- desc: "Agências de viagem, pousadas e guias. Inclui cotações de pacotes, passeios e reservas.",
- },
- {
- id: "education",
- title: "Cursos e Educação",
- desc: "Escolas, cursos e workshops. Inclui grade de aulas, matrículas e turmas de alunos.",
- },
- {
- id: "wholesale",
- title: "Atacado e B2B",
- desc: "Indústrias e distribuidoras. Inclui tabelas de preço PJ, orçamentos em lote e faturamento.",
- },
- ].map((n) => {
- const activeSemantics = getNicheSemantics({ segment });
- const isSelected =
- activeSemantics.nicheId === n.id ||
- (n.id === "ecommerce" && activeSemantics.nicheId === "retail") ||
- (n.id === "automotive" && activeSemantics.nicheId === "vehicles") ||
- (n.id === "rental_events" && activeSemantics.nicheId === "rental") ||
- segment === n.id;
-
- return (
- <button
- key={n.id}
- type="button"
- onClick={() => {
-   setSegment(n.id);
-   setEnabledModules(getDefaultModulesForNiche(n.id));
-   toast.success(`Nicho alterado para ${n.title}. Módulos recomendados foram ativados.`);
- }}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex flex-col text-left p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer relative",
- isSelected
- ? "border-primary bg-primary/5 ring-1 ring-primary/40"
- : "border-border/60 bg-muted/20 hover:bg-muted/50 text-muted-foreground"
- )}
- >
- <div className="flex items-center justify-between w-full mb-2">
- <span className={cn("text-xs font-bold", isSelected ? "text-primary" : "text-foreground")}>
- {n.title}
- </span>
- {isSelected && <Check className="size-3.5 text-primary shrink-0" />}
- </div>
- <p className="text-xs leading-relaxed text-muted-foreground">
- {n.desc}
- </p>
- </button>
- );
- })}
- </div>
- </Card>
-
- <Card className="p-6 rounded-lg border-border bg-card space-y-5">
-  <MultiBrandEcosystemGovernanceCard storeId={store?.id} onUpdated={() => router.invalidate()} />
- </Card>
-
- {/* ── Gerenciador de Módulos Habilitados ── */}
- <Card className="p-6 rounded-lg border-border bg-card space-y-5">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
- <div>
- <h2 className="text-base font-bold text-foreground flex items-center gap-2">
- <ListChecks className="size-4 text-primary" />
- Módulos Habilitados
- </h2>
- <p className="text-xs text-muted-foreground">
- Ative somente os recursos que sua operação utiliza para manter o menu do Workspace limpo e focado.
- </p>
- </div>
- <div className="flex items-center gap-2">
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={() => {
-   const newDefaults = getDefaultModulesForNiche(semantics.nicheId || segment);
-   setEnabledModules(newDefaults);
-   toast.success(`Módulos restaurados para o padrão ${semantics.name}.`);
- }}
- className="text-xs h-11 min-h-11 rounded-lg"
- >
- {semantics.nicheId === "tourism"
- ? "Padrão Turismo & Viagens"
- : semantics.nicheId === "services"
- ? "Padrão Serviços"
- : "Padrão Comercial & Loja"}
- </Button>
- </div>
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
- {[
- {
- id: "catalog",
- title: semantics.nicheId === "gastronomy" ? "Cardápio & Itens" : semantics.catalogTitle || "Catálogo & Itens",
- desc: semantics.nicheId === "tourism"
- ? "Cadastro de pacotes, roteiros, destinos e passeios."
- : semantics.nicheId === "gastronomy"
- ? "Cadastro de pratos, bebidas, adicionais e categorias."
- : "Cadastro de produtos, variações, categorias e fotos.",
- icon: semantics.nicheId === "tourism" ? Plane : semantics.nicheId === "gastronomy" ? UtensilsCrossed : Package,
- },
- {
- id: "orders",
- title: semantics.ordersLabel || "Gestor de Pedidos",
- desc: semantics.nicheId === "tourism"
- ? "Recepção de cotações, propostas e emissões."
- : semantics.nicheId === "gastronomy"
- ? "Recepção de pedidos em tempo real, telas de cozinha (KDS) e despacho."
- : "Recepção de pedidos, separação e expedição de compras.",
- icon: ClipboardList,
- },
- {
- id: "delivery",
- title: semantics.nicheId === "tourism" ? "Embarque & Frota" : "Frota & Entregas",
- desc: semantics.nicheId === "tourism"
- ? "Gestão de veículos, ônibus, embarques e transfers."
- : "Gestão de entregadores, despacho e taxas por bairro.",
- icon: semantics.nicheId === "tourism" ? Bus : Truck,
- },
- {
- id: "pos",
- title: semantics.nicheId === "tourism" ? "Balcão & Vendas Rápidas" : "Frente de Caixa (PDV)",
- desc: semantics.nicheId === "gastronomy"
- ? "Ponto de venda rápido para balcão, comandas e mesas."
- : "Ponto de venda rápido para recebimento e vendas presenciais.",
- icon: Store,
- },
- {
- id: "stock",
- title: semantics.stockLabel || "Controle de Estoque",
- desc: semantics.nicheId === "tourism"
- ? "Controle de vagas, bloqueios de quartos e assentos."
- : "Movimentações, baixa automática e alerta de insumos mínimos.",
- icon: Boxes,
- },
- {
- id: "studio",
- title: "Estúdio Visual Studio 3.0",
- desc: "Criador de posts, encartes promocionais e banners para redes.",
- icon: Palette,
- },
- {
- id: "biolink",
- title: "Link da Bio (Biolink)",
- desc: "Página móvel com botões rápidos de WhatsApp, PIX e redes.",
- icon: Link2,
- },
- {
- id: "pages",
- title: "Páginas do Site (CMS)",
- desc: "Páginas institucionais como Sobre Nós, Políticas e Dúvidas.",
- icon: FileText,
- },
- {
- id: "classifieds",
- title: "Classificados Locais",
- desc: "Anúncios rápidos de desapegos e oportunidades na região.",
- icon: Megaphone,
- },
- {
- id: "news",
- title: "Notícias e Redação",
- desc: "Publicação de matérias jornalísticas e conteúdos editoriais.",
- icon: Newspaper,
- },
- {
- id: "events",
- title: "Eventos e Ingressos",
- desc: "Venda de ingressos com lotes, setores e validação QR Code.",
- icon: Ticket,
- },
- {
- id: "jobs",
- title: "Empregos e Recrutamento",
- desc: "Abertura de vagas e recebimento de currículos de candidatos.",
- icon: Briefcase,
- },
- {
- id: "vehicles",
- title: "Veículos e Concessionária",
- desc: "Estoque de seminovos, propostas de financiamento e placas.",
- icon: Car,
- },
- {
- id: "real_estate",
- title: "Imóveis e Imobiliária",
- desc: "Catálogo de imóveis para venda/locação e vistorias.",
- icon: Building2,
- },
- {
- id: "tourism",
- title: "Turismo e Passeios",
- desc: "Pacotes de viagem, pousadas e reservas de passeios locais.",
- icon: Plane,
- },
- {
- id: "education",
- title: "Cursos e Workshops",
- desc: "Gestão de turmas, materiais didáticos e matrículas.",
- icon: GraduationCap,
- },
- {
- id: "rh_dp",
- title: "RH & Departamento Pessoal",
- desc: "Folha de pagamento CLT/PJ, ponto eletrônico, holerites em PDF e equipe.",
- icon: Users,
- },
- ].map((mod) => {
- const isEnabled = enabledModules.includes(mod.id);
- return (
- <div
-    key={mod.id}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        handleToggleModule(mod.id);
-      }
-    }}
-    onClick={() => handleToggleModule(mod.id)}
-    className={cn(
-      "flex items-start justify-between p-4 rounded-lg border transition-colors motion-reduce:transition-none cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
- isEnabled
- ? "border-primary/40 bg-primary/5 dark:bg-primary/10"
- : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-70"
- )}
- >
- <div className="space-y-1 pr-3">
- <div className="flex items-center gap-2">
- {(() => { const ModIcon = mod.icon; return <ModIcon className="size-4 text-primary shrink-0" />; })()}
- <span className="text-xs font-bold text-foreground">
- {mod.title}
- </span>
- </div>
- <p className="text-xs text-muted-foreground leading-snug">
- {mod.desc}
- </p>
- </div>
- <Switch
- checked={isEnabled}
- onCheckedChange={() => handleToggleModule(mod.id)}
- className="shrink-0 mt-1"
- />
- </div>
- );
- })}
- </div>
  </Card>
  </TabsContent>
 
@@ -2156,7 +1812,7 @@ export default function WorkspaceConfiguracoesPage() {
  {manualMethods.map((method: any) => (
  <div
  key={method.id}
- className="p-4 rounded-lg border border-border/70 bg-card flex items-center justify-between gap-3"
+ className="p-4 rounded-lg border border-border bg-card flex items-center justify-between gap-3"
  >
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2">

@@ -9,7 +9,6 @@ import {
   Smartphone,
   Shirt,
   Pill,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +69,7 @@ const CATEGORY_CONFIG: Record<
   tech: { label: "Eletrônicos & Conectividade", icon: Smartphone, color: "text-sky-500" },
   clothes: { label: "Vestuário & Calçados", icon: Shirt, color: "text-warning-strong" },
   health: { label: "Farmácia & Saúde", icon: Pill, color: "text-rose-500" },
-  comfort: { label: "Higiene & Conforto", icon: Sparkles, color: "text-purple-500" },
+  comfort: { label: "Higiene & Conforto", icon: Luggage, color: "text-purple-500" },
 };
 
 export function SmartPackingChecklist({ tripId, destination }: SmartPackingChecklistProps) {

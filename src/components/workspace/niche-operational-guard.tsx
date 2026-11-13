@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { ShieldAlert, ArrowRight, Plane, Users, Bus, Calendar, Layers, Store, ClipboardList, ShoppingBag, ExternalLink, ChevronRight } from "lucide-react";
+import { ShieldAlert, ArrowRight, Plane, Users, Bus, Calendar, Layers, Store, ClipboardList, ShoppingBag, ExternalLink, ChevronRight, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { resolveUnifiedNicheId } from "@/lib/niches/niche-ssot";
 
 interface NicheOperationalGuardProps {
   targetNiche?: string;
@@ -25,14 +26,23 @@ export function NicheOperationalGuard({
 }: NicheOperationalGuardProps) {
   const [dismissed, setDismissed] = useState(false);
   const semantics = getNicheSemantics(store);
+  const unifiedNicheId = resolveUnifiedNicheId(store);
 
   const effectiveNiches = requiredNiches && requiredNiches.length > 0
     ? requiredNiches
     : targetNiche ? [targetNiche] : [];
 
+  const matchesNiche = effectiveNiches.some((req) => {
+    if (req === semantics.nicheId || req === unifiedNicheId) return true;
+    if (req === "services" && ["beauty_salon", "barbershop", "aesthetics_clinic", "healthcare", "dental", "psychology", "vet_petshop", "education", "law_firm", "accounting", "automotive"].includes(unifiedNicheId)) return true;
+    if ((req === "vehicles" || req === "tech_repair") && unifiedNicheId === "automotive") return true;
+    if (req === "legal" && (unifiedNicheId === "law_firm" || unifiedNicheId === "accounting")) return true;
+    return false;
+  });
+
   // Se o nicho da loja for o mesmo do alvo ou nenhum nicho específico exigido, libera o acesso direto
-  if (effectiveNiches.length === 0 || effectiveNiches.includes(semantics.nicheId) || dismissed) {
-    if (dismissed && effectiveNiches.length > 0 && !effectiveNiches.includes(semantics.nicheId)) {
+  if (effectiveNiches.length === 0 || matchesNiche || dismissed) {
+    if (dismissed && effectiveNiches.length > 0 && !matchesNiche) {
       return (
         <div className="space-y-4">
           <div className="p-3 px-4 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs flex items-center justify-between gap-3">
@@ -101,6 +111,29 @@ export function NicheOperationalGuard({
  {
  title: "Frente de Caixa (PDV)",
  desc: "Fechamento rápido de serviços e comandas individuais",
+ path: "/workspace/pdv",
+ icon: Store,
+ },
+ ];
+ }
+
+ if (unifiedNicheId === "automotive" || semantics.nicheId === "vehicles" || semantics.nicheId === "tech_repair") {
+ return [
+ {
+ title: "Ordens de Serviço (OS)",
+ desc: "Abertura de OS, checklist de entrada, peças e entrega ao cliente",
+ path: "/workspace/ordens-servico",
+ icon: Wrench,
+ },
+ {
+ title: "Orçamentos Técnicos",
+ desc: "Aprovação rápida de mão de obra e peças antes da execução",
+ path: "/workspace/orcamentos",
+ icon: ClipboardList,
+ },
+ {
+ title: "Frente de Caixa (PDV)",
+ desc: "Faturamento de balcão e encerramento financeiro da OS",
  path: "/workspace/pdv",
  icon: Store,
  },

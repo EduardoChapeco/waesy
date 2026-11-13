@@ -34,8 +34,13 @@ import { getStoreSettings } from "@/services/store.functions";
 import { listPublicArticles, fetchNewsImageDataUrlFn } from "@/services/news.functions";
 import { normalizePrometheeArticle, buildStudioCarouselSlidesFromNews } from "@/lib/news/news-studio-templates";
 import { formatMoney } from "@/lib/money";
-import { exportElementAsImage, exportElementAsPdf } from "@/lib/pdf-export";
+import { exportElementAsImage, exportElementAsPdf, exportMultipleElementsAsPdf } from "@/lib/pdf-export";
 import { generateQrCodeDataUri } from "@/lib/qr-code";
+import {
+  CREATIVE_THEMES,
+  CreativeArtboardRenderer,
+  type CreativeThemeId,
+} from "@/components/studio/creative-artboard-renderer";
 
 export const Route = createFileRoute("/workspace/marketing/studio")({
   head: () => ({
@@ -45,7 +50,7 @@ export const Route = createFileRoute("/workspace/marketing/studio")({
 });
 
 type TemplateType = "product" | "travel" | "quote" | "carousel" | "presentation" | "news";
-type AspectRatio = "9:16" | "1:1" | "16:9";
+type AspectRatio = "9:16" | "4:5" | "1:1" | "16:9";
 
 interface CarouselSlide {
   tag: string;
@@ -88,6 +93,8 @@ const DEFAULT_CAROUSEL_SLIDES: CarouselSlide[] = [
 export default function WorkspaceSocialStudioPage() {
   const [template, setTemplate] = useState<TemplateType>("product");
   const [ratio, setRatio] = useState<AspectRatio>("9:16");
+  const [themeId, setThemeId] = useState<CreativeThemeId>("obsidian");
+  const [overlayPercent, setOverlayPercent] = useState<number>(62);
 
   // Dados da Loja e Catálogo Real
   const { data: store, isLoading: isStoreLoading, isError: isStoreError } = useQuery({
@@ -132,6 +139,7 @@ export default function WorkspaceSocialStudioPage() {
   }, [store?.slug]);
 
   const previewRef = useRef<HTMLDivElement>(null);
+  const deckExportRef = useRef<HTMLDivElement>(null);
   const studioIsLoading = isStoreLoading || isProductsLoading;
   const studioHasError = isStoreError || isProductsError;
 
@@ -264,6 +272,19 @@ export default function WorkspaceSocialStudioPage() {
   const handleDownloadPdf = async () => {
     setIsExportingPdf(true);
     try {
+      if (template === "carousel" && deckExportRef.current) {
+        const slideNodes = Array.from(
+          deckExportRef.current.querySelectorAll<HTMLElement>("[data-marketing-deck-slide]")
+        );
+        if (slideNodes.length > 0) {
+          await exportMultipleElementsAsPdf(
+            slideNodes,
+            `carrossel-completo-${Date.now()}.pdf`
+          );
+          toast.success(`Carrossel completo (${slideNodes.length} lâminas) baixado em PDF!`);
+          return;
+        }
+      }
       await exportElementAsPdf(
         "social-card-render-target",
         `apresentacao-${Date.now()}.pdf`,
@@ -502,6 +523,15 @@ export default function WorkspaceSocialStudioPage() {
                 </Button>
                 <Button
                   type="button"
+                  variant={ratio === "4:5" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setRatio("4:5")}
+                  className="h-11 min-h-11 rounded-lg text-xs cursor-pointer"
+                >
+                  <Smartphone className="size-3.5 mr-1" /> 4:5 (Retrato)
+                </Button>
+                <Button
+                  type="button"
                   variant={ratio === "1:1" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setRatio("1:1")}
@@ -519,6 +549,43 @@ export default function WorkspaceSocialStudioPage() {
                   <Presentation className="size-3.5 mr-1" /> 16:9 (Paisagem)
                 </Button>
               </div>
+            </div>
+
+            {/* Paleta / Tema Visual */}
+            <div className="pt-2 space-y-2 border-t border-border/50">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground font-medium">Tema da Arte:</span>
+                {imageUrl && template !== "quote" && (
+                  <span className="text-2xs font-mono text-muted-foreground">
+                    Escurecimento: {overlayPercent}%
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(CREATIVE_THEMES) as CreativeThemeId[]).map((id) => (
+                  <Button
+                    key={id}
+                    type="button"
+                    size="sm"
+                    variant={themeId === id ? "default" : "outline"}
+                    onClick={() => setThemeId(id)}
+                    className="h-11 min-h-11 rounded-lg text-xs cursor-pointer"
+                  >
+                    {CREATIVE_THEMES[id].label}
+                  </Button>
+                ))}
+              </div>
+              {imageUrl && template !== "quote" && (
+                <input
+                  type="range"
+                  min={20}
+                  max={88}
+                  value={overlayPercent}
+                  onChange={(e) => setOverlayPercent(Number(e.target.value))}
+                  aria-label="Contraste da imagem de fundo"
+                  className="w-full accent-primary cursor-pointer"
+                />
+              )}
             </div>
           </div>
 
@@ -711,144 +778,72 @@ export default function WorkspaceSocialStudioPage() {
                 </span>
               )}
               <span className="font-mono text-xs bg-neutral-800 px-2 py-1 rounded text-neutral-300">
-                {ratio === "9:16" ? "1080 x 1920" : ratio === "1:1" ? "1080 x 1080" : "1920 x 1080"}
+                {ratio === "9:16" ? "1080 x 1920" : ratio === "4:5" ? "1080 x 1350" : ratio === "1:1" ? "1080 x 1080" : "1920 x 1080"}
               </span>
             </div>
           </div>
 
-          {/* O Card Renderizado */}
-          <div
+          {/* O Card Renderizado via Motor Unificado */}
+          <CreativeArtboardRenderer
             ref={previewRef}
             id="social-card-render-target"
-            className={cn(
-              "relative overflow-hidden rounded-lg transition-opacity motion-reduce:transition-none select-none flex flex-col justify-between p-8 bg-neutral-950 text-neutral-100 border border-neutral-800",
-              ratio === "9:16"
-                ? "w-96 min-h-160 aspect-9/16"
-                : ratio === "1:1"
-                ? "w-96 min-h-96 aspect-square"
-                : "w-full max-w-xl aspect-video"
-            )}
-          >
-            {template !== "quote" && imageUrl && (
-              <>
-                <img
-                  src={imageUrl}
-                  alt={title}
-                  className="absolute inset-0 w-full h-full object-cover z-0 opacity-65 pointer-events-none"
-                />
-                <div className="absolute inset-0 bg-neutral-950/65 z-0 pointer-events-none" />
-              </>
-            )}
-
-            {/* Topo */}
-            <div className="flex items-center justify-between z-10">
-              <div className="flex items-center gap-2">
-                <div className="size-10 rounded-full bg-neutral-800/80 border border-neutral-700 flex items-center justify-center font-bold text-sm text-neutral-100">
-                  {authorName.slice(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-tight tracking-tight text-neutral-100">{authorName}</p>
-                  <p className="text-xs text-neutral-300 font-mono leading-tight">{authorHandle}</p>
-                </div>
-              </div>
-
-              {(template === "carousel" ? activeSlide.tag : badgeText) && (
-                <span className="px-3 py-1 rounded-full bg-neutral-900/80 border border-neutral-700 text-xs font-semibold uppercase tracking-wider text-emerald-300">
-                  {template === "carousel" ? activeSlide.tag : badgeText}
-                </span>
-              )}
-            </div>
-
-            {/* Conteúdo Central */}
-            {template === "carousel" ? (
-              <div className="my-auto py-4 space-y-3 z-10">
-                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-100 leading-snug break-words">
-                  {activeSlide.headline}
-                </h3>
-                <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed break-words">
-                  {activeSlide.subheadline}
-                </p>
-                {activeSlide.highlightText && (
-                  <div className="pt-2">
-                    <span className="inline-block px-3 py-1 rounded-lg bg-primary text-primary-foreground font-bold text-xs">
-                      {activeSlide.highlightText}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : template === "presentation" ? (
-              <div className="my-auto py-4 space-y-2 z-10">
-                <span className="text-xs font-mono uppercase tracking-wider text-neutral-400">
-                  Apresentação Comercial • {store?.name || "Catálogo"}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-100 leading-tight break-words">
-                  {title}
-                </h3>
-                <p className="text-xs text-neutral-300 leading-relaxed max-w-md break-words">{subtitle}</p>
-                {price && (
-                  <div className="pt-2 flex items-baseline gap-2">
-                    <span className="text-lg sm:text-xl font-bold text-emerald-400">{price}</span>
-                    {installments && <span className="text-xs text-neutral-400">({installments})</span>}
-                  </div>
-                )}
-              </div>
-            ) : template === "quote" ? (
-              <div className="my-auto py-6 space-y-4 z-10">
-                <p className="text-base sm:text-lg font-serif italic leading-relaxed text-neutral-100 break-words">
-                  "{title}"
-                </p>
-                <p className="text-xs text-neutral-400 font-sans tracking-wide">— {subtitle}</p>
-              </div>
-            ) : (
-              <div className="space-y-3 z-10 mt-auto">
-                <div className="space-y-1">
-                  <h3 className="text-2xl font-extrabold tracking-tight text-neutral-100 leading-snug break-words">
-                    {title}
-                  </h3>
-                  <p className="text-sm text-neutral-300 line-clamp-2 leading-relaxed break-words">{subtitle}</p>
-                </div>
-
-                {price && (
-                  <div className="pt-2 border-t border-neutral-800 flex items-baseline justify-between gap-2">
-                    <div>
-                      <span className="text-xs text-neutral-400 block font-sans">A partir de</span>
-                      <span className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight">{price}</span>
-                    </div>
-                    {installments && <span className="text-xs text-neutral-300 font-medium">{installments}</span>}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Rodapé com Indicador de Carrossel e QR Code Soberano */}
-            <div className="pt-3 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400 z-10">
-              <span>{store?.name || "Waesy Comércio Local"}</span>
-              {template === "carousel" ? (
-                <div className="flex items-center gap-2">
-                  {carouselSlides.map((_, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "size-2 rounded-full transition-colors motion-reduce:transition-none",
-                        activeSlideIndex === i ? "bg-neutral-100 w-3" : "bg-neutral-600"
-                      )}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neutral-100">Escaneie o Catálogo</span>
-                  {qrDataUri && (
-                    <div className="p-1 rounded bg-neutral-100 shrink-0">
-                      <img src={qrDataUri} alt="QR Code" className="size-8 object-contain" />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+            archetype={template}
+            themeId={themeId}
+            aspectRatio={ratio}
+            badge={template === "carousel" ? activeSlide.tag : badgeText}
+            headline={template === "carousel" ? activeSlide.headline : title}
+            subheadline={template === "carousel" ? activeSlide.subheadline : subtitle}
+            offerBadge={template === "carousel" ? activeSlide.highlightText : template === "news" ? badgeText : undefined}
+            offerPrice={template === "carousel" ? undefined : price || undefined}
+            installments={template === "carousel" ? undefined : installments || undefined}
+            ctaText={template === "carousel" ? activeSlide.highlightText || "Ver Lâmina" : "Escaneie o Catálogo"}
+            brandName={authorName}
+            brandHandle={authorHandle}
+            logoUrl={store?.logo_url || undefined}
+            imageUrl={imageUrl || undefined}
+            imageOverlayPercent={overlayPercent}
+            qrDataUri={template === "carousel" ? undefined : qrDataUri}
+            slideIndex={template === "carousel" ? activeSlideIndex : undefined}
+            slideTotal={template === "carousel" ? carouselSlides.length : undefined}
+            bullets={
+              template === "presentation" && badgeText
+                ? [badgeText, price || "Condição Especial", installments || authorHandle]
+                : undefined
+            }
+          />
         </div>
       </div>
+
+      {/* Deck offscreen para exportação PDF multipágina de todas as lâminas do Carrossel */}
+      {template === "carousel" && (
+        <div
+          ref={deckExportRef}
+          aria-hidden="true"
+          style={{ position: "fixed", left: -99999, top: 0, pointerEvents: "none" }}
+        >
+          {carouselSlides.map((slideItem, idx) => (
+            <div key={idx} data-marketing-deck-slide="true">
+              <CreativeArtboardRenderer
+                archetype="carousel"
+                themeId={themeId}
+                aspectRatio={ratio}
+                badge={slideItem.tag}
+                headline={slideItem.headline}
+                subheadline={slideItem.subheadline}
+                offerBadge={slideItem.highlightText}
+                ctaText={slideItem.highlightText || "Arraste para o lado"}
+                brandName={authorName}
+                brandHandle={authorHandle}
+                logoUrl={store?.logo_url || undefined}
+                imageUrl={imageUrl || undefined}
+                imageOverlayPercent={overlayPercent}
+                slideIndex={idx}
+                slideTotal={carouselSlides.length}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

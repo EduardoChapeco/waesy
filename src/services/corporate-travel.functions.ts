@@ -752,13 +752,13 @@ export const createApprovalRequest = createServerFn({ method: "POST" })
     } else if (data.tripId) {
       const { data: trip } = await supabase
         .from("travel_projects")
-        .select("estimated_budget_cents")
+        .select("budget_cents")
         .eq("id", data.tripId)
         .maybeSingle();
 
-      if (trip?.estimated_budget_cents && Number(trip.estimated_budget_cents) > 0) {
-        totalAmountCents = Number(trip.estimated_budget_cents);
-        selectedFareCents = Number(trip.estimated_budget_cents);
+      if (trip?.budget_cents && Number(trip.budget_cents) > 0) {
+        totalAmountCents = Number(trip.budget_cents);
+        selectedFareCents = Number(trip.budget_cents);
       } else if (data.totalAmountCents && data.totalAmountCents > 0) {
         totalAmountCents = data.totalAmountCents;
       }
@@ -884,14 +884,14 @@ export const recordAirTicketCredit = createServerFn({ method: "POST" })
     let verifiedOriginalAmount = data.originalAmountCents;
     const { data: existingTicket } = await supabase
       .from("travel_projects")
-      .select("id, estimated_budget_cents")
+      .select("id, budget_cents")
       .eq("agency_id", data.agencyId)
       .limit(1)
       .maybeSingle();
 
-    if (existingTicket?.estimated_budget_cents && Number(existingTicket.estimated_budget_cents) > 0) {
-      if (verifiedOriginalAmount > Number(existingTicket.estimated_budget_cents) * 2) {
-        verifiedOriginalAmount = Number(existingTicket.estimated_budget_cents);
+    if (existingTicket?.budget_cents && Number(existingTicket.budget_cents) > 0) {
+      if (verifiedOriginalAmount > Number(existingTicket.budget_cents) * 2) {
+        verifiedOriginalAmount = Number(existingTicket.budget_cents);
       }
     }
 
@@ -1436,7 +1436,7 @@ export const generateCorporateTravelerMagicLink = createServerFn({ method: "POST
 
     const { data: traveler, error } = await supabase
       .from("traveler_profiles")
-      .select("id, corporate_account_id, full_name, email")
+      .select("id, company_id, full_name, email, loyalty_programs")
       .eq("id", data.travelerId)
       .eq("company_id", data.companyId)
       .maybeSingle();
@@ -1446,11 +1446,18 @@ export const generateCorporateTravelerMagicLink = createServerFn({ method: "POST
     const token = `corppax_${crypto.randomUUID().replace(/-/g, "")}`;
     const expiresAt = new Date(Date.now() + data.expiresInDays * 24 * 60 * 60 * 1000).toISOString();
 
+    const prevLoyalty =
+      (traveler as any).loyalty_programs && typeof (traveler as any).loyalty_programs === "object"
+        ? (traveler as any).loyalty_programs
+        : {};
     await supabase
       .from("traveler_profiles")
       .update({
-        magic_token: token,
-        magic_token_expires_at: expiresAt,
+        loyalty_programs: {
+          ...prevLoyalty,
+          magic_token: token,
+          magic_token_expires_at: expiresAt,
+        },
         updated_at: new Date().toISOString(),
       })
       .eq("id", traveler.id);

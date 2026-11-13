@@ -41,7 +41,6 @@ import {
   Copy,
   CreditCard,
   Percent,
-  Sparkles,
   RotateCcw,
   History,
   Star,
@@ -1637,11 +1636,13 @@ export default function WorkspaceTurismoCockpitPage() {
                           team={team}
                           onOpenDetails={openLeadDetails}
                           onGenerateProposal={(lead) => {
+                            const cf = lead.custom_fields && typeof lead.custom_fields === "object" ? lead.custom_fields : {};
                             setProposalLead({
                               id: lead.id,
                               fullName: lead.full_name,
                               phone: lead.phone,
                               email: lead.email,
+                              clientDocument: String(lead.document || lead.cpf_cnpj || cf.document || ""),
                               destination: lead.destination,
                               estimated_value_cents: lead.estimated_value_cents,
                               passenger_count: (lead.pax_adults || 2) + (lead.pax_children || 0),
@@ -1650,6 +1651,12 @@ export default function WorkspaceTurismoCockpitPage() {
                               adultsCount: lead.pax_adults || 2,
                               childrenCount: lead.pax_children || 0,
                               notes: lead.notes || "",
+                              customFields: cf,
+                              sourceListingId: lead.source_listing_id || cf.source_listing_id || "",
+                              sourceListingOrigin: lead.source_listing_origin || cf.source_listing_origin || "",
+                              paxList: Array.isArray(lead.pax_list) ? lead.pax_list : undefined,
+                              boardingPoint: cf.boarding_point ? String(cf.boarding_point) : undefined,
+                              departureOption: cf.departure_option || undefined,
                             });
                           }}
                           onOpenFlightGrid={setFlightLead}

@@ -90,7 +90,7 @@ export function TaskItemCard({
         <div className="space-y-1 min-w-0 flex-1">
           <p
             className={cn(
-              "text-xs sm:text-sm font-semibold text-foreground tracking-tight truncate",
+              "text-xs sm:text-sm font-semibold text-foreground tracking-tight line-clamp-2 text-anti-truncate",
               isDone && "line-through text-muted-foreground"
             )}
           >
@@ -101,7 +101,7 @@ export function TaskItemCard({
             {/* Prioridade */}
             <Badge
               variant="secondary"
-              className={cn("text-xs px-2 py-0 h-5", priorityInfo.className)}
+              className={cn("text-xs px-2 py-1", priorityInfo.className)}
             >
               {priorityInfo.label}
             </Badge>

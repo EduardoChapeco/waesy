@@ -20,7 +20,6 @@ import {
   Plus,
   Trash2,
   Table as TableIcon,
-  Sparkles,
   Eye,
   EyeOff,
   Image as ImageIcon,
@@ -66,6 +65,8 @@ export interface UniversalBlockInspectorProps {
   categories?: any[];
   collections?: any[];
   stores?: any[];
+  cmsCollections?: any[];
+  navigationMenus?: any[];
 }
 
 function getDynamicDataSourceForBlock(blockType: string): string {
@@ -106,6 +107,8 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
   categories = [],
   collections = [],
   stores = [],
+  cmsCollections = [],
+  navigationMenus = [],
 }) => {
   const [activeTab, setActiveTab] = useState<UniversalInspectorTab>("content");
   const config = selectedBlock.config || {};
@@ -578,6 +581,58 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
                 className="h-11 min-h-11 text-xs rounded-xl font-mono"
               />
             </div>
+
+            {(selectedBlock.type === "site_header" || selectedBlock.type === "news_promethee_header") && (
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <Label className="text-xs font-bold text-foreground">Comportamento do Header no Scroll</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "scrolls_with_site", label: "Rola junto" },
+                    { id: "freezes", label: "Fixo (Sticky)" },
+                    { id: "disappears", label: "Some ao rolar" },
+                    { id: "fades_out", label: "Esmaece ao rolar" },
+                  ].map((mode) => (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      onClick={() => onUpdateConfig({ headerScrollMode: mode.id })}
+                      className={cn(
+                        "h-11 min-h-11 px-3 rounded-xl border text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        (config.headerScrollMode || "freezes") === mode.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border/60 text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(selectedBlock.type === "site_header" || selectedBlock.type === "site_footer") && (
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <Label className="text-xs font-bold text-foreground">Menu CMS Vinculado</Label>
+                <select
+                  aria-label="Menu CMS Vinculado"
+                  value={config.menuHandle || (selectedBlock.type === "site_footer" ? "footer_menu" : "header_nav")}
+                  onChange={(e) => onUpdateConfig({ menuHandle: e.target.value })}
+                  className="w-full h-11 min-h-11 px-3 rounded-xl border border-border bg-background text-xs text-foreground font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <option value="header_nav">Cabeçalho Principal (header_nav)</option>
+                  <option value="footer_menu">Rodapé Global (footer_menu)</option>
+                  <option value="main-menu">Menu Institucional (main-menu)</option>
+                  {(navigationMenus || []).map((menu: any) =>
+                    menu?.handle &&
+                    !["header_nav", "footer_menu", "main-menu"].includes(menu.handle) ? (
+                      <option key={menu.id || menu.handle} value={menu.handle}>
+                        {menu.title || menu.handle} ({menu.handle})
+                      </option>
+                    ) : null,
+                  )}
+                </select>
+              </div>
+            )}
           </div>
         )}
 
@@ -793,8 +848,32 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
                     <option value="posts">Publicações Sociais</option>
                     <option value="hotpages">Hotpages & Categorias</option>
                     <option value="flyers">Stories & Encartes</option>
+                    <option value="cms_collection">Coleção CMS Dinâmica</option>
                   </select>
                 </div>
+
+                {(binding.entity === "cms_collection" || selectedBlock.type === "cms_collection_grid") && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-foreground">Coleção CMS de Origem</Label>
+                    <select
+                      aria-label="Coleção CMS de Origem"
+                      value={binding.cmsCollectionSlug || config.collectionSlug || ""}
+                      onChange={(e) => {
+                        const slug = e.target.value;
+                        onUpdateBinding({ ...binding, entity: "cms_collection", cmsCollectionSlug: slug });
+                        onUpdateConfig({ collectionSlug: slug });
+                      }}
+                      className="w-full h-11 min-h-11 px-3 rounded-xl border border-border bg-background text-xs text-foreground font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <option value="">Selecionar coleção...</option>
+                      {(cmsCollections || []).map((col: any) => (
+                        <option key={col.id || col.slug} value={col.slug}>
+                          {col.name} ({col.slug})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
@@ -1053,7 +1132,7 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
               <div className="space-y-2 pt-2 border-t border-border/40">
                 <Label className="text-xs font-bold text-foreground flex items-center justify-between">
                   <span>Subestado Visual do Componente</span>
-                  <Sparkles className="size-3.5 text-primary" />
+                  <Sliders className="size-3.5 text-primary" />
                 </Label>
                 <p className="text-2xs text-muted-foreground">
                   Alterne entre os subestados internos do componente para inspecionar elementos ocultos.

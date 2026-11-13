@@ -367,7 +367,7 @@ export function AdminShell({
  onMouseEnter={() => setCollapsed(false)}
  onMouseLeave={() => setCollapsed(true)}
  className={cn(
- "fixed left-0 top-0 bottom-0 z-40 hidden flex-col bg-card shadow-op-md md:flex pb-safe",
+ "fixed left-0 top-0 bottom-0 z-40 hidden flex-col bg-sidebar border-r border-border md:flex pb-safe",
  collapsed ? "w-16" : "w-64",
  )}
  >
@@ -396,8 +396,8 @@ export function AdminShell({
  )}
  >
  {collapsed ? (
- <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 border border-primary/20">
- <Store className="size-5 text-primary" />
+ <div className="flex size-10 items-center justify-center rounded-full bg-muted border border-border">
+ <Store className="size-5 text-foreground" />
  </div>
  ) : (
  <Link to="/workspace" className="flex items-center">
@@ -410,7 +410,7 @@ export function AdminShell({
  <Button
  variant="secondary"
  size="sm"
- className="w-full text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border-transparent"
+ className="w-full text-xs font-semibold bg-muted hover:bg-accent text-foreground border border-border"
  asChild
  >
  <Link to="/workspace" onClick={() => setViewMode("modules")} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -474,7 +474,7 @@ export function AdminShell({
  to={mod.path}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
- isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
+ isCurrent && "bg-sidebar-accent text-sidebar-foreground",
  collapsed && "justify-center",
  )}
  title={collapsed ? mod.label : undefined}
@@ -505,10 +505,10 @@ export function AdminShell({
  </Button>
 
  {/* User profile & Logout footer */}
- <div className="mt-2 pt-2 border-t border-sidebar-border/60 flex items-center justify-between gap-2">
+ <div className="mt-2 pt-2 border-t border-sidebar-border flex items-center justify-between gap-2">
  <div className="flex items-center gap-2 overflow-hidden">
  <Avatar className="size-8 ">
- <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+ <AvatarFallback className="bg-muted text-foreground font-bold text-xs">
  {getInitials(session?.email || "Admin")}
  </AvatarFallback>
  </Avatar>
@@ -567,7 +567,7 @@ export function AdminShell({
  <div className="space-y-6">
  {viewMode === "subpages" && activeGroupNav ? (
  <div className="space-y-4">
- <div className="px-3 pb-2 border-b border-sidebar-border/40 flex items-center justify-between">
+ <div className="px-3 pb-2 border-b border-sidebar-border flex items-center justify-between">
  <span className="eyebrow text-primary font-bold tracking-wider text-xs">
  {activeGroupNav.title}
  </span>
@@ -618,7 +618,7 @@ export function AdminShell({
  to={mod.path}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
- isCurrent && "bg-sidebar-accent/50 text-sidebar-foreground",
+ isCurrent && "bg-sidebar-accent text-sidebar-foreground",
  )}
  onClick={() => {
  setViewMode("subpages");

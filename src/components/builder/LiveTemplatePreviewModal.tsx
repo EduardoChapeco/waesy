@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { NicheTemplateDefinition, applyTemplateToPage } from "./templates";
 import { createEmptyOmniPage, OmniPageDocument } from "./types";
 import { OmniPageRenderer } from "./OmniPageRenderer";
+import { BuilderViewportFrame } from "./BuilderViewportFrame";
 import { getDocumentThemeCanvasStyle } from "@/lib/builder/block-data-resolver";
 import { BuilderViewportProvider } from "@/design-system/vitrine";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -109,20 +110,20 @@ export const LiveTemplatePreviewModal: React.FC<LiveTemplatePreviewModalProps> =
           </div>
         </header>
 
-        <div className="flex-1 bg-muted/20 overflow-y-auto p-2 sm:p-8 flex justify-center items-start overflow-x-hidden">
-          <div
-            style={getDocumentThemeCanvasStyle(previewDocument.theme, { forceIsolate: true })}
-            className={`transition-colors duration-200 motion-reduce:transition-none ${
-              viewport === "mobile"
-                ? "w-full max-w-sm min-h-dvh shadow-xs rounded-lg border border-border/80 overflow-hidden bg-background my-2 shrink-0"
-                : "w-full max-w-6xl shadow-xs bg-background rounded-lg border border-border/60 my-2"
-            }`}
-          >
-            <BuilderViewportProvider viewport={viewport}>
-              <OmniPageRenderer document={previewDocument} />
-            </BuilderViewportProvider>
-          </div>
-        </div>
+        <BuilderViewportFrame
+          viewport={viewport}
+          onChangeViewport={(vp) => setViewport(vp === "desktop" ? "desktop" : "mobile")}
+          themeStyle={getDocumentThemeCanvasStyle(previewDocument.theme, {
+            forceIsolate: true,
+            settings: previewDocument.settings,
+          })}
+          showControlsBar={false}
+          className="flex-1 min-h-0"
+        >
+          <BuilderViewportProvider viewport={viewport}>
+            <OmniPageRenderer document={previewDocument} />
+          </BuilderViewportProvider>
+        </BuilderViewportFrame>
       </DialogContent>
     </Dialog>
   );

@@ -2,7 +2,7 @@ import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { getPlatformMetrics, getPlatformStoresList, getPlatformInvoicesList, toggleStoreStatus } from "@/services/master.functions";
 import { listPlatformDomainTaxonomies, upsertPlatformDomainTaxonomy } from "@/services/deep-core.functions";
 import { formatMoney } from "@/lib/money";
-import { DollarSign, Store, Activity, AlertTriangle, Users, UserCheck, Layers, Plus, ShieldCheck, Truck, Lock, Layout, ArrowRight, Sparkles } from "lucide-react";
+import { DollarSign, Store, Activity, AlertTriangle, Users, UserCheck, Layers, Plus, ShieldCheck, Truck, Lock, Layout, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -156,7 +156,7 @@ function AdminMasterDashboard() {
             className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Link to="/admin-master/home-editor">
-              <Sparkles className="size-4" />
+              <Layout className="size-4" />
               <span>Abrir Omni Builder</span>
             </Link>
           </Button>

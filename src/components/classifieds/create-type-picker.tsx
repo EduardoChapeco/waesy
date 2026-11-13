@@ -29,11 +29,11 @@ export function CreateTypePicker({ onSelect, onAiPrefill, nicheCards, desapegoTa
       return;
     }
     setIsAiGenerating(true);
-    toast.loading("A Inteligência Artificial está montando seu anúncio...", { id: "ai-ad" });
+    toast.loading("Montando estrutura do anúncio...", { id: "ai-ad" });
     try {
       const res = await createListingWithAI({ data: { prompt: trimmed } });
       if (res?.success && res.listing) {
-        toast.success("Anúncio estruturado com IA! Revise os dados.", { id: "ai-ad" });
+        toast.success("Anúncio estruturado! Revise os dados.", { id: "ai-ad" });
         if (onAiPrefill) {
           onAiPrefill(res.listing);
         } else {
@@ -222,14 +222,14 @@ export function CreateTypePicker({ onSelect, onAiPrefill, nicheCards, desapegoTa
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-foreground truncate">
+                      <h3 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate">
                         {niche.title}
                       </h3>
-                      <span className="text-xs font-medium text-muted-foreground border border-border/60 px-2 py-0.2 rounded-sm shrink-0">
+                      <span className="text-xs font-medium text-muted-foreground border border-border px-2 py-1 rounded-sm shrink-0">
                         {niche.badge}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate mt-1">
+                    <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate mt-1">
                       {niche.subtitle}
                     </p>
                   </div>

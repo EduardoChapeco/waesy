@@ -7,7 +7,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, Sparkles, ArrowRight, Handshake } from "lucide-react";
+import { Clock, Phone, MapPin, SlidersHorizontal, Shield, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag, ArrowRight, Handshake } from "lucide-react";
 import { WhatsappLogo, PaperPlaneTilt, Globe, InstagramLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1120,14 +1120,14 @@ function cleanAddressSegment(text: string): string {
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "catalogo"
-                  ? "bg-background text-foreground font-bold shadow-2xs"
+                  ? "bg-background text-foreground font-bold border border-border"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <CatalogIcon className="size-4 sm:size-4" />
               <span>{catalogTabTitle}</span>
               {catalog.length > 0 && (
-                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {catalog.length}
                 </span>
               )}
@@ -1140,7 +1140,7 @@ function cleanAddressSegment(text: string): string {
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "sobre"
-                  ? "bg-background text-foreground font-bold shadow-2xs"
+                  ? "bg-background text-foreground font-bold border border-border"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1156,7 +1156,7 @@ function cleanAddressSegment(text: string): string {
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "informacoes"
-                  ? "bg-background text-foreground font-bold shadow-2xs"
+                  ? "bg-background text-foreground font-bold border border-border"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1171,14 +1171,14 @@ function cleanAddressSegment(text: string): string {
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "posts"
-                  ? "bg-background text-foreground font-bold shadow-2xs"
+                  ? "bg-background text-foreground font-bold border border-border"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <MessageSquare className="size-4 sm:size-4" />
               <span>Posts</span>
               {posts.length > 0 && (
-                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {posts.length}
                 </span>
               )}
@@ -1191,14 +1191,14 @@ function cleanAddressSegment(text: string): string {
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "avaliacoes"
-                  ? "bg-background text-foreground font-bold shadow-2xs"
+                  ? "bg-background text-foreground font-bold border border-border"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Star className="size-4 sm:size-4" />
               <span>Avaliações</span>
               {reviews.length > 0 && (
-                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {reviews.length}
                 </span>
               )}
@@ -1211,14 +1211,14 @@ function cleanAddressSegment(text: string): string {
               className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                 "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vagas"
-                  ? "bg-background text-foreground font-bold shadow-2xs"
+                  ? "bg-background text-foreground font-bold border border-border"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Briefcase className="size-4 sm:size-4" />
               <span>Vagas</span>
               {jobs.length > 0 && (
-                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {jobs.length}
                 </span>
               )}
@@ -1232,13 +1232,13 @@ function cleanAddressSegment(text: string): string {
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "classificados"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold border border-border"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Tag className="size-4 sm:size-4" />
                 <span>Classificados</span>
-                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {ads.length}
                 </span>
               </button>
@@ -1252,13 +1252,13 @@ function cleanAddressSegment(text: string): string {
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "concursos"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold border border-border"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Ticket className="size-4 sm:size-4" />
                 <span>Sorteios</span>
-                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {concursos.length}
                 </span>
               </button>
@@ -1272,13 +1272,13 @@ function cleanAddressSegment(text: string): string {
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                   "h-11 min-h-11 flex-1 sm:flex-initial px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "associadas"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold border border-border"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Handshake className="size-4 sm:size-4" />
                 <span>Empresas Associadas</span>
-                <span className="text-xs px-2 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {associatedMembers.length}
                 </span>
               </button>
@@ -1426,10 +1426,10 @@ function cleanAddressSegment(text: string): string {
                               <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                                 key={card.id}
                                 onClick={handleCardClick}
-                                className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="group rounded-lg border border-border bg-card overflow-hidden hover:border-ring transition-colors duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 {card.imageUrl ? (
-                                  <div className="aspect-21/9 w-full overflow-hidden bg-muted/30 relative">
+                                  <div className="aspect-21/9 w-full overflow-hidden bg-muted relative">
                                     <img
                                       src={card.imageUrl}
                                       alt={card.title}
@@ -1437,7 +1437,7 @@ function cleanAddressSegment(text: string): string {
                                       loading="lazy"
                                     />
                                     {card.tag && (
-                                      <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-xs font-bold text-foreground">
+                                      <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background border border-border text-xs font-bold text-foreground">
                                         {card.tag}
                                       </span>
                                     )}
@@ -1821,8 +1821,8 @@ function cleanAddressSegment(text: string): string {
                     })}
                   </div>
 
-                  {/* Visualização Desktop: Grid de Cards */}
-                  <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Visualização Desktop: Grid de Cards Horizontais (DL-32 max 2 cols >=400px) */}
+                  <div className="hidden sm:grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {filteredProducts.map((p: any) => {
                       const priceCents = p.price_cents || p.price || 0;
                       const imageUrl = p.images?.[0] || p.image_url || null;
@@ -1830,16 +1830,16 @@ function cleanAddressSegment(text: string): string {
                       return (
                         <div
                           key={p.id}
-                          className="flex flex-col justify-between rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-colors duration-200 group"
+                          className="flex flex-col justify-between rounded-lg border border-border bg-card overflow-hidden hover:border-ring transition-colors duration-200 group"
                         >
                           <div className="flex items-start gap-3 p-4">
                             <div className="min-w-0 flex-1 space-y-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug">
+                                <h3 className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate leading-snug">
                                   {p.title}
                                 </h3>
                                 {p.is_mined && (
-                                  <Badge variant="outline" className="text-xs font-mono py-0 px-1 border-border/70">
+                                  <Badge variant="outline" className="text-xs font-mono px-2 py-1 border-border">
                                     Catálogo Web
                                   </Badge>
                                 )}
@@ -2078,9 +2078,9 @@ function cleanAddressSegment(text: string): string {
                       key={ad.id}
                       to="/classificados/$id"
                       params={{ id: ad.id }}
-                      className="group flex flex-col rounded-lg bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-colors duration-200 cursor-pointer shadow-xs"
+                      className="group flex flex-col rounded-lg bg-card border border-border overflow-hidden hover:border-ring transition-colors duration-200 cursor-pointer"
                     >
-                      <div className="aspect-16/10 w-full bg-muted/40 relative overflow-hidden">
+                      <div className="aspect-16/10 w-full bg-muted relative overflow-hidden">
                         {firstImage ? (
                           <img
                             src={firstImage}
@@ -2089,18 +2089,18 @@ function cleanAddressSegment(text: string): string {
                           />
                         ) : (
                           <div className="size-full flex items-center justify-center text-muted-foreground">
-                            <Tag className="size-8 opacity-40" />
+                            <Tag className="size-8 text-muted-foreground" />
                           </div>
                         )}
                         {ad.deal_type && (
-                          <span className="absolute top-2.5 left-2.5 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-background/90 backdrop-blur-xs text-foreground border border-border/50">
+                          <span className="absolute top-2.5 left-2.5 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-background text-foreground border border-border">
                             {ad.deal_type === "sale" ? "Venda" : ad.deal_type === "rent" ? "Aluguel" : ad.deal_type}
                           </span>
                         )}
                       </div>
-                      <div className="p-4 sm:p-4 flex flex-col flex-1 justify-between gap-2">
+                      <div className="p-4 flex flex-col flex-1 justify-between gap-2">
                         <div>
-                          <h4 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                          <h4 className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
                             {ad.title}
                           </h4>
                           {ad.category && (
@@ -2263,11 +2263,11 @@ function cleanAddressSegment(text: string): string {
           {/* ── CONTEÚDO DA ABA 6: PATROCINADORES & APOIADORES ── */}
           {activeTab === "patrocinadores" && hasSponsors && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                 {sponsors.map((sp: any) => (
                   <div
                     key={sp.id}
-                    className="p-5 rounded-lg border border-border/60 bg-card flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-colors duration-200"
+                    className="p-5 rounded-lg border border-border bg-card flex flex-col justify-between space-y-3 hover:border-ring transition-colors duration-200"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
@@ -2276,10 +2276,10 @@ function cleanAddressSegment(text: string): string {
                           className={cn(
                             "text-xs uppercase font-bold",
                             sp.tier === "gold"
-                              ? "bg-warning/10 text-warning-strong border-warning/30"
+                              ? "bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800"
                               : sp.tier === "silver"
-                              ? "bg-slate-500/10 text-slate-600 border-slate-500/30"
-                              : "bg-muted/30"
+                              ? "bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
+                              : "bg-muted border-border text-muted-foreground"
                           )}
                         >
                           {sp.tier || "Apoiador Oficial"}
@@ -2291,7 +2291,7 @@ function cleanAddressSegment(text: string): string {
                           <img
                             src={sp.logo_url}
                             alt={sp.name}
-                            className="size-12 rounded-lg object-contain bg-muted/20 border border-border/40 p-1"
+                            className="size-12 rounded-lg object-contain bg-muted border border-border p-1"
                           />
                         ) : (
                           <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
@@ -2521,15 +2521,15 @@ function cleanAddressSegment(text: string): string {
                 </div>
               </div>
 
-              {/* 5. Atendimento por Setor & Tempo de Resposta */}
-              <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4">
+              {/* 5. Atendimento por Setor */}
+              <div className="p-5 sm:p-6 rounded-lg bg-card border border-border space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Clock className="size-4 text-primary" />
-                    <h3 className="text-sm font-bold text-foreground">Horários por Setor & Tempo de Resposta</h3>
+                    <Clock className="size-4 text-foreground" />
+                    <h3 className="text-sm font-bold text-foreground">Atendimento por Setor</h3>
                   </div>
-                  <Badge variant="outline" className="text-xs font-mono font-semibold w-fit border-primary/30 text-primary bg-primary/5">
-                    Tempo de Resposta Médio
+                  <Badge variant="outline" className="text-xs font-mono font-semibold w-fit border-border text-foreground bg-muted">
+                    Resposta Média
                   </Badge>
                 </div>
 
@@ -3065,8 +3065,8 @@ function cleanAddressSegment(text: string): string {
                   </div>
                   <div className="rounded-lg bg-card border border-border/50 p-3 space-y-2 text-xs">
                     <div className="flex items-center gap-2 font-semibold text-foreground">
-                      <Sparkles className="size-4 text-primary shrink-0" />
-                      <span>Capa dos Feeds & Vitrines</span>
+                      <Layers className="size-4 text-primary shrink-0" />
+                      <span>Capa nos Feeds</span>
                     </div>
                     <p className="text-muted-foreground leading-relaxed">
                       A capa da sua empresa é exibida exclusivamente nos cards de destaque, feeds do guia e vitrines. Ela é configurada e padronizada diretamente no Brand Kit.

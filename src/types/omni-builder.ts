@@ -50,6 +50,9 @@ export const CANONICAL_BUILDER_BLOCK_IDS = [
   "ifood_recent_stores_shelf",
   "ifood_category_grid_custom",
   "ifood_showcase_store_rail",
+  "site_header",
+  "site_footer",
+  "cms_collection_grid",
 ] as const;
 
 export type CanonicalBuilderBlockId = (typeof CANONICAL_BUILDER_BLOCK_IDS)[number];
@@ -727,8 +730,8 @@ export const VitrineLateralDrawerSectionSchema = z.object({
 export type VitrineLateralDrawerSection = z.infer<typeof VitrineLateralDrawerSectionSchema>;
 
 export const VitrineLateralDrawerBlockDataSchema = z.object({
-  greetingTitle: z.string().default("Aproveite o nosso App!"),
-  greetingSubtitle: z.string().default("Explore categorias e atalhos rápidos"),
+  greetingTitle: z.string().default("Menu"),
+  greetingSubtitle: z.string().default("Atalhos"),
   showViewModeToggle: z.boolean().default(true),
   defaultViewMode: z.enum(["grid", "list"]).default("grid"),
   sections: z.array(VitrineLateralDrawerSectionSchema).default([]),
@@ -930,8 +933,10 @@ export const BlockDataBindingSchema = z.object({
       "hotpages",
       "posts",
       "custom_items",
+      "cms_collection",
     ])
     .optional(),
+  cmsCollectionSlug: z.string().optional(),
   categoryFilter: z.string().optional(),
   nicheFilter: z.string().optional(),
   cityFilter: z.string().optional(),
@@ -986,7 +991,10 @@ export const OmniPageDocumentSchema = z.object({
     backgroundColor: z.string().default(String.fromCharCode(35) + "ffffff"),
     textColor: z.string().default(String.fromCharCode(35) + "09090b"),
     fontFamily: z.string().default("Inter, sans-serif"),
+    headingFont: z.string().optional(),
+    bodyFont: z.string().optional(),
     borderRadius: z.string().default("xl"),
+    surfaceStyle: z.string().optional(),
     customThemeEnabled: z.boolean().optional(),
   }),
   blocks: z.array(OmniBlockInstanceSchema).default([]),

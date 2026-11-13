@@ -11,7 +11,6 @@ import {
   Clock,
   Eye,
   Store,
-  Sparkles,
   ShoppingBag,
 } from "lucide-react";
 import { toast } from "sonner";

@@ -596,9 +596,9 @@ export async function executeGenerateStorefrontFromOnboarding(
         block_type: "hero_banner",
         sort_order: 1,
         content: {
-          headline: `Bem-vindo à ${title}`,
-          subheadline: "Produtos selecionados com garantia de procedência e entrega rápida.",
-          cta_text: "Ver Cardápio Completo",
+          headline: title,
+          subheadline: "Produtos selecionados com garantia de procedência e entrega.",
+          cta_text: "Ver Cardápio",
         },
         design_tokens: {
           padding_y: "py-12",

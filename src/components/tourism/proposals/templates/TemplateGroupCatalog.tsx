@@ -5,7 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Users, MapPin, Calendar, Clock, Bus, CheckCircle2, Building2, Sparkles, Plane } from "lucide-react";
+import { Users, MapPin, Calendar, Clock, Bus, CheckCircle2, Building2, Plane } from "lucide-react";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -55,7 +55,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1 rounded-full ds-meta font-black uppercase tracking-widest mb-4 shadow-sm">
-              <Sparkles className="w-3 h-3" /> Proposta de Viagem
+              <Plane className="w-3 h-3" /> Proposta de Viagem
             </div>
           )}
           <h1

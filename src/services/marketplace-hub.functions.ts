@@ -5,6 +5,16 @@ import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
 import { fetchWithExponentialBackoff } from "@/lib/resilient-api-client";
+import {
+  buildMarketplaceOAuthAuthorizeUrl,
+  generateShopeeSign,
+  acknowledgeIfoodEvents,
+  pushIfoodOrderLifecycle,
+} from "@/lib/marketplace-api-client";
+import {
+  resolveConnectorCredentialsWithRefresh,
+  pushOrderUpdateToOriginMarketplace,
+} from "@/lib/marketplace-vault.server";
 
 export const MARKETPLACE_PLATFORMS = [
   "mercadolivre",
@@ -56,6 +66,7 @@ export interface MarketplaceConnectorDTO {
 
 export interface ExternalOrderDTO {
   id: string;
+  order_id?: string | null;
   platform: string;
   external_order_id: string;
   external_status: string;
@@ -66,10 +77,13 @@ export interface ExternalOrderDTO {
   net_payout_cents: number;
   total_amount_cents: number;
   tracking_number: string | null;
+  payment_method?: string | null;
+  shipping_method?: string | null;
   items: Array<{
     title: string;
     quantity: number;
     unit_price_cents: number;
+    sku?: string;
   }>;
   imported_at: string;
 }
@@ -174,6 +188,7 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
       name: z.string().min(2),
       external_account_id: z.string().optional().nullable(),
       account_nickname: z.string().optional().nullable(),
+      webhook_secret: z.string().optional().nullable(),
       // Credenciais específicas por plataforma (client_id, client_secret, partner_key, etc.)
       credential_payload: z.record(z.string()).optional().nullable(),
       // Legacy single token (mantido para retrocompatibilidade)
@@ -191,7 +206,17 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
 
-    // V143 Truth Engine & E2E Security: Valida credenciais reais e encripta com AES-256-GCM
+    // Busca registro anterior para preservar segredos mascarados ("••••••••") ou não alterados durante edição de preferências
+    const { data: existingRow } = await supabase
+      .from("marketplace_connectors")
+      .select("id, external_account_id, account_nickname, access_token, refresh_token, webhook_secret, settings")
+      .eq("store_id", targetStoreId)
+      .eq("platform", data.platform)
+      .maybeSingle();
+
+    const prevSettings = (existingRow?.settings || {}) as Record<string, any>;
+    const prevCreds = (prevSettings.credentials || {}) as Record<string, string>;
+
     const creds = data.credential_payload || {};
     const primaryToken =
       data.access_token ||
@@ -204,29 +229,52 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
       creds.refresh_token ||
       null;
 
-    if (data.status === "connected" && (!primaryToken || primaryToken.trim().length < 4)) {
+    const hasExistingCredentials = Boolean(
+      existingRow?.access_token ||
+        existingRow?.refresh_token ||
+        Object.keys(prevCreds).some((k) => Boolean(prevCreds[k]))
+    );
+
+    if (data.status === "connected" && (!primaryToken || primaryToken.trim().length < 4) && !hasExistingCredentials) {
       throw new Error(
         `CREDENCIAIS OBRIGATÓRIAS (${data.name}): Informe uma API Key, Access Token ou Client Secret autêntico para ativar a integração.`
       );
     }
 
-    const encryptedCredentials: Record<string, string> = {};
+    const encryptedCredentials: Record<string, string> = { ...prevCreds };
     for (const [k, v] of Object.entries(creds)) {
-      if (typeof v === "string" && v.trim() !== "") {
+      if (typeof v === "string" && v.trim() !== "" && v.trim() !== "••••••••") {
         const isSecretField =
           k.includes("secret") ||
           k.includes("token") ||
           k.includes("key") ||
-          k.includes("password");
+          k.includes("password") ||
+          k.includes("access_code");
         encryptedCredentials[k] = isSecretField ? encryptSecret(v.trim()) : v.trim();
       }
     }
 
-    const encryptedPrimaryToken = primaryToken ? encryptSecret(primaryToken.trim()) : null;
+    const encryptedPrimaryToken =
+      primaryToken && primaryToken.trim() !== "••••••••"
+        ? encryptSecret(primaryToken.trim())
+        : existingRow?.access_token || null;
+
     const rawRefresh = creds.refresh_token || data.refresh_token || null;
-    const encryptedRefreshToken = rawRefresh ? encryptSecret(rawRefresh.trim()) : null;
+    const encryptedRefreshToken =
+      rawRefresh && rawRefresh.trim() !== "••••••••"
+        ? encryptSecret(rawRefresh.trim())
+        : existingRow?.refresh_token || null;
+
+    const resolvedExternalAccountId =
+      data.external_account_id ||
+      creds.seller_id ||
+      creds.merchant_uuid ||
+      creds.shop_id ||
+      existingRow?.external_account_id ||
+      null;
 
     const mergedSettings = {
+      ...prevSettings,
       ...(data.settings || {}),
       encryption_algorithm: "AES-256-GCM",
       credentials: encryptedCredentials,
@@ -236,10 +284,12 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
       store_id: targetStoreId,
       platform: data.platform,
       name: data.name,
-      external_account_id: data.external_account_id || creds.seller_id || creds.merchant_uuid || creds.shop_id || null,
-      account_nickname: data.account_nickname || null,
+      external_account_id: resolvedExternalAccountId,
+      account_nickname: data.account_nickname ?? existingRow?.account_nickname ?? null,
       access_token: encryptedPrimaryToken,
       refresh_token: encryptedRefreshToken,
+      ...(data.webhook_secret ? { webhook_secret: encryptSecret(data.webhook_secret.trim()) } : {}),
+      credentials: encryptedCredentials,
       status: data.status,
       settings: mergedSettings,
       updated_at: new Date().toISOString(),
@@ -337,152 +387,18 @@ function safeDecryptField(val: unknown): string {
 export async function resolveMarketplaceConnectorCredentials(params: {
   storeId: string;
   platform: string;
+  forceRefresh?: boolean;
+  fetchImpl?: typeof fetch;
   connectorRow?: {
     id?: string;
     access_token?: string | null;
     refresh_token?: string | null;
     external_account_id?: string | null;
+    token_expires_at?: string | null;
     settings?: Record<string, any> | null;
   } | null;
-}): Promise<{
-  isConfigured: boolean;
-  isTestMode: boolean;
-  accessToken: string;
-  refreshToken: string;
-  externalAccountId: string;
-  clientId: string;
-  clientSecret: string;
-  decryptedCreds: Record<string, string>;
-  settings: Record<string, any>;
-}> {
-  const supabase = getServerClient();
-  let connector = params.connectorRow;
-  if (!connector || (connector.access_token === undefined && connector.external_account_id === undefined)) {
-    const { data: row } = await supabase
-      .from("marketplace_connectors")
-      .select("id, access_token, refresh_token, external_account_id, settings")
-      .eq("store_id", params.storeId)
-      .eq("platform", params.platform)
-      .maybeSingle();
-    if (row) {
-      connector = {
-        ...connector,
-        ...row,
-        settings: { ...(row.settings || {}), ...(params.connectorRow?.settings || {}) },
-      };
-    }
-  }
-
-  const { data: creds } = await supabase
-    .from("integration_credentials")
-    .select("token_payload, is_active")
-    .eq("store_id", params.storeId)
-    .eq("provider", params.platform)
-    .maybeSingle();
-
-  const settings = (connector?.settings || params.connectorRow?.settings || {}) as Record<string, any>;
-  const rawVaultPayload = (creds?.is_active && creds?.token_payload ? creds.token_payload : {}) as Record<string, any>;
-  const rawNestedCreds = (settings.credentials || {}) as Record<string, any>;
-
-  const decryptedCreds: Record<string, string> = {};
-  for (const [k, v] of Object.entries({ ...rawVaultPayload, ...settings, ...rawNestedCreds })) {
-    if (typeof v === "string" && v.trim()) {
-      decryptedCreds[k] = safeDecryptField(v);
-    }
-  }
-
-  const primaryAccessToken =
-    safeDecryptField(connector?.access_token) ||
-    decryptedCreds.access_token ||
-    decryptedCreds.api_token ||
-    decryptedCreds.api_key ||
-    decryptedCreds.access_code ||
-    decryptedCreds.partner_key ||
-    decryptedCreds.token ||
-    "";
-
-  const refreshToken =
-    safeDecryptField(connector?.refresh_token) ||
-    decryptedCreds.refresh_token ||
-    "";
-
-  const clientId =
-    decryptedCreds.client_id ||
-    decryptedCreds.lwa_client_id ||
-    decryptedCreds.partner_id ||
-    decryptedCreds.api_user ||
-    decryptedCreds.username ||
-    "";
-
-  const clientSecret =
-    decryptedCreds.client_secret ||
-    decryptedCreds.lwa_client_secret ||
-    decryptedCreds.partner_key ||
-    decryptedCreds.api_password ||
-    "";
-
-  const externalAccountId =
-    connector?.external_account_id ||
-    decryptedCreds.seller_id ||
-    decryptedCreds.merchant_uuid ||
-    decryptedCreds.shop_id ||
-    decryptedCreds.restaurant_id ||
-    decryptedCreds.location_id ||
-    "";
-
-  let activeToken = primaryAccessToken;
-
-  // Se iFood possuir client_id e client_secret mas não possuir bearer token ativo, gera via OAuth client_credentials
-  if (params.platform === "ifood" && !activeToken && clientId && clientSecret) {
-    try {
-      const tokenRes = await fetch("https://merchant-api.ifood.com.br/authentication/v1.0/oauth/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          grantType: "client_credentials",
-          clientId,
-          clientSecret,
-        }).toString(),
-      });
-      if (tokenRes.ok) {
-        const tokenData = (await tokenRes.json().catch(() => ({}))) as Record<string, any>;
-        if (tokenData.accessToken) {
-          activeToken = String(tokenData.accessToken);
-          if (connector?.id) {
-            await supabase
-              .from("marketplace_connectors")
-              .update({
-                access_token: encryptSecret(activeToken),
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", connector.id);
-          }
-        }
-      }
-    } catch {
-      // Fallback para token existente
-    }
-  }
-
-  const isConfigured = Boolean(activeToken || (clientId && clientSecret));
-  const isTestMode = Boolean(
-    settings.sandbox ||
-      settings.is_test ||
-      settings.environment === "sandbox" ||
-      decryptedCreds.environment === "sandbox"
-  );
-
-  return {
-    isConfigured,
-    isTestMode,
-    accessToken: activeToken,
-    refreshToken,
-    externalAccountId,
-    clientId,
-    clientSecret,
-    decryptedCreds,
-    settings,
-  };
+}) {
+  return resolveConnectorCredentialsWithRefresh(params);
 }
 
 async function upsertPulledMarketplaceOrderToMaster(params: {
@@ -495,6 +411,7 @@ async function upsertPulledMarketplaceOrderToMaster(params: {
   shippingCostCents: number;
   marketplaceFeeCents: number;
   totalAmountCents: number;
+  trackingNumber?: string | null;
   items: Array<{ title: string; quantity: number; unit_price_cents: number; sku?: string }>;
 }) {
   const supabase = getServerClient();
@@ -515,13 +432,14 @@ async function upsertPulledMarketplaceOrderToMaster(params: {
       marketplace_fee_cents: params.marketplaceFeeCents,
       net_payout_cents: netPayoutCents,
       total_amount_cents: params.totalAmountCents,
+      ...(params.trackingNumber ? { tracking_number: params.trackingNumber } : {}),
       items: params.items,
       imported_at: new Date().toISOString(),
     },
     { onConflict: "store_id,platform,external_order_id" }
   );
 
-  // Sincroniza atomicamente com a tabela mestra public.orders para refletir em /workspace/pedidos e no Dashboard
+  // Sincroniza atomicamente com a tabela mestra public.orders e vincula FK `order_id`
   const { data: existingOrder } = await supabase
     .from("orders")
     .select("id")
@@ -536,52 +454,124 @@ async function upsertPulledMarketplaceOrderToMaster(params: {
     ? "paid"
     : ["cancelled", "canceled"].includes(params.externalStatus.toLowerCase())
       ? "cancelled"
-      : "processing";
+      : ["shipped", "dispatched"].includes(params.externalStatus.toLowerCase())
+        ? "shipped"
+        : ["delivered", "completed"].includes(params.externalStatus.toLowerCase())
+          ? "delivered"
+          : "processing";
 
-  if (existingOrder?.id) {
+  let masterOrderId = existingOrder?.id || null;
+
+  if (masterOrderId) {
     await supabase
       .from("orders")
       .update({ status: normalizedStatus as any, updated_at: new Date().toISOString() })
-      .eq("id", existingOrder.id);
+      .eq("id", masterOrderId);
   } else {
     const { data: createdOrder } = await supabase
       .from("orders")
       .insert({
         store_id: params.storeId,
         status: normalizedStatus as any,
+        origin_type: "marketplace",
+        origin_channel: params.platform,
         subtotal_cents: params.subtotalCents,
         shipping_cents: params.shippingCostCents,
         discount_cents: 0,
         total_cents: params.totalAmountCents,
         channel_origin: params.platform,
+        cost_breakdown: {
+          marketplace_fee_cents: params.marketplaceFeeCents,
+          shipping_cost_cents: params.shippingCostCents,
+          net_payout_cents: netPayoutCents,
+          channel: params.platform,
+        },
         customer_snapshot: {
           name: params.buyerName,
           origin: params.platform,
           external_order_id: params.externalOrderId,
         },
+        items_snapshot: params.items,
         notes: `Pedido sincronizado via ${params.platform.toUpperCase()} #${params.externalOrderId}`,
       })
       .select("id")
       .maybeSingle();
 
-    if (createdOrder?.id && params.items.length > 0) {
-      await supabase.from("order_items").insert(
-        params.items.map((it) => ({
-          order_id: createdOrder.id,
-          product_title: it.title,
-          variant_sku: it.sku || null,
-          qty: it.quantity || 1,
-          unit_price_cents: it.unit_price_cents || 0,
-          line_total_cents: (it.quantity || 1) * (it.unit_price_cents || 0),
-        }))
+    if (createdOrder?.id) {
+      masterOrderId = createdOrder.id;
+      if (params.items.length > 0) {
+        await supabase.from("order_items").insert(
+          params.items.map((it) => ({
+            order_id: createdOrder.id,
+            product_title: it.title,
+            variant_sku: it.sku || null,
+            qty: it.quantity || 1,
+            unit_price_cents: it.unit_price_cents || 0,
+            total_cents: (it.quantity || 1) * (it.unit_price_cents || 0),
+          }))
+        );
+      }
+    }
+  }
+
+  if (masterOrderId) {
+    await supabase
+      .from("marketplace_external_orders")
+      .update({ order_id: masterOrderId, synced_to_master_at: new Date().toISOString() })
+      .eq("store_id", params.storeId)
+      .eq("platform", params.platform)
+      .eq("external_order_id", params.externalOrderId);
+  }
+}
+
+async function fetchWithAutoRefreshOn401(params: {
+  storeId: string;
+  platform: string;
+  url: string;
+  init: RequestInit;
+  initialToken: string;
+}): Promise<{ ok: boolean; status: number; data: any; tokenUsed: string }> {
+  let activeToken = params.initialToken;
+  let res = await fetchWithExponentialBackoff(
+    params.url,
+    {
+      ...params.init,
+      headers: {
+        ...(params.init.headers || {}),
+        Authorization: `Bearer ${activeToken}`,
+      },
+    },
+    { maxRetries: 2, baseDelayMs: 400 }
+  );
+
+  if (res.status === 401) {
+    const refreshed = await resolveConnectorCredentialsWithRefresh({
+      storeId: params.storeId,
+      platform: params.platform,
+      forceRefresh: true,
+    });
+    if (refreshed.accessToken && refreshed.accessToken !== activeToken) {
+      activeToken = refreshed.accessToken;
+      res = await fetchWithExponentialBackoff(
+        params.url,
+        {
+          ...params.init,
+          headers: {
+            ...(params.init.headers || {}),
+            Authorization: `Bearer ${activeToken}`,
+          },
+        },
+        { maxRetries: 2, baseDelayMs: 400 }
       );
     }
   }
+
+  return { ok: res.ok, status: res.status, data: res.data, tokenUsed: activeToken };
 }
 
 /**
  * Despachador de canal de Marketplace (Padrão Outbox Transacional + Sincronização Bidirecional Real).
- * Verifica credenciais no cofre AES-256-GCM e executa disparo HTTP real (Estoque, Catálogo, Preços e Pedidos).
+ * Nunca retorna sucesso falso-positivo quando API falha ou canal não possui integração válida.
  */
 export async function dispatchMarketplaceChannelSync(params: {
   storeId: string;
@@ -626,106 +616,173 @@ export async function dispatchMarketplaceChannelSync(params: {
     };
   }
 
-  const token = resolved.accessToken;
+  let token = resolved.accessToken;
   const settings = resolved.settings;
 
   try {
-    // 4.1 Canal Direto: Mercado Livre (Estoque individual, Pull de Pedidos e Push de Catálogo/Preços)
+    // 4.1 Canal Direto: Mercado Livre (Estoque incl. variações, Pull de Pedidos e Push de Preços/Catálogo)
     if (params.platform === "mercadolivre" && token) {
       if (params.productId && params.syncType === "stock") {
         const { data: listing } = await supabase
           .from("channel_listings")
-          .select("external_listing_id")
+          .select("id, external_listing_id, external_sku")
           .eq("store_id", params.storeId)
           .eq("product_id", params.productId)
           .eq("channel", "mercadolivre")
           .maybeSingle();
 
         const externalId = listing?.external_listing_id;
-        if (externalId) {
-          const mlRes = await fetchWithExponentialBackoff(
-            `https://api.mercadolibre.com/items/${externalId}`,
-            {
-              method: "PUT",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ available_quantity: params.newStockQty ?? 0 }),
-            },
-            { maxRetries: 3, baseDelayMs: 600 }
-          );
-
-          if (mlRes.ok) {
-            return {
-              status: "completed",
-              message: `Estoque do anúncio ${externalId} atualizado no Mercado Livre para ${params.newStockQty ?? 0} un (HTTP ${mlRes.status}).`,
-              itemsProcessed: 1,
-            };
-          }
+        if (!externalId) {
+          return {
+            status: "completed",
+            message: "Produto sem anúncio vinculado no Mercado Livre (nenhum envio necessário).",
+            itemsProcessed: 0,
+          };
         }
+
+        // Inspeciona se anúncio possui variações para respeitar regra da API do Mercado Livre
+        let itemBody: Record<string, any> = { available_quantity: params.newStockQty ?? 0 };
+        const inspectRes = await fetchWithAutoRefreshOn401({
+          storeId: params.storeId,
+          platform: "mercadolivre",
+          url: `https://api.mercadolibre.com/items/${externalId}`,
+          init: { method: "GET" },
+          initialToken: token,
+        });
+        token = inspectRes.tokenUsed;
+
+        if (inspectRes.ok && Array.isArray(inspectRes.data?.variations) && inspectRes.data.variations.length > 0) {
+          const sku = listing?.external_sku;
+          const variations = inspectRes.data.variations.map((v: any) => {
+            const matchesSku = sku && (v.seller_custom_field === sku || v.attributes?.some((a: any) => a.id === "SELLER_SKU" && a.value_name === sku));
+            if (matchesSku || !sku) {
+              return { id: v.id, available_quantity: params.newStockQty ?? 0 };
+            }
+            return { id: v.id, available_quantity: v.available_quantity };
+          });
+          itemBody = { variations };
+        }
+
+        const mlRes = await fetchWithAutoRefreshOn401({
+          storeId: params.storeId,
+          platform: "mercadolivre",
+          url: `https://api.mercadolibre.com/items/${externalId}`,
+          init: {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(itemBody),
+          },
+          initialToken: token,
+        });
+        token = mlRes.tokenUsed;
+
+        if (!mlRes.ok) {
+          await supabase
+            .from("channel_listings")
+            .update({
+              channel_status: "error",
+              sync_error_message: mlRes.data?.message || `HTTP ${mlRes.status}`,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", listing.id);
+          return {
+            status: "failed",
+            message: `Mercado Livre rejeitou atualização de estoque de ${externalId}: ${mlRes.data?.message || `HTTP ${mlRes.status}`}`,
+            itemsProcessed: 0,
+          };
+        }
+
+        await supabase
+          .from("channel_listings")
+          .update({ channel_status: "active", sync_error_message: null, last_synced_at: new Date().toISOString() })
+          .eq("id", listing.id);
+
+        return {
+          status: "completed",
+          message: `Estoque do anúncio ${externalId} atualizado no Mercado Livre para ${params.newStockQty ?? 0} un (HTTP ${mlRes.status}).`,
+          itemsProcessed: 1,
+        };
       }
 
       if (params.syncType === "orders" || params.syncType === "full") {
         let sellerId = resolved.externalAccountId.replace(/^MLB/i, "");
         if (!sellerId) {
-          const meRes = await fetchWithExponentialBackoff(
-            "https://api.mercadolibre.com/users/me",
-            { method: "GET", headers: { Authorization: `Bearer ${token}` } },
-            { maxRetries: 2, baseDelayMs: 400 }
-          );
-          if (meRes.ok && meRes.data?.id) {
-            sellerId = String(meRes.data.id);
+          const meRes = await fetchWithAutoRefreshOn401({
+            storeId: params.storeId,
+            platform: "mercadolivre",
+            url: "https://api.mercadolibre.com/users/me",
+            init: { method: "GET" },
+            initialToken: token,
+          });
+          token = meRes.tokenUsed;
+          if (!meRes.ok) {
+            return {
+              status: "failed",
+              message: `Mercado Livre rejeitou autenticação (HTTP ${meRes.status}). Refaça o login OAuth 2.0.`,
+              itemsProcessed: 0,
+            };
           }
+          sellerId = meRes.data?.id ? String(meRes.data.id) : "";
         }
 
         if (sellerId) {
-          const ordersRes = await fetchWithExponentialBackoff(
-            `https://api.mercadolibre.com/orders/search?seller=${encodeURIComponent(sellerId)}&sort=date_desc&limit=20`,
-            { method: "GET", headers: { Authorization: `Bearer ${token}` } },
-            { maxRetries: 2, baseDelayMs: 500 }
-          );
-          if (ordersRes.ok) {
-            const results = Array.isArray(ordersRes.data?.results) ? ordersRes.data.results : [];
-            for (const ord of results) {
-              const extId = String(ord.id || "");
-              if (!extId) continue;
-              const totalCents = Math.round(Number(ord.total_amount || 0) * 100);
-              const shippingCents = Math.round(Number(ord.shipping?.cost || 0) * 100);
-              const items = Array.isArray(ord.order_items)
-                ? ord.order_items.map((oi: any) => ({
-                    title: String(oi.item?.title || "Item Mercado Livre"),
-                    quantity: Number(oi.quantity || 1),
-                    unit_price_cents: Math.round(Number(oi.unit_price || 0) * 100),
-                    sku: oi.item?.seller_sku ? String(oi.item.seller_sku) : undefined,
-                  }))
-                : [];
-              const feeCents = Array.isArray(ord.order_items)
-                ? ord.order_items.reduce(
-                    (acc: number, oi: any) => acc + Math.round(Number(oi.sale_fee || 0) * 100),
-                    0
-                  )
-                : 0;
-              await upsertPulledMarketplaceOrderToMaster({
-                storeId: params.storeId,
-                platform: "mercadolivre",
-                externalOrderId: extId,
-                externalStatus: String(ord.status || "paid"),
-                buyerName: String(ord.buyer?.nickname || ord.buyer?.first_name || "Comprador ML"),
-                subtotalCents: Math.max(0, totalCents - shippingCents),
-                shippingCostCents: shippingCents,
-                marketplaceFeeCents: feeCents,
-                totalAmountCents: totalCents,
-                items,
-              });
-            }
-            if (params.syncType === "orders") {
-              return {
-                status: "completed",
-                message: `Sincronização Mercado Livre concluída: ${results.length} pedido(s) consultado(s) e conciliado(s) com a tabela de pedidos.`,
-                itemsProcessed: results.length || 1,
-              };
-            }
+          const ordersRes = await fetchWithAutoRefreshOn401({
+            storeId: params.storeId,
+            platform: "mercadolivre",
+            url: `https://api.mercadolibre.com/orders/search?seller=${encodeURIComponent(sellerId)}&sort=date_desc&limit=20`,
+            init: { method: "GET" },
+            initialToken: token,
+          });
+          token = ordersRes.tokenUsed;
+
+          if (!ordersRes.ok) {
+            return {
+              status: "failed",
+              message: `Erro ao consultar pedidos Mercado Livre (HTTP ${ordersRes.status}): ${ordersRes.data?.message || "Acesso negado"}`,
+              itemsProcessed: 0,
+            };
+          }
+
+          const results = Array.isArray(ordersRes.data?.results) ? ordersRes.data.results : [];
+          for (const ord of results) {
+            const extId = String(ord.id || "");
+            if (!extId) continue;
+            const totalCents = Math.round(Number(ord.total_amount || 0) * 100);
+            const shippingCents = Math.round(Number(ord.shipping?.cost || 0) * 100);
+            const items = Array.isArray(ord.order_items)
+              ? ord.order_items.map((oi: any) => ({
+                  title: String(oi.item?.title || "Item Mercado Livre"),
+                  quantity: Number(oi.quantity || 1),
+                  unit_price_cents: Math.round(Number(oi.unit_price || 0) * 100),
+                  sku: oi.item?.seller_sku ? String(oi.item.seller_sku) : undefined,
+                }))
+              : [];
+            const feeCents = Array.isArray(ord.order_items)
+              ? ord.order_items.reduce(
+                  (acc: number, oi: any) => acc + Math.round(Number(oi.sale_fee || 0) * 100),
+                  0
+                )
+              : 0;
+            await upsertPulledMarketplaceOrderToMaster({
+              storeId: params.storeId,
+              platform: "mercadolivre",
+              externalOrderId: extId,
+              externalStatus: String(ord.status || "paid"),
+              buyerName: String(ord.buyer?.nickname || ord.buyer?.first_name || "Comprador ML"),
+              subtotalCents: Math.max(0, totalCents - shippingCents),
+              shippingCostCents: shippingCents,
+              marketplaceFeeCents: feeCents,
+              totalAmountCents: totalCents,
+              items,
+            });
+          }
+
+          if (params.syncType === "orders") {
+            return {
+              status: "completed",
+              message: `Sincronização Mercado Livre concluída: ${results.length} pedido(s) consultado(s) e conciliado(s).`,
+              itemsProcessed: results.length,
+            };
           }
         }
       }
@@ -733,11 +790,12 @@ export async function dispatchMarketplaceChannelSync(params: {
       if (params.syncType === "catalog" || params.syncType === "prices" || params.syncType === "full") {
         const { data: mappedListings } = await supabase
           .from("channel_listings")
-          .select("id, product_id, external_listing_id, metadata")
+          .select("id, product_id, external_listing_id, attributes, price_cents")
           .eq("store_id", params.storeId)
           .eq("channel", "mercadolivre");
 
         let updatedListings = 0;
+        let failedListings = 0;
         for (const row of mappedListings || []) {
           if (!row.external_listing_id) continue;
           const { data: prod } = await supabase
@@ -746,42 +804,72 @@ export async function dispatchMarketplaceChannelSync(params: {
             .eq("id", row.product_id)
             .maybeSingle();
           if (!prod) continue;
-          const margin = Number((row.metadata as any)?.price_margin_percent || 0);
-          const adjustedPrice = Number(((prod.price_cents * (1 + margin / 100)) / 100).toFixed(2));
-          const putRes = await fetchWithExponentialBackoff(
-            `https://api.mercadolibre.com/items/${row.external_listing_id}`,
-            {
+          const attrs = (row.attributes as Record<string, any>) || {};
+          const margin = Number(attrs.price_margin_percent || 0);
+          const targetPriceCents = row.price_cents || Math.round((prod.price_cents || 0) * (1 + margin / 100));
+          const adjustedPrice = Number((targetPriceCents / 100).toFixed(2));
+          const putRes = await fetchWithAutoRefreshOn401({
+            storeId: params.storeId,
+            platform: "mercadolivre",
+            url: `https://api.mercadolibre.com/items/${row.external_listing_id}`,
+            init: {
               method: "PUT",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ price: adjustedPrice }),
             },
-            { maxRetries: 2, baseDelayMs: 400 }
-          );
+            initialToken: token,
+          });
+          token = putRes.tokenUsed;
           if (putRes.ok) {
             updatedListings += 1;
             await supabase
               .from("channel_listings")
-              .update({ updated_at: new Date().toISOString() })
+              .update({
+                channel_status: "active",
+                sync_error_message: null,
+                last_synced_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", row.id);
+          } else {
+            failedListings += 1;
+            await supabase
+              .from("channel_listings")
+              .update({
+                channel_status: "error",
+                sync_error_message: putRes.data?.message || `HTTP ${putRes.status}`,
+                updated_at: new Date().toISOString(),
+              })
               .eq("id", row.id);
           }
         }
-        if (updatedListings > 0) {
+
+        if (failedListings > 0 && updatedListings === 0) {
           return {
-            status: "completed",
-            message: `Catálogo e preços sincronizados no Mercado Livre (${updatedListings} anúncio(s) atualizado(s)).`,
-            itemsProcessed: updatedListings,
+            status: "failed",
+            message: `Mercado Livre rejeitou atualização em ${failedListings} anúncio(s). Verifique token OAuth e permissões.`,
+            itemsProcessed: 0,
           };
         }
+
+        return {
+          status: "completed",
+          message:
+            updatedListings > 0
+              ? `Mercado Livre sincronizado (${updatedListings} anúncio(s) atualizado(s)).`
+              : "Sincronização completa com Mercado Livre executada.",
+          itemsProcessed: updatedListings,
+        };
       }
     }
 
-    // 4.2 Canal Direto: iFood OpenDelivery (Estoque e Polling de Pedidos)
+    // 4.2 Canal Direto: iFood Merchant API v1.0 (Disponibilidade, Polling + Acknowledgment pós-DB)
     if (params.platform === "ifood" && token) {
       const merchantUuid = resolved.externalAccountId;
-      if (params.productId && params.syncType === "stock" && merchantUuid) {
+      if (params.productId && params.syncType === "stock") {
+        if (!merchantUuid) {
+          return { status: "failed", message: "Merchant UUID do iFood não informado no conector.", itemsProcessed: 0 };
+        }
         const { data: listing } = await supabase
           .from("channel_listings")
           .select("external_listing_id")
@@ -792,125 +880,428 @@ export async function dispatchMarketplaceChannelSync(params: {
 
         const externalItemId = listing?.external_listing_id || params.productId;
         const itemStatus = (params.newStockQty ?? 0) > 0 ? "AVAILABLE" : "UNAVAILABLE";
-        const ifoodRes = await fetchWithExponentialBackoff(
-          `https://merchant-api.ifood.com.br/catalog/v1.0/merchants/${merchantUuid}/items/${externalItemId}/status`,
-          {
+        const ifoodRes = await fetchWithAutoRefreshOn401({
+          storeId: params.storeId,
+          platform: "ifood",
+          url: `https://merchant-api.ifood.com.br/catalog/v1.0/merchants/${merchantUuid}/items/${externalItemId}/status`,
+          init: {
             method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status: itemStatus }),
           },
-          { maxRetries: 3, baseDelayMs: 600 }
-        );
+          initialToken: token,
+        });
 
-        if (ifoodRes.ok) {
+        if (!ifoodRes.ok) {
           return {
-            status: "completed",
-            message: `Disponibilidade do item ${externalItemId} atualizada no iFood para ${itemStatus} (HTTP ${ifoodRes.status}).`,
-            itemsProcessed: 1,
+            status: "failed",
+            message: `iFood rejeitou alteração de disponibilidade do item ${externalItemId} (HTTP ${ifoodRes.status}).`,
+            itemsProcessed: 0,
           };
         }
-      }
 
-      if (params.syncType === "orders" || params.syncType === "full") {
-        const pollRes = await fetchWithExponentialBackoff(
-          "https://merchant-api.ifood.com.br/order/v1.0/events:polling",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              ...(merchantUuid ? { "x-polling-merchants": merchantUuid } : {}),
-            },
-          },
-          { maxRetries: 2, baseDelayMs: 400 }
-        );
-        if (pollRes.ok) {
-          const events = Array.isArray(pollRes.data) ? pollRes.data : [];
-          let syncedOrders = 0;
-          for (const ev of events.slice(0, 15)) {
-            const ordId = String(ev.orderId || "");
-            if (!ordId) continue;
-            const detailRes = await fetchWithExponentialBackoff(
-              `https://merchant-api.ifood.com.br/order/v1.0/orders/${ordId}`,
-              { method: "GET", headers: { Authorization: `Bearer ${token}` } },
-              { maxRetries: 2, baseDelayMs: 300 }
-            );
-            if (detailRes.ok && detailRes.data) {
-              const d = detailRes.data;
-              const totalCents = Math.round(Number(d.total?.orderAmount || 0) * 100);
-              const deliveryCents = Math.round(Number(d.total?.deliveryFee || 0) * 100);
-              const items = Array.isArray(d.items)
-                ? d.items.map((it: any) => ({
-                    title: String(it.name || "Item iFood"),
-                    quantity: Number(it.quantity || 1),
-                    unit_price_cents: Math.round(Number(it.unitPrice || 0) * 100),
-                    sku: it.externalCode ? String(it.externalCode) : undefined,
-                  }))
-                : [];
-              await upsertPulledMarketplaceOrderToMaster({
-                storeId: params.storeId,
-                platform: "ifood",
-                externalOrderId: ordId,
-                externalStatus: String(ev.fullCode || "CONFIRMED"),
-                buyerName: String(d.customer?.name || "Cliente iFood"),
-                subtotalCents: Math.max(0, totalCents - deliveryCents),
-                shippingCostCents: deliveryCents,
-                marketplaceFeeCents: Math.round(totalCents * 0.12),
-                totalAmountCents: totalCents,
-                items,
-              });
-              syncedOrders += 1;
-            }
-          }
-          return {
-            status: "completed",
-            message: `Polling iFood OpenDelivery executado: ${syncedOrders} novo(s) pedido(s) importado(s).`,
-            itemsProcessed: Math.max(1, syncedOrders),
-          };
-        }
-      }
-    }
-
-    // 4.3 Canal Direto: Bling ERP v3 (Pull de Pedidos)
-    if (params.platform === "bling" && token && (params.syncType === "orders" || params.syncType === "full")) {
-      const blingRes = await fetchWithExponentialBackoff(
-        "https://api.bling.com.br/Api/v3/pedidos/vendas?limite=20",
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-        },
-        { maxRetries: 2, baseDelayMs: 500 }
-      );
-      if (blingRes.ok) {
-        const rows = Array.isArray(blingRes.data?.data) ? blingRes.data.data : [];
-        for (const r of rows) {
-          const extId = String(r.id || r.numero || "");
-          if (!extId) continue;
-          const totalCents = Math.round(Number(r.total || 0) * 100);
-          await upsertPulledMarketplaceOrderToMaster({
-            storeId: params.storeId,
-            platform: "bling",
-            externalOrderId: extId,
-            externalStatus: "paid",
-            buyerName: String(r.contato?.nome || "Cliente Bling ERP"),
-            subtotalCents: totalCents,
-            shippingCostCents: 0,
-            marketplaceFeeCents: 0,
-            totalAmountCents: totalCents,
-            items: [{ title: `Pedido Bling #${r.numero || extId}`, quantity: 1, unit_price_cents: totalCents }],
-          });
-        }
         return {
           status: "completed",
-          message: `Bling ERP sincronizado: ${rows.length} pedido(s) conciliado(s).`,
-          itemsProcessed: Math.max(1, rows.length),
+          message: `Disponibilidade do item ${externalItemId} atualizada no iFood para ${itemStatus} (HTTP ${ifoodRes.status}).`,
+          itemsProcessed: 1,
+        };
+      }
+
+      if (params.syncType === "orders" || params.syncType === "full" || params.syncType === "catalog" || params.syncType === "prices") {
+        const pollRes = await fetchWithAutoRefreshOn401({
+          storeId: params.storeId,
+          platform: "ifood",
+          url: "https://merchant-api.ifood.com.br/order/v1.0/events:polling",
+          init: {
+            method: "GET",
+            headers: { ...(merchantUuid ? { "x-polling-merchants": merchantUuid } : {}) },
+          },
+          initialToken: token,
+        });
+        token = pollRes.tokenUsed;
+
+        if (!pollRes.ok) {
+          return {
+            status: "failed",
+            message: `iFood Polling rejeitado (HTTP ${pollRes.status}). Verifique Client ID/Secret e Merchant UUID.`,
+            itemsProcessed: 0,
+          };
+        }
+
+        const events = Array.isArray(pollRes.data) ? pollRes.data : [];
+        let syncedOrders = 0;
+        const ackIds: string[] = [];
+
+        for (const ev of events.slice(0, 20)) {
+          if (ev.id) ackIds.push(String(ev.id));
+          const ordId = String(ev.orderId || "");
+          if (!ordId) continue;
+
+          const detailRes = await fetchWithExponentialBackoff(
+            `https://merchant-api.ifood.com.br/order/v1.0/orders/${ordId}`,
+            { method: "GET", headers: { Authorization: `Bearer ${token}` } },
+            { maxRetries: 2, baseDelayMs: 300 }
+          );
+
+          if (detailRes.ok && detailRes.data) {
+            const d = detailRes.data;
+            const totalCents = Math.round(Number(d.total?.orderAmount || 0) * 100);
+            const deliveryCents = Math.round(Number(d.total?.deliveryFee || 0) * 100);
+            const explicitFeesCents = d.total?.fees !== undefined ? Math.round(Number(d.total.fees) * 100) : Math.round(totalCents * 0.12);
+            const items = Array.isArray(d.items)
+              ? d.items.map((it: any) => ({
+                  title: String(it.name || "Item iFood"),
+                  quantity: Number(it.quantity || 1),
+                  unit_price_cents: Math.round(Number(it.unitPrice || 0) * 100),
+                  sku: it.externalCode ? String(it.externalCode) : undefined,
+                }))
+              : [];
+
+            await upsertPulledMarketplaceOrderToMaster({
+              storeId: params.storeId,
+              platform: "ifood",
+              externalOrderId: ordId,
+              externalStatus: String(ev.fullCode || "CONFIRMED"),
+              buyerName: String(d.customer?.name || "Cliente iFood"),
+              subtotalCents: Math.max(0, totalCents - deliveryCents),
+              shippingCostCents: deliveryCents,
+              marketplaceFeeCents: explicitFeesCents,
+              totalAmountCents: totalCents,
+              items,
+            });
+            syncedOrders += 1;
+
+            if (settings.auto_accept_orders && String(ev.code || ev.fullCode || "").toUpperCase() === "PLACED") {
+              await pushIfoodOrderLifecycle({
+                accessToken: token,
+                externalOrderId: ordId,
+                targetStatus: "confirmed",
+              });
+            }
+          }
+        }
+
+        // Regra Oficial iFood: Acknowledgment obrigatório somente após persistência
+        if (ackIds.length > 0) {
+          await acknowledgeIfoodEvents(token, ackIds);
+        }
+
+        return {
+          status: "completed",
+          message: `Polling iFood concluído: ${syncedOrders} pedido(s) sincronizado(s) e ${ackIds.length} evento(s) confirmados.`,
+          itemsProcessed: Math.max(events.length, syncedOrders),
         };
       }
     }
 
-    // 4.4 Webhook Customizado / Endpoint do Lojista
+    // 4.3 Canal Direto: Shopee Open Platform v2 (Pedidos, Estoque & Preços com HMAC-SHA256)
+    if (params.platform === "shopee" && token && resolved.clientId && resolved.clientSecret && resolved.externalAccountId) {
+      const partnerId = resolved.clientId;
+      const partnerKey = resolved.clientSecret;
+      const shopId = resolved.externalAccountId;
+      const ts = Math.floor(Date.now() / 1000);
+
+      if (params.productId && (params.syncType === "stock" || params.syncType === "prices")) {
+        const { data: listing } = await supabase
+          .from("channel_listings")
+          .select("external_listing_id, price_cents")
+          .eq("store_id", params.storeId)
+          .eq("product_id", params.productId)
+          .eq("channel", "shopee")
+          .maybeSingle();
+
+        if (!listing?.external_listing_id) {
+          return { status: "completed", message: "Produto sem anúncio vinculado na Shopee.", itemsProcessed: 0 };
+        }
+
+        const apiPath = params.syncType === "stock" ? "/api/v2/product/update_stock" : "/api/v2/product/update_price";
+        const sign = generateShopeeSign({ partnerId, partnerKey, apiPath, timestamp: ts, accessToken: token, shopId });
+        const url = `https://partner.shopeemobile.com${apiPath}?partner_id=${encodeURIComponent(partnerId)}&timestamp=${ts}&access_token=${encodeURIComponent(token)}&shop_id=${encodeURIComponent(shopId)}&sign=${sign}`;
+
+        const body =
+          params.syncType === "stock"
+            ? { item_id: Number(listing.external_listing_id), stock_list: [{ seller_stock: [{ stock: params.newStockQty ?? 0 }] }] }
+            : { item_id: Number(listing.external_listing_id), price_list: [{ original_price: Number(((listing.price_cents || 0) / 100).toFixed(2)) }] };
+
+        const res = await fetchWithExponentialBackoff(
+          url,
+          { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+          { maxRetries: 2, baseDelayMs: 400 }
+        );
+
+        if (!res.ok || res.data?.error) {
+          return {
+            status: "failed",
+            message: `Shopee API rejeitou atualização: ${res.data?.message || res.data?.error || `HTTP ${res.status}`}`,
+            itemsProcessed: 0,
+          };
+        }
+
+        return {
+          status: "completed",
+          message: `Anúncio #${listing.external_listing_id} atualizado na Shopee v2.`,
+          itemsProcessed: 1,
+        };
+      }
+
+      if (params.syncType === "orders" || params.syncType === "full" || params.syncType === "catalog") {
+        const listPath = "/api/v2/order/get_order_list";
+        const listSign = generateShopeeSign({ partnerId, partnerKey, apiPath: listPath, timestamp: ts, accessToken: token, shopId });
+        const timeTo = ts;
+        const timeFrom = ts - 86400 * 7;
+        const listUrl =
+          `https://partner.shopeemobile.com${listPath}?partner_id=${encodeURIComponent(partnerId)}&timestamp=${ts}&access_token=${encodeURIComponent(token)}&shop_id=${encodeURIComponent(shopId)}&sign=${listSign}` +
+          `&time_range_field=create_time&time_from=${timeFrom}&time_to=${timeTo}&page_size=20`;
+
+        const listRes = await fetchWithExponentialBackoff(listUrl, { method: "GET" }, { maxRetries: 2, baseDelayMs: 400 });
+        if (!listRes.ok || listRes.data?.error) {
+          return {
+            status: "failed",
+            message: `Shopee v2 falhou ao listar pedidos: ${listRes.data?.message || listRes.data?.error || `HTTP ${listRes.status}`}`,
+            itemsProcessed: 0,
+          };
+        }
+
+        const snList = (listRes.data?.response?.order_list || []).map((o: any) => o.order_sn).filter(Boolean);
+        let importedCount = 0;
+        if (snList.length > 0) {
+          const detPath = "/api/v2/order/get_order_detail";
+          const detTs = Math.floor(Date.now() / 1000);
+          const detSign = generateShopeeSign({ partnerId, partnerKey, apiPath: detPath, timestamp: detTs, accessToken: token, shopId });
+          const detUrl =
+            `https://partner.shopeemobile.com${detPath}?partner_id=${encodeURIComponent(partnerId)}&timestamp=${detTs}&access_token=${encodeURIComponent(token)}&shop_id=${encodeURIComponent(shopId)}&sign=${detSign}` +
+            `&order_sn_list=${encodeURIComponent(snList.slice(0, 20).join(","))}&response_optional_fields=buyer_username,recipient_address,item_list,total_amount,actual_shipping_fee`;
+          const detRes = await fetchWithExponentialBackoff(detUrl, { method: "GET" }, { maxRetries: 2, baseDelayMs: 400 });
+          if (detRes.ok && Array.isArray(detRes.data?.response?.order_list)) {
+            for (const o of detRes.data.response.order_list) {
+              const totalCents = Math.round(Number(o.total_amount || 0) * 100);
+              const shipCents = Math.round(Number(o.actual_shipping_fee || 0) * 100);
+              const feeCents = Math.round(totalCents * 0.14);
+              const items = Array.isArray(o.item_list)
+                ? o.item_list.map((it: any) => ({
+                    title: String(it.item_name || "Item Shopee"),
+                    quantity: Number(it.model_quantity_purchased || 1),
+                    unit_price_cents: Math.round(Number(it.model_discounted_price || 0) * 100),
+                    sku: it.model_sku || it.item_sku || undefined,
+                  }))
+                : [];
+              await upsertPulledMarketplaceOrderToMaster({
+                storeId: params.storeId,
+                platform: "shopee",
+                externalOrderId: String(o.order_sn),
+                externalStatus: String(o.order_status || "paid"),
+                buyerName: String(o.buyer_username || o.recipient_address?.name || "Cliente Shopee"),
+                subtotalCents: Math.max(0, totalCents - shipCents),
+                shippingCostCents: shipCents,
+                marketplaceFeeCents: feeCents,
+                totalAmountCents: totalCents,
+                items,
+              });
+              importedCount++;
+            }
+          }
+        }
+
+        return {
+          status: "completed",
+          message: `Shopee v2 sincronizada: ${importedCount} pedido(s) conciliado(s).`,
+          itemsProcessed: importedCount,
+        };
+      }
+    }
+
+    // 4.4 Canal Direto: Bling ERP v3 (Pedidos & Estoque com `/Api/v3/` e auto-refresh on 401)
+    if (params.platform === "bling" && token) {
+      if (params.productId && params.syncType === "stock") {
+        const { data: listing } = await supabase
+          .from("channel_listings")
+          .select("external_listing_id, external_sku")
+          .eq("store_id", params.storeId)
+          .eq("product_id", params.productId)
+          .eq("channel", "bling")
+          .maybeSingle();
+
+        const externalProductId = listing?.external_listing_id;
+        if (!externalProductId) {
+          return { status: "completed", message: "Produto sem vínculo no Bling v3.", itemsProcessed: 0 };
+        }
+
+        const stockRes = await fetchWithAutoRefreshOn401({
+          storeId: params.storeId,
+          platform: "bling",
+          url: "https://api.bling.com.br/Api/v3/estoques",
+          init: {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              produto: { id: Number(externalProductId) || externalProductId },
+              operacao: "B",
+              quantidade: params.newStockQty ?? 0,
+              observacoes: "Atualização automática Waesy",
+            }),
+          },
+          initialToken: token,
+        });
+
+        if (!stockRes.ok) {
+          return {
+            status: "failed",
+            message: `Bling v3 rejeitou atualização de estoque (HTTP ${stockRes.status}): ${stockRes.data?.error?.message || "Erro"}`,
+            itemsProcessed: 0,
+          };
+        }
+
+        return {
+          status: "completed",
+          message: `Balanço de estoque enviado ao Bling ERP v3 (${params.newStockQty ?? 0} un).`,
+          itemsProcessed: 1,
+        };
+      }
+
+      const blingRes = await fetchWithAutoRefreshOn401({
+        storeId: params.storeId,
+        platform: "bling",
+        url: "https://api.bling.com.br/Api/v3/pedidos/vendas?limite=20",
+        init: { method: "GET", headers: { Accept: "application/json" } },
+        initialToken: token,
+      });
+
+      if (!blingRes.ok) {
+        return {
+          status: "failed",
+          message: `Bling ERP v3 rejeitou consulta (HTTP ${blingRes.status}). Reautentique OAuth 2.0.`,
+          itemsProcessed: 0,
+        };
+      }
+
+      const rows = Array.isArray(blingRes.data?.data) ? blingRes.data.data : [];
+      for (const r of rows) {
+        const extId = String(r.id || r.numero || "");
+        if (!extId) continue;
+        const totalCents = Math.round(Number(r.total || 0) * 100);
+        await upsertPulledMarketplaceOrderToMaster({
+          storeId: params.storeId,
+          platform: "bling",
+          externalOrderId: extId,
+          externalStatus: "paid",
+          buyerName: String(r.contato?.nome || "Cliente Bling ERP"),
+          subtotalCents: totalCents,
+          shippingCostCents: 0,
+          marketplaceFeeCents: 0,
+          totalAmountCents: totalCents,
+          items: [{ title: `Pedido Bling #${r.numero || extId}`, quantity: 1, unit_price_cents: totalCents }],
+        });
+      }
+
+      return {
+        status: "completed",
+        message: `Bling ERP v3 sincronizado: ${rows.length} pedido(s) conciliado(s).`,
+        itemsProcessed: rows.length,
+      };
+    }
+
+    // 4.5 Canal Direto: Magalu Open API
+    if (params.platform === "magalu" && token) {
+      if (params.productId && params.syncType === "stock") {
+        const { data: listing } = await supabase
+          .from("channel_listings")
+          .select("external_listing_id, external_sku")
+          .eq("store_id", params.storeId)
+          .eq("product_id", params.productId)
+          .eq("channel", "magalu")
+          .maybeSingle();
+
+        const sku = listing?.external_sku || listing?.external_listing_id;
+        if (!sku) return { status: "completed", message: "Produto sem SKU Magalu vinculado.", itemsProcessed: 0 };
+
+        const res = await fetchWithAutoRefreshOn401({
+          storeId: params.storeId,
+          platform: "magalu",
+          url: `https://api.magalu.com/seller/v1/portfolios/skus/${encodeURIComponent(sku)}/stocks`,
+          init: {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: params.newStockQty ?? 0 }),
+          },
+          initialToken: token,
+        });
+
+        if (!res.ok) {
+          return { status: "failed", message: `Magalu rejeitou estoque de ${sku} (HTTP ${res.status}).`, itemsProcessed: 0 };
+        }
+        return { status: "completed", message: `Estoque SKU ${sku} atualizado na Magalu.`, itemsProcessed: 1 };
+      }
+
+      const ordersRes = await fetchWithAutoRefreshOn401({
+        storeId: params.storeId,
+        platform: "magalu",
+        url: "https://api.magalu.com/seller/v1/orders?_limit=20",
+        init: { method: "GET", headers: { Accept: "application/json" } },
+        initialToken: token,
+      });
+
+      if (!ordersRes.ok) {
+        return { status: "failed", message: `Magalu Open API falhou (HTTP ${ordersRes.status}).`, itemsProcessed: 0 };
+      }
+
+      const list = Array.isArray(ordersRes.data?.results) ? ordersRes.data.results : Array.isArray(ordersRes.data) ? ordersRes.data : [];
+      for (const ord of list) {
+        const extId = String(ord.code || ord.id || "");
+        if (!extId) continue;
+        const totalCents = Math.round(Number(ord.amounts?.total || ord.total || 0) * 100);
+        await upsertPulledMarketplaceOrderToMaster({
+          storeId: params.storeId,
+          platform: "magalu",
+          externalOrderId: extId,
+          externalStatus: String(ord.status || "paid"),
+          buyerName: String(ord.customer?.name || "Cliente Magalu"),
+          subtotalCents: totalCents,
+          shippingCostCents: 0,
+          marketplaceFeeCents: Math.round(totalCents * 0.16),
+          totalAmountCents: totalCents,
+          items: [{ title: `Pedido Magalu #${extId}`, quantity: 1, unit_price_cents: totalCents }],
+        });
+      }
+
+      return { status: "completed", message: `Magalu sincronizada: ${list.length} pedido(s) conciliado(s).`, itemsProcessed: list.length };
+    }
+
+    // 4.6 Canal Direto: Amazon SP-API
+    if (params.platform === "amazon" && token) {
+      const createdAfter = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
+      const ordersRes = await fetchWithExponentialBackoff(
+        `https://sellingpartnerapi-na.amazon.com/orders/v0/orders?MarketplaceIds=A2Q3Y263D00KWC&CreatedAfter=${encodeURIComponent(createdAfter)}`,
+        { method: "GET", headers: { "x-amz-access-token": token, Accept: "application/json" } },
+        { maxRetries: 2, baseDelayMs: 400 }
+      );
+
+      if (!ordersRes.ok) {
+        return { status: "failed", message: `Amazon SP-API rejeitou requisição (HTTP ${ordersRes.status}).`, itemsProcessed: 0 };
+      }
+
+      const list = Array.isArray(ordersRes.data?.payload?.Orders) ? ordersRes.data.payload.Orders : [];
+      for (const ord of list) {
+        const extId = String(ord.AmazonOrderId || "");
+        if (!extId) continue;
+        const totalCents = Math.round(Number(ord.OrderTotal?.Amount || 0) * 100);
+        await upsertPulledMarketplaceOrderToMaster({
+          storeId: params.storeId,
+          platform: "amazon",
+          externalOrderId: extId,
+          externalStatus: String(ord.OrderStatus || "paid"),
+          buyerName: String(ord.BuyerInfo?.BuyerName || "Cliente Amazon"),
+          subtotalCents: totalCents,
+          shippingCostCents: 0,
+          marketplaceFeeCents: Math.round(totalCents * 0.15),
+          totalAmountCents: totalCents,
+          items: [{ title: `Pedido Amazon #${extId}`, quantity: 1, unit_price_cents: totalCents }],
+        });
+      }
+
+      return { status: "completed", message: `Amazon SP-API sincronizada: ${list.length} pedido(s) conciliado(s).`, itemsProcessed: list.length };
+    }
+
+    // 4.7 Webhook Customizado / Endpoint do Lojista
     const webhookUrl = settings.outbound_webhook_url || settings.endpoint_url;
     if (webhookUrl && typeof webhookUrl === "string" && webhookUrl.startsWith("http")) {
       const payload = {
@@ -938,19 +1329,18 @@ export async function dispatchMarketplaceChannelSync(params: {
           message: `Despachado via API resiliente para ${params.platform.toUpperCase()} (HTTP ${res.status}, retentativas: ${res.retriesAttempted}).`,
           itemsProcessed: params.itemCount || 1,
         };
-      } else {
-        return {
-          status: "failed",
-          message: `Falha no endpoint externo ${params.platform.toUpperCase()}: HTTP ${res.status}`,
-          itemsProcessed: 0,
-        };
       }
+      return {
+        status: "failed",
+        message: `Falha no endpoint externo ${params.platform.toUpperCase()}: HTTP ${res.status}`,
+        itemsProcessed: 0,
+      };
     }
 
     return {
-      status: "completed",
-      message: `Credenciais AES-256-GCM verificadas e sincronização de ${params.syncType} processada no canal ${params.platform.toUpperCase()}.`,
-      itemsProcessed: params.itemCount || 1,
+      status: "failed",
+      message: `Conector ${params.platform.toUpperCase()} sem token OAuth válido ou webhook de saída configurado para disparo real.`,
+      itemsProcessed: 0,
     };
   } catch (dispatchErr: any) {
     return {
@@ -1187,7 +1577,7 @@ export async function _syncStockToMarketplacesInternal(
         connector_id: conn.id,
         platform: conn.platform,
         sync_type: "stock",
-        direction: "outbound",
+        direction: "export",
         status: dispatchResult.status,
         items_processed: 1,
         items_created: 0,
@@ -1245,7 +1635,7 @@ export async function matchMarketplaceSkuToVariant(
 }
 
 /**
- * Transmite a atualização de estoque físico de uma variante para todos os canais de marketplace.
+ * Transmite a atualização de estoque físico de uma variante para todos os canais de marketplace conectados via HTTP real.
  */
 export async function broadcastStockUpdateToMarketplaces(
   storeId: string,
@@ -1253,51 +1643,41 @@ export async function broadcastStockUpdateToMarketplaces(
   newStockQty: number
 ): Promise<{ success: boolean; updatedChannels: string[] }> {
   const supabase = getServerClient();
+  const safeQty = Math.max(0, newStockQty);
 
   // 1. Atualiza estoque interno na variante
-  await supabase
+  const { data: variant } = await supabase
     .from("product_variants")
-    .update({ stock_on_hand: Math.max(0, newStockQty), updated_at: new Date().toISOString() })
-    .eq("id", variantId);
+    .update({ stock_on_hand: safeQty, updated_at: new Date().toISOString() })
+    .eq("id", variantId)
+    .select("product_id")
+    .maybeSingle();
 
-  // 2. Busca os conectores ativos de marketplace da loja
+  if (!variant?.product_id) {
+    return { success: false, updatedChannels: [] };
+  }
+
+  // 2. Soma estoque total das variantes do produto e dispara sync HTTP real nos canais conectados
+  const { data: allVariants } = await supabase
+    .from("product_variants")
+    .select("stock_on_hand")
+    .eq("product_id", variant.product_id);
+
+  const totalProductStock = (allVariants || []).reduce((sum, v) => sum + Number(v.stock_on_hand || 0), 0) || safeQty;
+
+  const syncRes = await _syncStockToMarketplacesInternal(storeId, variant.product_id, totalProductStock);
+
   const { data: connectors } = await supabase
     .from("marketplace_connectors")
-    .select("platform, status, settings")
+    .select("platform, settings")
     .eq("store_id", storeId)
     .eq("status", "connected");
 
-  const updatedChannels: string[] = [];
+  const updatedChannels = (connectors || [])
+    .filter((c) => c.settings?.sync_stock !== false)
+    .map((c) => c.platform);
 
-  for (const conn of connectors || []) {
-    if (conn.settings?.sync_stock !== false) {
-      updatedChannels.push(conn.platform);
-    }
-  }
-
-  // 3. Registra log de sincronização de saída
-  if (updatedChannels.length > 0) {
-    await supabase.from("marketplace_sync_logs").insert({
-      store_id: storeId,
-      platform: "all",
-      sync_type: "stock_broadcast",
-      direction: "outbound",
-      status: "completed",
-      items_processed: 1,
-      items_created: 0,
-      items_updated: updatedChannels.length,
-      items_failed: 0,
-      duration_ms: 45,
-      errors: [],
-      metadata: {
-        variant_id: variantId,
-        new_stock: newStockQty,
-        synced_channels: updatedChannels,
-      },
-    });
-  }
-
-  return { success: true, updatedChannels };
+  return { success: syncRes.success, updatedChannels };
 }
 
 /**
@@ -1605,7 +1985,7 @@ export const syncGoogleBusinessProfile = createServerFn({ method: "POST" })
     // Busca conector ativo do Google Business
     const { data: connector } = await supabase
       .from("marketplace_connectors")
-      .select("id, status, credentials")
+      .select("id, status, access_token, refresh_token, external_account_id, settings")
       .eq("store_id", targetStoreId)
       .eq("platform", "google_business")
       .maybeSingle();
@@ -1614,20 +1994,55 @@ export const syncGoogleBusinessProfile = createServerFn({ method: "POST" })
       throw new Error("Integração com o Google Meu Negócio não está conectada. Configure sua conta primeiro.");
     }
 
-    // Registra log de sincronização com colunas canônicas
+    const resolvedGbp = await resolveMarketplaceConnectorCredentials({
+      storeId: targetStoreId,
+      platform: "google_business",
+      connectorRow: connector,
+    });
+
+    const locationId = resolvedGbp.decryptedCreds.location_id || resolvedGbp.externalAccountId;
+    if (!resolvedGbp.accessToken && !locationId) {
+      throw new Error("Credenciais OAuth ou Location ID do Google Business Profile ausentes.");
+    }
+
+    let remoteVerified = false;
+    if (resolvedGbp.accessToken && locationId && resolvedGbp.accessToken.startsWith("ya29.")) {
+      const normalizedName = locationId.startsWith("locations/") ? locationId : `locations/${locationId}`;
+      const gbpRes = await fetchWithExponentialBackoff(
+        `https://mybusinessbusinessinformation.googleapis.com/v1/${normalizedName}?updateMask=title,phoneNumbers`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${resolvedGbp.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: store.name,
+            ...(store.phone ? { phoneNumbers: { primaryPhone: store.phone } } : {}),
+          }),
+        },
+        { maxRetries: 2, baseDelayMs: 400 }
+      );
+      if (!gbpRes.ok) {
+        throw new Error(`Google Business Profile rejeitou atualização (HTTP ${gbpRes.status}).`);
+      }
+      remoteVerified = true;
+    }
+
+    // Registra log de sincronização com colunas canônicas válidas
     await supabase.from("marketplace_sync_logs").insert({
       store_id: targetStoreId,
       connector_id: connector.id,
       platform: "google_business",
-      sync_type: "profile",
-      direction: "outbound",
-      status: "completed",
+      sync_type: "catalog",
+      direction: "export",
+      status: remoteVerified ? "completed" : "partial",
       items_processed: 1,
       items_created: 0,
-      items_updated: 1,
+      items_updated: remoteVerified ? 1 : 0,
       items_failed: 0,
       duration_ms: 120,
-      errors: [],
+      errors: remoteVerified ? [] : ["Sincronização de feed XML/GBP marcada; configure OAuth token ya29.* para PATCH direto."],
       metadata: {
         action: "google_business_profile_sync",
         synced_at: new Date().toISOString(),
@@ -1635,6 +2050,7 @@ export const syncGoogleBusinessProfile = createServerFn({ method: "POST" })
         phone: store.phone,
         city: store.city,
         state: store.state,
+        remote_verified: remoteVerified,
       },
     });
 
@@ -1650,7 +2066,9 @@ export const syncGoogleBusinessProfile = createServerFn({ method: "POST" })
 
     return {
       success: true,
-      message: "Perfil institucional sincronizado com o Google Meu Negócio com sucesso!",
+      message: remoteVerified
+        ? "Perfil institucional sincronizado via API do Google Meu Negócio com sucesso!"
+        : "Dados institucionais prontos no feed GBP. Adicione token OAuth (ya29.*) para atualização remota automática.",
       syncedAt: new Date().toISOString(),
     };
   });
@@ -1826,11 +2244,40 @@ export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
       throw new Error("Formato de ID do Mercado Livre inválido. Ex: MLB1234567890 ou link completo do anúncio.");
     }
 
-    // 2. Fetch real na API pública oficial do Mercado Livre
-    const mlbRes = await fetch(`https://api.mercadolibre.com/items/${cleanMlbId}`, {
-      headers: { "User-Agent": "Waesy/1.0" },
-      signal: AbortSignal.timeout(10000),
+    // 2. Fetch real na API oficial do Mercado Livre (autenticado quando houver conector ativo)
+    let mlCreds = await resolveConnectorCredentialsWithRefresh({
+      storeId: targetStoreId,
+      platform: "mercadolivre",
     });
+
+    const fetchMlEndpoint = async (url: string, accessToken?: string) =>
+      fetch(url, {
+        headers: {
+          "User-Agent": "Waesy/1.0",
+          Accept: "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+    let mlbRes = await fetchMlEndpoint(
+      `https://api.mercadolibre.com/items/${cleanMlbId}`,
+      mlCreds.accessToken || undefined
+    );
+
+    if (mlbRes.status === 401 && mlCreds.refreshToken) {
+      mlCreds = await resolveConnectorCredentialsWithRefresh({
+        storeId: targetStoreId,
+        platform: "mercadolivre",
+        forceRefresh: true,
+      });
+      if (mlCreds.accessToken) {
+        mlbRes = await fetchMlEndpoint(
+          `https://api.mercadolibre.com/items/${cleanMlbId}`,
+          mlCreds.accessToken
+        );
+      }
+    }
 
     if (!mlbRes.ok) {
       if (mlbRes.status === 404) {
@@ -1840,11 +2287,25 @@ export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
     }
 
     const item = await mlbRes.json();
+    let fullDescription = "";
+    try {
+      const descRes = await fetchMlEndpoint(
+        `https://api.mercadolibre.com/items/${cleanMlbId}/description`,
+        mlCreds.accessToken || undefined
+      );
+      if (descRes.ok) {
+        const descJson = (await descRes.json().catch(() => ({}))) as Record<string, any>;
+        fullDescription = String(descJson.plain_text || descJson.text || "").trim();
+      }
+    } catch {
+      // Descrição complementar não é bloqueante para importação do item
+    }
+
     const priceCents = Math.round((Number(item.price) || 0) * 100);
     const title = (item.title || "Produto Importado ML").trim();
-    const stockQty = Math.max(1, Number(item.available_quantity) || 1);
+    const stockQty = Math.max(0, Number(item.available_quantity) || 0);
 
-    // Gera slug amigável único
+    // Gera slug amigável único por MLB ID
     const baseSlug = title
       .toLowerCase()
       .normalize("NFD")
@@ -1867,73 +2328,111 @@ export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
       warehouseId = defaultLoc?.id;
     }
 
-    // 4. Insere o produto em `products`
-    const { data: product, error: prodErr } = await supabase
+    // 4. Upsert defensivo em `products` (evita colisão ao reimportar o mesmo MLB ID)
+    const { data: existingProd } = await supabase
       .from("products")
-      .insert({
-        store_id: targetStoreId,
-        title,
-        slug: uniqueSlug,
-        description: item.condition === "new" ? "Produto Novo importado via Mercado Livre." : "Produto Usado importado via Mercado Livre.",
-        price_cents: priceCents,
-        status: "active",
-        brand: item.attributes?.find((a: any) => a.id === "BRAND")?.value_name || null,
-        ean: item.attributes?.find((a: any) => a.id === "GTIN")?.value_name || null,
-        publish_to_marketplace: true,
-        availability_channels: {
-          mercadolivre: {
-            listing_id: cleanMlbId,
-            external_sku: item.seller_custom_field || cleanMlbId,
-            price_cents: priceCents,
-            price_margin_percent: 0,
-            synced_at: new Date().toISOString(),
-            status: item.status === "active" ? "active" : "paused",
-          },
-        },
-        attributes: {
-          permalink: item.permalink,
-          condition: item.condition,
-          pictures: (item.pictures || []).map((p: any) => p.secure_url || p.url).filter(Boolean),
-          imported_from: "mercadolivre",
-          imported_at: new Date().toISOString(),
-        },
-      })
-      .select()
-      .single();
+      .select("id, availability_channels, attributes")
+      .eq("store_id", targetStoreId)
+      .eq("slug", uniqueSlug)
+      .maybeSingle();
+
+    const mlChannelMeta = {
+      listing_id: cleanMlbId,
+      external_sku: item.seller_custom_field || cleanMlbId,
+      price_cents: priceCents,
+      price_margin_percent: 0,
+      synced_at: new Date().toISOString(),
+      status: item.status === "active" ? "active" : "paused",
+    };
+
+    const productWritePayload = {
+      store_id: targetStoreId,
+      title,
+      slug: uniqueSlug,
+      description:
+        fullDescription ||
+        (item.condition === "new"
+          ? "Produto Novo importado via Mercado Livre."
+          : "Produto Usado importado via Mercado Livre."),
+      price_cents: priceCents,
+      status: item.status === "active" ? "active" : "draft",
+      brand: item.attributes?.find((a: any) => a.id === "BRAND")?.value_name || null,
+      ean: item.attributes?.find((a: any) => a.id === "GTIN")?.value_name || null,
+      publish_to_marketplace: true,
+      availability_channels: {
+        ...((existingProd?.availability_channels as Record<string, any>) || {}),
+        mercadolivre: mlChannelMeta,
+      },
+      attributes: {
+        ...((existingProd?.attributes as Record<string, any>) || {}),
+        permalink: item.permalink,
+        condition: item.condition,
+        category_id: item.category_id,
+        pictures: (item.pictures || []).map((p: any) => p.secure_url || p.url).filter(Boolean),
+        imported_from: "mercadolivre",
+        imported_at: new Date().toISOString(),
+      },
+    };
+
+    const { data: product, error: prodErr } = existingProd?.id
+      ? await supabase
+          .from("products")
+          .update(productWritePayload)
+          .eq("id", existingProd.id)
+          .select()
+          .single()
+      : await supabase.from("products").insert(productWritePayload).select().single();
 
     if (prodErr) {
       console.error("[marketplace-hub] Erro ao cadastrar produto do Mercado Livre:", prodErr);
       throw new Error(`Erro ao salvar produto importado: ${prodErr.message}`);
     }
 
-    // 5. Cria a variante padrão com SKU do MLB
-    const { data: variant, error: varErr } = await supabase
+    // 5. Garante variante padrão com SKU e estoque atualizado
+    const targetSku = item.seller_custom_field || `MLB-${cleanMlbId}`;
+    const { data: existingVar } = await supabase
       .from("product_variants")
-      .insert({
-        product_id: product.id,
-        sku: item.seller_custom_field || `MLB-${cleanMlbId}`,
-        price_cents: priceCents,
-        stock_on_hand: stockQty,
-      })
-      .select()
-      .single();
+      .select("id")
+      .eq("product_id", product.id)
+      .limit(1)
+      .maybeSingle();
+
+    const { data: variant, error: varErr } = existingVar?.id
+      ? await supabase
+          .from("product_variants")
+          .update({ sku: targetSku, price_cents: priceCents, stock_on_hand: stockQty })
+          .eq("id", existingVar.id)
+          .select()
+          .single()
+      : await supabase
+          .from("product_variants")
+          .insert({
+            product_id: product.id,
+            sku: targetSku,
+            price_cents: priceCents,
+            stock_on_hand: stockQty,
+          })
+          .select()
+          .single();
 
     if (varErr) {
-      console.warn("[marketplace-hub] Aviso ao criar variante para produto importado:", varErr.message);
+      console.warn("[marketplace-hub] Aviso ao criar/atualizar variante para produto importado:", varErr.message);
     }
 
-    // 6. Cadastra imagens em `product_media`
+    // 6. Cadastra imagens em `product_media` na primeira importação
     const pictures = (item.pictures || []).slice(0, 5);
-    for (let i = 0; i < pictures.length; i++) {
-      const picUrl = pictures[i].secure_url || pictures[i].url;
-      if (picUrl) {
-        await supabase.from("product_media").insert({
-          product_id: product.id,
-          url: picUrl,
-          alt: `${title} - Foto ${i + 1}`,
-          media_type: "image",
-          sort_order: i,
-        });
+    if (!existingProd?.id) {
+      for (let i = 0; i < pictures.length; i++) {
+        const picUrl = pictures[i].secure_url || pictures[i].url;
+        if (picUrl) {
+          await supabase.from("product_media").insert({
+            product_id: product.id,
+            url: picUrl,
+            alt: `${title} - Foto ${i + 1}`,
+            media_type: "image",
+            sort_order: i,
+          });
+        }
       }
     }
 
@@ -1968,6 +2467,7 @@ export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
         attributes: {
           permalink: item.permalink,
           condition: item.condition,
+          category_id: item.category_id,
           imported: true,
         },
         updated_at: new Date().toISOString(),
@@ -1975,16 +2475,16 @@ export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
       { onConflict: "store_id,product_id,channel" }
     );
 
-    // 9. Grava no log de sincronização
+    // 9. Grava no log de sincronização com enums canônicos
     await supabase.from("marketplace_sync_logs").insert({
       store_id: targetStoreId,
       platform: "mercadolivre",
-      sync_type: "catalog_import",
-      direction: "inbound",
+      sync_type: "catalog",
+      direction: "import",
       status: "completed",
       items_processed: 1,
-      items_created: 1,
-      items_updated: 0,
+      items_created: existingProd?.id ? 0 : 1,
+      items_updated: existingProd?.id ? 1 : 0,
       items_failed: 0,
       duration_ms: 120,
       errors: [],
@@ -2007,7 +2507,796 @@ export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
         permalink: item.permalink,
         image_url: pictures[0]?.secure_url || pictures[0]?.url || null,
       },
-      message: `Produto "${title}" importado com sucesso do Mercado Livre!`,
+      message: existingProd?.id
+        ? `Produto "${title}" atualizado do Mercado Livre.`
+        : `Produto "${title}" importado com sucesso do Mercado Livre.`,
+    };
+  });
+
+/**
+ * Importação em lote dos anúncios ativos do vendedor autenticado no Mercado Livre.
+ */
+export const importMercadoLivreSellerListings = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      limit: z.number().int().min(1).max(50).default(20),
+      status: z.enum(["active", "paused", "all"]).default("active"),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = input.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    let creds = await resolveConnectorCredentialsWithRefresh({
+      storeId: targetStoreId,
+      platform: "mercadolivre",
+    });
+
+    if (!creds.accessToken) {
+      throw new Error("Conecte a conta do Mercado Livre via OAuth 2.0 antes de importar os anúncios da conta.");
+    }
+
+    let sellerId = creds.externalAccountId;
+    if (!sellerId) {
+      let meRes = await fetch("https://api.mercadolibre.com/users/me", {
+        headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (meRes.status === 401 && creds.refreshToken) {
+        creds = await resolveConnectorCredentialsWithRefresh({
+          storeId: targetStoreId,
+          platform: "mercadolivre",
+          forceRefresh: true,
+        });
+        if (creds.accessToken) {
+          meRes = await fetch("https://api.mercadolibre.com/users/me", {
+            headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: "application/json" },
+            signal: AbortSignal.timeout(10000),
+          });
+        }
+      }
+      if (!meRes.ok) {
+        throw new Error(`Não foi possível identificar o seller_id no Mercado Livre (HTTP ${meRes.status}).`);
+      }
+      const meJson = (await meRes.json().catch(() => ({}))) as Record<string, any>;
+      sellerId = String(meJson.id || "");
+    }
+
+    if (!sellerId) throw new Error("ID do vendedor no Mercado Livre não encontrado.");
+
+    const searchUrl = new URL(`https://api.mercadolibre.com/users/${sellerId}/items/search`);
+    searchUrl.searchParams.set("limit", String(input.limit));
+    if (input.status !== "all") {
+      searchUrl.searchParams.set("status", input.status);
+    }
+
+    const searchRes = await fetch(searchUrl.toString(), {
+      headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (!searchRes.ok) {
+      throw new Error(`Falha ao listar anúncios do vendedor no Mercado Livre (HTTP ${searchRes.status}).`);
+    }
+
+    const searchJson = (await searchRes.json().catch(() => ({}))) as { results?: string[] };
+    const itemIds = (searchJson.results || []).slice(0, input.limit);
+    if (itemIds.length === 0) {
+      return { success: true, importedCount: 0, updatedCount: 0, failedCount: 0, message: "Nenhum anúncio encontrado nesta conta." };
+    }
+
+    let created = 0;
+    let updated = 0;
+    let failed = 0;
+
+    for (let i = 0; i < itemIds.length; i += 20) {
+      const batch = itemIds.slice(i, i + 20);
+      const batchRes = await fetch(`https://api.mercadolibre.com/items?ids=${batch.join(",")}`, {
+        headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: "application/json" },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!batchRes.ok) {
+        failed += batch.length;
+        continue;
+      }
+      const entries = (await batchRes.json().catch(() => [])) as Array<{ code: number; body: Record<string, any> }>;
+      for (const entry of entries) {
+        const item = entry.body;
+        if (entry.code !== 200 || !item?.id) {
+          failed++;
+          continue;
+        }
+        try {
+          const cleanMlbId = String(item.id).toUpperCase();
+          const title = String(item.title || cleanMlbId).trim();
+          const priceCents = Math.round((Number(item.price) || 0) * 100);
+          const stockQty = Math.max(0, Number(item.available_quantity) || 0);
+          const baseSlug = title
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "")
+            .slice(0, 50);
+          const uniqueSlug = `${baseSlug}-${cleanMlbId.toLowerCase()}`;
+
+          const { data: existingProd } = await supabase
+            .from("products")
+            .select("id")
+            .eq("store_id", targetStoreId)
+            .eq("slug", uniqueSlug)
+            .maybeSingle();
+
+          let productId = existingProd?.id;
+          if (productId) {
+            await supabase
+              .from("products")
+              .update({
+                title,
+                price_cents: priceCents,
+                status: item.status === "active" ? "active" : "draft",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", productId);
+            updated++;
+          } else {
+            const { data: inserted } = await supabase
+              .from("products")
+              .insert({
+                store_id: targetStoreId,
+                title,
+                slug: uniqueSlug,
+                description: item.condition === "new" ? "Produto Novo importado do Mercado Livre." : "Produto Usado importado do Mercado Livre.",
+                price_cents: priceCents,
+                status: item.status === "active" ? "active" : "draft",
+                publish_to_marketplace: true,
+                availability_channels: {
+                  mercadolivre: {
+                    listing_id: cleanMlbId,
+                    external_sku: item.seller_custom_field || cleanMlbId,
+                    price_cents: priceCents,
+                    synced_at: new Date().toISOString(),
+                    status: item.status === "active" ? "active" : "paused",
+                  },
+                },
+              })
+              .select("id")
+              .single();
+            productId = inserted?.id;
+            if (productId) {
+              created++;
+              await supabase.from("product_variants").insert({
+                product_id: productId,
+                sku: item.seller_custom_field || `MLB-${cleanMlbId}`,
+                price_cents: priceCents,
+                stock_on_hand: stockQty,
+              });
+              const pics = (item.pictures || []).slice(0, 3);
+              for (let pIdx = 0; pIdx < pics.length; pIdx++) {
+                const url = pics[pIdx]?.secure_url || pics[pIdx]?.url;
+                if (url) {
+                  await supabase.from("product_media").insert({
+                    product_id: productId,
+                    url,
+                    alt: `${title} - Foto ${pIdx + 1}`,
+                    media_type: "image",
+                    sort_order: pIdx,
+                  });
+                }
+              }
+            }
+          }
+
+          if (productId) {
+            await supabase.from("channel_listings").upsert(
+              {
+                store_id: targetStoreId,
+                product_id: productId,
+                channel: "mercadolivre",
+                external_listing_id: cleanMlbId,
+                external_sku: item.seller_custom_field || cleanMlbId,
+                price_cents: priceCents,
+                channel_status: item.status === "active" ? "active" : "paused",
+                is_active: item.status === "active",
+                last_synced_at: new Date().toISOString(),
+                attributes: { permalink: item.permalink, condition: item.condition, category_id: item.category_id, imported: true },
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "store_id,product_id,channel" }
+            );
+          }
+        } catch {
+          failed++;
+        }
+      }
+    }
+
+    await supabase.from("marketplace_sync_logs").insert({
+      store_id: targetStoreId,
+      platform: "mercadolivre",
+      sync_type: "catalog",
+      direction: "import",
+      status: failed > 0 && created + updated === 0 ? "failed" : failed > 0 ? "partial" : "completed",
+      items_processed: itemIds.length,
+      items_created: created,
+      items_updated: updated,
+      items_failed: failed,
+      duration_ms: 500,
+      errors: [],
+      metadata: { seller_id: sellerId },
+    });
+
+    return {
+      success: failed === 0 || created + updated > 0,
+      importedCount: created,
+      updatedCount: updated,
+      failedCount: failed,
+      message: `${created} importado(s), ${updated} atualizado(s)${failed > 0 ? `, ${failed} falha(s)` : ""}.`,
+    };
+  });
+
+/**
+ * Publica ou atualiza um produto do catálogo Waesy diretamente no canal externo (Mercado Livre, Shopee ou Bling v3).
+ */
+export const publishProductToMarketplace = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      productId: z.string().uuid(),
+      platform: z.enum(["mercadolivre", "shopee", "bling"]),
+      categoryId: z.string().optional(),
+      listingTypeId: z.string().default("gold_special"),
+      condition: z.enum(["new", "used"]).default("new"),
+      marginPercent: z.number().min(-90).max(500).default(0),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = input.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    const { data: product } = await supabase
+      .from("products")
+      .select("id, title, description, short_description, price_cents, attributes, availability_channels, product_variants(id, sku, stock_on_hand), product_media(url, sort_order)")
+      .eq("id", input.productId)
+      .eq("store_id", targetStoreId)
+      .single();
+
+    if (!product) throw new Error("Produto não encontrado nesta loja.");
+
+    const { data: existingListing } = await supabase
+      .from("channel_listings")
+      .select("id, external_listing_id, external_sku")
+      .eq("store_id", targetStoreId)
+      .eq("product_id", input.productId)
+      .eq("channel", input.platform)
+      .maybeSingle();
+
+    const variants = (product.product_variants || []) as Array<{ id: string; sku: string; stock_on_hand: number }>;
+    const totalStock = variants.reduce((acc, v) => acc + Math.max(0, Number(v.stock_on_hand) || 0), 0);
+    const primarySku = variants[0]?.sku || existingListing?.external_sku || product.id.slice(0, 12).toUpperCase();
+    const channelPriceCents = Math.max(100, Math.round((product.price_cents || 0) * (1 + input.marginPercent / 100)));
+    const priceDecimal = Number((channelPriceCents / 100).toFixed(2));
+    const mediaUrls = ((product.product_media || []) as Array<{ url: string; sort_order: number }>)
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+      .map((m) => m.url)
+      .filter((u) => typeof u === "string" && /^https?:\/\//i.test(u));
+
+    let creds = await resolveConnectorCredentialsWithRefresh({
+      storeId: targetStoreId,
+      platform: input.platform,
+    });
+
+    if (!creds.accessToken) {
+      throw new Error(`Conector ${input.platform.toUpperCase()} não possui Access Token ativo. Autentique o canal primeiro.`);
+    }
+
+    let externalId = existingListing?.external_listing_id || "";
+    let permalink: string | undefined;
+    let publishOk = false;
+    let publishError = "";
+
+    if (input.platform === "mercadolivre") {
+      const doMl = async (token: string, method: "POST" | "PUT", url: string, body: Record<string, any>) =>
+        fetch(url, {
+          method,
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(12000),
+        });
+
+      if (externalId) {
+        let res = await doMl(creds.accessToken, "PUT", `https://api.mercadolibre.com/items/${externalId}`, {
+          price: priceDecimal,
+          available_quantity: totalStock,
+        });
+        if (res.status === 401 && creds.refreshToken) {
+          creds = await resolveConnectorCredentialsWithRefresh({ storeId: targetStoreId, platform: "mercadolivre", forceRefresh: true });
+          if (creds.accessToken) {
+            res = await doMl(creds.accessToken, "PUT", `https://api.mercadolibre.com/items/${externalId}`, {
+              price: priceDecimal,
+              available_quantity: totalStock,
+            });
+          }
+        }
+        const json = (await res.json().catch(() => ({}))) as Record<string, any>;
+        publishOk = res.ok;
+        permalink = json.permalink;
+        if (!res.ok) publishError = json.message || `Mercado Livre HTTP ${res.status}`;
+      } else {
+        let categoryId = input.categoryId?.trim() || (product.attributes as any)?.category_id || "";
+        if (!categoryId) {
+          const predRes = await fetch(
+            `https://api.mercadolibre.com/sites/MLB/domain_discovery/search?q=${encodeURIComponent(product.title.slice(0, 60))}&limit=1`,
+            { headers: { Authorization: `Bearer ${creds.accessToken}` }, signal: AbortSignal.timeout(8000) }
+          );
+          if (predRes.ok) {
+            const predList = (await predRes.json().catch(() => [])) as Array<{ category_id?: string }>;
+            categoryId = predList[0]?.category_id || "";
+          }
+        }
+        if (!categoryId) {
+          throw new Error("Não foi possível identificar a categoria oficial MLB automaticamente. Informe o Category ID (ex: MLB1055).");
+        }
+
+        const createBody: Record<string, any> = {
+          title: product.title.slice(0, 60),
+          category_id: categoryId,
+          price: priceDecimal,
+          currency_id: "BRL",
+          available_quantity: Math.max(1, totalStock),
+          buying_mode: "buy_it_now",
+          condition: input.condition,
+          listing_type_id: input.listingTypeId,
+          seller_custom_field: primarySku,
+        };
+        if (mediaUrls.length > 0) {
+          createBody.pictures = mediaUrls.slice(0, 10).map((url) => ({ source: url }));
+        }
+
+        let res = await doMl(creds.accessToken, "POST", "https://api.mercadolibre.com/items", createBody);
+        if (res.status === 401 && creds.refreshToken) {
+          creds = await resolveConnectorCredentialsWithRefresh({ storeId: targetStoreId, platform: "mercadolivre", forceRefresh: true });
+          if (creds.accessToken) {
+            res = await doMl(creds.accessToken, "POST", "https://api.mercadolibre.com/items", createBody);
+          }
+        }
+        const json = (await res.json().catch(() => ({}))) as Record<string, any>;
+        publishOk = res.ok && Boolean(json.id);
+        if (publishOk) {
+          externalId = String(json.id);
+          permalink = json.permalink;
+          if (product.description) {
+            await doMl(creds.accessToken, "POST", `https://api.mercadolibre.com/items/${externalId}/description`, {
+              plain_text: String(product.description).slice(0, 50000),
+            }).catch(() => null);
+          }
+        } else {
+          publishError = json.message || (Array.isArray(json.cause) ? json.cause[0]?.message : "") || `Mercado Livre HTTP ${res.status}`;
+        }
+      }
+    } else if (input.platform === "bling") {
+      const blingMethod = externalId ? "PUT" : "POST";
+      const blingUrl = externalId
+        ? `https://api.bling.com.br/Api/v3/produtos/${encodeURIComponent(externalId)}`
+        : "https://api.bling.com.br/Api/v3/produtos";
+      const blingRes = await fetch(blingUrl, {
+        method: blingMethod,
+        headers: {
+          Authorization: `Bearer ${creds.accessToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          nome: product.title.slice(0, 120),
+          codigo: primarySku,
+          preco: priceDecimal,
+          tipo: "P",
+          situacao: "A",
+          formato: "S",
+          descricaoCurta: product.short_description || undefined,
+        }),
+        signal: AbortSignal.timeout(12000),
+      });
+      const json = (await blingRes.json().catch(() => ({}))) as Record<string, any>;
+      publishOk = blingRes.ok;
+      if (publishOk && json?.data?.id) externalId = String(json.data.id);
+      if (!publishOk) publishError = json?.error?.message || `Bling v3 HTTP ${blingRes.status}`;
+    } else if (input.platform === "shopee") {
+      const partnerId = creds.clientId;
+      const partnerKey = creds.clientSecret;
+      const shopId = creds.externalAccountId;
+      if (!partnerId || !partnerKey || !shopId) {
+        throw new Error("Shopee requer Partner ID, Partner Key e Shop ID válidos para publicar ou atualizar itens.");
+      }
+      if (!externalId) {
+        throw new Error("Para publicar novo item na Shopee v2 informe/importe primeiro um item_id existente ou mapeie o category_id numérico Shopee.");
+      }
+      const timestamp = Math.floor(Date.now() / 1000);
+      const apiPath = "/api/v2/product/update_stock";
+      const sign = generateShopeeSign({
+        partnerId,
+        partnerKey,
+        apiPath,
+        timestamp,
+        accessToken: creds.accessToken,
+        shopId,
+      });
+      const shopeeRes = await fetch(
+        `https://partner.shopeemobile.com${apiPath}?partner_id=${encodeURIComponent(partnerId)}&timestamp=${timestamp}&access_token=${encodeURIComponent(creds.accessToken)}&shop_id=${encodeURIComponent(shopId)}&sign=${sign}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            item_id: Number(externalId) || externalId,
+            stock_list: [{ model_id: 0, seller_stock: [{ stock: totalStock }] }],
+          }),
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      const json = (await shopeeRes.json().catch(() => ({}))) as Record<string, any>;
+      publishOk = shopeeRes.ok && !json.error;
+      if (!publishOk) publishError = json.message || json.error || `Shopee HTTP ${shopeeRes.status}`;
+    }
+
+    await supabase.from("channel_listings").upsert(
+      {
+        store_id: targetStoreId,
+        product_id: input.productId,
+        channel: input.platform,
+        external_listing_id: externalId || null,
+        external_sku: primarySku,
+        price_cents: channelPriceCents,
+        channel_status: publishOk ? "active" : "error",
+        is_active: publishOk,
+        sync_error: publishOk ? null : publishError,
+        last_synced_at: new Date().toISOString(),
+        attributes: permalink ? { permalink } : {},
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "store_id,product_id,channel" }
+    );
+
+    const channels = (product.availability_channels as Record<string, any>) || {};
+    channels[input.platform] = {
+      ...(channels[input.platform] || {}),
+      listing_id: externalId || null,
+      external_sku: primarySku,
+      price_cents: channelPriceCents,
+      price_margin_percent: input.marginPercent,
+      status: publishOk ? "active" : "error",
+      synced_at: new Date().toISOString(),
+    };
+    await supabase
+      .from("products")
+      .update({ availability_channels: channels, publish_to_marketplace: true, updated_at: new Date().toISOString() })
+      .eq("id", input.productId);
+
+    await supabase.from("marketplace_sync_logs").insert({
+      store_id: targetStoreId,
+      platform: input.platform,
+      sync_type: "catalog",
+      direction: "export",
+      status: publishOk ? "completed" : "failed",
+      items_processed: 1,
+      items_created: publishOk && !existingListing?.external_listing_id ? 1 : 0,
+      items_updated: publishOk && existingListing?.external_listing_id ? 1 : 0,
+      items_failed: publishOk ? 0 : 1,
+      duration_ms: 250,
+      errors: publishOk ? [] : [{ product_id: input.productId, error: publishError }],
+      metadata: { external_listing_id: externalId || null },
+    });
+
+    if (!publishOk) {
+      throw new Error(publishError || `Falha ao publicar produto em ${input.platform}.`);
+    }
+
+    return {
+      success: true,
+      externalListingId: externalId,
+      permalink,
+      message: `Produto sincronizado com sucesso no canal ${input.platform.toUpperCase()} (${externalId}).`,
+    };
+  });
+
+/**
+ * Executa ação operacional em um pedido de marketplace dentro do Waesy e empurra a transição para a API de origem.
+ */
+export const syncMarketplaceOrderStatus = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      externalOrderId: z.string().uuid().optional(),
+      orderId: z.string().uuid().optional(),
+      action: z.enum(["confirm", "startPreparation", "readyToPickup", "dispatch", "cancel"]),
+      trackingCode: z.string().optional(),
+      carrierName: z.string().optional(),
+      trackingUrl: z.string().optional(),
+      cancellationReason: z.string().optional(),
+      cancellationCode: z.string().optional(),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+
+    const targetStoreId = input.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+    if (!input.externalOrderId && !input.orderId) {
+      throw new Error("Informe externalOrderId ou orderId para sincronizar o pedido.");
+    }
+
+    let extQuery = supabase
+      .from("marketplace_external_orders")
+      .select("id, platform, external_order_id, order_id, external_status")
+      .eq("store_id", targetStoreId);
+
+    if (input.externalOrderId) {
+      extQuery = extQuery.eq("id", input.externalOrderId);
+    } else if (input.orderId) {
+      extQuery = extQuery.eq("order_id", input.orderId);
+    }
+
+    const { data: extOrder } = await extQuery.maybeSingle();
+    const resolvedOrderId = input.orderId || extOrder?.order_id || null;
+
+    const statusMap: Record<typeof input.action, { masterStatus: string; externalStatus: string }> = {
+      confirm: { masterStatus: "paid", externalStatus: "confirmed" },
+      startPreparation: { masterStatus: "processing", externalStatus: "preparing" },
+      readyToPickup: { masterStatus: "ready_for_pickup", externalStatus: "ready" },
+      dispatch: { masterStatus: "shipped", externalStatus: "dispatched" },
+      cancel: { masterStatus: "cancelled", externalStatus: "cancelled" },
+    };
+
+    const mapped = statusMap[input.action];
+
+    let pushResult: { dispatched: boolean; platform?: string; ok: boolean; message: string } = {
+      dispatched: false,
+      platform: extOrder?.platform,
+      ok: true,
+      message: "Atualizado localmente.",
+    };
+
+    if (resolvedOrderId) {
+      const nowIso = new Date().toISOString();
+      const orderPatch: Record<string, any> = {
+        status: mapped.masterStatus,
+        updated_at: nowIso,
+      };
+      if (input.action === "dispatch") orderPatch.shipped_at = nowIso;
+      if (input.action === "cancel") {
+        orderPatch.cancelled_at = nowIso;
+        if (input.cancellationReason) orderPatch.cancellation_reason = input.cancellationReason.trim();
+      }
+
+      await supabase
+        .from("orders")
+        .update(orderPatch)
+        .eq("id", resolvedOrderId)
+        .eq("store_id", targetStoreId);
+
+      if (input.trackingCode) {
+        await supabase.from("shipments").insert({
+          store_id: targetStoreId,
+          order_id: resolvedOrderId,
+          tracking_code: input.trackingCode.trim().toUpperCase(),
+          carrier_name: input.carrierName?.trim() || "Transportadora",
+          tracking_url: input.trackingUrl?.trim() || "",
+          status: "in_transit",
+          shipped_at: nowIso,
+        });
+      }
+
+      pushResult = await pushOrderUpdateToOriginMarketplace({
+        storeId: targetStoreId,
+        orderId: resolvedOrderId,
+        targetStatus: mapped.masterStatus,
+        trackingCode: input.trackingCode,
+        carrierName: input.carrierName,
+        trackingUrl: input.trackingUrl,
+        cancellationReason: input.cancellationReason,
+      });
+    } else if (extOrder?.platform === "ifood") {
+      const creds = await resolveConnectorCredentialsWithRefresh({ storeId: targetStoreId, platform: "ifood" });
+      if (creds.accessToken) {
+        const res = await pushIfoodOrderLifecycle({
+          accessToken: creds.accessToken,
+          externalOrderId: extOrder.external_order_id,
+          targetStatus: mapped.masterStatus,
+          cancellationReason: input.cancellationReason,
+          cancellationCode: input.cancellationCode,
+        });
+        pushResult = {
+          dispatched: true,
+          platform: "ifood",
+          ok: res.ok,
+          message: res.message,
+        };
+      }
+    }
+
+    if (extOrder?.id) {
+      await supabase
+        .from("marketplace_external_orders")
+        .update({
+          external_status: mapped.externalStatus,
+          ...(input.trackingCode ? { tracking_number: input.trackingCode.trim().toUpperCase() } : {}),
+          ...(input.cancellationReason ? { cancellation_reason: input.cancellationReason.trim() } : {}),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", extOrder.id)
+        .eq("store_id", targetStoreId);
+    }
+
+    return {
+      success: pushResult.ok,
+      status: mapped.externalStatus,
+      pushResult,
+      message: pushResult.message,
+    };
+  });
+
+/**
+ * Lista perguntas pré-venda armazenadas no inbox de Marketplaces (`marketplace_questions`).
+ */
+export const listMarketplaceQuestions = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        storeId: z.string().optional(),
+        status: z.enum(["all", "unanswered", "answered"]).default("all"),
+        limit: z.number().int().min(1).max(100).default(50),
+      })
+      .optional()
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+
+    const targetStoreId = input?.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    try {
+      let query = supabase
+        .from("marketplace_questions")
+        .select("id, platform, external_question_id, external_item_id, product_id, buyer_nickname, question_text, answer_text, status, asked_at, answered_at")
+        .eq("store_id", targetStoreId)
+        .order("asked_at", { ascending: false })
+        .limit(input?.limit ?? 50);
+
+      if (input?.status && input.status !== "all") {
+        query = query.eq("status", input.status);
+      }
+
+      const { data, error } = await query;
+      if (error) return [];
+      return data || [];
+    } catch {
+      return [];
+    }
+  });
+
+/**
+ * Busca perguntas recebidas na API oficial do Mercado Livre (`GET /my/received_questions/search`) e persiste em `marketplace_questions`.
+ */
+export const syncMercadoLivreQuestions = createServerFn({ method: "POST" })
+  .validator(
+    z
+      .object({
+        storeId: z.string().optional(),
+        status: z.enum(["UNANSWERED", "ANSWERED", "ALL"]).default("ALL"),
+        limit: z.number().int().min(1).max(50).default(25),
+      })
+      .optional()
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+
+    const targetStoreId = input?.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    let creds = await resolveConnectorCredentialsWithRefresh({
+      storeId: targetStoreId,
+      platform: "mercadolivre",
+    });
+
+    if (!creds.accessToken) {
+      throw new Error("Conecte sua conta do Mercado Livre para sincronizar perguntas pré-venda.");
+    }
+
+    const qUrl = new URL("https://api.mercadolibre.com/my/received_questions/search");
+    qUrl.searchParams.set("sort_fields", "date_created");
+    qUrl.searchParams.set("sort_types", "DESC");
+    qUrl.searchParams.set("api_version", "4");
+    qUrl.searchParams.set("limit", String(input?.limit ?? 25));
+    if (input?.status && input.status !== "ALL") {
+      qUrl.searchParams.set("status", input.status);
+    }
+
+    let res = await fetch(qUrl.toString(), {
+      headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (res.status === 401 && creds.refreshToken) {
+      creds = await resolveConnectorCredentialsWithRefresh({
+        storeId: targetStoreId,
+        platform: "mercadolivre",
+        forceRefresh: true,
+      });
+      if (creds.accessToken) {
+        res = await fetch(qUrl.toString(), {
+          headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: "application/json" },
+          signal: AbortSignal.timeout(12000),
+        });
+      }
+    }
+
+    if (!res.ok) {
+      throw new Error(`Erro ao consultar perguntas no Mercado Livre (HTTP ${res.status}).`);
+    }
+
+    const body = (await res.json().catch(() => ({}))) as { questions?: Array<Record<string, any>> };
+    const questions = body.questions || [];
+    let synced = 0;
+
+    for (const q of questions) {
+      const extQId = String(q.id || "");
+      const extItemId = String(q.item_id || "");
+      if (!extQId || !extItemId) continue;
+
+      const isAnswered = q.status === "ANSWERED" || Boolean(q.answer?.text);
+      const { error } = await supabase.from("marketplace_questions").upsert(
+        {
+          store_id: targetStoreId,
+          platform: "mercadolivre",
+          external_question_id: extQId,
+          external_item_id: extItemId,
+          buyer_id: q.from?.id ? String(q.from.id) : null,
+          question_text: String(q.text || ""),
+          answer_text: q.answer?.text ? String(q.answer.text) : null,
+          status: isAnswered ? "answered" : q.status === "CLOSED_UNANSWERED" ? "closed" : "unanswered",
+          asked_at: q.date_created || new Date().toISOString(),
+          answered_at: q.answer?.date_created || null,
+          raw_payload: q,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id,platform,external_question_id" }
+      );
+      if (!error) synced++;
+    }
+
+    await supabase.from("marketplace_sync_logs").insert({
+      store_id: targetStoreId,
+      platform: "mercadolivre",
+      sync_type: "orders",
+      direction: "import",
+      status: "completed",
+      items_processed: questions.length,
+      items_created: synced,
+      items_updated: 0,
+      items_failed: 0,
+      duration_ms: 180,
+      errors: [],
+      metadata: { scope: "questions", synced },
+    });
+
+    return {
+      success: true,
+      syncedCount: synced,
+      message: `${synced} pergunta(s) sincronizada(s) do Mercado Livre.`,
     };
   });
 
@@ -2121,20 +3410,12 @@ export async function pushOrderToBlingErp(
 ): Promise<{ success: boolean; blingOrderId?: string; message: string }> {
   const supabase = getServerClient();
 
-  const { data: creds } = await supabase
-    .from("integration_credentials")
-    .select("token_payload, is_active")
-    .eq("store_id", storeId)
-    .eq("provider", "bling")
-    .eq("is_active", true)
-    .maybeSingle();
+  let creds = await resolveConnectorCredentialsWithRefresh({
+    storeId,
+    platform: "bling",
+  });
 
-  const apiKey =
-    (creds?.token_payload as any)?.apiKey ||
-    (creds?.token_payload as any)?.api_key ||
-    (creds?.token_payload as any)?.access_token;
-
-  if (!apiKey) {
+  if (!creds.accessToken) {
     return { success: false, message: "Bling ERP v3 não configurado ou inativo nesta loja." };
   }
 
@@ -2174,33 +3455,60 @@ export async function pushOrderToBlingErp(
     },
   };
 
-  const res = await fetchWithExponentialBackoff(
-    "https://api.bling.com.br/v3/pedidos/vendas",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
+  const sendToBling = async (token: string) =>
+    fetchWithExponentialBackoff(
+      "https://api.bling.com.br/Api/v3/pedidos/vendas",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload),
-    },
-    { maxRetries: 3, baseDelayMs: 600 }
-  );
+      { maxRetries: 3, baseDelayMs: 600 }
+    );
+
+  let res = await sendToBling(creds.accessToken);
+  if (res.status === 401 && creds.refreshToken) {
+    creds = await resolveConnectorCredentialsWithRefresh({
+      storeId,
+      platform: "bling",
+      forceRefresh: true,
+    });
+    if (creds.accessToken) {
+      res = await sendToBling(creds.accessToken);
+    }
+  }
 
   if (res.ok) {
     const blingData = res.data?.data;
     const blingId = blingData?.id ? String(blingData.id) : undefined;
+    await supabase.from("marketplace_sync_logs").insert({
+      store_id: storeId,
+      platform: "bling",
+      sync_type: "orders",
+      direction: "export",
+      status: "completed",
+      items_processed: 1,
+      items_created: 1,
+      items_updated: 0,
+      items_failed: 0,
+      duration_ms: 150,
+      errors: [],
+      metadata: { order_id: orderId, bling_order_id: blingId || null },
+    });
     return {
       success: true,
       blingOrderId: blingId,
-      message: `Pedido sincronizado com Bling ERP com sucesso (Bling ID #${blingId || "OK"}).`,
+      message: `Pedido sincronizado com Bling ERP v3 com sucesso (Bling ID #${blingId || "OK"}).`,
     };
   }
 
   return {
     success: false,
-    message: `Falha ao sincronizar pedido com Bling ERP: HTTP ${res.status}`,
+    message: `Falha ao sincronizar pedido com Bling ERP v3: HTTP ${res.status}`,
   };
 }
 
@@ -2229,7 +3537,7 @@ export const syncProductStockAndPriceToChannels = createServerFn({ method: "POST
 
 /**
  * Despacha resposta de pergunta pré-venda diretamente para a API do Mercado Livre (POST /answers)
- * Conforme SPEC-V144 REQ-04. Suporta chamada direta e como Server Action.
+ * e atualiza o registro local em `marketplace_questions`.
  */
 export async function answerMercadoLivreQuestion(
   input:
@@ -2239,34 +3547,12 @@ export async function answerMercadoLivreQuestion(
   const params = "data" in input ? input.data : input;
   const supabase = getServerClient();
 
-  // 1. Busca credenciais ativas do Mercado Livre
-  const { data: connector } = await supabase
-    .from("marketplace_connectors")
-    .select("id, settings, sync_status")
-    .eq("store_id", params.storeId)
-    .eq("platform", "mercadolivre")
-    .maybeSingle();
+  let creds = await resolveConnectorCredentialsWithRefresh({
+    storeId: params.storeId,
+    platform: "mercadolivre",
+  });
 
-  const { data: creds } = await supabase
-    .from("channel_vault_credentials")
-    .select("token_payload, is_active")
-    .eq("store_id", params.storeId)
-    .eq("platform", "mercadolivre")
-    .maybeSingle();
-
-  const settings = (connector?.settings || {}) as Record<string, any>;
-  const rawToken = settings.access_token || (creds?.token_payload as any)?.access_token;
-
-  let token = "";
-  if (rawToken) {
-    try {
-      token = decryptSecret(rawToken);
-    } catch {
-      token = rawToken;
-    }
-  }
-
-  if (!token) {
+  if (!creds.accessToken) {
     console.warn(`[marketplace-hub] Resposta de pergunta ML #${params.questionId} sem credencial configurada.`);
     return {
       success: false,
@@ -2275,37 +3561,69 @@ export async function answerMercadoLivreQuestion(
     };
   }
 
-  // 2. Dispara POST https://api.mercadolibre.com/answers com Exponential Backoff
   try {
-    const response = await fetchWithExponentialBackoff(
-      "https://api.mercadolibre.com/answers",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+    const postAnswer = async (token: string) =>
+      fetchWithExponentialBackoff(
+        "https://api.mercadolibre.com/answers",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            question_id: Number(params.questionId) || params.questionId,
+            text: params.answerText,
+          }),
         },
-        body: JSON.stringify({
-          question_id: Number(params.questionId) || params.questionId,
-          text: params.answerText,
-        }),
-      },
-      { maxRetries: 3, baseDelayMs: 500 }
-    );
+        { maxRetries: 3, baseDelayMs: 500 }
+      );
+
+    let response = await postAnswer(creds.accessToken);
+    if (response.status === 401 && creds.refreshToken) {
+      creds = await resolveConnectorCredentialsWithRefresh({
+        storeId: params.storeId,
+        platform: "mercadolivre",
+        forceRefresh: true,
+      });
+      if (creds.accessToken) {
+        response = await postAnswer(creds.accessToken);
+      }
+    }
 
     const resBody = (response.data || {}) as Record<string, any>;
 
-    // 3. Trilha de auditoria no log de sincronização
+    if (response.ok) {
+      await supabase
+        .from("marketplace_questions")
+        .update({
+          answer_text: params.answerText,
+          status: "answered",
+          answered_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("store_id", params.storeId)
+        .eq("platform", "mercadolivre")
+        .eq("external_question_id", String(params.questionId));
+    }
+
     await supabase.from("marketplace_sync_logs").insert({
       store_id: params.storeId,
       platform: "mercadolivre",
-      sync_type: "questions",
+      sync_type: "orders",
+      direction: "export",
       status: response.ok ? "completed" : "failed",
-      items_count: 1,
+      items_processed: 1,
+      items_created: 0,
+      items_updated: response.ok ? 1 : 0,
+      items_failed: response.ok ? 0 : 1,
+      duration_ms: 120,
+      errors: response.ok ? [] : [{ question_id: params.questionId, message: resBody.message || response.statusText }],
       message: response.ok
         ? `Resposta à pergunta #${params.questionId} enviada com sucesso ao Mercado Livre.`
         : `Falha ao responder pergunta #${params.questionId} no Mercado Livre: ${resBody.message || response.statusText}`,
-      created_at: new Date().toISOString(),
+      metadata: { scope: "question_answer", question_id: String(params.questionId) },
     });
 
     if (!response.ok) {
@@ -2320,6 +3638,7 @@ export async function answerMercadoLivreQuestion(
       success: true,
       status: "completed",
       data: resBody,
+      message: `Resposta à pergunta #${params.questionId} publicada no Mercado Livre.`,
     };
   } catch (err: any) {
     console.error("[marketplace-hub] Erro ao enviar resposta para Mercado Livre:", err);
@@ -2331,14 +3650,50 @@ export async function answerMercadoLivreQuestion(
   }
 }
 
+export const answerMarketplaceQuestionFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      questionId: z.string().min(1),
+      answerText: z.string().min(1, "Informe a resposta.").max(2000),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+    const targetStoreId = data.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+    return answerMercadoLivreQuestion({
+      storeId: targetStoreId,
+      questionId: data.questionId,
+      answerText: data.answerText,
+    });
+  });
+
+export const pushOrderToBlingErpFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      orderId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    const targetStoreId = data.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+    return pushOrderToBlingErp(targetStoreId, data.orderId);
+  });
+
 /**
- * Gera URL de Login Rápido OAuth 2.0 (1-Clique) para Marketplaces (Mercado Livre, Bling, Shopee).
+ * Gera URL oficial de Login Rápido OAuth 2.0 (1-Clique) para Marketplaces (Mercado Livre, Bling, Shopee, Magalu, iFood).
  */
 export const getMarketplaceOAuthUrl = createServerFn({ method: "POST" })
   .validator(
     z.object({
       platform: z.enum(MARKETPLACE_PLATFORMS),
       clientId: z.string().optional(),
+      partnerKey: z.string().optional(),
       returnPath: z.string().default("/workspace/integracoes/marketplaces"),
     })
   )
@@ -2348,60 +3703,35 @@ export const getMarketplaceOAuthUrl = createServerFn({ method: "POST" })
     const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja não identificada.");
 
-    const resolved = await resolveMarketplaceConnectorCredentials({
+    const resolved = await resolveConnectorCredentialsWithRefresh({
       storeId,
       platform: data.platform,
     });
 
     const appUrl = (process.env.VITE_APP_URL || process.env.PUBLIC_APP_URL || "https://waesy.com").replace(/\/$/, "");
-    const redirectUri = `${appUrl}/api/webhooks/marketplace?oauth_callback=1&platform=${data.platform}&store_id=${storeId}`;
-    const state = Buffer.from(JSON.stringify({ storeId, platform: data.platform, returnPath: data.returnPath }), "utf8").toString("base64url");
+    const cleanClientId = (data.clientId || resolved.clientId || "").replace(/•+/g, "").trim();
+    const cleanPartnerKey = (data.partnerKey || resolved.clientSecret || "").replace(/•+/g, "").trim();
 
-    const clientId = (data.clientId || resolved.clientId || "").trim();
-
-    if (data.platform === "mercadolivre") {
-      const mlAppId = clientId || process.env.MERCADOLIVRE_APP_ID || process.env.ML_CLIENT_ID || "";
-      if (!mlAppId) {
-        return {
-          configured: false,
-          authUrl: null,
-          message: "Informe o App ID (Client ID) do Mercado Livre no modal para iniciar o OAuth 2.0 em 1 clique.",
-        };
-      }
-      const url = new URL("https://auth.mercadolivre.com.br/authorization");
-      url.searchParams.set("response_type", "code");
-      url.searchParams.set("client_id", mlAppId);
-      url.searchParams.set("redirect_uri", redirectUri);
-      url.searchParams.set("state", state);
-      return { configured: true, authUrl: url.toString(), message: "Redirecionando para o Mercado Livre..." };
-    }
-
-    if (data.platform === "bling") {
-      const blingClientId = clientId || process.env.BLING_CLIENT_ID || "";
-      if (!blingClientId) {
-        return {
-          configured: false,
-          authUrl: null,
-          message: "Informe o Client ID do Bling v3 para autorizar via OAuth 2.0.",
-        };
-      }
-      const url = new URL("https://www.bling.com.br/Api/v3/oauth/authorize");
-      url.searchParams.set("response_type", "code");
-      url.searchParams.set("client_id", blingClientId);
-      url.searchParams.set("state", state);
-      return { configured: true, authUrl: url.toString(), message: "Redirecionando para o Bling ERP..." };
-    }
-
-    return {
-      configured: false,
-      authUrl: null,
-      message: `Use as chaves de API do painel ${data.platform.toUpperCase()} para ativar a conexão encriptada.`,
-    };
+    return buildMarketplaceOAuthAuthorizeUrl({
+      platform: data.platform,
+      appUrl,
+      storeId,
+      clientId: cleanClientId || undefined,
+      partnerKey: cleanPartnerKey || undefined,
+      returnPath: data.returnPath,
+    });
   });
 
 export async function verifyMarketplaceConnectorConnectivity(params: {
   platform: string;
-  resolved: { isConfigured: boolean; accessToken?: string | null };
+  resolved: {
+    isConfigured: boolean;
+    accessToken?: string | null;
+    clientId?: string;
+    clientSecret?: string;
+    externalAccountId?: string;
+    isTestMode?: boolean;
+  };
   fetchImpl?: typeof fetch;
 }): Promise<{ success: boolean; verifiedRemotely: boolean; message: string }> {
   const { platform, resolved } = params;
@@ -2445,7 +3775,7 @@ export async function verifyMarketplaceConnectorConnectivity(params: {
 
   if (platform === "bling" && resolved.accessToken) {
     try {
-      const res = await doFetch("https://api.bling.com.br/v3/situacoes/modulos", {
+      const res = await doFetch("https://api.bling.com.br/Api/v3/situacoes/modulos", {
         headers: { Authorization: `Bearer ${resolved.accessToken}`, Accept: "application/json" },
         signal: AbortSignal.timeout(10000),
       });
@@ -2480,19 +3810,113 @@ export async function verifyMarketplaceConnectorConnectivity(params: {
         return {
           success: false,
           verifiedRemotely: true,
-          message: `iFood OpenDelivery rejeitou o token informado (HTTP ${res.status}).`,
+          message: `iFood Merchant API rejeitou o token informado (HTTP ${res.status}).`,
         };
       }
       return {
         success: true,
         verifiedRemotely: true,
-        message: "Token OAuth 2.0 iFood OpenDelivery verificado ao vivo (HTTP 200).",
+        message: "Token OAuth 2.0 iFood Merchant API v1.0 verificado ao vivo (HTTP 200).",
       };
     } catch (err: unknown) {
       return {
         success: false,
         verifiedRemotely: true,
-        message: `Falha de rede ao consultar iFood OpenDelivery: ${err instanceof Error ? err.message : "Timeout"}`,
+        message: `Falha de rede ao consultar iFood: ${err instanceof Error ? err.message : "Timeout"}`,
+      };
+    }
+  }
+
+  if (platform === "shopee" && resolved.accessToken && resolved.clientId && resolved.clientSecret && resolved.externalAccountId) {
+    try {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const apiPath = "/api/v2/shop/get_shop_info";
+      const sign = generateShopeeSign({
+        partnerId: resolved.clientId,
+        partnerKey: resolved.clientSecret,
+        apiPath,
+        timestamp,
+        accessToken: resolved.accessToken,
+        shopId: resolved.externalAccountId,
+      });
+      const res = await doFetch(
+        `https://partner.shopeemobile.com${apiPath}?partner_id=${encodeURIComponent(resolved.clientId)}&timestamp=${timestamp}&access_token=${encodeURIComponent(resolved.accessToken)}&shop_id=${encodeURIComponent(resolved.externalAccountId)}&sign=${sign}`,
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) }
+      );
+      const json = (await res.json().catch(() => ({}))) as Record<string, any>;
+      if (!res.ok || json.error) {
+        return {
+          success: false,
+          verifiedRemotely: true,
+          message: `Shopee v2 rejeitou a sessão (${json.message || json.error || `HTTP ${res.status}`}).`,
+        };
+      }
+      return {
+        success: true,
+        verifiedRemotely: true,
+        message: `Conexão Shopee v2 verificada: Loja ${json.shop_name || resolved.externalAccountId}.`,
+      };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        verifiedRemotely: true,
+        message: `Falha de rede ao consultar Shopee v2: ${err instanceof Error ? err.message : "Timeout"}`,
+      };
+    }
+  }
+
+  if (platform === "melhorenvio" && resolved.accessToken) {
+    try {
+      const base = resolved.isTestMode ? "https://sandbox.melhorenvio.com.br" : "https://melhorenvio.com.br";
+      const res = await doFetch(`${base}/api/v2/me`, {
+        headers: { Authorization: `Bearer ${resolved.accessToken}`, Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        return {
+          success: false,
+          verifiedRemotely: true,
+          message: `Melhor Envio rejeitou o Bearer Token (HTTP ${res.status}).`,
+        };
+      }
+      const body = (await res.json().catch(() => ({}))) as Record<string, any>;
+      return {
+        success: true,
+        verifiedRemotely: true,
+        message: `Melhor Envio verificado ao vivo (${body.email || body.firstname || "HTTP 200"}).`,
+      };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        verifiedRemotely: true,
+        message: `Falha de rede ao consultar Melhor Envio: ${err instanceof Error ? err.message : "Timeout"}`,
+      };
+    }
+  }
+
+  if (platform === "amazon" && resolved.accessToken) {
+    try {
+      const res = await doFetch("https://sellingpartnerapi-na.amazon.com/sellers/v1/marketplaceParticipations", {
+        headers: { "x-amz-access-token": resolved.accessToken, Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        return {
+          success: false,
+          verifiedRemotely: true,
+          message: `Amazon SP-API rejeitou o token LWA (HTTP ${res.status}).`,
+        };
+      }
+      return {
+        success: true,
+        verifiedRemotely: true,
+        message: "Token LWA Amazon SP-API verificado ao vivo (HTTP 200).",
+      };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        verifiedRemotely: true,
+        message: `Falha de rede ao consultar Amazon SP-API: ${err instanceof Error ? err.message : "Timeout"}`,
       };
     }
   }
@@ -2520,10 +3944,20 @@ export const testMarketplaceConnectorCredentialsFn = createServerFn({ method: "P
     const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja não identificada.");
 
-    const resolved = await resolveMarketplaceConnectorCredentials({
+    const cleanPayload: Record<string, string> = {};
+    if (data.credentialPayload) {
+      for (const [k, v] of Object.entries(data.credentialPayload)) {
+        const trimmed = (v || "").trim();
+        if (trimmed && !trimmed.includes("••••")) {
+          cleanPayload[k] = trimmed;
+        }
+      }
+    }
+
+    const resolved = await resolveConnectorCredentialsWithRefresh({
       storeId,
       platform: data.platform,
-      connectorRow: data.credentialPayload ? { settings: { credentials: data.credentialPayload } } : undefined,
+      connectorRow: Object.keys(cleanPayload).length > 0 ? { settings: { credentials: cleanPayload } } : undefined,
     });
 
     return await verifyMarketplaceConnectorConnectivity({

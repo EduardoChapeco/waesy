@@ -21,6 +21,8 @@ export const createDealProposal = createServerFn({ method: "POST" })
  totalPriceCents: z.number().int().min(0).optional(),
  guestsCount: z.number().int().min(1).optional(),
  isDirectBooking: z.boolean().optional().default(false),
+ customAnswers: z.record(z.any()).optional(),
+ structuredSelection: z.record(z.any()).optional(),
  }),
  )
  .handler(async ({ data: input }) => {
@@ -32,10 +34,11 @@ export const createDealProposal = createServerFn({ method: "POST" })
  throw new Error("Você não pode enviar uma proposta para o seu próprio anúncio.");
  }
 
+ let classifiedMeta: { id?: string; title?: string | null; store_id?: string | null; category?: string | null; attributes?: any } | null = null;
  if (input.classifiedId) {
    const { data: classified, error: classifiedErr } = await supabase
      .from("classifieds")
-     .select("author_profile_id, status")
+     .select("id, title, store_id, category, attributes, author_profile_id, status")
      .eq("id", input.classifiedId)
      .maybeSingle();
    if (classifiedErr || !classified) throw new Error("Anúncio não encontrado.");
@@ -45,6 +48,7 @@ export const createDealProposal = createServerFn({ method: "POST" })
    if (["archived", "removed", "completed"].includes(String(classified.status))) {
      throw new Error("Este anúncio não aceita novas negociações.");
    }
+   classifiedMeta = classified;
  }
 
  const isDirect = input.isDirectBooking || false;
@@ -80,7 +84,7 @@ export const createDealProposal = createServerFn({ method: "POST" })
  throw new Error("Erro ao registrar proposta ou reserva.");
  }
 
- // Registra evento de proposta ou reserva inicial
+ // Registra evento de proposta ou reserva inicial com respostas estruturadas
  await supabase.from("deal_events").insert({
  deal_id: deal.id,
  sender_id: identity.id,
@@ -94,8 +98,63 @@ export const createDealProposal = createServerFn({ method: "POST" })
  installments: input.installmentsCount,
  terms: input.terms,
  is_direct: isDirect,
+ custom_answers: input.customAnswers || {},
+ structured_selection: input.structuredSelection || {},
  },
  });
+
+ // Espelha automaticamente no CRM Kanban (leads_crm + customers_crm) se o anuncio pertence a uma loja
+ let ingestedLeadId: string | null = null;
+ if (classifiedMeta?.store_id) {
+   try {
+     const { data: buyerProfile } = await supabase
+       .from("profiles")
+       .select("full_name, phone, cpf")
+       .eq("id", identity.id)
+       .maybeSingle();
+     const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+     const sel = (input.structuredSelection && typeof input.structuredSelection === "object"
+       ? input.structuredSelection
+       : {}) as Record<string, any>;
+     const ingested = await ingestOmnichannelLead(supabase, {
+       storeId: classifiedMeta.store_id,
+       source: isDirect ? "classified_booking" : "classified_deal",
+       sourceDetail: classifiedMeta.title || "Anuncio Vitrine",
+       fullName: buyerProfile?.full_name || "Cliente Autenticado",
+       phone: buyerProfile?.phone || null,
+       email: (identity as any)?.email || null,
+       document: buyerProfile?.cpf || null,
+       destination:
+         (classifiedMeta.attributes as any)?.destination ||
+         (classifiedMeta.attributes as any)?.travel_package?.destination ||
+         classifiedMeta.title ||
+         null,
+       travelStart: input.startDate || sel.departure_date || null,
+       travelEnd: input.endDate || sel.return_date || null,
+       paxCount: input.guestsCount || 1,
+       paxAdults: input.guestsCount || 1,
+       estimatedValueCents: input.totalPriceCents || input.proposedPriceCents,
+       message: input.terms || null,
+       status: "negotiation",
+       sourceDealId: deal.id,
+       sourceListingId: input.classifiedId || null,
+       sourceListingOrigin: "classified",
+       sourceListingTitle: classifiedMeta.title || null,
+       departureOption: sel.departure_option || null,
+       boardingPoint: sel.boarding_point || null,
+       customFields: {
+         ...(input.customAnswers || {}),
+         ...(input.structuredSelection || {}),
+         installments_count: input.installmentsCount,
+         deposit_cents: input.depositCents,
+         classified_category: classifiedMeta.category || null,
+       },
+     });
+     ingestedLeadId = ingested.leadId;
+   } catch (crmErr) {
+     console.warn("[deals] Aviso ao espelhar deal no leads_crm:", crmErr);
+   }
+ }
 
  // Abre canal de conversa P2P entre comprador e vendedor automaticamente
  // (idempotente: reutiliza thread existente se já houver um entre os dois)
@@ -148,7 +207,7 @@ export const createDealProposal = createServerFn({ method: "POST" })
  console.warn("[deals] Falha ao criar thread de conversa P2P:", chatErr);
  }
 
- return { ...deal, chat_thread_id: undefined };
+ return { ...deal, lead_id: ingestedLeadId, chat_thread_id: undefined };
  });
 
 export const respondToDealProposal = createServerFn({ method: "POST" })

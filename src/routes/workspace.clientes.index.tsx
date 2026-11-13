@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { listCustomers, archiveCustomer } from "@/services/crm.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
@@ -27,8 +27,12 @@ export const Route = createFileRoute("/workspace/clientes/")({
  head: () => ({ meta: [{ title: "Clientes | Workspace Waesy" }] }),
  loader: async () => {
    try {
+ let loadError: string | null = null;
  const [customers, teamRes, store] = await Promise.all([
- listCustomers().catch(() => []),
+ listCustomers().catch((err: any) => {
+   loadError = err?.message || "Falha ao carregar carteira de clientes.";
+   return [];
+ }),
  listTeamMembers().catch(() => []),
  getStoreSettings().catch(() => null),
  ]);
@@ -36,10 +40,11 @@ export const Route = createFileRoute("/workspace/clientes/")({
  customers: customers || [],
  team: teamRes || [],
  store: store || null,
+ loadError,
  };
-   } catch (err) {
+   } catch (err: any) {
      console.error("[loader:workspace.clientes.index] Unhandled loader error:", err);
-     return { customers: [], team: [], store: null };
+     return { customers: [], team: [], store: null, loadError: err?.message || "Erro ao carregar carteira de clientes." };
    }
  },
  component: CarteiraClientesPage,
@@ -51,6 +56,7 @@ function CarteiraClientesPage() {
   const customers = loaderData?.customers || [];
   const team = loaderData?.team || [];
   const store = loaderData?.store || null;
+  const loadError: string | null = loaderData?.loadError || null;
   const router = useRouter();
   const { t, nicheId } = useNicheTranslation(store);
 
@@ -305,7 +311,14 @@ function CarteiraClientesPage() {
 
 
       {/* ── 5. Carteira de Clientes com Alternância Polimórfica (UniversalViewManager Marco M2) ── */}
-      <UniversalViewManager<any>
+      {loadError ? (
+        <ErrorState
+          title="Erro ao carregar carteira de clientes"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      ) : (
+        <UniversalViewManager<any>
         currentView={viewMode}
         onViewChange={setViewMode}
         data={filteredCustomers}
@@ -715,11 +728,13 @@ function CarteiraClientesPage() {
           );
         }}
       />
+      )}
  {/* ── 6. Wizard Multi-Etapa de Novo Cliente ── */}
  <NewClientWizard
  isOpen={isWizardOpen}
  onClose={() => setIsWizardOpen(false)}
  onSuccess={() => router.invalidate()}
+ store={store}
  teamMembers={team.map((m: any) => ({
  id: m.id || m.profile_id,
  fullName: m.profiles?.full_name || m.full_name || "Membro da Equipe",

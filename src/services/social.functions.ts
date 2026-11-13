@@ -497,9 +497,21 @@ export const getMuralFeed = createServerFn({ method: "GET" })
     if (productIds.length > 0) {
       const { data } = await db
         .from("products")
-        .select("id, title, slug, price_cents, images, compare_at_price_cents, stores(id, name, slug)")
+        .select("id, title, slug, price_cents, compare_at_cents, product_media(url, sort_order), stores(id, name, slug)")
         .in("id", productIds);
-      (data ?? []).forEach((r: any) => productMap.set(r.id, r));
+      (data ?? []).forEach((r: any) => {
+        const sortedUrls = Array.isArray(r.product_media)
+          ? [...r.product_media]
+              .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+              .map((m: any) => m.url)
+              .filter(Boolean)
+          : [];
+        productMap.set(r.id, {
+          ...r,
+          compare_at_price_cents: r.compare_at_cents ?? null,
+          images: sortedUrls,
+        });
+      });
     }
     if (eventIds.length > 0) {
       const { data } = await db
@@ -1149,7 +1161,7 @@ export const getMomentsMap = createServerFn({ method: "GET" })
  // 3. Eventos
  const eventsQuery = db
  .from("events")
- .select("id, title, event_date, cover_image, is_free, location_name")
+ .select("id, title, event_date, cover_image, is_free, location, venue_name")
  .eq("status", "published")
  .order("event_date", { ascending: true })
  .limit(30);
@@ -1281,7 +1293,7 @@ export const getMomentsMap = createServerFn({ method: "GET" })
  id: e.id,
  kind: "event" as const,
  title: e.title,
- subtitle: e.location_name || "Local do evento",
+ subtitle: e.venue_name || e.location || "Local do evento",
  image_url: e.cover_image || null,
  event_date: e.event_date,
  is_free: e.is_free,
@@ -1783,14 +1795,22 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
 
  const fetchMemberEvents = async () => {
  try {
- return await db
+ const res = await db
  .from("events")
  .select(
- "id, title, description, cover_image, event_date, location_name, is_free, price_cents, status, created_at",
+ "id, title, description, cover_image, event_date, location, venue_name, is_free, price_min_cents, status, created_at",
  )
- .or(`author_profile_id.eq.${targetUserId},created_by.eq.${targetUserId}`)
+ .eq("author_profile_id", targetUserId)
  .order("event_date", { ascending: false })
  .limit(15);
+ return {
+ ...res,
+ data: (res.data || []).map((e: any) => ({
+ ...e,
+ location_name: e.venue_name || e.location || null,
+ price_cents: e.price_min_cents ?? null,
+ })),
+ };
  } catch {
  return { data: [] };
  }
@@ -2110,16 +2130,19 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
     // 3.3 Eventos da Marca / Artista
     try {
       const cleanHandle = (creatorProfile.handle || "").toLowerCase().trim();
-      const stageName = creatorProfile.name || creatorProfile.stage_name || cleanHandle;
+      const stageName = creatorProfile.name || (creatorProfile as any).stage_name || cleanHandle;
       const { data: evts } = await db
         .from("events")
-        .select("id, title, description, event_date, end_date, location, city, state, cover_image, price_cents, is_free, is_external_ticket, external_ticket_url, category")
+        .select("id, title, description, event_date, end_date, location, city, state, cover_image, price_min_cents, is_free, is_external_ticket, external_ticket_url, category")
         .eq("status", "published")
         .gte("event_date", new Date().toISOString())
-        .or(`creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${stageName}%,created_by.eq.${targetUserId}`)
+        .or(`creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${stageName}%,author_profile_id.eq.${targetUserId}`)
         .order("event_date", { ascending: true })
         .limit(10);
-      creatorEvents = evts || [];
+      creatorEvents = (evts || []).map((e: any) => ({
+        ...e,
+        price_cents: e.price_min_cents ?? null,
+      }));
     } catch (err) {
       console.warn("[social.functions] Erro ao buscar eventos do criador:", err);
     }
@@ -2834,7 +2857,7 @@ export const getPostById = createServerFn({ method: "GET" })
     try {
       const { count } = await db
         .from("post_likes")
-        .select("id", { count: "exact", head: true })
+        .select("post_id", { count: "exact", head: true })
         .eq("post_id", postId);
       likesCount = count || 0;
     } catch {
@@ -2860,7 +2883,7 @@ export const getPostById = createServerFn({ method: "GET" })
       try {
         const { data: likeRecord } = await db
           .from("post_likes")
-          .select("id")
+          .select("post_id")
           .eq("post_id", postId)
           .eq("profile_id", currentUserId)
           .maybeSingle();
@@ -2875,13 +2898,17 @@ export const getPostById = createServerFn({ method: "GET" })
     if (post.reference_type === "product" && post.reference_id) {
       const { data: prod } = await db
         .from("products")
-        .select("id, title, slug, price_cents, compare_at_price_cents, images, stores(id, name, slug)")
+        .select("id, title, slug, price_cents, compare_at_cents, product_media(url, sort_order), stores(id, name, slug)")
         .eq("id", post.reference_id)
         .maybeSingle();
       if (prod) {
+        const sortedMedia = Array.isArray((prod as any).product_media)
+          ? [...(prod as any).product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          : [];
         referenceData = {
           ...prod,
-          image_url: prod.images?.[0] || null,
+          compare_at_price_cents: (prod as any).compare_at_cents ?? null,
+          image_url: sortedMedia[0]?.url || null,
           store_name: (prod.stores as any)?.name || null,
           store_slug: (prod.stores as any)?.slug || null,
         };
@@ -2889,7 +2916,7 @@ export const getPostById = createServerFn({ method: "GET" })
     } else if (post.reference_type === "event" && post.reference_id) {
       const { data: evt } = await db
         .from("events")
-        .select("id, title, event_date, location, cover_image, price_cents, is_free")
+        .select("id, title, event_date, location, cover_image, price_min_cents, is_free")
         .eq("id", post.reference_id)
         .maybeSingle();
       if (evt) {
@@ -2898,7 +2925,7 @@ export const getPostById = createServerFn({ method: "GET" })
           date: evt.event_date,
           location: evt.location,
           cover_image: evt.cover_image,
-          price_cents: evt.price_cents,
+          price_cents: (evt as any).price_min_cents ?? null,
           is_free: evt.is_free,
         };
       }

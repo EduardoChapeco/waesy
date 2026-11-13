@@ -26,7 +26,6 @@ import {
   X,
   Bus,
   ShoppingCart,
-  Sparkles,
   ArrowLeftRight,
   Clock,
   Package,
@@ -57,7 +56,14 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { formatMoney } from "@/lib/money";
-import { createTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat, type FlightSegmentDTO, type TransferDTO } from "@/services/travel-proposal.functions";
+import {
+  createTravelProposal,
+  listStoreCatalogItemsForProposal,
+  type TravelProposalDTO,
+  type ProposalCanvasFormat,
+  type FlightSegmentDTO,
+  type TransferDTO,
+} from "@/services/travel-proposal.functions";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
@@ -80,12 +86,14 @@ import {
 } from "@/services/infotravel";
 import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal-share-whatsapp-modal";
 import { TRAVEL_PACKAGE_TEMPLATES, type TravelPackageTemplate } from "@/lib/tourism/tourism-templates";
+import type { UnifiedBridgeCatalogContext } from "@/lib/niches/unified-field-bridge";
 
 export interface UnifiedProposalWorkspaceLead {
   id: string;
   fullName?: string;
   email?: string | null;
   phone?: string | null;
+  clientDocument?: string | null;
   destination?: string | null;
   estimated_value_cents?: number;
   passenger_count?: number;
@@ -98,6 +106,12 @@ export interface UnifiedProposalWorkspaceLead {
   cover_image?: string | null;
   cover_image_url?: string | null;
   payment_plan?: any;
+  customFields?: Record<string, unknown>;
+  sourceListingId?: string | null;
+  sourceListingOrigin?: "product" | "classified" | string | null;
+  paxList?: any[];
+  boardingPoint?: string | null;
+  departureOption?: any;
 }
 
 export interface UnifiedProposalWorkspaceProps {
@@ -188,9 +202,17 @@ export function UnifiedProposalWorkspace({
   const [currency, setCurrency] = useState<string>("BRL");
   const [validUntilDays, setValidUntilDays] = useState<number>(7);
   const [selectedPackageTemplateId, setSelectedPackageTemplateId] = useState<string | null>(null);
+  const [selectedSourceCatalogItem, setSelectedSourceCatalogItem] = useState<UnifiedBridgeCatalogContext | null>(null);
+  const autoAppliedListingRef = useRef<string>("");
   const [showOcrTextModal, setShowOcrTextModal] = useState(false);
   const [ocrPastedText, setOcrPastedText] = useState("");
   const [originCity, setOriginCity] = useState("");
+
+  const { data: storeCatalogItems = [], isLoading: isLoadingCatalogItems } = useQuery({
+    queryKey: ["proposal-store-catalog-items"],
+    queryFn: () => listStoreCatalogItemsForProposal().catch(() => []),
+    enabled: open,
+  });
 
   const { data: crmCustomersRes, refetch: refetchCustomers } = useQuery({
     queryKey: ["crm-customers-proposal-workspace"],
@@ -323,6 +345,7 @@ export function UnifiedProposalWorkspace({
         if (lead.fullName) setClientName(lead.fullName);
         if (lead.phone) setClientPhone(lead.phone);
         if (lead.email) setClientEmail(lead.email);
+        if (lead.clientDocument) setClientDocument(lead.clientDocument);
         if (lead.destination) setDestinationQuery(sanitizeDestinationString(lead.destination));
         if (lead.departureDate) {
           const iso = normalizeDateToIso(lead.departureDate);
@@ -344,8 +367,11 @@ export function UnifiedProposalWorkspace({
           },
           ...prev.slice(1),
         ]);
-        if (lead.notes) {
-          setNotes((curr) => curr ? curr : lead.notes!);
+        const extraLeadNotes: string[] = [];
+        if (lead.notes) extraLeadNotes.push(lead.notes);
+        if (lead.boardingPoint) extraLeadNotes.push(`Ponto de Embarque: ${lead.boardingPoint}`);
+        if (extraLeadNotes.length > 0) {
+          setNotes((curr) => (curr ? curr : extraLeadNotes.join("\n")));
         }
         if (lead.payment_plan) {
           const pp = lead.payment_plan;
@@ -446,6 +472,19 @@ export function UnifiedProposalWorkspace({
   const [infotravelOperatorFilter, setInfotravelOperatorFilter] = useState<InfoTravelOperatorSlug>("infotravel_default");
   const [isSearchingInfotravel, setIsSearchingInfotravel] = useState(false);
 
+  const filteredStoreCatalogItems = useMemo(() => {
+    const q = catalogSearchQuery.trim().toLowerCase();
+    const list = Array.isArray(storeCatalogItems) ? storeCatalogItems : [];
+    if (!q) return list;
+    return list.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        item.destination.toLowerCase().includes(q) ||
+        item.subtitle.toLowerCase().includes(q) ||
+        item.includes.some((inc) => inc.toLowerCase().includes(q)),
+    );
+  }, [catalogSearchQuery, storeCatalogItems]);
+
   const filteredCatalogPackages = useMemo(() => {
     const q = catalogSearchQuery.trim().toLowerCase();
     if (!q) return TRAVEL_PACKAGE_TEMPLATES;
@@ -457,6 +496,95 @@ export function UnifiedProposalWorkspace({
         pkg.includes?.some((inc) => inc.toLowerCase().includes(q))
     );
   }, [catalogSearchQuery]);
+
+  const handleApplyStoreCatalogItem = (item: UnifiedBridgeCatalogContext, silent = false) => {
+    const cleanCity = sanitizeDestinationString(item.destination || item.title);
+    if (cleanCity) setDestinationQuery(cleanCity);
+    if (item.title) setCustomTitle(item.title);
+    setSelectedSourceCatalogItem(item);
+
+    if (Array.isArray(item.flights) && item.flights.length > 0) {
+      setProposalFlights(
+        item.flights.map((f: any, idx: number) => ({
+          id: f.id || `fl-cms-${Date.now()}-${idx}`,
+          leg: f.type === "return" || f.leg === "volta" ? "volta" : "ida",
+          airline: f.airline_name || f.airline || "",
+          flight_number: f.flight_number || "",
+          origin_iata: f.origin_iata || originCity || "",
+          origin_city: f.origin_city || originCity || "",
+          destination_iata: f.destination_iata || "",
+          destination_city: f.destination_city || cleanCity,
+          departure_date: departureDate,
+          departure_time: f.departure_time || "",
+          arrival_time: f.arrival_time || "",
+          baggage_included: f.baggage_included ? String(f.baggage_included) : "Conforme companhia",
+          stops_count: f.stops_count || f.stops || 0,
+        })),
+      );
+    }
+
+    if (Array.isArray(item.hotels) && item.hotels.length > 0) {
+      const mainH: any = item.hotels[0];
+      const hotelLabel = mainH.hotel_name || mainH.name || item.title;
+      setBundleOptions([
+        {
+          optionLabel: "Opcao do Pacote CMS",
+          hotelName: hotelLabel,
+          airlineDesc: item.flights?.[0]?.airline || "Transporte Incluso",
+          operatorSlug: "",
+          adultPriceCents: item.priceCents > 0 ? item.priceCents : 0,
+          isRecommended: true,
+        },
+      ]);
+      setHotelQuery(hotelLabel);
+    }
+
+    if (item.priceCents > 0) {
+      setRooms((prev) => [
+        {
+          ...prev[0],
+          baseAdultPriceCents: item.priceCents,
+        },
+        ...prev.slice(1),
+      ]);
+    }
+
+    if (Array.isArray(item.itinerary) && item.itinerary.length > 0) {
+      setProposalItinerary(
+        item.itinerary.map((d: any, idx: number) => ({
+          day: d.day || d.day_number || idx + 1,
+          title: d.title || `Dia ${idx + 1}`,
+          description: d.description || "",
+          meals: Array.isArray(d.meals) ? d.meals.join(", ") : d.meals || "Conforme roteiro",
+        })),
+      );
+    }
+
+    if (Array.isArray(item.includes) && item.includes.length > 0) {
+      setSelectedInclusions(item.includes);
+    }
+    if (Array.isArray(item.excludes) && item.excludes.length > 0) {
+      setSelectedExclusions(item.excludes);
+    }
+
+    if (!silent) {
+      setShowCatalogModal(false);
+      toast.success(`Item CMS "${item.title}" conectado a proposta!`);
+    }
+  };
+
+  useEffect(() => {
+    if (!open || !lead?.sourceListingId || !Array.isArray(storeCatalogItems) || storeCatalogItems.length === 0) {
+      return;
+    }
+    const syncKey = `${lead.id}:${lead.sourceListingId}`;
+    if (autoAppliedListingRef.current === syncKey) return;
+    const matched = storeCatalogItems.find((it) => it.id === lead.sourceListingId);
+    if (matched) {
+      autoAppliedListingRef.current = syncKey;
+      handleApplyStoreCatalogItem(matched, true);
+    }
+  }, [open, lead?.id, lead?.sourceListingId, storeCatalogItems]);
 
   const handleApplyCatalogPackage = (pkg: TravelPackageTemplate) => {
     const cleanCity = sanitizeDestinationString(pkg.destinationCity);
@@ -1585,10 +1713,18 @@ export function UnifiedProposalWorkspace({
           templateTheme,
           templateId: matchedPkgTemplate?.id,
           coverPhotoUrl:
+            selectedSourceCatalogItem?.heroImageUrl ||
             lead?.cover_image_url ||
             lead?.cover_image ||
             matchedPkgTemplate?.coverImageUrl ||
             undefined,
+          customFields: lead?.customFields || undefined,
+          sourceListingId: selectedSourceCatalogItem?.id || lead?.sourceListingId || undefined,
+          sourceListingOrigin:
+            selectedSourceCatalogItem?.origin ||
+            (lead?.sourceListingOrigin === "product" || lead?.sourceListingOrigin === "classified"
+              ? lead.sourceListingOrigin
+              : undefined),
           initialNotes: fullSummary,
           flights: proposalFlights.length > 0 ? proposalFlights : (matchedPkgTemplate?.flights || []),
           hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt, idx) => ({
@@ -2080,7 +2216,7 @@ export function UnifiedProposalWorkspace({
               <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                 <div className="flex items-start sm:items-center gap-2.5">
                   <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary shrink-0 mt-0.5 sm:mt-0">
-                    <Sparkles className="size-4" />
+                    <Zap className="size-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -3703,23 +3839,23 @@ export function UnifiedProposalWorkspace({
 
               {/* Card Rodoviário */}
               {proposalTransfers[0]?.notes || proposalTransfers[0]?.vehicle ? (
-                <div className="p-3 rounded-lg bg-card border border-border/60 space-y-1 text-xs">
+                <div className="p-3 rounded-lg bg-card border border-border space-y-1 text-xs">
                   <div className="flex items-center justify-between text-2xs font-bold text-primary">
-                    <span className="flex items-center gap-1.5"><Bus className="size-3" /> Rodoviário</span>
+                    <span className="flex items-center gap-2"><Bus className="size-3" /> Rodoviário</span>
                     <span className="text-muted-foreground font-normal">{proposalTransfers[0].type}</span>
                   </div>
-                  <p className="font-bold text-foreground truncate">{proposalTransfers[0].vehicle || "Transporte Executivo"}</p>
+                  <p className="font-bold text-foreground line-clamp-2 text-anti-truncate">{proposalTransfers[0].vehicle || "Transporte Executivo"}</p>
                   {proposalTransfers[0].notes && <p className="text-2xs text-muted-foreground line-clamp-2">{proposalTransfers[0].notes}</p>}
                 </div>
               ) : null}
 
               {/* Card Inclusões */}
               {selectedInclusions.length > 0 && (
-                <div className="p-3 rounded-lg bg-card border border-border/60 space-y-1.5">
+                <div className="p-3 rounded-lg bg-card border border-border space-y-2">
                   <span className="text-2xs font-bold text-muted-foreground block">Inclusões ({selectedInclusions.length}):</span>
                   <div className="flex flex-wrap gap-1">
                     {selectedInclusions.map((inc) => (
-                      <span key={inc} className="text-2xs px-2 py-0.5 rounded-md bg-muted text-foreground border border-border/40">
+                      <span key={inc} className="text-2xs px-2 py-1 rounded-md bg-muted text-foreground border border-border">
                         {inc.split(" ")[0]} {inc.split(" ")[1] || ""}
                       </span>
                     ))}
@@ -3728,7 +3864,7 @@ export function UnifiedProposalWorkspace({
               )}
 
               {/* Totalização Consolidada */}
-              <div className="mt-auto pt-4 border-t border-border/60 space-y-3">
+              <div className="mt-auto pt-4 border-t border-border space-y-3">
                 <div className="flex items-baseline justify-between">
                   <span className="text-xs text-muted-foreground">Total da Proposta</span>
                   <span className="text-xl font-black font-mono text-foreground">{formatMoney(calculation.grandTotalCents)}</span>
@@ -3739,7 +3875,7 @@ export function UnifiedProposalWorkspace({
                 </div>
 
                 {/* Condições de Pagamento */}
-                <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40 space-y-1 text-2xs text-muted-foreground">
+                <div className="p-3 rounded-lg bg-muted border border-border space-y-1 text-2xs text-muted-foreground">
                   <div className="flex justify-between">
                     <span>Cartão de Crédito</span>
                     <span className="font-bold text-foreground">Até {cardInstallments}x</span>
@@ -3766,7 +3902,7 @@ export function UnifiedProposalWorkspace({
                     disabled={saveProposalMutation.isPending}
                     className="w-full h-11 text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer"
                   >
-                    {saveProposalMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                    {saveProposalMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Layers className="size-4" />}
                     <span>Salvar & Abrir Studio</span>
                   </Button>
 
@@ -3897,64 +4033,137 @@ export function UnifiedProposalWorkspace({
             </div>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
-            {filteredCatalogPackages.length === 0 ? (
-              <div className="p-8 text-center rounded-lg border border-dashed border-border/60 text-muted-foreground text-xs space-y-1">
-                <Package className="size-8 mx-auto opacity-40 mb-2" />
-                <p className="font-semibold text-foreground">Nenhum pacote encontrado para a busca.</p>
-                <p>Tente outro termo ou limpe a busca para ver todos os modelos.</p>
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+            {isLoadingCatalogItems ? (
+              <div className="p-4 rounded-lg border border-border/50 bg-muted/20 text-xs text-muted-foreground flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin text-primary" />
+                <span>Carregando pacotes e produtos do seu catálogo CMS...</span>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filteredCatalogPackages.map((pkg) => (
-                  <div
-                    key={pkg.id}
-                    className="p-4 rounded-xl border border-border/60 bg-card hover:border-primary/50 transition-colors flex flex-col justify-between space-y-2"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Badge variant="outline" className="text-2xs font-bold text-primary border-primary/30">
-                          {pkg.badge || "Pacote Completo"}
-                        </Badge>
-                        <span className="text-2xs font-mono text-muted-foreground">
-                          {pkg.durationDays}D / {pkg.durationNights || pkg.durationDays - 1}N
-                        </span>
-                      </div>
-                      <h4 className="text-xs font-bold text-foreground line-clamp-1">
-                        {pkg.title}
-                      </h4>
-                      <p className="text-2xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="size-3 text-primary shrink-0" />
-                        <span>{pkg.destinationCity}</span>
-                      </p>
-                      {pkg.includes && pkg.includes.length > 0 && (
-                        <p className="text-3xs text-muted-foreground line-clamp-2 leading-relaxed">
-                          Inclui: {pkg.includes.slice(0, 3).join(", ")}{pkg.includes.length > 3 ? "..." : ""}
+            ) : filteredStoreCatalogItems.length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Meu Catálogo CMS & Vitrine ({filteredStoreCatalogItems.length})
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {filteredStoreCatalogItems.map((item) => (
+                    <div
+                      key={`${item.origin}-${item.id}`}
+                      className="p-4 rounded-xl border border-primary/30 bg-card hover:border-primary transition-colors flex flex-col justify-between space-y-2"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline" className="text-2xs font-bold text-primary border-primary/30">
+                            {item.origin === "product" ? "Produto CMS" : "Anúncio Vitrine"}
+                          </Badge>
+                          {item.durationLabel && (
+                            <span className="text-2xs font-mono text-muted-foreground">
+                              {item.durationLabel}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-xs font-bold text-foreground line-clamp-1">
+                          {item.title}
+                        </h4>
+                        <p className="text-2xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="size-3 text-primary shrink-0" />
+                          <span className="truncate">{item.destination || item.subtitle || "Item do catálogo"}</span>
                         </p>
-                      )}
-                    </div>
-
-                    <div className="pt-2 border-t border-border/30 flex items-center justify-between gap-2">
-                      <div>
-                        <span className="text-3xs text-muted-foreground block">A partir de</span>
-                        <span className="text-xs font-bold font-mono text-foreground">
-                          {formatMoney(pkg.suggestedPriceCents || 0)}
-                        </span>
+                        {item.specsRows.length > 0 && (
+                          <p className="text-3xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            {item.specsRows.slice(0, 3).map((s) => `${s.label}: ${s.value}`).join(" · ")}
+                          </p>
+                        )}
                       </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleApplyCatalogPackage(pkg)}
-                        className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <Sparkles className="size-3" />
-                        <span>Aplicar na Proposta</span>
-                      </Button>
+
+                      <div className="pt-2 border-t border-border/30 flex items-center justify-between gap-2">
+                        <div>
+                          <span className="text-3xs text-muted-foreground block">Valor Base</span>
+                          <span className="text-xs font-bold font-mono text-foreground">
+                            {formatMoney(item.priceCents || 0)}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => handleApplyStoreCatalogItem(item)}
+                          className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Plus className="size-3" />
+                          <span>Aplicar na Proposta</span>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            )}
+            ) : null}
+
+            <div className="space-y-3">
+              {filteredStoreCatalogItems.length > 0 && (
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                  Roteiros Modelos Prontos ({filteredCatalogPackages.length})
+                </span>
+              )}
+              {filteredCatalogPackages.length === 0 && filteredStoreCatalogItems.length === 0 ? (
+                <div className="p-8 text-center rounded-lg border border-dashed border-border/60 text-muted-foreground text-xs space-y-1">
+                  <Package className="size-8 mx-auto opacity-40 mb-2" />
+                  <p className="font-semibold text-foreground">Nenhum pacote encontrado para a busca.</p>
+                  <p>Tente outro termo ou limpe a busca para ver todos os modelos.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {filteredCatalogPackages.map((pkg) => (
+                    <div
+                      key={pkg.id}
+                      className="p-4 rounded-xl border border-border/60 bg-card hover:border-primary/50 transition-colors flex flex-col justify-between space-y-2"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline" className="text-2xs font-bold text-primary border-primary/30">
+                            {pkg.badge || "Pacote Completo"}
+                          </Badge>
+                          <span className="text-2xs font-mono text-muted-foreground">
+                            {pkg.durationDays}D / {pkg.durationNights || pkg.durationDays - 1}N
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-foreground line-clamp-1">
+                          {pkg.title}
+                        </h4>
+                        <p className="text-2xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="size-3 text-primary shrink-0" />
+                          <span>{pkg.destinationCity}</span>
+                        </p>
+                        {pkg.includes && pkg.includes.length > 0 && (
+                          <p className="text-3xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            Inclui: {pkg.includes.slice(0, 3).join(", ")}{pkg.includes.length > 3 ? "..." : ""}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-2 border-t border-border/30 flex items-center justify-between gap-2">
+                        <div>
+                          <span className="text-3xs text-muted-foreground block">A partir de</span>
+                          <span className="text-xs font-bold font-mono text-foreground">
+                            {formatMoney(pkg.suggestedPriceCents || 0)}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => handleApplyCatalogPackage(pkg)}
+                          className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Plus className="size-3" />
+                          <span>Aplicar na Proposta</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

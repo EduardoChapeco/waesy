@@ -1,20 +1,13 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Layers, Users, Smartphone, Receipt, Check, Loader2, ShieldCheck, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
+import { Layers, Users, Smartphone, Receipt, Check, ShieldCheck, ArrowRight, Package, Bot } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { ErrorState, EmptyState } from "@/components/state/states";
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  getStorePlanOverview,
-  toggleStoreModuleAddon,
-  updateStorePlanTier,
-} from "@/services/store-modules.functions";
-import type { CommercialModuleId, StorePlanTier } from "@/lib/architecture/module-plan-governance";
+import { getStorePlanOverview } from "@/services/store-modules.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/configuracoes/planos")({
@@ -53,8 +46,9 @@ function WorkspaceConfiguracoesPlanosPage() {
     error: string | null;
   };
   const router = useRouter();
-  const [busyTier, setBusyTier] = useState<string | null>(null);
-  const [busyModule, setBusyModule] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+    ((initialOverview?.store as any)?.billingCycle as "monthly" | "annual") || "monthly",
+  );
 
   if (error || !initialOverview) {
     return (
@@ -68,38 +62,25 @@ function WorkspaceConfiguracoesPlanosPage() {
     );
   }
 
-  const { store, plan, usage, monthlyTotalCents, invoices, modules, availablePlans } = initialOverview;
+  const {
+    store,
+    plan,
+    verticalPlan,
+    usage,
+    monthlyTotalCents,
+    invoices,
+    modules,
+    availablePlans,
+    availableVerticalPlans = [],
+  } = initialOverview;
   const staffUnlimited = store.isExempt || usage.maxStaffUsers >= 999;
   const waUnlimited = store.isExempt || usage.maxWhatsAppInstances >= 999;
+  const catalogUnlimited = store.isExempt || (usage.maxCatalogItems ?? 99999) >= 50000;
   const staffPct = staffUnlimited ? 25 : Math.min(100, Math.round((usage.staffCount / Math.max(1, usage.maxStaffUsers)) * 100));
   const waPct = waUnlimited ? 25 : Math.min(100, Math.round((usage.whatsAppInstancesCount / Math.max(1, usage.maxWhatsAppInstances)) * 100));
-
-  const handleSelectPlan = async (tier: StorePlanTier) => {
-    if (tier === store.tier) return;
-    setBusyTier(tier);
-    try {
-      await updateStorePlanTier({ data: { storeId: store.id, planTier: tier } });
-      toast.success(`Plano alterado para ${tier.toUpperCase()}.`);
-      await router.invalidate();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Não foi possível alterar o plano.");
-    } finally {
-      setBusyTier(null);
-    }
-  };
-
-  const handleToggleModule = async (moduleId: CommercialModuleId, nextActive: boolean) => {
-    setBusyModule(moduleId);
-    try {
-      await toggleStoreModuleAddon({ data: { storeId: store.id, moduleId, active: nextActive } });
-      toast.success(nextActive ? "Módulo adicional ativado." : "Módulo adicional desativado.");
-      await router.invalidate();
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Erro ao atualizar módulo.");
-    } finally {
-      setBusyModule(null);
-    }
-  };
+  const catalogPct = catalogUnlimited
+    ? 15
+    : Math.min(100, Math.round(((usage.catalogItemsCount || 0) / Math.max(1, usage.maxCatalogItems || 100)) * 100));
 
   return (
     <div className="space-y-8 w-full px-0 sm:px-4 md:px-0 pb-20">
@@ -118,21 +99,26 @@ function WorkspaceConfiguracoesPlanosPage() {
       />
 
       {/* Resumo de Uso & Cotas Atuais */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="rounded-lg border border-border bg-card p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Plano Ativo</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sistema & Plano</span>
             <Badge variant="secondary" className="font-mono text-2xs uppercase">
-              {store.isExempt ? "Enterprise (SSOT)" : plan.name}
+              {store.isExempt ? "Enterprise (SSOT)" : store.planName || plan.name}
             </Badge>
           </div>
           <div className="text-2xl font-bold font-mono text-foreground">
             {formatMoney(monthlyTotalCents)}
             <span className="text-xs font-normal text-muted-foreground">/mês</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Inclui {plan.includedModules.length} módulo(s) nativo(s) e {plan.includedVerticalsCount} vertical(is).
-          </p>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="outline" className="text-3xs font-mono uppercase">
+              {store.subscriptionStatus || "active"}
+            </Badge>
+            {store.trialEndsAt && store.subscriptionStatus === "trialing" && (
+              <span>Trial até {formatBrDate(store.trialEndsAt)}</span>
+            )}
+          </div>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-5 space-y-3">
@@ -168,13 +154,117 @@ function WorkspaceConfiguracoesPlanosPage() {
           <Progress value={waPct} className="h-2" />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Canais conectados na Evolution / Meta</span>
-            <Link to="/workspace/configuracoes/integracoes" className="font-semibold text-primary inline-flex items-center gap-1 hover:underline">
-              <span>Integrações</span>
+            <Link to="/workspace/atendimento/whatsapp" className="font-semibold text-primary inline-flex items-center gap-1 hover:underline">
+              <span>Canais</span>
               <ArrowRight className="size-3" />
             </Link>
           </div>
         </div>
+
+        <div className="rounded-lg border border-border bg-card p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Package className="size-3.5" />
+              <span>Catálogo & Créditos IA</span>
+            </span>
+            <span className="text-xs font-mono font-bold text-foreground">
+              {usage.catalogItemsCount ?? 0} / {catalogUnlimited ? "Ilimitado" : usage.maxCatalogItems ?? 300}
+            </span>
+          </div>
+          <Progress value={catalogPct} className="h-2" />
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <Bot className="size-3" />
+              {(usage.maxMonthlyAiCalls ?? 1500).toLocaleString("pt-BR")} execuções IA/mês
+            </span>
+          </div>
+        </div>
       </section>
+
+      {/* Sistemas Verticais Dedicados (Venda Avulsa ou Combo) */}
+      {availableVerticalPlans.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Layers className="size-4 text-primary" />
+              <h2 className="text-base font-bold text-foreground">Sistemas Verticais Standalone</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant={billingCycle === "monthly" ? "secondary" : "outline"}
+                onClick={() => setBillingCycle("monthly")}
+                className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Cobrança Mensal
+              </Button>
+              <Button
+                type="button"
+                variant={billingCycle === "annual" ? "secondary" : "outline"}
+                onClick={() => setBillingCycle("annual")}
+                className="h-11 min-h-11 px-4 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Anual (20% off)
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {availableVerticalPlans.map((vp: any) => {
+              const isCurrentSku = store.verticalSku === vp.sku && (store.billingCycle || "monthly") === billingCycle;
+              const displayPriceCents =
+                billingCycle === "annual"
+                  ? Math.round((vp.annualPriceCents || vp.monthlyPriceCents * 12) / 12)
+                  : vp.monthlyPriceCents;
+              return (
+                <div
+                  key={vp.sku}
+                  className={`rounded-lg border p-5 flex flex-col justify-between gap-4 bg-card ${
+                    isCurrentSku ? "border-primary ring-1 ring-primary/30" : "border-border"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-foreground">{vp.name}</h3>
+                      {isCurrentSku ? (
+                        <Badge variant="secondary" className="text-3xs font-mono uppercase">
+                          Ativo
+                        </Badge>
+                      ) : !vp.isStandalone ? (
+                        <Badge variant="outline" className="text-3xs font-mono uppercase">
+                          Combo Full
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{vp.tagline}</p>
+                    <div className="text-xl font-bold font-mono text-foreground pt-1">
+                      {formatMoney(displayPriceCents)}
+                      <span className="text-xs font-normal text-muted-foreground">/mês</span>
+                    </div>
+                    <p className="text-2xs font-mono text-muted-foreground">
+                      {vp.limits.maxTeamMembers >= 999 ? "Equipe ilimitada" : `Até ${vp.limits.maxTeamMembers} colaboradores`} •{" "}
+                      {vp.limits.maxWhatsappInstances} WhatsApp • {vp.limits.maxCatalogItems} itens
+                    </p>
+                  </div>
+
+                  <Badge
+                    variant={isCurrentSku ? "default" : "outline"}
+                    className="h-11 min-h-11 w-full justify-center text-xs font-bold gap-2"
+                  >
+                    <span>
+                      {store.isExempt
+                        ? "Licença Master Ativa"
+                        : isCurrentSku
+                        ? "Sistema Contratado"
+                        : "Gerenciado pelo Admin Master"}
+                    </span>
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Tiers Disponíveis */}
       <section className="space-y-4">
@@ -185,7 +275,6 @@ function WorkspaceConfiguracoesPlanosPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {availablePlans.map((tierDef) => {
             const isCurrent = tierDef.tier === store.tier;
-            const isLoading = busyTier === tierDef.tier;
             return (
               <div
                 key={tierDef.tier}
@@ -230,16 +319,12 @@ function WorkspaceConfiguracoesPlanosPage() {
                   </ul>
                 </div>
 
-                <Button
-                  type="button"
-                  variant={isCurrent ? "secondary" : "default"}
-                  disabled={isCurrent || Boolean(busyTier) || store.isExempt}
-                  onClick={() => handleSelectPlan(tierDef.tier)}
-                  className="h-11 min-h-11 w-full text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+                <Badge
+                  variant={isCurrent ? "default" : "outline"}
+                  className="h-11 min-h-11 w-full justify-center text-xs font-bold gap-2"
                 >
-                  {isLoading && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />}
-                  <span>{store.isExempt ? "Protegido (SSOT)" : isCurrent ? "Plano Ativo" : "Selecionar Plano"}</span>
-                </Button>
+                  <span>{store.isExempt ? "Licença Master Ativa" : isCurrent ? "Plano Contratado" : "Disponível via Admin Master"}</span>
+                </Badge>
               </div>
             );
           })}
@@ -254,8 +339,6 @@ function WorkspaceConfiguracoesPlanosPage() {
         </div>
         <div className="rounded-lg border border-border bg-card divide-y divide-border/60">
           {modules.map((mod) => {
-            const isUpdating = busyModule === mod.id;
-            const lockedByPlan = mod.isIncludedInPlan || store.isExempt;
             return (
               <div key={mod.id} className="p-4 flex items-center justify-between gap-4">
                 <div className="space-y-1 min-w-0">
@@ -279,13 +362,9 @@ function WorkspaceConfiguracoesPlanosPage() {
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0">
-                  {isUpdating && <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-muted-foreground" />}
-                  <Switch
-                    checked={mod.isActive}
-                    disabled={lockedByPlan || isUpdating}
-                    onCheckedChange={(checked) => handleToggleModule(mod.id as CommercialModuleId, checked)}
-                    aria-label={`Alternar módulo ${mod.name}`}
-                  />
+                  <Badge variant={mod.isActive ? "default" : "outline"} className="text-2xs font-mono">
+                    {mod.isActive ? "Habilitado" : "Inativo"}
+                  </Badge>
                 </div>
               </div>
             );

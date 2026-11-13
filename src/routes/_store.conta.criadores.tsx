@@ -15,11 +15,11 @@ import { getProfile, getUserSession } from "@/services/auth.functions";
 export const Route = createFileRoute("/_store/conta/criadores")({
   head: () => ({
     meta: [
-      { title: "Perfis de Criador e Parcerias | Waesy" },
+      { title: "Perfis de Criador | Waesy" },
       {
         name: "description",
         content:
-          "Gerencie seus perfis de criador de conteúdo, vitrines digitais de afiliados e identidades de publicação na Rede Waesy.",
+          "Gerencie seus perfis de criador, vitrines de afiliados e canais de publicação.",
       },
     ],
   }),

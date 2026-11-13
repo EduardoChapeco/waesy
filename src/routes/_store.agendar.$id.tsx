@@ -18,6 +18,7 @@ import { getBookingServiceById, getAvailableSlots, createAppointment, listMyPass
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { cn } from "@/lib/utils";
 import { buildBookingServiceSeoHead } from "@/lib/seo/universal-seo-head";
+import { getBookingCategoryLabelFromSsot } from "@/lib/niches/niche-ssot";
 
 export const Route = createFileRoute("/_store/agendar/$id")({
   head: ({ loaderData }) => buildBookingServiceSeoHead(loaderData),
@@ -32,16 +33,6 @@ export const Route = createFileRoute("/_store/agendar/$id")({
   errorComponent: ServiceDetailErrorComponent,
   component: ServiceDetailPage,
 });
-
-const CATEGORY_LABELS: Record<string, string> = {
-  barbearia: "Barbearia",
-  salao_cabelo: "Salão & Cabelo",
-  unhas_manicure: "Unhas & Manicure",
-  estetica_massagem: "Estética & Massagem",
-  saude_fisioterapia: "Saúde & Fisioterapia",
-  pet_shop: "Pet Shop & Banho",
-  personal_fitness: "Personal & Aulas",
-};
 
 function ServiceDetailErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
@@ -175,7 +166,7 @@ function ServiceDetailPage() {
     appointmentMutation.mutate();
   };
 
-  const categoryLabel = CATEGORY_LABELS[service.category] || service.category || "Geral";
+  const categoryLabel = getBookingCategoryLabelFromSsot(service.category);
   const store = service.stores;
   const storeSettings = (store?.settings as any) || {};
   const storeCity = storeSettings.address?.city || storeSettings.address_city || "São Miguel do Oeste, SC";
