@@ -1402,7 +1402,7 @@ export default function TripPortalPage() {
 
       {/* Modal de Abertura de Chamado Emergencial */}
       {supportModalOpen && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
           <div className="bg-card text-card-foreground border border-border rounded-lg max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-bold text-base text-foreground flex items-center gap-2">

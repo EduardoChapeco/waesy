@@ -640,7 +640,7 @@ Assinatura da Loja (Consignante)`;
           >
             Conciliações
             {(report?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-2 py-1 rounded-full bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 font-bold text-xs">
+              <span className="px-2 py-1 rounded-full bg-muted border border-border text-warning-strong font-bold text-xs">
                 {report?.pendingConciliationCount}
               </span>
             )}
@@ -949,9 +949,9 @@ Assinatura da Loja (Consignante)`;
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Vencimento Próximo
                 </span>
-                <AlertCircle className="size-4 text-amber-700 dark:text-amber-400" />
+                <AlertCircle className="size-4 text-warning-strong" />
               </div>
-              <div className="text-xl font-bold text-amber-700 dark:text-amber-400">
+              <div className="text-xl font-bold text-warning-strong">
                 {condicionaisList.filter((c: any) => c.status === "due_today" || c.status === "overdue").length}
               </div>
               <div className="text-xs text-muted-foreground">Malas vencendo hoje ou atrasadas</div>
@@ -960,7 +960,7 @@ Assinatura da Loja (Consignante)`;
 
           {/* Filtros e Busca de Condicionais */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 p-1 rounded-lg bg-muted/60 border border-border/50 overflow-x-auto scroll-area-carousel">
+            <div className="flex items-center gap-2 p-1 rounded-lg bg-muted border border-border overflow-x-auto scroll-area-carousel">
               {(
                 [
                   { key: "all", label: "Todas" },
@@ -976,7 +976,7 @@ Assinatura da Loja (Consignante)`;
                   onClick={() => setCondicionaisFilter(f.key)}
                   className={cn("px-4 min-h-11 h-11 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                     condicionaisFilter === f.key
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-card border border-border text-foreground"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -991,7 +991,7 @@ Assinatura da Loja (Consignante)`;
                 placeholder="Buscar cliente ou mala..."
                 value={condicionaisSearch}
                 onChange={(e) => setCondicionaisSearch(e.target.value)}
-                className="pl-9 h-11 min-h-11 text-xs rounded-lg bg-card border-border/60"
+                className="pl-9 h-11 min-h-11 text-xs rounded-lg bg-card border-border"
               />
             </div>
           </div>
@@ -1036,7 +1036,7 @@ Assinatura da Loja (Consignante)`;
                               </Badge>
                             )}
                             {isDueToday && (
-                              <Badge className="text-xs px-2 py-1 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              <Badge className="text-xs px-2 py-1 bg-muted text-warning-strong border border-border">
                                 Vence Hoje
                               </Badge>
                             )}

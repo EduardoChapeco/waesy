@@ -441,7 +441,7 @@ export function StoreVitrineSectionsEditor({
       </div>
 
       {/* Barra de Ação Inferior In-Page (Sticky z-30) */}
-      <div className="sticky bottom-0 z-30 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 p-4 rounded-b-lg border-t border-border/60 bg-background/95 backdrop-blur-md flex items-center justify-end gap-3">
+      <div className="sticky bottom-0 z-30 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 p-4 rounded-b-lg border-t border-border bg-background flex items-center justify-end gap-3">
         <Button
           type="button"
           variant="outline"

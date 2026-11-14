@@ -154,11 +154,11 @@ export function CampaignDraftCard({
             Prévia ilustrativa (não publicada)
           </span>
 
-          <div className="w-full max-w-85 rounded-lg border border-border/90 bg-background overflow-hidden text-xs">
+          <div className="w-full max-w-85 rounded-lg border border-border bg-background overflow-hidden text-xs">
             {/* Top Bar do Anúncio Instagram */}
-            <div className="p-3 flex items-center justify-between border-b border-border/40">
+            <div className="p-3 flex items-center justify-between border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="size-8 rounded-full border border-primary/40 p-[1.5px]">
+                <div className="size-8 rounded-full border-2 border-primary p-0.5">
                   <div className="size-full rounded-full bg-background flex items-center justify-center overflow-hidden">
                     <span className="text-2xs font-bold text-foreground">
                       {(payload.creative.sponsorHandle || "W")[0].toUpperCase()}
@@ -187,8 +187,8 @@ export function CampaignDraftCard({
             </div>
 
             {/* Barra de Ação Patrocinada Instantânea (CTA Bar) */}
-            <div className="p-3 px-3 bg-muted/60 border-t border-b border-border/40 flex items-center justify-between">
-              <span className="font-bold text-xs text-foreground truncate max-w-52">
+            <div className="p-3 px-3 bg-muted border-t border-b border-border flex items-center justify-between">
+              <span className="font-bold text-xs text-foreground line-clamp-1 max-w-52">
                 {ctaLabel}
               </span>
               <ChevronRight className="size-4 text-muted-foreground" />
@@ -221,9 +221,9 @@ export function CampaignDraftCard({
 
         {/* COLUNA DIREITA: TELEMETRIA, ESTIMATIVAS & CONTROLES */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="flex items-center justify-between pb-1 border-b border-border/60">
+          <div className="flex items-center justify-between pb-1 border-b border-border">
             <div>
-              <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">{campaignTitle}</h3>
+              <h3 className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate">{campaignTitle}</h3>
               <p className="text-xs text-muted-foreground">
                 Rascunho baseado no briefing informado; copy e parâmetros ainda não foram testados.
               </p>

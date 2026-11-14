@@ -460,7 +460,7 @@ export function ProductCatalogPricingSheet({
         </div>
 
         {/* ── Footer de Ação ── */}
-        <div className="p-4 border-t border-border/40 flex items-center justify-end gap-3 shrink-0 bg-background/95 backdrop-blur-md">
+        <div className="p-4 border-t border-border flex items-center justify-end gap-3 shrink-0 bg-background">
           <Button
             type="button"
             variant="outline"

@@ -897,9 +897,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
             {/* Floating Action Bar (Batch Operations Thumb Zone) */}
             {selectedProductIds.length > 0 && (
-              <div className="sticky bottom-4 z-40 p-3 rounded-lg border border-border/60 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
+              <div className="sticky bottom-4 z-30 p-3 rounded-lg border border-border bg-background flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono text-xs px-2 py-1 rounded-full border-primary/40 bg-primary/10 text-primary font-bold">
+                  <Badge variant="outline" className="font-mono text-xs px-2 py-1 rounded-full border-border bg-muted text-foreground font-bold">
                     {selectedProductIds.length} selecionado{selectedProductIds.length > 1 ? "s" : ""}
                   </Badge>
                   <Button

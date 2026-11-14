@@ -254,7 +254,7 @@ export function DepartamentoVerticalPage() {
       </header>
 
       {/* ── Grade de Produtos ── */}
-      <main className="max-w-5xl mx-auto px-4 py-4 space-y-4">
+      <main className="max-w-5xl mx-auto px-0 sm:px-4 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-muted-foreground">
             {filteredProducts.length} itens disponíveis

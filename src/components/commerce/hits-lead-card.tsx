@@ -36,7 +36,7 @@ export function HitsLeadCard({
       to={actionTo as any}
       aria-label={ariaLabel}
       className={cn(
-        "group relative overflow-hidden rounded-lg bg-card w-56 sm:w-64 h-96 min-h-96 transition-transform duration-200 duration-200 active:scale-95 select-none block shrink-0 snap-start border border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+        "group relative overflow-hidden rounded-lg bg-card w-56 sm:w-64 h-96 min-h-96 transition-transform duration-200 active:scale-95 select-none block shrink-0 snap-start border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         className
       )}
     >
@@ -56,28 +56,28 @@ export function HitsLeadCard({
           />
         </div>
       ) : (
-        <div className={`size-full bg-linear-to-br ${gradient} flex flex-col justify-between p-4 text-foreground`}>
+        <div className={cn("size-full bg-neutral-900 flex flex-col justify-between p-4 text-neutral-50", gradient && "bg-neutral-900")}>
           {badge ? (
-            <span className="self-start px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-card/20 backdrop-blur-md border border-white/25 text-foreground shadow-xs">
+            <span className="self-start px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-card border border-border text-foreground">
               {badge}
             </span>
           ) : (
-            <div className="size-10 sm:size-12 rounded-lg bg-card/20 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="size-10 sm:size-12 rounded-lg bg-card border border-border flex items-center justify-center group-hover:scale-105 transition-transform">
               <span className="text-foreground font-black text-lg sm:text-xl font-mono">#1</span>
             </div>
           )}
 
           {title ? (
             <div className="space-y-1 z-10">
-              <h3 className="font-extrabold text-sm sm:text-base leading-tight  text-foreground line-clamp-2">
+              <h3 className="font-extrabold text-sm sm:text-base leading-tight text-neutral-50 line-clamp-2">
                 {title}
               </h3>
               {subtitle && (
-                <p className="text-xs text-foreground/80 line-clamp-2 leading-relaxed drop-shadow-xs">
+                <p className="text-xs text-neutral-200 line-clamp-2 leading-relaxed">
                   {subtitle}
                 </p>
               )}
-              <div className="pt-1 flex items-center gap-1 text-xs font-bold text-foreground/95 group-hover:translate-x-1 transition-transform">
+              <div className="pt-1 flex items-center gap-1 text-xs font-bold text-neutral-50 group-hover:translate-x-1 transition-transform">
                 <span>{actionLabel}</span>
                 <ArrowRight className="size-4" />
               </div>
@@ -86,24 +86,24 @@ export function HitsLeadCard({
         </div>
       )}
 
-      {/* Se houver coverImage e title, exibe gradiente de sobreposição com textos */}
+      {/* Se houver coverImage e title, exibe sobreposição escura sólida para leitura */}
       {coverImage && title && (
-        <div className="absolute inset-0 bg-black/60 p-4 sm:p-4 flex flex-col justify-between text-foreground">
+        <div className="absolute inset-0 bg-neutral-950/70 p-4 flex flex-col justify-between text-neutral-50">
           {badge && (
-            <span className="self-start px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-card/20 backdrop-blur-md border border-white/25 text-foreground">
+            <span className="self-start px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-card border border-border text-foreground">
               {badge}
             </span>
           )}
           <div className="space-y-1">
-            <h3 className="font-extrabold text-sm sm:text-base leading-tight  text-foreground line-clamp-2">
+            <h3 className="font-extrabold text-sm sm:text-base leading-tight text-neutral-50 line-clamp-2">
               {title}
             </h3>
             {subtitle && (
-              <p className="text-xs text-foreground/80 line-clamp-2 leading-relaxed drop-shadow-xs">
+              <p className="text-xs text-neutral-200 line-clamp-2 leading-relaxed">
                 {subtitle}
               </p>
             )}
-            <div className="pt-1 flex items-center gap-1 text-xs font-bold text-foreground/95 group-hover:translate-x-1 transition-transform">
+            <div className="pt-1 flex items-center gap-1 text-xs font-bold text-neutral-50 group-hover:translate-x-1 transition-transform">
               <span>{actionLabel}</span>
               <ArrowRight className="size-3.5" />
             </div>

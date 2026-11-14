@@ -351,7 +351,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
           aria-label="Foto ampliada da acomodação"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Escape') setSelectedImage(null); }}
-          className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-4 backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => setSelectedImage(null)}
         >
           <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */
@@ -363,7 +363,7 @@ export const TravelProductDetail: React.FC<TravelProductDetailProps> = ({
             <button
               type="button"
               onClick={() => setSelectedImage(null)}
-              className="absolute top-3 right-3 size-11 flex items-center justify-center bg-background/80 hover:bg-background text-foreground rounded-full border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+              className="absolute top-3 right-3 size-11 flex items-center justify-center bg-card hover:bg-muted text-foreground rounded-full border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               aria-label="Fechar galeria"
             >
               <X className="size-4" aria-hidden="true" />

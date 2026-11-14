@@ -437,7 +437,7 @@ function CustomerConversationsIndexPage() {
       {/* ── Coluna Esquerda: Lista de Conversas (100% Mobile / Sidebar no Desktop) ── */}
       <div className="w-full lg:w-96 h-full flex flex-col overflow-y-auto no-scrollbar space-y-3 pb-24 lg:pb-6 px-0 lg:border-r lg:border-border/60 shrink-0">
       {/* ── Header Minimalista Padronizado (Voltar + Hambúrguer SuperApp + LocationMasterPill + Busca/Notificações) ── */}
-      <header className="flex items-center justify-between gap-2 border-b border-border/40 px-3 py-2 sticky top-0 z-20 bg-background/95 backdrop-blur-md">
+      <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2 sticky top-0 z-20 bg-background">
         <div className="flex items-center gap-1 min-w-0 flex-1">
           <Link
             to="/"

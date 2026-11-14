@@ -115,6 +115,14 @@ export async function trackAndOpenWhatsApp(
     originUrl = window.location.href;
   }
 
+  let attr: Record<string, any> = {};
+  try {
+    const { collectClientAttribution } = await import("@/lib/attribution-collector");
+    attr = collectClientAttribution();
+  } catch {
+    attr = {};
+  }
+
   try {
     // Validação estrita server-side: visitante DEVE estar logado
     const check = await getProtectedWhatsAppContact({
@@ -127,6 +135,26 @@ export async function trackAndOpenWhatsApp(
         custom_message: params.customMessage || params.message || null,
         origin_url: originUrl,
         niche: params.niche || null,
+        utm_source: attr.utmSource || null,
+        utm_medium: attr.utmMedium || null,
+        utm_campaign: attr.utmCampaign || null,
+        utm_content: attr.utmContent || null,
+        utm_term: attr.utmTerm || null,
+        fbclid: attr.fbclid || null,
+        fbp: attr.fbp || null,
+        fbc: attr.fbc || null,
+        gclid: attr.gclid || null,
+        ttclid: attr.ttclid || null,
+        ctwa_clid: attr.ctwaClid || null,
+        ad_id: attr.adId || null,
+        adset_id: attr.adsetId || null,
+        campaign_id: attr.campaignId || null,
+        creative_id: attr.creativeId || null,
+        form_id: attr.formId || null,
+        landing_url: attr.landingUrl || null,
+        referrer: attr.referrer || null,
+        device_id: attr.deviceId || null,
+        visitor_id: attr.deviceId || null,
       },
     });
 
@@ -147,45 +175,17 @@ export async function trackAndOpenWhatsApp(
     }
 
     if (check.targetUrl && typeof window !== "undefined") {
-      // Dispara telemetria de conversão (Meta Pixel client-side)
+      // Dispara telemetria de conversão (Meta Pixel client-side com deduplicação por eventID)
       if (typeof (window as any).fbq === "function") {
-        (window as any).fbq("track", "Contact", {
-          content_name: params.entityTitle,
-          content_category: params.entityType,
-        });
-      }
-
-      // Dispara telemetria server-side (Meta CAPI) se vinculado a uma loja
-      if (params.storeId) {
-        import("@/lib/attribution-collector")
-          .then(({ collectClientAttribution }) => {
-            const attr = collectClientAttribution();
-            return import("@/services/pixels.functions").then(({ dispatchMetaCapiEvent }) => {
-              dispatchMetaCapiEvent({
-                data: {
-                  storeId: params.storeId!,
-                  eventName: "Contact",
-                  eventId: `contact_${check.leadCode}`,
-                  eventSourceUrl: originUrl || attr.landingUrl || undefined,
-                  userData: {
-                    fbp: attr.fbp,
-                    fbc: attr.fbc,
-                    clientUserAgent: attr.userAgent,
-                  },
-                  customData: {
-                    entity_type: params.entityType,
-                    entity_title: params.entityTitle || undefined,
-                    lead_code: check.leadCode,
-                    device_id: attr.deviceId,
-                    gclid: attr.gclid,
-                    utm_source: attr.utmSource,
-                    utm_campaign: attr.utmCampaign,
-                  },
-                },
-              }).catch(() => {});
-            });
-          })
-          .catch(() => {});
+        (window as any).fbq(
+          "track",
+          "Contact",
+          {
+            content_name: params.entityTitle,
+            content_category: params.entityType,
+          },
+          check.leadCode ? { eventID: `contact_${check.leadCode}` } : undefined,
+        );
       }
 
       window.open(check.targetUrl, "_blank", "noopener,noreferrer");

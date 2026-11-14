@@ -216,7 +216,7 @@ export function SupermarketProductDetailModal({
                   onClick={() => setUnitMode("kg")}
                   className={cn(
                     "h-11 min-h-11 rounded-lg text-xs font-bold transition flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    unitMode === "kg" ? "bg-emerald-600 text-white font-extrabold shadow-overlay" : "text-muted-foreground hover:text-foreground",
+                    unitMode === "kg" ? "bg-emerald-700 text-neutral-50 font-extrabold" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Peso (Kg)
@@ -375,9 +375,9 @@ export function SupermarketProductDetailModal({
         </div>
 
         {/* ── Footer Sticky com Stepper de Quantidade e CTA (Piso 44px) ── */}
-        <div className="p-4 border-t border-border/40 bg-background/95 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
+        <div className="p-4 border-t border-border bg-background flex items-center justify-between gap-3 shrink-0">
           {/* Stepper de Quantidade */}
-          <div className="flex items-center border border-border/60 rounded-xl h-11 min-h-11 px-1 bg-muted/30">
+          <div className="flex items-center border border-border rounded-xl h-11 min-h-11 px-1 bg-muted">
             <button
               type="button"
               disabled={quantity <= 1}

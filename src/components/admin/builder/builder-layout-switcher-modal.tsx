@@ -70,7 +70,7 @@ export function BuilderLayoutSwitcherModal({
  const currentVariant = currentNode.layout_rules?.variant || "grid";
 
 	 return (
-	 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay backdrop-blur-xs select-none animate-in fade-in duration-150 motion-reduce:animate-none motion-reduce:transition-none">
+	 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay select-none animate-in fade-in duration-150 motion-reduce:animate-none motion-reduce:transition-none">
 	 <div
 	 role="dialog"
 	 aria-modal="true"
@@ -78,10 +78,10 @@ export function BuilderLayoutSwitcherModal({
 	 aria-describedby="builder-layout-switcher-modal-description"
 	 className="w-full max-w-lg bg-card border border-border rounded-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none"
 	 >
- {/* Cabeçalho do Seletor (Wix Pro Gallery Standard — Imagem 2) */}
- <div className="p-5 border-b border-border/70 flex items-center justify-between bg-muted/20">
+ {/* Cabeçalho do Seletor */}
+ <div className="p-5 border-b border-border flex items-center justify-between bg-muted">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+ <div className="size-9 rounded-lg bg-background text-primary flex items-center justify-center border border-border">
  <LayoutGrid className="size-5" />
  </div>
  <div>

@@ -85,7 +85,7 @@ export function EventDetailMobile({
           {isOwner && (
             <Link
               to="/workspace/eventos"
-              className="size-11 min-h-11 min-w-11 rounded-full bg-amber-50 dark:bg-amber-950 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 flex items-center justify-center border border-amber-200 dark:border-amber-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 min-h-11 min-w-11 rounded-full bg-card hover:bg-muted text-foreground flex items-center justify-center border border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Editar Evento"
             >
               <PencilSimple size={20} weight="bold" />
@@ -126,9 +126,9 @@ export function EventDetailMobile({
 
       {/* ── 2. Owner Mode Banner (se aplicável) ── */}
       {isOwner && (
-        <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
+        <div className="bg-muted border-b border-border px-4 py-2 flex items-center justify-between text-xs text-warning-strong">
           <div className="flex items-center gap-2">
-            <span className="inline-block size-2 rounded-full bg-amber-600 dark:bg-amber-400" />
+            <span className="inline-block size-2 rounded-full bg-warning" />
             <span className="font-semibold">Modo Organizador Ativo</span>
           </div>
           <Link
@@ -466,7 +466,7 @@ export function EventDetailMobile({
                   partner.nivel === "diamante"
                     ? "border-violet-200 dark:border-violet-800 text-violet-800 dark:text-violet-200 bg-violet-50 dark:bg-violet-950"
                     : partner.nivel === "ouro"
-                    ? "border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950"
+                    ? "border-border text-warning-strong bg-muted"
                     : partner.nivel === "bronze"
                     ? "border-orange-200 dark:border-orange-800 text-orange-800 dark:text-orange-200 bg-orange-50 dark:bg-orange-950"
                     : "border-border text-foreground bg-muted";

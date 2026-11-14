@@ -1,11 +1,26 @@
 /**
  * Template 4: Apresentação Guiada (Paisagem / Slides)
- * Focado em visualização na tela (16:9 ou A4 Landscape), com fotos enormes e slides separados.
+ * Focado em visualização em lâminas (16:9, A4 Paisagem ou formatos adaptativos), com contraste WCAG AA/AAA.
  */
+import type React from "react";
 import { type Proposal } from "@/services/proposals";
+import type { ProposalCanvasFormat } from "@/services/travel-proposal.functions";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Plane, Hotel, Compass, Check, X, MapPin, Calendar, FileText, PhoneCall, Car, Utensils } from "lucide-react";
+import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
+import {
+  Plane,
+  Hotel,
+  Compass,
+  Check,
+  X,
+  MapPin,
+  Calendar,
+  FileText,
+  PhoneCall,
+  Car,
+  Utensils,
+} from "lucide-react";
 import { DocumentPage } from "./blocks/UI";
 
 interface TemplateProps {
@@ -15,13 +30,28 @@ interface TemplateProps {
 
 export default function TemplateLandscape({ proposal: p, agency }: TemplateProps) {
   const vm = buildBaseViewModel(p, agency);
-  const brand = vm.agency.brand_color;
-  const fallbackBrand = String.fromCharCode(35) + "18181b";
-  const defaultSky = String.fromCharCode(35) + "38bdf8";
-  const activeAccent = brand && brand !== fallbackBrand ? brand : defaultSky;
-  const format = (p.canvas_format as "a4-landscape" | "presentation-169") || "a4-landscape";
+  const raw = p as unknown as Record<string, any>;
+  const theme = resolveProposalCanvasTheme(
+    { ...raw, template: raw.template || "landscape-presentation" },
+    vm.agency,
+  );
+  const format: ProposalCanvasFormat =
+    (p.canvas_format as ProposalCanvasFormat) || "a4-landscape";
+  const isWideFormat = format === "a4-landscape" || format === "presentation-169";
 
-  // Agrupamento de dias do roteiro para caber em slides individuais
+  const customEntries: Array<{ key: string; label: string; value: string }> = Array.isArray(
+    raw.custom_field_entries,
+  )
+    ? raw.custom_field_entries
+    : [];
+  const hasConditions = Boolean(
+    raw.boarding_requirements ||
+      raw.cancellation_policy ||
+      p.terms ||
+      customEntries.length > 0,
+  );
+
+  // Agrupamento de dias do roteiro para caber em lâminas individuais
   const itineraryDays = p.itinerary || [];
   const daysPerSlide = format === "presentation-169" ? 3 : 2;
   const itinerarySlides: any[][] = [];
@@ -29,7 +59,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
     itinerarySlides.push(itineraryDays.slice(i, i + daysPerSlide));
   }
 
-  // Agrupamento de hotéis para caber em slides individuais (2 por slide)
+  // Agrupamento de hotéis (2 por lâmina)
   const hotelsList = p.hotels || [];
   const hotelsPerSlide = 2;
   const hotelSlides: any[][] = [];
@@ -37,7 +67,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
     hotelSlides.push(hotelsList.slice(i, i + hotelsPerSlide));
   }
 
-  // Agrupamento de voos para caber em slides individuais (4 por slide)
+  // Agrupamento de voos (4 por lâmina)
   const flightsList = p.flights || [];
   const flightsPerSlide = 4;
   const flightSlides: any[][] = [];
@@ -46,138 +76,181 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
   }
 
   return (
-    <div className="flex flex-col bg-slate-950 font-sans text-slate-100 select-text">
+    <div
+      style={theme.cssVars as React.CSSProperties}
+      className="flex flex-col p-canvas-root p-body-font select-text divide-y p-border-main"
+    >
       {/* ─── SLIDE 1: CAPA ─── */}
-      <DocumentPage format={format} className="relative flex-col bg-slate-900 border-none">
-        {p.cover_image_url && (
-          <img
-            src={p.cover_image_url}
-            crossOrigin="anonymous"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+      <DocumentPage format={format} className="relative flex-col justify-between p-10 sm:p-14">
+        {p.cover_image_url ? (
+          <>
+            <img
+              src={p.cover_image_url}
+              alt={p.title || "Capa"}
+              crossOrigin="anonymous"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 p-surface-hero-overlay" />
+          </>
+        ) : (
+          <div className="absolute inset-0 p-surface-subtle" />
         )}
-        {/* Degradê escuro sobreposto */}
-        <div className="absolute inset-0 bg-slate-950/70" />
 
         {/* Logo / Nome da Agência no Topo */}
-        <div className="absolute top-10 left-10 z-10">
+        <div className="relative z-10 flex items-center justify-between gap-4">
           {vm.agency.logo_url ? (
             <img
               src={vm.agency.logo_url}
               crossOrigin="anonymous"
-              alt="Logo"
-              className="h-12 w-auto max-w-45 aspect-banner-ultrawide object-contain brightness-0 invert"
-              width={180}
+              alt={vm.agency.name}
+              className="h-12 w-auto max-w-44 object-contain"
+              width={176}
               height={48}
             />
           ) : (
-            <div className="text-2xl font-black uppercase tracking-tight text-foreground">
+            <div
+              className={`text-2xl font-bold uppercase tracking-tight ${p.cover_image_url ? "p-text-on-dark" : "p-text-ink"}`}
+            >
               {vm.agency.name}
+            </div>
+          )}
+          <div
+            className={`text-right ${p.cover_image_url ? "p-text-on-dark-muted" : "p-text-muted"}`}
+          >
+            <div className="text-xs font-bold uppercase tracking-widest">Lâmina Executiva</div>
+            <div className="text-base font-mono font-bold p-text-brand">#{p.number}</div>
+          </div>
+        </div>
+
+        {/* Informações da Capa */}
+        <div className="relative z-10 max-w-4xl space-y-5 my-auto py-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest p-surface-brand-soft border p-border-brand">
+            <Compass className="size-3.5 p-text-brand" />
+            <span>Apresentação Exclusiva · Proposta #{p.number}</span>
+          </div>
+
+          <h1
+            className={`text-4xl sm:text-6xl font-bold tracking-tight leading-tight p-heading-font ${p.cover_image_url ? "p-text-on-dark" : "p-text-ink"}`}
+          >
+            {p.title || p.destination || "Seu Próximo Destino"}
+          </h1>
+
+          {p.destination && p.title && (
+            <p
+              className={`text-xl font-medium ${p.cover_image_url ? "p-text-on-dark-muted" : "p-text-muted"}`}
+            >
+              {p.destination}
+            </p>
+          )}
+
+          {theme.isSectionVisible("summary") && (
+            <div
+              className={`flex flex-wrap items-center gap-6 text-sm sm:text-base pt-4 font-medium ${p.cover_image_url ? "p-text-on-dark-muted" : "p-text-muted"}`}
+            >
+              <span className="flex items-center gap-2">
+                <Calendar className="size-4 p-text-brand" />
+                {p.travel_start ? formatDate(p.travel_start) : "Data a definir"}
+                {p.travel_end ? ` — ${formatDate(p.travel_end)}` : ""}
+              </span>
+              <span>·</span>
+              <span>
+                Cliente:{" "}
+                <strong className={p.cover_image_url ? "p-text-on-dark" : "p-text-ink"}>
+                  {vm.client?.name || "—"}
+                </strong>
+              </span>
+              <span>·</span>
+              <span>
+                Viajantes:{" "}
+                <strong className={p.cover_image_url ? "p-text-on-dark" : "p-text-ink"}>
+                  {vm.totalPax} pax
+                </strong>
+              </span>
             </div>
           )}
         </div>
 
-        {/* Informações da Capa */}
-        <div className="absolute inset-0 flex flex-col justify-end p-16 z-10">
-          <div className="max-w-4xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full ds-label-caps glass-dark backdrop-blur-md border border-border">
-              <Compass
-                className="w-3.5 h-3.5 text-brand"
-                /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                style={{ color: activeAccent }}
-              />
-              Apresentação Exclusiva · Proposta #{p.number}
-            </div>
-
-            <h1 className="text-7xl font-black tracking-tight leading-none text-foreground shadow-none">
-              {p.destination || p.title || "Seu Próximo Destino"}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-6 text-lg text-slate-200 pt-2 font-medium">
-              <span className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 opacity-70" />
-                {p.travel_start ? formatDate(p.travel_start) : ""} —{" "}
-                {p.travel_end ? formatDate(p.travel_end) : ""}
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-              <span>
-                Cliente: <strong className="text-foreground">{vm.client?.name || "—"}</strong>
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-              <span>
-                Passageiros: <strong className="text-foreground">{vm.totalPax} pax</strong>
-              </span>
-            </div>
-          </div>
+        <div
+          className={`relative z-10 flex justify-between items-center text-xs border-t pt-4 p-border-subtle ${p.cover_image_url ? "p-text-on-dark-muted" : "p-text-faint"}`}
+        >
+          <span>{vm.agency.name}</span>
+          <span>{p.valid_until ? `Válida até ${formatDate(p.valid_until)}` : `Ref #${p.number}`}</span>
         </div>
       </DocumentPage>
 
       {/* ─── SLIDES 2+: ROTEIRO DIA-A-DIA ─── */}
-      {vm.hasItinerary &&
+      {theme.isSectionVisible("itinerary") &&
+        vm.hasItinerary &&
         itinerarySlides.map((slideDays, slideIdx) => (
           <DocumentPage
-            key={slideIdx}
+            key={`itin-${slideIdx}`}
             format={format}
-            className="bg-slate-900 border-none p-12 justify-between"
+            className="p-10 sm:p-12 justify-between"
           >
             <div>
               {/* Header do Slide */}
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+              <div className="flex justify-between items-center border-b p-border-main pb-4 mb-8">
                 <div className="flex items-center gap-3">
-                  <Compass
-                    className="w-6 h-6 text-brand"
-                    /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                    style={{ color: activeAccent }}
-                  />
-                  <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  <Compass className="size-6 p-text-brand" />
+                  <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
                     Cronograma da Viagem
                   </h2>
                 </div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Roteiro · Slide {slideIdx + 1} de {itinerarySlides.length}
+                <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
+                  Roteiro · Lâmina {slideIdx + 1} de {itinerarySlides.length}
                 </span>
               </div>
 
               {/* Grid de Dias */}
               <div
-                className={`grid ${format === "presentation-169" ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"} gap-8`}
+                className={`grid ${format === "presentation-169" ? "grid-cols-1 sm:grid-cols-3" : isWideFormat ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"} gap-6`}
               >
                 {slideDays.map((d: any, idx: number) => {
                   const absoluteDayNumber = slideIdx * daysPerSlide + idx + 1;
                   return (
                     <div
                       key={idx}
-                      className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-3"
+                      className="p-surface-card border p-border-main rounded-xl p-6 flex flex-col gap-3"
                     >
                       <div className="flex items-center gap-3">
-                        <span
-                          className="px-3 py-1 rounded-full text-xs font-black uppercase text-foreground shrink-0"
-                          /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                          style={{ backgroundColor: activeAccent }}
-                        >
-                          Dia {d.day || absoluteDayNumber}
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase p-surface-brand shrink-0">
+                          {d.day || `Dia ${absoluteDayNumber}`}
                         </span>
-                        <h4 className="font-bold text-lg text-foreground truncate">{d.title}</h4>
+                        <h4 className="font-bold text-lg p-text-ink truncate">{d.title}</h4>
                       </div>
-                      {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
+                      {Boolean(
+                        d.city ||
+                          d.location ||
+                          (d.meals && d.meals.length > 0) ||
+                          (d.included_meals && d.included_meals.length > 0),
+                      ) && (
                         <div className="flex flex-wrap items-center gap-2">
-                          {((d as any).city || (d as any).location) && (
-                            <span className="inline-flex items-center gap-1 text-xs text-slate-300 bg-slate-800/80 px-2 py-1 rounded-full font-medium">
-                              <MapPin className="size-3 text-slate-400" />
-                              {(d as any).city || (d as any).location}
+                          {Boolean(d.city || d.location) && (
+                            <span className="inline-flex items-center gap-1 text-xs p-text-muted p-surface-subtle border p-border-subtle px-3 py-1 rounded-full font-medium">
+                              <MapPin className="size-3 p-text-brand" />
+                              {d.city || d.location}
                             </span>
                           )}
-                          {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
-                            <span className="inline-flex items-center gap-1 text-xs text-slate-300 bg-slate-800/80 px-2 py-1 rounded-full font-medium">
-                              <Utensils className="size-3 text-slate-400" />
-                              {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
+                          {Boolean(
+                            (d.meals && d.meals.length > 0) ||
+                              (d.included_meals && d.included_meals.length > 0),
+                          ) && (
+                            <span className="inline-flex items-center gap-1 text-xs p-text-muted p-surface-subtle border p-border-subtle px-3 py-1 rounded-full font-medium">
+                              <Utensils className="size-3 p-text-brand" />
+                              {Array.isArray(d.meals)
+                                ? d.meals.join(", ")
+                                : Array.isArray(d.included_meals)
+                                  ? d.included_meals.join(", ")
+                                  : d.meals || d.included_meals}
                             </span>
                           )}
                         </div>
                       )}
-                      <p className="text-slate-400 text-sm leading-relaxed overflow-y-auto max-h-55 pr-2 whitespace-pre-wrap">
-                        {d.description}
-                      </p>
+                      {d.description && (
+                        <p className="p-text-muted text-sm leading-relaxed whitespace-pre-wrap">
+                          {d.description}
+                        </p>
+                      )}
                     </div>
                   );
                 })}
@@ -185,7 +258,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
             </div>
 
             {/* Footer do Slide */}
-            <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
+            <div className="flex justify-between items-center text-xs p-text-faint border-t p-border-subtle pt-4 mt-8">
               <span>{vm.agency.name} · Planejamento Comercial</span>
               <span>Proposta #{p.number}</span>
             </div>
@@ -193,65 +266,66 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
         ))}
 
       {/* ─── SLIDES: HOSPEDAGEM ─── */}
-      {vm.hasHotels &&
+      {theme.isSectionVisible("hotels") &&
+        vm.hasHotels &&
         hotelSlides.map((slideHotels, slideIdx) => (
           <DocumentPage
-            key={slideIdx}
+            key={`hotel-${slideIdx}`}
             format={format}
-            className="bg-slate-900 border-none p-12 justify-between"
+            className="p-10 sm:p-12 justify-between"
           >
             <div>
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+              <div className="flex justify-between items-center border-b p-border-main pb-4 mb-8">
                 <div className="flex items-center gap-3">
-                  <Hotel className="w-6 h-6 text-warning-strong" />
-                  <h2 className="text-2xl font-black tracking-tight text-foreground">
-                    Onde você vai ficar
+                  <Hotel className="size-6 p-text-brand" />
+                  <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
+                    Hospedagem Selecionada
                   </h2>
                 </div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Hospedagem Premium · Slide {slideIdx + 1} de {hotelSlides.length}
+                <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
+                  Hospedagem · Lâmina {slideIdx + 1} de {hotelSlides.length}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-8">
+              <div className={`grid ${isWideFormat ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"} gap-6`}>
                 {slideHotels.map((h, i) => (
                   <div
                     key={i}
-                    className="bg-slate-800/30 border border-slate-800 rounded-lg p-6 flex gap-6"
+                    className="p-surface-card border p-border-main rounded-xl p-6 flex flex-col sm:flex-row gap-6"
                   >
                     {h.images?.[0] && (
-                      <div className="w-44 h-44 shrink-0 rounded-lg overflow-hidden border border-slate-700 bg-slate-950">
+                      <div className="w-full sm:w-40 h-40 shrink-0 rounded-lg overflow-hidden border p-border-subtle p-surface-subtle">
                         <img
                           src={h.images[0]}
+                          alt={h.name}
                           crossOrigin="anonymous"
                           className="w-full h-full object-cover"
                         />
                       </div>
                     )}
-                    <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex-1 flex flex-col justify-between gap-4">
                       <div>
-                        <h4 className="text-xl font-bold text-foreground mb-1">{h.name}</h4>
-                        <div
-                          className="text-xs font-bold text-brand uppercase tracking-wider mb-4"
-                          /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                          style={{ color: activeAccent }}
-                        >
-                          {h.city}
-                        </div>
-                        <div className="text-xs text-slate-400 space-y-1">
+                        <h4 className="text-xl font-bold p-text-ink mb-1">{h.name}</h4>
+                        {h.city && (
+                          <div className="text-xs font-bold p-text-brand uppercase tracking-wider mb-3">
+                            {h.city}
+                          </div>
+                        )}
+                        <div className="text-xs p-text-muted space-y-2">
                           <div>
-                            <strong>Período:</strong> {formatDate(h.checkin)} a{" "}
-                            {formatDate(h.checkout)}
+                            <strong className="p-text-ink">Período:</strong>{" "}
+                            {h.checkin ? formatDate(h.checkin) : "—"} a{" "}
+                            {h.checkout ? formatDate(h.checkout) : "—"}
                           </div>
                           <div>
-                            <strong>Acomodação:</strong>{" "}
+                            <strong className="p-text-ink">Acomodação:</strong>{" "}
                             {h.rooms?.[0]
-                              ? h.rooms.map((r: any) => `${r.qty}x ${r.type}`).join(", ")
+                              ? h.rooms.map((r: any) => `${r.qty || 1}x ${r.type}`).join(", ")
                               : "Standard"}
                           </div>
                         </div>
                       </div>
-                      <div className="bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/60 text-center text-xs font-bold text-warning-strong self-start mt-2">
+                      <div className="p-surface-brand-soft px-3 py-1 rounded-lg border p-border-brand text-xs font-bold p-text-brand self-start">
                         Regime: {h.meal_plan || "Café da Manhã"}
                       </div>
                     </div>
@@ -260,7 +334,7 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               </div>
             </div>
 
-            <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
+            <div className="flex justify-between items-center text-xs p-text-faint border-t p-border-subtle pt-4 mt-8">
               <span>Hospedagem</span>
               <span>Cotação #{p.number}</span>
             </div>
@@ -268,60 +342,72 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
         ))}
 
       {/* ─── SLIDES: VOO ─── */}
-      {vm.hasFlights &&
+      {theme.isSectionVisible("flights") &&
+        vm.hasFlights &&
         flightSlides.map((slideFlights, slideIdx) => (
           <DocumentPage
-            key={slideIdx}
+            key={`flight-${slideIdx}`}
             format={format}
-            className="bg-slate-900 border-none p-12 justify-between"
+            className="p-10 sm:p-12 justify-between"
           >
             <div>
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+              <div className="flex justify-between items-center border-b p-border-main pb-4 mb-8">
                 <div className="flex items-center gap-3">
-                  <Plane className="w-6 h-6 text-blue-500" />
-                  <h2 className="text-2xl font-black tracking-tight text-foreground">Logística Aérea</h2>
+                  <Plane className="size-6 p-text-brand" />
+                  <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
+                    Logística Aérea
+                  </h2>
                 </div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Voos · Slide {slideIdx + 1} de {flightSlides.length}
+                <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
+                  Voos · Lâmina {slideIdx + 1} de {flightSlides.length}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-8">
+              <div className={`grid ${isWideFormat ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"} gap-6`}>
                 {slideFlights.map((f, i) => (
-                  <div key={i} className="bg-slate-800/30 border border-slate-800 rounded-lg p-6">
-                    <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
-                      <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+                  <div
+                    key={i}
+                    className="p-surface-card border p-border-main rounded-xl p-6"
+                  >
+                    <div className="flex justify-between items-center border-b p-border-subtle pb-3 mb-4">
+                      <span className="text-xs font-bold uppercase tracking-widest p-text-brand">
                         {f.airline_name || f.airline || "Companhia Aérea"}
                       </span>
-                      <span className="text-xs font-mono font-bold bg-slate-800 text-blue-400 px-2 py-1 rounded border border-slate-700">
-                        {f.flight_number || "Voo"}
+                      <span className="text-xs font-mono font-bold p-surface-subtle p-text-ink px-3 py-1 rounded border p-border-main">
+                        {f.flight_number || "Voo Confirmado"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-center py-2">
                       <div>
-                        <div className="text-4xl font-black text-foreground tracking-tight">
+                        <div className="text-3xl sm:text-4xl font-bold p-text-ink tracking-tight">
                           {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                         </div>
-                        <div className="text-xs font-bold text-slate-400 mt-1">
+                        <div className="text-xs font-bold p-text-muted mt-1">
                           {f.departure_time || "--:--"}
                         </div>
                       </div>
 
                       <div className="flex-1 px-6 relative flex flex-col items-center">
-                        <div className="w-full border-t border-dashed border-slate-700" />
-                        <span className="absolute -top-3.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-800 text-3xs font-black uppercase text-slate-500">
-                          {(f.stops_count ?? f.stops ?? 0) === 0 ? "Direto" : `${f.stops_count ?? f.stops} Parada${(f.stops_count ?? f.stops ?? 1) > 1 ? "s" : ""}`}
+                        <div className="w-full border-t border-dashed p-border-main" />
+                        <span className="-mt-3 p-surface-subtle px-3 py-1 rounded-full border p-border-main text-xs font-bold uppercase p-text-muted">
+                          {(f.stops_count ?? f.stops ?? 0) === 0
+                            ? "Direto"
+                            : `${f.stops_count ?? f.stops} Parada${(f.stops_count ?? f.stops ?? 1) > 1 ? "s" : ""}`}
                         </span>
-                        <span className="text-3xs text-slate-500 font-bold mt-2">
-                          {f.departure_date ? formatDate(f.departure_date) : f.date ? formatDate(f.date) : ""}
+                        <span className="text-xs p-text-faint font-semibold mt-2">
+                          {f.departure_date
+                            ? formatDate(f.departure_date)
+                            : f.date
+                              ? formatDate(f.date)
+                              : ""}
                         </span>
                       </div>
 
                       <div>
-                        <div className="text-4xl font-black text-foreground tracking-tight">
+                        <div className="text-3xl sm:text-4xl font-bold p-text-ink tracking-tight">
                           {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                         </div>
-                        <div className="text-xs font-bold text-slate-400 mt-1">
+                        <div className="text-xs font-bold p-text-muted mt-1">
                           {f.arrival_time || "--:--"}
                         </div>
                       </div>
@@ -331,269 +417,280 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
               </div>
             </div>
 
-            <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
+            <div className="flex justify-between items-center text-xs p-text-faint border-t p-border-subtle pt-4 mt-8">
               <span>Voos</span>
               <span>Cotação #{p.number}</span>
             </div>
           </DocumentPage>
         ))}
 
-      {/* ─── SLIDE: TRASLADOS & SERVIÇOS ─── */}
-      {vm.hasTransfers && (
-        <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
-          <div>
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+      {/* ─── SLIDE: TRASLADOS & PASSEIOS ─── */}
+      {((theme.isSectionVisible("transfers") && vm.hasTransfers) ||
+        (theme.isSectionVisible("tours") && vm.hasTours)) && (
+        <DocumentPage format={format} className="p-10 sm:p-12 justify-between">
+          <div className="space-y-8">
+            <div className="flex justify-between items-center border-b p-border-main pb-4">
               <div className="flex items-center gap-3">
-                <Car
-                  className="w-6 h-6 text-brand"
-                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                  style={{ color: activeAccent }}
-                />
-                <h2 className="text-2xl font-black tracking-tight text-foreground">
-                  Traslados & Receptivo
+                <Car className="size-6 p-text-brand" />
+                <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
+                  Serviços Terrestres & Experiências
                 </h2>
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Logística Terrestre
+              <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
+                Receptivo & Passeios
               </span>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {p.transfers!.map((t, idx) => (
-                <div
-                  key={idx}
-                  className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-foreground font-bold text-base">{t.description || "Transfer"}</span>
-                    <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-700 text-slate-200">
-                      {t.type === "shared" ? "Regular" : "Privativo"}
-                    </span>
+              {theme.isSectionVisible("transfers") &&
+                p.transfers?.map((t, idx) => (
+                  <div
+                    key={`tr-${idx}`}
+                    className="p-surface-card border p-border-main rounded-xl p-5 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="p-text-ink font-bold text-base">
+                        {t.description || "Transfer"}
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
+                        {t.type === "shared" ? "Regular" : "Privativo"}
+                      </span>
+                    </div>
+                    <div className="text-xs p-text-muted">
+                      {t.vehicle && (
+                        <span>
+                          Veículo: <strong className="p-text-ink">{t.vehicle}</strong>{" "}
+                        </span>
+                      )}
+                      {t.date && <span>· Data: {formatDate(t.date)}</span>}
+                    </div>
+                    {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
                   </div>
-                  <div className="text-xs text-slate-400">
-                    {t.vehicle && <span>Veículo: <strong className="text-slate-200">{t.vehicle}</strong> </span>}
-                    {t.date && <span>· Data: {formatDate(t.date)}</span>}
+                ))}
+
+              {theme.isSectionVisible("tours") &&
+                p.tours?.map((tour, idx) => (
+                  <div
+                    key={`to-${idx}`}
+                    className="p-surface-card border p-border-main rounded-xl p-5 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="p-text-ink font-bold text-base">
+                        {tour.description || (tour as any).title || "Passeio"}
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-subtle border p-border-subtle p-text-muted">
+                        Experiência
+                      </span>
+                    </div>
+                    {tour.date && (
+                      <div className="text-xs p-text-muted">Duração / Data: {tour.date}</div>
+                    )}
+                    {tour.notes && (
+                      <p className="text-xs p-text-faint whitespace-pre-wrap">{tour.notes}</p>
+                    )}
                   </div>
-                  {t.notes && <p className="text-xs text-slate-400 italic">{t.notes}</p>}
-                </div>
-              ))}
+                ))}
             </div>
           </div>
-          <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
-            <span>Traslados</span>
+
+          <div className="flex justify-between items-center text-xs p-text-faint border-t p-border-subtle pt-4 mt-8">
+            <span>Serviços e Receptivo</span>
             <span>Cotação #{p.number}</span>
           </div>
         </DocumentPage>
       )}
 
-      {/* ─── SLIDE: PASSEIOS & EXPERIÊNCIAS ─── */}
-      {vm.hasTours && (
-        <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
-          <div>
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+      {/* ─── SLIDE: INCLUSÕES / EXCLUSÕES & CONDIÇÕES ─── */}
+      {((theme.isSectionVisible("includes") && (vm.hasIncludes || vm.hasExcludes)) ||
+        (theme.isSectionVisible("conditions") && hasConditions)) && (
+        <DocumentPage format={format} className="p-10 sm:p-12 justify-between">
+          <div className="space-y-8">
+            <div className="flex justify-between items-center border-b p-border-main pb-4">
               <div className="flex items-center gap-3">
-                <Compass
-                  className="w-6 h-6 text-brand"
-                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                  style={{ color: activeAccent }}
-                />
-                <h2 className="text-2xl font-black tracking-tight text-foreground">
-                  Passeios & Experiências
+                <FileText className="size-6 p-text-brand" />
+                <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
+                  Inclusões & Condições Gerais
                 </h2>
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Atividades Especiais
+              <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
+                Escopo do Pacote
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {p.tours!.map((tour, idx) => (
-                <div
-                  key={idx}
-                  className="bg-slate-800/40 border border-slate-800 rounded-lg p-6 flex flex-col gap-2"
-                >
-                  <span className="text-foreground font-bold text-base">{tour.description || (tour as any).title || "Passeio"}</span>
-                  {tour.date && <div className="text-xs text-slate-400">Duração / Data: {tour.date}</div>}
-                  {tour.notes && <p className="text-xs text-slate-400 whitespace-pre-wrap">{tour.notes}</p>}
+
+            {theme.isSectionVisible("includes") && (vm.hasIncludes || vm.hasExcludes) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="p-surface-card border p-border-main rounded-xl p-6 space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-widest p-text-brand flex items-center gap-2 border-b p-border-subtle pb-2">
+                    <Check className="size-4" /> Serviços Inclusos
+                  </h4>
+                  <ul className="space-y-3">
+                    {p.includes?.map((inc, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm p-text-muted">
+                        <Check className="size-4 p-text-brand mt-1 shrink-0" />
+                        <span>{inc}</span>
+                      </li>
+                    ))}
+                    {(!p.includes || p.includes.length === 0) && (
+                      <li className="text-xs p-text-faint">Conforme roteiro descritivo.</li>
+                    )}
+                  </ul>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
-            <span>Passeios</span>
-            <span>Cotação #{p.number}</span>
-          </div>
-        </DocumentPage>
-      )}
 
-      {/* ─── SLIDE: INCLUSÕES / EXCLUSÕES ─── */}
-      {(vm.hasIncludes || vm.hasExcludes) && (
-        <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
-          <div>
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
-              <div className="flex items-center gap-3">
-                <FileText
-                  className="w-6 h-6 text-brand"
-                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                  style={{ color: activeAccent }}
-                />
-                <h2 className="text-2xl font-black tracking-tight text-foreground">Condições Gerais</h2>
+                <div className="p-surface-card border p-border-main rounded-xl p-6 space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-widest p-text-faint flex items-center gap-2 border-b p-border-subtle pb-2">
+                    <X className="size-4" /> Não Inclusos no Pacote
+                  </h4>
+                  <ul className="space-y-3">
+                    {p.excludes?.map((exc, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm p-text-muted">
+                        <X className="size-4 p-text-faint mt-1 shrink-0" />
+                        <span>{exc}</span>
+                      </li>
+                    ))}
+                    {(!p.excludes || p.excludes.length === 0) && (
+                      <li className="text-xs p-text-faint">Despesas extras de caráter pessoal.</li>
+                    )}
+                  </ul>
+                </div>
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Inclusões e Exclusões
-              </span>
-            </div>
+            )}
 
-            <div className="grid grid-cols-2 gap-12">
-              {/* Inclui */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-2 border-b border-emerald-500/20 pb-2">
-                  <Check className="w-4 h-4" /> Serviços Inclusos
-                </h4>
-                <ul className="space-y-3">
-                  {p.includes?.map((inc, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
-                      <Check className="w-4 h-4 text-emerald-500 mt-1 shrink-0" />
-                      {inc}
-                    </li>
-                  ))}
-                  {(!p.includes || p.includes.length === 0) && (
-                    <li className="text-xs text-slate-500">Nenhum detalhado.</li>
+            {theme.isSectionVisible("conditions") && hasConditions && (
+              <div className="p-surface-subtle border p-border-main rounded-xl p-5 space-y-3 text-xs p-text-muted">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {raw.boarding_requirements && (
+                    <div>
+                      <strong className="p-text-ink block mb-1">Requisitos de Embarque:</strong>
+                      <span className="whitespace-pre-line">{raw.boarding_requirements}</span>
+                    </div>
                   )}
-                </ul>
-              </div>
-
-              {/* Não inclui */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-bold uppercase tracking-widest text-rose-500 flex items-center gap-2 border-b border-rose-500/20 pb-2">
-                  <X className="w-4 h-4" /> Não Inclusos no Pacote
-                </h4>
-                <ul className="space-y-3">
-                  {p.excludes?.map((exc, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
-                      <X className="w-4 h-4 text-rose-500 mt-1 shrink-0" />
-                      {exc}
-                    </li>
-                  ))}
-                  {(!p.excludes || p.excludes.length === 0) && (
-                    <li className="text-xs text-slate-500">Itens extras de caráter pessoal.</li>
+                  {raw.cancellation_policy && (
+                    <div>
+                      <strong className="p-text-ink block mb-1">Política de Cancelamento:</strong>
+                      <span className="whitespace-pre-line">{raw.cancellation_policy}</span>
+                    </div>
                   )}
-                </ul>
+                </div>
+                {p.terms && <p className="p-text-faint whitespace-pre-line">{p.terms}</p>}
               </div>
-            </div>
+            )}
           </div>
 
-          <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-800/60 pt-4">
-            <span>Consulte nossa equipe em caso de dúvidas sobre cobranças extras</span>
+          <div className="flex justify-between items-center text-xs p-text-faint border-t p-border-subtle pt-4 mt-8">
+            <span>Consulte nossa equipe para personalizações adicionais</span>
             <span>Cotação #{p.number}</span>
           </div>
         </DocumentPage>
       )}
 
       {/* ─── SLIDE: INVESTIMENTO E ASSINATURA ─── */}
-      <DocumentPage format={format} className="bg-slate-900 border-none p-12 justify-between">
-        <div>
-          <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
-            <div className="flex items-center gap-3">
-              <Compass
-                className="w-6 h-6 text-brand"
-                /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                style={{ color: activeAccent }}
-              />
-              <h2 className="text-2xl font-black tracking-tight text-foreground">
-                Investimento e Condições
-              </h2>
-            </div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-              Resumo Financeiro
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-8 items-center">
-            {/* Valor Esquerda */}
-            <div className="col-span-2 space-y-2">
-              <span className="ds-label-caps text-slate-400 block">Valor Total da Viagem</span>
-              <div
-                className="text-7xl font-black tracking-tighter leading-none"
-                /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                style={{ color: activeAccent }}
-              >
-                {formatCurrency(vm.totals.total, p.currency)}
+      {theme.isSectionVisible("financial") && (
+        <DocumentPage format={format} className="p-10 sm:p-12 justify-between">
+          <div>
+            <div className="flex justify-between items-center border-b p-border-main pb-4 mb-8">
+              <div className="flex items-center gap-3">
+                <Compass className="size-6 p-text-brand" />
+                <h2 className="text-2xl font-bold tracking-tight p-text-ink p-heading-font">
+                  Investimento e Condições
+                </h2>
               </div>
-              {p.valid_until && (
-                <span className="text-xs font-bold text-warning-strong block pt-2">
-                  * Tarifa garantida até {formatDate(p.valid_until)}
+              <span className="text-xs font-bold p-text-faint uppercase tracking-widest">
+                Resumo Financeiro
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-8 items-center">
+              {/* Valor Esquerda */}
+              <div className="sm:col-span-2 space-y-2 p-surface-card border p-border-main rounded-2xl p-6">
+                <span className="text-xs uppercase font-bold tracking-widest p-text-faint block">
+                  Valor Total da Viagem
                 </span>
-              )}
-            </div>
-
-            {/* Condições de Pagamento Direita */}
-            <div className="col-span-3 grid grid-cols-2 gap-4">
-              <div className="bg-slate-800/40 border border-slate-800 rounded-lg p-5">
-                <span className="ds-label-caps text-slate-400 block mb-2">Cartão de Crédito</span>
-                <div className="text-2xl font-black text-foreground leading-none">
-                  {vm.totals.parcelasCartao}x de
+                <div className="text-4xl sm:text-5xl font-bold tracking-tight p-text-brand">
+                  {formatCurrency(vm.totals.total, p.currency)}
                 </div>
-                <div className="text-xl font-bold text-slate-200 mt-1">
-                  {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
-                </div>
-              </div>
-
-              <div
-                className="bg-card rounded-lg p-5 text-slate-950 border-2"
-                /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                style={{ borderColor: activeAccent }}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="ds-label-caps text-slate-500">Pix (À vista)</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-3xs font-black px-2 py-1 rounded">
-                    -{vm.totals.descontoPixPercentual}%
+                {p.valid_until && (
+                  <span className="text-xs font-semibold p-text-muted block pt-2">
+                    Tarifa válida até {formatDate(p.valid_until)}
                   </span>
-                </div>
-                <div className="text-2xl font-black leading-none">
-                  {formatCurrency(vm.totals.totalPix, p.currency)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer com Assinatura / Consultor */}
-        <div className="flex justify-between items-center border-t border-slate-800 pt-6">
-          {p.agent_name ? (
-            <div className="flex items-center gap-4">
-              {p.agent_photo_url ? (
-                <img
-                  src={p.agent_photo_url}
-                  alt={p.agent_name}
-                  crossOrigin="anonymous"
-                  className="w-14 h-14 rounded-full object-cover border-2 border-slate-800 shadow-none"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-slate-400">
-                  {p.agent_name.charAt(0)}
-                </div>
-              )}
-              <div>
-                <div className="ds-label-caps text-slate-500 mb-1">Consultor Comercial</div>
-                <div className="font-extrabold text-foreground text-base leading-snug">
-                  {p.agent_name}
-                </div>
-                {p.agent_whatsapp && (
-                  <div className="text-xs text-emerald-400 font-bold flex items-center gap-2 mt-1">
-                    <PhoneCall className="w-3.5 h-3.5" /> {p.agent_whatsapp}
-                  </div>
                 )}
               </div>
-            </div>
-          ) : (
-            <div className="text-slate-500 font-bold text-sm">{vm.agency.name}</div>
-          )}
 
-          <div className="text-right">
-            <span className="ds-label-caps text-slate-600 block mb-1">Token Autenticador</span>
-            <span className="font-mono text-xs text-slate-400">{p.public_token?.slice(0, 16)}</span>
+              {/* Condições de Pagamento Direita */}
+              <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-surface-card border p-border-main rounded-2xl p-6">
+                  <span className="text-xs uppercase font-bold tracking-widest p-text-faint block mb-2">
+                    Cartão de Crédito
+                  </span>
+                  <div className="text-2xl font-bold p-text-ink leading-none">
+                    {vm.totals.parcelasCartao}x de
+                  </div>
+                  <div className="text-xl font-bold p-text-muted mt-1">
+                    {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
+                  </div>
+                </div>
+
+                <div className="p-surface-brand-soft rounded-2xl p-6 border-2 p-border-brand">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-xs uppercase font-bold tracking-widest p-text-brand">
+                      PIX (À vista)
+                    </span>
+                    {vm.totals.descontoPixPercentual > 0 && (
+                      <span className="p-badge-success text-xs font-bold px-2 py-1 rounded-full">
+                        -{vm.totals.descontoPixPercentual}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-2xl font-bold p-text-brand leading-none">
+                    {formatCurrency(vm.totals.totalPix, p.currency)}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </DocumentPage>
+
+          {/* Footer com Assinatura / Consultor */}
+          {theme.isSectionVisible("footer") && (
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-t p-border-main pt-6 mt-8">
+              <div className="flex items-center gap-4">
+                {p.agent_photo_url ? (
+                  <img
+                    src={p.agent_photo_url}
+                    alt={p.agent_name || vm.agency.name}
+                    crossOrigin="anonymous"
+                    className="w-12 h-12 rounded-full object-cover border p-border-main"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full p-surface-brand flex items-center justify-center text-base font-bold">
+                    {(p.agent_name || vm.agency.name || "A").charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <div className="text-xs uppercase font-bold tracking-widest p-text-faint">
+                    Consultor Comercial
+                  </div>
+                  <div className="font-bold p-text-ink text-base leading-snug">
+                    {p.agent_name || vm.agency.name}
+                  </div>
+                  {(p.agent_whatsapp || vm.agency.whatsapp) && (
+                    <div className="text-xs p-text-brand font-bold flex items-center gap-2 mt-1">
+                      <PhoneCall className="size-3.5" /> {p.agent_whatsapp || vm.agency.whatsapp}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="text-center sm:text-right">
+                <span className="text-xs uppercase font-bold tracking-widest p-text-faint block mb-1">
+                  Token Autenticador
+                </span>
+                <span className="font-mono text-xs p-text-muted">
+                  #{p.number} {p.public_token ? `· ${p.public_token.slice(0, 14)}` : ""}
+                </span>
+              </div>
+            </div>
+          )}
+        </DocumentPage>
+      )}
     </div>
   );
 }

@@ -382,8 +382,8 @@ function PainelAuthPage() {
           </div>
 
           <div className="pt-6 space-y-3 max-w-md">
-            <div className="flex items-start gap-3 p-4 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm">
-              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-1">
+            <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card">
+              <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-primary shrink-0 mt-1">
                 <Store className="size-4" />
               </div>
               <div>

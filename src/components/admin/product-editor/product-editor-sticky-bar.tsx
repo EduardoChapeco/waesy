@@ -24,8 +24,8 @@ export function ProductEditorStickyBar({
   const isDraft = status === "draft";
 
   return (
-    <div className="fixed bottom-4 inset-x-0 z-40 flex justify-center px-4 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-200">
-      <div className="pointer-events-auto w-full max-w-4xl bg-card/95 backdrop-blur-md border border-border/80  rounded-xl p-3 flex items-center justify-between gap-3">
+    <div className="fixed bottom-4 inset-x-0 z-30 flex justify-center px-4 pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-200">
+      <div className="pointer-events-auto w-full max-w-4xl bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Badge
             variant={isDraft ? "secondary" : "default"}

@@ -187,7 +187,7 @@ export const CanonicalFormFooter = React.forwardRef<HTMLDivElement, CanonicalFor
       <div
         ref={ref}
         className={cn(
-          'w-full min-h-16 border-t border-border bg-card/95 backdrop-blur-md px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4',
+          'w-full min-h-16 border-t border-border bg-card px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4',
           className
         )}
         {...props}

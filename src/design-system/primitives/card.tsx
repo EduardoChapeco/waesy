@@ -219,7 +219,7 @@ export function OfferCard({
           </div>
         )}
         {badgeText && (
-          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-background/90 backdrop-blur-xs text-2xs font-semibold text-foreground">
+          <span className="absolute top-2.5 left-2.5 px-2 py-1 rounded-md bg-card border border-border text-2xs font-semibold text-foreground">
             {badgeText}
           </span>
         )}

@@ -202,7 +202,7 @@ export function ProductPreviewPane({
                   </div>
                 )}
                 {isUsingVariantImage && (
-                  <Badge variant="outline" className="absolute bottom-3 left-3 text-xs bg-background/80 backdrop-blur-sm border-border text-foreground font-semibold">
+                  <Badge variant="outline" className="absolute bottom-3 left-3 text-xs bg-card border-border text-foreground font-semibold">
                     Foto da Variação
                   </Badge>
                 )}

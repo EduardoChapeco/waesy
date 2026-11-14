@@ -446,7 +446,7 @@ export function PostCreationDrawer({
  <Drawer open={open} onOpenChange={onOpenChange}>
  <DrawerContent className="h-dvh max-h-dvh rounded-none sm:rounded-2xl sm:h-auto sm:max-h-full border-none bg-background p-0 flex flex-col overflow-hidden max-w-2xl mx-auto overscroll-contain">
  {/* ── Top Header Fixo (Silêncio Operacional) ── */}
- <DrawerHeader className="p-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur-md">
+ <DrawerHeader className="p-4 flex items-center justify-between shrink-0 bg-background border-b border-border">
  <div className="flex items-center gap-3">
  <button
  onClick={() => onOpenChange(false)}
@@ -654,7 +654,7 @@ export function PostCreationDrawer({
  </div>
 
  {/* ── Barra Inferior de Ações e Anexos ── */}
- <div className="p-4 sm:p-4 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 shrink-0 border-t border-border/50">
+ <div className="p-4 sm:p-4 bg-background flex flex-wrap items-center justify-between gap-3 shrink-0 border-t border-border">
  <div className="flex flex-wrap items-center gap-3">
  <input
  ref={fileInputRef}

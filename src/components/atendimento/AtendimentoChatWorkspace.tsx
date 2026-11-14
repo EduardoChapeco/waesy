@@ -1590,7 +1590,7 @@ export function AtendimentoChatWorkspace({
           </RouterLink>
 
           <RouterLink
-            to="/workspace/atendimento/departamentos"
+            to="/workspace/atendimento/filas"
             className="px-3 py-1 rounded-lg text-xs font-medium bg-muted/40 text-muted-foreground hover:text-foreground border border-border/60 inline-flex items-center gap-1 shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
             <Sliders className="size-3.5" />
@@ -1669,7 +1669,7 @@ export function AtendimentoChatWorkspace({
               </div>
 
               {/* Filtro por Setor + Filtro por Tags / Pastas de Tags (Umbler Talk / Whaticket Parity) */}
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+              <div className="flex items-center gap-1 overflow-x-auto tab-list no-scrollbar">
                 <select
                   value={deptFilter}
                   onChange={(e) => setDeptFilter(e.target.value)}
@@ -1715,7 +1715,7 @@ export function AtendimentoChatWorkspace({
                   <button
                     type="button"
                     onClick={() => setSelectedTagFilter("all")}
-                    className="px-2 py-1 rounded-md text-2xs font-bold bg-primary/10 text-primary border border-primary/30 shrink-0 cursor-pointer"
+                    className="px-2 py-1 rounded-md text-2xs font-bold bg-primary/10 text-primary border border-primary/30 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                   >
                     Limpar Tag
                   </button>
@@ -1818,7 +1818,7 @@ export function AtendimentoChatWorkspace({
                               className="text-xs px-2 py-0 h-4 bg-primary/10 text-primary border-primary/30 gap-1 font-semibold"
                             >
                               <Users className="size-3" />
-                              <span>Grupo WhatsApp</span>
+                              <span>{t.participants_count ? `Grupo (${t.participants_count})` : "Grupo WhatsApp"}</span>
                             </Badge>
                           ) : isChan ? (
                             <Badge
@@ -1838,14 +1838,37 @@ export function AtendimentoChatWorkspace({
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-xs px-2 py-0 h-4 gap-1">
-                              <MessageCircle className="size-3 text-primary" />
+                              <MessageSquare className="size-3" />
                               <span>Web</span>
                             </Badge>
                           )}
+                          {(t.attribution?.campaign || t.attribution?.utm_campaign || t.attribution?.ctwa_clid || t.attribution?.ad_id) && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs px-2 py-0 h-4 bg-primary/10 text-primary border-primary/30 gap-1 font-semibold max-w-40 truncate"
+                            >
+                              <span className="truncate">
+                                {t.attribution.campaign || t.attribution.utm_campaign || "Anúncio Ads"}
+                              </span>
+                            </Badge>
+                          )}
 
-                          <Badge variant="secondary" className="text-xs px-2 py-0 h-4 uppercase">
+                          <Badge variant="secondary" className="text-2xs px-2 py-0 h-4 uppercase">
                             {departmentLabels[t.department] || t.department}
                           </Badge>
+
+                          {Array.isArray(t.tags) &&
+                            t.tags.slice(0, 3).map((tagLabel: string) => (
+                              <span
+                                key={tagLabel}
+                                className={cn(
+                                  "px-2 py-0 rounded text-2xs font-bold border leading-4",
+                                  resolveTagPillClass(tagLabel, storeTagCatalog?.tags),
+                                )}
+                              >
+                                {tagLabel}
+                              </span>
+                            ))}
 
                           {t.status === "archived" && (
                             <Badge
@@ -1934,16 +1957,36 @@ export function AtendimentoChatWorkspace({
                           <span>WhatsApp</span>
                         </span>
                       )}
+                      {(activeThread.attribution?.campaign ||
+                        activeThread.attribution?.utm_campaign ||
+                        activeThread.attribution?.ad_id ||
+                        activeThread.attribution?.ctwa_clid ||
+                        activeThread.attribution?.platform) && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary shrink-0 border border-primary/20">
+                          <span>
+                            {activeThread.attribution.campaign ||
+                              activeThread.attribution.utm_campaign ||
+                              (activeThread.attribution.ctwa_clid ? "Anúncio CTWA" : activeThread.attribution.platform || "Anúncio")}
+                          </span>
+                        </span>
+                      )}
                     </div>
                     
                     <p className="text-xs text-muted-foreground truncate font-mono select-all">
-                      {activeThread.customer?.phone || activeThread.customer?.email || "Atendimento Direto"}
+                      {activeThread.is_group || activeThread.thread_type === "group"
+                        ? (activeThread.participants_count > 0
+                            ? `${activeThread.participants_count} participantes • Grupo WhatsApp`
+                            : "Grupo WhatsApp")
+                        : activeThread.customer?.phone || activeThread.customer?.email || "Atendimento Direto"}
                     </p>
                     {/* Tags Semânticas Coloridas (Whaticket / CRM Parity) */}
                     <div className="pt-1">
                       <ThreadTagsPicker
                         threadId={activeThread?.id || ""}
+                        storeId={store?.id || undefined}
                         tags={activeThread.tags || []}
+                        contactName={activeThread.customer?.full_name || null}
+                        contactAvatarUrl={activeThread.avatar_url || activeThread.customer?.avatar_url || null}
                         onTagsChange={(newTags) => {
                           setThreads((prev) =>
                             prev.map((t) => (t.id === activeThread?.id ? { ...t, tags: newTags } : t))
@@ -1955,37 +1998,33 @@ export function AtendimentoChatWorkspace({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  {/* Ação: Encerrar / Reabrir Atendimento */}
-                  <Button
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Ação: Encerrar / Reabrir Atendimento (Squircle Compacto) */}
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
                     disabled={isArchiving}
                     onClick={() =>
                       activeThread?.id && handleArchiveThread(activeThread.id, activeThread.status !== "archived")
                     }
-                    className="h-11 min-h-11 rounded-lg text-xs font-semibold gap-2 px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+                    className="px-3 py-1 rounded-lg border border-border/80 bg-card hover:bg-muted text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none shrink-0"
                     title={activeThread.status === "archived" ? "Reabrir conversa" : "Encerrar atendimento"}
                   >
                     {activeThread.status === "archived" ? (
                       <>
-                        <ArchiveRestore className="size-4 shrink-0" />
+                        <ArchiveRestore className="size-3.5 shrink-0" />
                         <span className="hidden xl:inline">Reabrir</span>
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                        <CheckCircle2 className="size-3.5 shrink-0 text-emerald-600" />
                         <span className="hidden xl:inline">Encerrar</span>
                       </>
                     )}
-                  </Button>
+                  </button>
 
-                  {/* Toggle Ficha do Cliente (Perfil 360) */}
-                  <Button
+                  {/* Toggle Ficha do Cliente (Perfil 360 — Squircle Compacto) */}
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
                     onClick={() => {
                       if (typeof window !== "undefined" && window.innerWidth < 1024) {
                         setMobileCustomer360Open((prev) => !prev);
@@ -1994,29 +2033,27 @@ export function AtendimentoChatWorkspace({
                       }
                     }}
                     className={cn(
-                      "h-11 min-h-11 text-xs font-semibold rounded-lg px-3 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0",
-                      showCustomer360 ? "bg-muted font-bold" : "",
+                      "px-3 py-1 rounded-lg border border-border/80 text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none shrink-0",
+                      showCustomer360 ? "bg-muted text-foreground font-bold" : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50",
                     )}
                     title="Exibir dados e ficha do cliente"
                     aria-label="Ficha do Cliente"
                   >
-                    <UserCheck className="size-4 mr-0 xl:mr-1 shrink-0" />
+                    <UserCheck className="size-3.5 shrink-0" />
                     <span className="hidden xl:inline">Ficha</span>
-                  </Button>
+                  </button>
 
-                  {/* Menu Dropdown de Ações Operacionais */}
+                  {/* Menu Dropdown de Ações Operacionais (Squircle Compacto) */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
-                        size="icon"
-                        className="size-11 min-w-11 min-h-11 rounded-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-primary shrink-0"
+                        className="px-2 py-1 rounded-lg border border-border/80 bg-card hover:bg-muted text-muted-foreground hover:text-foreground inline-flex items-center justify-center cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none shrink-0"
                         title="Mais Ações de Atendimento"
                         aria-label="Mais Ações de Atendimento"
                       >
                         <MoreVertical className="size-4" />
-                      </Button>
+                      </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-border shadow-overlay">
                       <DropdownMenuItem
@@ -2343,7 +2380,16 @@ export function AtendimentoChatWorkspace({
                               ? msg.payload?.origin === "whatsapp_device"
                                 ? "Celular WhatsApp"
                                 : "Equipe / Você"
-                              : activeThread.customer?.full_name || "Cliente"} •{" "}
+                              : (() => {
+                                  const sName = msg.metadata?.sender_name || msg.payload?.sender_name;
+                                  const sPhone = msg.metadata?.sender_phone || msg.payload?.sender_phone;
+                                  if (activeThread.is_group || activeThread.thread_type === "group") {
+                                    if (sName && sPhone) return `${sName} (${sPhone})`;
+                                    return sName || sPhone || "Participante";
+                                  }
+                                  return activeThread.customer?.full_name || sPhone || "Cliente";
+                                })()}{" "}
+                            •{" "}
                             {formatDate(msg.created_at)}
                             {isStaff && (
                               <MessageDeliveryStatusIcon
@@ -2415,7 +2461,18 @@ export function AtendimentoChatWorkspace({
                             </button>
                           )}
                           <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
-                            {isStaff ? (Boolean(msg.payload?.origin === "whatsapp_device") ? "Celular WhatsApp" : "Você") : activeThread?.customer?.full_name || "Cliente"} •{" "}
+                            {isStaff
+                              ? (Boolean(msg.payload?.origin === "whatsapp_device") ? "Celular WhatsApp" : "Você")
+                              : (() => {
+                                  const sName = msg.metadata?.sender_name || msg.payload?.sender_name;
+                                  const sPhone = msg.metadata?.sender_phone || msg.payload?.sender_phone;
+                                  if (activeThread?.is_group || activeThread?.thread_type === "group") {
+                                    if (sName && sPhone) return `${sName} (${sPhone})`;
+                                    return sName || sPhone || "Participante";
+                                  }
+                                  return activeThread?.customer?.full_name || sPhone || "Cliente";
+                                })()}{" "}
+                            •{" "}
                             {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -2611,7 +2668,18 @@ export function AtendimentoChatWorkspace({
                           )}
                         </div>
                         <span className="text-xs text-muted-foreground mt-1 px-1 flex items-center gap-1 font-mono">
-                          {isStaff ? (isFromDevice ? "Celular WhatsApp" : "Você") : activeThread.customer?.full_name || "Cliente"} •{" "}
+                          {isStaff
+                            ? (isFromDevice ? "Celular WhatsApp" : "Você")
+                            : (() => {
+                                const sName = msg.metadata?.sender_name || msg.payload?.sender_name;
+                                const sPhone = msg.metadata?.sender_phone || msg.payload?.sender_phone;
+                                if (activeThread.is_group || activeThread.thread_type === "group") {
+                                  if (sName && sPhone) return `${sName} (${sPhone})`;
+                                  return sName || sPhone || "Participante";
+                                }
+                                return activeThread.customer?.full_name || sPhone || "Cliente";
+                              })()}{" "}
+                          •{" "}
                           {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -2648,33 +2716,33 @@ export function AtendimentoChatWorkspace({
                   />
                 )}
 
-                {/* Seletor de Modo: Responder ao Cliente vs Nota Interna da Equipe */}
+                {/* Seletor de Modo: Responder ao Cliente vs Nota Interna da Equipe (Squircles Compactos) */}
                 <div className="flex items-center justify-between gap-2 pb-1">
                   <div className="inline-flex items-center rounded-lg bg-muted/60 p-1 border border-border/60">
                     <button
                       type="button"
                       onClick={() => setIsWhisperMode(false)}
                       className={cn(
-                        "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                        "px-3 py-1 rounded-md text-2xs font-semibold flex items-center gap-1 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         !isWhisperMode
                           ? "bg-background text-foreground font-bold shadow-2xs"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      <MessageSquare className="size-3.5 text-emerald-600" />
+                      <MessageSquare className="size-3 text-emerald-600" />
                       <span>Responder (Cliente)</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsWhisperMode(true)}
                       className={cn(
-                        "h-11 min-h-11 px-3 rounded-md text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                        "px-3 py-1 rounded-md text-2xs font-semibold flex items-center gap-1 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                         isWhisperMode
                           ? "bg-warning/20 text-warning-strong font-bold"
                           : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      <Lock className="size-3.5 text-warning-strong" />
+                      <Lock className="size-3 text-warning-strong" />
                       <span>Nota Interna (Equipe)</span>
                     </button>
                   </div>
@@ -2682,66 +2750,68 @@ export function AtendimentoChatWorkspace({
 
                 {/* Banner Modo Nota Interna (Whisper) */}
                 {isWhisperMode && (
-                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong text-xs font-medium animate-in fade-in">
+                  <div className="flex items-center justify-between gap-2 px-3 py-1 rounded-lg bg-warning/15 border border-warning/40 text-warning-strong text-2xs font-medium animate-in fade-in">
                     <div className="flex items-center gap-2">
-                      <Lock className="size-3.5 shrink-0 text-warning-strong" />
+                      <Lock className="size-3 shrink-0 text-warning-strong" />
                       <span>Nota interna privada: visível apenas para a equipe (não enviada ao WhatsApp).</span>
                     </div>
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
                       onClick={() => setIsWhisperMode(false)}
-                      className="h-11 min-h-11 px-3 text-xs text-warning-strong hover:bg-warning/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      className="px-2 py-1 rounded-md text-2xs font-semibold text-warning-strong hover:bg-warning/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       Cancelar
-                    </Button>
+                    </button>
                   </div>
                 )}
 
-                {/* Trilho de Respostas Rápidas / Macros Compacto */}
+                {/* Trilho de Respostas Rápidas / Macros Compacto (Squircles Finos Estilo Tags) */}
                 <div
                   role="tablist"
                   aria-label="Atalhos Rápidos"
-                  className="flex items-center gap-2 overflow-x-auto tab-list no-scrollbar py-1"
+                  className="flex items-center gap-1 overflow-x-auto tab-list no-scrollbar py-1"
                 >
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
                     onClick={() => setQuickAnswersModalOpen(true)}
-                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-2 shrink-0 border-border/70 text-foreground hover:bg-muted cursor-pointer"
+                    className="px-2 py-1 rounded-md text-2xs font-semibold inline-flex items-center gap-1 shrink-0 border border-border/70 bg-card text-foreground hover:bg-muted cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     title="Gerenciar respostas rápidas e atalhos comerciais"
                   >
                     <Zap className="size-3 text-warning-strong" />
                     <span>Atalhos</span>
-                  </Button>
+                  </button>
 
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
                     onClick={() => handleGenerateSmartReply(false)}
                     disabled={isGeneratingSmartReply}
-                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 shrink-0 border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                    className="px-2 py-1 rounded-md text-2xs font-semibold inline-flex items-center gap-1 shrink-0 border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     title="Escrever resposta sugerida com base no histórico do cliente"
                   >
-                    <Zap className="size-3.5 text-primary" />
+                    <Zap className="size-3 text-primary" />
                     <span>{isGeneratingSmartReply ? "Escrevendo..." : "Escrever com IA"}</span>
-                  </Button>
+                  </button>
 
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
                     onClick={() => handleGenerateSmartReply(true)}
                     disabled={isGeneratingSmartAudio}
-                    className="h-11 min-h-11 px-3 rounded-md text-xs font-semibold gap-1 shrink-0 border-border bg-muted text-foreground hover:bg-accent cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                    className="px-2 py-1 rounded-md text-2xs font-semibold inline-flex items-center gap-1 shrink-0 border border-border bg-muted/60 text-foreground hover:bg-accent cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     title="Gerar áudio e ouvir antes de enviar"
                   >
-                    <Volume2 className="size-3.5 text-foreground" />
-                    <span>{isGeneratingSmartAudio ? "Sintetizando..." : "Áudio"}</span>
-                  </Button>
+                    <Volume2 className="size-3 text-foreground" />
+                    <span>{isGeneratingSmartAudio ? "Sintetizando..." : "Gerar Áudio IA"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLiveModalOverride("image_card")}
+                    className="px-2 py-1 rounded-md text-2xs font-semibold inline-flex items-center gap-1 shrink-0 border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    title="Gerar card visual em imagem para o cliente (Oferta, Voucher PNR, Fatura PIX)"
+                  >
+                    <ImageIcon className="size-3 text-emerald-600" />
+                    <span>Gerar Imagem</span>
+                  </button>
 
                   {(storeMacros.length > 0
                     ? storeMacros.map((m: any) => ({ cmd: m.shortcut, text: m.message, label: m.title }))
@@ -2782,9 +2852,9 @@ export function AtendimentoChatWorkspace({
                       key={macro.cmd}
                       type="button"
                       onClick={() => setText(interpolateTemplateVariables(macro.text, { customerName: activeThread.customer?.full_name, customerPhone: activeThread.customer?.phone, storeName: store?.name }))}
-                      className="h-11 min-h-11 px-3 rounded-md text-xs font-mono font-medium bg-muted hover:bg-accent border border-border text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      className="px-2 py-1 rounded-md text-2xs font-mono font-medium bg-muted/60 hover:bg-accent border border-border/70 text-muted-foreground hover:text-foreground shrink-0 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
-                      /{macro.cmd} <span className="text-xs opacity-75">({macro.label})</span>
+                      /{macro.cmd} <span className="text-2xs opacity-75">({macro.label})</span>
                     </button>
                   ))}
                 </div>
@@ -2928,99 +2998,24 @@ export function AtendimentoChatWorkspace({
             </div>
           )}
 
-          {/* COLUNA 3: Customer 360 (Lateral Direita Recolhível) */}
+          {/* COLUNA 3: Customer 360 (Lateral Direita Recolhível — Identidade no Topo, Seguida de Tags/Notas, IA, Viagens/PNR, Faturas/Imagens e E-mail) */}
           {activeThread && showCustomer360 && (
-            <div className="hidden lg:block w-80 xl:w-96 border-l border-border/80 bg-background overflow-y-auto no-scrollbar shrink-0 p-4">
-              <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-4">
-                <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+            <div className="hidden lg:block w-80 xl:w-96 border-l border-border/80 bg-background overflow-y-auto no-scrollbar shrink-0 p-3">
+              <div className="flex items-center justify-between pb-2 border-b border-border/60 mb-3">
+                <span className="font-bold text-2xs uppercase tracking-wider text-muted-foreground">
                   {activeThread?.is_group || activeThread?.thread_type === "group"
                     ? "Dossiê do Grupo WhatsApp"
                     : activeThread?.is_channel || activeThread?.thread_type === "channel"
                     ? "Dossiê do Canal"
                     : "Perfil 360º do Cliente"}
                 </span>
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
                   onClick={() => setShowCustomer360(false)}
-                  className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  className="px-2 py-1 rounded-md text-2xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   Fechar
-                </Button>
-              </div>
-              {/* Controles estilo TrackChat / WhatsOmni: AI Assistant Control, Team Router & Assignee */}
-              <div className="space-y-3 mb-4 pb-4 border-b border-border/60">
-                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Bot className="size-4 text-primary" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        IA Automática
-                      </span>
-                    </div>
-                    <Switch
-                      checked={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
-                      onCheckedChange={(checked) => {
-                        setAiAutoReplyPerThread((prev) => ({
-                          ...prev,
-                          ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
-                        }));
-                        toast.success(
-                          checked
-                            ? "IA Copilot Auto-Reply ativado para este contato."
-                            : "IA Copilot pausado. Atendimento assumido manualmente.",
-                        );
-                      }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
-                    Responder automaticamente dúvidas, catálogo e cotações para este cliente.
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Setor / Fila
-                  </Label>
-                  <select
-                    value={activeThread?.department || "geral"}
-                    onChange={(e) => handleDepartmentChange(e.target.value)}
-                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    {Object.entries(departmentLabels).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Atendente Responsável
-                  </Label>
-                  <select
-                    value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setAssignedAgentPerThread((prev) => ({
-                        ...prev,
-                        ...(activeThread?.id ? { [activeThread.id]: val } : {}),
-                      }));
-                      if (activeThread?.id) assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
-                      toast.success("Atendente atribuído à conversa!");
-                    }}
-                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <option value="">Distribuição Automática</option>
-                    {(teamMembers || []).map((m: any) => (
-                      <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
-                        {m.full_name || m.name || m.email || "Atendente"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                </button>
               </div>
               <Customer360Sidebar
                 customerId={activeThread?.customer?.id}
@@ -3033,9 +3028,65 @@ export function AtendimentoChatWorkspace({
                 isGroup={Boolean(activeThread?.is_group || activeThread?.thread_type === "group")}
                 isChannel={Boolean(activeThread?.is_channel || activeThread?.thread_type === "channel")}
                 avatarUrl={activeThread?.avatar_url || activeThread?.customer?.avatar_url}
+                department={activeThread?.department || "geral"}
+                assignedAgentId={
+                  activeThread?.id
+                    ? assignedAgentPerThread[activeThread.id] ?? activeThread?.assigned_to_profile_id ?? null
+                    : null
+                }
+                teamMembers={teamMembers}
+                departmentLabels={departmentLabels}
+                aiAutoReply={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
+                onToggleAiAutoReply={(checked) => {
+                  setAiAutoReplyPerThread((prev) => ({
+                    ...prev,
+                    ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
+                  }));
+                  toast.success(
+                    checked
+                      ? "IA Copilot Auto-Reply ativado para este contato."
+                      : "IA Copilot pausado. Atendimento assumido manualmente.",
+                  );
+                }}
+                onDepartmentChange={handleDepartmentChange}
+                onAssignedAgentChange={(val) => {
+                  setAssignedAgentPerThread((prev) => ({
+                    ...prev,
+                    ...(activeThread?.id ? { [activeThread.id]: val } : {}),
+                  }));
+                  if (activeThread?.id) {
+                    assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
+                  }
+                  toast.success("Atendente atribuído à conversa!");
+                }}
                 onQuickSendMessage={(msgText) => setText(msgText)}
                 onOpenTransfer={() => setTransferModalOpen(true)}
                 onOpenSchedule={() => setScheduleModalOpen(true)}
+                onOpenQuickComposerModal={(modal) =>
+                  setLiveModalOverride(modal === "image_card" ? "image_card" : "form")
+                }
+                onProfileSynced={({ avatarUrl: nextAvatar, fullName: nextName, phone: nextPhone, isGroup: nextIsGroup, attribution: nextAttribution }) => {
+                  const targetId = activeThread?.id;
+                  if (!targetId) return;
+                  setThreads((prev) =>
+                    prev.map((t) =>
+                      t.id === targetId
+                        ? {
+                            ...t,
+                            ...(nextAvatar !== undefined ? { avatar_url: nextAvatar } : {}),
+                            ...(nextIsGroup && nextName ? { group_subject: nextName } : {}),
+                            ...(nextAttribution !== undefined ? { attribution: nextAttribution } : {}),
+                            customer: {
+                              ...(t.customer || {}),
+                              ...(nextName ? { full_name: nextName } : {}),
+                              ...(nextPhone !== undefined ? { phone: nextPhone || "" } : {}),
+                              ...(nextAvatar !== undefined ? { avatar_url: nextAvatar } : {}),
+                            },
+                          }
+                        : t,
+                    ),
+                  );
+                }}
               />
             </div>
           )}
@@ -3043,8 +3094,8 @@ export function AtendimentoChatWorkspace({
           {/* Drawer Sheet Mobile/Tablet do Perfil 360 */}
           <Sheet open={Boolean(activeThread && mobileCustomer360Open)} onOpenChange={setMobileCustomer360Open}>
             <SheetContent side="right" className="lg:hidden w-full sm:max-w-md p-0 overflow-y-auto">
-              <SheetHeader className="p-4 border-b border-border/60">
-                <SheetTitle className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              <SheetHeader className="p-3 border-b border-border/60">
+                <SheetTitle className="text-2xs uppercase tracking-wider text-muted-foreground font-bold">
                   {activeThread?.is_group || activeThread?.thread_type === "group"
                     ? "Dossiê do Grupo WhatsApp"
                     : activeThread?.is_channel || activeThread?.thread_type === "channel"
@@ -3053,96 +3104,89 @@ export function AtendimentoChatWorkspace({
                 </SheetTitle>
               </SheetHeader>
               {activeThread?.id && (
-              <div className="p-4">
-                {/* Controles estilo TrackChat / WhatsOmni: AI Assistant Control, Team Router & Assignee */}
-              <div className="space-y-3 mb-4 pb-4 border-b border-border/60">
-                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Bot className="size-4 text-primary" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        IA Automática
-                      </span>
-                    </div>
-                    <Switch
-                      checked={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
-                      onCheckedChange={(checked) => {
-                        setAiAutoReplyPerThread((prev) => ({
-                          ...prev,
-                          ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
-                        }));
-                        toast.success(
-                          checked
-                            ? "IA Copilot Auto-Reply ativado para este contato."
-                            : "IA Copilot pausado. Atendimento assumido manualmente.",
-                        );
-                      }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-snug">
-                    Responder automaticamente dúvidas, catálogo e cotações para este cliente.
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Setor / Fila
-                  </Label>
-                  <select
-                    value={activeThread?.department || "geral"}
-                    onChange={(e) => handleDepartmentChange(e.target.value)}
-                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    {Object.entries(departmentLabels).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Atendente Responsável
-                  </Label>
-                  <select
-                    value={activeThread?.id ? assignedAgentPerThread[activeThread.id] || "" : ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                <div className="p-3">
+                  <Customer360Sidebar
+                    customerId={activeThread?.customer?.id}
+                    storeId={store?.id || ""}
+                    threadId={activeThread?.id}
+                    guestName={activeThread?.customer?.full_name}
+                    guestPhone={activeThread?.customer?.phone}
+                    niche={semantics.nicheId}
+                    storeName={store?.name}
+                    isGroup={Boolean(activeThread?.is_group || activeThread?.thread_type === "group")}
+                    isChannel={Boolean(activeThread?.is_channel || activeThread?.thread_type === "channel")}
+                    avatarUrl={activeThread?.avatar_url || activeThread?.customer?.avatar_url}
+                    department={activeThread?.department || "geral"}
+                    assignedAgentId={
+                      activeThread?.id
+                        ? assignedAgentPerThread[activeThread.id] ?? activeThread?.assigned_to_profile_id ?? null
+                        : null
+                    }
+                    teamMembers={teamMembers}
+                    departmentLabels={departmentLabels}
+                    aiAutoReply={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
+                    onToggleAiAutoReply={(checked) => {
+                      setAiAutoReplyPerThread((prev) => ({
+                        ...prev,
+                        ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
+                      }));
+                      toast.success(
+                        checked
+                          ? "IA Copilot Auto-Reply ativado para este contato."
+                          : "IA Copilot pausado. Atendimento assumido manualmente.",
+                      );
+                    }}
+                    onDepartmentChange={handleDepartmentChange}
+                    onAssignedAgentChange={(val) => {
                       setAssignedAgentPerThread((prev) => ({
                         ...prev,
                         ...(activeThread?.id ? { [activeThread.id]: val } : {}),
                       }));
-                      if (activeThread?.id) assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
+                      if (activeThread?.id) {
+                        assignChatThread({ data: { threadId: activeThread.id, assigned_to_profile_id: val || null } }).catch(() => {});
+                      }
                       toast.success("Atendente atribuído à conversa!");
                     }}
-                    className="w-full h-11 rounded-md border border-border/70 bg-background px-3 text-xs font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <option value="">Distribuição Automática</option>
-                    {(teamMembers || []).map((m: any) => (
-                      <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
-                        {m.full_name || m.name || m.email || "Atendente"}
-                      </option>
-                    ))}
-                  </select>
+                    onQuickSendMessage={(msgText) => {
+                      setText(msgText);
+                      setMobileCustomer360Open(false);
+                    }}
+                    onOpenTransfer={() => {
+                      setMobileCustomer360Open(false);
+                      setTransferModalOpen(true);
+                    }}
+                    onOpenSchedule={() => {
+                      setMobileCustomer360Open(false);
+                      setScheduleModalOpen(true);
+                    }}
+                    onOpenQuickComposerModal={(modal) => {
+                      setMobileCustomer360Open(false);
+                      setLiveModalOverride(modal === "image_card" ? "image_card" : "form");
+                    }}
+                    onProfileSynced={({ avatarUrl: nextAvatar, fullName: nextName, phone: nextPhone, isGroup: nextIsGroup, attribution: nextAttribution }) => {
+                      const targetId = activeThread?.id;
+                      if (!targetId) return;
+                      setThreads((prev) =>
+                        prev.map((t) =>
+                          t.id === targetId
+                            ? {
+                                ...t,
+                                ...(nextAvatar !== undefined ? { avatar_url: nextAvatar } : {}),
+                                ...(nextIsGroup && nextName ? { group_subject: nextName } : {}),
+                                ...(nextAttribution !== undefined ? { attribution: nextAttribution } : {}),
+                                customer: {
+                                  ...(t.customer || {}),
+                                  ...(nextName ? { full_name: nextName } : {}),
+                                  ...(nextPhone !== undefined ? { phone: nextPhone || "" } : {}),
+                                  ...(nextAvatar !== undefined ? { avatar_url: nextAvatar } : {}),
+                                },
+                              }
+                            : t,
+                        ),
+                      );
+                    }}
+                  />
                 </div>
-              </div>
-              <Customer360Sidebar
-                  customerId={activeThread?.customer?.id}
-                  storeId={store?.id || ""}
-                  threadId={activeThread?.id}
-                  guestName={activeThread?.customer?.full_name}
-                  guestPhone={activeThread?.customer?.phone}
-                  niche={semantics.nicheId}
-                  storeName={store?.name}
-                  isGroup={Boolean(activeThread?.is_group || activeThread?.thread_type === "group")}
-                  isChannel={Boolean(activeThread?.is_channel || activeThread?.thread_type === "channel")}
-                  avatarUrl={activeThread?.avatar_url || activeThread?.customer?.avatar_url}
-                  onQuickSendMessage={(msgText) => { setText(msgText); setMobileCustomer360Open(false); }}
-                  onOpenTransfer={() => { setMobileCustomer360Open(false); setTransferModalOpen(true); }}
-                  onOpenSchedule={() => { setMobileCustomer360Open(false); setScheduleModalOpen(true); }}
-                />
-              </div>
               )}
             </SheetContent>
           </Sheet>
@@ -4064,9 +4108,9 @@ export function AtendimentoChatWorkspace({
               data: {
                 threadId: activeThreadId,
                 message: data.message,
-                message_type: data.message_type,
+                message_type: data.message_type as any,
                 payload: data.payload,
-                attachments: [],
+                attachments: data.attachments || [],
               },
             });
             setMessages((prev) => [...prev, sent]);
@@ -4078,6 +4122,7 @@ export function AtendimentoChatWorkspace({
                 message: data.message,
                 message_type: data.message_type,
                 payload: data.payload,
+                attachments: data.attachments || [],
                 is_staff_reply: true,
                 created_at: new Date().toISOString(),
               },

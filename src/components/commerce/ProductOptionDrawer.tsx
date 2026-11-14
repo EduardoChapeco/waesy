@@ -189,7 +189,7 @@ export function ProductOptionDrawer({
         </div>
 
         {/* ─── Rodapé Fixo de Ação Primária (z-30 / Piso 44px) ───────────── */}
-        <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 bg-card/95 backdrop-blur-md border-t border-border/40 flex items-center justify-between gap-3 z-30 pb-3 pb-safe">
+        <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 bg-card border-t border-border flex items-center justify-between gap-3 z-30 pb-3 pb-safe">
           {/* Contador de Quantidade 44px */}
           <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/40 shrink-0">
             <button

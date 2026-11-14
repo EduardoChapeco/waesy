@@ -132,7 +132,7 @@ function CreatorProfilesManagementPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground pb-24">
       {/* ─── Top Bar Executiva Apple HIG ────────────────────────────── */}
-      <div className="border-b border-border/40 bg-card/60 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-20">
+      <div className="border-b border-border bg-background px-4 sm:px-6 py-4 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button

@@ -25,10 +25,10 @@ export function JobDetailMobile({
   return (
     <div className="w-full min-h-dvh bg-background text-foreground pb-24 font-sans select-none antialiased">
       {/* ── 1. Top Bar Mobile com Botão Voltar & Compartilhar ── */}
-      <div className="flex items-center justify-between p-3 border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-30">
+      <div className="flex items-center justify-between p-3 border-b border-border bg-background sticky top-0 z-30">
         <Link
           to="/empregos"
-          className="size-11 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center border border-border/60 text-foreground active:scale-95 transition-transform duration-200"
+          className="size-11 rounded-full bg-muted hover:bg-accent flex items-center justify-center border border-border text-foreground active:scale-95 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Voltar para Vagas"
         >
           <ArrowLeft size={20} weight="bold" />

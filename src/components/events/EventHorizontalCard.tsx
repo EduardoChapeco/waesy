@@ -90,12 +90,12 @@ export function EventHorizontalCard({
         <div className="space-y-1">
           <div className="flex items-center gap-1 text-2xs text-muted-foreground font-mono">
             <CalendarBlank size={12} weight="bold" className="shrink-0 text-primary" />
-            <span className="truncate">{formattedDate}</span>
+            <span className="line-clamp-1">{formattedDate}</span>
           </div>
 
           <div className="flex items-center gap-1 text-2xs text-muted-foreground">
             <MapPin size={12} weight="bold" className="shrink-0 text-muted-foreground" />
-            <span className="truncate">{displayLocation}</span>
+            <span className="line-clamp-1">{displayLocation}</span>
           </div>
         </div>
       </div>

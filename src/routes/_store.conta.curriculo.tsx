@@ -790,7 +790,7 @@ export default function MeuCurriculoPage() {
   return (
     <div className="w-full min-h-screen flex flex-col bg-background font-sans text-foreground">
       {/* ── TOPBAR DO CRIADOR DE CURRÍCULO ── */}
-      <header className="h-16 px-4 sm:px-6 border-b border-border/60 bg-card/80 backdrop-blur-md flex items-center justify-between gap-4 sticky top-0 z-30 shrink-0">
+      <header className="h-16 px-4 sm:px-6 border-b border-border bg-background flex items-center justify-between gap-4 sticky top-0 z-30 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Button asChild variant="ghost" size="icon" className="size-11 min-h-11 rounded-lg shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <Link to="/conta" aria-label="Voltar para Minha Conta">
@@ -1584,7 +1584,7 @@ export default function MeuCurriculoPage() {
           )}
         >
           {/* Barra de Zoom da Folha A4 */}
-          <div className="sticky top-2 z-20 mb-4 px-3 py-1 rounded-full bg-card/90 backdrop-blur-md border border-border/60 shadow-xs flex items-center gap-2 text-xs">
+          <div className="sticky top-2 z-20 mb-4 px-3 py-1 rounded-full bg-card border border-border flex items-center gap-2 text-xs">
             <button
               type="button"
               onClick={() => setZoomLevel((z) => Math.max(50, z - 15))}

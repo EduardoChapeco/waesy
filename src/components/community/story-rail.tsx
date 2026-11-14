@@ -67,7 +67,7 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  )}
 
  {/* Gradient Overlay for Text Readability */}
- <div className="absolute inset-0 bg-black/60" />
+ <div className="absolute inset-0 bg-neutral-950/70" />
 
  {/* Top Avatar / Badge */}
  <div className="relative z-10 flex items-center justify-between w-full">
@@ -145,12 +145,12 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  )}
 
  {/* Barra de Progresso Superior */}
- <div className="relative z-10 w-full h-1 bg-card/20 rounded-full overflow-hidden mb-2">
- <div className="h-full bg-card rounded-full w-full animate-pulse motion-reduce:animate-none" />
+ <div className="relative z-10 w-full h-1 bg-neutral-800 rounded-full overflow-hidden mb-2">
+ <div className="h-full bg-primary rounded-full w-full animate-pulse motion-reduce:animate-none" />
  </div>
 
  {/* Header com Avatar e Autor */}
- <div className="relative z-10 bg-foreground/50 backdrop-blur-sm p-3 rounded-lg flex items-center justify-between gap-3">
+ <div className="relative z-10 bg-neutral-900 border border-neutral-800 text-neutral-50 p-3 rounded-lg flex items-center justify-between gap-3">
  <div className="flex items-center gap-3 min-w-0">
  <Avatar className="size-8 ring-2 ring-primary">
  <AvatarImage src={selectedStory.avatar_url ?? ""} />
@@ -159,8 +159,8 @@ export function StoryRail({ stories = [], onCreateStory }: StoryRailProps) {
  </AvatarFallback>
  </Avatar>
  <div className="min-w-0">
- <p className="font-bold text-sm leading-none truncate">{selectedStory.title}</p>
- <p className="text-2xs text-foreground/80 mt-1">
+ <p className="font-bold text-sm leading-none line-clamp-1 text-neutral-50">{selectedStory.title}</p>
+ <p className="text-2xs text-neutral-300 mt-1">
  {selectedStory.badge || "Story da Comunidade"}
  </p>
  </div>

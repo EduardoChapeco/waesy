@@ -266,7 +266,7 @@ export function EventsShowcaseDesktopView({
                     className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute top-3 left-3 z-10">
-                    <span className="bg-background/70 text-primary-foreground backdrop-blur-xs text-xs font-mono font-bold px-2 py-1 rounded-lg border border-white/20">
+                    <span className="bg-neutral-950 text-neutral-50 text-xs font-mono font-bold px-2 py-1 rounded-lg border border-neutral-800">
                       {formatDate(ev.event_date)}
                     </span>
                   </div>
@@ -277,13 +277,13 @@ export function EventsShowcaseDesktopView({
                     <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                       {ev.title}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
-                      <MapPin size={13} weight="bold" />
-                      <span className="truncate">{ev.venue || ev.location || "Local a confirmar"}</span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                      <MapPin size={13} weight="bold" className="shrink-0" />
+                      <span className="line-clamp-2 text-anti-truncate">{ev.venue || ev.location || "Local a confirmar"}</span>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                  <div className="pt-2 border-t border-border flex items-center justify-between">
                     <span className="text-xs font-bold text-foreground font-mono">
                       {ev.is_free ? "Gratuito" : ev.price_min_cents ? `A partir de R$ ${(ev.price_min_cents / 100).toFixed(2)}` : "Gratuito"}
                     </span>
@@ -310,21 +310,21 @@ export function EventsShowcaseDesktopView({
               <Link
                 key={item.id}
                 to={item.targetUrl as any}
-                className="h-48 rounded-2xl p-4 flex flex-col justify-between text-primary-foreground relative overflow-hidden select-none shadow-xs hover:opacity-95 active:scale-98 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="h-48 rounded-2xl p-4 flex flex-col justify-between text-neutral-50 relative overflow-hidden select-none hover:opacity-95 active:scale-98 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 style={{
                   background: item.imageUrl
                     ? undefined
-                    : `linear-gradient(145deg, ${item.bgColor || "#7c3aed"} 0%, #0f172a 120%)`,
+                    : item.bgColor || "var(--neutral-900, #171717)",
                 }}
               >
                 {item.imageUrl && (
                   <img src={item.imageUrl} alt={item.title} className="absolute inset-0 size-full object-cover" />
                 )}
-                <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+                <div className="absolute inset-0 bg-neutral-950/60 pointer-events-none" />
 
                 <div className="relative z-10">
                   {item.badgeText && (
-                    <span className="text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-full bg-card/20 backdrop-blur-xs border border-white/30 text-primary-foreground inline-block">
+                    <span className="text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-50 inline-block">
                       {item.badgeText}
                     </span>
                   )}
@@ -332,17 +332,17 @@ export function EventsShowcaseDesktopView({
 
                 <div className="relative z-10 space-y-2">
                   <div>
-                    <h3 className="text-base font-bold leading-tight line-clamp-2 drop-shadow-xs">
+                    <h3 className="text-base font-bold leading-tight line-clamp-2 text-neutral-50">
                       {item.title}
                     </h3>
                     {item.subtitle && (
-                      <p className="text-xs text-primary-foreground/80 line-clamp-1 mt-1 drop-shadow-xs">
+                      <p className="text-xs text-neutral-200 line-clamp-1 mt-1">
                         {item.subtitle}
                       </p>
                     )}
                   </div>
 
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card/20 backdrop-blur-md text-primary-foreground text-xs font-bold group-hover:bg-card/30 transition-colors">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-50 text-xs font-bold group-hover:bg-neutral-800 transition-colors">
                     <span>{item.actionText || "Conferir"}</span>
                     <CaretRight size={12} weight="bold" />
                   </div>

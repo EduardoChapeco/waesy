@@ -71,9 +71,9 @@ export function NativeMobileHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 -mx-2 sm:mx-0 sm:w-full select-none transition-colors",
-        transparent ? "bg-transparent" : "bg-background/95 backdrop-blur-md",
-        bordered && !transparent ? "border-b border-border/40" : "",
+        "sticky top-0 z-30 -mx-2 sm:mx-0 sm:w-full select-none transition-colors",
+        transparent ? "bg-transparent" : "bg-background",
+        bordered && !transparent ? "border-b border-border" : "",
         mobileOnly ? "waesy-compact-block" : "",
         "pt-safe",
         className

@@ -460,7 +460,7 @@ export function CarouselStudioEditor({
             </div>
 
             {/* CONTROLE DE ZOOM & SLIDE ANTERIOR/PRÓXIMO */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-card/90 backdrop-blur-md border border-border px-3 py-2 rounded-full">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-card border border-border shadow-overlay px-3 py-2 rounded-full">
               <Button
                 variant="ghost"
                 size="icon"

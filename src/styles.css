@@ -1780,7 +1780,7 @@ u.copilot-underline {
  * ========================================================================== */
 
 /* 1. Anti-Sanfona: Unifica containers de página em qualquer nível de guard dentro do Workspace */
-#workspace-main-content :is(.max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .workspace-container):not([role="dialog"]) {
+#workspace-main-content :is(.max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .workspace-container):not([role="dialog"], [data-proposal-canvas], [data-proposal-canvas] *) {
   max-width: 100%;
 }
 
@@ -1798,7 +1798,7 @@ u.copilot-underline {
   .bg-surface-paper,
   .bg-surface-paper\/50,
   .bg-surface-paper\/80
-) {
+):not([data-proposal-canvas], [data-proposal-canvas] *) {
   background-color: var(--card);
   border-color: transparent;
   backdrop-filter: none;
@@ -1834,7 +1834,7 @@ u.copilot-underline {
   .bg-sky-500\/10,
   .bg-violet-500\/5,
   .bg-violet-500\/10
-) {
+):not([data-proposal-canvas], [data-proposal-canvas] *) {
   background-color: var(--muted);
   border-color: transparent;
   backdrop-filter: none;
@@ -1876,8 +1876,160 @@ u.copilot-underline {
   .border-indigo-500\/30,
   .border-sky-500\/20,
   .border-sky-500\/30
-) {
+):not([data-proposal-canvas], [data-proposal-canvas] *) {
   border-color: transparent;
 }
+
+/* ==========================================================================
+ * PROPOSAL STUDIO DOCUMENT CANVAS ENGINE (SPEC-PROPOSAL-STUDIO-CANVAS-V1)
+ * Isolamento cromático absoluto, fundo sólido determinístico e contraste WCAG
+ * ========================================================================== */
+[data-proposal-canvas] {
+  --p-bg: #ffffff;
+  --p-surface: #ffffff;
+  --p-subtle: #f8fafc;
+  --p-ink: #0f172a;
+  --p-muted: #334155;
+  --p-faint: #64748b;
+  --p-border: #e2e8f0;
+  --p-brand: #0f2942;
+  --p-brand-fg: #ffffff;
+  --p-brand-accent: #0f2942;
+  --p-brand-soft: #eef2f6;
+  --p-brand-border: #cbd5e1;
+  --p-heading-font: "Playfair Display", Georgia, serif;
+  --p-body-font: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: var(--p-bg);
+  color: var(--p-ink);
+  font-family: var(--p-body-font);
+}
+
+.p-canvas-root {
+  background-color: var(--p-bg);
+  color: var(--p-ink);
+  font-family: var(--p-body-font);
+}
+
+.p-surface-canvas {
+  background-color: var(--p-bg);
+  color: var(--p-ink);
+}
+
+.p-surface-card {
+  background-color: var(--p-surface);
+  color: var(--p-ink);
+  border-color: var(--p-border);
+}
+
+.p-surface-subtle {
+  background-color: var(--p-subtle);
+  color: var(--p-ink);
+  border-color: var(--p-border);
+}
+
+.p-surface-brand {
+  background-color: var(--p-brand);
+  color: var(--p-brand-fg);
+  border-color: var(--p-brand);
+}
+
+.p-surface-brand-soft {
+  background-color: var(--p-brand-soft);
+  color: var(--p-brand-accent);
+  border-color: var(--p-brand-border);
+}
+
+.p-surface-hero-dark {
+  background-color: #0b0f19;
+  color: #f8fafc;
+}
+
+.p-surface-hero-overlay {
+  background-color: rgba(11, 15, 25, 0.62);
+  color: #f8fafc;
+}
+
+.p-surface-glass-dark {
+  background-color: rgba(15, 23, 42, 0.72);
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.p-text-ink {
+  color: var(--p-ink);
+}
+
+.p-text-muted {
+  color: var(--p-muted);
+}
+
+.p-text-faint {
+  color: var(--p-faint);
+}
+
+.p-text-brand {
+  color: var(--p-brand-accent);
+}
+
+.p-text-brand-fg {
+  color: var(--p-brand-fg);
+}
+
+.p-text-on-dark {
+  color: #f8fafc;
+}
+
+.p-text-on-dark-muted {
+  color: #cbd5e1;
+}
+
+.p-border-main {
+  border-color: var(--p-border);
+}
+
+.p-border-brand {
+  border-color: var(--p-brand-accent);
+}
+
+.p-border-brand-soft {
+  border-color: var(--p-brand-border);
+}
+
+.p-divide-main > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--p-border);
+}
+
+.p-heading-font {
+  font-family: var(--p-heading-font);
+}
+
+.p-body-font {
+  font-family: var(--p-body-font);
+}
+
+.p-badge-success {
+  background-color: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+[data-proposal-canvas][data-canvas-tone="dark"] .p-badge-success {
+  background-color: #064e3b;
+  color: #6ee7b7;
+  border-color: #047857;
+}
+
+.p-badge-danger {
+  background-color: #fff1f2;
+  color: #be123c;
+  border-color: #fecdd3;
+}
+
+[data-proposal-canvas][data-canvas-tone="dark"] .p-badge-danger {
+  background-color: #4c0519;
+  color: #fda4af;
+  border-color: #881337;
+}
+
 
 

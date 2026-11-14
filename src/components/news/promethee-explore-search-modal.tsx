@@ -75,12 +75,12 @@ export function PrometheeExploreSearchModal({
       role="dialog"
       aria-modal="true"
       aria-label="Buscar e Explorar Notícias"
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-xs p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-overlay p-0 sm:p-4"
     >
       <div className="flex h-dvh sm:h-auto sm:max-h-192 w-full max-w-2xl flex-col rounded-t-3xl sm:rounded-3xl border border-border bg-background overflow-hidden pt-safe pb-safe">
         {/* Cabeçalho da Barra de Busca */}
-        <div className="flex items-center gap-3 border-b border-border/40 p-4">
-          <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-muted/30 px-3 h-11 min-h-11">
+        <div className="flex items-center gap-3 border-b border-border p-4">
+          <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-muted px-3 h-11 min-h-11">
             <Search className="size-4 text-muted-foreground shrink-0" />
             <input
               type="search"

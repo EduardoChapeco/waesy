@@ -135,9 +135,9 @@ export function ClassifiedItemCard({ item, variant = "grid" }: ClassifiedItemCar
           </Link>
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
-            <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono truncate">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono min-w-0">
               <MapPin className="size-3 shrink-0 text-primary" />
-              <span className="truncate">{item.location_name || item.location_text || "Regional"}</span>
+              <span className="line-clamp-2 text-anti-truncate">{item.location_name || item.location_text || "Regional"}</span>
             </span>
 
             <div className="flex items-center gap-2">

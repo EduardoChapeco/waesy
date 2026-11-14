@@ -352,11 +352,11 @@ export function MemberPublicProfileView({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-card/90 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-neutral-950/90 flex items-center justify-center p-4"
         >
           <button
             type="button"
-            className="absolute top-6 right-6 size-11 min-h-11 min-w-11 rounded-full bg-card/10 hover:bg-card/20 text-primary-foreground transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="absolute top-6 right-6 size-11 min-h-11 min-w-11 rounded-full bg-card border border-border hover:bg-muted text-foreground transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={() => setPreviewMediaUrl(null)}
             aria-label="Fechar visualizador"
           >
@@ -409,7 +409,7 @@ export function MemberPublicProfileView({
 
       {/* ── 2. Modo de Edição In-Page (Zero Modais / Zero Popups) ── */}
       {isOwner && (isProfileInPageEditorOpen || (isCreator && editingSection === "creator_profile")) ? (
-        <div className="w-full max-w-5xl mx-auto space-y-6 bg-card rounded-lg border border-border/70 p-4 sm:p-6 md:p-8 shadow-xs animate-in fade-in duration-200">
+        <div className="w-full max-w-5xl mx-auto space-y-6 bg-card rounded-lg border border-border p-3 sm:p-6 md:p-8 animate-in fade-in duration-200">
           <ProfileInPageEditor
             isOpen={true}
             onClose={() => {
@@ -2929,7 +2929,7 @@ function ExperienceEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-between gap-3">
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-between gap-3">
  {item ? (
  <Button
  type="button"
@@ -3068,7 +3068,7 @@ function EducationEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-between gap-3">
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-between gap-3">
  {item ? (
  <Button
  type="button"
@@ -3182,7 +3182,7 @@ function CertificationEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-between gap-3">
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-between gap-3">
  {item ? (
  <Button
  type="button"
@@ -3325,7 +3325,7 @@ function ProjectEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-between gap-3">
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-between gap-3">
  {item ? (
  <Button
  type="button"
@@ -3475,7 +3475,7 @@ function VolunteeringEditModal({
  </div>
  </div>
 
- <div className="p-5 border-t border-border/40 shrink-0 bg-background/95 backdrop-blur-sm flex items-center justify-between gap-3">
+ <div className="p-5 border-t border-border shrink-0 bg-background flex items-center justify-between gap-3">
  {item ? (
  <Button
  type="button"

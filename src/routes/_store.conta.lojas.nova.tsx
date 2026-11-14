@@ -154,7 +154,7 @@ export default function NovaLojaPage() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6 pb-safe pb-24 px-4 sm:px-6">
+    <div className="w-full max-w-3xl mx-auto space-y-6 pb-safe pb-24 px-0 sm:px-6">
       {/* ── Native Mobile Header ── */}
       <NativeMobileHeader title="Nova Loja" fallbackHref="/conta/lojas" mobileOnly />
 

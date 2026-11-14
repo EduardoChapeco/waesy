@@ -674,7 +674,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
               className="relative overflow-hidden rounded-lg bg-muted inline-block size-24 shrink-0 border border-border/50"
             >
               {isUploadingMedia && index >= mediaUrls.length && (
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-xs flex flex-col items-center justify-center z-20 gap-1 text-foreground">
+                <div className="absolute inset-0 bg-card flex flex-col items-center justify-center z-20 gap-1 text-foreground">
                   <CircleNotch className="size-5 animate-spin motion-reduce:animate-none text-primary" />
                   <span className="text-xs font-bold">Enviando...</span>
                 </div>

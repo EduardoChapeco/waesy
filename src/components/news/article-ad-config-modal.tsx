@@ -106,13 +106,13 @@ export function ArticleAdConfigModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="ad-config-modal-title"
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-xs p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-overlay p-0 sm:p-4"
     >
       <div className="flex h-dvh sm:h-auto sm:max-h-192 w-full max-w-2xl flex-col rounded-t-3xl sm:rounded-3xl border border-border bg-background overflow-hidden pt-safe pb-safe">
         {/* Header Modal */}
-        <div className="flex items-center justify-between border-b border-border/40 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground border border-border">
               <Megaphone className="size-5" />
             </div>
             <div>

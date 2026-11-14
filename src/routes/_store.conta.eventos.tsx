@@ -336,7 +336,7 @@ function CivilianEventsPage() {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <div className="max-w-6xl mx-auto px-0 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* ── Desktop Header ── */}
         <div className="hidden md:flex items-center justify-between gap-4">
           <div>
@@ -356,7 +356,7 @@ function CivilianEventsPage() {
 
         {/* ── Metrics Summary Bar ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="bg-card border border-border/60 rounded-2xl p-4 flex flex-col justify-center">
+          <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center">
             <span className="text-xs text-muted-foreground font-medium">Eventos Cadastrados</span>
             <span className="text-xl sm:text-2xl font-bold text-foreground mt-1">{totalEvents}</span>
           </div>

@@ -101,11 +101,11 @@ export function UnifiedFeedCard({
               className="size-5 rounded-full object-cover shrink-0"
             />
           ) : (
-            <div className="size-5 rounded-full bg-primary/10 text-primary text-2xs font-bold flex items-center justify-center shrink-0">
+            <div className="size-5 rounded-full bg-muted border border-border text-foreground text-2xs font-bold flex items-center justify-center shrink-0">
               {authorName.slice(0, 1).toUpperCase()}
             </div>
           )}
-          <span className="text-2xs font-bold text-foreground truncate">
+          <span className="text-2xs font-bold text-foreground line-clamp-1">
             {authorName}
           </span>
           {post.author?.is_verified && (

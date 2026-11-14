@@ -26,13 +26,13 @@ export interface SlimActionBannerProps {
 }
 
 const GRADIENT_CLASSES: Record<string, string> = {
- blue: "bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-foreground",
- indigo: "bg-linear-to-r from-indigo-800 via-blue-700 to-sky-600 text-foreground",
- purple: "bg-linear-to-r from-purple-800 via-violet-700 to-fuchsia-700 text-foreground",
- emerald: "bg-linear-to-r from-emerald-800 via-teal-700 to-cyan-700 text-foreground",
- amber: "bg-linear-to-r from-warning via-orange-600 to-rose-700 text-foreground",
- dark: "bg-linear-to-r from-zinc-900 via-zinc-800 to-black text-foreground",
- none: "bg-card text-foreground",
+  blue: "bg-primary text-primary-foreground",
+  indigo: "bg-slate-900 text-slate-50",
+  purple: "bg-zinc-900 text-zinc-50",
+  emerald: "bg-emerald-900 text-emerald-50",
+  amber: "bg-warning text-warning-foreground",
+  dark: "bg-neutral-950 text-neutral-50",
+  none: "bg-card border border-border text-foreground",
 };
 
 export function SlimActionBanner({
@@ -100,20 +100,23 @@ export function SlimActionBanner({
  />
  )}
 
- {/* Sobreposição de Cor / Gradiente para Leitura */}
+ {/* Sobreposição de Cor para Leitura */}
  {isOverlayVisible && (
- <div className="absolute inset-0 bg-black/70 backdrop-blur-xs" />
+ <div className="absolute inset-0 bg-neutral-950/75" />
  )}
  </div>
  )}
 
  {/* ── Conteúdo do Banner Fino ── */}
- <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 text-foreground">
+ <div className={cn(
+ "relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5",
+ hasMedia || effectiveGradient !== "none" ? "text-neutral-50" : "text-foreground",
+ )}>
  <div className="space-y-2 max-w-2xl">
  {/* Badge Opcional */}
  {isBadgeVisible && effectiveBadge && (
  <div className="flex items-center gap-2">
- <span className="text-2xs font-mono font-black uppercase tracking-wider bg-card/20 px-3 py-1 rounded-full backdrop-blur-md text-foreground border border-white/20">
+ <span className="text-2xs font-mono font-black uppercase tracking-wider bg-card px-3 py-1 rounded-full text-foreground border border-border">
  {effectiveBadge}
  </span>
  </div>
@@ -121,14 +124,17 @@ export function SlimActionBanner({
 
  {/* Título */}
  {isTitleVisible && effectiveTitle && (
- <h2 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight leading-snug text-foreground drop-shadow-xs">
+ <h2 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight leading-snug">
  {effectiveTitle}
  </h2>
  )}
 
  {/* Descrição / Subtítulo */}
  {isDescVisible && effectiveSubtitle && (
- <p className="text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed">
+ <p className={cn(
+ "text-xs sm:text-sm font-medium leading-relaxed",
+ hasMedia || effectiveGradient !== "none" ? "text-neutral-200" : "text-muted-foreground",
+ )}>
  {effectiveSubtitle}
  </p>
  )}
@@ -140,7 +146,7 @@ export function SlimActionBanner({
  {onCtaClick ? (
  <Button
  onClick={onCtaClick}
- className="h-11 px-6 rounded-lg font-bold text-xs bg-card text-zinc-950 hover:bg-card/90 cursor-pointer transition-transform duration-200 active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-card text-foreground border border-border hover:bg-muted cursor-pointer transition-transform duration-200 active:scale-95"
  >
  <span>{effectiveCtaLabel}</span>
  <ArrowRight className="size-3.5 ml-2" />
@@ -148,7 +154,7 @@ export function SlimActionBanner({
  ) : effectiveTargetUrl.startsWith("http") ? (
  <Button
  asChild
- className="h-11 px-6 rounded-lg font-bold text-xs bg-card text-zinc-950 hover:bg-card/90 cursor-pointer transition-transform duration-200 active:scale-95"
+ className="h-11 px-6 rounded-lg font-bold text-xs bg-card text-foreground border border-border hover:bg-muted cursor-pointer transition-transform duration-200 active:scale-95"
  >
  <a href={effectiveTargetUrl} target="_blank" rel="noopener noreferrer">
  <span>{effectiveCtaLabel}</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Plus, Clock, ArrowRight, Loader2 } from "lucide-react";
+import { Plus, Clock, ArrowRight, Loader2, Tag } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { addToCart } from "@/services/cart.functions";
@@ -18,7 +18,7 @@ export interface OfferCardProps {
   discount_percent: number;
   mechanic_label: string;
   ends_at?: string | null;
-  cover_image: string;
+  cover_image?: string | null;
   selling_unit?: string;
   in_stock?: boolean;
   has_flash_offer?: boolean;
@@ -51,7 +51,12 @@ export function OfferCard({
 }: OfferCardProps) {
   const { setCartData, setIsCartOpen } = useCartContext();
   const [isAdding, setIsAdding] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [cover_image]);
 
   // Timer de oferta relâmpago
   useEffect(() => {
@@ -119,7 +124,7 @@ export function OfferCard({
     return (
       <div
         className={cn(
-          "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-lg bg-card border border-border/70 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none p-0 shadow-2xs",
+          "group relative flex flex-row items-stretch w-full h-36 sm:h-40 rounded-lg bg-card border border-border hover:border-primary transition-colors duration-200 content-auto-card overflow-hidden select-none p-0",
           className,
         )}
       >
@@ -129,12 +134,19 @@ export function OfferCard({
           className="flex flex-row items-stretch flex-1 min-w-0 cursor-pointer"
         >
           <div className="relative w-28 sm:w-36 h-full bg-muted overflow-hidden shrink-0">
-            <img
-              src={cover_image || "/banner-placeholder.png"}
-              alt={title}
-              className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-              loading="lazy"
-            />
+            {cover_image && !imgFailed ? (
+              <img
+                src={cover_image}
+                alt={title}
+                className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+                loading="lazy"
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              <div className="size-full flex items-center justify-center text-muted-foreground">
+                <Tag className="size-6" />
+              </div>
+            )}
             {discountVal > 0 && (
               <div className="absolute top-2 left-2 z-10">
                 <span className="px-2 py-1 rounded-md text-xs font-black uppercase tracking-wider bg-foreground text-background">
@@ -170,7 +182,7 @@ export function OfferCard({
                   {formatMoney(original_price_cents)}
                 </span>
               )}
-              <div className="text-xs sm:text-sm font-black text-foreground font-mono leading-tight truncate">
+              <div className="text-xs sm:text-sm font-black text-foreground font-mono leading-tight line-clamp-2 text-anti-truncate">
                 {formatMoney(price_cents)}
                 <span className="text-xs text-muted-foreground font-normal ml-1">
                   /{selling_unit}
@@ -217,15 +229,19 @@ export function OfferCard({
       >
         {/* ── IMAGEM NO TOPO (ASPECT-4-3 FULL BLEED COM ESCALA PROPORCIONAL) ── */}
         <div className="relative aspect-4-3 w-full bg-muted overflow-hidden shrink-0">
-          <img
-            src={cover_image || "/banner-placeholder.png"}
-            alt={title}
-            className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
-            loading="lazy"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = "/banner-placeholder.png";
-            }}
-          />
+          {cover_image && !imgFailed ? (
+            <img
+              src={cover_image}
+              alt={title}
+              className="relative size-full object-contain group-hover:scale-105 transition-transform duration-300 motion-reduce:transition-none"
+              loading="lazy"
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <div className="size-full flex items-center justify-center text-muted-foreground">
+              <Tag className="size-7" />
+            </div>
+          )}
 
           {/* Badge de Desconto */}
           {discountVal > 0 && (
@@ -276,7 +292,7 @@ export function OfferCard({
                 {formatMoney(original_price_cents)}
               </span>
             )}
-            <div className="text-base font-black text-foreground font-mono leading-tight truncate">
+            <div className="text-base font-black text-foreground font-mono leading-tight line-clamp-2 text-anti-truncate">
               {formatMoney(price_cents)}
               <span className="text-xs text-muted-foreground font-normal ml-1">
                 /{selling_unit}

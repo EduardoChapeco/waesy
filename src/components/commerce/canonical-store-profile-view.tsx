@@ -2276,7 +2276,7 @@ function cleanAddressSegment(text: string): string {
                           className={cn(
                             "text-xs uppercase font-bold",
                             sp.tier === "gold"
-                              ? "bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                              ? "bg-muted text-warning-strong border-border"
                               : sp.tier === "silver"
                               ? "bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
                               : "bg-muted border-border text-muted-foreground"

@@ -227,14 +227,14 @@ export const DynamicBookingHero: React.FC<DynamicBookingHeroProps> = ({
         ) : (
           <div className="size-full bg-muted/30" />
         )}
-        <div className="absolute inset-0 bg-background/90 backdrop-blur-xs" />
+        <div className="absolute inset-0 bg-background/95" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Headline Editorial de Cabeçalho */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
           {badge && (
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-xs font-bold text-primary">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1 text-xs font-bold text-primary">
               <Compass className="size-4" />
               <span>{badge}</span>
             </div>

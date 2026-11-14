@@ -433,7 +433,7 @@ export function ClassifiedDetailMobile({
       className="w-full min-h-screen bg-background text-foreground pb-32 pb-safe select-none"
     >
       {/* ── 1. HEADER PADRONIZADO FIXO NO TOPO COM FLEX ROW E BACK BUTTON ALINHADO ── */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 px-3 h-12 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-background border-b border-border px-3 h-12 flex items-center justify-between">
         <NativeBackButton
           variant="default"
           fallbackHref="/classificados"
@@ -518,7 +518,7 @@ export function ClassifiedDetailMobile({
 
             {/* Contador no Canto */}
             {images.length > 1 && (
-              <div className="absolute bottom-3 right-3 px-2 py-1 rounded-md bg-neutral-950/70 backdrop-blur-md text-foreground text-xs font-mono font-medium pointer-events-none z-10">
+              <div className="absolute bottom-3 right-3 px-2 py-1 rounded-md bg-neutral-950 border border-neutral-800 text-neutral-50 text-xs font-mono font-medium pointer-events-none z-10">
                 {activeImage + 1}/{images.length}
               </div>
             )}

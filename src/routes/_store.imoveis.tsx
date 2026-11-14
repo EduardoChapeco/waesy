@@ -399,7 +399,7 @@ function PropertyListItem({ item }: { item: any }) {
             <House size={24} className="text-muted-foreground/40" />
           </div>
         )}
-        <Badge variant="secondary" className="absolute top-2 left-2 text-3xs px-2 py-1 font-bold bg-background/90 backdrop-blur-xs">
+        <Badge variant="secondary" className="absolute top-2 left-2 text-2xs px-2 py-1 font-bold bg-card text-foreground border border-border">
           {isTemporada ? "Temp." : isAluguel ? "Aluguel" : "Venda"}
         </Badge>
       </div>

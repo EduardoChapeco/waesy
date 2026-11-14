@@ -122,8 +122,8 @@ export function ExperienceMediaCarousel({
                       className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                      <span className="text-2xs font-medium text-foreground truncate flex items-center gap-1">
+                    <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                      <span className="text-2xs font-medium text-neutral-50 truncate flex items-center gap-1">
                         <Maximize2 className="size-3" />
                         {item.title || "Ver em alta resolução"}
                       </span>
@@ -132,7 +132,7 @@ export function ExperienceMediaCarousel({
                 )}
 
                 {/* Badge indicador discreto */}
-                <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-foreground/60 backdrop-blur-sm text-3xs font-mono text-foreground/90">
+                <div className="absolute top-2 right-2 px-2 py-1 rounded-md bg-neutral-950 border border-neutral-800 text-3xs font-mono text-neutral-50">
                   {idx + 1}/{normalizedItems.length}
                 </div>
               </div>
@@ -146,12 +146,12 @@ export function ExperienceMediaCarousel({
         <div
     role="dialog"
     aria-modal="true"
-    className="fixed inset-0 z-50 bg-foreground/90 backdrop-blur-2xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200 focus-visible:outline-none"
+    className="fixed inset-0 z-50 bg-neutral-950 text-neutral-50 flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200 focus-visible:outline-none"
     onClick={() => setSelectedMediaIndex(null)}
   >
           {/* Header Superior Flutuante */}
           <div
-    className="w-full max-w-5xl flex items-center justify-between text-foreground z-10 py-2 focus-visible:outline-none"
+    className="w-full max-w-5xl flex items-center justify-between text-neutral-50 z-10 py-2 focus-visible:outline-none"
     onClick={(e) => e.stopPropagation()}
   >
             <div className="space-y-1 max-w-7/10">
@@ -159,12 +159,12 @@ export function ExperienceMediaCarousel({
                 {activeItem.title || itemTitle || "Evidência Profissional"}
               </h4>
               {companyName && (
-                <p className="text-xs text-foreground/70 truncate">{companyName}</p>
+                <p className="text-xs text-neutral-300 truncate">{companyName}</p>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-foreground/70 mr-2">
+              <span className="text-xs font-mono text-neutral-300 mr-2">
                 {selectedMediaIndex + 1} de {normalizedItems.length}
               </span>
 
@@ -172,7 +172,7 @@ export function ExperienceMediaCarousel({
                 asChild
                 size="sm"
                 variant="ghost"
-                className="size-9 p-0 rounded-full text-foreground/80 hover:text-foreground hover:bg-card/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                className="size-9 p-0 rounded-full text-neutral-200 hover:text-neutral-50 hover:bg-neutral-800 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
               >
                 <a
                   href={activeItem.url}
@@ -188,7 +188,7 @@ export function ExperienceMediaCarousel({
               <Button
                 size="sm"
                 variant="ghost"
-                className="size-9 p-0 rounded-full text-foreground/80 hover:text-foreground hover:bg-card/10 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                className="size-9 p-0 rounded-full text-neutral-200 hover:text-neutral-50 hover:bg-neutral-800 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
                 onClick={() => setSelectedMediaIndex(null)}
                 title="Fechar (ESC)"
               >
@@ -211,7 +211,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev > 0 ? prev - 1 : normalizedItems.length - 1) : null
                   )
                 }
-                className="absolute left-2 sm:left-4 z-10 size-11 rounded-full bg-foreground/50 hover:bg-foreground/80 text-foreground backdrop-blur-md border border-white/10 flex items-center justify-center transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="absolute left-2 sm:left-4 z-10 size-11 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-50 border border-neutral-700 flex items-center justify-center transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Anterior (Seta Esquerda)"
               >
                 <ChevronLeft className="size-6" />
@@ -221,7 +221,7 @@ export function ExperienceMediaCarousel({
             {/* Conteúdo da Mídia */}
             {activeItem.type === "pdf" || activeItem.url.toLowerCase().endsWith(".pdf") ? (
               <div className="w-full max-w-2xl h-vh-65 rounded-lg bg-card p-6 flex flex-col items-center justify-center text-center space-y-4 border border-border ">
-                <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <div className="size-16 rounded-lg bg-muted text-foreground border border-border flex items-center justify-center">
                   <FileText className="size-8" />
                 </div>
                 <div className="space-y-1">
@@ -243,7 +243,7 @@ export function ExperienceMediaCarousel({
               <img
                 src={activeItem.url}
                 alt={activeItem.title || "Visualização ampliada"}
-                className="max-h-vh-75 max-w-full object-contain rounded-lg  border border-white/10 animate-in zoom-in-95 duration-200"
+                className="max-h-vh-75 max-w-full object-contain rounded-lg border border-neutral-800 animate-in zoom-in-95 duration-200"
               />
             )}
 
@@ -256,7 +256,7 @@ export function ExperienceMediaCarousel({
                     prev !== null ? (prev < normalizedItems.length - 1 ? prev + 1 : 0) : null
                   )
                 }
-                className="absolute right-2 sm:right-4 z-10 size-11 rounded-full bg-foreground/50 hover:bg-foreground/80 text-foreground backdrop-blur-md border border-white/10 flex items-center justify-center transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="absolute right-2 sm:right-4 z-10 size-11 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-50 border border-neutral-700 flex items-center justify-center transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Próximo (Seta Direita)"
               >
                 <ChevronRight className="size-6" />

@@ -275,8 +275,8 @@ export function MediaMosaic({
               className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-black/50 flex items-end p-3">
-              <span className="text-xs font-semibold text-primary-foreground truncate">
+            <div className="absolute inset-0 bg-neutral-950/60 flex items-end p-3">
+              <span className="text-xs font-semibold text-neutral-50 line-clamp-2 text-anti-truncate text-left">
                 {item.title}
               </span>
             </div>

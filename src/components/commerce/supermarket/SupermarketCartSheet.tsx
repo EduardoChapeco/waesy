@@ -91,7 +91,7 @@ export function SupermarketCartSheet({
         className="w-full sm:max-w-lg p-0 flex flex-col bg-background gap-0 max-h-screen"
       >
         {/* ── Top Bar do Carrinho / Checkout ── */}
-        <SheetHeader className="p-4 border-b border-border/40 bg-background/95 backdrop-blur-md flex flex-row items-center justify-between gap-3 shrink-0">
+        <SheetHeader className="p-4 border-b border-border bg-background flex flex-row items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2">
             {checkoutStep !== "cart" ? (
               <button
@@ -487,7 +487,7 @@ export function SupermarketCartSheet({
         ) : null}
 
         {/* ── Footer Sticky com Total e Próxima Ação (Piso 44px) ── */}
-        <div className="p-4 border-t border-border/40 bg-background/95 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
+        <div className="p-4 border-t border-border bg-background flex items-center justify-between gap-3 shrink-0">
           <div className="flex flex-col min-w-0">
             <span className="text-3xs text-muted-foreground font-semibold">Total</span>
             <span className="text-lg font-black text-foreground">
@@ -523,7 +523,7 @@ export function SupermarketCartSheet({
           ) : (
             <Button
               onClick={handleFinishPurchase}
-              className="h-11 min-h-11 px-8 rounded-xl font-black gap-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-8 rounded-xl font-black gap-2 text-sm bg-emerald-700 hover:bg-emerald-800 text-neutral-50 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Check size={18} weight="bold" />
               <span>Concluir Compra</span>

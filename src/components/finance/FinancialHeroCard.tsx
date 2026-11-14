@@ -96,14 +96,14 @@ export function FinancialHeroCard({
   return (
     <div
       className={cn(
-        "w-full rounded-b-[36px] sm:rounded-b-[44px] bg-warning text-zinc-950 pt-safe pt-4 px-4 sm:px-6 pb-6  relative overflow-hidden select-none transition-colors",
+        "w-full rounded-b-3xl bg-warning text-neutral-950 pt-safe pt-4 px-4 sm:px-6 pb-6 relative overflow-hidden select-none transition-colors",
         className
       )}
     >
       {/* ── Top Bar: Perfil do Usuário + Cluster de Utilidades (Sino, Busca, Suporte) ── */}
       <div className="flex items-center justify-between gap-3 min-h-11">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="size-11 min-h-11 min-w-11 rounded-full ring-2 ring-black/10 overflow-hidden bg-zinc-900 text-zinc-100 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+          <div className="size-11 min-h-11 min-w-11 rounded-full ring-2 ring-neutral-950/15 overflow-hidden bg-neutral-900 text-neutral-100 flex items-center justify-center font-bold text-xs shrink-0">
             {userAvatarUrl ? (
               <img
                 src={userAvatarUrl}
@@ -114,16 +114,16 @@ export function FinancialHeroCard({
                 }}
               />
             ) : (
-              <span className="text-warning-strong font-extrabold text-sm uppercase">
+              <span className="text-warning font-extrabold text-sm uppercase">
                 {userName.charAt(0) || "U"}
               </span>
             )}
           </div>
           <div className="min-w-0">
-            <span className="text-xs font-semibold text-zinc-800 leading-tight block truncate">
+            <span className="text-xs font-semibold text-neutral-800 leading-tight block line-clamp-1">
               Bem-Vindo,
             </span>
-            <span className="text-sm font-extrabold text-zinc-950 leading-tight block truncate">
+            <span className="text-sm font-extrabold text-neutral-950 leading-tight block line-clamp-2 text-anti-truncate">
               {userName}
             </span>
           </div>
@@ -136,7 +136,7 @@ export function FinancialHeroCard({
             onClick={onNotificationClick}
             aria-label="Notificações do banco"
             title="Notificações"
-            className="size-11 min-h-11 min-w-11 rounded-full bg-background/10 hover:bg-background/15 active:bg-background/20 text-zinc-950 flex items-center justify-center relative cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+            className="size-11 min-h-11 min-w-11 rounded-full bg-neutral-950/10 hover:bg-neutral-950/15 active:bg-neutral-950/20 text-neutral-950 flex items-center justify-center relative cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
           >
             <Bell className="size-4" />
             <span className="size-2 rounded-full bg-rose-600 absolute top-2.5 right-2.5 ring-2 ring-warning" />
@@ -147,7 +147,7 @@ export function FinancialHeroCard({
             onClick={onSearchClick}
             aria-label="Buscar transações e funções"
             title="Buscar"
-            className="size-11 min-h-11 min-w-11 rounded-full bg-background/10 hover:bg-background/15 active:bg-background/20 text-zinc-950 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+            className="size-11 min-h-11 min-w-11 rounded-full bg-neutral-950/10 hover:bg-neutral-950/15 active:bg-neutral-950/20 text-neutral-950 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
           >
             <Search className="size-4" />
           </button>
@@ -157,7 +157,7 @@ export function FinancialHeroCard({
             onClick={onSupportClick}
             aria-label="Suporte e atendimento ao cliente"
             title="Suporte"
-            className="size-11 min-h-11 min-w-11 rounded-full bg-background/10 hover:bg-background/15 active:bg-background/20 text-zinc-950 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+            className="size-11 min-h-11 min-w-11 rounded-full bg-neutral-950/10 hover:bg-neutral-950/15 active:bg-neutral-950/20 text-neutral-950 flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
           >
             <Headphones className="size-4" />
           </button>
@@ -241,35 +241,35 @@ export function FinancialHeroCard({
 
       {/* ── Pílulas Opcionais de Ação Rápida ── */}
       {showInlineActionButtons && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 pt-4 border-t border-black/10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 pt-4 border-t border-neutral-950/15">
           <button
             type="button"
             onClick={onDepositClick}
             aria-label="Abastecer ou carregar carteira"
-            className="h-11 min-h-11 px-2 rounded-xl bg-zinc-950 hover:bg-zinc-900 text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+            className="h-11 min-h-11 px-2 rounded-xl bg-neutral-950 hover:bg-neutral-800 text-neutral-50 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
           >
             <Plus className="size-4 shrink-0" />
-            <span className="truncate">Abastecer</span>
+            <span className="line-clamp-1">Abastecer</span>
           </button>
 
           <button
             type="button"
             onClick={onPayClick}
             aria-label="Pagar conta ou boleto"
-            className="h-11 min-h-11 px-2 rounded-xl bg-card/70 hover:bg-card text-zinc-950 border border-black/10 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+            className="h-11 min-h-11 px-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 text-neutral-950 border border-neutral-300 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
           >
             <ArrowUpRight className="size-4 shrink-0" />
-            <span className="truncate">Pagar</span>
+            <span className="line-clamp-1">Pagar</span>
           </button>
 
           <button
             type="button"
             onClick={onTransferClick}
             aria-label="Transferir dinheiro via Pix"
-            className="h-11 min-h-11 px-2 rounded-xl bg-card/70 hover:bg-card text-zinc-950 border border-black/10 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950"
+            className="h-11 min-h-11 px-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 text-neutral-950 border border-neutral-300 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950"
           >
             <ArrowDownLeft className="size-4 shrink-0" />
-            <span className="truncate">Transferir</span>
+            <span className="line-clamp-1">Transferir</span>
           </button>
         </div>
       )}

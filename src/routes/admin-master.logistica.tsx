@@ -523,7 +523,7 @@ function AdminMasterLogisticaPage() {
                   </div>
                 )}
                 <div className="absolute top-2 left-2">
-                  <Badge className="bg-background/80 backdrop-blur-md text-foreground border-border/60 text-xs font-bold">
+                  <Badge className="bg-card text-foreground border border-border text-xs font-bold">
                     {badge}
                   </Badge>
                 </div>

@@ -1094,7 +1094,7 @@ export function BrandKitPage() {
                     ].map((color, i) => (
                       <div
                         key={i}
-                        className="w-8 h-8 rounded-full border-2 border-white/20"
+                        className="w-8 h-8 rounded-full border-2 border-border"
                         // design-lint-ignore DL-05 reason:"Preview dinâmico de amostras de cores do Brand Kit" expiry:"2027-12-31"
                         style={{ backgroundColor: color }}
                         title={color}

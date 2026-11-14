@@ -242,13 +242,13 @@ function ConcursosPublicPage() {
                           to="/diretorio/$id"
                           params={{ id: raffle.storeId }}
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-foreground/70 hover:bg-foreground/90 text-foreground text-2xs backdrop-blur-md transition-transform duration-200 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-50 border border-neutral-700 text-2xs transition-transform duration-200 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Store className="size-3" />
                           <span>{raffle.storeName}</span>
                         </Link>
                       ) : (
-                        <Badge className="bg-foreground/70 text-foreground text-2xs backdrop-blur-md border-0 gap-1 px-3 py-1">
+                        <Badge className="bg-neutral-900 text-neutral-50 text-2xs border border-neutral-700 gap-1 px-3 py-1">
                           <Store className="size-3" />
                           <span>{raffle.storeName}</span>
                         </Badge>
@@ -259,8 +259,8 @@ function ConcursosPublicPage() {
                       <Badge
                         className={
                           isCompleted
-                            ? "bg-foreground/70 text-foreground text-2xs backdrop-blur-md border-0"
-                            : "bg-emerald-600 text-foreground text-2xs font-bold border-0"
+                            ? "bg-neutral-900 text-neutral-50 text-2xs border border-neutral-700"
+                            : "bg-emerald-700 text-emerald-50 text-2xs font-bold border border-emerald-600"
                         }
                       >
                         {isCompleted ? "Encerrado" : "Sorteio Aberto"}

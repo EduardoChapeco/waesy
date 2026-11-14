@@ -1181,18 +1181,18 @@ function CommunityHomePage() {
                         className="size-full object-cover group-hover:scale-102 transition-transform duration-200"
                       />
                     )}
-                    <div className="absolute inset-0 bg-black/60" />
+                    <div className="absolute inset-0 bg-neutral-950/60" />
                     <div className="absolute bottom-4 left-4 right-4 text-left">
                       {middleBanners[0].badge_text && (
-                        <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 text-foreground border border-white/20 mb-2">
+                        <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-neutral-900 text-neutral-50 border border-neutral-700 mb-2">
                           {middleBanners[0].badge_text}
                         </span>
                       )}
-                      <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight drop-">
+                      <h3 className="text-base sm:text-lg font-bold text-neutral-50 leading-tight">
                         {middleBanners[0].title}
                       </h3>
                       {middleBanners[0].subtitle && (
-                        <p className="text-xs text-foreground/85 line-clamp-1 mt-1">
+                        <p className="text-xs text-neutral-200 line-clamp-1 mt-1">
                           {middleBanners[0].subtitle}
                         </p>
                       )}
@@ -1454,18 +1454,18 @@ function CommunityHomePage() {
                   className="size-full object-cover group-hover:scale-102 transition-transform duration-200"
                 />
               )}
-              <div className="absolute inset-0 bg-black/60" />
+              <div className="absolute inset-0 bg-neutral-950/60" />
               <div className="absolute bottom-5 left-5 right-5 text-left">
                 {footerBanners[0].badge_text && (
-                  <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 text-foreground border border-white/20 mb-2">
+                  <span className="inline-block px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-neutral-900 text-neutral-50 border border-neutral-700 mb-2">
                     {footerBanners[0].badge_text}
                   </span>
                 )}
-                <h3 className="text-lg sm:text-xl font-bold text-foreground leading-tight drop-">
+                <h3 className="text-lg sm:text-xl font-bold text-neutral-50 leading-tight">
                   {footerBanners[0].title}
                 </h3>
                 {footerBanners[0].subtitle && (
-                  <p className="text-xs sm:text-sm text-foreground/85 line-clamp-1 mt-1">
+                  <p className="text-xs sm:text-sm text-neutral-200 line-clamp-1 mt-1">
                     {footerBanners[0].subtitle}
                   </p>
                 )}

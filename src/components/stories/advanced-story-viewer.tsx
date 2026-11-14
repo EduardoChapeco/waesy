@@ -297,13 +297,13 @@ export function AdvancedStoryViewer({
  )}
 
  {currentStory.is_sponsored && (
- <Badge className="bg-amber-950 text-amber-100 border border-amber-700 text-xs font-bold px-2 py-1 rounded-md">
+ <Badge className="bg-muted text-warning-strong border border-border text-xs font-bold px-2 py-1 rounded-md">
  Patrocinado
  </Badge>
  )}
  </div>
 
- <div className="flex items-center gap-2 text-xs text-zinc-300">
+ <div className="flex items-center gap-2 text-xs text-neutral-300">
  {currentGroup.entityHandle && <span>{currentGroup.entityHandle}</span>}
  <span>•</span>
  <span>Há 3h</span>

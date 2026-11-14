@@ -24,12 +24,12 @@ export function PoweredByWaesyBadge({
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-medium transition-colors duration-200 shadow-xs",
+          "inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-medium transition-colors duration-200",
           isDark
-            ? "bg-foreground/80 text-foreground/80 border border-white/10 hover:border-white/20 hover:text-foreground"
+            ? "bg-neutral-900 text-neutral-300 border border-neutral-700 hover:border-neutral-500 hover:text-neutral-50"
             : isLight
-            ? "bg-card text-zinc-700 border border-zinc-200 hover:border-zinc-300 hover:text-zinc-900"
-            : "bg-muted/40 text-muted-foreground border border-border/60 hover:text-foreground hover:border-border",
+            ? "bg-card text-foreground border border-border hover:bg-muted"
+            : "bg-muted text-muted-foreground border border-border hover:text-foreground",
           className
         )}
       >

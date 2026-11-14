@@ -29,6 +29,18 @@ Modernizar e estabilizar ponta a ponta o ecossistema de Atendimento Omnichannel 
 ### REQ-05: Hub Cloudwebly / cPanel de Hospedagem e Caixas de E-mail Corporativo
 - **WHEN** o gestor acessar `/workspace/configuracoes/integracoes`, **THE SYSTEM SHALL** disponibilizar a gestão completa de Hospedagem & E-mail Corporativo (Cloudwebly / cPanel UAPI + SMTP/IMAP), permitindo conectar o servidor cPanel/Cloudwebly, criar contas de e-mail do domínio (`@suaempresa.com.br`), excluir contas, definir cotas e vincular cada caixa de e-mail a setores/filas e usuários específicos do workspace.
 
+### REQ-06: Protocolo Universal de Hash de Rastreabilidade Multi-Nicho & Pílulas Visuais com Foto/Inicial
+- **WHEN** uma tarefa, chamado SAC, viagem, pedido, agendamento ou oportunidade for vinculada a um cliente ou operação, **THE SYSTEM SHALL** gerar e persistir um código padronizado de rastreabilidade (`#CLI-XXXX`, `#TRP-XXXX`, `#PED-XXXX`, `#AGD-XXXX`, `#SAC-XXXX`, `#TSK-XXXX`) em `custom_fields` / `metadata` e nas tags operacionais.
+- **WHILE** uma tag ou pílula de vínculo de cliente/responsável for exibida no Chat (`Customer360Sidebar`), Tarefas (`TaskItemCard`), Suporte (`/workspace/suporte`) ou Viagens (`/workspace/turismo/viagens`), **THE SYSTEM SHALL** renderizar a foto real do cliente/usuário (`<img>` com fallback defensivo para inicial) ao lado do nome e do hash de vínculo em formato squircle minimalista.
+
+### REQ-07: Divisão Operacional do Setor de Suporte / SAC (Resolução de Pepinos vs. Planilha Viva de Customer Success)
+- **WHEN** a equipe acessar `/workspace/suporte` (ou a visão de Onboarding em `/workspace/turismo/viagens`), **THE SYSTEM SHALL** dividir claramente a operação em:
+  1. **Resolução de Pepinos & Reclamações (Lista Ordenada + Kanban):** Unificação de chamados técnicos/operacionais (`operator_support_tickets`), chamados SAC do cliente (`store_support_tickets`) e incidentes de viagem/voo (`tourism_incidents`), com alternância entre Lista Ordenada por SLA/Prioridade e Kanban de Resolução, atribuição de responsável/função e vínculo direto com Viagem/Pedido/Cliente.
+  2. **Planilha Viva de Onboarding & Customer Success (Sheet Multi-Nicho):** Visão tabular interativa estilo Sheet listando cada Viagem (`tourism_trips` + dossiês), Pedido (`orders`) e Contrato/Agendamento ativo com colunas clicáveis em tempo real para marcar etapas concluídas (`Docs Recebidos`, `Contrato Assinado`, `Pagamento OK`, `Emissão / PNR`, `Vouchers / Kit Enviado`, `Pré-Embarque / CS`, `Pós-Venda Concluído`), barra de progresso e botões rápidos para criar Tarefa vinculada ou abrir Pepino/SAC.
+
+### REQ-08: Sincronização Bidirecional de Tarefas (`/workspace/tarefas` ⇄ Chat 360º ⇄ Suporte/CS)
+- **WHEN** um operador criar ou concluir uma tarefa vinculada a um cliente, viagem, pedido ou chamado a partir do Chat 360º (`Customer360Sidebar`), da Planilha Viva de Customer Success ou do módulo `/workspace/tarefas`, **THE SYSTEM SHALL** sincronizar a tarefa em `workspace_tasks` com metadados completos do cliente (`customer_id`, `customer_name`, `customer_avatar_url`, `trace_hash`, `entity_type`, `entity_code`, `assigned_sector`), exibindo-a simultaneamente no painel lateral do Chat 360º e no quadro/lista de `/workspace/tarefas`.
+
 ## 3. Entradas, Saídas e Invariantes
 - **Entradas:** Eventos de UI no chat omnichannel, payloads validados via Zod nas Server Functions (`chat.functions.ts`, `integrations.functions.ts`).
 - **Saídas:** Atualizações persistidas em `stores.settings`, `chat_threads`, `chat_messages`, `customers_crm`, `tourism_trips` e `integration_credentials`.

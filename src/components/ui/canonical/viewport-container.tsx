@@ -178,7 +178,7 @@ export const CanonicalHooberThumbZone = React.forwardRef<
       ref={ref}
       className={cn(
         "sticky bottom-0 z-30 w-full",
-        "bg-card/95 backdrop-blur-md border-t border-border",
+        "bg-card border-t border-border",
         "p-3 sm:p-4",
         "flex items-center justify-between gap-3",
         "safe-area-bottom",

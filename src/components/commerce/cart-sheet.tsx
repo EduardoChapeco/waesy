@@ -129,12 +129,12 @@ export function CartSheet() {
           side="right"
           size="wide"
           className={cn(
-            "w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background/95 backdrop-blur-md border-l border-border/60 overscroll-contain",
+            "w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background border-l border-border overscroll-contain",
             "max-sm:inset-0 max-sm:h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-none"
           )}
         >
           {/* Cabeçalho do Carrinho */}
-          <SheetHeader className="px-5 py-4 bg-card/60 backdrop-blur-md shrink-0 border-b border-border/40">
+          <SheetHeader className="px-5 py-4 bg-card shrink-0 border-b border-border">
             <SheetTitle className="flex items-center justify-between font-bold text-foreground text-lg">
               <div className="flex items-center gap-2">
                 <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center">
@@ -529,7 +529,7 @@ export function CartSheet() {
 
           {/* Rodapé fixo do Carrinho */}
           {globalCarts.length > 0 && (
-            <div className="bg-card/95 backdrop-blur-md p-4 pb-safe z-10 shrink-0 space-y-3 border-t border-border/60">
+            <div className="bg-card p-4 pb-safe z-10 shrink-0 space-y-3 border-t border-border">
               <div className="space-y-1">
                 <div className="flex items-center justify-between font-bold text-foreground">
                   <span className="text-xs uppercase tracking-wider text-muted-foreground">

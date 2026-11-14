@@ -117,13 +117,13 @@ export const ChatCartCard: React.FC<ChatCartCardProps> = ({
 
   return (
     <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 w-full max-w-sm">
-      <div className="flex items-center justify-between border-b border-border/50 pb-2">
+      <div className="flex items-center justify-between border-b border-border pb-2">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="size-8 rounded-md bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
             <ShoppingCart className="size-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-foreground truncate max-w-44">
+            <h4 className="text-xs font-bold text-foreground line-clamp-2 text-anti-truncate max-w-44">
               {storeName}
             </h4>
             <p className="text-xs text-muted-foreground">Carrinho Ativo</p>
@@ -139,10 +139,10 @@ export const ChatCartCard: React.FC<ChatCartCardProps> = ({
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between gap-2 text-xs py-1 border-b border-border/30 last:border-b-0"
+              className="flex items-center justify-between gap-2 text-xs py-1 border-b border-border last:border-b-0"
             >
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-foreground truncate">{item.title}</p>
+                <p className="font-semibold text-foreground line-clamp-2 text-anti-truncate">{item.title}</p>
                 <p className="text-muted-foreground font-mono">
                   {formatMoney(item.unitPriceCents / 100)} cada
                 </p>
@@ -512,14 +512,14 @@ export const ChatAppointmentCard: React.FC<ChatAppointmentCardProps> = ({
   const isConfirmed = status === "confirmed" || status === "completed";
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card p-4 space-y-3 w-full max-w-sm">
-      <div className="flex items-center justify-between border-b border-border/50 pb-2">
+    <div className="rounded-lg border border-border bg-card p-4 space-y-3 w-full max-w-sm">
+      <div className="flex items-center justify-between border-b border-border pb-2">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="size-8 rounded-md bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
             <Calendar className="size-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-foreground truncate max-w-44">
+            <h4 className="text-xs font-bold text-foreground line-clamp-2 text-anti-truncate">
               {serviceTitle}
             </h4>
             <p className="text-xs text-muted-foreground">{storeName}</p>

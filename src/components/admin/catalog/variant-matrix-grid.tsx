@@ -199,9 +199,9 @@ export function VariantMatrixGrid({
       {/* Visualizacao Desktop: Tabela Ampla com Rolagem Suave sem Esmagamento */}
       <div className="hidden md:block border rounded-lg overflow-x-auto table-container bg-card mb-4">
         <table className="w-max min-w-full text-sm text-left">
-          <thead className="bg-muted/40 text-muted-foreground text-xs uppercase font-semibold">
+          <thead className="bg-muted text-muted-foreground text-xs uppercase font-semibold">
             <tr>
-              <th className="px-3 py-3 w-44 group bg-muted/90 backdrop-blur-xs sticky left-0 z-20 border-r border-border shadow-xs">
+              <th className="px-3 py-3 w-44 group bg-muted sticky left-0 z-20 border-r border-border">
                 <div className="flex items-center gap-1">
                   <Input
                     value={rowKey}

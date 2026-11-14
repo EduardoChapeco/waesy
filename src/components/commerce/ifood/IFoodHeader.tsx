@@ -68,7 +68,7 @@ export function IFoodHeader({
   return (
     <header
       className={cn(
-        "w-full bg-background/95 backdrop-blur-md py-2 px-3 sm:px-4 flex-col gap-2 sticky top-0 z-30 border-b border-border/40 pt-safe",
+        "w-full bg-background py-2 px-3 sm:px-4 flex-col gap-2 sticky top-0 z-30 border-b border-border pt-safe",
         visibilityClass,
         className,
       )}

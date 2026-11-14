@@ -240,12 +240,12 @@ function AdminMasterMarcaPage() {
  {/* Indicador de Status */}
  <div className="flex items-center gap-2">
  {isDirty ? (
- <Badge className="bg-warning/10 text-warning-strong text-xs font-semibold px-3 py-1">
- ● Alterações não salvas
+ <Badge className="bg-muted border border-border text-warning-strong text-xs font-semibold px-3 py-1">
+ Alterações pendentes
  </Badge>
  ) : (
- <Badge className="bg-emerald-500/10 text-emerald-600 text-xs font-semibold px-3 py-1">
-  Sincronizado com o sistema
+ <Badge className="bg-muted border border-border text-emerald-700 dark:text-emerald-300 text-xs font-semibold px-3 py-1">
+ Sincronizado com o sistema
  </Badge>
  )}
  </div>
@@ -256,9 +256,9 @@ function AdminMasterMarcaPage() {
  {/* Coluna Esquerda: Formulários de Configuração (7 colunas) */}
  <div className="lg:col-span-7 space-y-6">
  {/* 1. Nome & Exibição na Barra Superior */}
- <div className="p-5 rounded-lg bg-card space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border space-y-4">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
  <Type className="size-4" />
  </div>
  <div>
@@ -279,12 +279,12 @@ function AdminMasterMarcaPage() {
  value={platformName}
  onChange={(e) => setPlatformName(e.target.value)}
  placeholder="Ex: Waesy"
- className="rounded-lg h-10 text-sm font-semibold bg-background"
+ className="rounded-lg h-11 min-h-11 text-sm font-semibold bg-background"
  />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
- <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
  <div>
  <p className="text-xs font-semibold text-foreground">Exibir Nome</p>
  <p className="text-2xs text-muted-foreground">Texto na barra superior</p>
@@ -292,7 +292,7 @@ function AdminMasterMarcaPage() {
  <Switch checked={showName} onCheckedChange={setShowName} id="show-name-toggle" />
  </div>
 
- <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20">
+ <div className="flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
  <div>
  <p className="text-xs font-semibold text-foreground">Exibir Logo</p>
  <p className="text-2xs text-muted-foreground">Imagem da marca no topo</p>
@@ -304,10 +304,10 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 2. Upload de Logomarca Oficial */}
- <div className="p-5 rounded-lg bg-card space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-info/10 text-info flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
  <ImageIcon className="size-4" />
  </div>
  <div>
@@ -322,7 +322,7 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="sm"
  onClick={() => setLogoUrl(null)}
- className="text-xs text-destructive hover:bg-destructive/10 h-11 min-h-11 sm:h-9 gap-1"
+ className="text-xs text-destructive hover:bg-muted h-11 min-h-11 sm:h-9 gap-1 cursor-pointer"
  >
  <Trash2 className="size-3.5" />
  <span>Remover</span>
@@ -330,7 +330,7 @@ function AdminMasterMarcaPage() {
  )}
  </div>
 
- <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20">
+ <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted border border-border">
  <div className="size-20 rounded-lg bg-background flex items-center justify-center p-2 shrink-0 overflow-hidden">
  {logoUrl ? (
  <img src={logoUrl} alt="Logo" className="size-full object-contain" />
@@ -380,10 +380,10 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 3. Upload de Favicon */}
- <div className="p-5 rounded-lg bg-card space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
  <Palette className="size-4" />
  </div>
  <div>
@@ -398,7 +398,7 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="sm"
  onClick={() => setFaviconUrl(null)}
- className="text-xs text-destructive hover:bg-destructive/10 h-11 min-h-11 sm:h-9 gap-1"
+ className="text-xs text-destructive hover:bg-muted h-11 min-h-11 sm:h-9 gap-1 cursor-pointer"
  >
  <Trash2 className="size-3.5" />
  <span>Remover</span>
@@ -406,7 +406,7 @@ function AdminMasterMarcaPage() {
  )}
  </div>
 
- <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted/20">
+ <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg bg-muted border border-border">
  <div className="size-12 rounded-lg bg-background flex items-center justify-center p-2 shrink-0 overflow-hidden">
  {faviconUrl ? (
  <img src={faviconUrl} alt="Favicon" className="size-full object-contain" />
@@ -451,31 +451,31 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 4. Cores Padrão do Site & Identidade Visual (Azul Intermediário Canônico & Preto Estrutural) */}
- <div className="p-5 rounded-lg bg-card space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
  <Palette className="size-4" />
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Cores Padrão do Site e Identidade Visual
+ Cores e Identidade Visual
  </h2>
  <p className="text-2xs text-muted-foreground">
- Preto/cinza para estrutura e o Azul Intermediário Canônico como acento secundário e assinatura (sem excesso de cor).
+ Preto/cinza para estrutura e acento institucional para foco e assinatura.
  </p>
  </div>
  </div>
- <Badge variant="secondary" className="text-3xs font-mono text-primary">
- Zero Hardcode
+ <Badge variant="secondary" className="text-3xs font-mono">
+ Token Sync
  </Badge>
  </div>
 
  {/* Seletor do Tom de Azul Intermediário (Acento / Assinatura) */}
- <div className="p-4 rounded-lg bg-muted/20 space-y-4">
+ <div className="p-4 rounded-lg bg-muted border border-border space-y-4">
  <div className="space-y-1">
  <Label htmlFor="accent-color-input" className="text-xs font-bold text-foreground flex items-center gap-2">
- <span>Azul Institucional Waesy (Cor de Destaque)</span>
+ <span>Cor de Destaque Institucional</span>
  <span className="size-3.5 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de acento customizada" expiry:"2027-12-31" */ style={{ backgroundColor: accentColor }} />
  </Label>
  <p className="text-2xs text-muted-foreground">
@@ -490,7 +490,7 @@ function AdminMasterMarcaPage() {
  type="color"
  value={accentColor}
  onChange={(e) => setAccentColor(e.target.value)}
- className="size-10 rounded-lg cursor-pointer border border-border/60 p-1 bg-background shrink-0"
+ className="size-11 sm:size-10 rounded-lg cursor-pointer border border-border p-1 bg-background shrink-0"
  title="Selecionar cor de acento"
  />
  <Input
@@ -498,7 +498,7 @@ function AdminMasterMarcaPage() {
  value={accentColor}
  onChange={(e) => setAccentColor(e.target.value)}
  placeholder="Ex: Azul Royal"
- className="w-28 font-mono text-xs font-bold uppercase rounded-lg h-10 bg-background"
+ className="w-28 font-mono text-xs font-bold uppercase rounded-lg h-11 sm:h-10 bg-background"
  />
  </div>
 
@@ -511,7 +511,7 @@ function AdminMasterMarcaPage() {
  variant="outline"
  size="sm"
  onClick={() => setAccentColor(preset.hex)}
- className={`h-11 min-h-11 sm:h-9 text-2xs font-semibold rounded-lg px-3 gap-2 cursor-pointer ${accentColor.toLowerCase() === preset.hex.toLowerCase() ? "ring-2 ring-primary bg-primary/10 text-primary font-bold" : ""}`}
+ className={`h-11 min-h-11 sm:h-9 text-2xs font-semibold rounded-lg px-3 gap-2 cursor-pointer ${accentColor.toLowerCase() === preset.hex.toLowerCase() ? "bg-foreground text-background border-foreground font-bold" : ""}`}
  >
  <span className={`size-2 rounded-full ${preset.dot} shrink-0`} />
  <span>{preset.name}</span>
@@ -523,9 +523,9 @@ function AdminMasterMarcaPage() {
 
  {/* Seletor da Cor Primária Neutra (Preto/Cinza Estrutural) */}
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="p-3 rounded-lg bg-muted/20 space-y-2">
+ <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
  <Label htmlFor="primary-color-input" className="text-xs font-bold text-foreground flex items-center justify-between">
- <span>Cor Estrutural (Preto / Tipografia)</span>
+ <span>Cor Estrutural</span>
  <span className="size-3 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de marca configurada" expiry:"2027-12-31" */ style={{ backgroundColor: primaryColor }} />
  </Label>
  <div className="flex items-center gap-2">
@@ -534,7 +534,7 @@ function AdminMasterMarcaPage() {
  type="color"
  value={primaryColor}
  onChange={(e) => setPrimaryColor(e.target.value)}
- className="size-10 sm:size-8 rounded-lg cursor-pointer border border-border/60 p-1 bg-background shrink-0"
+ className="size-11 sm:size-9 rounded-lg cursor-pointer border border-border p-1 bg-background shrink-0"
  title="Selecionar cor primária"
  />
  <Input
@@ -542,14 +542,14 @@ function AdminMasterMarcaPage() {
  value={primaryColor}
  onChange={(e) => setPrimaryColor(e.target.value)}
  placeholder="Ex: Preto Puro"
- className="font-mono text-xs font-bold uppercase rounded-lg h-10 sm:h-8 bg-background flex-1"
+ className="font-mono text-xs font-bold uppercase rounded-lg h-11 sm:h-9 bg-background flex-1"
  />
  </div>
  </div>
 
- <div className="p-3 rounded-lg bg-muted/20 space-y-2">
+ <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
  <Label htmlFor="secondary-color-input" className="text-xs font-bold text-foreground flex items-center justify-between">
- <span>Tom Secundário (Hover / Contornos)</span>
+ <span>Tom Secundário</span>
  <span className="size-3 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Amostra dinamica de cor de marca configurada" expiry:"2027-12-31" */ style={{ backgroundColor: secondaryColor }} />
  </Label>
  <div className="flex items-center gap-2">
@@ -558,7 +558,7 @@ function AdminMasterMarcaPage() {
  type="color"
  value={secondaryColor}
  onChange={(e) => setSecondaryColor(e.target.value)}
- className="size-10 sm:size-8 rounded-lg cursor-pointer border border-border/60 p-1 bg-background shrink-0"
+ className="size-11 sm:size-9 rounded-lg cursor-pointer border border-border p-1 bg-background shrink-0"
  title="Selecionar cor secundária"
  />
  <Input
@@ -566,14 +566,36 @@ function AdminMasterMarcaPage() {
  value={secondaryColor}
  onChange={(e) => setSecondaryColor(e.target.value)}
  placeholder="Ex: Azul Escuro"
- className="font-mono text-xs font-bold uppercase rounded-lg h-10 sm:h-8 bg-background flex-1"
+ className="font-mono text-xs font-bold uppercase rounded-lg h-11 sm:h-9 bg-background flex-1"
  />
  </div>
  </div>
  </div>
 
+ <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
+ <Label className="text-xs font-bold text-foreground">Estilo de Superfície Global</Label>
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+ {[
+   { id: "azure_minimal", label: "Azure Minimal" },
+   { id: "editorial_mono", label: "Editorial Mono" },
+   { id: "surface_matte", label: "Surface Matte" },
+ ].map((preset) => (
+   <Button
+     key={preset.id}
+     type="button"
+     variant="outline"
+     size="sm"
+     onClick={() => setThemeStyle(preset.id)}
+     className={`h-11 min-h-11 sm:h-9 rounded-lg text-xs font-semibold cursor-pointer ${themeStyle === preset.id ? "bg-foreground text-background border-foreground font-bold" : "bg-background text-foreground"}`}
+   >
+     {preset.label}
+   </Button>
+ ))}
+ </div>
+ </div>
+
  {/* Amostra em tempo real do acento aplicado */}
- <div className="p-4 rounded-lg bg-muted/15 space-y-3">
+ <div className="p-4 rounded-lg bg-muted border border-border space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground">
  Amostra do acento
@@ -592,7 +614,7 @@ function AdminMasterMarcaPage() {
  }}
  >
  <div className="relative z-10 space-y-1">
- <span className="text-3xs font-bold uppercase tracking-wider text-primary-foreground/80">
+ <span className="text-3xs font-bold uppercase tracking-wider text-primary-foreground">
  Acento configurado
  </span>
  <p className="text-sm font-bold text-primary-foreground tracking-tight">
@@ -600,7 +622,7 @@ function AdminMasterMarcaPage() {
  </p>
  </div>
 
- <div className="relative z-10 size-16 sm:size-20 rounded-2xl bg-primary-foreground/15 flex items-center justify-center text-primary-foreground font-extrabold text-2xl sm:text-3xl shrink-0 select-none">
+ <div className="relative z-10 size-16 sm:size-20 rounded-2xl bg-neutral-950/25 flex items-center justify-center text-primary-foreground font-extrabold text-2xl sm:text-3xl shrink-0 select-none">
  4
  </div>
  </div>
@@ -613,16 +635,12 @@ function AdminMasterMarcaPage() {
  onClick={() => setAccentPreviewApplied((current) => !current)}
  /* design-lint-ignore DL-05 reason:"Previa interativa de acento dinamico da plataforma" expiry:"2027-12-31" */
  style={{ backgroundColor: accentColor, color: "var(--primary-foreground)" }}
- className="rounded-lg h-11 min-h-11 text-xs font-bold px-4 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ className="rounded-lg h-11 min-h-11 text-xs font-bold px-4 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  aria-pressed={accentPreviewApplied}
  >
  {accentPreviewApplied ? "Acento aplicado à prévia" : "Aplicar acento à prévia"}
  </Button>
- <div
- /* design-lint-ignore DL-05 reason:"Previa interativa de badge com acento dinamico" expiry:"2027-12-31" */
- style={{ backgroundColor: `color-mix(in srgb, ${accentColor} 12%, transparent)`, color: accentColor }}
- className="text-xs font-semibold px-3 py-2 rounded-lg bg-muted/40 flex items-center gap-2"
- >
+ <div className="text-xs font-semibold px-3 py-2 rounded-lg bg-background border border-border flex items-center gap-2 text-foreground">
  <span className="size-2 rounded-full shrink-0" /* design-lint-ignore DL-05 reason:"Indicador de amostra de acento" expiry:"2027-12-31" */ style={{ backgroundColor: accentColor }} />
  <span>Badge Secundário de Assinatura</span>
  </div>
@@ -633,15 +651,15 @@ function AdminMasterMarcaPage() {
  </div>
  </div>
 
- {/* 5. Backgrounds Imersivos da Tela de Login (3 Breakpoints) */}
- <div className="p-5 rounded-lg bg-card space-y-4">
+ {/* 5. Backgrounds da Tela de Login */}
+ <div className="p-5 rounded-lg bg-card border border-border space-y-4">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
  <ImageIcon className="size-4" />
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Background Imersivo da Tela de Login (3 Breakpoints)
+ Backgrounds da Tela de Login
  </h2>
  <p className="text-2xs text-muted-foreground">
  Imagens recortadas na proporção exata de cada dispositivo para tela cheia fluida sem distorção.
@@ -651,12 +669,12 @@ function AdminMasterMarcaPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
  {/* Breakpoint 1: Desktop (16:9) */}
- <div className="p-3 rounded-lg bg-muted/20 space-y-3 flex flex-col justify-between">
+ <div className="p-3 rounded-lg bg-muted border border-border space-y-3 flex flex-col justify-between">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
  <Monitor className="size-3.5 text-primary" />
- <span>Desktop (16:9)</span>
+ <span>Desktop 16:9</span>
  </span>
  <span className="text-2xs font-mono text-muted-foreground">1920×1080</span>
  </div>
@@ -702,7 +720,7 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="icon"
  onClick={() => setLoginBgDesktopUrl(null)}
- className="size-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 rounded-lg text-destructive hover:bg-muted shrink-0"
  >
  <Trash2 className="size-4" />
  </Button>
@@ -711,7 +729,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Breakpoint 2: Tablet (4:3) */}
- <div className="p-3 rounded-lg bg-muted/20 space-y-3 flex flex-col justify-between">
+ <div className="p-3 rounded-lg bg-muted border border-border space-y-3 flex flex-col justify-between">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
@@ -762,7 +780,7 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="icon"
  onClick={() => setLoginBgTabletUrl(null)}
- className="size-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 rounded-lg text-destructive hover:bg-muted shrink-0"
  >
  <Trash2 className="size-4" />
  </Button>
@@ -771,12 +789,12 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* Breakpoint 3: Mobile (9:16) */}
- <div className="p-3 rounded-lg bg-muted/20 space-y-3 flex flex-col justify-between">
+ <div className="p-3 rounded-lg bg-muted border border-border space-y-3 flex flex-col justify-between">
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1">
  <Smartphone className="size-3.5 text-emerald-500" />
- <span>Mobile (9:16)</span>
+ <span>Mobile 9:16</span>
  </span>
  <span className="text-2xs font-mono text-muted-foreground">1080×1920</span>
  </div>
@@ -822,7 +840,7 @@ function AdminMasterMarcaPage() {
  variant="ghost"
  size="icon"
  onClick={() => setLoginBgMobileUrl(null)}
- className="size-11 rounded-lg text-destructive hover:bg-destructive/10 shrink-0"
+ className="size-11 rounded-lg text-destructive hover:bg-muted shrink-0"
  >
  <Trash2 className="size-4" />
  </Button>
@@ -833,9 +851,9 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* 5. Canais Oficiais de Suporte & Atendimento */}
- <div className="p-5 rounded-lg bg-card space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border space-y-4">
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+ <div className="size-9 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
  <Globe className="size-4" />
  </div>
  <div>
@@ -920,10 +938,10 @@ function AdminMasterMarcaPage() {
  {/* Coluna Direita: Truthful Live Preview Real (5 colunas) */}
  <div className="lg:col-span-5">
  <div className="sticky top-6 space-y-4">
- <div className="p-5 rounded-lg bg-card space-y-4">
+ <div className="p-5 rounded-lg bg-card border border-border space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
  <Eye className="size-4" />
  </div>
  <div>
@@ -943,14 +961,14 @@ function AdminMasterMarcaPage() {
  onValueChange={(v) => setPreviewTab(v as any)}
  className="w-full"
  >
- <TabsList className="w-full grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-3 h-8 p-1 bg-muted/40 rounded-lg">
- <TabsTrigger value="topbar" className="text-2xs rounded-lg">
+ <TabsList className="w-full grid grid-cols-1 sm:grid-cols-3 min-h-11 sm:h-9 p-1 bg-muted border border-border rounded-lg">
+ <TabsTrigger value="topbar" className="text-2xs rounded-md">
  Barra de Topo
  </TabsTrigger>
- <TabsTrigger value="login" className="text-2xs rounded-lg">
+ <TabsTrigger value="login" className="text-2xs rounded-md">
  Tela de Login
  </TabsTrigger>
- <TabsTrigger value="browser" className="text-2xs rounded-lg">
+ <TabsTrigger value="browser" className="text-2xs rounded-md">
  Aba e Suporte
  </TabsTrigger>
  </TabsList>
@@ -958,8 +976,16 @@ function AdminMasterMarcaPage() {
  {/* ── Visualização 1: Barra de Topo Real ── */}
  <TabsContent value="topbar" className="pt-3 space-y-3">
  <div
- style={{ "--magic-accent-primary": accentColor, "--primary": accentColor } as React.CSSProperties}
- className="rounded-lg bg-background overflow-hidden"
+ data-theme-style={themeStyle}
+ style={{
+ "--magic-accent-primary": accentColor,
+ "--magic-accent-hover": secondaryColor,
+ "--brand-primary": primaryColor,
+ "--brand-secondary": secondaryColor,
+ "--primary": accentColor,
+ "--ring": accentColor,
+ } as React.CSSProperties}
+ className="rounded-lg border border-border bg-background overflow-hidden"
 >
  {/* Header TopBar */}
  <div className="px-4 py-3 flex items-center justify-between gap-2">
@@ -979,14 +1005,14 @@ function AdminMasterMarcaPage() {
  )}
  {!showLogo && !showName && (
  <span className="text-2xs text-muted-foreground italic">
- (Sem identificador ativo)
+ Identificador oculto
  </span>
  )}
  </div>
 
  {/* Busca Simulada */}
  <div className="hidden sm:flex flex-1 max-w-35 mx-1">
- <div className="w-full flex items-center gap-2 px-3 py-1 rounded-lg bg-muted/40 text-2xs text-muted-foreground">
+ <div className="w-full flex items-center gap-2 px-3 py-1 rounded-lg bg-muted border border-border text-2xs text-muted-foreground">
  <Search className="size-3" />
  <span>Buscar produtos...</span>
  </div>
@@ -994,10 +1020,10 @@ function AdminMasterMarcaPage() {
 
  {/* Ícones Canônicos */}
  <div className="flex items-center gap-1 shrink-0">
- <div className="size-7 rounded-lg bg-muted/30 flex items-center justify-center text-muted-foreground">
+ <div className="size-7 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground">
  <ShoppingBag className="size-3.5" />
  </div>
- <div className="size-7 rounded-lg bg-muted/30 flex items-center justify-center text-muted-foreground">
+ <div className="size-7 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground">
  <Bell className="size-3.5" />
  </div>
  <div className="size-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-2xs font-bold">
@@ -1008,22 +1034,22 @@ function AdminMasterMarcaPage() {
 
  {/* Trilho de Chips */}
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de preview de navegacao com overflow nativo" expiry:"2027-12-31" */}
- <div className="px-3 py-2 bg-muted/15 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar text-2xs">
- <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
+ <div className="px-3 py-2 bg-muted border-y border-border flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar text-2xs">
+ <span className="px-2 py-1 rounded-md bg-background border border-border text-foreground font-medium shrink-0">
  Início
  </span>
- <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background border border-border text-foreground font-medium shrink-0">
  Ofertas
  </span>
- <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background border border-border text-foreground font-medium shrink-0">
  Gastronomia
  </span>
- <span className="px-2 py-1 rounded-md bg-background text-foreground font-medium shrink-0">
+ <span className="px-2 py-1 rounded-md bg-background border border-border text-foreground font-medium shrink-0">
  Mercado
  </span>
  </div>
 
- <div className="p-3 text-2xs text-muted-foreground text-center bg-muted/5">
+ <div className="p-3 text-2xs text-muted-foreground text-center bg-card">
  Visualização real da barra superior em todas as páginas públicas.
  </div>
  </div>
@@ -1104,7 +1130,7 @@ function AdminMasterMarcaPage() {
                 )}
 
                 {/* Overlay Escuro Sólido Sutil */}
-                <div className="absolute inset-0 bg-foreground/30" />
+                <div className="absolute inset-0 bg-neutral-950/40" />
 
                 {/* Topo do Login */}
                 <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
@@ -1120,7 +1146,7 @@ function AdminMasterMarcaPage() {
                 <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-3 rounded-lg bg-card border border-border z-10 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-2xs font-bold text-foreground">Acessar Conta</span>
-                    <Badge className="bg-primary text-primary-foreground text-3xs px-2 py-0">
+                    <Badge className="bg-primary text-primary-foreground text-3xs px-2 py-1">
                       {platformName || "Waesy"}
                     </Badge>
                   </div>
@@ -1139,7 +1165,7 @@ function AdminMasterMarcaPage() {
  <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Aba do Navegador
  </p>
- <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 w-full">
+ <div className="flex items-center gap-2 bg-muted border border-border rounded-lg px-3 py-2 w-full">
  <div className="size-4 rounded overflow-hidden flex items-center justify-center bg-background shrink-0">
  {faviconUrl ? (
  <img src={faviconUrl} alt="favicon" className="size-full object-contain" />
@@ -1159,7 +1185,7 @@ function AdminMasterMarcaPage() {
  <p className="text-2xs font-bold text-muted-foreground uppercase tracking-wider">
  Canais no Rodapé
  </p>
- <div className="p-4 rounded-lg bg-background space-y-3 text-xs">
+ <div className="p-4 rounded-lg bg-background border border-border space-y-3 text-xs">
  <div className="flex items-center gap-2 text-foreground font-semibold">
  <Phone className="size-3.5 text-emerald-500" />
  <span>{supportWhatsapp || "Não informado"}</span>
@@ -1188,7 +1214,7 @@ function AdminMasterMarcaPage() {
  </div>
 
  {/* ── Barra de Ação Flutuante Sticky (Salvar Alterações) ── */}
- <div className="fixed bottom-0 left-0 md:left-64 right-0 z-40 bg-background p-4 pb-safe">
+ <div className="fixed bottom-0 left-0 md:left-64 right-0 z-30 bg-background border-t border-border p-4 pb-safe">
  <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
  <div className="flex items-center gap-2">
  <span className="text-xs sm:text-sm font-semibold text-foreground">
@@ -1196,7 +1222,7 @@ function AdminMasterMarcaPage() {
  </span>
  {isDirty && (
  <span className="text-xs text-warning-strong font-medium hidden sm:inline">
- (Alterações prontas para publicação)
+ Alterações prontas
  </span>
  )}
  </div>

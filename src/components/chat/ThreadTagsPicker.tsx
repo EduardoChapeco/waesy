@@ -28,6 +28,8 @@ export interface ThreadTagsPickerProps {
   onTagsChange?: (newTags: string[]) => void;
   className?: string;
   compact?: boolean;
+  contactName?: string | null;
+  contactAvatarUrl?: string | null;
 }
 
 export type TagColorKey = "violet" | "emerald" | "warning" | "rose" | "sky" | "indigo" | "slate";
@@ -109,10 +111,13 @@ export function ThreadTagsPicker({
   onTagsChange,
   className,
   compact = false,
+  contactName,
+  contactAvatarUrl,
 }: ThreadTagsPickerProps) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [currentTags, setCurrentTags] = useState<string[]>(tags);
+  const [avatarImgFailed, setAvatarImgFailed] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeGroupId, setActiveGroupId] = useState<string>("all");
@@ -319,8 +324,28 @@ export function ThreadTagsPicker({
 
   return (
     <div className={cn("flex items-center gap-1 flex-wrap", className)}>
-      {currentTags.map((tag) =>
-        compact ? (
+      {currentTags.map((tag) => {
+        const showAvatarBadge = Boolean(contactName || contactAvatarUrl || tag.startsWith("#"));
+        const badgeInitial = String(contactName || tag.replace(/^#/, "") || "C")
+          .trim()
+          .charAt(0)
+          .toUpperCase();
+        const avatarNode = showAvatarBadge ? (
+          <span className="size-3.5 rounded-full bg-background/80 text-foreground font-bold flex items-center justify-center shrink-0 overflow-hidden text-2xs">
+            {contactAvatarUrl && !avatarImgFailed ? (
+              <img
+                src={contactAvatarUrl}
+                alt={contactName || tag}
+                className="size-full object-cover"
+                onError={() => setAvatarImgFailed(true)}
+              />
+            ) : (
+              <span>{badgeInitial}</span>
+            )}
+          </span>
+        ) : null;
+
+        return compact ? (
           <span
             key={tag}
             className={cn(
@@ -328,6 +353,7 @@ export function ThreadTagsPicker({
               resolveTagPillClass(tag, catalogTags),
             )}
           >
+            {avatarNode}
             <span>{tag}</span>
           </span>
         ) : (
@@ -341,11 +367,12 @@ export function ThreadTagsPicker({
             onClick={() => handleToggleTag(tag)}
             title={`Remover tag ${tag}`}
           >
+            {avatarNode}
             <span>{tag}</span>
             <X className="size-3 opacity-70" />
           </button>
-        ),
-      )}
+        );
+      })}
 
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>

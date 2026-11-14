@@ -320,7 +320,7 @@ function EventDetailPage() {
   return (
     <>
       {isLinkOnly && (
-        <div className="w-full bg-card/90 backdrop-blur-md border-b border-border/60 sticky top-0 z-40 px-4 py-2 flex items-center justify-between">
+        <div className="w-full bg-background border-b border-border sticky top-0 z-30 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 overflow-hidden">
             <Button
               asChild

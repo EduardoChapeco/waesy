@@ -44,7 +44,7 @@ const TOOL_OPTIONS: Array<{
 }> = [
  { type: "seat", label: "Poltrona", badgeColor: "bg-primary text-primary-foreground" },
  { type: "aisle", label: "Corredor", badgeColor: "bg-muted text-muted-foreground" },
- { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-200 dark:border-amber-800" },
+ { type: "wc", label: "Banheiro (WC)", badgeColor: "bg-muted text-warning-strong border border-border" },
  { type: "door", label: "Porta", badgeColor: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800" },
  { type: "driver", label: "Motorista", badgeColor: "bg-indigo-100 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800" },
  { type: "guide", label: "Guia", badgeColor: "bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200 border border-violet-200 dark:border-violet-800" },
@@ -463,7 +463,7 @@ function VehicleLayoutEditorPage() {
  "size-2.5 rounded-full inline-block",
  tool.type === "seat" && "bg-primary",
  tool.type === "aisle" && "bg-muted-foreground",
- tool.type === "wc" && "bg-amber-600",
+ tool.type === "wc" && "bg-warning",
  tool.type === "door" && "bg-emerald-600",
  tool.type === "driver" && "bg-indigo-600",
  tool.type === "guide" && "bg-violet-600",
@@ -508,7 +508,7 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* ── 3. Chassi Virtual do Veículo 2D (Apple Grade) ── */}
- <div className="tab-list flex flex-col items-center justify-center p-6 sm:p-10 rounded-2xl bg-muted/20 border border-border/70 overflow-x-auto no-scrollbar">
+ <div className="tab-list flex flex-col items-center justify-center p-6 sm:p-10 rounded-2xl bg-muted border border-border overflow-x-auto no-scrollbar">
  <div className="text-xs font-mono text-muted-foreground mb-4 flex items-center gap-2">
  <Info className="size-3.5" />
  <span>
@@ -519,9 +519,9 @@ function VehicleLayoutEditorPage() {
  </div>
 
  {/* Carroceria do Ônibus */}
- <div className="relative w-fit rounded-2xl border-4 border-foreground/30 bg-card p-6 sm:p-8 flex flex-col items-center space-y-4 min-w-72 sm:min-w-80">
+ <div className="relative w-fit rounded-2xl border-4 border-border bg-card p-6 sm:p-8 flex flex-col items-center space-y-4 min-w-72 sm:min-w-80">
  {/* Para-brisa Dianteiro */}
- <div className="w-full h-9 rounded-t-lg bg-sky-500/10 border-2 border-sky-500/30 flex items-center justify-center text-xs font-mono font-bold text-sky-600 uppercase tracking-widest">
+ <div className="w-full h-9 rounded-t-lg bg-muted border-2 border-border flex items-center justify-center text-xs font-mono font-bold text-foreground uppercase tracking-widest">
  Frente / Para-brisa {isDoubleDecker ? `(Piso ${activeDeck})` : ""}
  </div>
 
@@ -554,7 +554,7 @@ function VehicleLayoutEditorPage() {
  !isAccessible &&
  !isBlocked &&
  (cell?.category === "leito_cama"
- ? "bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-100 border border-amber-300 dark:border-amber-700"
+ ? "bg-muted text-warning-strong border border-border"
  : cell?.category === "leito"
  ? "bg-primary text-primary-foreground border border-primary"
  : cell?.category === "semi_leito"
@@ -569,7 +569,7 @@ function VehicleLayoutEditorPage() {
  cellType === "aisle" &&
  "bg-muted border border-dashed border-border text-muted-foreground hover:bg-accent",
  cellType === "wc" &&
- "bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800 font-mono text-xs",
+ "bg-muted text-warning-strong border border-border font-mono text-xs",
  cellType === "door" &&
  "bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 text-xs",
  cellType === "driver" &&

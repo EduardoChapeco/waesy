@@ -22,8 +22,36 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Users, LayoutTemplate, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette } from "lucide-react";
+import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Users, LayoutTemplate, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette, Type, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { formatDynamicFieldLabel, normalizeCustomFieldMap } from "@/lib/niches/unified-field-bridge";
+import {
+  CANVAS_BG_PRESETS,
+  BRAND_COLOR_PRESETS,
+  FONT_PRESET_OPTIONS,
+  PROPOSAL_SECTION_CATALOG,
+  TEMPLATE_DEFAULT_PALETTES,
+  resolveProposalCanvasTheme,
+  type ProposalSectionKey,
+  type ProposalTemplateCanonicalId,
+} from "@/lib/tourism/proposal-theme-palettes";
+
+const STUDIO_RESERVED_FIELD_KEYS = new Set([
+  "boarding_requirements",
+  "cancellation_policy",
+  "canvas_bg_color",
+  "canvas_brand_color",
+  "canvas_font_preset",
+  "hidden_sections",
+  "agent_name",
+  "agent_whatsapp",
+  "agency_name",
+]);
+
+function buildColorSwatchStyle(hexColor: string): React.CSSProperties {
+  const styleMap: Record<string, string> = {};
+  styleMap["backgroundColor"] = hexColor;
+  return styleMap as React.CSSProperties;
+}
 
 const TEMPLATE_CATALOG = [
   { id: "editorial-flat", label: "Clean Apple", desc: "Design minimalista, foco em tipografia e fotos amplas", icon: LayoutTemplate },
@@ -35,11 +63,11 @@ const TEMPLATE_CATALOG = [
 ];
 
 const FORMAT_CATALOG: Array<{ id: ProposalCanvasFormat; label: string; icon: string; desc: string }> = [
-  { id: "a4-portrait", label: "A4 Retrato", icon: "📄", desc: "Padrão oficial para impressão e PDF clássico (210×297mm)" },
-  { id: "a4-landscape", label: "A4 Paisagem", icon: "📑", desc: "Visual horizontal panorâmico para relatórios" },
-  { id: "story-916", label: "Story 9:16", icon: "📱", desc: "Vertical para visualização mobile e WhatsApp" },
-  { id: "presentation-169", label: "Apresentação 16:9", icon: "🖥️", desc: "Widescreen para reuniões e propostas executivas" },
-  { id: "letter-portrait", label: "Carta (US)", icon: "📜", desc: "Formato internacional Carta" },
+  { id: "a4-portrait", label: "A4 Retrato", icon: "A4", desc: "Padrão oficial para impressão e PDF clássico (210×297mm)" },
+  { id: "a4-landscape", label: "A4 Paisagem", icon: "A4L", desc: "Visual horizontal panorâmico para relatórios" },
+  { id: "story-916", label: "Story 9:16", icon: "9:16", desc: "Vertical para visualização mobile e WhatsApp" },
+  { id: "presentation-169", label: "Apresentação 16:9", icon: "16:9", desc: "Widescreen para reuniões e propostas executivas" },
+  { id: "letter-portrait", label: "Carta (US)", icon: "US", desc: "Formato internacional Carta" },
 ];
 
 const COMMON_INCLUDE_PRESETS = [
@@ -75,7 +103,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  });
 
  // Estado local para input de preço em Reais amigável
- const { data: customersRes } = useQuery({
+ const { data: customersRes, isLoading: isLoadingCrm } = useQuery({
    queryKey: ["crm-customers-studio"],
    queryFn: () => listCustomers({ data: {} }).catch(() => ({ customers: [] })),
  });
@@ -116,7 +144,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
     ...((proposal.pricing as any)?.custom_fields && typeof (proposal.pricing as any).custom_fields === "object"
       ? (proposal.pricing as any).custom_fields
       : {}),
-  } as Record<string, unknown>);
+  } as Record<string, unknown>) as Record<string, string>;
 
   const updateStudioCustomField = (key: string, value: string | null) => {
     const cleanKey = key.trim();
@@ -134,6 +162,32 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
         custom_fields: next,
       } as any,
     });
+  };
+
+  const activeCanvasTheme = resolveProposalCanvasTheme({
+    templateId: proposal.template_theme || (proposal as any).template || "editorial-flat",
+    customFields: studioCustomFields,
+    brandColorProp: (proposal as any).brand_color,
+  });
+
+  const defaultTemplatePalette =
+    TEMPLATE_DEFAULT_PALETTES[(proposal.template_theme || "editorial-flat") as ProposalTemplateCanonicalId] ||
+    TEMPLATE_DEFAULT_PALETTES["editorial-flat"];
+
+  const toggleProposalSection = (secKey: ProposalSectionKey) => {
+    const nextSet = new Set(activeCanvasTheme.hiddenSections);
+    if (nextSet.has(secKey)) {
+      nextSet.delete(secKey);
+    } else {
+      nextSet.add(secKey);
+    }
+    const serialized = Array.from(nextSet).join(",");
+    updateStudioCustomField("hidden_sections", serialized || null);
+  };
+
+  const applyValidityDaysOffset = (days: number) => {
+    const targetDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    onChange({ valid_until: targetDate.toLocaleDateString("pt-BR") });
   };
 
  const handlePriceChange = (valStr: string) => {
@@ -566,26 +620,24 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
- <Tabs defaultValue="dados" className="space-y-4">
- <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar w-full justify-start gap-1 h-11 p-1 rounded-lg bg-muted/50 text-xs">
-          <TabsTrigger value="design" className="text-xs px-3 rounded-lg font-bold shrink-0">Modelos</TabsTrigger>
-          <TabsTrigger value="dados" className="text-xs px-3 rounded-lg font-bold shrink-0">Geral</TabsTrigger>
-          <TabsTrigger value="voos" className="text-xs px-3 rounded-lg font-bold shrink-0">Voos</TabsTrigger>
-          <TabsTrigger value="hotel" className="text-xs px-3 rounded-lg font-bold shrink-0">Hotel</TabsTrigger>
-          <TabsTrigger value="rodoviario" className="text-xs px-3 rounded-lg font-bold shrink-0">Rodoviário</TabsTrigger>
-          <TabsTrigger value="roteiro" className="text-xs px-3 rounded-lg font-bold shrink-0">Roteiro</TabsTrigger>
-          <TabsTrigger value="servicos" className="text-xs px-3 rounded-lg font-bold shrink-0">Serviços</TabsTrigger>
-          <TabsTrigger value="inclusoes" className="text-xs px-3 rounded-lg font-bold shrink-0">Inclusões</TabsTrigger>
-          <TabsTrigger value="preco" className="text-xs px-3 rounded-lg font-bold shrink-0">Preço</TabsTrigger>
+ <Tabs defaultValue="design" className="space-y-4">
+ <TabsList className="grid grid-cols-2 sm:grid-cols-3 gap-1 w-full h-auto p-1 rounded-lg bg-muted/50 text-xs">
+          <TabsTrigger value="design" className="h-9 text-xs px-2 rounded-md font-bold">Modelos</TabsTrigger>
+          <TabsTrigger value="dados" className="h-9 text-xs px-2 rounded-md font-bold">Geral</TabsTrigger>
+          <TabsTrigger value="voos" className="h-9 text-xs px-2 rounded-md font-bold">Voos</TabsTrigger>
+          <TabsTrigger value="hotel" className="h-9 text-xs px-2 rounded-md font-bold">Hotel</TabsTrigger>
+          <TabsTrigger value="rodoviario" className="h-9 text-xs px-2 rounded-md font-bold">Rodoviário</TabsTrigger>
+          <TabsTrigger value="roteiro" className="h-9 text-xs px-2 rounded-md font-bold">Roteiro</TabsTrigger>
+          <TabsTrigger value="servicos" className="h-9 text-xs px-2 rounded-md font-bold">Serviços</TabsTrigger>
+          <TabsTrigger value="inclusoes" className="h-9 text-xs px-2 rounded-md font-bold">Inclusões</TabsTrigger>
+          <TabsTrigger value="preco" className="h-9 text-xs px-2 rounded-md font-bold">Preço</TabsTrigger>
         </TabsList>
 
- {/* ── ABA 1: DADOS GERAIS & CLIENTE ── */}
- 
         {/* ── ABA 0: MODELOS & DESIGN DO CANVAS ── */}
         <TabsContent value="design" className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <LayoutTemplate className="size-4 text-primary" />
                 <span>Modelo Visual da Proposta</span>
               </Label>
@@ -595,24 +647,37 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
               {TEMPLATE_CATALOG.map((tpl) => {
                 const TplIcon = tpl.icon;
                 const isSelected = (proposal.template_theme || "editorial-flat") === tpl.id;
+                const tplPalette = TEMPLATE_DEFAULT_PALETTES[tpl.id as ProposalTemplateCanonicalId] || TEMPLATE_DEFAULT_PALETTES["editorial-flat"];
                 return (
                   <button
                     key={tpl.id}
                     type="button"
                     onClick={() => onChange({ template_theme: tpl.id })}
                     className={cn(
-                      "p-3 rounded-lg text-left transition-all cursor-pointer border flex flex-col gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "p-3 rounded-lg text-left transition-colors cursor-pointer border flex flex-col gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isSelected
                         ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary"
                         : "border-border/60 bg-card hover:bg-muted/40 hover:border-border"
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
+                      <div className="flex items-center gap-2 font-bold text-xs text-foreground">
                         <TplIcon className={cn("size-3.5", isSelected ? "text-primary" : "text-muted-foreground")} />
                         <span>{tpl.label}</span>
                       </div>
-                      {isSelected && <Check className="size-3.5 text-primary" />}
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="size-3.5 rounded-full border border-border/80 inline-block"
+                          style={buildColorSwatchStyle(tplPalette.canvasBg)}
+                          title={`Fundo padrão: ${tplPalette.canvasBg}`}
+                        />
+                        <span
+                          className="size-3.5 rounded-full border border-border/80 inline-block"
+                          style={buildColorSwatchStyle(tplPalette.brandColor)}
+                          title={`Destaque padrão: ${tplPalette.brandColor}`}
+                        />
+                        {isSelected && <Check className="size-3.5 text-primary" />}
+                      </div>
                     </div>
                     <p className="text-2xs text-muted-foreground leading-snug">{tpl.desc}</p>
                   </button>
@@ -621,9 +686,184 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
             </div>
           </div>
 
+          {/* ── COR DE FUNDO DO CANVAS (QUADRO SÓLIDO EDITÁVEL) ── */}
+          <div className="space-y-3 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                <Palette className="size-4 text-primary" />
+                <span>Cor de Fundo do Canvas</span>
+              </Label>
+              {studioCustomFields.canvas_bg_color ? (
+                <button
+                  type="button"
+                  onClick={() => updateStudioCustomField("canvas_bg_color", null)}
+                  className="text-2xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                >
+                  <RotateCcw className="size-3" />
+                  <span>Padrão ({defaultTemplatePalette.canvasBg})</span>
+                </button>
+              ) : (
+                <span className="text-2xs font-mono text-muted-foreground uppercase">
+                  Padrão {activeCanvasTheme.canvasBg}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="relative flex items-center justify-center size-9 rounded-lg border border-border cursor-pointer shrink-0 overflow-hidden">
+                <input
+                  type="color"
+                  aria-label="Selecionar cor de fundo do canvas"
+                  value={activeCanvasTheme.canvasBg}
+                  onChange={(e) => updateStudioCustomField("canvas_bg_color", e.target.value)}
+                  className="sr-only"
+                />
+                <span
+                  className="w-full h-full block"
+                  style={buildColorSwatchStyle(activeCanvasTheme.canvasBg)}
+                />
+              </label>
+              <Input
+                value={studioCustomFields.canvas_bg_color || activeCanvasTheme.canvasBg}
+                onChange={(e) => updateStudioCustomField("canvas_bg_color", e.target.value)}
+                placeholder={defaultTemplatePalette.canvasBg}
+                className="h-9 text-xs font-mono uppercase rounded-lg flex-1"
+              />
+              <span className="px-2 py-1 rounded bg-muted text-2xs font-semibold text-muted-foreground shrink-0">
+                {activeCanvasTheme.tone === "dark" ? "Modo Escuro" : "Modo Claro"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {CANVAS_BG_PRESETS.map((preset) => {
+                const isSelected = activeCanvasTheme.canvasBg.toUpperCase() === preset.color.toUpperCase();
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => updateStudioCustomField("canvas_bg_color", preset.color)}
+                    className={cn(
+                      "p-2 rounded-lg border text-left transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "border-primary bg-primary/10 ring-1 ring-primary"
+                        : "border-border/60 bg-card hover:bg-muted/40"
+                    )}
+                  >
+                    <span
+                      className="size-4 rounded-full border border-border/80 shrink-0"
+                      style={buildColorSwatchStyle(preset.color)}
+                    />
+                    <span className="text-2xs font-medium text-foreground truncate">{preset.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── COR PRINCIPAL DA MARCA / DESTAQUES ── */}
+          <div className="space-y-3 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                <Zap className="size-4 text-primary" />
+                <span>Cor de Destaque da Marca</span>
+              </Label>
+              {studioCustomFields.canvas_brand_color ? (
+                <button
+                  type="button"
+                  onClick={() => updateStudioCustomField("canvas_brand_color", null)}
+                  className="text-2xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+                >
+                  <RotateCcw className="size-3" />
+                  <span>Padrão ({defaultTemplatePalette.brandColor})</span>
+                </button>
+              ) : (
+                <span className="text-2xs font-mono text-muted-foreground uppercase">
+                  Padrão {activeCanvasTheme.brandColor}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="relative flex items-center justify-center size-9 rounded-lg border border-border cursor-pointer shrink-0 overflow-hidden">
+                <input
+                  type="color"
+                  aria-label="Selecionar cor principal da marca"
+                  value={activeCanvasTheme.brandColor}
+                  onChange={(e) => updateStudioCustomField("canvas_brand_color", e.target.value)}
+                  className="sr-only"
+                />
+                <span
+                  className="w-full h-full block"
+                  style={buildColorSwatchStyle(activeCanvasTheme.brandColor)}
+                />
+              </label>
+              <Input
+                value={studioCustomFields.canvas_brand_color || activeCanvasTheme.brandColor}
+                onChange={(e) => updateStudioCustomField("canvas_brand_color", e.target.value)}
+                placeholder={defaultTemplatePalette.brandColor}
+                className="h-9 text-xs font-mono uppercase rounded-lg flex-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {BRAND_COLOR_PRESETS.map((preset) => {
+                const isSelected = activeCanvasTheme.brandColor.toUpperCase() === preset.color.toUpperCase();
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => updateStudioCustomField("canvas_brand_color", preset.color)}
+                    className={cn(
+                      "p-2 rounded-lg border text-left transition-colors cursor-pointer flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "border-primary bg-primary/10 ring-1 ring-primary"
+                        : "border-border/60 bg-card hover:bg-muted/40"
+                    )}
+                  >
+                    <span
+                      className="size-4 rounded-full border border-border/80 shrink-0"
+                      style={buildColorSwatchStyle(preset.color)}
+                    />
+                    <span className="text-2xs font-medium text-foreground truncate">{preset.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── TIPOGRAFIA DO DOCUMENTO ── */}
+          <div className="space-y-2 pt-3 border-t border-border/40">
+            <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+              <Type className="size-4 text-primary" />
+              <span>Tipografia Editorial</span>
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {FONT_PRESET_OPTIONS.map((fontOpt) => {
+                const isSelected = activeCanvasTheme.fontPreset === fontOpt.id;
+                return (
+                  <button
+                    key={fontOpt.id}
+                    type="button"
+                    onClick={() => updateStudioCustomField("canvas_font_preset", fontOpt.id)}
+                    className={cn(
+                      "p-2 rounded-lg border text-left transition-colors cursor-pointer flex flex-col gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "border-primary bg-primary/10 ring-1 ring-primary"
+                        : "border-border/60 bg-card hover:bg-muted/40"
+                    )}
+                  >
+                    <span className="text-xs font-bold text-foreground">{fontOpt.label}</span>
+                    <span className="text-2xs text-muted-foreground leading-tight">{fontOpt.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── FORMATO DO CANVAS & EXPORTAÇÃO ── */}
           <div className="space-y-2 pt-3 border-t border-border/40">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
                 <Monitor className="size-4 text-primary" />
                 <span>Formato do Canvas & Exportação</span>
               </Label>
@@ -638,20 +878,54 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                     type="button"
                     onClick={() => onChange({ canvas_format: fmt.id })}
                     className={cn(
-                      "p-2.5 rounded-lg text-left transition-all cursor-pointer border flex flex-col gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "p-3 rounded-lg text-left transition-colors cursor-pointer border flex flex-col gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isSelected
                         ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary"
                         : "border-border/60 bg-card hover:bg-muted/40 hover:border-border"
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
-                        <span className="text-sm">{fmt.icon}</span>
+                      <div className="flex items-center gap-2 font-bold text-xs text-foreground">
+                        <span className="px-1 py-1 rounded bg-muted text-2xs font-mono font-bold text-primary">{fmt.icon}</span>
                         <span>{fmt.label}</span>
                       </div>
                       {isSelected && <Check className="size-3.5 text-primary" />}
                     </div>
                     <p className="text-2xs text-muted-foreground leading-snug">{fmt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── SEÇÕES VISÍVEIS NO DOCUMENTO ── */}
+          <div className="space-y-2 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                <Eye className="size-4 text-primary" />
+                <span>Seções Visíveis no Canvas</span>
+              </Label>
+              <span className="text-2xs text-muted-foreground">
+                {PROPOSAL_SECTION_CATALOG.length - activeCanvasTheme.hiddenSections.size}/{PROPOSAL_SECTION_CATALOG.length} ativas
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {PROPOSAL_SECTION_CATALOG.map((sec) => {
+                const isHidden = activeCanvasTheme.hiddenSections.has(sec.key);
+                return (
+                  <button
+                    key={sec.key}
+                    type="button"
+                    onClick={() => toggleProposalSection(sec.key)}
+                    className={cn(
+                      "h-9 min-h-11 sm:min-h-0 px-3 rounded-lg border text-xs font-medium flex items-center justify-between gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      !isHidden
+                        ? "border-primary/40 bg-primary/5 text-foreground font-semibold"
+                        : "border-border/50 bg-muted/30 text-muted-foreground line-through"
+                    )}
+                  >
+                    <span className="truncate">{sec.label}</span>
+                    {isHidden ? <EyeOff className="size-3.5 shrink-0 text-muted-foreground" /> : <Eye className="size-3.5 shrink-0 text-primary" />}
                   </button>
                 );
               })}
@@ -899,35 +1173,39 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    className="h-11 text-xs rounded-lg mb-2"
  />
 
- {crmCustomers.length > 0 && (
+ {(isLoadingCrm || crmCustomers.length > 0) && (
    <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2 mb-2">
      <Label className="text-xs font-bold text-primary flex items-center gap-2">
        <Users className="size-3.5" />
        <span>Importar Cliente do CRM da Agência</span>
      </Label>
-     <select
-       defaultValue=""
-       onChange={(e) => {
-         const cust = crmCustomers.find((c: any) => c.id === e.target.value);
-         if (cust) {
-           onChange({
-             client_name: cust.full_name || cust.name || proposal.client_name,
-             client_whatsapp: cust.phone || cust.whatsapp || proposal.client_whatsapp,
-             client_email: cust.email || proposal.client_email,
-           });
-           toast.success(`Dados de ${cust.full_name || cust.name} vinculados à proposta!`);
-         }
-         e.target.value = "";
-       }}
-       className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
-     >
-       <option value="" disabled>Buscar cliente cadastrado no CRM...</option>
-       {crmCustomers.slice(0, 50).map((c: any) => (
-         <option key={c.id} value={c.id}>
-           {c.full_name || c.name} {c.phone ? `(${c.phone})` : ""}
-         </option>
-       ))}
-     </select>
+     {isLoadingCrm ? (
+       <div className="h-9 rounded-lg bg-muted/40 animate-pulse motion-reduce:transition-none" />
+     ) : (
+       <select
+         defaultValue=""
+         onChange={(e) => {
+           const cust = crmCustomers.find((c: any) => c.id === e.target.value);
+           if (cust) {
+             onChange({
+               client_name: cust.full_name || cust.name || proposal.client_name,
+               client_whatsapp: cust.phone || cust.whatsapp || proposal.client_whatsapp,
+               client_email: cust.email || proposal.client_email,
+             });
+             toast.success(`Dados de ${cust.full_name || cust.name} vinculados à proposta!`);
+           }
+           e.target.value = "";
+         }}
+         className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
+       >
+         <option value="" disabled>Buscar cliente cadastrado no CRM...</option>
+         {crmCustomers.slice(0, 50).map((c: any) => (
+           <option key={c.id} value={c.id}>
+             {c.full_name || c.name} {c.phone ? `(${c.phone})` : ""}
+           </option>
+         ))}
+       </select>
+     )}
    </div>
  )}
 
@@ -944,49 +1222,68 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <div className="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-3 mb-2">
    <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-     <LayoutTemplate className="size-3.5 text-primary" />
-     <span>Design & Formato do Documento</span>
+     <Briefcase className="size-3.5 text-primary" />
+     <span>Assinatura do Consultor & Agência</span>
    </div>
-   <div className="grid grid-cols-2 gap-2">
+   <div className="space-y-2">
      <div className="space-y-1">
-       <Label className="text-xs font-semibold text-muted-foreground">Template Visual</Label>
-       <select
-         value={proposal.template_theme || (proposal as any).template || "editorial-flat"}
-         onChange={(e) => onChange({ template_theme: e.target.value })}
-         className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
-       >
-         <option value="editorial-flat">Clean Apple (Editorial)</option>
-         <option value="dark-premium">Dark Luxo</option>
-         <option value="executivo-b2b">Executivo B2B</option>
-         <option value="landscape-presentation">Apresentação Paisagem</option>
-         <option value="vertical-premium">Vertical Premium</option>
-         <option value="group-catalog">Catálogo de Grupo</option>
-       </select>
+       <Label className="text-2xs font-semibold text-muted-foreground">Nome da Agência</Label>
+       <Input
+         value={String(studioCustomFields.agency_name || proposal.agency_name || "")}
+         onChange={(e) => {
+           updateStudioCustomField("agency_name", e.target.value);
+           onChange({ agency_name: e.target.value });
+         }}
+         placeholder="Ex: Excelência Tour"
+         className="h-9 text-xs rounded-lg bg-background"
+       />
      </div>
-     <div className="space-y-1">
-       <Label className="text-xs font-semibold text-muted-foreground">Formato da Página</Label>
-       <select
-         value={proposal.canvas_format || "a4-portrait"}
-         onChange={(e) => onChange({ canvas_format: e.target.value as any })}
-         className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
-       >
-         <option value="a4-portrait">A4 Retrato (PDF)</option>
-         <option value="a4-landscape">A4 Paisagem</option>
-         <option value="story-916">Story 9:16 (Mobile)</option>
-         <option value="presentation-169">Slide 16:9 (TV/Reunião)</option>
-         <option value="letter-portrait">Carta (US Letter)</option>
-       </select>
+     <div className="grid grid-cols-2 gap-2">
+       <div className="space-y-1">
+         <Label className="text-2xs font-semibold text-muted-foreground">Consultor Responsável</Label>
+         <Input
+           value={String(studioCustomFields.agent_name || (proposal as any).agent_name || "")}
+           onChange={(e) => updateStudioCustomField("agent_name", e.target.value)}
+           placeholder="Ex: Consultor Especialista"
+           className="h-9 text-xs rounded-lg bg-background"
+         />
+       </div>
+       <div className="space-y-1">
+         <Label className="text-2xs font-semibold text-muted-foreground">WhatsApp da Agência</Label>
+         <Input
+           value={String(studioCustomFields.agent_whatsapp || (proposal as any).agent_whatsapp || "")}
+           onChange={(e) => updateStudioCustomField("agent_whatsapp", e.target.value)}
+           placeholder="(49) 99999-9999"
+           className="h-9 text-xs rounded-lg bg-background"
+         />
+       </div>
      </div>
    </div>
  </div>
 
- <Label className="text-xs font-bold">Validade da Proposta</Label>
- <Input
- value={proposal.valid_until || ""}
- onChange={(e) => onChange({ valid_until: e.target.value })}
- placeholder="Ex: Até 24h ou 15/10/2026"
- className="h-9 text-xs rounded-lg"
- />
+ <div className="space-y-2">
+   <div className="flex items-center justify-between gap-2">
+     <Label className="text-xs font-bold">Validade da Proposta</Label>
+     <div className="flex items-center gap-1">
+       {[7, 15, 30].map((days) => (
+         <button
+           key={days}
+           type="button"
+           onClick={() => applyValidityDaysOffset(days)}
+           className="px-2 py-1 rounded bg-muted hover:bg-primary/10 text-2xs font-mono font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+         >
+           +{days}d
+         </button>
+       ))}
+     </div>
+   </div>
+   <Input
+     value={proposal.valid_until || ""}
+     onChange={(e) => onChange({ valid_until: e.target.value })}
+     placeholder="Ex: Até 24h ou 15/10/2026"
+     className="h-9 text-xs rounded-lg"
+   />
+ </div>
  </div>
  </TabsContent>
 
@@ -2036,11 +2333,11 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  {Object.entries(studioCustomFields).filter(
- ([k]) => k !== "boarding_requirements" && k !== "cancellation_policy",
+ ([k]) => !STUDIO_RESERVED_FIELD_KEYS.has(k),
  ).length > 0 && (
  <div className="space-y-2 pt-2 border-t border-border/40">
  {Object.entries(studioCustomFields)
- .filter(([k]) => k !== "boarding_requirements" && k !== "cancellation_policy")
+ .filter(([k]) => !STUDIO_RESERVED_FIELD_KEYS.has(k))
  .map(([fieldKey, fieldValue]) => (
  <div key={fieldKey} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
  <span

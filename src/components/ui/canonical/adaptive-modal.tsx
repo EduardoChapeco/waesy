@@ -40,7 +40,7 @@ export function AdaptiveModal({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs transition-opacity" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay transition-opacity" />
         <DialogPrimitive.Content
           className={cn(
             'fixed z-50 bg-card text-foreground border border-border duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',

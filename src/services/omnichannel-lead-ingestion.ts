@@ -35,6 +35,7 @@ export interface OmnichannelLeadInput {
   sourceSubmissionId?: string | null;
   departureOption?: Record<string, unknown> | string | null;
   boardingPoint?: string | null;
+  nicheId?: string | null;
   customFields?: Record<string, unknown> | null;
   fieldLabelsMap?: Record<string, string>;
 }

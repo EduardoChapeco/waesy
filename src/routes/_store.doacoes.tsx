@@ -472,7 +472,7 @@ function DoacoesPage() {
               <FrostedCardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
                 <div
                   className={cn(
-                    "size-10 rounded-lg flex items-center justify-center backdrop-blur-md",
+                    "size-10 rounded-lg flex items-center justify-center",
                     cat.accentClass
                   )}
                 >
@@ -480,7 +480,7 @@ function DoacoesPage() {
                 </div>
                 <Badge
                   variant={isSelected ? "default" : "secondary"}
-                  className="rounded-full text-2xs font-semibold backdrop-blur-md"
+                  className="rounded-full text-2xs font-semibold"
                 >
                   {isSelected ? "Filtro Ativo" : "Explorar"}
                 </Badge>
@@ -653,13 +653,13 @@ function DoacoesPage() {
           role="dialog"
           aria-modal="true"
           aria-label="Anunciar Doação"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/60 backdrop-blur-xs animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-overlay animate-in fade-in duration-150"
         >
-          <div className="w-full h-dvh sm:h-auto sm:max-h-vh-90 sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden ">
+          <div className="w-full h-dvh sm:h-auto sm:max-h-vh-90 sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden">
             {/* Sheet Top Bar */}
-            <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
+            <div className="px-4 h-14 border-b border-border flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <div className="size-8 rounded-lg bg-muted border border-border text-primary flex items-center justify-center">
                   <Heart size={17} weight="fill" />
                 </div>
                 <span className="text-base font-bold text-foreground">

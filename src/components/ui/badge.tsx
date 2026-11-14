@@ -20,7 +20,7 @@ const badgeVariants = cva(
         /** Success status (e.g. "Refunded", "Delivered") */
         success: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800",
         /** Warning status (e.g. "Pending review") */
-        warning: "bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-200 dark:border-amber-800",
+        warning: "bg-muted text-warning-strong border border-border",
       },
     },
     defaultVariants: {

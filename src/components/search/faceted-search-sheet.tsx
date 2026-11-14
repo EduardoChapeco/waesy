@@ -271,10 +271,10 @@ export function FacetedSearchSheet({
         </div>
 
         {/* Zona do Polegar Fixa (Apple HIG) */}
-        <div className="p-4 border-t border-border/50 bg-background/95 backdrop-blur-sm shrink-0">
+        <div className="p-4 border-t border-border bg-background shrink-0">
           <Button
             onClick={handleApply}
-            className="w-full min-h-11 rounded-lg text-sm font-bold shadow-xs cursor-pointer"
+            className="w-full min-h-11 rounded-lg text-sm font-bold cursor-pointer"
           >
             Aplicar Filtros {totalResultsCount > 0 ? `(${totalResultsCount} itens)` : ""}
           </Button>

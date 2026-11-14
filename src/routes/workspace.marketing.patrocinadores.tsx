@@ -210,10 +210,10 @@ function WorkspacePatrocinadoresPage() {
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                         sp.tier === "gold"
-                          ? "bg-warning/15 text-warning-strong  border border-warning/30"
+                          ? "bg-muted text-warning-strong border border-border"
                           : sp.tier === "silver"
-                          ? "bg-zinc-500/15 text-zinc-600 dark:text-zinc-300 border border-zinc-500/30"
-                          : "bg-primary/10 text-primary border border-primary/20"
+                          ? "bg-muted text-foreground border border-border"
+                          : "bg-card text-primary border border-border"
                       }`}
                     >
                       {sp.tier === "gold"

@@ -178,18 +178,18 @@ export function GlobalQuickCreateModal({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") setOpen(false);
         }}
-        className="fixed inset-0 bg-foreground/50 backdrop-blur-xs transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="fixed inset-0 bg-overlay transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
 
       {/* Sheet / Dialog Surface */}
-      <div className="relative z-10 w-full sm:max-w-md bg-background text-foreground rounded-t-3xl sm:rounded-2xl border-t sm:border border-border/60 shadow-overlay overflow-hidden pb-safe animate-in slide-in-from-bottom-4 duration-200">
+      <div className="relative z-10 w-full sm:max-w-md bg-background text-foreground rounded-t-3xl sm:rounded-2xl border-t sm:border border-border overflow-hidden pb-safe animate-in slide-in-from-bottom-4 duration-200">
         {/* Handle bar mobile */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
           <div className="w-10 h-1 rounded-full bg-border" />
         </div>
 
         {/* Header */}
-        <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between gap-2">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
           <h2 className="text-base font-bold text-foreground tracking-tight">
             Criar
           </h2>

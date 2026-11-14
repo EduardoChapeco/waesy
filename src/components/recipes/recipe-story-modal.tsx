@@ -129,18 +129,18 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
 
               {recipe.ingredients && recipe.ingredients.length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-2xs uppercase font-bold text-zinc-400 tracking-wider">
+                  <span className="text-2xs uppercase font-bold text-neutral-400 tracking-wider">
                     Principais Ingredientes:
                   </span>
                   <div className="space-y-1">
                     {recipe.ingredients.slice(0, 3).map((ing, i) => (
-                      <p key={i} className="text-2xs text-zinc-300 line-clamp-1 flex items-center gap-1">
-                        <span className="size-1 rounded-full bg-zinc-500 shrink-0" />
+                      <p key={i} className="text-2xs text-neutral-300 line-clamp-1 flex items-center gap-1">
+                        <span className="size-1 rounded-full bg-neutral-500 shrink-0" />
                         {ing}
                       </p>
                     ))}
                     {recipe.ingredients.length > 3 && (
-                      <p className="text-3xs text-zinc-400 italic">
+                      <p className="text-3xs text-neutral-400 italic">
                         +{recipe.ingredients.length - 3} outros ingredientes...
                       </p>
                     )}

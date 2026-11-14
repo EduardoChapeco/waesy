@@ -1270,7 +1270,7 @@ export function EditorialShowcaseView({
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {lodging.stars ? (
-                                    <span className="text-xs font-bold text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-950 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800">
+                                    <span className="text-xs font-bold text-warning-strong bg-muted px-2 py-1 rounded-md border border-border">
                                       {lodging.stars} estrelas
                                     </span>
                                   ) : null}
@@ -1508,7 +1508,7 @@ export function EditorialShowcaseView({
                         {Array.isArray(item.meals_included) && item.meals_included.length > 0 && (
                           <div className="flex gap-2 flex-wrap pt-1">
                             {item.meals_included.map((m: string) => (
-                              <span key={m} className="text-xs px-3 py-1 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-semibold flex items-center gap-1">
+                              <span key={m} className="text-xs px-3 py-1 rounded-lg bg-muted border border-border text-foreground font-semibold flex items-center gap-1">
                                 {m === "breakfast" ? "Café da Manhã" : m === "lunch" ? "Almoço" : "Jantar"}
                               </span>
                             ))}
@@ -3021,8 +3021,8 @@ export function EditorialShowcaseView({
       
       {/* ── Modal Player de Vídeo do Feed ── */}
       <Dialog open={!!selectedVideoUrl} onOpenChange={(open) => !open && setSelectedVideoUrl(null)}>
-        <DialogContent className="max-w-2xl p-2 sm:p-4 rounded-lg bg-foreground/95 border border-white/10 text-foreground">
-          <div className="relative aspect-video rounded-lg overflow-hidden bg-foreground flex items-center justify-center">
+        <DialogContent className="max-w-2xl p-2 sm:p-4 rounded-lg bg-card border border-border text-foreground">
+          <div className="relative aspect-video rounded-lg overflow-hidden bg-neutral-950 flex items-center justify-center">
             {selectedVideoUrl && (
               <video
                 src={selectedVideoUrl}

@@ -1028,7 +1028,7 @@ export function ConvenienceShowcaseView({
                     </span>
                   )}
                   {progressiveDiscountTiers.length > 0 && (
-                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-amber-600 text-amber-50 border border-amber-700">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-warning text-warning-foreground border border-warning">
                       Leve Mais Por Menos
                     </span>
                   )}
@@ -1728,7 +1728,7 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "p-3 rounded-lg border text-center transition-colors duration-150 cursor-pointer flex flex-col items-center gap-1 min-h-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                       orderPaymentMethod === "cash"
-                        ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 font-bold"
+                        ? "border-primary bg-muted text-warning-strong font-bold"
                         : "border-border bg-background text-muted-foreground hover:text-foreground"
                     )}
                   >

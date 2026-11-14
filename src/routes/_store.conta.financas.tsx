@@ -690,7 +690,7 @@ function PersonalFinancePage() {
             onSupportClick={() => toast.info("Central de Ajuda e Suporte Waesy")}
           />
 
-          <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-5">
+          <div className="max-w-md md:max-w-xl mx-auto px-0 sm:px-5 space-y-5">
             {/* Carrossel Deslizante de Squircles de Ação (Pix Priorizado em 1º) */}
             <FinancialActionGrid
               onPixClick={() => setIsPixHubOpen(true)}
@@ -799,7 +799,7 @@ function PersonalFinancePage() {
       {/* VISTA 2: FATURA CARTÃO DE CRÉDITO (IMAGEM 1 - TELA 3)        */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "card" && (
-        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4 animate-in fade-in duration-200">
+        <div className="max-w-md md:max-w-xl mx-auto px-0 sm:px-5 space-y-4 pt-4 animate-in fade-in duration-200">
           <CreditCardInvoiceView
             cardHolderName={overview?.card?.cardHolderName || overview?.profile?.fullName || "CLIENTE WAESY"}
             lastFourDigits={overview?.card?.lastFourDigits || "8842"}
@@ -822,7 +822,7 @@ function PersonalFinancePage() {
       {/* VISTA 3: EXTRATO COMPLETO / HISTÓRICO                         */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "feed" && (
-        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4">
+        <div className="max-w-md md:max-w-xl mx-auto px-0 sm:px-5 space-y-4 pt-4">
           {/* Seletor de Período Mensal */}
           <div className="flex items-center justify-between bg-card border border-border rounded-2xl p-2">
             <button
@@ -953,7 +953,7 @@ function PersonalFinancePage() {
       {/* VISTA 4: MENU / FERRAMENTAS FINANCEIRAS                       */}
       {/* ══════════════════════════════════════════════════════════════ */}
       {activePillar === "planning" && (
-        <div className="max-w-md md:max-w-xl mx-auto px-4 sm:px-5 space-y-4 pt-4">
+        <div className="max-w-md md:max-w-xl mx-auto px-0 sm:px-5 space-y-4 pt-4">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-base font-extrabold tracking-tight text-foreground">
               Menu Financeiro
@@ -1194,10 +1194,10 @@ function PersonalFinancePage() {
 
       {/* Modal / Diálogo: Rendimento da Conta (CDI Real) */}
       {isYieldModalOpen && (
-        <div className="fixed inset-0 z-50 bg-foreground/40 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
           <div className="w-full max-w-sm rounded-3xl bg-card border border-border p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="size-10 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-muted border border-border text-warning-strong flex items-center justify-center">
                 <TrendingUp className="size-5" />
               </div>
               <button
@@ -1417,11 +1417,11 @@ function PersonalFinancePage() {
 
       {/* Modal: Adicionar Saldo / Depósito Pix */}
       {isDepositOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay">
           <div className="relative bg-card border border-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="size-10 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex items-center justify-center">
+                <div className="size-10 rounded-xl bg-muted border border-border text-warning-strong flex items-center justify-center">
                   <Plus className="size-5" />
                 </div>
                 <div>
@@ -1496,11 +1496,11 @@ function PersonalFinancePage() {
 
       {/* Modal: Transferência P2P */}
       {isTransferOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay">
           <div className="relative bg-card border border-border w-full max-w-md rounded-3xl p-5 sm:p-6 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
-                <div className="size-10 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 flex items-center justify-center">
+                <div className="size-10 rounded-xl bg-muted border border-border text-warning-strong flex items-center justify-center">
                   <ArrowLeftRight className="size-5" />
                 </div>
                 <div>

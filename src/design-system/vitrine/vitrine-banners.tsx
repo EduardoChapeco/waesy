@@ -249,9 +249,9 @@ export function VitrineMetamorphicBanner({
 
         {hasEditorialText && (
           <div className="absolute inset-x-3 bottom-3 sm:inset-x-6 sm:bottom-6 flex items-end justify-between gap-4 pointer-events-none">
-            <div className="max-w-xl rounded-lg bg-background/90 backdrop-blur-md border border-border/70 p-4 space-y-2 pointer-events-auto">
+            <div className="max-w-xl rounded-lg bg-card border border-border p-4 space-y-2 pointer-events-auto">
               {slide.badge && (
-                <span className="inline-flex items-center px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+                <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted text-foreground border border-border text-xs font-bold uppercase tracking-wider">
                   {slide.badge}
                 </span>
               )}
@@ -334,7 +334,7 @@ export function VitrineMetamorphicBanner({
                 type="button"
                 onClick={() => setActiveIndex((prev) => (prev - 1 + count) % count)}
                 aria-label="Banner anterior"
-                className="absolute left-3 top-1/2 -translate-y-1/2 size-11 min-h-11 rounded-full bg-background/90 backdrop-blur-md border border-border/70 text-foreground flex items-center justify-center cursor-pointer hover:bg-background transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute left-3 top-1/2 -translate-y-1/2 size-11 min-h-11 rounded-full bg-card border border-border text-foreground flex items-center justify-center cursor-pointer hover:bg-muted transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronLeft className="size-5" />
               </button>
@@ -342,7 +342,7 @@ export function VitrineMetamorphicBanner({
                 type="button"
                 onClick={() => setActiveIndex((prev) => (prev + 1) % count)}
                 aria-label="Próximo banner"
-                className="absolute right-3 top-1/2 -translate-y-1/2 size-11 min-h-11 rounded-full bg-background/90 backdrop-blur-md border border-border/70 text-foreground flex items-center justify-center cursor-pointer hover:bg-background transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute right-3 top-1/2 -translate-y-1/2 size-11 min-h-11 rounded-full bg-card border border-border text-foreground flex items-center justify-center cursor-pointer hover:bg-muted transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronRight className="size-5" />
               </button>
@@ -514,7 +514,7 @@ export function VitrineBentoTetris({
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-200 motion-reduce:transition-none group-hover:scale-105"
                   />
-                  <div className="absolute inset-x-3 bottom-3 rounded-lg bg-background/90 backdrop-blur-md border border-border/60 p-3 space-y-1">
+                  <div className="absolute inset-x-3 bottom-3 rounded-lg bg-card border border-border p-3 space-y-1">
                     {tile.tag && (
                       <span className="inline-block text-xs font-bold uppercase tracking-wider text-primary">
                         {tile.tag}

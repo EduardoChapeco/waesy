@@ -315,11 +315,11 @@ function BookingIndexPage() {
                             </div>
                           )}
                           <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-                            <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
+                            <span className="bg-card text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border">
                               {service.category || "Geral"}
                             </span>
                             {service.duration_minutes && (
-                              <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
+                              <span className="bg-card text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border flex items-center gap-1">
                                 <Clock size={11} />
                                 <span>{service.duration_minutes}m</span>
                               </span>
@@ -332,7 +332,7 @@ function BookingIndexPage() {
                           {service.stores?.name && (
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Storefront size={13} className="text-primary" />
-                              <span className="font-semibold truncate">{service.stores.name}</span>
+                              <span className="font-semibold line-clamp-1">{service.stores.name}</span>
                             </div>
                           )}
                           <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
@@ -347,7 +347,7 @@ function BookingIndexPage() {
                       </Link>
 
                       {/* Preço e Botão */}
-                      <div className="p-4 pt-2 border-t border-border/40 flex items-center justify-between">
+                      <div className="p-4 pt-2 border-t border-border flex items-center justify-between">
                         <span className="font-mono font-black text-base text-foreground">
                           {formatMoney(service.price_cents)}
                         </span>
@@ -365,14 +365,14 @@ function BookingIndexPage() {
               ))}
 
               {/* Gôndola Geral de Agendamentos */}
-              <div className="space-y-4 pt-4 border-t border-border/40">
+              <div className="space-y-4 pt-4 border-t border-border">
                 
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {services.map((service: any) => (
                     <div
                       key={service.id}
-                      className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between group"
+                      className="rounded-lg bg-card border border-border overflow-hidden hover:border-foreground transition-colors duration-200 flex flex-col justify-between group"
                     >
                       <Link
                         to="/agendar/$id"
@@ -393,11 +393,11 @@ function BookingIndexPage() {
                             </div>
                           )}
                           <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-                            <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
+                            <span className="bg-card text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border">
                               {service.category || "Geral"}
                             </span>
                             {service.duration_minutes && (
-                              <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
+                              <span className="bg-card text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border flex items-center gap-1">
                                 <Clock size={11} />
                                 <span>{service.duration_minutes}m</span>
                               </span>
@@ -409,7 +409,7 @@ function BookingIndexPage() {
                           {service.stores?.name && (
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Storefront size={13} className="text-primary" />
-                              <span className="font-semibold truncate">{service.stores.name}</span>
+                              <span className="font-semibold line-clamp-1">{service.stores.name}</span>
                             </div>
                           )}
                           <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
@@ -423,7 +423,7 @@ function BookingIndexPage() {
                         </div>
                       </Link>
 
-                      <div className="p-4 pt-2 border-t border-border/40 flex items-center justify-between">
+                      <div className="p-4 pt-2 border-t border-border flex items-center justify-between">
                         <span className="font-mono font-black text-base text-foreground">
                           {formatMoney(service.price_cents)}
                         </span>
@@ -448,7 +448,7 @@ function BookingIndexPage() {
               {services.map((service: any) => (
                 <div
                   key={service.id}
-                  className="rounded-lg bg-card border border-border/60 overflow-hidden hover:border-foreground/30 transition-colors duration-200 flex flex-col justify-between group shadow-xs"
+                  className="rounded-lg bg-card border border-border overflow-hidden hover:border-foreground transition-colors duration-200 flex flex-col justify-between group"
                 >
                   <Link
                     to="/agendar/$id"
@@ -470,11 +470,11 @@ function BookingIndexPage() {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-                        <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40">
+                        <span className="bg-card text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border">
                           {service.category || "Geral"}
                         </span>
                         {service.duration_minutes && (
-                          <span className="bg-background/90 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1">
+                          <span className="bg-card text-foreground text-xs font-mono font-bold px-2 py-1 rounded-lg border border-border flex items-center gap-1">
                             <Clock size={11} />
                             <span>{service.duration_minutes}m</span>
                           </span>

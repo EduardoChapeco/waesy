@@ -47,14 +47,58 @@ export const upsertWhatsAppContactIdentity = createServerFn({ method: "POST" })
       existing = result.data;
     }
     const payload = { store_id: identity.store_id, channel_instance_id: data.channelInstanceId || null, provider: data.provider, external_user_id: data.externalUserId || null, phone_e164: phone, phone_hash: hash, display_name: data.displayName || null, profile_name: data.profileName || null, customer_id: data.customerId || existing?.customer_id || null, lead_id: data.leadId || existing?.lead_id || null, consent_status: data.consentStatus || existing?.consent_status || "unknown", last_seen_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    let savedIdentity: any = null;
     if (existing) {
       const { data: updated, error } = await db.from("whatsapp_contact_identities").update(payload).eq("id", existing.id).eq("store_id", identity.store_id).select().single();
       if (error) throw new Error(`Falha ao atualizar identidade WhatsApp: ${error.message}`);
-      return updated;
+      savedIdentity = updated;
+    } else {
+      const { data: created, error } = await db.from("whatsapp_contact_identities").insert(payload).select().single();
+      if (error) throw new Error(`Falha ao criar identidade WhatsApp: ${error.message}`);
+      savedIdentity = created;
     }
-    const { data: created, error } = await db.from("whatsapp_contact_identities").insert(payload).select().single();
-    if (error) throw new Error(`Falha ao criar identidade WhatsApp: ${error.message}`);
-    return created;
+
+    const resolvedName = data.displayName || data.profileName || null;
+    const isGroup = Boolean(data.externalUserId && String(data.externalUserId).includes("@g.us"));
+    const syncThreadOr: string[] = [];
+    if (savedIdentity?.id) syncThreadOr.push(`channel_identity_id.eq.${savedIdentity.id}`);
+    if (data.externalUserId) syncThreadOr.push(`entity_id.eq.${data.externalUserId}`);
+    if (!isGroup && phone) syncThreadOr.push(`primary_phone_e164.eq.${phone}`);
+
+    if (syncThreadOr.length > 0 && (resolvedName || (!isGroup && phone) || data.customerId || data.leadId)) {
+      const threadSync: Record<string, any> = { updated_at: new Date().toISOString() };
+      if (resolvedName) threadSync.guest_name = resolvedName;
+      if (isGroup && resolvedName) {
+        threadSync.group_subject = resolvedName;
+        threadSync.subject = `Grupo: ${resolvedName}`;
+      } else if (!isGroup && phone) {
+        threadSync.primary_phone_e164 = phone;
+      }
+      if (data.customerId) threadSync.customer_id = data.customerId;
+      if (data.leadId) threadSync.lead_id = data.leadId;
+
+      await db
+        .from("chat_threads")
+        .update(threadSync)
+        .eq("store_id", identity.store_id)
+        .or(syncThreadOr.join(","));
+    }
+
+    if (!isGroup && data.customerId && (resolvedName || phone)) {
+      const crmSync: Record<string, any> = { updated_at: new Date().toISOString() };
+      if (resolvedName) crmSync.full_name = resolvedName;
+      if (phone) crmSync.phone = phone;
+      await db.from("customers_crm").update(crmSync).eq("store_id", identity.store_id).eq("id", data.customerId);
+    }
+
+    if (!isGroup && data.leadId && (resolvedName || phone)) {
+      const leadSync: Record<string, any> = { updated_at: new Date().toISOString() };
+      if (resolvedName) leadSync.full_name = resolvedName;
+      if (phone) leadSync.phone = phone;
+      await db.from("leads_crm").update(leadSync).eq("store_id", identity.store_id).eq("id", data.leadId);
+    }
+
+    return savedIdentity;
   });
 
 export const setWhatsAppContactConsent = createServerFn({ method: "POST" })

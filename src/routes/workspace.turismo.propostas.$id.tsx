@@ -20,6 +20,7 @@ import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { StudioFrame, CANVAS_DIMENSIONS } from "@/components/tourism/studio/studio-frame";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
 import { StudioSidebarEditor } from "@/components/tourism/studio/studio-sidebar-editor";
+import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
 import { cn } from "@/lib/utils";
 
@@ -253,6 +254,7 @@ function WorkspaceProposalStudioPage() {
  );
 
  const currentTemplate = proposal.template_theme || (proposal as any).template || "editorial-flat";
+ const activeCanvasTheme = resolveProposalCanvasTheme(proposal as unknown as Record<string, any>);
  const displayZoom = Math.round((zoomScale !== null ? zoomScale : autoFitScale) * 100);
 
  return (
@@ -434,6 +436,7 @@ function WorkspaceProposalStudioPage() {
  <StudioFrame
  format={proposal.canvas_format}
  zoomScale={zoomScale}
+ canvasBgColor={activeCanvasTheme.canvasBg}
  onAutoFitScaleCalculated={setAutoFitScale}
  >
  <ProposalCanvasRenderer proposal={proposal} />

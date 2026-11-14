@@ -248,7 +248,7 @@ export function MediaUploader({
  <img
  src={value}
  alt="Media preview"
- className="max-h-30 w-auto max-w-full object-contain rounded-lg shadow-2xs"
+ className="max-h-30 w-auto max-w-full object-contain rounded-lg"
  onError={() => {
  setHasImageError(true);
  }}
@@ -257,7 +257,7 @@ export function MediaUploader({
  </div>
 
  {/* Overlay com Ações Rápidas */}
- <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none flex items-center justify-center gap-2 p-2 backdrop-blur-xs">
+ <div className="absolute inset-0 bg-neutral-950/75 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none flex items-center justify-center gap-2 p-2">
  <Button
  type="button"
  variant="secondary"

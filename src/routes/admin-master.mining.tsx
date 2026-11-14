@@ -1740,14 +1740,14 @@ function AdminMiningHubPage() {
   <Badge
   variant="outline"
   className={cn(
-  "text-2xs px-2 py-0 font-medium rounded-md",
+  "text-2xs px-2 py-1 font-medium rounded-md",
   item.modalidadeNome.toLowerCase().includes("pregão")
   ? "bg-secondary text-foreground border-border"
   : item.modalidadeNome.toLowerCase().includes("dispensa") || item.modalidadeNome.toLowerCase().includes("inexigibilidade")
   ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800"
   : item.modalidadeNome.toLowerCase().includes("concorrência") || item.modalidadeNome.toLowerCase().includes("tomada")
   ? "bg-muted text-foreground border-border"
-  : "bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border-amber-200 dark:border-amber-800"
+  : "bg-muted text-warning-strong border-border"
   )}
   >
   {item.modalidadeNome}

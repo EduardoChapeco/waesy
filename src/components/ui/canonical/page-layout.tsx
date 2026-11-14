@@ -58,12 +58,12 @@ export const CanonicalShell = React.forwardRef<HTMLDivElement, CanonicalShellPro
         className={cn('min-h-screen w-full bg-background text-foreground flex flex-col', className)}
         {...props}
       >
-        {header && <header className="w-full border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-30">{header}</header>}
+        {header && <header className="w-full border-b border-border bg-background sticky top-0 z-30">{header}</header>}
         <div className="flex-1 flex w-full">
-          {rail && <aside className="hidden lg:block shrink-0 border-r border-border bg-card/50">{rail}</aside>}
+          {rail && <aside className="hidden lg:block shrink-0 border-r border-border bg-sidebar">{rail}</aside>}
           <main className={cn('flex-1 w-full', bottomBar && 'pb-20')}>{children}</main>
         </div>
-        {bottomBar && <div className="sticky bottom-0 z-40 w-full">{bottomBar}</div>}
+        {bottomBar && <div className="sticky bottom-0 z-30 w-full">{bottomBar}</div>}
       </div>
     );
   }
@@ -298,7 +298,7 @@ export const CanonicalBottomBarContainer = React.forwardRef<HTMLDivElement, Cano
       <div
         ref={ref}
         className={cn(
-          'sticky bottom-0 z-40 w-full bg-card/95 backdrop-blur-md border-t border-border p-4 flex items-center justify-between gap-4',
+          'sticky bottom-0 z-30 w-full bg-card border-t border-border p-4 flex items-center justify-between gap-4',
           className
         )}
         {...props}

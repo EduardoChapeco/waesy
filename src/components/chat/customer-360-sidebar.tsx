@@ -31,6 +31,7 @@ import {
   Trash2,
   Paperclip,
   CheckCircle2,
+  Target,
 } from "lucide-react";
 import { formatBRL, cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
@@ -54,7 +55,17 @@ import {
   addSupportTicketStep,
   linkThreadToCrmOpportunity,
   registerCrmCommercialActivity,
+  createLinkedCustomerTask,
+  toggleCustomerOnboardingStep,
 } from "@/services/chat.functions";
+import { updateTaskStatus } from "@/services/tasks.functions";
+import {
+  ONBOARDING_CS_STEPS,
+  SAC_FUNCTION_ROLES,
+  CustomerIdentityTagPill,
+  type OnboardingStepKey,
+  type SacFunctionRoleKey,
+} from "@/lib/entity-trace-hash";
 import { ThreadTagsPicker } from "@/components/chat/ThreadTagsPicker";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
 import { Loader2 } from "lucide-react";
@@ -110,7 +121,13 @@ interface Customer360SidebarProps {
   onQuickSendMessage?: (text: string) => void;
   onOpenTransfer?: () => void;
   onOpenSchedule?: () => void;
-  onProfileSynced?: (payload: { avatarUrl?: string | null; fullName?: string | null }) => void;
+  onProfileSynced?: (payload: {
+    avatarUrl?: string | null;
+    fullName?: string | null;
+    phone?: string | null;
+    isGroup?: boolean;
+    attribution?: Record<string, any> | null;
+  }) => void;
 }
 
 export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
@@ -162,6 +179,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const [avatarImgFailed, setAvatarImgFailed] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSyncingWhatsAppProfile, setIsSyncingWhatsAppProfile] = useState(false);
+  const [isEditingAttribution, setIsEditingAttribution] = useState(false);
+  const [isSavingAttribution, setIsSavingAttribution] = useState(false);
+  const [attrPlatform, setAttrPlatform] = useState("");
+  const [attrUtmSource, setAttrUtmSource] = useState("");
+  const [attrUtmMedium, setAttrUtmMedium] = useState("");
+  const [attrCampaign, setAttrCampaign] = useState("");
+  const [attrAdId, setAttrAdId] = useState("");
+  const [attrHeadline, setAttrHeadline] = useState("");
 
   const [handoffMode, setHandoffMode] = useState<"ai_triage" | "human_queue" | "human_active">("ai_triage");
   const [selectedAiAgent, setSelectedAiAgent] = useState<string>("general_copilot");
@@ -196,8 +221,19 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const [newTicketTitle, setNewTicketTitle] = useState("");
   const [newTicketDesc, setNewTicketDesc] = useState("");
   const [newTicketPriority, setNewTicketPriority] = useState<"low" | "normal" | "high" | "urgent">("normal");
+  const [newTicketRole, setNewTicketRole] = useState<SacFunctionRoleKey>("sac_pepinos");
+  const [newTicketEntityCode, setNewTicketEntityCode] = useState("");
   const [isSavingTicket, setIsSavingTicket] = useState(false);
   const [stepInputByTicket, setStepInputByTicket] = useState<Record<string, string>>({});
+
+  // Estado Tarefas Vinculadas & Onboarding CS (Sheet Rápida)
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high" | "urgent">("high");
+  const [newTaskSector, setNewTaskSector] = useState<SacFunctionRoleKey>("customer_success");
+  const [newTaskEntityCode, setNewTaskEntityCode] = useState("");
+  const [isSavingTask, setIsSavingTask] = useState(false);
+  const [togglingOnboardingKey, setTogglingOnboardingKey] = useState<string | null>(null);
   const [isLinkingOpportunity, setIsLinkingOpportunity] = useState(false);
   const [activityTitle, setActivityTitle] = useState("");
   const [activityType, setActivityType] = useState<"note" | "call" | "whatsapp_followup" | "proposal_sent" | "meeting">("whatsapp_followup");
@@ -222,11 +258,18 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         setInternalNotes(res?.threadContext?.internal_notes || "");
         setFunnelStage(res?.linkedLead?.status || "new");
         setEditName(res?.profile?.full_name || guestName || "");
-        setEditPhone(res?.profile?.phone || guestPhone || "");
-        setEditEmail(res?.profile?.email || "");
-        setEditCpf(res?.profile?.document_cpf || "");
-        setEditCity(res?.profile?.city || "");
+        setEditPhone(res?.isGroup ? "" : (res?.profile?.phone || guestPhone || ""));
+        setEditEmail(res?.isGroup ? "" : (res?.profile?.email || ""));
+        setEditCpf(res?.isGroup ? "" : (res?.profile?.document_cpf || ""));
+        setEditCity(res?.isGroup ? "" : (res?.profile?.city || ""));
         setEditAvatarUrl(res?.profile?.avatar_url || avatarUrl || "");
+        const attr = (res?.attribution || {}) as Record<string, any>;
+        setAttrPlatform(String(attr.platform || ""));
+        setAttrUtmSource(String(attr.utm_source || attr.source || ""));
+        setAttrUtmMedium(String(attr.utm_medium || attr.medium || ""));
+        setAttrCampaign(String(attr.campaign || attr.utm_campaign || ""));
+        setAttrAdId(String(attr.ad_id || attr.meta_ad_id || ""));
+        setAttrHeadline(String(attr.ad_headline || attr.listing_title || ""));
         if (res?.aiAgentConfig?.handoffMode) {
           setHandoffMode(res.aiAgentConfig.handoffMode);
         } else if ((res?.threadContext as any)?.metadata?.handoff_mode) {
@@ -259,25 +302,34 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       const synced = await syncContactProfileFromWhatsApp({
         data: { threadId, storeId },
       });
-      if (synced.avatarUrl || synced.fullName) {
+      if (synced.avatarUrl || synced.fullName || synced.phone) {
         setData((prev: any) =>
           prev
             ? {
                 ...prev,
+                isGroup: synced.isGroup ?? prev.isGroup,
                 profile: {
                   ...(prev.profile || {}),
                   ...(synced.avatarUrl ? { avatar_url: synced.avatarUrl } : {}),
                   ...(synced.fullName ? { full_name: synced.fullName } : {}),
+                  ...(!synced.isGroup && synced.phone ? { phone: synced.phone } : {}),
                 },
               }
             : prev,
         );
         if (synced.avatarUrl) setEditAvatarUrl(synced.avatarUrl);
         if (synced.fullName) setEditName(synced.fullName);
-        onProfileSynced?.({ avatarUrl: synced.avatarUrl, fullName: synced.fullName });
-        toast.success(synced.avatarUrl ? "Foto e perfil do WhatsApp sincronizados!" : "Dados do contato sincronizados!");
+        if (!synced.isGroup && synced.phone) setEditPhone(synced.phone);
+        if (synced.isGroup) loadContext();
+        onProfileSynced?.({
+          avatarUrl: synced.avatarUrl,
+          fullName: synced.fullName,
+          phone: synced.isGroup ? null : (synced.phone || null),
+          isGroup: Boolean(synced.isGroup),
+        });
+        toast.success(synced.avatarUrl ? "Foto e dados do WhatsApp sincronizados!" : "Dados do WhatsApp sincronizados!");
       } else {
-        toast.info("O contato não possui foto pública visível no WhatsApp.");
+        toast.info("Não encontramos foto pública adicional no WhatsApp.");
       }
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível sincronizar a foto do WhatsApp.");
@@ -540,8 +592,9 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     }
   };
   const handleSaveCustomerProfile = async () => {
+    const resolvedIsGroup = Boolean(isGroup || data?.isGroup);
     if (!editName.trim()) {
-      toast.error("Informe o nome do cliente.");
+      toast.error(resolvedIsGroup ? "Informe o nome do grupo." : "Informe o nome do cliente.");
       return;
     }
     setIsSavingProfile(true);
@@ -549,13 +602,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     try {
       const res = await updateCustomerProfileFromChat({
         data: {
-          customerId: data?.profile?.id || customerId || null,
+          customerId: resolvedIsGroup ? null : (data?.profile?.id || customerId || null),
           threadId: threadId || null,
+          isGroup: resolvedIsGroup,
           fullName: editName.trim(),
-          phone: editPhone.trim() || null,
-          email: editEmail.trim() || null,
-          documentCpf: editCpf.trim() || null,
-          city: editCity.trim() || null,
+          phone: resolvedIsGroup ? null : (editPhone.trim() || null),
+          email: resolvedIsGroup ? null : (editEmail.trim() || null),
+          documentCpf: resolvedIsGroup ? null : (editCpf.trim() || null),
+          city: resolvedIsGroup ? null : (editCity.trim() || null),
           avatarUrl: editAvatarUrl.trim() || null,
         },
       });
@@ -563,6 +617,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         prev
           ? {
               ...prev,
+              ...(resolvedIsGroup ? { groupSubject: editName.trim() } : {}),
               profile: {
                 ...(prev.profile || {}),
                 ...res.profile,
@@ -574,13 +629,48 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       onProfileSynced?.({
         avatarUrl: editAvatarUrl.trim() || data?.profile?.avatar_url || null,
         fullName: editName.trim(),
+        phone: resolvedIsGroup ? null : (res?.profile?.phone || editPhone.trim() || null),
+        isGroup: resolvedIsGroup,
       });
       setIsEditingProfile(false);
-      toast.success("Dados do contato atualizados!");
+      toast.success(resolvedIsGroup ? "Nome e foto do grupo atualizados!" : "Dados do contato atualizados!");
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao atualizar contato.");
+      toast.error(err?.message || "Erro ao atualizar dados.");
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleSaveAttribution = async () => {
+    const resolvedIsGroup = Boolean(isGroup || data?.isGroup);
+    const currentName = String(data?.profile?.full_name || editName || guestName || (resolvedIsGroup ? "Grupo WhatsApp" : "Contato")).trim();
+    setIsSavingAttribution(true);
+    try {
+      const res = await updateCustomerProfileFromChat({
+        data: {
+          customerId: resolvedIsGroup ? null : (data?.profile?.id || customerId || null),
+          threadId: threadId || null,
+          isGroup: resolvedIsGroup,
+          fullName: currentName.length >= 2 ? currentName : "Contato WhatsApp",
+          attributionUpdate: {
+            platform: attrPlatform.trim() || null,
+            source: attrUtmSource.trim() || attrPlatform.trim() || null,
+            campaign: attrCampaign.trim() || null,
+            ad_id: attrAdId.trim() || null,
+            ad_headline: attrHeadline.trim() || null,
+            utm_source: attrUtmSource.trim() || null,
+            utm_medium: attrUtmMedium.trim() || null,
+          },
+        },
+      });
+      setData((prev: any) => (prev ? { ...prev, attribution: res.attribution } : prev));
+      onProfileSynced?.({ attribution: res.attribution || null });
+      setIsEditingAttribution(false);
+      toast.success("Origem e atribuição de anúncio atualizadas!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar atribuição.");
+    } finally {
+      setIsSavingAttribution(false);
     }
   };
 
@@ -610,6 +700,15 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     }
     setIsSavingTicket(true);
     try {
+      const activeTrip = data?.trips?.[0] || null;
+      const activeDossier = data?.travelDossiers?.[0] || null;
+      const activeOrder = data?.orders?.[0] || null;
+      const entityCode =
+        newTicketEntityCode.trim() ||
+        activeTrip?.trip_number ||
+        activeDossier?.pnrLocator ||
+        (activeOrder ? `PED-${String(activeOrder.id).slice(0, 6).toUpperCase()}` : "");
+
       const created = await createSupportTicketFromChat({
         data: {
           threadId,
@@ -617,17 +716,135 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           title: newTicketTitle.trim(),
           description: newTicketDesc.trim(),
           priority: newTicketPriority,
+          sacFunctionRole: newTicketRole,
+          linkedEntityType: activeTrip || activeDossier ? "trip" : activeOrder ? "order" : "customer",
+          linkedEntityId: activeTrip?.id || activeOrder?.id || null,
+          linkedEntityCode: entityCode || null,
+          customerName: data?.profile?.full_name || guestName || "Cliente",
+          customerAvatarUrl: data?.profile?.avatar_url || avatarUrl || null,
+          traceHash: data?.customerTraceHash || data?.profile?.trace_hash || null,
         },
       });
       setData((prev: any) => (prev ? { ...prev, tickets: [created, ...(prev.tickets || [])] } : prev));
       setNewTicketTitle("");
       setNewTicketDesc("");
+      setNewTicketEntityCode("");
       setIsCreatingTicket(false);
-      toast.success("Demanda aberta e link enviado no chat!");
+      toast.success("Chamado SAC aberto e sincronizado com o painel de Suporte!");
     } catch (err: any) {
       toast.error(err?.message || "Erro ao criar demanda.");
     } finally {
       setIsSavingTicket(false);
+    }
+  };
+
+  const handleToggleOnboardingStep = async (stepKey: OnboardingStepKey) => {
+    const currentSteps = (data?.onboardingSteps || {}) as Record<string, boolean>;
+    const nextCompleted = !currentSteps[stepKey];
+    setTogglingOnboardingKey(stepKey);
+    setData((prev: any) =>
+      prev
+        ? {
+            ...prev,
+            onboardingSteps: { ...(prev.onboardingSteps || {}), [stepKey]: nextCompleted },
+          }
+        : prev
+    );
+    try {
+      await toggleCustomerOnboardingStep({
+        data: {
+          storeId,
+          threadId: threadId || null,
+          tripId: data?.trips?.[0]?.id || null,
+          stepKey,
+          completed: nextCompleted,
+        },
+      });
+      toast.success(
+        nextCompleted
+          ? `Etapa "${ONBOARDING_CS_STEPS.find((s) => s.key === stepKey)?.shortLabel}" concluída!`
+          : "Etapa reaberta na Planilha Viva CS."
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao sincronizar etapa CS.");
+      loadContext();
+    } finally {
+      setTogglingOnboardingKey(null);
+    }
+  };
+
+  const handleCreateLinkedTask = async () => {
+    if (!newTaskTitle.trim()) {
+      toast.error("Informe o título da tarefa.");
+      return;
+    }
+    setIsSavingTask(true);
+    try {
+      const activeTrip = data?.trips?.[0] || null;
+      const activeDossier = data?.travelDossiers?.[0] || null;
+      const activeOrder = data?.orders?.[0] || null;
+      const entityCode =
+        newTaskEntityCode.trim() ||
+        activeTrip?.trip_number ||
+        activeDossier?.pnrLocator ||
+        (activeOrder ? `PED-${String(activeOrder.id).slice(0, 6).toUpperCase()}` : "");
+
+      const created = await createLinkedCustomerTask({
+        data: {
+          storeId,
+          threadId: threadId || null,
+          customerId: data?.profile?.id || customerId || null,
+          customerName: data?.profile?.full_name || guestName || "Cliente",
+          customerPhone: data?.profile?.phone || guestPhone || null,
+          customerAvatarUrl: data?.profile?.avatar_url || avatarUrl || null,
+          title: newTaskTitle.trim(),
+          priority: newTaskPriority,
+          assignedSector: newTaskSector,
+          entityType: activeTrip || activeDossier ? "trip" : activeOrder ? "order" : "customer",
+          entityId: activeTrip?.id || activeOrder?.id || data?.profile?.id || null,
+          entityCode: entityCode || null,
+          pnrLocator: activeDossier?.pnrLocator || null,
+          isMyDay: true,
+        },
+      });
+      setData((prev: any) =>
+        prev ? { ...prev, tasks: [created, ...(prev.tasks || [])] } : prev
+      );
+      setNewTaskTitle("");
+      setNewTaskEntityCode("");
+      setIsCreatingTask(false);
+      toast.success("Tarefa vinculada criada e disponível no módulo Tarefas!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar tarefa vinculada.");
+    } finally {
+      setIsSavingTask(false);
+    }
+  };
+
+  const handleToggleLinkedTaskStatus = async (task: any) => {
+    const nextStatus = task.status === "done" ? "todo" : "done";
+    setData((prev: any) =>
+      prev
+        ? {
+            ...prev,
+            tasks: (prev.tasks || []).map((t: any) =>
+              t.id === task.id ? { ...t, status: nextStatus } : t
+            ),
+          }
+        : prev
+    );
+    try {
+      await updateTaskStatus({
+        data: {
+          store_id: storeId,
+          task_id: task.id,
+          status: nextStatus as any,
+        },
+      });
+      toast.success(nextStatus === "done" ? "Tarefa concluída!" : "Tarefa reaberta.");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao atualizar tarefa.");
+      loadContext();
     }
   };
 
@@ -704,9 +921,12 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
   const {
     profile,
+    customerTraceHash,
     metrics,
     orders = [],
     tickets = [],
+    tasks = [],
+    onboardingSteps = {},
     trips = [],
     travelDossiers = [],
     linkedEmails = [],
@@ -720,11 +940,18 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   } = data;
 
   const resolvedCustomerId = profile?.id || customerId;
+  const effectiveTraceHash = customerTraceHash || profile?.trace_hash || "#CLI-SYNC";
+  const effectiveIsGroup = Boolean(isGroup || data?.isGroup);
+  const groupParticipants: Array<{ jid: string; phone: string | null; name: string | null; admin?: boolean }> =
+    Array.isArray(data?.groupParticipants) ? data.groupParticipants : [];
+  const attribution = (data?.attribution && typeof data.attribution === "object" ? data.attribution : null) as Record<string, any> | null;
+  const pixelConversions: Array<any> = Array.isArray(data?.pixelConversions) ? data.pixelConversions : [];
   const activeOpportunity = data?.linkedLead || null;
   const activeChecklist = Array.isArray(activeOpportunity?.checklist) ? activeOpportunity.checklist : [];
   const effectiveAvatar = !avatarImgFailed ? (profile?.avatar_url || avatarUrl || null) : null;
   const rawEmailStr = String(profile?.email || "").trim();
   const cleanCustomerEmail = !rawEmailStr || rawEmailStr.endsWith("@whatsapp.waesy") ? null : rawEmailStr;
+  const safeDisplayPhone = effectiveIsGroup || isChannel ? null : (profile?.phone || guestPhone || null);
 
   return (
     <div className={cn("space-y-4 p-3 text-xs font-sans", className)}>
@@ -740,7 +967,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                   className="size-full object-cover"
                   onError={() => setAvatarImgFailed(true)}
                 />
-              ) : isGroup ? (
+              ) : effectiveIsGroup ? (
                 <Users className="size-5 text-primary" />
               ) : isChannel ? (
                 <Radio className="size-5 text-emerald-600" />
@@ -753,7 +980,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                 type="button"
                 onClick={handleSyncWhatsAppProfile}
                 disabled={isSyncingWhatsAppProfile}
-                className="mt-1 w-full px-1 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-muted-foreground hover:text-foreground inline-flex items-center justify-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="mt-1 w-full min-h-11 sm:min-h-7 px-1 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-muted-foreground hover:text-foreground inline-flex items-center justify-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 title="Sincronizar foto e nome direto do WhatsApp"
               >
                 <RefreshCw className={cn("size-2.5", isSyncingWhatsAppProfile && "animate-spin motion-reduce:animate-none")} />
@@ -764,31 +991,47 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-center justify-between gap-1">
-              <h4 className="font-bold text-foreground truncate text-sm">
-                {profile?.full_name || guestName || (isGroup ? "Grupo WhatsApp" : "Contato")}
-              </h4>
-              {!isGroup && !isChannel && (
+              <div className="flex items-center gap-1 min-w-0">
+                <h4 className="font-bold text-foreground truncate text-sm">
+                  {profile?.full_name || data?.groupSubject || guestName || (effectiveIsGroup ? "Grupo WhatsApp" : "Contato")}
+                </h4>
+                <span className="px-2 py-1 rounded bg-primary/10 text-primary font-mono text-2xs font-bold shrink-0">
+                  {effectiveTraceHash}
+                </span>
+              </div>
+              {!isChannel && (
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile((prev) => !prev)}
-                  className="px-2 py-1 rounded-lg border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-foreground cursor-pointer transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="min-h-11 sm:min-h-8 px-2 py-1 rounded-lg border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-foreground cursor-pointer transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {isEditingProfile ? "Fechar" : "Editar"}
                 </button>
               )}
             </div>
 
-            {(profile?.phone || guestPhone) && (
+            {effectiveIsGroup && (
+              <div className="flex items-center gap-2 text-muted-foreground text-2xs">
+                <Users className="size-3 shrink-0 text-primary" />
+                <span>
+                  {groupParticipants.length > 0
+                    ? `Grupo WhatsApp · ${groupParticipants.length} participantes`
+                    : "Grupo WhatsApp"}
+                </span>
+              </div>
+            )}
+
+            {safeDisplayPhone && (
               <div className="flex items-center gap-1 text-muted-foreground font-mono text-2xs">
                 <Phone className="size-3 shrink-0 text-primary/80" />
-                <span className="truncate">{profile?.phone || guestPhone}</span>
+                <span className="truncate">{safeDisplayPhone}</span>
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard.writeText(String(profile?.phone || guestPhone || ""));
+                    navigator.clipboard.writeText(String(safeDisplayPhone));
                     toast.success("Telefone copiado!");
                   }}
-                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="min-h-11 min-w-11 sm:min-h-6 sm:min-w-6 inline-flex items-center justify-center p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   title="Copiar telefone"
                 >
                   <Copy className="size-2.5" />
@@ -796,14 +1039,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               </div>
             )}
 
-            {!isGroup && !isChannel && (
+            {!effectiveIsGroup && !isChannel && (
               <p className="text-muted-foreground text-2xs truncate flex items-center gap-1">
                 <Mail className="size-3 shrink-0 text-primary/80" />
                 <span>{cleanCustomerEmail || "E-mail não informado"}</span>
               </p>
             )}
 
-            {(profile?.document_cpf || profile?.city) && (
+            {!effectiveIsGroup && (profile?.document_cpf || profile?.city) && (
               <div className="flex items-center gap-1 flex-wrap pt-1">
                 {profile?.document_cpf && (
                   <span className="px-2 py-1 rounded-md bg-background border border-border/60 text-2xs font-mono text-muted-foreground">
@@ -822,52 +1065,58 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
         {isEditingProfile && (
           <div className="pt-2 border-t border-border/50 space-y-2">
-            <p className="text-2xs font-bold text-foreground uppercase tracking-wider">Editar Dados & Foto</p>
+            <p className="text-2xs font-bold text-foreground uppercase tracking-wider">
+              {effectiveIsGroup ? "Editar Grupo e Foto" : "Editar Dados e Foto"}
+            </p>
             <input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              placeholder="Nome completo do cliente"
-              className="w-full px-3 py-2 rounded-lg bg-background border border-border/70 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              placeholder={effectiveIsGroup ? "Nome do grupo WhatsApp" : "Nome completo do cliente"}
+              className="w-full min-h-11 sm:min-h-9 px-3 py-2 rounded-lg bg-background border border-border/70 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                value={editPhone}
-                onChange={(e) => setEditPhone(e.target.value)}
-                placeholder="WhatsApp / Telefone"
-                className="w-full px-2 py-1 rounded-lg bg-background border border-border/70 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              />
-              <input
-                value={editCpf}
-                onChange={(e) => setEditCpf(e.target.value)}
-                placeholder="CPF / CNPJ"
-                className="w-full px-2 py-1 rounded-lg bg-background border border-border/70 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                placeholder="E-mail real do cliente"
-                className="w-full px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              />
-              <input
-                value={editCity}
-                onChange={(e) => setEditCity(e.target.value)}
-                placeholder="Cidade / UF"
-                className="w-full px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              />
-            </div>
+            {!effectiveIsGroup && (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="WhatsApp / Telefone"
+                    className="w-full min-h-11 sm:min-h-9 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                  <input
+                    value={editCpf}
+                    onChange={(e) => setEditCpf(e.target.value)}
+                    placeholder="CPF / CNPJ"
+                    className="w-full min-h-11 sm:min-h-9 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="E-mail real do cliente"
+                    className="w-full min-h-11 sm:min-h-9 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                  <input
+                    value={editCity}
+                    onChange={(e) => setEditCity(e.target.value)}
+                    placeholder="Cidade / UF"
+                    className="w-full min-h-11 sm:min-h-9 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                </div>
+              </>
+            )}
             <input
               value={editAvatarUrl}
               onChange={(e) => setEditAvatarUrl(e.target.value)}
               placeholder="URL da Foto / Avatar (opcional)"
-              className="w-full px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-full min-h-11 sm:min-h-9 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsEditingProfile(false)}
-                className="px-3 py-1 rounded-lg border border-border/70 bg-background text-2xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="min-h-11 sm:min-h-8 px-3 py-1 rounded-lg border border-border/70 bg-background text-2xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Cancelar
               </button>
@@ -875,14 +1124,227 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                 type="button"
                 disabled={isSavingProfile}
                 onClick={handleSaveCustomerProfile}
-                className="px-3 py-1 rounded-lg bg-primary text-primary-foreground text-2xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="min-h-11 sm:min-h-8 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-2xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                {isSavingProfile ? "Salvando..." : "Salvar Ficha"}
+                {isSavingProfile ? "Salvando..." : effectiveIsGroup ? "Salvar Grupo" : "Salvar Ficha"}
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* 1.1 PARTICIPANTES DO GRUPO (QUANDO @g.us) */}
+      {effectiveIsGroup && groupParticipants.length > 0 && (
+        <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-2xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
+              <Users className="size-3.5 text-primary" />
+              <span>Participantes ({groupParticipants.length})</span>
+            </span>
+          </div>
+          <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+            {groupParticipants.map((p, idx) => (
+              <div
+                key={p.jid || p.phone || idx}
+                className="flex items-center justify-between gap-2 py-1 px-2 rounded-lg bg-muted/30 text-2xs"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground truncate">
+                    {p.name || p.phone || "Participante"}
+                  </p>
+                  {p.phone && (
+                    <p className="font-mono text-muted-foreground truncate">{p.phone}</p>
+                  )}
+                </div>
+                {p.admin && (
+                  <span className="px-2 py-1 rounded bg-primary/10 text-primary font-semibold shrink-0">
+                    Admin
+                  </span>
+                )}
+                {p.phone && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(p.phone!);
+                      toast.success("Telefone do participante copiado!");
+                    }}
+                    className="min-h-11 min-w-11 sm:min-h-7 sm:min-w-7 inline-flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    title="Copiar número do participante"
+                  >
+                    <Copy className="size-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 1.2 ORIGEM, ANÚNCIO E PIXEL (ATRIBUIÇÃO CONECTADA) */}
+      {threadId && (
+        <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-2xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
+              <Target className="size-3.5 text-primary" />
+              <span>Origem, Anúncio e Pixel</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsEditingAttribution((prev) => !prev)}
+              className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {isEditingAttribution ? "Fechar" : "Editar"}
+            </button>
+          </div>
+
+          {!isEditingAttribution && (
+            <>
+              {attribution ? (
+                <div className="space-y-1 text-2xs">
+                  {(attribution.platform || attribution.utm_source || attribution.source) && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">Canal:</span>
+                      <span className="font-semibold text-foreground truncate">
+                        {attribution.platform || attribution.utm_source || attribution.source}
+                        {attribution.utm_medium ? ` / ${attribution.utm_medium}` : ""}
+                      </span>
+                    </div>
+                  )}
+                  {(attribution.campaign || attribution.utm_campaign || attribution.campaign_id) && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">Campanha:</span>
+                      <span className="font-semibold text-foreground truncate">
+                        {attribution.campaign || attribution.utm_campaign || `#${attribution.campaign_id}`}
+                      </span>
+                    </div>
+                  )}
+                  {(attribution.ad_headline || attribution.ad_id) && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">Anúncio:</span>
+                      <span className="font-semibold text-foreground truncate">
+                        {attribution.ad_headline || `ID ${attribution.ad_id}`}
+                      </span>
+                    </div>
+                  )}
+                  {attribution.listing_title && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">Oferta Waesy:</span>
+                      <span className="font-semibold text-foreground truncate">{attribution.listing_title}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1 flex-wrap pt-1">
+                    {attribution.ctwa_clid && (
+                      <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono">
+                        CTWA
+                      </span>
+                    )}
+                    {(attribution.fbclid || attribution.fbc || attribution.fbp) && (
+                      <span className="px-2 py-1 rounded bg-primary/10 text-primary font-mono">
+                        Meta Pixel
+                      </span>
+                    )}
+                    {attribution.gclid && (
+                      <span className="px-2 py-1 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300 font-mono">
+                        Google Ads
+                      </span>
+                    )}
+                    {attribution.lead_code && (
+                      <span className="px-2 py-1 rounded bg-muted text-muted-foreground font-mono">
+                        #{attribution.lead_code}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-2xs text-muted-foreground">
+                  Origem direta ou ainda sem parâmetros de anúncio vinculados.
+                </p>
+              )}
+
+              {pixelConversions.length > 0 && (
+                <div className="pt-2 border-t border-border/50 flex items-center gap-1 flex-wrap">
+                  {pixelConversions.slice(0, 4).map((ev: any) => (
+                    <span
+                      key={ev.id}
+                      className={cn(
+                        "px-2 py-1 rounded font-mono text-2xs border",
+                        ev.status === "delivered" || ev.status === "dispatched"
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                          : "bg-destructive/10 text-destructive border-destructive/30",
+                      )}
+                      title={ev.response_data?.error || `${ev.event_name} (${ev.event_source || "capi"})`}
+                    >
+                      CAPI: {ev.event_name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {isEditingAttribution && (
+            <div className="pt-2 border-t border-border/50 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={attrPlatform}
+                  onChange={(e) => setAttrPlatform(e.target.value)}
+                  placeholder="Plataforma (meta_ads, google_ads)"
+                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+                <input
+                  value={attrUtmSource}
+                  onChange={(e) => setAttrUtmSource(e.target.value)}
+                  placeholder="UTM Source (ex: instagram)"
+                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={attrUtmMedium}
+                  onChange={(e) => setAttrUtmMedium(e.target.value)}
+                  placeholder="UTM Medium (ex: cpc, ctwa)"
+                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+                <input
+                  value={attrAdId}
+                  onChange={(e) => setAttrAdId(e.target.value)}
+                  placeholder="ID do Anúncio (ad_id)"
+                  className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+              </div>
+              <input
+                value={attrCampaign}
+                onChange={(e) => setAttrCampaign(e.target.value)}
+                placeholder="Nome da Campanha"
+                className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              />
+              <input
+                value={attrHeadline}
+                onChange={(e) => setAttrHeadline(e.target.value)}
+                placeholder="Título / Criativo do Anúncio"
+                className="w-full min-h-11 sm:min-h-8 px-2 py-1 rounded-lg bg-background border border-border/70 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              />
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingAttribution(false)}
+                  className="min-h-11 sm:min-h-8 px-3 py-1 rounded-lg border border-border/70 bg-background text-2xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  disabled={isSavingAttribution}
+                  onClick={handleSaveAttribution}
+                  className="min-h-11 sm:min-h-8 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-2xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {isSavingAttribution ? "Salvando..." : "Salvar Origem"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 2. FEATURES RÁPIDAS: TAGS (COM PASTAS) & OBSERVAÇÕES DA EQUIPE */}
       {threadId && (
@@ -895,6 +1357,8 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               threadId={threadId}
               storeId={storeId}
               tags={data?.thread?.tags || []}
+              contactName={profile?.full_name || guestName || null}
+              contactAvatarUrl={effectiveAvatar}
               onTagsChange={(newTags) =>
                 setData((prev: any) =>
                   prev ? { ...prev, thread: { ...(prev.thread || {}), tags: newTags } } : prev,
@@ -964,7 +1428,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           </div>
 
           {/* Modo de Atendimento (Botões Squircle Compactos) */}
-          <div className="grid grid-cols-3 gap-1 bg-muted/60 p-1 rounded-lg border border-border/60">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 bg-muted/60 p-1 rounded-lg border border-border/60">
             {[
               { id: "ai_triage", label: "IA Copilot" },
               { id: "human_queue", label: "Fila" },
@@ -1409,7 +1873,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
           {isEmailComposerOpen && (
             <div className="p-2 rounded-lg bg-muted/40 border border-border/70 space-y-2">
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
                 {[
                   { id: "operator", label: "Operadora" },
                   { id: "airline", label: "Cia Aérea" },
@@ -1625,12 +2089,181 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           </div>
         )}
 
+        {/* Planilha Viva de Onboarding CS & Tarefas Sincronizadas (/workspace/tarefas e /workspace/suporte) */}
+        <div className="pt-2 border-t border-border/50 space-y-2">
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-2xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
+              <CheckCircle2 className="size-3.5 text-emerald-600" />
+              <span>
+                Onboarding CS ({ONBOARDING_CS_STEPS.filter((s) => Boolean((onboardingSteps as any)?.[s.key])).length}/7)
+              </span>
+            </span>
+            <Link
+              to="/workspace/suporte"
+              className="px-2 py-1 rounded-md border border-border/70 bg-muted/30 hover:bg-muted text-2xs font-semibold text-primary inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <span>Abrir Sheet CS</span>
+              <ArrowUpRight className="size-2.5" />
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap gap-1">
+            {ONBOARDING_CS_STEPS.map((step) => {
+              const isChecked = Boolean((onboardingSteps as any)?.[step.key]);
+              const isBusy = togglingOnboardingKey === step.key;
+              return (
+                <button
+                  key={step.key}
+                  type="button"
+                  disabled={isBusy}
+                  onClick={() => handleToggleOnboardingStep(step.key)}
+                  title={`${step.fullLabel}: ${step.description}`}
+                  className={cn(
+                    "px-2 py-1 rounded-md border text-2xs font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    isChecked
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                      : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
+                  )}
+                >
+                  <CheckCircle2 className={cn("size-3", isChecked ? "text-emerald-600" : "opacity-40")} />
+                  <span>{step.shortLabel}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tarefas Vinculadas ao Cliente / Viagem / Pedido */}
+          <div className="pt-2 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
+                <Calendar className="size-3.5 text-primary" />
+                <span>Tarefas Vinculadas ({tasks.length})</span>
+              </span>
+              <div className="flex items-center gap-1">
+                <Link
+                  to="/workspace/tarefas"
+                  className="px-2 py-1 rounded-md text-2xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Ver Módulo
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingTask((prev) => !prev)}
+                  className="px-2 py-1 rounded-md border border-border/70 bg-muted/40 hover:bg-muted text-2xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {isCreatingTask ? "Cancelar" : "+ Tarefa"}
+                </button>
+              </div>
+            </div>
+
+            {isCreatingTask && (
+              <div className="p-2 rounded-lg bg-muted/40 border border-border/70 space-y-2">
+                <div className="flex items-center justify-between gap-1">
+                  <CustomerIdentityTagPill
+                    name={profile?.full_name || guestName || "Cliente"}
+                    avatarUrl={effectiveAvatar}
+                    traceHash={effectiveTraceHash}
+                  />
+                </div>
+                <input
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  placeholder="Título da tarefa (ex: Enviar voucher / Conferir assinatura)..."
+                  className="w-full px-2 py-1 rounded-md bg-background border border-border/70 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <select
+                    value={newTaskSector}
+                    onChange={(e) => setNewTaskSector(e.target.value as SacFunctionRoleKey)}
+                    className="px-2 py-1 rounded-md bg-background border border-border/70 text-2xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {SAC_FUNCTION_ROLES.map((r) => (
+                      <option key={r.key} value={r.key}>
+                        {r.shortLabel}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={newTaskPriority}
+                    onChange={(e) => setNewTaskPriority(e.target.value as any)}
+                    className="px-2 py-1 rounded-md bg-background border border-border/70 text-2xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <option value="urgent">Prioridade Urgente</option>
+                    <option value="high">Alta</option>
+                    <option value="medium">Normal</option>
+                    <option value="low">Baixa</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    value={newTaskEntityCode}
+                    onChange={(e) => setNewTaskEntityCode(e.target.value)}
+                    placeholder="Vínculo opcional (#TRP, PNR ou #PED)..."
+                    className="flex-1 px-2 py-1 rounded-md bg-background border border-border/70 text-2xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                  <button
+                    type="button"
+                    disabled={isSavingTask}
+                    onClick={handleCreateLinkedTask}
+                    className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-2xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    {isSavingTask ? "..." : "Vincular"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {tasks.length > 0 && (
+              <div className="space-y-2 max-h-40 overflow-y-auto no-scrollbar pr-1">
+                {tasks.map((tsk: any) => {
+                  const isDone = tsk.status === "done";
+                  const cf = (tsk.custom_fields || {}) as Record<string, any>;
+                  return (
+                    <div
+                      key={tsk.id}
+                      className="p-2 rounded-lg bg-muted/30 border border-border/60 flex items-start justify-between gap-2"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLinkedTaskStatus(tsk)}
+                        className={cn(
+                          "mt-1 p-1 rounded border flex items-center justify-center shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          isDone
+                            ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+                            : "bg-background border-border"
+                        )}
+                        title={isDone ? "Reabrir tarefa" : "Concluir tarefa"}
+                      >
+                        {isDone ? <CheckCircle2 className="size-3" /> : <span className="size-3 block" />}
+                      </button>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <p
+                          className={cn(
+                            "text-xs font-semibold text-foreground truncate",
+                            isDone && "line-through text-muted-foreground"
+                          )}
+                        >
+                          {tsk.title}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1 text-2xs font-mono text-muted-foreground">
+                          {tsk.task_code && <span>#{tsk.task_code}</span>}
+                          {cf.trace_hash && <span className="text-primary">{cf.trace_hash}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Chamados / Tickets SAC */}
         <div className="pt-2 border-t border-border/50 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-2xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
               <ShieldAlert className="size-3.5 text-primary" />
-              <span>Tickets & Suporte ({tickets.length})</span>
+              <span>Tickets, Pepinos & SAC ({tickets.length})</span>
             </span>
             {threadId && (
               <button
@@ -1638,7 +2271,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                 onClick={() => setIsCreatingTicket((prev) => !prev)}
                 className="px-2 py-1 rounded-md border border-border/70 bg-muted/40 hover:bg-muted text-2xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                {isCreatingTicket ? "Cancelar" : "+ Ticket"}
+                {isCreatingTicket ? "Cancelar" : "+ Pepino / Ticket"}
               </button>
             )}
           </div>
@@ -1648,26 +2281,45 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               <input
                 value={newTicketTitle}
                 onChange={(e) => setNewTicketTitle(e.target.value)}
-                placeholder="Título do ticket / protocolo..."
+                placeholder="Título do pepino / reclamação / protocolo..."
                 className="w-full px-2 py-1 rounded-md bg-background border border-border/70 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
               <textarea
                 value={newTicketDesc}
                 onChange={(e) => setNewTicketDesc(e.target.value)}
-                placeholder="Descrição da solicitação..."
+                placeholder="Descrição da ocorrência ou solicitação..."
                 rows={2}
                 className="w-full rounded-md bg-background border border-border/70 p-2 text-xs text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
-              <div className="flex items-center gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <select
+                  value={newTicketRole}
+                  onChange={(e) => setNewTicketRole(e.target.value as SacFunctionRoleKey)}
+                  className="px-2 py-1 rounded-md bg-background border border-border/70 text-2xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {SAC_FUNCTION_ROLES.map((r) => (
+                    <option key={r.key} value={r.key}>
+                      {r.shortLabel}
+                    </option>
+                  ))}
+                </select>
                 <select
                   value={newTicketPriority}
                   onChange={(e) => setNewTicketPriority(e.target.value as any)}
-                  className="px-2 py-1 rounded-md bg-background border border-border/70 text-2xs font-semibold text-foreground flex-1"
+                  className="px-2 py-1 rounded-md bg-background border border-border/70 text-2xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <option value="normal">Prioridade Normal</option>
                   <option value="high">Alta</option>
-                  <option value="urgent">Urgente</option>
+                  <option value="urgent">Urgente (Pepino Crítico)</option>
                 </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  value={newTicketEntityCode}
+                  onChange={(e) => setNewTicketEntityCode(e.target.value)}
+                  placeholder="Ref. Viagem / PNR / Pedido..."
+                  className="flex-1 px-2 py-1 rounded-md bg-background border border-border/70 text-2xs font-mono text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                />
                 <button
                   type="button"
                   disabled={isSavingTicket}
@@ -1778,14 +2430,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
 
       {/* Modal de Conversão Rápida em Lead */}
       {isCreatingLead && threadId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
           <div className="w-full max-w-md rounded-2xl bg-card border border-border p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-bold text-foreground text-sm">Nova Oportunidade Comercial</h3>
               <button
                 type="button"
                 onClick={() => setIsCreatingLead(false)}
-                className="p-2 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="size-11 min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Fechar"
               >
                 <X className="size-4" />

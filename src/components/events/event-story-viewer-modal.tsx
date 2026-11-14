@@ -61,34 +61,34 @@ export function EventStoryViewerModal({
       role="dialog"
       aria-modal="true"
       aria-label={`Story do evento: ${eventTitle}`}
-      className="fixed inset-0 z-50 bg-foreground flex items-center justify-center select-none"
+      className="fixed inset-0 z-50 bg-neutral-950 text-neutral-50 flex items-center justify-center select-none"
     >
       {/* 9:16 Container */}
-      <div className="relative w-full h-full max-w-md max-h-dvh aspect-9/16 bg-foreground overflow-hidden flex flex-col justify-between">
+      <div className="relative w-full h-full max-w-md max-h-dvh aspect-9/16 bg-neutral-950 overflow-hidden flex flex-col justify-between">
         {/* Progress Bar & Top Header */}
-        <div className="absolute top-0 inset-x-0 z-30 pt-safe px-4 pt-3 pb-6 bg-black/50 space-y-2">
+        <div className="absolute top-0 inset-x-0 z-30 pt-safe px-4 pt-3 pb-6 bg-neutral-950/70 space-y-2">
           {/* Progress Bar */}
-          <div className="w-full h-1 bg-card/30 rounded-full overflow-hidden">
+          <div className="w-full h-1 bg-neutral-700 rounded-full overflow-hidden">
             <div
-              className="h-full bg-card transition-colors duration-200 duration-75"
+              className="h-full bg-neutral-50 transition-colors duration-200 duration-75"
               style={{ width: `${progress}%` }}
             />
           </div>
 
           {/* Top Controls */}
-          <div className="flex items-center justify-between gap-2 text-foreground">
+          <div className="flex items-center justify-between gap-2 text-neutral-50">
             <div className="flex items-center gap-2 overflow-hidden">
               <button
                 type="button"
                 onClick={onClose}
-                className="size-11 rounded-full bg-foreground/40 backdrop-blur-md flex items-center justify-center text-foreground border border-white/20 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="size-11 rounded-full bg-neutral-900 hover:bg-neutral-800 flex items-center justify-center text-neutral-50 border border-neutral-700 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Fechar Story"
               >
                 <ArrowLeft className="size-5" />
               </button>
               <div className="truncate">
-                <p className="text-xs font-bold text-foreground truncate">{eventTitle}</p>
-                {eventDate && <p className="text-2xs text-foreground/80">{eventDate}</p>}
+                <p className="text-xs font-bold text-neutral-50 truncate">{eventTitle}</p>
+                {eventDate && <p className="text-2xs text-neutral-300">{eventDate}</p>}
               </div>
             </div>
 
@@ -97,7 +97,7 @@ export function EventStoryViewerModal({
                 <button
                   type="button"
                   onClick={() => setIsMuted(!isMuted)}
-                  className="size-11 rounded-full bg-foreground/40 backdrop-blur-md flex items-center justify-center text-foreground border border-white/20 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  className="size-11 rounded-full bg-neutral-900 hover:bg-neutral-800 flex items-center justify-center text-neutral-50 border border-neutral-700 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label={isMuted ? "Ativar som" : "Desativar som"}
                 >
                   {isMuted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
@@ -106,7 +106,7 @@ export function EventStoryViewerModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="size-11 rounded-full bg-foreground/40 backdrop-blur-md flex items-center justify-center text-foreground border border-white/20 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="size-11 rounded-full bg-neutral-900 hover:bg-neutral-800 flex items-center justify-center text-neutral-50 border border-neutral-700 active:scale-95 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Fechar"
               >
                 <X className="size-5" />
@@ -156,8 +156,8 @@ export function EventStoryViewerModal({
 
           {/* Pause overlay icon */}
           {isPaused && (
-            <div className="absolute inset-0 flex items-center justify-center bg-foreground/30 pointer-events-none">
-              <div className="size-16 rounded-full bg-foreground/60 text-foreground flex items-center justify-center backdrop-blur-md">
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/40 pointer-events-none">
+              <div className="size-16 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-50 flex items-center justify-center">
                 <Play className="size-8 ml-1" />
               </div>
             </div>
@@ -165,11 +165,11 @@ export function EventStoryViewerModal({
         </div>
 
         {/* Bottom CTA / Action */}
-        <div className="absolute bottom-0 inset-x-0 z-30 pb-safe px-4 pb-4 pt-8 bg-black/50 flex items-center justify-center">
+        <div className="absolute bottom-0 inset-x-0 z-30 pb-safe px-4 pb-4 pt-8 bg-neutral-950/70 flex items-center justify-center">
           <Button
             type="button"
             onClick={onClose}
-            className="w-full h-11 min-h-11 rounded-xl font-bold bg-card text-foreground hover:bg-card/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="w-full h-11 min-h-11 rounded-xl font-bold bg-neutral-50 text-neutral-950 hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Ver Detalhes do Evento
           </Button>

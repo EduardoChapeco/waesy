@@ -4218,7 +4218,7 @@ const [aiInstructions, setAiInstructions] = useState("");
  return (
  <div className="space-y-4">
  {/* ── Topbar Operacional Compacta & Sticky no Mobile ────────── */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60 -mx-4 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
+      <div className="sticky top-0 z-30 bg-background border-b border-border -mx-4 px-4 py-2 sm:mx-0 sm:px-0 sm:py-0 sm:static sm:border-0 sm:bg-transparent flex items-center justify-between gap-2 pb-3">
         <div className="flex items-center gap-2">
           <Button
             type="button"

@@ -149,7 +149,7 @@ function PublicTicketTrackingPage() {
   const publicMessages = Array.isArray(tracking.publicMessages) ? tracking.publicMessages : [];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 pb-32 pb-safe space-y-6">
+    <div className="max-w-3xl mx-auto px-0 sm:px-4 py-6 sm:py-10 pb-32 pb-safe space-y-6">
       {/* Cabeçalho do Protocolo */}
       <div className="rounded-2xl bg-card p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">

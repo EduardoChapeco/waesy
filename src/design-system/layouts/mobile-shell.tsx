@@ -25,7 +25,7 @@ export function MobileShell({
     >
       {/* 1. Native Mobile Header (Safe Area Aware) */}
       {headerSlot && (
-        <header className="flex items-center justify-between min-h-12 px-4 safe-area-top border-b border-border/50 bg-card/95 backdrop-blur-md shrink-0 z-20">
+        <header className="flex items-center justify-between min-h-12 px-4 safe-area-top border-b border-border bg-card shrink-0 z-20">
           {headerSlot}
         </header>
       )}
@@ -37,7 +37,7 @@ export function MobileShell({
 
       {/* 3. Sticky Contextual Action (Hoober Thumb Zone) */}
       {contextActionSlot && (
-        <div className="p-3 border-t border-border/40 bg-card/95 backdrop-blur-md shrink-0 z-10">
+        <div className="p-3 border-t border-border bg-card shrink-0 z-10">
           {contextActionSlot}
         </div>
       )}
@@ -46,7 +46,7 @@ export function MobileShell({
       {bottomNavSlot && (
         <nav
           aria-label="Navegação Inferior"
-          className="min-h-14 safe-area-bottom border-t border-border/50 bg-card/95 backdrop-blur-md shrink-0 z-20 mobile-nav-hide-on-keyboard"
+          className="min-h-14 safe-area-bottom border-t border-border bg-card shrink-0 z-20 mobile-nav-hide-on-keyboard"
         >
           {bottomNavSlot}
         </nav>

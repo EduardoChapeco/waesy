@@ -355,7 +355,7 @@ export function CommunityPostComposer({
                 {isColorPickerOpen && (
                   <div className="absolute left-0 top-12 z-50 p-2 rounded-xl bg-popover text-popover-foreground border border-border flex items-center gap-1">
                     {[
-                      { id: "yellow", name: "Amarelo", bg: "bg-amber-200 dark:bg-amber-800" },
+                      { id: "yellow", name: "Amarelo", bg: "bg-warning" },
                       { id: "cyan", name: "Ciano", bg: "bg-sky-200 dark:bg-sky-800" },
                       { id: "pink", name: "Rosa", bg: "bg-rose-200 dark:bg-rose-800" },
                       { id: "green", name: "Verde", bg: "bg-emerald-200 dark:bg-emerald-800" },

@@ -131,7 +131,7 @@ export function FlightOfferCard({
       </div>
 
       {/* Bottom Row: Baggage, Conditions & Price + CTA */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Luggage className="size-3.5" />
@@ -143,7 +143,7 @@ export function FlightOfferCard({
                   : "Sem bagagem despachada"}
             </span>
           </div>
-          {conditions && <span className="truncate">{conditions}</span>}
+          {conditions && <span className="line-clamp-2 text-anti-truncate">{conditions}</span>}
         </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">

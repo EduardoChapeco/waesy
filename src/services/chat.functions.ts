@@ -193,6 +193,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
  id, store_id, customer_id, guest_name, guest_email, status, subject,
  department, assigned_to_profile_id, channel_instance_id, order_id, priority, satisfaction_rating,
  internal_notes, first_response_at, closed_at, updated_at, created_at, thread_type, context_type, entity_id, metadata, tags,
+ group_subject, primary_phone_e164, lead_id, attribution,
  last_message_text, last_message_at
  `,
  )
@@ -345,17 +346,34 @@ export const listChatThreads = createServerFn({ method: "GET" })
  const agentProfile = thread.assigned_to_profile_id ? profilesMap.get(thread.assigned_to_profile_id) : null;
  const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
  const overrideProfile = (threadMeta.customer_profile_override && typeof threadMeta.customer_profile_override === "object" ? threadMeta.customer_profile_override : null) as Record<string, any> | null;
- const threadIsGroup = Boolean(thread.thread_type === "group" || threadMeta.is_group || String(thread.entity_id || "").includes("@g.us") || (String(thread.entity_id || "").length > 14 && String(thread.entity_id || "").startsWith("+120")));
+ const rawEntityDigits = String(thread.entity_id || "").replace(/\D/g, "");
+ const threadIsGroup = Boolean(
+   thread.thread_type === "group" ||
+   threadMeta.is_group ||
+   String(thread.entity_id || "").includes("@g.us") ||
+   /^120363\d{10,}$/.test(rawEntityDigits)
+ );
  const threadIsChannel = Boolean(thread.thread_type === "channel" || threadMeta.is_channel || String(thread.entity_id || "").includes("@newsletter"));
  const threadAvatar = overrideProfile?.avatar_url || threadMeta.avatar_url || customerProfile?.avatar_url || null;
  const rawEmail = String(overrideProfile?.email || customerProfile?.email || thread.guest_email || "").trim();
- const cleanEmail = rawEmail.endsWith("@whatsapp.waesy") ? "" : rawEmail;
+ const cleanEmail = (rawEmail.endsWith("@whatsapp.waesy") || rawEmail.endsWith("@grupo.whatsapp.waesy")) ? "" : rawEmail;
+ const groupSubject = overrideProfile?.full_name || thread.group_subject || threadMeta.group_subject || null;
  const resolvedDisplayName =
    overrideProfile?.full_name ||
+   (threadIsGroup ? groupSubject : null) ||
    customerProfile?.full_name ||
    thread.guest_name ||
    threadMeta.push_name ||
-   (threadIsGroup ? "Grupo WhatsApp" : threadIsChannel ? "Canal WhatsApp" : thread.context_type === "whatsapp" ? ("WhatsApp " + (thread.entity_id || "")) : "Cliente");
+   (threadIsGroup ? "Grupo WhatsApp" : threadIsChannel ? "Canal WhatsApp" : thread.context_type === "whatsapp" ? ("WhatsApp " + (thread.primary_phone_e164 || thread.entity_id || "")) : "Cliente");
+ const directPhone = threadIsGroup || threadIsChannel
+   ? ""
+   : (overrideProfile?.phone || customerProfile?.phone || thread.primary_phone_e164 || thread.entity_id || "");
+ const threadAttribution =
+   (thread.attribution && typeof thread.attribution === "object" && Object.keys(thread.attribution).length > 0
+     ? thread.attribution
+     : threadMeta.attribution && typeof threadMeta.attribution === "object"
+       ? threadMeta.attribution
+       : null);
 
  return {
  id: thread.id,
@@ -368,6 +386,11 @@ export const listChatThreads = createServerFn({ method: "GET" })
  thread_type: threadIsGroup ? "group" : threadIsChannel ? "channel" : thread.thread_type,
  is_group: threadIsGroup,
  is_channel: threadIsChannel,
+ group_subject: groupSubject,
+ group_jid: threadIsGroup ? (threadMeta.whatsapp_jid || threadMeta.remote_jid || thread.entity_id || null) : null,
+ participants_count: Array.isArray(threadMeta.participants) ? threadMeta.participants.length : 0,
+ lead_id: thread.lead_id || threadMeta.active_lead_id || null,
+ attribution: threadAttribution,
  avatar_url: threadAvatar,
  metadata: threadMeta,
 			context_type: thread.context_type,
@@ -376,7 +399,7 @@ export const listChatThreads = createServerFn({ method: "GET" })
 				...(customerProfile || {}),
 				full_name: resolvedDisplayName,
 				email: cleanEmail,
-				phone: overrideProfile?.phone || customerProfile?.phone || thread.entity_id || "",
+				phone: directPhone,
 				avatar_url: threadAvatar,
 			},
  order_id: thread.order_id,
@@ -477,7 +500,7 @@ export const getChatMessages = createServerFn({ method: "GET" })
 
  const { data: messages, error } = await db
  .from("chat_messages")
- .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status, external_message_id, failed_at, error_code, error_message")
+ .select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, metadata, delivery_status, external_message_id, failed_at, error_code, error_message")
  .eq("thread_id", threadId)
  .order("created_at", { ascending: true });
 
@@ -487,8 +510,14 @@ export const getChatMessages = createServerFn({ method: "GET" })
   // On-demand message history sync from Evolution API se a thread tiver historico escasso
   if (thread.context_type === "whatsapp" && (thread as any).entity_id && rawMessages.length <= 1) {
     try {
-      const cleanDigits = String((thread as any).entity_id).replace(/\D/g, "");
-      const remoteJid = `${cleanDigits}@s.whatsapp.net`;
+      const rawEntityId = String((thread as any).entity_id || "").trim();
+      const threadMetaJid = String((thread as any).metadata?.whatsapp_jid || (thread as any).metadata?.remote_jid || "").trim();
+      const cleanDigits = rawEntityId.replace(/\D/g, "");
+      const remoteJid = threadMetaJid.includes("@")
+        ? threadMetaJid
+        : rawEntityId.includes("@")
+          ? rawEntityId
+          : `${cleanDigits}@s.whatsapp.net`;
       const { data: inst } = await db
         .from("whatsapp_channel_instances")
         .select("id, instance_key, external_instance_id, public_config")
@@ -573,6 +602,17 @@ export const getChatMessages = createServerFn({ method: "GET" })
             const occurredAt = new Date(ts < 2_000_000_000 ? ts * 1000 : ts).toISOString();
             const exists = rawMessages.some((m: any) => m.external_message_id === externalId);
             if (!exists) {
+              const { extractWhatsAppGroupContext } = await import("@/services/omnichannel-attribution.server");
+              const grp = extractWhatsAppGroupContext(rec, rec);
+              const msgMetadata =
+                grp.isGroup || grp.senderPhone || grp.senderName
+                  ? {
+                      sender_jid: grp.senderJid || null,
+                      sender_phone: grp.senderPhone || null,
+                      sender_name: grp.senderName || null,
+                      is_group: grp.isGroup,
+                    }
+                  : {};
               const { data: createdMsg } = await db.from("chat_messages").insert({
                 thread_id: thread.id,
                 channel: "whatsapp",
@@ -589,8 +629,9 @@ export const getChatMessages = createServerFn({ method: "GET" })
                   origin: fromMe ? "whatsapp_device" : "whatsapp_customer",
                   ...(mediaUrl ? { media: { type: msgType, url: mediaUrl, mimetype: mediaMime } } : {}),
                 },
+                metadata: msgMetadata,
                 created_at: occurredAt,
-              }).select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, delivery_status").maybeSingle();
+              }).select("id, message, message_type, is_staff_reply, created_at, sender_id, attachments, payload, metadata, delivery_status").maybeSingle();
               if (createdMsg) rawMessages.push(createdMsg);
             }
           }
@@ -1019,15 +1060,25 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
  if (threadId) {
    const { data: threadRow } = await db
      .from("chat_threads")
-     .select("id, customer_id, guest_name, guest_email, entity_id, department, priority, status, internal_notes, tags, assigned_to_profile_id, metadata")
+     .select("id, customer_id, channel_identity_id, lead_id, guest_name, guest_email, group_subject, primary_phone_e164, entity_id, thread_type, department, priority, status, internal_notes, tags, assigned_to_profile_id, metadata, attribution")
      .eq("id", threadId)
      .eq("store_id", storeId)
      .maybeSingle();
    threadContext = threadRow || null;
  }
 
- let resolvedCustomerId = customerId || threadContext?.customer_id || null;
- const rawPhone = guestPhone || threadContext?.entity_id || null;
+ const threadMeta = ((threadContext?.metadata as any) || {}) as Record<string, any>;
+ const entityDigits = String(threadContext?.entity_id || "").replace(/\D/g, "");
+ const isGroupThread = Boolean(
+   threadContext?.thread_type === "group" ||
+     threadMeta.is_group ||
+     String(threadContext?.entity_id || "").includes("@g.us") ||
+     /^120363\d{10,}$/.test(entityDigits),
+ );
+ let resolvedCustomerId = isGroupThread ? null : (customerId || threadContext?.customer_id || null);
+ const rawPhone = isGroupThread
+   ? null
+   : (guestPhone || threadContext?.primary_phone_e164 || threadContext?.entity_id || null);
  const cleanDigits = rawPhone ? String(rawPhone).replace(/\D/g, "") : "";
 
  let profileData: any = null;
@@ -1143,35 +1194,61 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
 
  profileData = {
    id: resolvedCustomerId,
-   full_name: overrideMeta?.full_name || crmCustomer?.full_name || profileData?.full_name || guestName || threadContext?.guest_name || customerPhone || "Visitante em Atendimento",
-   phone: overrideMeta?.phone || customerPhone,
-   email: sanitizedCustomerEmail,
-   document_cpf: overrideMeta?.document_cpf || crmCustomer?.document || profileData?.cpf || null,
-   city: overrideMeta?.city || crmCustomer?.city || profileData?.city || null,
+   full_name: isGroupThread
+     ? (threadContext?.group_subject ||
+         overrideMeta?.full_name ||
+         threadMeta.group_subject ||
+         guestName ||
+         threadContext?.guest_name ||
+         "Grupo WhatsApp")
+     : (overrideMeta?.full_name ||
+         crmCustomer?.full_name ||
+         profileData?.full_name ||
+         guestName ||
+         threadContext?.guest_name ||
+         customerPhone ||
+         "Visitante em Atendimento"),
+   phone: isGroupThread ? null : (overrideMeta?.phone || customerPhone),
+   email: isGroupThread ? null : sanitizedCustomerEmail,
+   document_cpf: isGroupThread ? null : (overrideMeta?.document_cpf || crmCustomer?.document || profileData?.cpf || null),
+   city: isGroupThread ? null : (overrideMeta?.city || crmCustomer?.city || profileData?.city || null),
    avatar_url: resolvedAvatarUrl,
    created_at: profileData?.created_at || crmCustomer?.created_at || null,
  };
 
  const leadOrFilters: string[] = [];
+ if (threadContext?.lead_id) leadOrFilters.push(`id.eq.${threadContext.lead_id}`);
  if (resolvedCustomerId) leadOrFilters.push(`customer_id.eq.${resolvedCustomerId}`);
- if (customerPhone) leadOrFilters.push(`phone.eq.${customerPhone}`);
- if (cleanDigits.length >= 8) leadOrFilters.push(`phone.eq.+${cleanDigits}`, `phone.eq.${cleanDigits}`);
+ if (!isGroupThread && customerPhone) leadOrFilters.push(`phone.eq.${customerPhone}`);
+ if (!isGroupThread && cleanDigits.length >= 8) leadOrFilters.push(`phone.eq.+${cleanDigits}`, `phone.eq.${cleanDigits}`);
 
- const [ordersRes, ticketsRes, tripsRes, creditsRes, leadsRes, quotesRes, contractsRes, debtRes, docsRes] = await Promise.all([
+ const [ordersRes, ticketsRes, opTicketsRes, tasksRes, tripsRes, creditsRes, leadsRes, quotesRes, contractsRes, debtRes, docsRes] = await Promise.all([
    resolvedCustomerId
      ? db.from("orders").select("id, total_cents, status, created_at, payments(method)").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
      : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
      ? db.from("store_support_tickets").select("*").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false })
-     : Promise.resolve({ data: [] as any[] }),
+     : threadId
+       ? db.from("store_support_tickets").select("*").eq("store_id", storeId).eq("thread_id", threadId).order("created_at", { ascending: false })
+       : Promise.resolve({ data: [] as any[] }),
    resolvedCustomerId
-     ? db.from("tourism_trips").select("id, trip_number, title, destination_city, travel_start_date, travel_end_date, total_cents, status").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("travel_start_date", { ascending: false }).limit(5)
+     ? db.from("operator_support_tickets").select("*").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("created_at", { ascending: false }).limit(10)
+     : Promise.resolve({ data: [] as any[] }),
+   db
+     .from("workspace_tasks")
+     .select("id, task_code, title, description, priority, status, due_date, context_type, context_id, context_label, tags, is_my_day, custom_fields, created_at")
+     .eq("store_id", storeId)
+     .neq("status", "archived")
+     .order("created_at", { ascending: false })
+     .limit(40),
+   resolvedCustomerId
+     ? db.from("tourism_trips").select("id, trip_number, title, destination_city, travel_start_date, travel_end_date, total_cents, status, financial_details").eq("store_id", storeId).eq("customer_id", resolvedCustomerId).order("travel_start_date", { ascending: false }).limit(5)
      : Promise.resolve({ data: [] as any[] }),
    db.from("air_ticket_credits").select("id, airline, original_pnr, remaining_amount_cents, expires_at, status").eq("agency_id", storeId).eq("status", "active").limit(5),
    leadOrFilters.length > 0
      ? db
          .from("leads_crm")
-         .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+         .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, custom_fields, created_at, updated_at")
          .eq("store_id", storeId)
          .or(leadOrFilters.join(","))
          .order("created_at", { ascending: false })
@@ -1218,7 +1295,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    ...op,
    estimated_budget: op.estimated_value_cents ?? 0,
  }));
- const activeLeadIdFromThread = (threadContext?.metadata as any)?.active_lead_id;
+ const activeLeadIdFromThread = (threadContext?.metadata as any)?.active_lead_id || threadContext?.lead_id;
  let linkedLead: any = null;
  if (activeLeadIdFromThread === "none") {
    linkedLead = null;
@@ -1227,7 +1304,7 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    if (!linkedLead) {
      const { data: explicitLead } = await db
        .from("leads_crm")
-       .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, created_at, updated_at")
+       .select("id, status, title, estimated_value_cents, source, destination_of_interest, assigned_to, notes, checklist, custom_fields, created_at, updated_at")
        .eq("id", activeLeadIdFromThread)
        .eq("store_id", storeId)
        .maybeSingle();
@@ -1295,11 +1372,202 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
    aiAutoReplyEnabled: (threadContext?.metadata as any)?.ai_auto_reply_enabled !== false,
  };
 
+ const customerSeed = resolvedCustomerId || cleanDigits || threadId || "0000";
+ const shortSeed = String(customerSeed).replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(-4) || "0000";
+ const customerTraceHash = `#CLI-${shortSeed}`;
+
+ const allStoreTasks = ((tasksRes?.data as any[]) || []);
+ const customerTasks = allStoreTasks.filter((t: any) => {
+   const cf = (t.custom_fields || {}) as Record<string, any>;
+   if (resolvedCustomerId && (t.context_id === resolvedCustomerId || cf.customer_id === resolvedCustomerId)) return true;
+   if (threadId && cf.thread_id === threadId) return true;
+   if (cleanDigits.length >= 8 && cf.customer_phone && String(cf.customer_phone).replace(/\D/g, "") === cleanDigits) return true;
+   if (Array.isArray(t.tags) && t.tags.some((tg: string) => tg.toUpperCase().includes(customerTraceHash))) return true;
+   if (profileData?.full_name && profileData.full_name !== "Visitante em Atendimento" && t.context_label && String(t.context_label).toLowerCase().includes(String(profileData.full_name).toLowerCase())) return true;
+   return false;
+ });
+
+ const tripsList = (tripsRes?.data as any[]) || [];
+ const primaryTripSteps = (tripsList[0]?.financial_details as any)?.cs_onboarding_steps || {};
+ const threadOnboardingSteps = ((threadContext?.metadata as any)?.cs_onboarding_steps || {}) as Record<string, boolean>;
+ const onboardingSteps: Record<string, boolean> = {
+   docs_received: Boolean(threadOnboardingSteps.docs_received ?? primaryTripSteps.docs_received ?? ((docsRes?.data as any[])?.length > 0)),
+   contract_signed: Boolean(threadOnboardingSteps.contract_signed ?? primaryTripSteps.contract_signed ?? normalizedContracts.some((c: any) => c.status === "signed" || c.status === "active")),
+   payment_verified: Boolean(threadOnboardingSteps.payment_verified ?? primaryTripSteps.payment_verified ?? paidOrders.length > 0),
+   issuance_completed: Boolean(threadOnboardingSteps.issuance_completed ?? primaryTripSteps.issuance_completed ?? (rawTravelDossiers.some((d: any) => Boolean(d.pnrLocator)) || tripsList.some((tr: any) => tr.status === "confirmed"))),
+   vouchers_sent: Boolean(threadOnboardingSteps.vouchers_sent ?? primaryTripSteps.vouchers_sent ?? false),
+   onboarding_ready: Boolean(threadOnboardingSteps.onboarding_ready ?? primaryTripSteps.onboarding_ready ?? false),
+   cs_completed: Boolean(threadOnboardingSteps.cs_completed ?? primaryTripSteps.cs_completed ?? false),
+ };
+
+ const storeTicketsList = (ticketsRes.data || []) as any[];
+ const operatorTicketsList = ((opTicketsRes?.data as any[]) || []).map((ot: any) => ({
+   id: ot.id,
+   title: ot.subject,
+   description: ot.ticket_code ? `${ot.ticket_code} · ${ot.category}` : ot.category,
+   status: ot.status === "in_progress" ? "under_review" : ot.status,
+   priority: ot.priority || "normal",
+   ticket_type: ot.category || "support",
+   ticket_code: ot.ticket_code,
+   created_at: ot.created_at,
+   source_table: "operator_support_tickets",
+ }));
+ const mergedTickets = [
+   ...storeTicketsList,
+   ...operatorTicketsList.filter((ot) => !storeTicketsList.some((st) => st.title === ot.title)),
+ ];
+
+ const { mergeAttributionPayloads, normalizePhoneE164 } = await import("@/services/omnichannel-attribution.server");
+
+ const attrOrFilters: string[] = [];
+ if (threadId) attrOrFilters.push(`thread_id.eq.${threadId}`);
+ if (linkedLead?.id) attrOrFilters.push(`lead_id.eq.${linkedLead.id}`);
+ if (!isGroupThread && cleanDigits.length >= 8) {
+   attrOrFilters.push(`phone_digits.eq.${cleanDigits}`);
+   if (cleanDigits.length >= 10) attrOrFilters.push(`phone_digits.ilike.%${cleanDigits.slice(-8)}`);
+ }
+
+ const telemetryOrFilters: string[] = [];
+ if (threadId) telemetryOrFilters.push(`thread_id.eq.${threadId}`);
+ if (linkedLead?.id) telemetryOrFilters.push(`lead_id.eq.${linkedLead.id}`);
+
+ const [identityRes, touchpointsRes, telemetryRes, groupMsgsRes] = await Promise.all([
+   threadContext?.channel_identity_id
+     ? db
+         .from("whatsapp_contact_identities")
+         .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, metadata, last_seen_at")
+         .eq("id", threadContext.channel_identity_id)
+         .eq("store_id", storeId)
+         .maybeSingle()
+     : !isGroupThread && cleanDigits.length >= 8
+       ? db
+           .from("whatsapp_contact_identities")
+           .select("id, provider, external_user_id, phone_e164, display_name, profile_name, consent_status, metadata, last_seen_at")
+           .eq("store_id", storeId)
+           .or(`phone_e164.eq.+${cleanDigits},phone_e164.eq.${cleanDigits}`)
+           .order("last_seen_at", { ascending: false })
+           .limit(1)
+           .maybeSingle()
+       : Promise.resolve({ data: null as any }),
+   attrOrFilters.length > 0
+     ? (db.from("ad_attribution_touchpoints") as any)
+         .select("id, ad_platform, utm_source, utm_medium, utm_campaign, utm_content, utm_term, ad_id, adset_id, campaign_id, form_id, ad_headline, ad_body, source_url, landing_url, referrer, ctwa_clid, fbclid, fbp, fbc, gclid, ttclid, lead_code, entity_type, entity_id, entity_title, captured_via, created_at")
+         .eq("store_id", storeId)
+         .or(attrOrFilters.join(","))
+         .order("created_at", { ascending: false })
+         .limit(10)
+     : Promise.resolve({ data: [] as any[] }),
+   telemetryOrFilters.length > 0
+     ? db
+         .from("lead_conversion_telemetry")
+         .select("id, event_name, event_id, event_source, channel, status, response_data, dispatched_at")
+         .eq("store_id", storeId)
+         .or(telemetryOrFilters.join(","))
+         .order("dispatched_at", { ascending: false })
+         .limit(10)
+     : Promise.resolve({ data: [] as any[] }),
+   isGroupThread && threadId
+     ? db
+         .from("chat_messages")
+         .select("metadata, created_at")
+         .eq("thread_id", threadId)
+         .order("created_at", { ascending: false })
+         .limit(60)
+     : Promise.resolve({ data: [] as any[] }),
+ ]);
+
+ const participantMap = new Map<string, { jid: string; phone: string | null; name: string | null; admin: boolean }>();
+ if (isGroupThread) {
+   const metaParticipants = Array.isArray(threadMeta.participants) ? threadMeta.participants : [];
+   for (const p of metaParticipants) {
+     const pPhone = normalizePhoneE164(p?.phone || p?.jid);
+     const pKey = String(pPhone || p?.jid || "").trim();
+     if (!pKey) continue;
+     participantMap.set(pKey, {
+       jid: String(p?.jid || pPhone || pKey),
+       phone: pPhone,
+       name: p?.name ? String(p.name) : null,
+       admin: Boolean(p?.admin),
+     });
+   }
+   for (const msgRow of ((groupMsgsRes?.data as any[]) || [])) {
+     const m = (msgRow?.metadata || {}) as Record<string, any>;
+     const sPhone = normalizePhoneE164(m.sender_phone || m.sender_jid);
+     const sJid = String(m.sender_jid || sPhone || "").trim();
+     const sKey = sPhone || sJid;
+     if (!sKey || sKey.endsWith("@g.us")) continue;
+     const existingPart = participantMap.get(sKey);
+     const sName = typeof m.sender_name === "string" && m.sender_name.trim() ? m.sender_name.trim() : null;
+     if (!existingPart) {
+       participantMap.set(sKey, { jid: sJid || sKey, phone: sPhone, name: sName, admin: false });
+     } else {
+       if (!existingPart.name && sName) existingPart.name = sName;
+       if (!existingPart.phone && sPhone) existingPart.phone = sPhone;
+     }
+   }
+ }
+ const groupParticipants = Array.from(participantMap.values()).slice(0, 50);
+
+ const touchpoints = (touchpointsRes?.data as any[]) || [];
+ const latestTouchpoint = touchpoints[0] || null;
+ const leadCustomFields = (linkedLead?.custom_fields || null) as Record<string, any> | null;
+ const tpAttribution = latestTouchpoint
+   ? {
+       platform: latestTouchpoint.ad_platform,
+       source: latestTouchpoint.utm_source || latestTouchpoint.ad_platform,
+       medium: latestTouchpoint.utm_medium,
+       campaign: latestTouchpoint.utm_campaign,
+       campaign_id: latestTouchpoint.campaign_id,
+       ad_id: latestTouchpoint.ad_id,
+       adset_id: latestTouchpoint.adset_id,
+       form_id: latestTouchpoint.form_id,
+       ad_headline: latestTouchpoint.ad_headline,
+       ad_body: latestTouchpoint.ad_body,
+       source_url: latestTouchpoint.source_url,
+       landing_url: latestTouchpoint.landing_url,
+       referrer: latestTouchpoint.referrer,
+       listing_id: latestTouchpoint.entity_id,
+       listing_origin: latestTouchpoint.entity_type,
+       listing_title: latestTouchpoint.entity_title,
+       ctwa_clid: latestTouchpoint.ctwa_clid,
+       fbclid: latestTouchpoint.fbclid,
+       fbp: latestTouchpoint.fbp,
+       fbc: latestTouchpoint.fbc,
+       gclid: latestTouchpoint.gclid,
+       ttclid: latestTouchpoint.ttclid,
+       utm_source: latestTouchpoint.utm_source,
+       utm_medium: latestTouchpoint.utm_medium,
+       utm_campaign: latestTouchpoint.utm_campaign,
+       utm_content: latestTouchpoint.utm_content,
+       utm_term: latestTouchpoint.utm_term,
+       lead_code: latestTouchpoint.lead_code,
+       captured_via: latestTouchpoint.captured_via,
+       detected_at: latestTouchpoint.created_at,
+     }
+   : null;
+
+ const resolvedAttribution = mergeAttributionPayloads(
+   mergeAttributionPayloads(leadCustomFields, tpAttribution),
+   threadContext?.attribution || threadMeta?.attribution || null,
+ );
+
  return {
-   profile: profileData,
+   profile: {
+     ...profileData,
+     trace_hash: customerTraceHash,
+   },
+   customerTraceHash,
    crmCustomer,
    threadContext,
    thread: threadContext,
+   isGroup: isGroupThread,
+   groupSubject: isGroupThread ? (threadContext?.group_subject || threadMeta.group_subject || threadContext?.guest_name || null) : null,
+   groupJid: isGroupThread ? (threadMeta.whatsapp_jid || threadContext?.entity_id || null) : null,
+   groupParticipants,
+   whatsappIdentity: identityRes?.data || null,
+   attribution: Object.keys(resolvedAttribution).length > 0 ? resolvedAttribution : null,
+   touchpoints,
+   pixelConversions: (telemetryRes?.data as any[]) || [],
    permissions: {
      role: memberRole,
      canManageOpportunities: true,
@@ -1312,15 +1580,17 @@ export const getCustomer360Context = createServerFn({ method: "GET" })
      ltv_cents: totalSpentCents,
      last_purchase_at: lastPurchaseAt,
      pending_debt_cents: pendingDebtCents,
-     active_tickets_count: (ticketsRes.data || []).filter((t: any) => t.status === "open" || t.status === "under_review").length,
+     active_tickets_count: mergedTickets.filter((t: any) => t.status === "open" || t.status === "under_review").length,
    },
    orders,
-   trips: (tripsRes?.data as any[]) || [],
+   trips: tripsList,
    travelDossiers: rawTravelDossiers,
    linkedEmails: rawLinkedEmails,
    aiAgentConfig,
+   onboardingSteps,
+   tasks: customerTasks,
    credits: (creditsRes?.data as any[]) || [],
-   tickets: ticketsRes.data || [],
+   tickets: mergedTickets,
    opportunities,
    linkedLead,
    quotes: normalizedQuotes,
@@ -2552,22 +2822,47 @@ export const updateCustomerProfileFromChatSchema = z.object({
   documentCpf: z.string().trim().max(30).optional().nullable(),
   city: z.string().trim().max(80).optional().nullable(),
   avatarUrl: z.string().trim().max(2000).optional().nullable(),
+  isGroup: z.boolean().optional(),
+  attributionUpdate: z
+    .object({
+      platform: z.string().trim().max(60).optional().nullable(),
+      source: z.string().trim().max(60).optional().nullable(),
+      campaign: z.string().trim().max(160).optional().nullable(),
+      ad_id: z.string().trim().max(80).optional().nullable(),
+      ad_headline: z.string().trim().max(200).optional().nullable(),
+      utm_source: z.string().trim().max(100).optional().nullable(),
+      utm_medium: z.string().trim().max(100).optional().nullable(),
+      utm_campaign: z.string().trim().max(160).optional().nullable(),
+      utm_content: z.string().trim().max(160).optional().nullable(),
+      listing_title: z.string().trim().max(200).optional().nullable(),
+    })
+    .optional()
+    .nullable(),
 });
 
 export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
   .validator(updateCustomerProfileFromChatSchema)
   .handler(async ({ data }) => {
-    const { customerId, threadId, fullName, phone, email, documentCpf, city, avatarUrl } = data;
+    const { customerId, threadId, fullName, phone, email, documentCpf, city, avatarUrl, isGroup, attributionUpdate } = data;
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
     const db = getServerClient();
+    const { normalizePhoneE164, cleanAttributionObject, mergeAttributionPayloads } = await import("./omnichannel-attribution.server");
+    const { createHash } = await import("node:crypto");
 
-    if (customerId) {
+    const normalizedPhone = !isGroup && phone ? (normalizePhoneE164(phone) || phone.trim()) : (phone || null);
+    let resolvedThreadMeta: Record<string, any> = {};
+    let resolvedAttribution: Record<string, any> | null = null;
+    let linkedChannelIdentityId: string | null = null;
+    let linkedLeadId: string | null = null;
+    let detectedGroup = Boolean(isGroup);
+
+    if (customerId && !detectedGroup) {
       await db
         .from("profiles")
         .update({
           full_name: fullName,
-          ...(phone !== undefined ? { phone: phone || null } : {}),
+          ...(phone !== undefined ? { phone: normalizedPhone } : {}),
           ...(avatarUrl !== undefined ? { avatar_url: avatarUrl || null } : {}),
           ...(documentCpf !== undefined ? { cpf: documentCpf || null } : {}),
           ...(city !== undefined ? { city: city || null } : {}),
@@ -2579,19 +2874,41 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
     if (threadId) {
       const { data: currentThread } = await db
         .from("chat_threads")
-        .select("metadata")
+        .select("metadata, thread_type, entity_id, channel_identity_id, lead_id, attribution")
         .eq("id", threadId)
         .eq("store_id", identity.store_id)
         .maybeSingle();
 
       const existingMeta = (((currentThread?.metadata as any) || {}) as Record<string, any>);
+      detectedGroup = Boolean(
+        detectedGroup ||
+          currentThread?.thread_type === "group" ||
+          existingMeta.is_group ||
+          String(currentThread?.entity_id || "").includes("@g.us"),
+      );
+      linkedChannelIdentityId = currentThread?.channel_identity_id || null;
+      linkedLeadId = (currentThread as any)?.lead_id || existingMeta.active_lead_id || null;
+
+      if (attributionUpdate) {
+        resolvedAttribution = mergeAttributionPayloads(
+          (currentThread as any)?.attribution || existingMeta.attribution || null,
+          cleanAttributionObject({
+            ...attributionUpdate,
+            captured_via: "operator_manual_edit",
+            detected_at: new Date().toISOString(),
+          }),
+        );
+      }
+
       const nextMeta = {
         ...existingMeta,
         ...(avatarUrl !== undefined ? { avatar_url: avatarUrl || existingMeta.avatar_url || null } : {}),
+        ...(detectedGroup ? { group_subject: fullName } : {}),
+        ...(resolvedAttribution ? { attribution: resolvedAttribution } : {}),
         customer_profile_override: {
           ...(existingMeta.customer_profile_override || {}),
           full_name: fullName,
-          phone: phone || null,
+          phone: detectedGroup ? null : normalizedPhone,
           email: email || null,
           document_cpf: documentCpf || null,
           city: city || null,
@@ -2599,12 +2916,19 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
           updated_at: new Date().toISOString(),
         },
       };
+      resolvedThreadMeta = nextMeta;
 
       await db
         .from("chat_threads")
         .update({
           guest_name: fullName,
+          ...(detectedGroup
+            ? { group_subject: fullName, subject: `Grupo ${fullName}` }
+            : {
+                ...(normalizedPhone ? { primary_phone_e164: normalizedPhone, subject: `WhatsApp ${normalizedPhone}` } : {}),
+              }),
           ...(email !== undefined ? { guest_email: email || null } : {}),
+          ...(resolvedAttribution ? { attribution: resolvedAttribution } : {}),
           metadata: nextMeta,
           updated_at: new Date().toISOString(),
         })
@@ -2612,10 +2936,59 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
         .eq("store_id", identity.store_id);
     }
 
+    // Sincronizar whatsapp_contact_identities ligada à conversa
+    if (identity.store_id && (linkedChannelIdentityId || (!detectedGroup && normalizedPhone))) {
+      try {
+        const phoneHash = !detectedGroup && normalizedPhone ? createHash("sha256").update(normalizedPhone).digest("hex") : null;
+        if (linkedChannelIdentityId) {
+          await db
+            .from("whatsapp_contact_identities")
+            .update({
+              display_name: fullName,
+              ...(!detectedGroup && normalizedPhone ? { phone_e164: normalizedPhone, phone_hash: phoneHash } : {}),
+              ...(resolvedAttribution ? { metadata: { attribution: resolvedAttribution } } : {}),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", linkedChannelIdentityId)
+            .eq("store_id", identity.store_id);
+        }
+      } catch {}
+    }
+
+    // Sincronizar leads_crm ligado à conversa/cliente
+    if (identity.store_id && !detectedGroup && (linkedLeadId || customerId)) {
+      try {
+        const targetLeadFilter = linkedLeadId
+          ? db.from("leads_crm").select("id, custom_fields").eq("id", linkedLeadId).eq("store_id", identity.store_id).maybeSingle()
+          : db.from("leads_crm").select("id, custom_fields").eq("customer_id", customerId!).eq("store_id", identity.store_id).order("updated_at", { ascending: false }).limit(1).maybeSingle();
+        const { data: leadRow } = await targetLeadFilter;
+        if (leadRow?.id) {
+          const mergedCf = resolvedAttribution
+            ? { ...((leadRow.custom_fields as Record<string, any>) || {}), ...resolvedAttribution }
+            : leadRow.custom_fields;
+          await db
+            .from("leads_crm")
+            .update({
+              full_name: fullName,
+              ...(normalizedPhone ? { phone: normalizedPhone } : {}),
+              ...(email !== undefined && email ? { email } : {}),
+              ...(resolvedAttribution ? {
+                custom_fields: mergedCf,
+                ...(resolvedAttribution.source ? { source: String(resolvedAttribution.source) } : {}),
+                ...(resolvedAttribution.campaign || resolvedAttribution.ad_headline ? { lead_source_detail: String(resolvedAttribution.campaign || resolvedAttribution.ad_headline) } : {}),
+              } : {}),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", leadRow.id)
+            .eq("store_id", identity.store_id);
+        }
+      } catch {}
+    }
+
     // Sincronização em customers_crm da loja
     try {
       const storeId = identity.store_id;
-      if (storeId) {
+      if (storeId && !detectedGroup) {
         let existing = null;
         if (customerId) {
           const { data: foundById } = await db
@@ -2627,13 +3000,15 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
             .maybeSingle();
           existing = foundById;
         }
-        if (!existing && phone) {
+        if (!existing && normalizedPhone) {
+          const suffix = normalizedPhone.replace(/\D/g, "").slice(-8);
           const { data: foundByPhone } = await db
             .from("customers_crm")
             .select("id")
             .eq("store_id", storeId)
-            .eq("phone", phone)
+            .or(`phone.eq.${normalizedPhone},phone.ilike.%${suffix}%`)
             .is("deleted_at", null)
+            .limit(1)
             .maybeSingle();
           existing = foundByPhone;
         }
@@ -2653,7 +3028,7 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
             .from("customers_crm")
             .update({
               full_name: fullName,
-              ...(phone !== undefined ? { phone: phone || null } : {}),
+              ...(phone !== undefined ? { phone: normalizedPhone } : {}),
               ...(email !== undefined ? { email: email || null } : {}),
               ...(documentCpf !== undefined ? { document: documentCpf || null } : {}),
               ...(city !== undefined ? { city: city || null } : {}),
@@ -2666,7 +3041,7 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
             .insert({
               store_id: storeId,
               full_name: fullName,
-              phone: phone || null,
+              phone: normalizedPhone,
               email: email || null,
               document: documentCpf || null,
               city: city || null,
@@ -2688,11 +3063,13 @@ export const updateCustomerProfileFromChat = createServerFn({ method: "POST" })
       profile: {
         id: customerId || null,
         full_name: fullName,
-        phone: phone || null,
+        phone: detectedGroup ? null : normalizedPhone,
         email: email || null,
         document_cpf: documentCpf || null,
         city: city || null,
+        avatar_url: avatarUrl || resolvedThreadMeta?.avatar_url || null,
       },
+      attribution: resolvedAttribution,
     };
   });
 
@@ -2748,12 +3125,33 @@ export const createSupportTicketFromChatSchema = z.object({
   description: z.string().trim().min(3).max(1000),
   ticketType: z.enum(["support", "return_exchange", "defect_complaint", "Order_Demand"]).default("support"),
   priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+  sacFunctionRole: z.enum(["sac_pepinos", "customer_success", "operadora_cia", "reembolso_financeiro", "documentacao", "comercial"]).default("sac_pepinos"),
+  linkedEntityType: z.enum(["none", "trip", "order", "booking", "contract", "customer"]).default("none"),
+  linkedEntityId: z.string().optional().nullable(),
+  linkedEntityCode: z.string().optional().nullable(),
+  customerName: z.string().optional().nullable(),
+  customerAvatarUrl: z.string().optional().nullable(),
+  traceHash: z.string().optional().nullable(),
 });
 
 export const createSupportTicketFromChat = createServerFn({ method: "POST" })
   .validator(createSupportTicketFromChatSchema)
   .handler(async ({ data }) => {
-    const { threadId, customerId, title, description, ticketType, priority } = data;
+    const {
+      threadId,
+      customerId,
+      title,
+      description,
+      ticketType,
+      priority,
+      sacFunctionRole,
+      linkedEntityType,
+      linkedEntityId,
+      linkedEntityCode,
+      customerName,
+      customerAvatarUrl,
+      traceHash,
+    } = data;
     const identity = await getServerIdentity();
     assertStoreAccess(identity);
     const db = getServerClient();
@@ -2763,6 +3161,18 @@ export const createSupportTicketFromChat = createServerFn({ method: "POST" })
       label: "Chamado registrado e em triagem",
       status: "done",
       created_at: new Date().toISOString(),
+    };
+
+    const resolutionPayload = {
+      steps: [initialStep],
+      public_summary: description,
+      sac_function_role: sacFunctionRole,
+      linked_entity_type: linkedEntityType,
+      linked_entity_id: linkedEntityId || null,
+      linked_entity_code: linkedEntityCode || null,
+      customer_name: customerName || null,
+      customer_avatar_url: customerAvatarUrl || null,
+      trace_hash: traceHash || null,
     };
 
     const { data: ticket, error } = await db
@@ -2777,12 +3187,41 @@ export const createSupportTicketFromChat = createServerFn({ method: "POST" })
         photo_urls: [],
         status: "open",
         priority,
-        resolution_notes: JSON.stringify({ steps: [initialStep], public_summary: description }),
+        resolution_notes: JSON.stringify(resolutionPayload),
       })
       .select()
       .single();
 
     if (error) throw new Error(`Falha ao criar demanda/ticket: ${error.message}`);
+
+    // Espelha também em operator_support_tickets para visibilidade unificada em /workspace/suporte
+    try {
+      const ticketCode = `SAC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const mappedCategory =
+        sacFunctionRole === "reembolso_financeiro"
+          ? "finance"
+          : sacFunctionRole === "operadora_cia" || linkedEntityType === "trip"
+            ? "tourism"
+            : "other";
+      const isUuid = (v?: string | null) => Boolean(v && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v));
+      await db.from("operator_support_tickets").insert({
+        store_id: identity.store_id,
+        created_by_profile_id: identity.id,
+        ticket_code: ticketCode,
+        subject: `${traceHash ? `${traceHash} · ` : ""}${title}`,
+        category: mappedCategory,
+        priority,
+        status: "open",
+        customer_id: isUuid(customerId) ? customerId : null,
+        customer_name: customerName || null,
+        order_id: linkedEntityType === "order" && isUuid(linkedEntityId) ? linkedEntityId : null,
+        tour_id: linkedEntityType === "trip" && isUuid(linkedEntityId) ? linkedEntityId : null,
+        sla_due_at: new Date(Date.now() + (priority === "urgent" ? 120 : priority === "high" ? 240 : 1440) * 60 * 1000).toISOString(),
+        sla_minutes: priority === "urgent" ? 120 : priority === "high" ? 240 : 1440,
+      });
+    } catch {
+      // Best-effort mirror to operator_support_tickets
+    }
 
     const appOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.app";
     const trackingUrl = `${appOrigin.replace(/\/$/, "")}/chamado/${ticket.id}`;
@@ -4387,13 +4826,56 @@ export const syncContactProfileFromWhatsApp = createServerFn({ method: "POST" })
     const apiKey = process.env.EVOLUTION_API_KEY?.trim() || "";
     if (!baseUrl || !apiKey) throw new Error("Gateway WhatsApp não configurado.");
 
+    const { extractParticipantPhone, isGroupJidOrSyntheticPhone, normalizePhoneE164 } = await import("@/services/omnichannel-attribution.server");
     const meta = ((thread.metadata as any) || {}) as Record<string, any>;
     const rawTarget = String(meta.whatsapp_jid_alt || meta.whatsapp_jid || thread.entity_id || "").trim();
     const digits = rawTarget.replace(/@.*$/, "").replace(/\D/g, "");
-    const targetQuery = rawTarget || digits;
+    const isGroup = isGroupJidOrSyntheticPhone(rawTarget, thread.entity_id) || Boolean(meta.is_group);
+    const groupJid = isGroup ? (rawTarget.includes("@g.us") ? rawTarget : `${digits}@g.us`) : null;
+    const targetQuery = groupJid || rawTarget || digits;
 
     let fetchedAvatarUrl: string | null = meta.avatar_url || null;
     let fetchedName: string | null = null;
+    let fetchedParticipants: Array<{ jid: string; phone: string | null; name: string | null; admin: boolean }> = Array.isArray(meta.participants)
+      ? meta.participants
+      : [];
+
+    if (isGroup && groupJid) {
+      try {
+        const grpRes = await fetch(
+          `${baseUrl}/group/findGroupInfos/${encodeURIComponent(externalName)}?groupJid=${encodeURIComponent(groupJid)}`,
+          {
+            method: "GET",
+            headers: { apikey: apiKey },
+            signal: AbortSignal.timeout(5000),
+          },
+        );
+        if (grpRes.ok) {
+          const grpJson = (await grpRes.json().catch(() => ({}))) as Record<string, any>;
+          const subj = String(grpJson.subject || grpJson.groupMetadata?.subject || grpJson.name || "").trim();
+          if (subj) fetchedName = subj;
+          const grpPic = grpJson.pictureUrl || grpJson.profilePicUrl || grpJson.picture || null;
+          if (!fetchedAvatarUrl && typeof grpPic === "string" && grpPic.startsWith("http")) {
+            fetchedAvatarUrl = grpPic;
+          }
+          const rawParts = Array.isArray(grpJson.participants)
+            ? grpJson.participants
+            : Array.isArray(grpJson.groupMetadata?.participants)
+              ? grpJson.groupMetadata.participants
+              : [];
+          if (rawParts.length > 0) {
+            fetchedParticipants = rawParts.slice(0, 50).map((p: any) => ({
+              jid: String(p?.id || p?.jid || ""),
+              phone: extractParticipantPhone(p?.phoneNumber || p?.pn || p?.id || p?.jid),
+              name: typeof (p?.pushName || p?.name) === "string" ? String(p.pushName || p.name).trim() || null : null,
+              admin: Boolean(p?.admin),
+            }));
+          }
+        }
+      } catch {
+        // Best-effort group lookup
+      }
+    }
 
     try {
       const picRes = await fetch(`${baseUrl}/chat/fetchProfilePictureUrl/${encodeURIComponent(externalName)}`, {
@@ -4413,63 +4895,97 @@ export const syncContactProfileFromWhatsApp = createServerFn({ method: "POST" })
       // Best-effort profile picture fetch
     }
 
-    try {
-      const contactsRes = await fetch(`${baseUrl}/chat/findContacts/${encodeURIComponent(externalName)}`, {
-        method: "POST",
-        headers: { apikey: apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ where: { id: rawTarget.includes("@") ? rawTarget : `${digits}@s.whatsapp.net` } }),
-        signal: AbortSignal.timeout(5000),
-      });
-      if (contactsRes.ok) {
-        const contactsJson = await contactsRes.json().catch(() => []);
-        const list = Array.isArray(contactsJson) ? contactsJson : Array.isArray(contactsJson?.data) ? contactsJson.data : [];
-        const match = list[0];
-        if (match) {
-          if (!fetchedAvatarUrl && typeof match.profilePicUrl === "string" && match.profilePicUrl.startsWith("http")) {
-            fetchedAvatarUrl = match.profilePicUrl;
-          }
-          const candidateName = String(match.pushName || match.name || "").trim();
-          if (candidateName && !["você", "voce", "you", "eu"].includes(candidateName.toLowerCase())) {
-            fetchedName = candidateName;
+    if (!isGroup) {
+      try {
+        const contactsRes = await fetch(`${baseUrl}/chat/findContacts/${encodeURIComponent(externalName)}`, {
+          method: "POST",
+          headers: { apikey: apiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({ where: { id: rawTarget.includes("@") ? rawTarget : `${digits}@s.whatsapp.net` } }),
+          signal: AbortSignal.timeout(5000),
+        });
+        if (contactsRes.ok) {
+          const contactsJson = await contactsRes.json().catch(() => []);
+          const list = Array.isArray(contactsJson) ? contactsJson : Array.isArray(contactsJson?.data) ? contactsJson.data : [];
+          const match = list[0];
+          if (match) {
+            if (!fetchedAvatarUrl && typeof match.profilePicUrl === "string" && match.profilePicUrl.startsWith("http")) {
+              fetchedAvatarUrl = match.profilePicUrl;
+            }
+            const candidateName = String(match.pushName || match.name || "").trim();
+            if (candidateName && !["você", "voce", "you", "eu"].includes(candidateName.toLowerCase())) {
+              fetchedName = candidateName;
+            }
           }
         }
+      } catch {
+        // Best-effort contact lookup
       }
-    } catch {
-      // Best-effort contact lookup
     }
 
     const currentGuestName = String(thread.guest_name || "").trim();
-    const isSyntheticName = !currentGuestName || /^\+?\d+$/.test(currentGuestName) || currentGuestName.startsWith("WhatsApp ");
-    const resolvedName = (isSyntheticName && fetchedName) ? fetchedName : (currentGuestName || fetchedName || `+${digits}`);
+    const isSyntheticName =
+      !currentGuestName ||
+      /^\+?\d+$/.test(currentGuestName) ||
+      currentGuestName.startsWith("WhatsApp ") ||
+      currentGuestName === "Grupo WhatsApp";
+    const normalizedDirectPhone = !isGroup ? normalizePhoneE164(rawTarget || thread.entity_id || digits) : null;
+    const resolvedName = (isSyntheticName && fetchedName)
+      ? fetchedName
+      : (currentGuestName || fetchedName || (isGroup ? "Grupo WhatsApp" : normalizedDirectPhone || `+${digits}`));
 
     const updatedMeta = {
       ...meta,
+      ...(isGroup ? { is_group: true } : {}),
+      ...(isGroup && resolvedName && resolvedName !== "Grupo WhatsApp" ? { group_subject: resolvedName } : {}),
+      ...(isGroup && fetchedParticipants.length > 0 ? { participants: fetchedParticipants, participants_count: fetchedParticipants.length } : {}),
       ...(fetchedAvatarUrl ? { avatar_url: fetchedAvatarUrl } : {}),
-      ...(fetchedName ? { push_name: fetchedName } : {}),
+      ...(!isGroup && fetchedName ? { push_name: fetchedName } : {}),
       last_whatsapp_profile_sync_at: new Date().toISOString(),
     };
 
+    const threadSyncPatch: Record<string, any> = {
+      guest_name: resolvedName,
+      metadata: updatedMeta,
+      updated_at: new Date().toISOString(),
+    };
+    if (isGroup && resolvedName !== "Grupo WhatsApp") {
+      threadSyncPatch.group_subject = resolvedName;
+      threadSyncPatch.subject = `Grupo: ${resolvedName}`;
+    } else if (!isGroup && normalizedDirectPhone) {
+      threadSyncPatch.primary_phone_e164 = normalizedDirectPhone;
+    }
+
     await db
       .from("chat_threads")
-      .update({
-        guest_name: resolvedName,
-        metadata: updatedMeta,
-        updated_at: new Date().toISOString(),
-      })
+      .update(threadSyncPatch)
       .eq("id", thread.id);
 
-    if (thread.customer_id && fetchedAvatarUrl) {
+    if (!isGroup && thread.customer_id && fetchedAvatarUrl) {
       await db
         .from("profiles")
         .update({ avatar_url: fetchedAvatarUrl, updated_at: new Date().toISOString() })
         .eq("id", thread.customer_id);
     }
 
+    if (externalName && !isGroup && normalizedDirectPhone) {
+      await db
+        .from("whatsapp_contact_identities")
+        .update({
+          profile_name: fetchedName || resolvedName,
+          phone_e164: normalizedDirectPhone,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("store_id", storeId)
+        .eq("phone_e164", normalizedDirectPhone);
+    }
+
     return {
       success: true,
+      isGroup,
       avatarUrl: fetchedAvatarUrl,
       fullName: resolvedName,
-      phone: thread.entity_id || (digits ? `+${digits}` : null),
+      phone: isGroup ? null : (normalizedDirectPhone || thread.entity_id || (digits ? `+${digits}` : null)),
+      participantsCount: fetchedParticipants.length,
     };
   });
 
@@ -4768,11 +5284,11 @@ export const sendClientLinkedEmail = createServerFn({ method: "POST" })
     if (resendKey) {
       try {
         const htmlBody = `
-          <div style="font-family: sans-serif; color: #111827; line-height: 1.6;">
+          <div style="font-family: sans-serif; color: black; line-height: 1.6;">
             <p>${bodyText.replace(/\n/g, "<br/>")}</p>
             ${attachmentImageUrl ? `<div style="margin-top: 16px;"><img src="${attachmentImageUrl}" alt="Anexo" style="max-width: 100%; border-radius: 8px;" /></div>` : ""}
-            <hr style="margin-top: 24px; border: 0; border-top: 1px solid #e5e7eb;" />
-            <p style="font-size: 11px; color: #6b7280;">
+            <hr style="margin-top: 24px; border: 0; border-top: 1px solid gainsboro;" />
+            <p style="font-size: 11px; color: dimgray;">
               Enviado por ${storeRow?.name || "Central de Atendimento"} (${fromEmail}) • Rastreio Automático: ${correlationTokens}
             </p>
           </div>
@@ -4914,7 +5430,7 @@ export const getCorporateEmailHostingOverview = createServerFn({ method: "GET" }
     const [{ data: storeRow }, { data: membersRows }, { data: deptsRows }] = await Promise.all([
       db.from("stores").select("id, name, slug, custom_domain, settings").eq("id", storeId).maybeSingle(),
       db.from("store_members").select("user_id, role, profiles:user_id(id, full_name)").eq("store_id", storeId),
-      db.from("store_departments").select("id, name, slug").eq("store_id", storeId).eq("is_active", true),
+      db.from("chat_departments").select("id, name, slug").eq("store_id", storeId).eq("is_active", true),
     ]);
 
     const settings = (((storeRow?.settings as any) || {}) as Record<string, any>);
@@ -4946,8 +5462,10 @@ export const getCorporateEmailHostingOverview = createServerFn({ method: "GET" }
 
     return {
       hostingConfig: {
-        provider: hostingConfig.provider || "cloudwebly_cpanel",
+        provider: (hostingConfig.provider || "cloudwebly_cpanel") as "cloudwebly_cpanel" | "custom_cpanel" | "custom_imap_smtp" | "imap_smtp",
+        planStatus: (hostingConfig.planStatus || "active") as "active" | "trial" | "external",
         cpanelHost: hostingConfig.cpanelHost || "https://br1.cloudwebly.com:2083",
+        cpanelPort: Number(hostingConfig.cpanelPort || 2083),
         cpanelUsername: hostingConfig.cpanelUsername || "",
         primaryDomain: hostingConfig.primaryDomain || storeRow?.custom_domain || `${storeRow?.slug || "empresa"}.com.br`,
         imapHost: hostingConfig.imapHost || `mail.${hostingConfig.primaryDomain || "seudominio.com.br"}`,
@@ -4957,8 +5475,11 @@ export const getCorporateEmailHostingOverview = createServerFn({ method: "GET" }
         planName: hostingConfig.planName || "Cloudwebly Hospedagem & E-mail Pro",
         planActive: hostingConfig.planActive !== false,
         hasApiToken: Boolean(hostingConfig.cpanelApiToken),
+        autoLinkByCustomerEmail: hostingConfig.autoLinkByCustomerEmail !== false,
+        autoLinkByPnrAndTicket: hostingConfig.autoLinkByPnrAndTicket !== false,
       },
       accounts,
+      mailboxes: accounts,
       teamMembers,
       departments,
     };
@@ -4966,8 +5487,10 @@ export const getCorporateEmailHostingOverview = createServerFn({ method: "GET" }
 
 export const saveCorporateEmailHostingConfigSchema = z.object({
   storeId: z.string().uuid().optional(),
-  provider: z.enum(["cloudwebly_cpanel", "custom_cpanel", "imap_smtp"]).default("cloudwebly_cpanel"),
-  cpanelHost: z.string().trim().min(4).max(200),
+  provider: z.enum(["cloudwebly_cpanel", "custom_cpanel", "custom_imap_smtp", "imap_smtp"]).default("cloudwebly_cpanel"),
+  planStatus: z.enum(["active", "trial", "external"]).optional(),
+  cpanelHost: z.string().trim().max(200).optional().nullable(),
+  cpanelPort: z.number().int().optional(),
   cpanelUsername: z.string().trim().max(80).optional().nullable(),
   cpanelApiToken: z.string().trim().max(300).optional().nullable(),
   primaryDomain: z.string().trim().min(3).max(120),
@@ -4976,6 +5499,8 @@ export const saveCorporateEmailHostingConfigSchema = z.object({
   smtpHost: z.string().trim().max(120).optional().nullable(),
   smtpPort: z.number().int().default(465),
   planActive: z.boolean().default(true),
+  autoLinkByCustomerEmail: z.boolean().optional(),
+  autoLinkByPnrAndTicket: z.boolean().optional(),
 });
 
 export const saveCorporateEmailHostingConfig = createServerFn({ method: "POST" })
@@ -4984,7 +5509,9 @@ export const saveCorporateEmailHostingConfig = createServerFn({ method: "POST" }
     const {
       storeId: inputStoreId,
       provider,
+      planStatus,
       cpanelHost,
+      cpanelPort,
       cpanelUsername,
       cpanelApiToken,
       primaryDomain,
@@ -4993,6 +5520,8 @@ export const saveCorporateEmailHostingConfig = createServerFn({ method: "POST" }
       smtpHost,
       smtpPort,
       planActive,
+      autoLinkByCustomerEmail,
+      autoLinkByPnrAndTicket,
     } = data;
 
     const identity = await getServerIdentity();
@@ -5014,7 +5543,9 @@ export const saveCorporateEmailHostingConfig = createServerFn({ method: "POST" }
     const nextConfig = {
       ...prevConfig,
       provider,
-      cpanelHost: cpanelHost.replace(/\/$/, ""),
+      planStatus: planStatus || prevConfig.planStatus || "active",
+      cpanelHost: (cpanelHost || prevConfig.cpanelHost || `https://cpanel.${cleanDomain}:2083`).replace(/\/$/, ""),
+      cpanelPort: cpanelPort || prevConfig.cpanelPort || 2083,
       cpanelUsername: (cpanelUsername || "").trim(),
       cpanelApiToken: cpanelApiToken && cpanelApiToken.trim() ? cpanelApiToken.trim() : (prevConfig.cpanelApiToken || ""),
       primaryDomain: cleanDomain,
@@ -5023,6 +5554,8 @@ export const saveCorporateEmailHostingConfig = createServerFn({ method: "POST" }
       smtpHost: (smtpHost || "").trim() || `mail.${cleanDomain}`,
       smtpPort,
       planActive,
+      autoLinkByCustomerEmail: autoLinkByCustomerEmail ?? prevConfig.autoLinkByCustomerEmail ?? true,
+      autoLinkByPnrAndTicket: autoLinkByPnrAndTicket ?? prevConfig.autoLinkByPnrAndTicket ?? true,
       updatedAt: new Date().toISOString(),
     };
 
@@ -5050,11 +5583,13 @@ export const createCorporateEmailMailboxSchema = z.object({
   storeId: z.string().uuid().optional(),
   localPart: z.string().trim().min(1).max(60),
   domain: z.string().trim().optional(),
-  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres").max(100),
-  displayName: z.string().trim().min(2).max(80),
+  password: z.string().max(100).optional(),
+  displayName: z.string().trim().min(1).max(80),
   quotaMb: z.number().int().min(100).max(50000).default(2048),
   departmentSlug: z.string().trim().default("geral"),
-  assignedProfileId: z.string().uuid().optional().nullable(),
+  assignedProfileId: z.string().optional().nullable(),
+  assignedProfileName: z.string().optional().nullable(),
+  autoAssignTicket: z.boolean().optional(),
 });
 
 export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
@@ -5069,6 +5604,8 @@ export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
       quotaMb,
       departmentSlug,
       assignedProfileId,
+      assignedProfileName: inputProfileName,
+      autoAssignTicket,
     } = data;
 
     const identity = await getServerIdentity();
@@ -5103,7 +5640,7 @@ export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
         const params = new URLSearchParams({
           email: cleanLocal,
           domain: effectiveDomain,
-          password,
+          password: password || `Waesy@${Math.floor(100000 + Math.random() * 900000)}`,
           quota: String(quotaMb),
         });
         const cpRes = await fetch(`${uapiUrl}?${params.toString()}`, {
@@ -5124,8 +5661,8 @@ export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
       }
     }
 
-    let assignedProfileName: string | null = null;
-    if (assignedProfileId) {
+    let assignedProfileName: string | null = inputProfileName || null;
+    if (assignedProfileId && !assignedProfileName) {
       const { data: p } = await db.from("profiles").select("full_name").eq("id", assignedProfileId).maybeSingle();
       assignedProfileName = p?.full_name || null;
     }
@@ -5135,7 +5672,7 @@ export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
       address: fullAddress,
       localPart: cleanLocal,
       domain: effectiveDomain,
-      displayName,
+      displayName: displayName || (autoAssignTicket ? `${cleanLocal} (SAC)` : cleanLocal),
       quotaMb,
       usedMb: 0,
       departmentSlug: departmentSlug || "geral",
@@ -5159,6 +5696,7 @@ export const createCorporateEmailMailbox = createServerFn({ method: "POST" })
 
     return {
       success: true,
+      cpanelProvisioned: cpanelSynced,
       mailbox: newMailbox,
       accounts: nextAccounts,
     };
@@ -5168,14 +5706,15 @@ export const assignCorporateEmailMailboxSchema = z.object({
   storeId: z.string().uuid().optional(),
   mailboxId: z.string().min(1),
   departmentSlug: z.string().trim().default("geral"),
-  assignedProfileId: z.string().uuid().optional().nullable(),
+  assignedProfileId: z.string().optional().nullable(),
+  assignedProfileName: z.string().optional().nullable(),
   displayName: z.string().trim().max(80).optional(),
 });
 
 export const assignCorporateEmailMailbox = createServerFn({ method: "POST" })
   .validator(assignCorporateEmailMailboxSchema)
   .handler(async ({ data }) => {
-    const { storeId: inputStoreId, mailboxId, departmentSlug, assignedProfileId, displayName } = data;
+    const { storeId: inputStoreId, mailboxId, departmentSlug, assignedProfileId, assignedProfileName: inputProfileName, displayName } = data;
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
@@ -5191,8 +5730,8 @@ export const assignCorporateEmailMailbox = createServerFn({ method: "POST" })
     const settings = (((storeRow?.settings as any) || {}) as Record<string, any>);
     const existingAccounts = (Array.isArray(settings.corporate_email_accounts) ? [...settings.corporate_email_accounts] : []) as CorporateEmailAccountItem[];
 
-    let assignedProfileName: string | null = null;
-    if (assignedProfileId) {
+    let assignedProfileName: string | null = inputProfileName || null;
+    if (assignedProfileId && !assignedProfileName) {
       const { data: p } = await db.from("profiles").select("full_name").eq("id", assignedProfileId).maybeSingle();
       assignedProfileName = p?.full_name || null;
     }
@@ -5228,12 +5767,13 @@ export const assignCorporateEmailMailbox = createServerFn({ method: "POST" })
 export const deleteCorporateEmailMailboxSchema = z.object({
   storeId: z.string().uuid().optional(),
   mailboxId: z.string().min(1),
+  deleteOnCpanel: z.boolean().optional(),
 });
 
 export const deleteCorporateEmailMailbox = createServerFn({ method: "POST" })
   .validator(deleteCorporateEmailMailboxSchema)
   .handler(async ({ data }) => {
-    const { storeId: inputStoreId, mailboxId } = data;
+    const { storeId: inputStoreId, mailboxId, deleteOnCpanel } = data;
     const identity = await getServerIdentity();
     const storeId = inputStoreId || identity.store_id;
     if (!storeId) throw new Error("Loja obrigatória.");
@@ -5251,7 +5791,7 @@ export const deleteCorporateEmailMailbox = createServerFn({ method: "POST" })
     const existingAccounts = (Array.isArray(settings.corporate_email_accounts) ? [...settings.corporate_email_accounts] : []) as CorporateEmailAccountItem[];
     const target = existingAccounts.find((a) => a.id === mailboxId);
 
-    if (target && hostingConfig.cpanelHost && hostingConfig.cpanelUsername && hostingConfig.cpanelApiToken) {
+    if (target && deleteOnCpanel !== false && hostingConfig.cpanelHost && hostingConfig.cpanelUsername && hostingConfig.cpanelApiToken) {
       try {
         const uapiUrl = `${String(hostingConfig.cpanelHost).replace(/\/$/, "")}/execute/Email/delete_pop`;
         const params = new URLSearchParams({
@@ -5284,6 +5824,245 @@ export const deleteCorporateEmailMailbox = createServerFn({ method: "POST" })
     return {
       success: true,
       accounts: nextAccounts,
+    };
+  });
+
+export const createLinkedCustomerTaskSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  threadId: z.string().uuid().optional().nullable(),
+  customerId: z.string().optional().nullable(),
+  customerName: z.string().trim().min(1).max(120),
+  customerPhone: z.string().optional().nullable(),
+  customerAvatarUrl: z.string().optional().nullable(),
+  title: z.string().trim().min(2).max(200),
+  description: z.string().optional().nullable(),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  dueDate: z.string().optional().nullable(),
+  assignedSector: z.enum(["sac_pepinos", "customer_success", "operadora_cia", "reembolso_financeiro", "documentacao", "comercial"]).default("customer_success"),
+  assignedToProfileId: z.string().uuid().optional().nullable(),
+  entityType: z.enum(["customer", "trip", "order", "booking", "contract", "ticket", "general"]).default("customer"),
+  entityId: z.string().optional().nullable(),
+  entityCode: z.string().optional().nullable(),
+  pnrLocator: z.string().optional().nullable(),
+  isMyDay: z.boolean().default(true),
+});
+
+export const createLinkedCustomerTask = createServerFn({ method: "POST" })
+  .validator(createLinkedCustomerTaskSchema)
+  .handler(async ({ data }) => {
+    const {
+      storeId: inputStoreId,
+      threadId,
+      customerId,
+      customerName,
+      customerPhone,
+      customerAvatarUrl,
+      title,
+      description,
+      priority,
+      dueDate,
+      assignedSector,
+      assignedToProfileId,
+      entityType,
+      entityId,
+      entityCode,
+      pnrLocator,
+      isMyDay,
+    } = data;
+
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória para criar tarefa vinculada.");
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const taskCode = `TSK-${Math.floor(1000 + Math.random() * 9000)}`;
+    const custSeed = String(customerId || customerPhone || customerName).replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(-4) || "0000";
+    const customerTraceHash = `#CLI-${custSeed}`;
+
+    const entityPrefixMap: Record<string, string> = {
+      trip: "TRP",
+      order: "PED",
+      booking: "AGD",
+      contract: "CTR",
+      ticket: "SAC",
+      customer: "CLI",
+      general: "WZY",
+    };
+    const entPrefix = entityPrefixMap[entityType] || "WZY";
+    const entSeed = String(entityCode || entityId || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(-4);
+    const entityTraceHash = entSeed ? `#${entPrefix}-${entSeed}` : null;
+
+    const compositeTraceHash = [
+      customerTraceHash,
+      entityTraceHash,
+      pnrLocator ? `#PNR-${pnrLocator.trim().toUpperCase()}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+    const mappedContextType =
+      entityType === "trip"
+        ? "group_tour"
+        : entityType === "order"
+          ? "order"
+          : entityType === "contract"
+            ? "contract"
+            : entityType === "booking"
+              ? "service"
+              : "customer";
+
+    const tags = Array.from(
+      new Set(
+        [
+          customerTraceHash,
+          entityTraceHash,
+          pnrLocator ? `PNR:${pnrLocator.trim().toUpperCase()}` : null,
+          assignedSector === "sac_pepinos"
+            ? "Pepino / SAC"
+            : assignedSector === "customer_success"
+              ? "Customer Success"
+              : assignedSector === "operadora_cia"
+                ? "Operadora / PNR"
+                : assignedSector === "documentacao"
+                  ? "Documentação"
+                  : "Pós-Venda",
+        ].filter(Boolean) as string[]
+      )
+    );
+
+    const customFields = {
+      customer_id: customerId || null,
+      customer_name: customerName,
+      customer_phone: customerPhone || null,
+      customer_avatar_url: customerAvatarUrl || null,
+      thread_id: threadId || null,
+      customer_trace_hash: customerTraceHash,
+      entity_trace_hash: entityTraceHash,
+      trace_hash: compositeTraceHash,
+      assigned_sector: assignedSector,
+      entity_type: entityType,
+      entity_id: entityId || null,
+      entity_code: entityCode || null,
+      pnr_locator: pnrLocator || null,
+    };
+
+    const { data: created, error } = await db
+      .from("workspace_tasks")
+      .insert({
+        store_id: storeId,
+        task_code: taskCode,
+        created_by_profile_id: identity.id,
+        assigned_to_profile_id: assignedToProfileId || identity.id,
+        title: title.trim(),
+        description: description?.trim() || `Vínculo automático: ${customerName} (${compositeTraceHash})`,
+        priority,
+        status: "todo",
+        due_date: dueDate ? new Date(dueDate).toISOString() : null,
+        context_type: mappedContextType,
+        context_id: customerId || entityId || null,
+        context_label: `${customerName} · ${compositeTraceHash}`,
+        tags,
+        is_my_day: isMyDay,
+        custom_fields: customFields,
+        kanban_column_id: "todo",
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error(`Falha ao criar tarefa vinculada: ${error.message}`);
+    return created;
+  });
+
+export const toggleCustomerOnboardingStepSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  threadId: z.string().uuid().optional().nullable(),
+  tripId: z.string().uuid().optional().nullable(),
+  stepKey: z.enum([
+    "docs_received",
+    "contract_signed",
+    "payment_verified",
+    "issuance_completed",
+    "vouchers_sent",
+    "onboarding_ready",
+    "cs_completed",
+  ]),
+  completed: z.boolean(),
+});
+
+export const toggleCustomerOnboardingStep = createServerFn({ method: "POST" })
+  .validator(toggleCustomerOnboardingStepSchema)
+  .handler(async ({ data }) => {
+    const { storeId: inputStoreId, threadId, tripId, stepKey, completed } = data;
+    const identity = await getServerIdentity();
+    const storeId = inputStoreId || identity.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    let updatedSteps: Record<string, boolean> = {};
+
+    if (threadId) {
+      const { data: threadRow } = await db
+        .from("chat_threads")
+        .select("metadata")
+        .eq("id", threadId)
+        .eq("store_id", storeId)
+        .maybeSingle();
+
+      const currentMeta = (((threadRow?.metadata as any) || {}) as Record<string, any>);
+      const existingSteps = ((currentMeta.cs_onboarding_steps || {}) as Record<string, boolean>);
+      updatedSteps = {
+        ...existingSteps,
+        [stepKey]: completed,
+      };
+      await db
+        .from("chat_threads")
+        .update({
+          metadata: {
+            ...currentMeta,
+            cs_onboarding_steps: updatedSteps,
+            cs_onboarding_updated_at: new Date().toISOString(),
+            cs_onboarding_updated_by: identity.id,
+          },
+        })
+        .eq("id", threadId)
+        .eq("store_id", storeId);
+    }
+
+    if (tripId) {
+      const { data: tripRow } = await db
+        .from("tourism_trips")
+        .select("financial_details")
+        .eq("id", tripId)
+        .eq("store_id", storeId)
+        .maybeSingle();
+
+      const currentFin = (((tripRow?.financial_details as any) || {}) as Record<string, any>);
+      const existingSteps = ((currentFin.cs_onboarding_steps || {}) as Record<string, boolean>);
+      updatedSteps = {
+        ...existingSteps,
+        ...updatedSteps,
+        [stepKey]: completed,
+      };
+      await db
+        .from("tourism_trips")
+        .update({
+          financial_details: {
+            ...currentFin,
+            cs_onboarding_steps: updatedSteps,
+            cs_onboarding_updated_at: new Date().toISOString(),
+          },
+        } as any)
+        .eq("id", tripId)
+        .eq("store_id", storeId);
+    }
+
+    return {
+      success: true,
+      stepKey,
+      completed,
+      onboardingSteps: updatedSteps,
     };
   });
 

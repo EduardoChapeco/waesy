@@ -56,7 +56,7 @@ export const InfiniteMarqueeRibbon: React.FC<InfiniteMarqueeRibbonProps> = ({
       id={id}
       style={customStyle}
       aria-label={data.title || "Destaques em letreiro contínuo"}
-      className={`relative w-full overflow-hidden ${paddingYClasses} border-y border-border/40 bg-card/60 backdrop-blur-xs ${className}`}
+      className={`relative w-full overflow-hidden ${paddingYClasses} border-y border-border bg-card ${className}`}
     >
       {data.title && (
         <div className="max-w-7xl mx-auto px-4 mb-3 text-center sm:text-left">

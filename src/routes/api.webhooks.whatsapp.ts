@@ -5,6 +5,11 @@ import { decryptSecret } from "@/lib/crypto-vault.server";
 import { encryptConversationMessageForThread, redactWhatsAppWebhookPayload } from "@/lib/conversation-crypto.server";
 import { dispatchWhatsAppInboundFlows, resolveWhatsAppIdentity } from "@/services/whatsapp-automation-runtime.server";
 import { WHATSAPP_CREDENTIAL_PROVIDER, WHATSAPP_META_CHANNEL_PROVIDER } from "@/services/whatsapp-provider-contract";
+import {
+  extractWhatsAppReferralAndTokens,
+  correlateAndPersistInboundWhatsAppAttribution,
+  normalizePhoneE164,
+} from "@/services/omnichannel-attribution.server";
 import { createHash } from "node:crypto";
 
 const MAX_WEBHOOK_BODY_BYTES = 1_048_576;
@@ -305,10 +310,13 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
 
                 const { text: messageText, type: messageType } = messageContent(message);
                 const occurredAt = eventTime(message.timestamp);
-                const customerName =
+                const normalizedSenderPhone = normalizePhoneE164(senderPhone) || senderPhone;
+                const rawContactName =
                   value.contacts?.find((contact: any) => String(contact?.wa_id || "") === String(message.from))?.profile?.name ||
                   value.contacts?.[0]?.profile?.name ||
-                  `WhatsApp ${senderPhone.slice(-4)}`;
+                  null;
+                const customerName = rawContactName || normalizedSenderPhone || `WhatsApp ${senderPhone.slice(-4)}`;
+                const referralAttr = extractWhatsAppReferralAndTokens(message as Record<string, any>, messageText);
 
                 const { data: officialInstance } = await supabase
                   .from("whatsapp_channel_instances")
@@ -322,7 +330,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   instanceId: officialInstance?.id || null,
                   provider: WHATSAPP_META_CHANNEL_PROVIDER,
                   externalUserId: String(message.from),
-                  phone: senderPhone,
+                  phone: normalizedSenderPhone,
                   displayName: customerName,
                 });
                 if (!channelIdentity) continue;
@@ -331,7 +339,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   .from("whatsapp_lead_conversions")
                   .select("id, notes")
                   .eq("store_id", targetStoreId)
-                  .eq("phone_target", senderPhone)
+                  .or(`phone_target.eq.${senderPhone},phone_target.eq.${normalizedSenderPhone},lead_phone_e164.eq.${normalizedSenderPhone}`)
                   .limit(1)
                   .maybeSingle();
 
@@ -345,13 +353,13 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   await supabase.rpc("record_whatsapp_lead", {
                     p_store_id: targetStoreId,
                     p_entity_type: "store",
-                    p_entity_id: null,
-                    p_entity_title: customerName,
-                    p_phone_target: senderPhone,
-                    p_origin_url: "whatsapp://cloud-api/inbound",
-                    p_utm_source: "whatsapp",
-                    p_utm_medium: "inbound",
-                    p_utm_campaign: null,
+                    p_entity_id: referralAttr?.ad_id || null,
+                    p_entity_title: referralAttr?.ad_headline || customerName,
+                    p_phone_target: normalizedSenderPhone,
+                    p_origin_url: referralAttr?.source_url || "whatsapp://cloud-api/inbound",
+                    p_utm_source: referralAttr?.utm_source || referralAttr?.platform || "whatsapp",
+                    p_utm_medium: referralAttr?.utm_medium || (referralAttr?.ctwa_clid ? "ctwa" : "inbound"),
+                    p_utm_campaign: referralAttr?.utm_campaign || referralAttr?.campaign || referralAttr?.ad_headline || null,
                     p_visitor_id: null,
                     p_user_id: null,
                     p_device_type: "mobile",
@@ -360,6 +368,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                       phone_number_id: phoneNumberId,
                       message_id: String(message.id),
                       message_type: messageType,
+                      ...(referralAttr ? { referral: referralAttr } : {}),
                     },
                   });
                 }
@@ -367,7 +376,7 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                 const entityId = `${phoneNumberId}:${senderPhone}`;
                 const { data: existingThread } = await supabase
                   .from("chat_threads")
-                  .select("id")
+                  .select("id, metadata, attribution")
                   .eq("store_id", targetStoreId)
                   .eq("channel_identity_id", channelIdentity.id)
                   .eq("context_type", "whatsapp")
@@ -375,17 +384,24 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                   .maybeSingle();
 
                 let threadId: string | null = existingThread?.id || null;
+                let currentThreadMeta: Record<string, any> = (existingThread?.metadata as Record<string, any>) || {};
+                let currentThreadAttr: Record<string, any> | null = (existingThread as any)?.attribution || null;
                 if (threadId) {
                   await supabase
                     .from("chat_threads")
                     .update({
-                      last_message_text: "[Mensagem protegida]",
+                      primary_phone_e164: normalizedSenderPhone,
+                      last_message_text: messageText.slice(0, 200),
                       last_message_at: occurredAt,
                       status: "open",
                       updated_at: new Date().toISOString(),
                     })
                     .eq("id", threadId);
                 } else {
+                  currentThreadMeta = {
+                    whatsapp_jid: String(message.from),
+                    ...(rawContactName ? { push_name: rawContactName } : {}),
+                  };
                   const { data: createdThread } = await supabase
                     .from("chat_threads")
                     .insert({
@@ -393,22 +409,25 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                       channel_instance_id: officialInstance?.id || null,
                       channel_identity_id: channelIdentity.id,
                       guest_name: customerName,
+                      primary_phone_e164: normalizedSenderPhone,
                       status: "open",
-                      subject: `Atendimento WhatsApp (${senderPhone})`,
+                      subject: `WhatsApp ${normalizedSenderPhone}`,
                       department: "geral",
                       priority: "normal",
                       context_type: "whatsapp",
                       entity_id: entityId,
-                      last_message_text: "[Mensagem protegida]",
+                      metadata: currentThreadMeta,
+                      last_message_text: messageText.slice(0, 200),
                       last_message_at: occurredAt,
                       internal_notes: `Canal: WhatsApp Cloud API | Phone Number ID: ${phoneNumberId}`,
                       created_at: occurredAt,
                       updated_at: new Date().toISOString(),
                     })
-                    .select("id")
+                    .select("id, metadata, attribution")
                     .single();
 
                   threadId = createdThread?.id || null;
+                  if (createdThread?.attribution) currentThreadAttr = createdThread.attribution as Record<string, any>;
                 }
 
                 if (!threadId) continue;
@@ -438,14 +457,29 @@ export const Route = createFileRoute("/api/webhooks/whatsapp")({
                       channel: "whatsapp",
                       provider: WHATSAPP_META_CHANNEL_PROVIDER,
                       phone_number_id: phoneNumberId,
-                      from: senderPhone,
+                      from: normalizedSenderPhone,
+                      sender_phone: normalizedSenderPhone,
+                      sender_name: customerName,
                       message_id: String(message.id),
                       timestamp: message.timestamp,
+                      ...(referralAttr ? { referral: referralAttr } : {}),
                     },
                     created_at: occurredAt,
                   });
                   if (chatMessageError && !/duplicate|unique/i.test(chatMessageError.message)) throw chatMessageError;
                 }
+
+                await correlateAndPersistInboundWhatsAppAttribution(supabase, {
+                  storeId: targetStoreId,
+                  threadId,
+                  identityId: channelIdentity.id,
+                  phone: normalizedSenderPhone,
+                  pushName: rawContactName,
+                  text: messageText,
+                  payload: message as Record<string, any>,
+                  existingThreadMeta: currentThreadMeta,
+                  existingThreadAttribution: currentThreadAttr,
+                }).catch(() => null);
 
                 await dispatchWhatsAppInboundFlows({
                   storeId: targetStoreId,

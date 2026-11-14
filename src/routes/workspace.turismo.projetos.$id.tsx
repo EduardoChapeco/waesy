@@ -289,16 +289,17 @@ export default function TravelProjectDetailPage() {
 
       {/* Modal Adicionar Item na Timeline */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
           <div className="bg-card text-card-foreground border border-border rounded-lg max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="font-bold text-sm text-foreground">Novo Item no Cronograma</h3>
               <button
                 type="button"
+                aria-label="Fechar"
                 onClick={() => setModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1 size-11 min-h-11 min-w-11 rounded-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                className="text-muted-foreground hover:text-foreground text-base font-bold size-11 min-h-11 min-w-11 rounded-md flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
-                
+                <span aria-hidden="true">×</span>
               </button>
             </div>
 

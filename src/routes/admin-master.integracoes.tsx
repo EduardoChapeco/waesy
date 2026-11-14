@@ -1977,17 +1977,17 @@ function AdminMasterIntegracoesPage() {
 
   {activeTab === "linkedin" && (
     <div className="space-y-6">
-      {/* Frosted Header Card */}
-      <div className="p-6 rounded-lg bg-background/80 backdrop-blur-md border border-border/70 shadow-xs space-y-4">
+      {/* Header Card */}
+      <div className="p-6 rounded-lg bg-card border border-border space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="size-11 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center border border-[#0A66C2]/20">
+            <div className="size-11 rounded-lg bg-muted text-primary flex items-center justify-center border border-border">
               <Linkedin className="size-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-foreground">LinkedIn Omni-Bridge</h3>
-                <Badge variant="outline" className="text-2xs font-bold border-blue-500/40 text-blue-600 bg-blue-500/10">
+                <Badge variant="outline" className="text-2xs font-bold border-border text-foreground bg-muted">
                   OAuth 2.0 Master
                 </Badge>
               </div>

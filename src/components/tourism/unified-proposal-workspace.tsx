@@ -3442,7 +3442,7 @@ export function UnifiedProposalWorkspace({
                             onClick={() => setHasBoletoDownpayment(!hasBoletoDownpayment)}
                             className={`h-11 min-h-11 px-3 rounded-full text-2xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                               hasBoletoDownpayment
-                                ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                                ? "bg-warning text-warning-foreground border border-warning"
                                 : "bg-muted text-muted-foreground"
                             }`}
                           >

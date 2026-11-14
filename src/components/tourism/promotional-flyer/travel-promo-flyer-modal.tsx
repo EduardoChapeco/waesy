@@ -918,7 +918,7 @@ export function TravelPromoFlyerModal({
         className="p-0 border-0 rounded-none bg-background flex flex-col overflow-hidden outline-none [&>button]:hidden z-50"
       >
         {/* ── 1. Top Bar Estúdio (Piso 44px h-11 min-h-11) ── */}
-        <header className="min-h-14 px-3 sm:px-6 py-2 border-b border-border/80 bg-card/95 backdrop-blur-md flex items-center justify-between z-20 shrink-0 select-none">
+        <header className="min-h-14 px-3 sm:px-6 py-2 border-b border-border bg-card flex items-center justify-between z-20 shrink-0 select-none">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <Button
               type="button"
@@ -1069,7 +1069,7 @@ export function TravelPromoFlyerModal({
                 height: `${artDimensions.height * previewScale}px`,
                 backgroundColor: "rgb(10, 25, 47)",
               }}
-              className="relative rounded-lg border border-white/10 transition-transform duration-150 overflow-hidden"
+              className="relative rounded-lg border border-border transition-transform duration-150 overflow-hidden"
             >
               <div
                 style={{
@@ -1084,7 +1084,7 @@ export function TravelPromoFlyerModal({
             </div>
 
             {/* Barra Inferior de Comando IA Direto sobre o Story (Sec. 13) */}
-            <div className="mt-4 w-full max-w-xl flex items-center gap-2 bg-card/95 backdrop-blur-md p-2 rounded-lg border border-border/80 z-20">
+            <div className="mt-4 w-full max-w-xl flex items-center gap-2 bg-card p-2 rounded-lg border border-border z-20">
               <Wand2 className="size-4 text-primary shrink-0 ml-2" />
               <Input
                 value={aiEditCommand}
@@ -1890,14 +1890,14 @@ export function TravelPromoFlyerModal({
                   <div className="space-y-2">
                     <Label className="text-xs font-semibold">Foto de Fundo Realista</Label>
 
-                    <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border/80 bg-muted/40">
+                    <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border bg-muted">
                       <img
                         src={safeBgDataUri || bgImageUrl}
                         alt="Preview de Fundo"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/50 flex items-end p-3">
-                        <span className="text-xs text-foreground/90 font-mono truncate">
+                      <div className="absolute inset-0 bg-neutral-950/60 flex items-end p-3">
+                        <span className="text-xs text-neutral-50 font-mono line-clamp-1">
                           {bgImageUrl.startsWith("data:")
                             ? "Imagem local carregada"
                             : bgImageUrl}

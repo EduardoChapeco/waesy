@@ -129,7 +129,7 @@ export function PrometheeLocationSheet({
       role="dialog"
       aria-modal="true"
       aria-label="Selecionar localização"
-      className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 bg-overlay flex items-end sm:items-center justify-center p-0 sm:p-4"
     >
       <div className="w-full h-dvh sm:h-auto sm:max-h-dvh sm:max-w-lg bg-background text-foreground sm:rounded-3xl border-0 sm:border sm:border-border flex flex-col overflow-hidden safe-top safe-bottom">
         {/* Topo discreto e limpo */}

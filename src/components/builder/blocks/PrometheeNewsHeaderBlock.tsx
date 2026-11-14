@@ -78,7 +78,7 @@ export function PrometheeNewsHeaderBlock({
     <header
       id={id}
       style={inlineStyle}
-      className={`sticky top-0 z-30 border-b border-border/80 bg-background/95 backdrop-blur-md text-foreground ${className}`}
+      className={`sticky top-0 z-30 border-b border-border bg-background text-foreground ${className}`}
     >
       <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-2">
         {/* Marca Editorial Limpa */}

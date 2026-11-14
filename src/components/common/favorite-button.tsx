@@ -145,10 +145,10 @@ export function FavoriteButton(props: FavoriteButtonProps) {
       onClick={handleClick}
       disabled={mutation.isPending}
       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-        "size-8 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer select-none min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
-        "bg-background/80 hover:bg-background backdrop-blur-md border border-border/50 shadow-xs",
-        "hover:scale-105 active:scale-95 active:shadow-none",
-        isFavorited && "text-primary border-primary/30 bg-primary/10",
+        "size-11 sm:size-9 rounded-lg flex items-center justify-center transition-colors duration-200 cursor-pointer select-none min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
+        "bg-card hover:bg-muted border border-border",
+        "hover:scale-105 active:scale-95",
+        isFavorited && "text-primary border-primary bg-muted",
         className,
       )}
       title={isFavorited ? "Remover dos salvos" : "Salvar nos favoritos"}

@@ -192,7 +192,7 @@ export function ProceduralInfiniteFeed({
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5">
-                        <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-3xs font-bold uppercase">
+                        <Badge variant="secondary" className="bg-card text-foreground border border-border text-2xs font-bold uppercase">
                           {item.deal_type || "Anúncio"}
                         </Badge>
                       </div>

@@ -134,9 +134,9 @@ export function DiscoveryControlBar({
 
   const stickyClasses =
     stickyMode === "mobile-only"
-      ? "sticky top-0 lg:static z-20 bg-background/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none pt-1 pb-2 border-b border-border/40 lg:border-b-0"
+      ? "sticky top-0 lg:static z-20 bg-background lg:bg-transparent pt-1 pb-2 border-b border-border lg:border-b-0"
       : stickyMode === "always"
-      ? "sticky top-0 z-20 bg-background/95 backdrop-blur-md pt-1 pb-2 border-b border-border/40"
+      ? "sticky top-0 z-20 bg-background pt-1 pb-2 border-b border-border"
       : "";
 
   const [isMlFilterOpen, setIsMlFilterOpen] = React.useState(false);
@@ -293,10 +293,9 @@ export function DiscoveryControlBar({
           role="dialog"
           aria-modal="true"
           aria-label="Filtros e Visualização"
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/60 backdrop-blur-xs animate-in fade-in duration-150 motion-reduce:animate-none"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-neutral-950/60 animate-in fade-in duration-150 motion-reduce:animate-none"
         >
-          /* design-lint-ignore DL-07 reason:"Sombra de elevação de diálogo modal per B.8" expiry:"2027-12-31" */
-          <div className="w-full h-dvh sm:h-auto sm:max-h-full sm:max-w-lg bg-background sm:rounded-lg flex flex-col overflow-hidden ">
+          <div className="w-full h-dvh sm:h-auto sm:max-h-full sm:max-w-lg bg-background sm:rounded-lg border border-border shadow-overlay flex flex-col overflow-hidden">
             <div className="px-4 h-14 border-b border-border/60 flex items-center justify-between shrink-0">
               <span className="text-base font-bold text-foreground">
                 Filtros e Ordenação

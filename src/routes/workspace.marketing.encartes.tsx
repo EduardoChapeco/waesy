@@ -412,12 +412,12 @@ export default function WorkspaceMarketingEncartesPage() {
                           </span>
                         )}
                         {flyer.status_badge === "scheduled" && (
-                          <span className="px-2 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold">
+                          <span className="px-2 py-1 rounded-full bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-bold">
                             Agendado
                           </span>
                         )}
                         {flyer.status_badge === "expired" && (
-                          <span className="px-2 py-1 rounded-full bg-zinc-500/10 text-zinc-500 text-xs font-bold">
+                          <span className="px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-bold">
                             Expirado
                           </span>
                         )}

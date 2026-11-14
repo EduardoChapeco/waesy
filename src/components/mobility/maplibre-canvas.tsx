@@ -313,7 +313,7 @@ export function MapLibreCanvas({
  className={`w-full h-full ${pinMode ? "cursor-crosshair" : ""}`}
  />
  {(!isLoaded || isLoadingConfig) && (
- <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-xs">
+ <div className="absolute inset-0 flex items-center justify-center bg-muted/80">
  <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-muted-foreground" />
  </div>
  )}

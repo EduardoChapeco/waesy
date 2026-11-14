@@ -210,6 +210,23 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       utmMedium: z.string().optional().nullable(),
       utmCampaign: z.string().optional().nullable(),
       utmContent: z.string().optional().nullable(),
+      utmTerm: z.string().optional().nullable(),
+      fbclid: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      gclid: z.string().optional().nullable(),
+      ttclid: z.string().optional().nullable(),
+      ctwaClid: z.string().optional().nullable(),
+      adId: z.string().optional().nullable(),
+      adsetId: z.string().optional().nullable(),
+      campaignId: z.string().optional().nullable(),
+      creativeId: z.string().optional().nullable(),
+      landingUrl: z.string().optional().nullable(),
+      sourceUrl: z.string().optional().nullable(),
+      referrer: z.string().optional().nullable(),
+      deviceId: z.string().optional().nullable(),
+      visitorId: z.string().optional().nullable(),
+      leadCode: z.string().optional().nullable(),
       deviceType: z.string().default("mobile"),
       deviceFingerprint: z.string().optional().nullable(),
     }),
@@ -322,6 +339,11 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     }
 
     // 2.1 Ingestao ou atualizacao canonica no CRM (leads_crm + customers_crm com todas raw_answers)
+    const { buildPhoneLookupCandidates, recordAttributionTouchpoint, dispatchServerSidePixelConversion } =
+      await import("@/services/omnichannel-attribution.server");
+    const phoneInfo = buildPhoneLookupCandidates(data.contactPhone);
+    const formLeadCode = data.leadCode || `WAEF-${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+
     let ingestedLeadId: string | null = data.leadId || null;
     let ingestedCustomerId: string | null = null;
     try {
@@ -339,8 +361,26 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
         sourceListingOrigin: data.classifiedId ? "classified" : "form",
         customFields: {
           ...(data.answers || {}),
+          lead_code: formLeadCode,
           ...(data.utmSource ? { utm_source: data.utmSource } : {}),
+          ...(data.utmMedium ? { utm_medium: data.utmMedium } : {}),
           ...(data.utmCampaign ? { utm_campaign: data.utmCampaign } : {}),
+          ...(data.utmContent ? { utm_content: data.utmContent } : {}),
+          ...(data.utmTerm ? { utm_term: data.utmTerm } : {}),
+          ...(data.fbclid ? { fbclid: data.fbclid } : {}),
+          ...(data.fbp ? { fbp: data.fbp } : {}),
+          ...(data.fbc ? { fbc: data.fbc } : {}),
+          ...(data.gclid ? { gclid: data.gclid } : {}),
+          ...(data.ttclid ? { ttclid: data.ttclid } : {}),
+          ...(data.ctwaClid ? { ctwa_clid: data.ctwaClid } : {}),
+          ...(data.adId ? { meta_ad_id: data.adId, ad_id: data.adId } : {}),
+          ...(data.adsetId ? { meta_adset_id: data.adsetId, adset_id: data.adsetId } : {}),
+          ...(data.campaignId ? { meta_campaign_id: data.campaignId, campaign_id: data.campaignId } : {}),
+          ...(data.creativeId ? { creative_id: data.creativeId } : {}),
+          ...(data.landingUrl ? { landing_url: data.landingUrl } : {}),
+          ...(data.sourceUrl ? { source_url: data.sourceUrl } : {}),
+          ...(data.referrer ? { referrer: data.referrer } : {}),
+          ...(data.deviceId ? { device_id: data.deviceId } : {}),
         },
       });
       if (ingested.leadId) ingestedLeadId = ingested.leadId;
@@ -360,11 +400,20 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
         contact_name: data.contactName.trim(),
         contact_email: cleanEmail,
         contact_phone: data.contactPhone.trim(),
+        phone_digits: phoneInfo.digits || null,
         is_new_registered_user: isNewRegisteredUser,
         utm_source: data.utmSource || null,
         utm_medium: data.utmMedium || null,
         utm_campaign: data.utmCampaign || null,
         utm_content: data.utmContent || null,
+        utm_term: data.utmTerm || null,
+        fbclid: data.fbclid || null,
+        fbp: data.fbp || null,
+        fbc: data.fbc || null,
+        gclid: data.gclid || null,
+        ttclid: data.ttclid || null,
+        ad_id: data.adId || null,
+        campaign_id: data.campaignId || null,
         device_type: data.deviceType,
         ip_address: telemetry.ip,
         device_fingerprint: fingerprint,
@@ -392,6 +441,69 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     if (submissionError || !submissionRow) {
       console.error("[lead-forms] Erro ao gravar submissão:", submissionError);
       throw new Error("Erro ao registrar resposta do formulário");
+    }
+
+    const eventId = `lead_form_${submissionRow.id}`;
+    await recordAttributionTouchpoint(supabase, {
+      storeId: formRow.store_id,
+      deviceId: data.deviceId || null,
+      visitorId: data.visitorId || null,
+      profileId,
+      phone: phoneInfo.e164 || data.contactPhone.trim(),
+      email: cleanEmail,
+      leadCode: formLeadCode,
+      ctwaClid: data.ctwaClid || null,
+      fbclid: data.fbclid || null,
+      fbp: data.fbp || null,
+      fbc: data.fbc || null,
+      gclid: data.gclid || null,
+      ttclid: data.ttclid || null,
+      utmSource: data.utmSource || null,
+      utmMedium: data.utmMedium || null,
+      utmCampaign: data.utmCampaign || null,
+      utmContent: data.utmContent || null,
+      utmTerm: data.utmTerm || null,
+      adId: data.adId || null,
+      adsetId: data.adsetId || null,
+      campaignId: data.campaignId || null,
+      creativeId: data.creativeId || null,
+      formId: formRow.id,
+      sourceUrl: data.sourceUrl || null,
+      landingUrl: data.landingUrl || null,
+      referrer: data.referrer || null,
+      entityType: data.classifiedId ? "classified" : "form",
+      entityId: data.classifiedId || formRow.id,
+      entityTitle: formRow.title,
+      capturedVia: "lead_form",
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
+    });
+
+    if (!isSpam && formRow.store_id) {
+      await dispatchServerSidePixelConversion(supabase, {
+        storeId: formRow.store_id,
+        eventName: "Lead",
+        eventId,
+        eventSource: "lead_form",
+        leadId: ingestedLeadId,
+        phone: phoneInfo.e164 || data.contactPhone.trim(),
+        email: cleanEmail,
+        fullName: data.contactName.trim(),
+        fbp: data.fbp || null,
+        fbc: data.fbc || null,
+        ctwaClid: data.ctwaClid || null,
+        sourceUrl: data.sourceUrl || data.landingUrl || null,
+        clientIpAddress: telemetry.ip,
+        clientUserAgent: telemetry.userAgent,
+        customData: {
+          form_id: formRow.id,
+          form_slug: formRow.slug,
+          lead_code: formLeadCode,
+          utm_source: data.utmSource || undefined,
+          utm_campaign: data.utmCampaign || undefined,
+          ad_id: data.adId || undefined,
+        },
+      });
     }
 
     // 4. Incrementa contador de submissões no formulário
@@ -440,6 +552,7 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
         }
       }
 
+      msg += `\n\nRef: #${formLeadCode}`;
       const formattedNumber = cleanTarget.startsWith("55") ? cleanTarget : `55${cleanTarget}`;
       whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(msg)}`;
     }
@@ -448,6 +561,8 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       submissionId: submissionRow.id,
       leadId: ingestedLeadId,
       customerId: ingestedCustomerId,
+      leadCode: formLeadCode,
+      eventId,
       afterSubmitAction: formRow.after_submit_action,
       whatsappUrl,
       redirectUrl: formRow.redirect_url,
@@ -979,6 +1094,25 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       contactEmail: z.string().email().optional().nullable(),
       answers: z.record(z.any()).default({}),
       utmSource: z.string().optional().nullable(),
+      utmMedium: z.string().optional().nullable(),
+      utmCampaign: z.string().optional().nullable(),
+      utmContent: z.string().optional().nullable(),
+      utmTerm: z.string().optional().nullable(),
+      fbclid: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      gclid: z.string().optional().nullable(),
+      ttclid: z.string().optional().nullable(),
+      ctwaClid: z.string().optional().nullable(),
+      adId: z.string().optional().nullable(),
+      adsetId: z.string().optional().nullable(),
+      campaignId: z.string().optional().nullable(),
+      creativeId: z.string().optional().nullable(),
+      landingUrl: z.string().optional().nullable(),
+      sourceUrl: z.string().optional().nullable(),
+      referrer: z.string().optional().nullable(),
+      deviceId: z.string().optional().nullable(),
+      visitorId: z.string().optional().nullable(),
       deviceType: z.string().default("desktop"),
       deviceFingerprint: z.string().optional().nullable(),
     }),
@@ -1039,6 +1173,10 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
 
     // 3. Registra na tabela de leads (lead_form_submissions) com Telemetria Completa
     let submissionId = crypto.randomUUID();
+    const { buildPhoneLookupCandidates, recordAttributionTouchpoint, dispatchServerSidePixelConversion } =
+      await import("@/services/omnichannel-attribution.server");
+    const phoneInfo = buildPhoneLookupCandidates(data.contactPhone);
+    const civilLeadCode = `WAEC-${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 
     try {
       const { data: subRow } = await supabase
@@ -1053,8 +1191,20 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
           contact_name: data.contactName.trim(),
           contact_email: data.contactEmail?.trim() || null,
           contact_phone: data.contactPhone.trim(),
+          phone_digits: phoneInfo.digits || null,
           is_new_registered_user: false,
           utm_source: data.utmSource || null,
+          utm_medium: data.utmMedium || null,
+          utm_campaign: data.utmCampaign || null,
+          utm_content: data.utmContent || null,
+          utm_term: data.utmTerm || null,
+          fbclid: data.fbclid || null,
+          fbp: data.fbp || null,
+          fbc: data.fbc || null,
+          gclid: data.gclid || null,
+          ttclid: data.ttclid || null,
+          ad_id: data.adId || null,
+          campaign_id: data.campaignId || null,
           device_type: data.deviceType,
           ip_address: telemetry.ip,
           device_fingerprint: fingerprint,
@@ -1103,7 +1253,26 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
           sourceSubmissionId: submissionId,
           customFields: {
             ...(data.answers || {}),
+            lead_code: civilLeadCode,
             ...(data.utmSource ? { utm_source: data.utmSource } : {}),
+            ...(data.utmMedium ? { utm_medium: data.utmMedium } : {}),
+            ...(data.utmCampaign ? { utm_campaign: data.utmCampaign } : {}),
+            ...(data.utmContent ? { utm_content: data.utmContent } : {}),
+            ...(data.utmTerm ? { utm_term: data.utmTerm } : {}),
+            ...(data.fbclid ? { fbclid: data.fbclid } : {}),
+            ...(data.fbp ? { fbp: data.fbp } : {}),
+            ...(data.fbc ? { fbc: data.fbc } : {}),
+            ...(data.gclid ? { gclid: data.gclid } : {}),
+            ...(data.ttclid ? { ttclid: data.ttclid } : {}),
+            ...(data.ctwaClid ? { ctwa_clid: data.ctwaClid } : {}),
+            ...(data.adId ? { meta_ad_id: data.adId, ad_id: data.adId } : {}),
+            ...(data.adsetId ? { meta_adset_id: data.adsetId, adset_id: data.adsetId } : {}),
+            ...(data.campaignId ? { meta_campaign_id: data.campaignId, campaign_id: data.campaignId } : {}),
+            ...(data.creativeId ? { creative_id: data.creativeId } : {}),
+            ...(data.landingUrl ? { landing_url: data.landingUrl } : {}),
+            ...(data.sourceUrl ? { source_url: data.sourceUrl } : {}),
+            ...(data.referrer ? { referrer: data.referrer } : {}),
+            ...(data.deviceId ? { device_id: data.deviceId } : {}),
           },
         });
         ingestedLeadId = ingested.leadId;
@@ -1111,6 +1280,69 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       } catch (ingestErr) {
         console.warn("[lead-forms] Aviso ao espelhar lead civil no CRM:", ingestErr);
       }
+    }
+
+    const eventId = `lead_civil_${submissionId}`;
+    await recordAttributionTouchpoint(supabase, {
+      storeId: classified.store_id || null,
+      deviceId: data.deviceId || null,
+      visitorId: data.visitorId || null,
+      profileId,
+      phone: phoneInfo.e164 || data.contactPhone.trim(),
+      email: data.contactEmail?.trim() || null,
+      leadCode: civilLeadCode,
+      ctwaClid: data.ctwaClid || null,
+      fbclid: data.fbclid || null,
+      fbp: data.fbp || null,
+      fbc: data.fbc || null,
+      gclid: data.gclid || null,
+      ttclid: data.ttclid || null,
+      utmSource: data.utmSource || null,
+      utmMedium: data.utmMedium || null,
+      utmCampaign: data.utmCampaign || null,
+      utmContent: data.utmContent || null,
+      utmTerm: data.utmTerm || null,
+      adId: data.adId || null,
+      adsetId: data.adsetId || null,
+      campaignId: data.campaignId || null,
+      creativeId: data.creativeId || null,
+      formId: (classified.attributes as any)?.lead_form_id || null,
+      sourceUrl: data.sourceUrl || null,
+      landingUrl: data.landingUrl || null,
+      referrer: data.referrer || null,
+      entityType: "classified",
+      entityId: classified.id,
+      entityTitle: classified.title,
+      capturedVia: "civil_inquiry_form",
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
+    });
+
+    if (!isSpam && classified.store_id) {
+      await dispatchServerSidePixelConversion(supabase, {
+        storeId: classified.store_id,
+        eventName: "Lead",
+        eventId,
+        eventSource: "civil_inquiry_form",
+        leadId: ingestedLeadId,
+        phone: phoneInfo.e164 || data.contactPhone.trim(),
+        email: data.contactEmail?.trim() || null,
+        fullName: data.contactName.trim(),
+        fbp: data.fbp || null,
+        fbc: data.fbc || null,
+        ctwaClid: data.ctwaClid || null,
+        sourceUrl: data.sourceUrl || data.landingUrl || null,
+        clientIpAddress: telemetry.ip,
+        clientUserAgent: telemetry.userAgent,
+        customData: {
+          classified_id: classified.id,
+          classified_title: classified.title,
+          lead_code: civilLeadCode,
+          utm_source: data.utmSource || undefined,
+          utm_campaign: data.utmCampaign || undefined,
+          ad_id: data.adId || undefined,
+        },
+      });
     }
 
     // 4. Prepara link do WhatsApp como fallback
@@ -1128,6 +1360,7 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
           }
         }
       }
+      msg += `\n\nRef: #${civilLeadCode}`;
       const formattedNumber = cleanTarget.startsWith("55") ? cleanTarget : `55${cleanTarget}`;
       whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(msg)}`;
     }

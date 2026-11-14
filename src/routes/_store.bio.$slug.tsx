@@ -367,15 +367,15 @@ function BiolinkPage() {
  className="w-full p-4 rounded-lg bg-slate-900 text-primary-foreground border border-slate-800  space-y-3 text-left"
  >
  <div className="flex items-start gap-3">
- <div className="size-7 rounded-lg bg-card/10 flex items-center justify-center text-sky-300 shrink-0">
+ <div className="size-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-sky-300 shrink-0">
  <Clock className="size-3.5" />
  </div>
  <div>
  <p className="text-xs font-bold uppercase tracking-wider text-sky-400">Horário de Atendimento</p>
- <p className="text-xs font-bold text-primary-foreground">{block.hoursText || "Todos os dias — 08h às 18h"}</p>
+ <p className="text-xs font-bold text-neutral-50">{block.hoursText || "Todos os dias — 08h às 18h"}</p>
  </div>
  </div>
- <div className="flex items-center justify-between pt-1 border-t border-white/10 text-xs">
+ <div className="flex items-center justify-between pt-1 border-t border-neutral-800 text-xs">
  <span className="flex items-center gap-1 text-slate-300 text-xs">
  <MapPin className="size-3 text-sky-400" />
  <span>{block.locationText || "São Miguel do Oeste - SC"}</span>

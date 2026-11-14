@@ -223,7 +223,7 @@ function PlaceDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="h-9 sm:h-10 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-3 rounded-lg border border-border/60 text-xs font-semibold focus-visible:ring-2 min-h-11 sm:min-h-0"
+                className="min-h-11 sm:min-h-0 h-11 sm:h-10 bg-card hover:bg-muted text-foreground px-3 rounded-lg border border-border text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Compartilhar link deste local"
               >
                 {copiedShare ? (

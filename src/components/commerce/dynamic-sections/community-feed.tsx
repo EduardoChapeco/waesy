@@ -97,7 +97,7 @@ export function CommunityFeed({ content, resolvedClassifieds, isEditing }: any) 
  {item.content}
  </p>
 
- <div className="flex items-center gap-3 pt-4 border-t border-black/10 dark:border-white/10 mt-auto">
+ <div className="flex items-center gap-3 pt-4 border-t border-border mt-auto">
  <Avatar className="h-8 w-8 border border-foreground">
  <AvatarImage src={item.avatar_url || ""} />
  <AvatarFallback className="font-bold bg-muted text-foreground">

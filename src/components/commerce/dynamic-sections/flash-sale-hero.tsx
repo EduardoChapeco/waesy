@@ -154,18 +154,18 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
           <div className="space-y-6 lg:col-span-7">
             {badge && (
               <div
-                className="inline-flex items-center gap-2 rounded-full border border-warning/30 bg-warning/10 px-4 py-1 text-xs font-bold text-warning-strong backdrop-blur-md"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1 text-xs font-bold text-warning-strong"
                 style={
                   accentColor
                     ? {
-                        borderColor: `${accentColor}55`,
-                        backgroundColor: `${accentColor}20`,
-                        color: accentColor,
+                        borderColor: accentColor,
+                        backgroundColor: accentColor,
+                        color: "#ffffff",
                       }
                     : undefined
                 }
               >
-                <Flame className="size-3.5 animate-pulse motion-reduce:animate-none text-warning-strong" style={accentStyle} />
+                <Flame className="size-3.5 animate-pulse motion-reduce:animate-none text-warning-strong" style={accentColor ? { color: "#ffffff" } : undefined} />
                 <span>{badge}</span>
               </div>
             )}
@@ -176,7 +176,7 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
                 {discountPercentage && (
                   <span
                     className="underline decoration-2 text-warning-strong decoration-warning/60"
-                    style={accentColor ? { color: accentColor, textDecorationColor: `${accentColor}80` } : undefined}
+                    style={accentColor ? { color: accentColor, textDecorationColor: accentColor } : undefined}
                   >
                     {discountPercentage}
                   </span>
@@ -192,14 +192,14 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
             {/* Cupom 1-Toque */}
             {(couponCode || props.isEditing) && (
               <div
-                className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card/90 max-w-md backdrop-blur-sm"
-                style={accentColor ? { borderColor: `${accentColor}40` } : undefined}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card max-w-md"
+                style={accentColor ? { borderColor: accentColor } : undefined}
               >
                 <div className="space-y-1 min-w-0 flex-1">
                   <p className="text-2xs uppercase font-bold text-warning-strong" style={accentStyle}>
                     Cupom de Desconto
                   </p>
-                  <p className="font-mono text-sm font-bold text-foreground tracking-widest truncate">
+                  <p className="font-mono text-sm font-bold text-foreground tracking-widest break-all">
                     {couponCode || "SEM CUPOM DEFINIDO"}
                   </p>
                 </div>
@@ -236,8 +236,8 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
           {/* Lado Direito: Temporizador Regressivo & CTA */}
           <div className="lg:col-span-5">
             <div
-              className="rounded-lg border border-border bg-card/90 p-6 sm:p-8 backdrop-blur-xl text-center space-y-6"
-              style={accentColor ? { borderColor: `${accentColor}40` } : undefined}
+              className="rounded-lg border border-border bg-card p-6 sm:p-8 text-center space-y-6"
+              style={accentColor ? { borderColor: accentColor } : undefined}
             >
               <div className="space-y-1">
                 <div

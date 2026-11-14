@@ -32,7 +32,7 @@ describe("Universal Accessibility & WCAG 2.2 AA Compliance Audit", () => {
 
   it("4. Deve declarar lang='pt-BR' e renderizar Skip Link acessível no topo do DOM em __root.tsx", () => {
     const rootCode = fs.readFileSync(rootRoutePath, "utf8");
-    expect(rootCode).toContain('<html lang="pt-BR">');
+    expect(rootCode).toMatch(/<html\b[^>]*lang="pt-BR"/);
     expect(rootCode).toContain('href="#main-content"');
     expect(rootCode).toContain("Pular para o conteúdo principal");
   });

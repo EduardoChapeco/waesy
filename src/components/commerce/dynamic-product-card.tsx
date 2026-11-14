@@ -93,9 +93,9 @@ export function DynamicProductCard({ product }: DynamicProductCardProps) {
  </div>
  )}
  {tipo === "event_producer" && attrs.local && (
- <div className="flex items-center gap-2 line-clamp-1">
- <MapPin className="size-4 shrink-0" />
- <span className="truncate">{attrs.local}</span>
+ <div className="flex items-start gap-2">
+ <MapPin className="size-4 shrink-0 mt-1" />
+ <span className="line-clamp-2 text-anti-truncate">{attrs.local}</span>
  </div>
  )}
  {tipo === "creator" && attrs.duracao_min && (

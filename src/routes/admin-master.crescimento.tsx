@@ -197,7 +197,7 @@ function GrowthValuationDashboard() {
         {/* TAB 1: VISÃO EXECUTIVA (METAS VS REAL) */}
         <TabsContent value="overview" className="space-y-6">
           {/* Seletor de Fase Alvo */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-border/50 bg-card/40 backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card">
             <div>
               <span className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                 Fase Alvo em Análise

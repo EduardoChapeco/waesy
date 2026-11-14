@@ -104,8 +104,8 @@ export function MediaCarousel({
                     muted
                     loop
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-foreground/20 group-hover:bg-foreground/30 transition-colors pointer-events-none">
-                    <div className="size-12 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center text-foreground ">
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/30 group-hover:bg-neutral-950/40 transition-colors pointer-events-none">
+                    <div className="size-12 rounded-full bg-card border border-border flex items-center justify-center text-foreground">
                       <Play className="size-6 ml-1 fill-foreground" />
                     </div>
                   </div>
@@ -124,7 +124,7 @@ export function MediaCarousel({
 
               {/* Botão sutil de expandir para fullscreen */}
               <div
-                className="absolute top-3 right-3 size-11 min-h-11 min-w-11 rounded-full bg-background/70 backdrop-blur-md text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-xs pointer-events-none"
+                className="absolute top-3 right-3 size-11 min-h-11 min-w-11 rounded-full bg-card border border-border text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                 aria-hidden="true"
               >
                 <Maximize2 className="size-4" />

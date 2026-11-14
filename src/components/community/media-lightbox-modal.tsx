@@ -109,19 +109,19 @@ export function MediaLightboxModal({
  if (!isOpen || !currentMediaUrl) return null;
 
  return (
- <div className="fixed inset-0 z-50 bg-foreground/95 backdrop-blur-md flex flex-col justify-between animate-in fade-in duration-200 select-none">
+ <div className="fixed inset-0 z-50 bg-neutral-950 flex flex-col justify-between animate-in fade-in duration-200 select-none">
  {/* Top Bar */}
- <div className="px-4 py-3 flex items-center justify-between text-foreground z-10 shrink-0">
- <div className="flex items-center gap-3">
- <Avatar className="size-9 border border-white/20">
+ <div className="px-4 py-3 flex items-center justify-between text-neutral-50 z-10 shrink-0">
+ <div className="flex items-center gap-3 min-w-0">
+ <Avatar className="size-9 border border-neutral-700">
  <AvatarImage src={post.author.avatar_url || undefined} />
- <AvatarFallback className="bg-card/20 text-foreground font-bold text-xs">
+ <AvatarFallback className="bg-neutral-800 text-neutral-50 font-bold text-xs">
  {post.author.name.charAt(0).toUpperCase()}
  </AvatarFallback>
  </Avatar>
- <div>
- <p className="text-sm font-bold truncate">{post.author.name}</p>
- <p className="text-2xs text-foreground/60">
+ <div className="min-w-0">
+ <p className="text-sm font-bold line-clamp-1 text-anti-truncate">{post.author.name}</p>
+ <p className="text-2xs text-neutral-400">
  Foto {currentIndex + 1} de {post.media_urls.length}
  </p>
  </div>

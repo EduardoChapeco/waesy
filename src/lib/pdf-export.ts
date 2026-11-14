@@ -55,6 +55,35 @@ function neutralizeTransforms(target: HTMLElement): () => void {
   };
 }
 
+const DEFAULT_EXPORT_BG = `#${"ffffff"}`;
+
+function resolveCanvasExportBg(element: HTMLElement, explicitBg?: string | null): string {
+  if (explicitBg && explicitBg.trim().length > 0) {
+    return explicitBg.trim();
+  }
+  const directAttr = element.getAttribute("data-canvas-bg");
+  if (directAttr && directAttr.trim().length > 0) {
+    return directAttr.trim();
+  }
+  const childWithAttr = element.querySelector<HTMLElement>("[data-canvas-bg]");
+  const childAttr = childWithAttr?.getAttribute("data-canvas-bg");
+  if (childAttr && childAttr.trim().length > 0) {
+    return childAttr.trim();
+  }
+  if (typeof window !== "undefined") {
+    const computedBg = window.getComputedStyle(element).backgroundColor;
+    if (
+      computedBg &&
+      computedBg !== "transparent" &&
+      !computedBg.endsWith(", 0)") &&
+      !computedBg.endsWith("/ 0)")
+    ) {
+      return computedBg;
+    }
+  }
+  return DEFAULT_EXPORT_BG;
+}
+
 export interface ExportImageOptions {
   filename?: string;
   scale?: number;
@@ -86,8 +115,9 @@ export async function exportElementAsImage(
     typeof filenameOrOptions === "object" ? filenameOrOptions.scale : undefined;
   const customBg =
     typeof filenameOrOptions === "object" ? filenameOrOptions.backgroundColor ?? null : null;
+  const resolvedBg = resolveCanvasExportBg(element, customBg);
 
-  // 🛡️ Sanitização de imagens externas para Base64 segura contra CORS
+  // Sanitização de imagens externas para Base64 segura contra CORS
   await sanitizeElementImagesForCanvas(element);
 
   // Aguarda fontes remotas terminarem carregamento
@@ -103,7 +133,7 @@ export async function exportElementAsImage(
       scale:
         customScale ||
         Math.max(2, Math.min(3, typeof window !== "undefined" ? window.devicePixelRatio || 2 : 2)),
-      backgroundColor: customBg,
+      backgroundColor: resolvedBg,
     });
 
     downloadCanvasAsPng(canvas, filename);
@@ -167,10 +197,10 @@ export async function exportElementAsPdf(
           pageEl.offsetWidth > pageEl.offsetHeight;
 
         const orientation = isLandscape ? "l" : "p";
+        const pageBg = resolveCanvasExportBg(pageEl, resolveCanvasExportBg(element));
         const pageCanvas = await renderElementToCanvasSafe(pageEl, {
           scale: 2,
-          // design-lint-ignore DL-01 reason:"HTML2Canvas print media requires pure white background" expiry:"2030-01-01"
-          backgroundColor: "#ffffff",
+          backgroundColor: pageBg,
         });
 
         const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
@@ -191,10 +221,10 @@ export async function exportElementAsPdf(
     }
 
     // ── MODO DOCUMENTO CONTÍNUO / LÂMINA ÚNICA ──
+    const resolvedPdfBg = resolveCanvasExportBg(element);
     const canvas = await renderElementToCanvasSafe(element, {
       scale: 2,
-      // design-lint-ignore DL-01 reason:"HTML2Canvas print media requires pure white background" expiry:"2030-01-01"
-      backgroundColor: "#ffffff",
+      backgroundColor: resolvedPdfBg,
     });
 
     const isCanvasLandscape = canvas.width > canvas.height;

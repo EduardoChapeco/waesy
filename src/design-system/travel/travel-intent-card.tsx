@@ -83,20 +83,20 @@ export function TravelIntentCard({
       </div>
 
       {/* Meta Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border/30 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border text-xs">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="size-3.5 shrink-0" />
-          <span className="text-foreground font-medium truncate">{dates}</span>
+          <span className="text-foreground font-medium line-clamp-2 text-anti-truncate">{dates}</span>
         </div>
 
         <div className="flex items-center gap-2 text-muted-foreground">
           <Users className="size-3.5 shrink-0" />
-          <span className="text-foreground font-medium truncate">{passengers}</span>
+          <span className="text-foreground font-medium line-clamp-2 text-anti-truncate">{passengers}</span>
         </div>
 
         <div className="flex items-center gap-2 text-muted-foreground">
           <Briefcase className="size-3.5 shrink-0" />
-          <span className="text-foreground font-medium truncate">{baggage}</span>
+          <span className="text-foreground font-medium line-clamp-2 text-anti-truncate">{baggage}</span>
         </div>
       </div>
     </div>

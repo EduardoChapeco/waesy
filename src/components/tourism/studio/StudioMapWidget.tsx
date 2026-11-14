@@ -236,11 +236,11 @@ export function StudioMapWidget({
         </div>
       )}
 
-      <div className="relative h-95 w-full rounded-lg border border-border/60 overflow-hidden bg-muted/20">
+      <div className="relative h-95 w-full rounded-lg border border-border overflow-hidden bg-muted">
         <div ref={mapContainer} className="h-full w-full" />
 
         {capturing && (
-          <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center z-20">
+          <div className="absolute inset-0 bg-background/90 flex items-center justify-center z-20">
             <div className="bg-card p-4 rounded-lg border border-border flex items-center gap-3 ">
               <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
               <span className="text-xs font-semibold">Capturando mapa em alta resolução...</span>

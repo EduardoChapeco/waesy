@@ -182,11 +182,11 @@ function FullscreenMapaPage() {
  />
  </div>
 
- {/* ── 2. CONTROLES FLUTUANTES SUPERIORES (GLASSMORPHISM) ── */}
+ {/* ── 2. CONTROLES FLUTUANTES SUPERIORES ── */}
  <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
  <Link
  to="/"
- className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card/90 backdrop-blur-md text-xs font-bold text-foreground hover:bg-card active:scale-95 transition-transform duration-200 cursor-pointer"
+ className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border shadow-overlay text-xs font-bold text-foreground hover:bg-muted active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <ArrowLeft size={16} weight="bold" />
  <span className="hidden sm:inline">Início</span>
@@ -196,7 +196,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={handleLocateMe}
- className="size-9 rounded-lg p-0 bg-card/90 backdrop-blur-md text-foreground hover:bg-card active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="size-11 sm:size-9 rounded-lg p-0 bg-card border border-border shadow-overlay text-foreground hover:bg-muted active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 sm:min-h-9 min-w-11 sm:min-w-9"
  title="Minha Localização"
  aria-label="Minha Localização"
  >
@@ -206,7 +206,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="h-9 px-4 rounded-lg font-bold text-xs gap-2 active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 sm:min-h-0"
+ className="h-11 sm:h-9 px-4 rounded-lg font-bold text-xs gap-2 active:scale-95 transition-transform duration-200 cursor-pointer min-h-11 sm:min-h-9"
  >
  <Plus size={14} weight="bold" />
  <span>Publicar</span>

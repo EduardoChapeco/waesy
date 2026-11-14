@@ -35,7 +35,7 @@ export function DesktopShell({
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-background">
         {/* Global Header / TopBar inside workspace */}
         {(headerSlot || utilityClusterSlot) && (
-          <header className="flex items-center justify-between h-14 px-6 border-b border-border/50 bg-card/60 backdrop-blur-xs shrink-0 z-10">
+          <header className="flex items-center justify-between h-14 px-6 border-b border-border bg-card shrink-0 z-10">
             <div className="flex items-center gap-4 min-w-0 flex-1">
               {headerSlot}
             </div>

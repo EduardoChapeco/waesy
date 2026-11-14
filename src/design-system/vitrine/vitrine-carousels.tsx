@@ -248,11 +248,11 @@ export function VitrineVerticalCarousel({
           {resolvedItems.map((item, idx) => {
             const safeHref = isEditorCanvas ? undefined : resolveSafeLinkHref(item.href);
             const cardInner = (
-              <div className="group rounded-lg border border-border/70 bg-card overflow-hidden flex flex-col justify-between h-full hover:border-primary/50 transition-colors duration-150 motion-reduce:transition-none">
-                <div className="relative aspect-post-vertical w-full overflow-hidden bg-muted/30">
+              <div className="group rounded-lg border border-border bg-card overflow-hidden flex flex-col justify-between h-full hover:border-primary transition-colors duration-150 motion-reduce:transition-none">
+                <div className="relative aspect-post-vertical w-full overflow-hidden bg-muted">
                   {renderMediaContent(item, true)}
                   {item.badge && (
-                    <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-xs font-bold text-foreground">
+                    <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-card border border-border text-xs font-bold text-foreground">
                       {item.badge}
                     </span>
                   )}
@@ -309,26 +309,26 @@ export function VitrineVerticalCarousel({
             );
 
             const verticalCard = (
-              <div className="group snap-start shrink-0 w-48 sm:w-56 rounded-lg border border-border/70 bg-card overflow-hidden flex flex-col justify-between hover:border-primary/50 transition-colors duration-150 motion-reduce:transition-none">
-                <div className={cn("relative w-full overflow-hidden bg-muted/40", aspectCls)}>
+              <div className="group snap-start shrink-0 w-48 sm:w-56 rounded-lg border border-border bg-card overflow-hidden flex flex-col justify-between hover:border-primary transition-colors duration-150 motion-reduce:transition-none">
+                <div className={cn("relative w-full overflow-hidden bg-muted", aspectCls)}>
                   {renderMediaContent(item, true)}
 
                   <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
                     {item.badge ? (
-                      <span className="px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-xs font-bold text-foreground">
+                      <span className="px-2 py-1 rounded-md bg-card border border-border text-xs font-bold text-foreground">
                         {item.badge}
                       </span>
                     ) : (
                       <span />
                     )}
                     {hasVideo && (
-                      <span className="size-8 rounded-full bg-background/90 backdrop-blur-md text-foreground flex items-center justify-center">
+                      <span className="size-8 rounded-full bg-card border border-border text-foreground flex items-center justify-center">
                         <Play className="size-4" />
                       </span>
                     )}
                   </div>
 
-                  <div className="absolute inset-x-2 bottom-2 rounded-lg bg-background/90 backdrop-blur-md border border-border/60 p-3 space-y-1">
+                  <div className="absolute inset-x-2 bottom-2 rounded-lg bg-card border border-border p-3 space-y-1">
                     <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-tight break-words">
                       {item.title}
                     </h3>

@@ -57,16 +57,16 @@ function MuralPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground pb-24">
       {/* ─── Topo / Filtros Rápidos ────────────────────────────────── */}
-      <div className="border-b border-border/40 bg-background sticky top-14 z-20">
-        <div className="carousel max-w-2xl mx-auto px-4 py-2 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
+      <div className="border-b border-border bg-background sticky top-14 z-20">
+        <div className="carousel max-w-2xl mx-auto px-0 sm:px-4 py-2 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setActiveFilter("all")}
               className={`h-11 min-h-11 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeFilter === "all"
-                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
+                  ? "bg-card text-foreground border border-border font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
               }`}
             >
               Para Você
@@ -77,8 +77,8 @@ function MuralPage() {
               onClick={() => setActiveFilter("simple")}
               className={`h-11 min-h-11 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeFilter === "simple"
-                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
+                  ? "bg-card text-foreground border border-border font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
               }`}
             >
               Publicações
@@ -89,8 +89,8 @@ function MuralPage() {
               onClick={() => setActiveFilter("news")}
               className={`h-11 min-h-11 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeFilter === "news"
-                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
+                  ? "bg-card text-foreground border border-border font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
               }`}
             >
               Notícias Locais
@@ -101,8 +101,8 @@ function MuralPage() {
               onClick={() => setActiveFilter("travel")}
               className={`h-11 min-h-11 px-4 rounded-full text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeFilter === "travel"
-                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
+                  ? "bg-card text-foreground border border-border font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
               }`}
             >
               Roteiros
@@ -112,7 +112,7 @@ function MuralPage() {
       </div>
 
       {/* ─── Feed Container Central ─────────────────────────────────── */}
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-2xl mx-auto px-0 sm:px-4 py-6 space-y-4">
         {/* Composer de Postagem no topo do feed */}
         <InlinePostComposer session={session || (profile ? { user: profile } : undefined)} />
 

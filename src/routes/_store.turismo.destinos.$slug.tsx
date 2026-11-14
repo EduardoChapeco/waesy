@@ -118,11 +118,11 @@ function PublicDestinationDetailPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header Fixo */}
-      <div className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md">
-        <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
+      <div className="sticky top-0 z-30 border-b border-border bg-background">
+        <div className="mx-auto max-w-6xl px-2 sm:px-4 h-14 flex items-center justify-between">
           <Link
             to={"/turismo" as any}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Voltar para Turismo"
           >
             <ChevronLeft className="size-4" />
@@ -133,7 +133,7 @@ function PublicDestinationDetailPage() {
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center justify-center size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="inline-flex items-center justify-center size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Compartilhar destino"
             >
               <Share2 className="size-4" />
@@ -148,9 +148,9 @@ function PublicDestinationDetailPage() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-6xl px-4 pt-6 space-y-8">
+      <main className="mx-auto max-w-6xl px-0 sm:px-4 pt-6 space-y-8">
         {/* Banner Hero */}
-        <div className="relative aspect-video sm:aspect-21/9 w-full overflow-hidden rounded-lg bg-muted border border-border/80">
+        <div className="relative aspect-video sm:aspect-21/9 w-full overflow-hidden rounded-lg bg-muted border border-border">
           {destination.cover_image_url ? (
             <img
               src={destination.cover_image_url}
@@ -163,7 +163,7 @@ function PublicDestinationDetailPage() {
             </div>
           )}
           {/* design-lint-ignore DL-08 reason:"Scrim fotografico para contraste sobre imagem per B.32" expiry:"2027-12-31" */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-8 space-y-2">
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/85 via-neutral-950/35 to-transparent flex flex-col justify-end p-6 sm:p-8 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="bg-primary text-primary-foreground border-none font-bold text-xs">
                 Destino Oficial
@@ -172,18 +172,18 @@ function PublicDestinationDetailPage() {
                 <Link
                   to={"/aeroporto/$iata" as any}
                   params={{ iata: destination.iata_gateway } as any}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-background/80 hover:bg-background backdrop-blur-md text-foreground font-mono text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="inline-flex items-center gap-2 min-h-11 px-3 py-2 rounded-md bg-card hover:bg-muted text-foreground border border-border font-mono text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Plane className="size-3.5" />
                   Aeroporto {destination.iata_gateway} — Ver Detalhes
                 </Link>
               )}
             </div>
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground tracking-tight">
+            <h1 className="text-3xl sm:text-5xl font-extrabold text-neutral-50 tracking-tight">
               {destination.name}
             </h1>
-            <p className="text-sm sm:text-base text-foreground/80 flex items-center gap-2">
-              <MapPin className="size-4 shrink-0 text-foreground" />
+            <p className="text-sm sm:text-base text-neutral-200 flex items-center gap-2">
+              <MapPin className="size-4 shrink-0 text-neutral-50" />
               <span>{destination.city}, {destination.state} • {destination.country}</span>
             </p>
           </div>

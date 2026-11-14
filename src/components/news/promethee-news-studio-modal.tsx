@@ -207,7 +207,7 @@ export function PrometheeNewsStudioModal({
       role="dialog"
       aria-modal="true"
       aria-label="Estúdio de Posts PNG"
-      className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-stretch sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 bg-overlay flex items-stretch sm:items-center justify-center p-0 sm:p-4"
     >
       <div className="w-full h-dvh sm:h-auto sm:max-h-dvh sm:max-w-5xl bg-background text-foreground sm:rounded-3xl border-0 sm:border sm:border-border flex flex-col overflow-hidden safe-top safe-bottom">
         {/* Barra Superior Discreta */}

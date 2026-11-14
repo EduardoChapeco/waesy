@@ -119,7 +119,7 @@ export const SiteHeaderBlock: React.FC<SiteHeaderBlockProps> = ({
       style={customStyle}
       data-testid="omni-site-header"
       className={cn(
-        "w-full border-b border-border/80 bg-background/95 backdrop-blur-md text-foreground transition-colors duration-200",
+        "w-full border-b border-border bg-background text-foreground transition-colors duration-200",
         scrollMode === "scrolls_with_site" ? "relative z-20" : "sticky top-0 z-30",
         scrollState === "hidden" && "-translate-y-full opacity-0",
         scrollState === "faded" && "opacity-75",

@@ -162,12 +162,12 @@ export const InteractiveComparisonSlider: React.FC<InteractiveComparisonSliderPr
 
               {/* Badges */}
               <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                <span className="px-3 py-1 rounded-md bg-background/90 backdrop-blur-xs text-foreground border border-border/60 text-xs font-bold uppercase tracking-wider">
+                <span className="px-3 py-1 rounded-md bg-card text-foreground border border-border text-xs font-bold uppercase tracking-wider">
                   {data.beforeLabel || "Antes"}
                 </span>
               </div>
               <div className="absolute top-4 right-4 z-10 pointer-events-none">
-                <span className="px-3 py-1 rounded-md bg-primary/90 backdrop-blur-xs text-primary-foreground text-xs font-bold uppercase tracking-wider">
+                <span className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider">
                   {data.afterLabel || "Depois"}
                 </span>
               </div>

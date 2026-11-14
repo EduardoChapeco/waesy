@@ -406,10 +406,10 @@ export default function TurismoRadarPage() {
                   }
                 }}
                 onClick={() => setSelectedDest(isSelected ? null : dest)}
-                className={`relative p-5 rounded-lg border cursor-pointer transition-colors duration-200 duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary  ${
+                className={`relative p-5 rounded-2xl border cursor-pointer transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   isSelected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20 rounded-2xl'
-                    : 'border-black/[0.06] dark:border-white/[0.08] bg-card hover:border-black/[0.12] dark:hover:border-white/[0.16] rounded-2xl'
+                    ? 'border-primary bg-muted'
+                    : 'border-border bg-card hover:border-foreground'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -418,12 +418,12 @@ export default function TurismoRadarPage() {
                       <span className="text-xs font-semibold text-muted-foreground">{dest.continent}</span>
                       {dest.is_featured && <Star className="size-3 text-warning-strong fill-warning" />}
                       {dest.is_visa_required && (
-                        <Badge variant="destructive" className="text-xs px-2 py-0 font-bold">
+                        <Badge variant="destructive" className="text-xs px-2 py-1 font-bold">
                           VISTO
                         </Badge>
                       )}
                     </div>
-                    <h3 className="font-bold text-foreground text-base leading-tight truncate">
+                    <h3 className="font-bold text-foreground text-base leading-tight line-clamp-2 text-anti-truncate">
                       {dest.destination}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-1">

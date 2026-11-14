@@ -154,7 +154,7 @@ export function TicketDetailModal({
                   )}
                 </Badge>
               </div>
-              <span className="text-sm font-black font-mono text-foreground bg-background/80 backdrop-blur-md px-2 py-1 rounded-md border border-border/40">
+              <span className="text-sm font-black font-mono text-foreground bg-card px-2 py-1 rounded-md border border-border">
                 {ticket.priceCents === 0 ? "Gratuito" : formatMoney(ticket.priceCents)}
               </span>
             </div>

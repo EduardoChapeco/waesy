@@ -163,7 +163,7 @@ function PublicTravelProposalPage() {
       
       {/* ── 1. HEADER TABS MULTI-OPÇÃO (QUANDO EXISTIREM 2+ COTAÇÕES) ── */}
       {options.length > 1 && (
-        <div className="bg-card/90 backdrop-blur-md border border-border/80 rounded-lg p-3">
+        <div className="bg-card border border-border rounded-lg p-3">
           <div className="flex items-center justify-between gap-2 mb-2 px-1">
             <span className="text-2xs font-bold tracking-tight text-foreground uppercase flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />

@@ -150,7 +150,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                       className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
                   ) : (
-                    <div className="size-full bg-linear-to-br from-primary/10 to-muted flex items-center justify-center">
+                    <div className="size-full bg-muted flex items-center justify-center">
                       <Plane className="size-8 text-muted-foreground/40" />
                     </div>
                   )}
@@ -158,7 +158,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                   {/* Badge de Duração (Canto Inferior Esquerdo da Imagem) */}
                   {pkg.durationText && (
                     <div className="absolute bottom-2.5 left-2.5">
-                      <span className="px-3 py-1 rounded-md text-2xs font-bold bg-foreground/75 text-foreground backdrop-blur-xs">
+                      <span className="px-3 py-1 rounded-md text-2xs font-bold bg-neutral-950 border border-neutral-800 text-neutral-50">
                         {pkg.durationText}
                       </span>
                     </div>
@@ -168,7 +168,7 @@ export const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                 {/* Conteúdo do Card */}
                 <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
                   <div className="space-y-2">
-                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 text-anti-truncate">
                       {pkg.title}
                     </h3>
 

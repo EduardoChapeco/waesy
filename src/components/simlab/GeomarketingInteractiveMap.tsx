@@ -396,7 +396,7 @@ export function GeomarketingInteractiveMap({
         <div ref={mapContainerRef} className="w-full h-full dark:[&_.maplibregl-canvas]:brightness-75 dark:[&_.maplibregl-canvas]:invert dark:[&_.maplibregl-canvas]:contrast-125 dark:[&_.maplibregl-canvas]:hue-rotate-180" />
 
         {(!isMapLoaded || isSimulating) && (
-          <div className="absolute inset-0 bg-background/75 backdrop-blur-xs flex flex-col items-center justify-center gap-3 z-20">
+          <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center gap-3 z-20">
             <Loader2 className="size-7 animate-spin motion-reduce:animate-none text-primary" />
             <p className="text-xs font-semibold text-foreground">
               {isSimulating
@@ -407,7 +407,7 @@ export function GeomarketingInteractiveMap({
         )}
 
         {/* Legenda Flutuante Compacta */}
-        <div className="absolute top-3 left-3 z-10 p-3 rounded-lg bg-background/90 backdrop-blur-md border border-border/60 space-y-2 max-w-xs">
+        <div className="absolute top-3 left-3 z-10 p-3 rounded-lg bg-card border border-border space-y-2 max-w-xs">
           <div className="flex items-center gap-2 text-xs font-bold text-foreground">
             <MapPin className="size-3.5 text-primary shrink-0" />
             <span className="break-words leading-tight">{targetAddress}</span>
@@ -433,7 +433,7 @@ export function GeomarketingInteractiveMap({
 
         {/* Card de Inspeção de POI Selecionado */}
         {selectedPoi && (
-          <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:w-80 z-20 p-4 rounded-lg bg-card/95 backdrop-blur-md border border-border/80 space-y-2">
+          <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:w-80 z-20 p-4 rounded-lg bg-card border border-border space-y-2">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <Badge

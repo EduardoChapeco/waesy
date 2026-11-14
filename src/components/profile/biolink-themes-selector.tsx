@@ -50,7 +50,7 @@ export const BIOLINK_THEMES: BiolinkThemeDefinition[] = [
     key: "sunset",
     label: "Calor Editorial",
     description: "Tons quentes inspirados no pôr-do-sol com contraste equilibrado.",
-    previewBg: "bg-amber-50 dark:bg-amber-950 border-rose-200 dark:border-rose-800",
+    previewBg: "bg-rose-50 dark:bg-rose-950 border-rose-200 dark:border-rose-800",
     cardStyle: "bg-card border-border text-foreground",
     buttonClass: "bg-background text-foreground hover:bg-muted font-bold border border-border",
   },

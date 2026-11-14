@@ -480,9 +480,9 @@ export function UniversalNicheCard({
         <div className="pt-4 flex-1 flex flex-col justify-between">
           <div>
             {/* Linha Geográfica / Eyebrow Textual Sutil */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium truncate">
+            <div className="flex items-start gap-2 text-xs text-muted-foreground font-medium">
               <MapPin className="size-4 text-muted-foreground shrink-0" />
-              <span className="truncate">{locationText}</span>
+              <span className="line-clamp-2 text-anti-truncate">{locationText}</span>
             </div>
 
             {/* Título Principal Amplo e Legível */}

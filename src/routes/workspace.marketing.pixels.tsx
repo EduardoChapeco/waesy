@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { getStorePixelConfig, saveStorePixelConfig, dispatchMetaCapiEvent, type StorePixelConfigDTO } from "@/services/pixels.functions";
+import {
+  getStorePixelConfig,
+  saveStorePixelConfig,
+  dispatchMetaCapiEvent,
+  getStoreAttributionOverview,
+  type StorePixelConfigDTO,
+} from "@/services/pixels.functions";
 import { getStoreMarketingTierStatus, upgradeStoreToWaesyMax } from "@/services/ads.functions";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Lock } from "lucide-react";
@@ -19,11 +25,14 @@ export const Route = createFileRoute("/workspace/marketing/pixels")({
   }),
   loader: async () => {
     try {
-      const config = await getStorePixelConfig();
-      return { config };
+      const [config, attributionOverview] = await Promise.all([
+        getStorePixelConfig(),
+        getStoreAttributionOverview({ data: { days: 30 } }).catch(() => null),
+      ]);
+      return { config, attributionOverview };
     } catch (err: any) {
       console.error("[loader:workspace.marketing.pixels] error:", err);
-      return { config: null };
+      return { config: null, attributionOverview: null };
     }
   },
   component: WorkspaceMarketingPixelsPage,
@@ -31,7 +40,7 @@ export const Route = createFileRoute("/workspace/marketing/pixels")({
 
 export default function WorkspaceMarketingPixelsPage() {
   const router = useRouter();
-  const { config, tierStatus: initialTierStatus } = Route.useLoaderData() as any;
+  const { config, tierStatus: initialTierStatus, attributionOverview } = Route.useLoaderData() as any;
   const [tierStatus, setTierStatus] = useState<any>(initialTierStatus || { planTier: "free", isMaxUnlocked: false });
   const [maxUpsellOpen, setMaxUpsellOpen] = useState(false);
   const [isUpgradingMax, setIsUpgradingMax] = useState(false);
@@ -803,6 +812,85 @@ export default function WorkspaceMarketingPixelsPage() {
           </Button>
         </div>
       </form>
+
+      {/* ── Bloco Extra: Telemetria Conectada (Anúncios ↔ WhatsApp ↔ CRM) ── */}
+      {attributionOverview && (
+        <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-border/40">
+            <div>
+              <h2 className="text-sm font-bold text-foreground">
+                Atribuição Conectada (Últimos 30 dias)
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Rastreamento unificado de anúncios, cliques WhatsApp, formulários e disparos CAPI.
+              </p>
+            </div>
+            <Badge variant="outline" className="text-xs font-mono">
+              {attributionOverview.summary?.totalTouchpoints || 0} toques
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+              <span className="text-xs text-muted-foreground block">Meta Ads / CTWA</span>
+              <span className="text-lg font-bold font-mono text-foreground">
+                {attributionOverview.summary?.metaAdsCount || 0}
+              </span>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+              <span className="text-xs text-muted-foreground block">Google Ads</span>
+              <span className="text-lg font-bold font-mono text-foreground">
+                {attributionOverview.summary?.googleAdsCount || 0}
+              </span>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+              <span className="text-xs text-muted-foreground block">Cliques WhatsApp</span>
+              <span className="text-lg font-bold font-mono text-foreground">
+                {attributionOverview.summary?.whatsappClicksCount || 0}
+              </span>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/20 border border-border/40">
+              <span className="text-xs text-muted-foreground block">CAPI Enviados</span>
+              <span className="text-lg font-bold font-mono text-emerald-600">
+                {attributionOverview.summary?.capiSuccessCount || 0}
+              </span>
+            </div>
+          </div>
+
+          {Array.isArray(attributionOverview.touchpoints) && attributionOverview.touchpoints.length > 0 ? (
+            <div className="divide-y divide-border/50 rounded-lg border border-border/60 bg-background">
+              {attributionOverview.touchpoints.slice(0, 12).map((tp: any) => (
+                <div
+                  key={tp.id}
+                  className="p-3 grid grid-cols-1 sm:grid-cols-4 gap-2 items-center text-xs hover:bg-muted/20"
+                >
+                  <div className="min-w-0">
+                    <span className="font-semibold text-foreground block truncate">
+                      {tp.utm_campaign || tp.ad_headline || tp.ad_platform || tp.utm_source || "Direto"}
+                    </span>
+                    <span className="text-2xs text-muted-foreground font-mono truncate block">
+                      {tp.ad_id ? `Anúncio #${tp.ad_id}` : tp.utm_medium || "-"}
+                    </span>
+                  </div>
+                  <div className="min-w-0 font-mono text-foreground truncate">
+                    {tp.phone_e164 || tp.email || (tp.lead_code ? `#${tp.lead_code}` : "-")}
+                  </div>
+                  <div className="min-w-0 text-muted-foreground truncate">
+                    {tp.entity_title || tp.captured_via}
+                  </div>
+                  <div className="sm:text-right font-mono text-muted-foreground">
+                    {new Date(tp.created_at).toLocaleDateString("pt-BR")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Nenhum evento de atribuição registrado nos últimos 30 dias.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

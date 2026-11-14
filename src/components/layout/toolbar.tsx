@@ -37,7 +37,7 @@ export const Toolbar = forwardRef<HTMLDivElement, ToolbarProps>(
       <div
         ref={ref}
         className={cn(
-          "w-full bg-background/95 backdrop-blur-sm border-b border-border/60 py-3 px-4 sm:px-6 transition-colors",
+          "w-full bg-background border-b border-border py-3 px-4 sm:px-6 transition-colors",
           sticky && "sticky top-0 z-30",
           className
         )}

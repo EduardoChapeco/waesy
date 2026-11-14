@@ -78,8 +78,8 @@ export function ShopTheLookSection({
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
  "absolute -translate-x-1/2 -translate-y-1/2 size-8 sm:size-9 rounded-full flex items-center justify-center cursor-pointer transition-colors duration-200  min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
  isSelected
- ? "bg-primary text-primary-foreground scale-110 ring-4 ring-primary/30"
- : "bg-background/90 text-foreground backdrop-blur-md hover:scale-105 border border-border"
+ ? "bg-primary text-primary-foreground scale-110 ring-2 ring-ring"
+ : "bg-card text-foreground hover:scale-105 border border-border"
  )}
  >
  <Plus className={cn("size-4 transition-transform", isSelected && "rotate-45")} />
@@ -91,7 +91,7 @@ export function ShopTheLookSection({
  {/* Card Lateral do Produto em Foco */}
  <div className="lg:col-span-4">
  {activeHotspot ? (
- <div className="p-6 rounded-lg border border-border/80 bg-card space-y-4 shadow-2xs">
+ <div className="p-6 rounded-lg border border-border bg-card space-y-4">
  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
  Peça Selecionada
  </span>

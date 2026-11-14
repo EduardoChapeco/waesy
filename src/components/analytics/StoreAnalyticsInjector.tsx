@@ -10,8 +10,12 @@
  */
 
 import { useEffect } from "react";
+import { collectClientAttribution } from "@/lib/attribution-collector";
+import { recordStorefrontAttributionVisit } from "@/services/pixels.functions";
 
 interface StoreAnalyticsInjectorProps {
+  /** ID da loja ativa para persistir touchpoints de atribuição (anúncio -> vitrine -> CRM/WhatsApp) */
+  storeId?: string | null;
   /** Objeto store.settings vindo do banco (JSONB) */
   storeSettings?: Record<string, any> | null;
   /** Contexto: qual evento PageView disparar */
@@ -34,6 +38,7 @@ declare global {
 }
 
 export function StoreAnalyticsInjector({
+  storeId,
   storeSettings,
   pageContext = "home",
   productData,
@@ -112,6 +117,60 @@ export function StoreAnalyticsInjector({
     noscript.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
     document.body.insertBefore(noscript, document.body.firstChild);
   }, [gtmId]);
+
+  // ── Persistência Automática de Touchpoint (Anúncio -> Vitrine) ─────────────
+  useEffect(() => {
+    if (!storeId || typeof window === "undefined") return;
+    const attr = collectClientAttribution();
+    const hasAdSignals = Boolean(
+      attr.utmSource ||
+        attr.utmCampaign ||
+        attr.fbclid ||
+        attr.gclid ||
+        attr.ttclid ||
+        attr.ctwaClid ||
+        attr.adId ||
+        attr.campaignId ||
+        attr.fbc,
+    );
+    if (!hasAdSignals) return;
+
+    const dedupeKey = `waesy_visit_tp_${storeId}_${attr.fbclid || attr.gclid || attr.ttclid || attr.ctwaClid || attr.utmCampaign || attr.utmSource || "direct"}`;
+    try {
+      if (window.sessionStorage.getItem(dedupeKey)) return;
+      window.sessionStorage.setItem(dedupeKey, "1");
+    } catch {}
+
+    recordStorefrontAttributionVisit({
+      data: {
+        storeId,
+        landingUrl: attr.landingUrl || window.location.href,
+        sourceUrl: window.location.href,
+        referrer: attr.referrer || document.referrer || null,
+        entityType: pageContext,
+        entityId: productData?.id || null,
+        entityTitle: productData?.name || null,
+        utmSource: attr.utmSource || null,
+        utmMedium: attr.utmMedium || null,
+        utmCampaign: attr.utmCampaign || null,
+        utmContent: attr.utmContent || null,
+        utmTerm: attr.utmTerm || null,
+        fbclid: attr.fbclid || null,
+        fbp: attr.fbp || null,
+        fbc: attr.fbc || null,
+        gclid: attr.gclid || null,
+        ttclid: attr.ttclid || null,
+        ctwaClid: attr.ctwaClid || null,
+        adId: attr.adId || null,
+        adsetId: attr.adsetId || null,
+        campaignId: attr.campaignId || null,
+        creativeId: attr.creativeId || null,
+        formId: attr.formId || null,
+        deviceId: attr.deviceId || null,
+        visitorId: attr.deviceId || null,
+      },
+    }).catch(() => {});
+  }, [storeId, pageContext, productData?.id, productData?.name]);
 
   // Componente não renderiza nada no DOM visível
   return null;

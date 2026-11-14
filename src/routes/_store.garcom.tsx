@@ -98,7 +98,7 @@ function GarcomTerminalPage() {
  return (
  <div className="min-h-screen bg-background text-foreground pb-20">
  {/* Header Fixo Mobile-First */}
- <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-4 flex items-center justify-between">
+ <div className="sticky top-0 z-30 bg-background border-b border-border px-4 py-4 flex items-center justify-between">
  <div className="flex items-center gap-3">
  <div className="size-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
  <Utensils className="h-4 w-4" />
@@ -123,7 +123,7 @@ function GarcomTerminalPage() {
  )}
  </div>
 
- <div className="max-w-4xl mx-auto p-4 space-y-4">
+ <div className="max-w-4xl mx-auto px-0 py-4 sm:p-4 space-y-4">
  {!selectedTable ? (
  <div>
  <h2 className="font-bold text-sm text-muted-foreground uppercase tracking-wider mb-3">
@@ -133,7 +133,7 @@ function GarcomTerminalPage() {
  {isLoading ? (
  <div className="p-8 text-center text-muted-foreground text-sm">Carregando mapa de mesas...</div>
  ) : isError ? (
- <div className="bg-card border border-destructive/30 p-8 rounded-lg text-center space-y-3">
+ <div className="bg-card border border-destructive p-8 rounded-lg text-center space-y-3">
    <p className="text-sm font-semibold text-destructive">Falha ao carregar mesas do salão.</p>
    <Button type="button" size="sm" variant="outline" onClick={() => refetch()} className="h-11 sm:h-9 text-xs font-bold">
      Tentar Novamente

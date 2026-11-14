@@ -941,7 +941,7 @@ function SearchPage() {
 
  {/* Bottom Card Flutuante de Estabelecimento Selecionado */}
  {selectedStoreMarker && (
- <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 p-4 rounded-lg border border-border/60 bg-card/95 backdrop-blur-md flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
+ <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 p-4 rounded-lg border border-border bg-card flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
  <div className="flex items-center gap-3 min-w-0">
  <div className="size-10 rounded-lg overflow-hidden bg-muted shrink-0 flex items-center justify-center">
  {selectedStoreMarker.logo_url ? (
@@ -951,7 +951,7 @@ function SearchPage() {
  )}
  </div>
  <div className="min-w-0">
- <span className="text-xs font-bold text-foreground truncate block">{selectedStoreMarker.name}</span>
+ <span className="text-xs font-bold text-foreground line-clamp-2 text-anti-truncate block">{selectedStoreMarker.name}</span>
  <span className="text-2xs text-success font-semibold">• Aberto agora</span>
  </div>
  </div>

@@ -44,7 +44,7 @@ export function TicketPreview({
           )}
 
           {/* Floating Price Tag */}
-          <div className="absolute top-3 right-3 bg-background/95 backdrop-blur-md px-3 py-2 rounded-lg text-xs font-black tracking-tight text-foreground border border-border/40">
+          <div className="absolute top-3 right-3 bg-card px-3 py-2 rounded-lg text-xs font-black tracking-tight text-foreground border border-border">
             {priceCents === 0 ? "Cortesia / Grátis" : formatMoney(priceCents)}
           </div>
 

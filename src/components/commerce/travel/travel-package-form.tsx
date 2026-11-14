@@ -2359,9 +2359,9 @@ export function TravelPackageForm({
                       <button
                         type="button"
                         onClick={() => updatePaymentConditions("has_boleto_downpayment", !hasBoletoDownpayment)}
-                        className={`h-7 px-2.5 rounded-full text-2xs font-bold transition-colors cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                        className={`min-h-11 sm:h-9 px-3 rounded-full text-2xs font-bold transition-colors cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                           hasBoletoDownpayment
-                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                            ? "bg-warning text-warning-foreground border-warning"
                             : "bg-muted text-muted-foreground border-transparent"
                         }`}
                       >

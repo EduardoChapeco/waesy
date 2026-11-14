@@ -64,16 +64,16 @@ export function TourismHeroBanner({
           <Link
             to="/"
             aria-label="Voltar para o início"
-            className="md:hidden size-11 min-h-11 min-w-11 rounded-full bg-background/80 backdrop-blur-md border border-border/40 text-foreground flex items-center justify-center hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+            className="md:hidden size-11 min-h-11 min-w-11 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
           >
             <ArrowLeft size={20} weight="bold" />
           </Link>
 
-          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-background/80 backdrop-blur-md border border-border/40 text-xs font-semibold text-foreground">
+          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-card border border-border text-xs font-semibold text-foreground">
             <span className="font-black tracking-tight text-primary">Waesy</span>
             <span className="opacity-40">+</span>
             <span className="font-black tracking-tight text-foreground">Excelência Tour</span>
-            <span className="text-3xs px-2 py-1 rounded-full bg-primary/20 text-primary font-bold uppercase tracking-wider">
+            <span className="text-3xs px-2 py-1 rounded-full bg-muted border border-border text-foreground font-bold uppercase tracking-wider">
               GDS & Wooba
             </span>
           </div>
@@ -81,10 +81,10 @@ export function TourismHeroBanner({
 
         {/* Título e Subtítulo */}
         <div className="space-y-2">
-          <h1 className="text-xl sm:text-3xl font-black tracking-tight text-primary-foreground leading-tight">
+          <h1 className="text-xl sm:text-3xl font-black tracking-tight text-neutral-50 leading-tight">
             {heroTitle}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-200/90 leading-relaxed font-medium">
+          <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed font-medium">
             {heroSubtitle}
           </p>
         </div>
@@ -92,10 +92,10 @@ export function TourismHeroBanner({
 
       {/* ── Widget Flutuante de Pontos & Fidelidade (Estilo iFood / Decolar) ── */}
       <div className="relative z-10 px-4 sm:px-8 pb-6">
-        <div className="w-full max-w-xl mx-auto sm:mx-0 rounded-xl bg-card/95 backdrop-blur-md border border-border/80 p-4 sm:p-5  space-y-4">
-          <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3">
+        <div className="w-full max-w-xl mx-auto sm:mx-0 rounded-xl bg-card border border-border p-4 sm:p-5 space-y-4">
+          <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center shrink-0">
+              <div className="size-8 rounded-lg bg-muted border border-border text-destructive flex items-center justify-center shrink-0">
                 <Tag size={18} weight="bold" />
               </div>
               <div>

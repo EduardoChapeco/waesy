@@ -128,13 +128,13 @@ export function ProductFoodSpecsCard({
   return (
     <div className="rounded-lg border border-border/60 bg-card p-5 space-y-6">
       {/* Top Header */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3">
+      <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground line-clamp-1 truncate">Especificações de Varejo e Alimentação</h3>
-            <Badge variant="outline" className="text-2xs font-bold bg-primary/10 text-primary border-none">
-              Padrão Varejo Digital
+            <h3 className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate">Especificações de Varejo</h3>
+            <Badge variant="outline" className="text-2xs font-bold bg-muted text-foreground border-border">
+              Padrão Varejo
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground">

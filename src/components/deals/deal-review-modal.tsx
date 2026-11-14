@@ -56,10 +56,10 @@ export function DealReviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6 rounded-lg bg-background/95 backdrop-blur-xl border border-border/60 shadow-overlay">
+      <DialogContent className="max-w-md p-6 rounded-lg bg-background border border-border">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-2xs font-bold gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+            <Badge variant="outline" className="text-2xs font-bold gap-1 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950">
               <ShieldCheck className="size-3" />
               <span>Avaliação Verificada</span>
             </Badge>

@@ -96,8 +96,8 @@ export function PWAInstallBanner({
  {/* ── Banner Flutuante de Instalação (Thumb-Zone amigável) ── */}
  <div
  className={cn(
- "fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-40 sm:max-w-md",
- "p-4 rounded-lg bg-card/95 backdrop-blur-md border border-border/80 ",
+ "fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-30 sm:max-w-md",
+ "p-4 rounded-lg bg-card border border-border",
  "flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5 duration-300",
  className
  )}
@@ -149,22 +149,22 @@ export function PWAInstallBanner({
 
  {/* ── Modal Guia de Instalação no iOS Safari ── */}
  {showIOSGuide && (
- <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
- <div className="w-full max-w-sm rounded-lg bg-card border border-border/80 p-5 space-y-4  animate-in slide-in-from-bottom-6">
+ <div className="fixed inset-0 z-50 bg-overlay flex items-end sm:items-center justify-center p-4">
+ <div className="w-full max-w-sm rounded-lg bg-card border border-border p-5 space-y-4  animate-in slide-in-from-bottom-6">
  <div className="flex items-center justify-between">
  <h3 className="text-sm font-bold text-foreground">Como instalar no iPhone</h3>
  <button
  type="button"
  onClick={() => setShowIOSGuide(false)}
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="min-h-11 size-11 sm:size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-4" />
  </button>
  </div>
 
  <div className="space-y-3 text-xs text-muted-foreground">
- <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
- <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
+ <div className="flex items-start gap-3 p-3 rounded-lg bg-muted border border-border">
+ <div className="size-7 rounded-lg bg-card border border-border flex items-center justify-center text-foreground font-bold shrink-0">
  1
  </div>
  <div className="space-y-1 pt-1">

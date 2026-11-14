@@ -55,11 +55,11 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
   return (
     <div className="w-full min-h-dvh bg-background text-foreground flex flex-col selection:bg-primary/20 overflow-x-hidden">
       {/* ── 1. HEADER ENTERPRISE (APPLE HIG & STRIPE STANDARD - TOPO ÚNICO) ── */}
-      <header className="sticky top-0 z-50 w-full bg-background/85 backdrop-blur-xl border-b border-border/60">
+      <header className="sticky top-0 z-30 w-full bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Logo Waesy */}
           <Link to="/" className="flex items-center gap-3 group cursor-pointer shrink-0">
-            <div className="size-9 rounded-lg bg-foreground text-background flex items-center justify-center font-black text-lg shadow-xs group-hover:scale-105 transition-transform">
+            <div className="size-9 rounded-lg bg-foreground text-background flex items-center justify-center font-black text-lg group-hover:scale-105 transition-transform">
               W
             </div>
             <div className="flex flex-col">

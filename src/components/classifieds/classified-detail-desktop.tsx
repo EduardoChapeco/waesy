@@ -485,7 +485,7 @@ export function ClassifiedDetailDesktop({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-11 min-h-11 px-3 rounded-lg border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 text-xs font-bold flex items-center gap-2"
+              className="h-11 min-h-11 px-3 rounded-lg border-border bg-muted hover:bg-accent text-foreground text-xs font-bold flex items-center gap-2"
             >
               <Edit3 className="size-4" />
               <span>Editar Anúncio</span>

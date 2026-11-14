@@ -234,7 +234,7 @@ function AdminMasterCarnesPage() {
           >
             Comprovantes em análise
             {(overview?.pendingConciliationCount || 0) > 0 && (
-              <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-950 dark:bg-amber-950 dark:text-amber-200 border border-amber-200 dark:border-amber-800 font-bold text-xs">
+              <span className="px-2 py-1 rounded-full bg-muted text-warning-strong border border-border font-bold text-xs">
                 {overview?.pendingConciliationCount}
               </span>
             )}
@@ -245,7 +245,7 @@ function AdminMasterCarnesPage() {
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
               "px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
               activeFilter === "settled"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-background text-foreground border border-border"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

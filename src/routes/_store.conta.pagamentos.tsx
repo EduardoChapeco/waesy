@@ -326,7 +326,7 @@ function CustomerPaymentsCenterPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground w-full max-w-5xl mx-auto space-y-6 pb-24 px-4 sm:px-6 md:px-0">
+    <div className="min-h-screen bg-background text-foreground w-full max-w-5xl mx-auto space-y-6 pb-24 px-0 sm:px-6 md:px-0">
       {/* ── 1. Top Bar Canônica Apple HIG (Mobile Native Header vs Desktop System Header) ── */}
       <NativeMobileHeader
         title="Pagamentos"
@@ -1173,11 +1173,11 @@ function CustomerPaymentsCenterPage() {
             type="button"
             aria-label="Fechar diálogo de detalhes"
             onClick={() => setSelectedTx(null)}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm cursor-pointer focus-visible:outline-none"
+            className="fixed inset-0 bg-overlay cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
 
-          <div className="relative w-full max-w-md rounded-3xl bg-card border border-border/80 p-6 space-y-4 z-10  animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+          <div className="relative w-full max-w-md rounded-3xl bg-card border border-border p-6 space-y-4 z-10 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
                 <h3 className="text-base font-bold text-foreground">Detalhe da Transação</h3>
                 <p className="text-xs text-muted-foreground font-mono">{selectedTx.reference_token}</p>
@@ -1185,8 +1185,9 @@ function CustomerPaymentsCenterPage() {
 
               <button
                 type="button"
+                aria-label="Fechar"
                 onClick={() => setSelectedTx(null)}
-                className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
               >
                 <X className="size-5" />
               </button>

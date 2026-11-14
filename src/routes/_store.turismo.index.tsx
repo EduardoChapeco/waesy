@@ -253,14 +253,14 @@ function TourismMasterPage() {
   const { isCompact } = useWindowSizeClass();
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-24 px-3 sm:px-4">
+    <div className="w-full max-w-5xl mx-auto space-y-6 pb-24 px-0 sm:px-4">
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
       {!isCompact && (
-        <div className="flex items-center justify-between pt-2 pb-3 border-b border-border/40">
+        <div className="flex items-center justify-between pt-2 pb-3 border-b border-border">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <span>Turis</span>
-              <span className="text-3xs font-extrabold uppercase px-2 py-1 rounded-full bg-primary/10 text-primary font-mono">
+              <span className="text-3xs font-extrabold uppercase px-2 py-1 rounded-full bg-muted text-foreground border border-border font-mono">
                 Excelência Tour · Agência Parceira
               </span>
             </h1>

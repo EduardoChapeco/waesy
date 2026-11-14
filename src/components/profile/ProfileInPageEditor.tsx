@@ -967,7 +967,7 @@ export function ProfileInPageEditor({
                         variant="secondary"
                         onClick={() => showcaseBannerInputRef.current?.click()}
                         disabled={isUploadingMedia}
-                        className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md border border-border/80 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs h-11 min-h-11"
+                        className="bg-card hover:bg-muted text-foreground border border-border px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer h-11 min-h-11"
                       >
                         <Camera className="size-3.5" />
                         <span>Alterar Banner (16:9)</span>
@@ -979,7 +979,7 @@ export function ProfileInPageEditor({
                           variant="destructive"
                           onClick={() => setShowcaseBannerUrl("")}
                           disabled={isUploadingMedia}
-                          className="bg-destructive/85 hover:bg-destructive text-destructive-foreground px-3 py-2 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-11 min-h-11 min-w-11"
+                          className="bg-destructive hover:bg-destructive/90 text-destructive-foreground px-3 py-2 rounded-lg text-xs font-semibold flex items-center cursor-pointer h-11 min-h-11 min-w-11"
                           title="Remover Banner"
                         >
                           <Trash2 className="size-3.5" />

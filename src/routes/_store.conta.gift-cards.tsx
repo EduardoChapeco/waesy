@@ -92,7 +92,7 @@ function UserGiftCardsPage() {
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-28 px-4 sm:px-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-28 px-0 sm:px-6 animate-in fade-in duration-200">
       {/* ── 1. Header com Navegação Nativa Mobile e Desktop ── */}
       <NativeMobileHeader
         title="Vales-Presente"

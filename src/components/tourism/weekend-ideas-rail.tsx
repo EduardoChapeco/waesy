@@ -67,8 +67,8 @@ export function WeekendIdeasRail({
                 )}
 
                 {/* Badge "a partir de R$ ..." Estilo iFood / Decolar */}
-                <div className="absolute bottom-2 left-2 z-10 px-3 py-2 rounded-lg bg-indigo-950/90 backdrop-blur-md text-primary-foreground border border-white/10 ">
-                  <span className="text-3xs block opacity-80 leading-tight">a partir de</span>
+                <div className="absolute bottom-2 left-2 z-10 px-3 py-2 rounded-lg bg-neutral-900 text-neutral-50 border border-neutral-700">
+                  <span className="text-3xs block text-neutral-300 leading-tight">a partir de</span>
                   <span className="text-xs sm:text-sm font-black font-mono leading-tight">
                     {displayPrice}
                   </span>
@@ -76,7 +76,7 @@ export function WeekendIdeasRail({
 
                 {/* Badge de Nota / Avaliação */}
                 {ratingVal > 0 && (
-                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-foreground border border-border/40 text-3xs font-extrabold shadow-2xs">
+                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-md bg-card text-foreground border border-border text-3xs font-extrabold">
                     <Star size={12} weight="fill" className="text-warning-strong" />
                     <span>{ratingVal.toFixed(1)}</span>
                   </div>
@@ -88,7 +88,7 @@ export function WeekendIdeasRail({
                 <div className="space-y-1">
                   <div className="flex items-center gap-1 text-3xs font-bold text-muted-foreground uppercase tracking-wider">
                     <MapPin size={12} className="text-primary" />
-                    <span className="truncate">{locationText}</span>
+                    <span className="line-clamp-1">{locationText}</span>
                   </div>
 
                   <Link

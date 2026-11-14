@@ -85,7 +85,7 @@ export function UniversalKanbanCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1 space-y-1">
           {subtitle && (
-            <span className="text-3xs uppercase font-mono font-bold tracking-wider text-muted-foreground block truncate">
+            <span className="text-3xs uppercase font-mono font-bold tracking-wider text-muted-foreground block line-clamp-2 text-anti-truncate">
               {subtitle}
             </span>
           )}
@@ -99,12 +99,12 @@ export function UniversalKanbanCard({
           <Badge
             variant="secondary"
             className={cn(
-              "font-mono text-3xs font-bold shrink-0 gap-1 border-0",
+              "font-mono text-3xs font-bold shrink-0 gap-1 border",
               isOverdue
-                ? "bg-destructive/15 text-destructive"
+                ? "bg-red-100 text-red-900 border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800"
                 : isWarningSla
-                ? "bg-warning/15 text-warning"
-                : "bg-success/15 text-success"
+                ? "bg-muted text-warning-strong border-border"
+                : "bg-emerald-100 text-emerald-900 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800"
             )}
           >
             <Clock className="size-3" />
@@ -116,11 +116,11 @@ export function UniversalKanbanCard({
           <Badge
             variant="secondary"
             className={cn(
-              "text-3xs font-semibold shrink-0 uppercase tracking-wide border-0",
-              priority === "urgent" && "bg-destructive/15 text-destructive",
-              priority === "high" && "bg-warning/15 text-warning",
-              priority === "medium" && "bg-muted text-muted-foreground",
-              priority === "low" && "bg-muted text-muted-foreground"
+              "text-3xs font-semibold shrink-0 uppercase tracking-wide border",
+              priority === "urgent" && "bg-red-100 text-red-900 border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800",
+              priority === "high" && "bg-muted text-warning-strong border-border",
+              priority === "medium" && "bg-muted text-muted-foreground border-border",
+              priority === "low" && "bg-muted text-muted-foreground border-border"
             )}
           >
             {priority === "urgent"
@@ -139,12 +139,12 @@ export function UniversalKanbanCard({
       {variant === "kds" && metadata.items && Array.isArray(metadata.items) && (
         <div className="rounded-xl bg-muted p-3 space-y-1 text-2xs font-mono">
           {metadata.items.map((item: any, idx: number) => (
-            <div key={idx} className="flex items-center justify-between text-foreground">
-              <span className="truncate">
+            <div key={idx} className="flex items-start justify-between gap-2 text-foreground">
+              <span className="line-clamp-2 text-anti-truncate">
                 <strong className="text-primary">{item.quantity || 1}x</strong> {item.name}
               </span>
               {item.notes && (
-                <span className="text-3xs text-muted-foreground truncate max-w-24">
+                <span className="text-3xs text-muted-foreground line-clamp-2 text-anti-truncate max-w-24">
                   {item.notes}
                 </span>
               )}
@@ -165,7 +165,7 @@ export function UniversalKanbanCard({
             )}
           </div>
           {metadata.diagnostic && (
-            <p className="text-muted-foreground text-3xs line-clamp-1">
+            <p className="text-muted-foreground text-3xs line-clamp-2 text-anti-truncate">
               {metadata.diagnostic}
             </p>
           )}
@@ -175,7 +175,7 @@ export function UniversalKanbanCard({
       {/* RH Recrutamento: Vaga e Pontuação de Match */}
       {variant === "hr_talent" && (
         <div className="flex items-center justify-between text-2xs">
-          <span className="text-muted-foreground truncate">{metadata.role || "Candidato"}</span>
+          <span className="text-muted-foreground line-clamp-2 text-anti-truncate">{metadata.role || "Candidato"}</span>
           {metadata.matchScore !== undefined && (
             <span className="font-mono font-bold text-primary text-3xs">
               {metadata.matchScore}% match
@@ -197,7 +197,7 @@ export function UniversalKanbanCard({
       {/* Compras: Fornecedor e Pedido */}
       {variant === "purchasing" && metadata.supplier && (
         <div className="flex items-center justify-between text-2xs text-muted-foreground">
-          <span className="truncate">Fornecedor: <strong className="text-foreground">{metadata.supplier}</strong></span>
+          <span className="line-clamp-2 text-anti-truncate">Fornecedor: <strong className="text-foreground">{metadata.supplier}</strong></span>
           {metadata.poNumber && <span className="font-mono text-3xs">OC #{metadata.poNumber}</span>}
         </div>
       )}

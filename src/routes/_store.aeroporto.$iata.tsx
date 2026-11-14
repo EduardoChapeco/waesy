@@ -221,7 +221,7 @@ function AirportDetailPage() {
                   className={cn(
                     "rounded-lg p-4 flex items-start gap-3 border text-sm",
                     n.severity === "alert" && "bg-rose-50 dark:bg-rose-950 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200",
-                    n.severity === "warning" && "bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300",
+                    n.severity === "warning" && "bg-muted border-border text-warning-strong",
                     n.severity === "info" && "bg-muted border-border text-foreground",
                   )}
                 >

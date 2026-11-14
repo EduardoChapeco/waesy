@@ -4,6 +4,11 @@ import { decryptSecret } from "@/lib/crypto-vault.server";
 import { decryptConversationMessageForThread, encryptConversationMessageForThread, redactConversationPayload } from "@/lib/conversation-crypto.server";
 import { verifyWebhookSignature } from "@/lib/webhook-signature";
 import { dispatchWhatsAppInboundFlows, resolveWhatsAppIdentity } from "@/services/whatsapp-automation-runtime.server";
+import {
+  extractWhatsAppGroupContext,
+  extractWhatsAppReferralAndTokens,
+  correlateAndPersistInboundWhatsAppAttribution,
+} from "@/services/omnichannel-attribution.server";
 
 export type UnofficialWhatsAppProvider = "evolution_api" | "wasender_api";
 // Payloads de providers externos são deliberadamente dinâmicos; o boundary é validado pelos normalizadores.
@@ -18,7 +23,25 @@ export type ExtractedMedia = {
   thumbnailUrl: string | null;
   isAnimated?: boolean;
 };
-type NormalizedMessage = { externalMessageId: string; externalUserId: string | null; phone: string | null; text: string; messageType: string; occurredAt: string; fromMe: boolean; pushName: string | null; attachments: string[]; media: ExtractedMedia | null; payload: JsonObject };
+type NormalizedMessage = {
+  externalMessageId: string;
+  externalUserId: string | null;
+  phone: string | null;
+  text: string;
+  messageType: string;
+  occurredAt: string;
+  fromMe: boolean;
+  pushName: string | null;
+  isGroup: boolean;
+  groupJid: string | null;
+  groupSubject: string | null;
+  senderPhone: string | null;
+  senderJid: string | null;
+  referral: Record<string, any> | null;
+  attachments: string[];
+  media: ExtractedMedia | null;
+  payload: JsonObject;
+};
 type NormalizedDelivery = { externalMessageId: string; deliveryStatus: "sent" | "delivered" | "read" | "failed"; remoteJid: string | null; recipientPhone: string | null; occurredAt: string; errorCode: string | null; errorMessage: string | null; payload: JsonObject };
 
 function hashBody(rawBody: string) { return createHash("sha256").update(rawBody).digest("hex"); }
@@ -185,21 +208,68 @@ function normalizedMessage(provider: UnofficialWhatsAppProvider, body: JsonObjec
   const fromMe = key.fromMe === true || item.fromMe === true;
   const rawRemoteJid = firstString(key.remoteJid, item.remoteJid);
   if (rawRemoteJid === "status@broadcast") return null;
+
+  const groupCtx = extractWhatsAppGroupContext(body, item);
   const resolvedRemoteJid = rawRemoteJid && rawRemoteJid.endsWith("@lid")
     ? firstString(key.remoteJidAlt, key.senderPn, key.cleanedSenderPn, rawRemoteJid)
     : rawRemoteJid;
-  const externalUserId = fromMe
-    ? firstString(resolvedRemoteJid, key.remoteJidAlt, item.to, item.recipient, body.recipient)
-    : firstString(key.senderPn, resolvedRemoteJid, key.cleanedSenderPn, item.from, item.sender, body.sender);
-  const phone = fromMe
-    ? remotePhone(firstString(resolvedRemoteJid, key.remoteJidAlt, item.to, item.recipient, body.recipient))
-    : remotePhone(firstString(key.senderPn, key.cleanedSenderPn, resolvedRemoteJid, item.from, item.sender, body.sender));
+
+  const externalUserId = groupCtx.isGroup
+    ? groupCtx.groupJid
+    : fromMe
+      ? firstString(resolvedRemoteJid, key.remoteJidAlt, item.to, item.recipient, body.recipient)
+      : firstString(key.senderPn, resolvedRemoteJid, key.cleanedSenderPn, item.from, item.sender, body.sender);
+
+  const phone = groupCtx.isGroup
+    ? (fromMe ? null : groupCtx.senderPhone)
+    : fromMe
+      ? remotePhone(firstString(resolvedRemoteJid, key.remoteJidAlt, item.to, item.recipient, body.recipient))
+      : remotePhone(firstString(key.senderPn, key.cleanedSenderPn, resolvedRemoteJid, item.from, item.sender, body.sender));
+
   const occurredAt = eventTime(item.messageTimestamp || item.timestamp || body.timestamp);
   const rawPushName = fromMe ? null : firstString(item.pushName, item.senderName, body.pushName);
   const pushName = rawPushName && !isSyntheticSelfLabel(rawPushName) ? rawPushName : null;
+  const text = messageText(item);
+  const msgType = messageType(item);
   const media = extractMediaPayload(item);
   const attachments = media.url ? [media.url] : [];
-  return { externalMessageId, externalUserId, phone, text: messageText(item), messageType: messageType(item), occurredAt, fromMe, pushName, attachments, media: media.type ? media : null, payload: redactConversationPayload({ provider, event_type: eventName(body), external_message_id: externalMessageId, external_user_id: externalUserId, phone, message_type: messageType(item), from_me: fromMe, timestamp: item.messageTimestamp || item.timestamp || body.timestamp }) };
+  const referralAttr = !groupCtx.isGroup && !fromMe ? extractWhatsAppReferralAndTokens(item, text) : null;
+
+  return {
+    externalMessageId,
+    externalUserId,
+    phone,
+    text,
+    messageType: msgType,
+    occurredAt,
+    fromMe,
+    pushName,
+    isGroup: groupCtx.isGroup,
+    groupJid: groupCtx.groupJid,
+    groupSubject: groupCtx.groupSubject,
+    senderPhone: groupCtx.senderPhone,
+    senderJid: groupCtx.senderJid,
+    referral: referralAttr,
+    attachments,
+    media: media.type ? media : null,
+    payload: redactConversationPayload({
+      provider,
+      event_type: eventName(body),
+      external_message_id: externalMessageId,
+      external_user_id: externalUserId,
+      phone,
+      is_group: groupCtx.isGroup,
+      group_jid: groupCtx.groupJid,
+      group_subject: groupCtx.groupSubject,
+      sender_phone: groupCtx.senderPhone,
+      sender_name: pushName,
+      sender_jid: groupCtx.senderJid,
+      referral: referralAttr,
+      message_type: msgType,
+      from_me: fromMe,
+      timestamp: item.messageTimestamp || item.timestamp || body.timestamp,
+    }),
+  };
 }
 function normalizedDelivery(provider: UnofficialWhatsAppProvider, body: JsonObject, item: JsonObject): NormalizedDelivery | null {
   const key = messageKey(item);
@@ -248,48 +318,79 @@ export async function persistDelivery(db: ReturnType<typeof getServerClient>, pr
 }
 
 export async function persistInboundMessage(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, message: NormalizedMessage) {
-  if (!message.phone) return { ignored: "without_phone" };
+  const isGroupJid = Boolean(message.isGroup || (message.externalUserId && message.externalUserId.endsWith("@g.us")));
+  if (!message.phone && !isGroupJid) return { ignored: "without_phone" };
   const storeId = String(instance.store_id);
   const eventKey = stableKey(["message", provider, instance.id, message.externalMessageId]);
   const { data: event, error: eventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: message.fromMe ? "outbound_echo" : "message", external_message_id: message.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: message.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
   if (eventError) throw eventError;
   // A ausência de data significa duplicata sob concorrência, não um novo evento.
   if (!event || event.processing_status === "processed") return { duplicate: true };
+  const identityPhoneSeed = isGroupJid
+    ? (message.groupJid || message.externalUserId || message.phone || "0000000")
+    : (message.phone as string);
   const identity = await resolveWhatsAppIdentity({
     storeId,
     instanceId: instance.id,
     provider,
     externalUserId: message.externalUserId,
-    phone: message.phone,
-    displayName: message.fromMe ? null : message.pushName,
+    phone: identityPhoneSeed,
+    displayName: isGroupJid
+      ? (message.groupSubject || null)
+      : (message.fromMe ? null : message.pushName),
   });
   if (!identity) return { ignored: "identity_not_resolved" };
-  const cleanDigits = message.phone.replace(/\D/g, "");
+  const cleanDigits = (message.phone || message.groupJid || "").replace(/\D/g, "");
+  const threadLookupFilters = isGroupJid
+    ? [
+        `channel_identity_id.eq.${identity.id}`,
+        ...(message.groupJid ? [`entity_id.eq.${message.groupJid}`] : []),
+        ...(cleanDigits.length >= 8 ? [`entity_id.eq.+${cleanDigits}`, `entity_id.eq.${cleanDigits}`] : []),
+      ]
+    : [
+        `channel_identity_id.eq.${identity.id}`,
+        `entity_id.eq.${message.phone}`,
+        ...(cleanDigits.length >= 8 ? [`entity_id.eq.${cleanDigits}`, `primary_phone_e164.eq.${message.phone}`] : []),
+      ];
   let { data: thread } = await db
     .from("chat_threads")
-    .select("id, metadata, guest_name")
+    .select("id, metadata, guest_name, group_subject, primary_phone_e164, lead_id, attribution")
     .eq("store_id", storeId)
-    .or(`channel_identity_id.eq.${identity.id},entity_id.eq.${message.phone},entity_id.eq.${cleanDigits}`)
+    .or(threadLookupFilters.join(","))
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const syntheticEmail = `${cleanDigits}@whatsapp.waesy`;
-  const isGroupJid = Boolean(message.externalUserId && message.externalUserId.endsWith("@g.us"));
+  const syntheticEmail = isGroupJid
+    ? `${cleanDigits || "grupo"}@grupo.whatsapp.waesy`
+    : `${cleanDigits}@whatsapp.waesy`;
   if (!thread) {
-    const safeGuestName = (!message.fromMe && message.pushName && !isSyntheticSelfLabel(message.pushName))
-      ? message.pushName
-      : (identity.display_name && !isSyntheticSelfLabel(identity.display_name) ? identity.display_name : message.phone);
+    const safeGuestName = isGroupJid
+      ? (message.groupSubject || (identity.display_name && !isSyntheticSelfLabel(identity.display_name) && !identity.display_name.startsWith("+120363") ? identity.display_name : "Grupo WhatsApp"))
+      : (!message.fromMe && message.pushName && !isSyntheticSelfLabel(message.pushName))
+        ? message.pushName
+        : (identity.display_name && !isSyntheticSelfLabel(identity.display_name) ? identity.display_name : message.phone);
+    const initialParticipants =
+      isGroupJid && !message.fromMe && (message.senderPhone || message.pushName || message.senderJid)
+        ? [{
+            phone: message.senderPhone || null,
+            name: message.pushName || message.senderPhone || "Participante",
+            jid: message.senderJid || null,
+            last_seen_at: message.occurredAt,
+          }]
+        : [];
     const created = await db.from("chat_threads").insert({
       store_id: storeId,
       channel_instance_id: instance.id,
       channel_identity_id: identity.id,
       guest_name: safeGuestName,
       guest_email: syntheticEmail,
+      group_subject: isGroupJid ? (message.groupSubject || null) : null,
+      primary_phone_e164: isGroupJid ? null : message.phone,
       status: "open",
-      subject: `WhatsApp ${message.phone}`,
+      subject: isGroupJid ? (message.groupSubject ? `Grupo ${message.groupSubject}` : "Grupo WhatsApp") : `WhatsApp ${message.phone}`,
       context_type: "whatsapp",
       thread_type: isGroupJid ? "group" : "store",
-      entity_id: message.phone,
+      entity_id: isGroupJid ? (message.groupJid || message.externalUserId) : message.phone,
       department: "geral",
       priority: "normal",
       ...(message.fromMe ? {} : { last_customer_message_at: message.occurredAt }),
@@ -298,9 +399,12 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       metadata: {
         is_group: isGroupJid,
         remote_jid: message.externalUserId,
+        ...(isGroupJid && message.groupSubject ? { group_subject: message.groupSubject } : {}),
+        ...(initialParticipants.length > 0 ? { participants: initialParticipants } : {}),
+        ...(!isGroupJid && message.pushName ? { push_name: message.pushName } : {}),
         ...(message.fromMe ? { handoff_mode: "human_active", ai_auto_reply_enabled: false, last_device_reply_at: message.occurredAt } : {}),
       },
-    }).select("id, metadata, guest_name").single();
+    }).select("id, metadata, guest_name, group_subject, primary_phone_e164, lead_id, attribution").single();
     if (created.error) throw created.error;
     thread = created.data;
   }
@@ -483,65 +587,95 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       sent_at: message.occurredAt,
       attachments: message.attachments,
       delivered_at: message.occurredAt,
-      payload: { ...message.payload, media: message.media, origin: "whatsapp_customer", from_me: false },
+      payload: {
+        ...message.payload,
+        media: message.media,
+        origin: "whatsapp_customer",
+        from_me: false,
+        ...(isGroupJid ? {
+          sender_phone: message.senderPhone,
+          sender_name: message.pushName || message.senderPhone || "Participante",
+          sender_jid: message.senderJid,
+        } : {}),
+        ...(message.referral ? { referral: message.referral } : {}),
+      },
       created_at: message.occurredAt,
     }).select("id").single();
     if (insertError) throw insertError;
     insertedMessageId = createdMsg?.id || null;
   }
   if (insertedMessageId) {
-    const shouldHealGuestName = Boolean(
-      message.pushName &&
-      !isSyntheticSelfLabel(message.pushName) &&
-      (isSyntheticSelfLabel(thread.guest_name) || thread.guest_name === message.phone || thread.guest_name === cleanDigits)
+    const existingMeta = ((thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>);
+    const hasManualOverride = Boolean(existingMeta?.customer_profile_override?.full_name);
+
+    const shouldHealGuestName = !hasManualOverride && Boolean(
+      isGroupJid
+        ? (message.groupSubject && (!thread.guest_name || thread.guest_name === "Grupo WhatsApp" || /^\+?\d+$/.test(String(thread.guest_name).trim())))
+        : (message.pushName && !isSyntheticSelfLabel(message.pushName) && (isSyntheticSelfLabel(thread.guest_name) || thread.guest_name === message.phone || thread.guest_name === cleanDigits))
     );
+
+    let nextParticipants = Array.isArray(existingMeta.participants) ? [...existingMeta.participants] : [];
+    if (isGroupJid && (message.senderPhone || message.pushName || message.senderJid)) {
+      const pKey = message.senderPhone || message.senderJid || message.pushName;
+      nextParticipants = nextParticipants.filter((p: any) => (p?.phone || p?.jid || p?.name) !== pKey);
+      nextParticipants.unshift({
+        phone: message.senderPhone || null,
+        name: message.pushName || message.senderPhone || "Participante",
+        jid: message.senderJid || null,
+        last_seen_at: message.occurredAt,
+      });
+      nextParticipants = nextParticipants.slice(0, 40);
+    }
+
+    const updatedMeta = {
+      ...existingMeta,
+      is_group: isGroupJid,
+      ...(isGroupJid && message.groupSubject ? { group_subject: message.groupSubject } : {}),
+      ...(nextParticipants.length > 0 ? { participants: nextParticipants } : {}),
+      ...(!isGroupJid && message.pushName ? { push_name: message.pushName } : {}),
+    };
+
     await db.from("chat_threads").update({
-      ...(shouldHealGuestName ? { guest_name: message.pushName } : {}),
+      ...(shouldHealGuestName ? { guest_name: isGroupJid ? message.groupSubject : message.pushName } : {}),
+      ...(isGroupJid && message.groupSubject ? { group_subject: message.groupSubject } : {}),
+      ...(!isGroupJid && message.phone ? { primary_phone_e164: message.phone } : {}),
+      metadata: updatedMeta,
       last_customer_message_at: message.occurredAt,
       last_message_text: message.text.slice(0, 200),
       last_message_at: message.occurredAt,
       updated_at: new Date().toISOString(),
       status: "open",
     }).eq("id", thread.id).eq("store_id", storeId);
-    if (!isGroupJid && cleanDigits.length >= 8) {
+
+    if (!isGroupJid && message.phone && cleanDigits.length >= 8) {
       try {
-        const suffix = cleanDigits.slice(-8);
-        const { data: existingCrm } = await db
-          .from("customers_crm")
-          .select("id, full_name")
-          .eq("store_id", storeId)
-          .ilike("phone", `%${suffix}%`)
-          .limit(1)
-          .maybeSingle();
-        const contactName =
-          message.pushName && !isSyntheticSelfLabel(message.pushName)
-            ? message.pushName
-            : existingCrm?.full_name || message.phone;
-        if (existingCrm?.id) {
-          await db
-            .from("customers_crm")
-            .update({
-              ...(message.pushName && !isSyntheticSelfLabel(message.pushName) && (!existingCrm.full_name || isSyntheticSelfLabel(existingCrm.full_name))
-                ? { full_name: message.pushName }
-                : {}),
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existingCrm.id)
-            .eq("store_id", storeId);
-        } else {
-          await db.from("customers_crm").insert({
-            store_id: storeId,
-            full_name: contactName,
-            phone: message.phone,
-            source: "whatsapp",
-            updated_at: new Date().toISOString(),
-          });
-        }
+        await correlateAndPersistInboundWhatsAppAttribution(db, {
+          storeId,
+          threadId: thread.id,
+          identityId: identity.id,
+          phone: message.phone,
+          pushName: message.pushName,
+          text: message.text,
+          payload: message.payload,
+          existingThreadMeta: updatedMeta,
+          existingThreadAttribution: (thread as any).attribution || null,
+        });
       } catch {
-        /* noop */
+        // Fallback preservado caso correlação falhe
       }
     }
-    await dispatchWhatsAppInboundFlows({ storeId, instanceId: instance.id, provider, threadId: thread.id, identityId: identity.id, phone: message.phone, text: message.text, eventId: event?.id || null, payload: { ...message.payload, event_type: eventName(body) } });
+
+    await dispatchWhatsAppInboundFlows({
+      storeId,
+      instanceId: instance.id,
+      provider,
+      threadId: thread.id,
+      identityId: identity.id,
+      phone: message.phone || identityPhoneSeed,
+      text: message.text,
+      eventId: event?.id || null,
+      payload: { ...message.payload, event_type: eventName(body) },
+    });
   }
   if (event?.id) await db.from("whatsapp_provider_webhook_events").update({ processing_status: "processed", processed_at: new Date().toISOString(), error_message: null }).eq("id", event.id);
   return { threadId: thread.id, messageId: insertedMessageId };

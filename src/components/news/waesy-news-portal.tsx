@@ -366,7 +366,7 @@ export function WaesyNewsPortal({
   return (
     <div className="light h-dvh w-full overflow-y-auto overflow-x-hidden bg-background text-foreground selection:bg-foreground selection:text-background">
       {/* ── 1. HEADER EDITORIAL MINIMALISTA (Ícones 44px no Mobile sem comprimir a marca) ── */}
-      <header className="sticky top-0 z-30 border-b border-border/80 bg-background/95 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-border bg-background">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-2">
           <button
             type="button"
@@ -673,7 +673,7 @@ export function WaesyNewsPortal({
 
           {/* Barra Inferior Flutuante Discreta (z-30 < z-50 de Modais) */}
           <div className="fixed bottom-4 inset-x-0 z-30 flex justify-center px-4 pointer-events-none">
-            <div className="pointer-events-auto rounded-full border border-border bg-background/95 backdrop-blur-md px-3 py-1 flex items-center gap-2">
+            <div className="pointer-events-auto rounded-full border border-border bg-card px-3 py-1 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() =>
@@ -1365,7 +1365,7 @@ export function WaesyNewsPortal({
           role="dialog"
           aria-modal="true"
           aria-label="Enviar Pauta"
-          className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-stretch sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-50 bg-overlay flex items-stretch sm:items-center justify-center p-0 sm:p-4"
         >
           <div className="w-full h-dvh sm:h-auto sm:max-h-dvh sm:max-w-lg bg-background text-foreground sm:rounded-3xl border-0 sm:border sm:border-border flex flex-col overflow-hidden safe-top safe-bottom">
             <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-border shrink-0">

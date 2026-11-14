@@ -269,10 +269,10 @@ export function TravelPackageDetailView({
  return (
  <div className="w-full bg-background text-foreground flex flex-col min-h-dvh relative select-none">
  {/* ── 1. Barra Superior de Abas (Estilo App Nativo de Viagem) ── */}
- <header className="relative md:static z-20 bg-background/95 md:bg-card/40 backdrop-blur-xl md:backdrop-blur-none border-b border-border/70 md:rounded-lg shadow-2xs md:shadow-none mb-3">
+ <header className="relative md:static z-20 bg-background md:bg-card border-b border-border md:rounded-lg mb-3">
  <div className="flex items-center justify-between px-4 h-12 max-w-4xl mx-auto w-full">
- <div className="flex items-center gap-2 truncate">
- <span className="text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-full">
+ <div className="flex items-center gap-2 min-w-0">
+ <span className="text-xs font-bold uppercase tracking-wider bg-muted text-primary border border-border px-2 py-1 rounded-full shrink-0">
  Pacote Oficial
  </span>
  <span className="text-xs text-muted-foreground">•</span>
@@ -355,20 +355,20 @@ export function TravelPackageDetailView({
  {/* Hero Panorâmico com Gradiente Editorial */}
  <div className="relative w-full aspect-video min-h-64 sm:h-96 max-h-96 overflow-hidden sm:rounded-b-lg">
  <img src={heroImage} alt={productTitle} className="absolute inset-0 size-full object-cover" />
- <div className="absolute inset-0 bg-foreground/70" />
- <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-primary-foreground">
+ <div className="absolute inset-0 bg-neutral-950/75" />
+ <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-neutral-50">
  {(destination.country || destination.region || destination.state) && (
  <div className="flex items-center gap-2 mb-2">
  {destination.country && (
- <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary-foreground/20 backdrop-blur-md uppercase tracking-wider">
+ <span className="px-3 py-1 rounded-full text-xs font-bold bg-neutral-900 border border-neutral-700 text-neutral-50 uppercase tracking-wider">
  {destination.country}
  </span>
  )}
  {destination.country && (destination.region || destination.state) && (
- <span className="text-xs text-primary-foreground/80">•</span>
+ <span className="text-xs text-neutral-300">•</span>
  )}
  {(destination.region || destination.state) && (
- <span className="text-xs text-primary-foreground/90 font-medium">{destination.region || destination.state}</span>
+ <span className="text-xs text-neutral-200 font-medium">{destination.region || destination.state}</span>
  )}
  </div>
  )}
@@ -1357,7 +1357,7 @@ export function TravelPackageDetailView({
  </main>
 
  {/* ── 3. Barra Fixa Inferior de Conversão (Bottom Booking Bar Dinâmica & Bilateral) ── */}
- <footer className={cn("fixed bottom-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/80 p-3 sm:p-4 shadow-2xs pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-lg border-x")}>
+ <footer className={cn("fixed bottom-0 z-30 bg-background border-t border-border p-3 sm:p-4 pb-safe", isCompact ? "left-0 right-0" : "left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-lg border-x")}>
  <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
  <div className="flex flex-col">
  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

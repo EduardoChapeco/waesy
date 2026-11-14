@@ -739,12 +739,12 @@ export function MarketRadarPage() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="fixed inset-0 z-50 bg-overlay flex items-end sm:items-center justify-center p-0 sm:p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => setShowAddModal(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border-t sm:border border-border/60 rounded-t-lg sm:rounded-lg p-5 sm:p-6 max-w-md w-full max-h-screen overflow-y-auto no-scrollbar shadow-xs space-y-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="bg-card border-t sm:border border-border rounded-t-lg sm:rounded-lg p-5 sm:p-6 max-w-md w-full max-h-screen overflow-y-auto no-scrollbar space-y-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div>
               <h3 className="text-lg font-bold text-foreground tracking-tight">

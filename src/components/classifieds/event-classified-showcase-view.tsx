@@ -465,7 +465,7 @@ export function EventClassifiedShowcaseView({
                   {event.visibility === "unlisted" && (
                     <Badge
                       variant="outline"
-                      className="text-xs font-semibold px-3 py-1 rounded-md border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
+                      className="text-xs font-semibold px-3 py-1 rounded-md border-border bg-muted text-warning-strong"
                     >
                       Evento Exclusivo (Link Direto)
                     </Badge>

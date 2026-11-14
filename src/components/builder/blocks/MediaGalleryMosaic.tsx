@@ -105,14 +105,14 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none"
                   loading="lazy"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-background/90 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none flex flex-col justify-end p-4 border-t border-border/40 text-foreground">
+                <div className="absolute inset-x-0 bottom-0 bg-card opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none flex flex-col justify-end p-4 border-t border-border text-foreground">
                   {item.title && (
                     <span className="text-sm sm:text-base font-bold tracking-tight text-foreground">{item.title}</span>
                   )}
                   {item.caption && (
                     <span className="text-xs text-muted-foreground mt-1">{item.caption}</span>
                   )}
-                  <div className="absolute top-4 right-4 size-8 rounded-full bg-muted/80 backdrop-blur-md flex items-center justify-center text-foreground">
+                  <div className="absolute top-4 right-4 size-8 rounded-full bg-muted border border-border flex items-center justify-center text-foreground">
                     <ZoomIn className="size-4" />
                   </div>
                 </div>
@@ -136,14 +136,14 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
             type="button"
             onClick={() => setSelectedImage(null)}
             aria-label="Fechar visualização ampliada"
-            className="fixed inset-0 bg-background/90 backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="fixed inset-0 bg-overlay cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
 
           <button
             type="button"
             onClick={() => setSelectedImage(null)}
             aria-label="Fechar visualização ampliada"
-            className="absolute top-6 right-6 z-10 size-11 min-h-11 rounded-full bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="absolute top-6 right-6 z-10 size-11 min-h-11 rounded-full bg-card border border-border hover:bg-muted text-foreground flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <X className="size-5" />
           </button>

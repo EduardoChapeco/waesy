@@ -312,9 +312,9 @@ export function LeadCard({
       {/* Corpo Estruturado: Roteiro, Datas e Valores Financeiros */}
       <div className="space-y-2">
         <div className="space-y-1 text-xs">
-          <div className="flex items-center gap-2 text-foreground font-semibold">
-            <MapPin className="size-3.5 text-primary shrink-0" />
-            <span className="truncate">{lead.destination || 'Destino a definir'}</span>
+          <div className="flex items-start gap-2 text-foreground font-semibold">
+            <MapPin className="size-3.5 text-primary shrink-0 mt-1" />
+            <span className="line-clamp-2 text-anti-truncate">{lead.destination || 'Destino a definir'}</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-2xs text-muted-foreground">
@@ -359,14 +359,14 @@ export function LeadCard({
       )}
 
       {/* Rodapé Operacional: Status + Categoria + SLA + Avanço de Etapa */}
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40 text-2xs">
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border text-2xs">
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <span className="inline-flex items-center gap-2 text-2xs text-muted-foreground font-medium">
             <span className={cn('size-2 rounded-full shrink-0', temperatureMeta.dotColor)} />
             <span>{temperatureMeta.label}</span>
           </span>
           <span className="text-2xs text-muted-foreground">·</span>
-          <span className="text-2xs text-muted-foreground truncate max-w-28 font-medium">
+          <span className="text-2xs text-muted-foreground line-clamp-2 text-anti-truncate font-medium">
             {categoryLabel}
           </span>
           <span className="text-2xs text-muted-foreground">·</span>

@@ -933,18 +933,19 @@ function WorkspaceNoticiasIndexPage() {
           role="dialog"
           aria-modal="true"
           aria-label="Agendar Publicação no Instagram"
-          className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4"
         >
-          <div className="w-full max-w-lg bg-background text-foreground rounded-3xl border border-border p-6 space-y-5 ">
-            <div className="flex items-center justify-between border-b border-border/60 pb-3">
+          <div className="w-full max-w-lg bg-card text-foreground rounded-3xl border border-border p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <Instagram className="size-5 text-primary" />
                 <h3 className="text-base font-bold text-foreground">Agendar no Instagram</h3>
               </div>
               <button
                 type="button"
+                aria-label="Fechar"
                 onClick={() => setIsScheduleModalOpen(false)}
-                className="size-11 min-h-11 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-11 min-h-11 rounded-full border border-border bg-muted hover:bg-accent flex items-center justify-center text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
                 <X className="size-4" />
               </button>

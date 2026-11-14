@@ -103,11 +103,11 @@ export function PromotionalFlyersRail({
                   {/* Ribbon Superior de Destaque */}
                   <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
                     {isRetro ? (
-                      <span className="px-2 py-1 rounded bg-red-600 text-warning-strong font-black text-xs uppercase tracking-tighter">
+                      <span className="px-2 py-1 rounded bg-red-700 text-red-50 font-black text-xs uppercase tracking-tighter">
                         {flyer.badge_text || "OFERTAÇO"}
                       </span>
                     ) : (
-                      <span className="px-2 py-1 rounded-md bg-background/90 backdrop-blur-md font-bold text-xs text-foreground shadow-xs">
+                      <span className="px-2 py-1 rounded-md bg-card border border-border font-bold text-xs text-foreground">
                         {flyer.badge_text || "Encarte"}
                       </span>
                     )}
@@ -116,10 +116,10 @@ export function PromotionalFlyersRail({
                     {flyer.time_left_display && (
                       <span
                         className={cn(
-                          "px-2 py-1 rounded text-xs font-bold flex items-center gap-1 backdrop-blur-md shadow-xs",
+                          "px-2 py-1 rounded text-xs font-bold flex items-center gap-1",
                           isRetro
-                            ? "bg-warning text-red-950 font-black border border-warning"
-                            : "bg-background/80 text-foreground border border-border/60"
+                            ? "bg-warning text-warning-foreground font-black border border-warning"
+                            : "bg-card text-foreground border border-border"
                         )}
                       >
                         <Clock className="size-2.5" />
@@ -130,7 +130,7 @@ export function PromotionalFlyersRail({
 
                   {/* Tag Flutuante Central de Ofertas Interativas */}
                   {hotspotsCount > 0 && (
-                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-md border border-border/60 text-foreground text-xs font-bold">
+                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2 px-2 py-1 rounded-lg bg-card border border-border text-foreground text-xs font-bold">
                       <div className="size-2 rounded-full bg-emerald-400 animate-ping motion-reduce:animate-none" />
                       <span>{hotspotsCount} {hotspotsCount === 1 ? "oferta interativa" : "ofertas interativas"}</span>
                     </div>

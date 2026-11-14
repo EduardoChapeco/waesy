@@ -123,11 +123,11 @@ function ColaboradorPortalPage() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground pb-20">
-      {/* Header Estilo Apple HIG com Blur e Elevação */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 sm:px-6 py-3 sm:py-4">
+      {/* Header Fosco Matte */}
+      <div className="sticky top-0 z-30 bg-background border-b border-border px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+            <div className="h-10 w-10 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">
               {initials}
             </div>
             <div>
@@ -137,7 +137,7 @@ function ColaboradorPortalPage() {
           </div>
 
           {/* Navegação por Abas com Touch Targets de 44px */}
-          <div className="flex gap-1 bg-muted/60 p-1 rounded-lg border border-border w-full sm:w-auto overflow-x-auto scroll-area-carousel no-scrollbar">
+          <div className="flex gap-1 bg-muted p-1 rounded-lg border border-border w-full sm:w-auto overflow-x-auto scroll-area-carousel no-scrollbar">
             <button
               onClick={() => setActiveTab("ponto")}
               className={`min-h-11 px-4 rounded-lg text-xs font-semibold transition-colors duration-200 shrink-0 focus-visible:ring-2 focus-visible:ring-primary ${
@@ -189,8 +189,8 @@ function ColaboradorPortalPage() {
  {activeTab === "ponto" && (
  <div className="space-y-6">
  {/* Relógio Digital Flutuante */}
- <div className="bg-card/70 backdrop-blur-xl border border-border rounded-lg p-8 text-center  relative overflow-hidden">
- <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+ <div className="bg-card border border-border rounded-lg p-8 text-center relative overflow-hidden">
+ <div className="absolute top-4 right-4 flex items-center gap-2 text-xs text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-3 py-1 rounded-full border border-emerald-300 dark:border-emerald-800">
  <MapPin className="h-3.5 w-3.5" /> GPS Ativo
  </div>
 

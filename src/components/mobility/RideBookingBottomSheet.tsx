@@ -99,7 +99,7 @@ export function RideBookingBottomSheet({
   return (
     <div
       className={cn(
-        "absolute z-30 bottom-0 left-0 right-0 bg-card/95 backdrop-blur-2xl border-t border-border/80 shadow-overlay transition-colors duration-300 rounded-t-3xl overflow-hidden flex flex-col",
+        "absolute z-30 bottom-0 left-0 right-0 bg-card border-t border-border transition-colors duration-300 rounded-t-3xl overflow-hidden flex flex-col",
         currentSnap === "compact" && "h-36 sm:h-40",
         currentSnap === "medium" && "h-vh-54 sm:h-120",
         currentSnap === "expanded" && "h-vh-88 sm:h-155",

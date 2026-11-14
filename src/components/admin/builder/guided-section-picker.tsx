@@ -45,16 +45,16 @@ export function GuidedSectionPicker({
     <div className="fixed inset-0 z-50 flex items-stretch select-none animate-in fade-in duration-200">
       {/* Backdrop transparente / suave */}
       <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
-        className="fixed inset-0 bg-foreground/40 backdrop-blur-xs transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="fixed inset-0 bg-overlay transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={onClose}
       />
 
-      {/* Painel Lateral Deslizante (Wix Studio / Framer Add Elements Panel) */}
+      {/* Painel Lateral Deslizante */}
        <div className="relative z-50 w-full max-w-xl bg-card border-r border-border flex flex-col h-full overflow-hidden animate-in slide-in-from-left duration-300">
         {/* Cabeçalho do Drawer */}
-        <div className="p-4 sm:p-5 border-b border-border/70 flex items-center justify-between bg-muted/20">
+        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-muted">
           <div className="flex items-center gap-3">
-            <div className="size-10 sm:size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
+            <div className="size-10 sm:size-9 rounded-lg bg-background text-primary flex items-center justify-center border border-border shrink-0">
               <LayoutTemplate className="size-5" />
             </div>
             <div>

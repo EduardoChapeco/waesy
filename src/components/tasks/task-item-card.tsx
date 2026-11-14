@@ -1,7 +1,12 @@
 import React from "react";
-import { Check, Star, Calendar, CheckSquare, MessageSquare, Tag } from "lucide-react";
+import { Check, Star, Calendar, CheckSquare, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import {
+  CustomerIdentityTagPill,
+  buildEntityTraceHash,
+  SAC_FUNCTION_ROLES,
+} from "@/lib/entity-trace-hash";
 import type { WorkspaceTask, TaskPriority } from "./task-types";
 
 interface TaskItemCardProps {
@@ -88,20 +93,73 @@ export function TaskItemCard({
 
         {/* Título e Metadados */}
         <div className="space-y-1 min-w-0 flex-1">
-          <p
-            className={cn(
-              "text-xs sm:text-sm font-semibold text-foreground tracking-tight line-clamp-2 text-anti-truncate",
-              isDone && "line-through text-muted-foreground"
+          <div className="flex items-center gap-1 flex-wrap">
+            {task.task_code && (
+              <span className="px-2 py-1 rounded bg-muted text-muted-foreground font-mono text-xs font-semibold shrink-0">
+                #{task.task_code}
+              </span>
             )}
-          >
-            {task.title}
-          </p>
+            <p
+              className={cn(
+                "text-xs sm:text-sm font-semibold text-foreground tracking-tight line-clamp-2 text-anti-truncate",
+                isDone && "line-through text-muted-foreground"
+              )}
+            >
+              {task.title}
+            </p>
+          </div>
+
+          {/* Vínculo Visual de Cliente / Viagem / Pedido com Foto/Inicial e Hash */}
+          {(() => {
+            const cf = (task.custom_fields || {}) as Record<string, any>;
+            const custName = cf.customer_name || (task.context_label ? String(task.context_label).split("·")[0]?.trim() : null);
+            const traceHash =
+              cf.trace_hash ||
+              cf.customer_trace_hash ||
+              (task.context_id ? buildEntityTraceHash(task.context_type as any, task.context_id) : null);
+            const sectorRole = SAC_FUNCTION_ROLES.find((r) => r.key === cf.assigned_sector);
+
+            if (!custName && !traceHash && (!task.tags || task.tags.length === 0)) return null;
+
+            return (
+              <div className="flex flex-wrap items-center gap-1 pt-1">
+                {(custName || traceHash) && (
+                  <CustomerIdentityTagPill
+                    name={custName || "Vínculo Operacional"}
+                    avatarUrl={cf.customer_avatar_url || null}
+                    traceHash={traceHash}
+                    subtitle={cf.entity_code || (cf.pnr_locator ? `PNR ${cf.pnr_locator}` : null)}
+                    roleLabel={sectorRole?.shortLabel || null}
+                  />
+                )}
+                {task.assigned_to_name && (
+                  <CustomerIdentityTagPill
+                    name={task.assigned_to_name}
+                    avatarUrl={cf.assigned_to_avatar_url || null}
+                    roleLabel="Responsável"
+                  />
+                )}
+                {Array.isArray(task.tags) &&
+                  task.tags
+                    .filter((tg) => !traceHash || !traceHash.includes(tg))
+                    .slice(0, 3)
+                    .map((tg) => (
+                      <span
+                        key={tg}
+                        className="px-2 py-1 rounded-md border border-border/60 bg-muted/40 text-muted-foreground font-mono text-xs"
+                      >
+                        {tg}
+                      </span>
+                    ))}
+              </div>
+            );
+          })()}
 
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-mono">
             {/* Prioridade */}
             <Badge
               variant="secondary"
-              className={cn("text-xs px-2 py-1", priorityInfo.className)}
+              className={cn("text-xs px-2 py-1 rounded-md", priorityInfo.className)}
             >
               {priorityInfo.label}
             </Badge>
@@ -137,10 +195,13 @@ export function TaskItemCard({
 
             {/* Contexto se não for geral */}
             {task.context_type !== "general" && (
-              <span className="px-2 py-0 rounded bg-muted/60 text-xs text-foreground/80">
-                {task.context_type === "order" && `Pedido #${task.context_id?.slice(0, 6)}`}
-                {task.context_type === "group_tour" && `Excursão #${task.context_id?.slice(0, 6)}`}
-                {task.context_type === "lead" && `Lead #${task.context_id?.slice(0, 6)}`}
+              <span className="px-2 py-1 rounded-md bg-muted/60 text-xs text-foreground/80">
+                {task.context_type === "order" && `Pedido #${task.context_id?.slice(0, 6) || "PED"}`}
+                {task.context_type === "group_tour" && `Viagem #${task.context_id?.slice(0, 6) || "TRP"}`}
+                {task.context_type === "lead" && `Oportunidade #${task.context_id?.slice(0, 6) || "OPR"}`}
+                {task.context_type === "customer" && `Cliente #${task.context_id?.slice(0, 6) || "CLI"}`}
+                {task.context_type === "contract" && `Contrato #${task.context_id?.slice(0, 6) || "CTR"}`}
+                {task.context_type === "service" && `Agendamento #${task.context_id?.slice(0, 6) || "AGD"}`}
                 {task.context_type === "table" && `Mesa ${task.context_id}`}
               </span>
             )}

@@ -2074,8 +2074,10 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           }
           return null;
         };
-        const cleanName =
+        let cleanName =
           safeCandidate(
+            chat.subject,
+            chat.groupMetadata?.subject,
             chat.name,
             contactInfo?.pushName,
             chat.pushName,
@@ -2083,6 +2085,34 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
             chat.contact?.name,
             isLastFromMe ? null : chat.lastMessage?.pushName,
           ) || (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : phone);
+        let groupParticipants: Array<{ phone: string | null; name: string; jid: string | null }> = [];
+        if (isGroup && (cleanName.startsWith("Grupo WhatsApp") || /^\+?\d+$/.test(cleanName))) {
+          try {
+            const gRes = await fetch(`${baseUrl}/group/findGroupInfos/${encodeURIComponent(externalName)}?groupJid=${encodeURIComponent(remoteJid)}`, {
+              method: "GET",
+              headers: { apikey: apiKey },
+              signal: AbortSignal.timeout(3000),
+            });
+            if (gRes.ok) {
+              const gJson = (await gRes.json().catch(() => ({}))) as Record<string, any>;
+              const subject = safeCandidate(gJson.subject, gJson.groupName, gJson.name);
+              if (subject) cleanName = subject;
+              if (Array.isArray(gJson.participants)) {
+                groupParticipants = gJson.participants.slice(0, 40).map((p: any) => {
+                  const pJid = String(p?.id || p?.jid || "");
+                  const pDigits = pJid.includes("@lid") ? "" : pJid.replace(/@.*$/, "").replace(/\D/g, "");
+                  return {
+                    phone: pDigits.length >= 8 ? `+${pDigits}` : null,
+                    name: String(p?.name || p?.pushName || (pDigits ? `+${pDigits}` : "Participante")),
+                    jid: pJid || null,
+                  };
+                });
+              }
+            }
+          } catch {
+            // Best-effort group info lookup
+          }
+        }
         let avatarUrl =
           contactInfo?.profilePicUrl ||
           chat.profilePicUrl ||
@@ -2152,7 +2182,8 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           avatar_url: avatarUrl || existingMeta.avatar_url || null,
           whatsapp_jid: remoteJid,
           ...(remoteJidAlt ? { whatsapp_jid_alt: remoteJidAlt } : {}),
-          push_name: cleanName,
+          ...(isGroup ? { group_subject: cleanName } : { push_name: cleanName }),
+          ...(isGroup && groupParticipants.length > 0 ? { participants: groupParticipants } : {}),
         };
 
         if (foundThread) {
@@ -2162,6 +2193,8 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
             .from("chat_threads")
             .update({
               guest_name: preservedName,
+              ...(isGroup ? { group_subject: preservedName } : {}),
+              ...(!isGroup && !isChannel ? { primary_phone_e164: phone } : {}),
               thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
               metadata: enrichedMeta,
               last_message_text: text.slice(0, 200),
@@ -2170,7 +2203,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
             })
             .eq("id", thread.id);
         } else {
-          const syntheticEmail = `${digits}@whatsapp.waesy`;
+          const syntheticEmail = isGroup ? `${digits}@grupo.whatsapp.waesy` : `${digits}@whatsapp.waesy`;
           const { data: newThread, error: newThErr } = await db
             .from("chat_threads")
             .insert({
@@ -2179,10 +2212,12 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
               channel_identity_id: identityRecord.id,
               guest_name: cleanName,
               guest_email: syntheticEmail,
+              group_subject: isGroup ? cleanName : null,
+              primary_phone_e164: isGroup || isChannel ? null : phone,
               status: "open",
               subject: isGroup ? `Grupo: ${cleanName}` : isChannel ? `Canal: ${cleanName}` : `WhatsApp ${phone}`,
               context_type: "whatsapp",
-              entity_id: phone,
+              entity_id: isGroup || isChannel ? remoteJid : phone,
               department: "geral",
               priority: "normal",
               thread_type: isGroup ? "group" : isChannel ? "channel" : "store",

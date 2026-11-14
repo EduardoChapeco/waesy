@@ -1129,8 +1129,14 @@ function WorkspaceComercialPage() {
                           const dynamicTags = buildStructuredCustomFieldsSummaryRows(lead.custom_fields)
                             .slice(0, 2)
                             .map((row) => `${row.label}: ${row.value}`);
+                          const cf = (lead.custom_fields || {}) as Record<string, any>;
+                          const adLabel =
+                            cf.utm_campaign ||
+                            cf.campaign ||
+                            (cf.ctwa_clid ? "Anúncio CTWA" : cf.gclid ? "Google Ads" : cf.meta_ad_id || cf.ad_id ? `Anúncio #${cf.meta_ad_id || cf.ad_id}` : cf.fbclid ? "Meta Ads" : null);
+                          const attrTags = adLabel ? [`Origem: ${adLabel}`] : [];
                           const baseTags = Array.isArray(lead.tags) ? lead.tags : [];
-                          return [...baseTags, ...dynamicTags].slice(0, 4);
+                          return [...attrTags, ...baseTags, ...dynamicTags].slice(0, 4);
                         })()}
                         onSelect={() => openLeadDetails(lead)}
                         onAdvance={

@@ -136,9 +136,9 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
                 </div>
               )}
 
-              {/* Card Flutuante de Vidro Fosco com Indicador Pulsante */}
+              {/* Card Flutuante Fosco com Indicador Pulsante */}
               {data.floatingStat && (
-                <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:min-w-60 bg-background/85 backdrop-blur-md border border-border/80 rounded-lg p-4">
+                <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:min-w-60 bg-card border border-border rounded-lg p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground block mb-1">

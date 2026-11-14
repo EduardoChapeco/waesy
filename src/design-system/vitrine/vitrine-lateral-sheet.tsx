@@ -256,7 +256,7 @@ export function VitrineLateralMenuSheet({
           if (e.key === "Enter" || e.key === " ") onClose();
         }}
         className={cn(
-          "fixed inset-0 z-40 bg-foreground/50 backdrop-blur-xs transition-opacity duration-300 md:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+          "fixed inset-0 z-40 bg-overlay transition-opacity duration-300 md:hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
         )}
       />
@@ -267,13 +267,13 @@ export function VitrineLateralMenuSheet({
         aria-modal="true"
         aria-label={greetingTitle}
         className={cn(
-          "fixed inset-y-0 left-0 lateral-sheet-width z-50 bg-background text-foreground border-r border-border/50 lateral-sheet-transition select-none flex flex-col shadow-overlay",
+          "fixed inset-y-0 left-0 lateral-sheet-width z-50 bg-background text-foreground border-r border-border lateral-sheet-transition select-none flex flex-col shadow-overlay",
           open ? "translate-x-0" : "-translate-x-full",
           className,
         )}
       >
         {/* ── Topo do Menu: Saudação + Alternador Grade/Lista + Botão Fechar ── */}
-        <header className="px-4 pt-safe-modal pb-3 border-b border-border/40 flex items-center justify-between gap-2 shrink-0 bg-background/95 backdrop-blur-xs">
+        <header className="px-4 pt-safe-modal pb-3 border-b border-border flex items-center justify-between gap-2 shrink-0 bg-background">
           <div className="min-w-0 flex-1">
             <h2 className="text-base sm:text-lg font-bold font-display text-foreground tracking-tight truncate leading-tight">
               {greetingTitle}

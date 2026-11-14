@@ -510,14 +510,14 @@ function StepByStepAuthPage() {
  <div className="fixed inset-0 size-full pointer-events-none z-0 bg-muted/10" />
  )}
 
- {/* Overlay com Blur Suave */}
- <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-1 pointer-events-none" />
+ {/* Overlay Sólido Discreto */}
+ <div className="fixed inset-0 bg-background/90 z-1 pointer-events-none" />
 
  {/* ── 2. Top Header Minimalista ── */}
  <header className="relative z-10 flex items-center justify-between w-full max-w-5xl mx-auto">
  <Link
  to="/"
- className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-card/80 backdrop-blur-xl border border-border/40 text-foreground hover:border-border transition-colors min-h-11"
+ className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-card border border-border text-foreground hover:border-foreground transition-colors min-h-11"
  >
  <span className="bg-primary text-primary-foreground font-black text-xs px-2 py-1 rounded-lg tracking-wider uppercase">
  {brand?.platform_name && brand.platform_name !== "Waesy" ? brand.platform_name : "Waesy"}
@@ -527,7 +527,7 @@ function StepByStepAuthPage() {
  <Link
  to="/"
  aria-label="Voltar ao início"
- className="size-11 rounded-lg bg-card/80 backdrop-blur-xl border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+ className="size-11 rounded-lg bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
  >
  <ArrowLeft className="size-5" />
  </Link>
@@ -535,7 +535,7 @@ function StepByStepAuthPage() {
 
  {/* ── 3. Card Centralizado: Experiência em Etapas (Step-by-Step) ── */}
  <div className="relative z-10 w-full max-w-md mx-auto my-auto py-6">
- <div className="bg-card/95 dark:bg-card/90 backdrop-blur-2xl border border-border/60 rounded-lg p-6 sm:p-8 shadow-xs text-foreground animate-in fade-in zoom-in-95 duration-300 motion-reduce:animate-none">
+ <div className="bg-card border border-border rounded-lg p-6 sm:p-8 shadow-overlay text-foreground animate-in fade-in zoom-in-95 duration-300 motion-reduce:animate-none">
  
  {/* Logo / Glifo Superior */}
  <div className="flex justify-center mb-4">
@@ -1121,21 +1121,21 @@ function StepByStepAuthPage() {
  {showPwaBanner && (
  <aside
  aria-label="Sugestão de Instalação do App"
- className="fixed bottom-4 right-4 z-40 max-w-xs w-full bg-card/95 backdrop-blur-xl border border-border/60 rounded-lg p-4 animate-in slide-in-from-bottom-4 duration-300 hidden sm:block"
+ className="fixed bottom-4 right-4 z-40 max-w-xs w-full bg-card border border-border shadow-overlay rounded-lg p-4 animate-in slide-in-from-bottom-4 duration-300 hidden sm:block"
  >
  <div className="flex items-start justify-between gap-2">
  <div className="flex items-center gap-3">
- <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-lg bg-muted text-primary flex items-center justify-center shrink-0">
  <Download className="size-4" />
  </div>
  <div className="min-w-0">
  <h4 className="text-xs font-bold text-foreground">Instalar Waesy App</h4>
- <p className="text-xs text-muted-foreground truncate">Rápido, offline e notificações</p>
+ <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate">Rápido, offline e notificações</p>
  </div>
  </div>
  <button
  onClick={() => setShowPwaBanner(false)}
- className="text-muted-foreground hover:text-foreground size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-muted-foreground hover:text-foreground size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Fechar"
  aria-label="Fechar"
  >

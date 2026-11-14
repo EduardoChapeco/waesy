@@ -3390,9 +3390,9 @@ export const OmniEditor: React.FC<OmniEditorProps> = ({
                   autosaveStatus === "saved"
                     ? "bg-success"
                     : autosaveStatus === "dirty"
-                      ? "bg-warning animate-pulse"
+                      ? "bg-warning animate-pulse motion-reduce:animate-none"
                       : autosaveStatus === "saving"
-                        ? "bg-primary animate-ping"
+                        ? "bg-primary animate-ping motion-reduce:animate-none"
                         : "bg-destructive"
                 }`}
               />
@@ -5170,7 +5170,7 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-20 rounded-lg border border-border/60 bg-muted/30 animate-pulse" />
+                <div key={i} className="h-20 rounded-lg border border-border bg-muted animate-pulse motion-reduce:animate-none" />
               ))}
             </div>
           ) : versions.length === 0 ? (

@@ -161,7 +161,7 @@ function CommunityAndPortalWhitelabelPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col selection:bg-primary/20 pb-24">
       {/* ─── Top Header Whitelabel Discreto ─────────────────────────────── */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/85 backdrop-blur-md px-4 py-2 sm:px-6">
+      <header className="sticky top-0 z-30 w-full border-b border-border bg-background px-4 py-2 sm:px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <Link

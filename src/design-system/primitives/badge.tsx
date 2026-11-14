@@ -10,7 +10,7 @@ export const dsBadgeVariants = cva(
         neutral: "bg-muted text-muted-foreground border border-border",
         primary: "bg-secondary text-foreground border border-border",
         success: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800",
-        warning: "bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-200 dark:border-amber-800",
+        warning: "bg-muted text-warning-strong border border-border",
         danger: "bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-200 border border-rose-200 dark:border-rose-800",
         info: "bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-200 border border-sky-200 dark:border-sky-800",
         ai: "bg-muted text-foreground border border-border",

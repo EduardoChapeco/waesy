@@ -831,7 +831,7 @@ function TourismDetailPage() {
       </div>
 
       {/* ── Sticky Bottom CTA Bar (Mobile Only) — Regra 12: Thumb Zone / 3 Toques ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden pb-safe bg-background/95 backdrop-blur-md border-t border-border/60 px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden pb-safe bg-background border-t border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <span className="text-xs text-muted-foreground font-semibold block leading-none">A partir de</span>

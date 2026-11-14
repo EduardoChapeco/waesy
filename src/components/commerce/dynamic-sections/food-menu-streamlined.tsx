@@ -127,7 +127,7 @@ export function FoodMenuStreamlinedSection({
  </div>
 
  {/* ── 2. Barra de Categorias Horizontal (Pills de Navegação) ── */}
- <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 px-0 border-b border-border/40 flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar ">
+ <div className="sticky top-0 z-10 bg-background py-2 px-0 border-b border-border flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar ">
  {displayCategories.map((cat) => {
  const isSelected = activeCategory === cat;
  return (
@@ -136,10 +136,10 @@ export function FoodMenuStreamlinedSection({
  type="button"
  onClick={() => setActiveCategory(cat)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer",
+ "px-4 py-2 rounded-full text-xs font-semibold transition-colors duration-200 shrink-0 cursor-pointer min-h-11",
  isSelected
- ? "bg-primary text-primary-foreground shadow-2xs"
- : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+ ? "bg-primary text-primary-foreground"
+ : "bg-muted text-muted-foreground hover:text-foreground"
  )}
  >
  {cat}

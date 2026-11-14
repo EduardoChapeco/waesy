@@ -147,7 +147,7 @@ export function SupermarketProductCard({
 
         {/* Validade / Estoque Real */}
         {product.promotionalRule?.ends_at ? (
-          <span className="text-3xs text-muted-foreground truncate">
+          <span className="text-3xs text-muted-foreground line-clamp-2 text-anti-truncate">
             Válido até {new Date(product.promotionalRule.ends_at).toLocaleDateString("pt-BR")}, sujeito a estoque.
           </span>
         ) : null}

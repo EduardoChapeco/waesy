@@ -1636,11 +1636,11 @@ export function TourismPipeCardDossier({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Identificação Principal & Título Editável */}
           <div className="flex items-center gap-4 min-w-0">
-            <div className="size-11 rounded-xl bg-muted border border-border/60 flex items-center justify-center shrink-0 font-bold text-foreground text-sm uppercase select-none">
+            <div className="size-11 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0 font-bold text-foreground text-sm uppercase select-none">
               {(formData.name || "LE").slice(0, 2)}
             </div>
             <div className="min-w-0 space-y-1">
-              <SheetTitle className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate">
+              <SheetTitle className="text-base sm:text-lg font-bold tracking-tight text-foreground line-clamp-2 text-anti-truncate">
                 {formData.name || "Oportunidade Comercial"}
               </SheetTitle>
               <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
@@ -2045,6 +2045,61 @@ export function TourismPipeCardDossier({
                           />
                         </div>
                       </div>
+
+                      {(() => {
+                        const cf = (lead?.custom_fields || {}) as Record<string, any>;
+                        const hasAttr = Boolean(
+                          cf.utm_source ||
+                            cf.utm_campaign ||
+                            cf.campaign ||
+                            cf.meta_ad_id ||
+                            cf.ad_id ||
+                            cf.meta_form_id ||
+                            cf.ctwa_clid ||
+                            cf.fbclid ||
+                            cf.gclid ||
+                            cf.fbp ||
+                            cf.lead_code,
+                        );
+                        if (!hasAttr) return null;
+                        return (
+                          <div className="p-3 rounded-lg border border-border/50 bg-background/60 space-y-1 text-2xs">
+                            <span className="font-bold uppercase tracking-wider text-primary block">
+                              Atribuição de Anúncio e Pixel
+                            </span>
+                            <div className="flex flex-wrap gap-2 text-muted-foreground">
+                              {(cf.utm_source || cf.platform) && (
+                                <span>
+                                  Fonte: <strong className="text-foreground">{cf.utm_source || cf.platform}</strong>
+                                </span>
+                              )}
+                              {(cf.utm_campaign || cf.campaign) && (
+                                <span>
+                                  Campanha: <strong className="text-foreground">{cf.utm_campaign || cf.campaign}</strong>
+                                </span>
+                              )}
+                              {(cf.meta_ad_id || cf.ad_id) && (
+                                <span className="font-mono">
+                                  Anúncio: <strong className="text-foreground">#{cf.meta_ad_id || cf.ad_id}</strong>
+                                </span>
+                              )}
+                              {cf.ad_headline && (
+                                <span>
+                                  Criativo: <strong className="text-foreground">{cf.ad_headline}</strong>
+                                </span>
+                              )}
+                              {cf.lead_code && (
+                                <span className="font-mono">
+                                  Ref: <strong className="text-foreground">#{cf.lead_code}</strong>
+                                </span>
+                              )}
+                              {cf.ctwa_clid && <span className="font-mono text-emerald-600">CTWA</span>}
+                              {(cf.fbclid || cf.fbc || cf.fbp) && <span className="font-mono text-primary">Meta Pixel</span>}
+                              {cf.gclid && <span className="font-mono text-sky-600">Google Ads</span>}
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Anotações da Abordagem */}
                       <div className="space-y-1">
@@ -2570,14 +2625,14 @@ export function TourismPipeCardDossier({
                       {infotravelCaptures.map((cap: any) => (
                         <div
                           key={`cap-${cap.id}`}
-                          className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex flex-col justify-between gap-3 text-xs"
+                          className="p-3 rounded-lg border border-border bg-card flex flex-col justify-between gap-3 text-xs"
                         >
                           <div className="space-y-1">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="font-bold text-foreground truncate">
+                              <span className="font-bold text-foreground line-clamp-2 text-anti-truncate">
                                 {cap.hotel_name || cap.destination || "Tarifa Operadora"}
                               </span>
-                              <Badge variant="outline" className="text-2xs uppercase">
+                              <Badge variant="outline" className="text-2xs uppercase shrink-0">
                                 {cap.source_provider || "InfoTravel"}
                               </Badge>
                             </div>
@@ -2605,7 +2660,7 @@ export function TourismPipeCardDossier({
                                 }),
                               );
                             }}
-                            className="h-11 min-h-11 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-11 min-h-11 text-xs font-semibold gap-2 border-border hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Zap className="size-3.5 text-primary" />
                             <span>Converter Captura em Proposta</span>
@@ -2626,15 +2681,15 @@ export function TourismPipeCardDossier({
                       {radarMatches.map((opp: any) => (
                         <div
                           key={`opp-${opp.id}`}
-                          className="p-3 rounded-lg border border-border/60 bg-muted/20 flex flex-col justify-between gap-3 text-xs"
+                          className="p-3 rounded-lg border border-border bg-muted flex flex-col justify-between gap-3 text-xs"
                         >
                           <div className="space-y-1">
-                            <span className="font-bold text-foreground truncate block">
+                            <span className="font-bold text-foreground line-clamp-2 text-anti-truncate block">
                               {opp.title || opp.destination || "Oportunidade do Radar"}
                             </span>
                             <div className="flex items-center gap-2 text-2xs font-mono text-muted-foreground pt-1">
                               <span>Tarifa Radar:</span>
-                              <strong className="text-emerald-600 font-mono">{formatMoney(opp.price_cents || 0)}</strong>
+                              <strong className="text-emerald-700 dark:text-emerald-400 font-mono">{formatMoney(opp.price_cents || 0)}</strong>
                               {opp.discount_pct ? (
                                 <Badge variant="secondary" className="text-2xs">-{opp.discount_pct}%</Badge>
                               ) : null}
@@ -2655,7 +2710,7 @@ export function TourismPipeCardDossier({
                                 }),
                               );
                             }}
-                            className="h-11 min-h-11 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-11 min-h-11 text-xs font-semibold gap-2 border-border hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <Plane className="size-3.5 text-primary" />
                             <span>Ofertar Pacote do Radar</span>
@@ -2678,14 +2733,14 @@ export function TourismPipeCardDossier({
                         return (
                           <div
                             key={`sim-${prop.id}`}
-                            className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col justify-between gap-3 text-xs"
+                            className="p-3 rounded-lg border border-border bg-muted flex flex-col justify-between gap-3 text-xs"
                           >
                             <div className="space-y-1">
-                              <span className="font-bold text-foreground truncate block">
+                              <span className="font-bold text-foreground line-clamp-2 text-anti-truncate block">
                                 {prop.title || prop.destination_city || "Pacote Turístico"}
                               </span>
                               {prop.client_name && (
-                                <span className="text-2xs text-muted-foreground block truncate">
+                                <span className="text-2xs text-muted-foreground block line-clamp-2 text-anti-truncate">
                                   Ref. Cliente: {prop.client_name} · Destino: {prop.destination_city || "Geral"}
                                 </span>
                               )}
@@ -3426,22 +3481,22 @@ export function TourismPipeCardDossier({
                     return (
                       <div
                         key={pKey}
-                        className="p-4 rounded-xl border border-border/50 bg-muted/20 space-y-3 text-xs"
+                        className="p-4 rounded-xl border border-border bg-muted space-y-3 text-xs"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border/40">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-border">
                           <div className="space-y-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-foreground text-sm truncate">
+                              <span className="font-bold text-foreground text-sm line-clamp-2 text-anti-truncate">
                                 {canonical.title}
                               </span>
                               <Badge
                                 variant="outline"
                                 className={
                                   isAccepted
-                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border-emerald-500/30 text-3xs gap-1"
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-bold border-emerald-300 dark:border-emerald-800 text-3xs gap-1"
                                     : isRevoked
-                                    ? "bg-destructive/10 text-destructive border-destructive/20 text-3xs"
-                                    : "bg-warning/10 text-warning border-warning/30 text-3xs"
+                                    ? "bg-destructive text-destructive-foreground border-destructive text-3xs"
+                                    : "bg-muted text-warning-strong border-border text-3xs"
                                 }
                               >
                                 {isAccepted ? (

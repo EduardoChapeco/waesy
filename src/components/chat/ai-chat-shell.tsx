@@ -720,7 +720,7 @@ export function AIChatShell({
         )}
       >
         {/* ── RÉGUA DE NAVEGAÇÃO CANÔNICA DO COPILOT ── */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-card/60 backdrop-blur-md gap-2 shrink-0 overflow-x-auto scroll-area-carousel no-scrollbar">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-card gap-2 shrink-0 overflow-x-auto scroll-area-carousel no-scrollbar">
           <div className="flex items-center gap-2 min-w-max">
             <Button
               type="button"
@@ -728,10 +728,10 @@ export function AIChatShell({
               size="sm"
               onClick={() => setViewMode("chat")}
               className={cn(
-                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 viewMode === "chat"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               <MessageSquare className="size-4" />
@@ -844,7 +844,7 @@ export function AIChatShell({
         ) : activeThread ? (
           <>
             {/* Cabeçalho da Conversa Ativa */}
-            <header className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-10 gap-2 shrink-0">
+            <header className="flex items-center justify-between px-3 py-2 border-b border-border bg-background sticky top-0 z-10 gap-2 shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 {/* Botão Voltar para Mobile */}
                 <Button

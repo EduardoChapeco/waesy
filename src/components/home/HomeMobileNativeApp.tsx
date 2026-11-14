@@ -468,7 +468,7 @@ export function HomeMobileNativeApp({
       {/* ── SUB-HEADER STICKY: DOCK HORIZONTAL DE CATEGORIAS AO ROLAR (Auto-hide ao rolar p/ baixo, revela ao subir) ── */}
       <div
         className={cn(
-          "sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40 transition-transform duration-300 w-full",
+          "sticky top-0 z-20 bg-background border-b border-border transition-transform duration-300 w-full",
           showStickyCategoryDock ? "block" : "hidden",
           isDockHiddenByScroll
             ? "-translate-y-full opacity-0 pointer-events-none"

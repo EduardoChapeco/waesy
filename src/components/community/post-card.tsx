@@ -620,7 +620,7 @@ export function PostCard(props: PostCardProps) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <span className="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 tracking-wider">
+            <span className="text-xs font-bold uppercase text-warning-strong tracking-wider">
               Classificado
             </span>
             <p className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate">
