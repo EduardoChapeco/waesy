@@ -81,7 +81,7 @@ export function ContractSignPad({
  ctx.lineWidth = 2.5;
  ctx.lineCap = 'round';
  ctx.lineJoin = 'round';
- ctx.strokeStyle = '#0f172a';
+ ctx.strokeStyle = getComputedStyle(canvas).getPropertyValue('--color-slate-900').trim() || 'black';
  ctx.lineTo(x, y);
  ctx.stroke();
  };

@@ -36,19 +36,22 @@ async function requirePlatformAdmin() {
     return { ...identity, role: "platform_admin" };
   }
 
-  const MASTER_EMAILS = [
-    "contato@usewaesy.com",
-    "admin@usewaesy.com",
-    "meuwaesy@gmail.com",
-    "meuwider@gmail.com",
-    "excelenciatour.smo@gmail.com",
-    "admin@jah.com",
-  ];
-
-  const { data: userData } = await db.auth.admin.getUserById(identity.id).catch(() => ({ data: { user: null } }));
+  const { isBootstrapPlatformAdminEmail } = await import("@/lib/identity.server");
+  const { data: userData, error: userFetchError } = await db.auth.admin.getUserById(identity.id);
+  if (userFetchError) {
+    console.warn("[waesy-cloud] Falha ao consultar e-mail do usuário na auth admin:", userFetchError.message);
+  }
   const email = userData?.user?.email?.toLowerCase();
 
-  if (email && MASTER_EMAILS.includes(email)) {
+  if (email && isBootstrapPlatformAdminEmail(email)) {
+    const { error: promotionError } = await db
+      .from("profiles")
+      .update({ role: "platform_admin" })
+      .eq("id", identity.id);
+    if (promotionError) {
+      console.error("[waesy-cloud] Falha ao persistir promoção para platform_admin:", promotionError);
+      throw new Error("Não foi possível confirmar a autorização administrativa.");
+    }
     return { ...identity, role: "platform_admin" };
   }
 

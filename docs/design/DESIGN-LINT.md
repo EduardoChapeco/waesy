@@ -1,4 +1,4 @@
-# DESIGN-LINT.md — Catálogo Normativo de Defeitos Visuais (DL-01 a DL-30)
+# DESIGN-LINT.md — Catálogo Normativo de Defeitos Visuais (DL-01 a DL-33)
 
 Este catálogo estabelece as regras determinísticas de detecção de defeitos visuais, severidades invioláveis, fundamentação teórica e algoritmos de auditoria mecânica.
 
@@ -203,3 +203,9 @@ Este catálogo estabelece as regras determinísticas de detecção de defeitos v
 - **Fundamentação:** Apple HIG / Material 3 Window Size Classes / Anti-Jank / Legibilidade Ergonômica.
 - **Regra:** Proibido colocar `grid` dentro de célula de outra `grid` sem `col-span-full`, e proibido forçar 3 ou mais colunas para cartões horizontais densos (logo + texto + metadados em linha) no desktop; cartões horizontais devem operar em `grid-cols-1 lg:grid-cols-2`, preservando largura mínima de 400px por cartão.
 - **Detecção:** Detecção de `grid` filho dentro de `grid` sem `col-span-full` ou uso de `grid-cols-3` / `grid-cols-4` em cartões de lista horizontal.
+
+### DL-33: Paleta Tailwind crua fora dos tokens semânticos de aviso
+- **Severidade:** P1
+- **Fundamentação:** W3C DTCG / Tokenização Estrita / Paridade Light & Dark Contrast (WCAG 2.2 AA).
+- **Regra:** Proibido utilizar classes Tailwind literais `amber-*`, `yellow-*` ou `lime-*` em superfícies e componentes; utilizar os tokens semânticos `--warning`, `--warning-foreground` e `--warning-strong` (`bg-warning`, `text-warning-strong`, `border-warning`).
+- **Detecção:** Regex `\b(?:bg|text|border(?:-[trblxy])?|ring|fill|stroke|from|to|via|divide|outline|decoration|accent)-(?:amber|yellow|lime)-\d{2,3}\b` em arquivos `.tsx`, `.jsx` e `.ts`.

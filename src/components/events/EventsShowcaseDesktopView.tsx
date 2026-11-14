@@ -314,7 +314,7 @@ export function EventsShowcaseDesktopView({
                 style={{
                   background: item.imageUrl
                     ? undefined
-                    : item.bgColor || "var(--neutral-900, #171717)",
+                    : item.bgColor || "var(--color-neutral-900)",
                 }}
               >
                 {item.imageUrl && (

@@ -48,6 +48,24 @@ function resolveMemoKey(rawCookie: string, host: string): string {
   }
 }
 
+export function isBootstrapPlatformAdminEmail(email?: string | null): boolean {
+  const normalizedEmail = (email || "").trim().toLowerCase();
+  if (!normalizedEmail) return false;
+  const allowlist = new Set([
+    "contato@usewaesy.com",
+    "admin@usewaesy.com",
+    "meuwaesy@gmail.com",
+    "meuwider@gmail.com",
+    "excelenciatour.smo@gmail.com",
+    "admin@jah.com",
+    ...(process.env.WAESY_MASTER_EMAILS || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  ]);
+  return allowlist.has(normalizedEmail);
+}
+
 /**
  * Resolve a identidade completa do usuário autenticado no contexto do servidor.
  * Retorna id: null se não autenticado. NUNCA simula usuário mock em produção.
@@ -311,7 +329,8 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
       userProfileRole === "superadmin" ||
       user?.app_metadata?.role === "platform_admin" ||
       user?.app_metadata?.role === "master" ||
-      Boolean(user?.app_metadata?.is_master);
+      Boolean(user?.app_metadata?.is_master) ||
+      isBootstrapPlatformAdminEmail(user?.email);
 
     // ── Passo 4: Resolver contexto ativo (Civil vs Creator vs Store) a partir do cookie capturado
     let activeContext = "civil";

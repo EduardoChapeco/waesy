@@ -36,6 +36,7 @@ import {
   type UnifiedBridgeCatalogContext,
 } from "@/lib/niches/unified-field-bridge";
 import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
+import { normalizeProposalNicheId } from "@/lib/tourism/proposal-theme-palettes";
 import { formatMoney } from "@/lib/money";
 import { formatPhone } from "@/lib/document-validator";
 import { cn } from "@/lib/utils";
@@ -266,29 +267,49 @@ function NovoOrcamentoTravelosPage({
    }
    if (Array.isArray(item.itinerary) && item.itinerary.length > 0) {
      setItinerary(
-       item.itinerary.map((d, idx) => ({
-         id: crypto.randomUUID(),
-         day_number: Number(d.day) || idx + 1,
-         title: d.title || `Dia ${idx + 1}`,
-         description: d.description || "",
-         included_meals: Array.isArray((d as any).meals)
-           ? (d as any).meals
-           : (d as any).meals
-             ? [String((d as any).meals)]
-             : [],
-       })),
+       item.itinerary.map((d: any, idx: number) => {
+         const singleImg = d.image_url || d.imageUrl || undefined;
+         const dayImages = Array.isArray(d.images) && d.images.length > 0
+           ? d.images.filter(Boolean)
+           : singleImg
+             ? [singleImg]
+             : [];
+         return {
+           id: crypto.randomUUID(),
+           day_number: Number(d.day) || idx + 1,
+           title: d.title || `Dia ${idx + 1}`,
+           description: d.description || "",
+           image_url: singleImg || dayImages[0],
+           images: dayImages,
+           included_meals: Array.isArray(d.meals)
+             ? d.meals
+             : d.meals
+               ? [String(d.meals)]
+               : [],
+         };
+       }),
      );
    }
    if (Array.isArray(item.lodgings) && item.lodgings.length > 0) {
      setHotels(
-       item.lodgings.map((h) => ({
-         id: crypto.randomUUID(),
-         hotel_name: h.hotelName || h.name || "Hospedagem",
-         destination: h.city || h.location || item.destination || "",
-         room_type: h.roomType || h.room_type || "Suíte Standard",
-         board_basis: h.boardBasis || h.meal_plan || "breakfast",
-         nights_count: 3,
-       })),
+       item.lodgings.map((h: any) => {
+         const hotelImg = h.image_url || h.featured_image_url || undefined;
+         const hotelImages = Array.isArray(h.images) && h.images.length > 0
+           ? h.images.filter(Boolean)
+           : hotelImg
+             ? [hotelImg]
+             : [];
+         return {
+           id: crypto.randomUUID(),
+           hotel_name: h.hotelName || h.name || "Hospedagem",
+           destination: h.city || h.location || item.destination || "",
+           room_type: h.roomType || h.room_type || "Suíte Standard",
+           board_basis: h.boardBasis || h.meal_plan || "breakfast",
+           nights_count: 3,
+           image_url: hotelImg || hotelImages[0],
+           images: hotelImages,
+         };
+       }),
      );
    }
    const primaryFlight = item.flights?.[0];
@@ -311,6 +332,7 @@ function NovoOrcamentoTravelosPage({
    const mergedEntriesMap = normalizeCustomFieldMap({
      ...Object.fromEntries(customFieldEntries.filter((e) => e.key).map((e) => [e.key, e.value])),
      ...item.rawAttributes,
+     ...(item.nicheId ? { proposal_niche: normalizeProposalNicheId(item.nicheId) } : {}),
      ...(item.boardingRequirements ? { boarding_requirements: item.boardingRequirements } : {}),
      ...(item.cancellationPolicy ? { cancellation_policy: item.cancellationPolicy } : {}),
      ...(item.transportType ? { transport_type: item.transportType } : {}),
@@ -559,6 +581,18 @@ function NovoOrcamentoTravelosPage({
  flights,
  hotels,
  itinerary,
+ rooms: [
+   {
+     id: "room-1",
+     roomNumber: 1,
+     roomType: roomDistribution || "Casal",
+     adults: proposalData.adultsCount,
+     children: proposalData.childrenCount,
+     childrenAges: [],
+     price_cents: totalPriceCents,
+     price_per_person_cents: Math.round(totalPriceCents / Math.max(1, totalPax)),
+   },
+ ],
  includes: includesText.split("\n").filter((l) => l.trim().length > 0),
  excludes: excludesText.split("\n").filter((l) => l.trim().length > 0),
  pricing: {
@@ -1294,8 +1328,32 @@ function NovoOrcamentoTravelosPage({
  <Label className="text-xs text-muted-foreground/75 font-bold">Foto de Destaque da Atração</Label>
  <ImageUpload
  value={day.image_url}
- onChange={(url) => setItinerary((prev) => prev.map((d) => (d.id === day.id ? { ...d, image_url: url } : d)))}
- onRemove={() => setItinerary((prev) => prev.map((d) => (d.id === day.id ? { ...d, image_url: "" } : d)))}
+ onChange={(url) =>
+   setItinerary((prev) =>
+     prev.map((d) =>
+       d.id === day.id
+         ? {
+             ...d,
+             image_url: url,
+             images: Array.from(new Set([url, ...(Array.isArray(d.images) ? d.images.filter(Boolean) : [])])),
+           }
+         : d,
+     ),
+   )
+ }
+ onRemove={() =>
+   setItinerary((prev) =>
+     prev.map((d) =>
+       d.id === day.id
+         ? {
+             ...d,
+             image_url: "",
+             images: Array.isArray(d.images) ? d.images.filter((img) => img !== day.image_url) : [],
+           }
+         : d,
+     ),
+   )
+ }
  bucket="cms-media"
  aspectPreset="widescreen"
  />

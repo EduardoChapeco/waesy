@@ -9,6 +9,8 @@ import {
   extractWhatsAppReferralAndTokens,
   correlateAndPersistInboundWhatsAppAttribution,
 } from "@/services/omnichannel-attribution.server";
+import { isBrokenOrMissingMediaUri } from "@/lib/whatsapp-media-utils";
+import { hydrateMediaFromEvolution } from "@/services/whatsapp-media.server";
 
 export type UnofficialWhatsAppProvider = "evolution_api" | "wasender_api";
 // Payloads de providers externos são deliberadamente dinâmicos; o boundary é validado pelos normalizadores.
@@ -51,7 +53,13 @@ function secretConfig(value: string | null): Record<string, unknown> { if (!valu
 function firstString(...values: unknown[]): string | null { return values.find((v): v is string => typeof v === "string" && v.trim().length > 0)?.trim() || null; }
 function eventTime(value: unknown, fallback = new Date().toISOString()): string { const number = Number(value); if (!Number.isFinite(number) || number <= 0) return fallback; return new Date(number < 2_000_000_000 ? number * 1000 : number).toISOString(); }
 function normalizedPhone(value: unknown): string | null { const digits = String(value || "").replace(/\D/g, ""); return digits.length >= 7 ? `+${digits}` : null; }
-function remotePhone(value: unknown): string | null { const text = firstString(value); return text ? normalizedPhone(text.replace(/@.*$/, "")) : null; }
+function remotePhone(value: unknown): string | null {
+  const text = firstString(value);
+  if (!text) return null;
+  if (text.includes("@lid") || text.includes("@g.us") || text.includes("@newsletter")) return null;
+  const digits = text.replace(/@.*$/, "").replace(/\D/g, "");
+  return digits.length >= 7 && digits.length <= 13 ? `+${digits}` : null;
+}
 function messageKey(item: JsonObject): JsonObject { return (item.key || item.message?.key || {}) as JsonObject; }
 export function unwrapBaileysMessage(raw: unknown): JsonObject {
   if (!raw || typeof raw !== "object") return {};
@@ -319,7 +327,12 @@ export async function persistDelivery(db: ReturnType<typeof getServerClient>, pr
 
 export async function persistInboundMessage(db: ReturnType<typeof getServerClient>, provider: UnofficialWhatsAppProvider, instance: JsonObject, body: JsonObject, message: NormalizedMessage) {
   const isGroupJid = Boolean(message.isGroup || (message.externalUserId && message.externalUserId.endsWith("@g.us")));
-  if (!message.phone && !isGroupJid) return { ignored: "without_phone" };
+  const isLidJid = Boolean(
+    !isGroupJid &&
+    message.externalUserId &&
+    (message.externalUserId.endsWith("@lid") || (!message.phone && message.externalUserId.replace(/\D/g, "").length >= 14)),
+  );
+  if (!message.phone && !isGroupJid && !isLidJid) return { ignored: "without_phone" };
   const storeId = String(instance.store_id);
   const eventKey = stableKey(["message", provider, instance.id, message.externalMessageId]);
   const { data: event, error: eventError } = await db.from("whatsapp_provider_webhook_events").upsert({ provider, instance_id: instance.id, store_id: storeId, event_key: eventKey, event_type: message.fromMe ? "outbound_echo" : "message", external_message_id: message.externalMessageId, payload_hash: hashBody(JSON.stringify(body)), payload: message.payload, signature_verified: true }, { onConflict: "provider,instance_id,event_key", ignoreDuplicates: true }).select("id, processing_status").maybeSingle();
@@ -328,7 +341,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
   if (!event || event.processing_status === "processed") return { duplicate: true };
   const identityPhoneSeed = isGroupJid
     ? (message.groupJid || message.externalUserId || message.phone || "0000000")
-    : (message.phone as string);
+    : (message.phone || message.externalUserId || "0000000");
   const identity = await resolveWhatsAppIdentity({
     storeId,
     instanceId: instance.id,
@@ -340,7 +353,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       : (message.fromMe ? null : message.pushName),
   });
   if (!identity) return { ignored: "identity_not_resolved" };
-  const cleanDigits = (message.phone || message.groupJid || "").replace(/\D/g, "");
+  const cleanDigits = (message.phone || message.groupJid || message.externalUserId || "").replace(/\D/g, "");
   const threadLookupFilters = isGroupJid
     ? [
         `channel_identity_id.eq.${identity.id}`,
@@ -349,8 +362,9 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       ]
     : [
         `channel_identity_id.eq.${identity.id}`,
-        `entity_id.eq.${message.phone}`,
-        ...(cleanDigits.length >= 8 ? [`entity_id.eq.${cleanDigits}`, `primary_phone_e164.eq.${message.phone}`] : []),
+        ...(message.phone ? [`entity_id.eq.${message.phone}`, `primary_phone_e164.eq.${message.phone}`] : []),
+        ...(message.externalUserId ? [`entity_id.eq.${message.externalUserId}`] : []),
+        ...(cleanDigits.length >= 8 ? [`entity_id.eq.${cleanDigits}`, `entity_id.eq.+${cleanDigits}`] : []),
       ];
   let { data: thread } = await db
     .from("chat_threads")
@@ -362,13 +376,19 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
     .maybeSingle();
   const syntheticEmail = isGroupJid
     ? `${cleanDigits || "grupo"}@grupo.whatsapp.waesy`
-    : `${cleanDigits}@whatsapp.waesy`;
+    : `${cleanDigits || "contato"}@whatsapp.waesy`;
   if (!thread) {
+    const safeIdentityName =
+      identity.display_name &&
+      !isSyntheticSelfLabel(identity.display_name) &&
+      !/^\+?\d{14,}$/.test(identity.display_name.trim())
+        ? identity.display_name
+        : null;
     const safeGuestName = isGroupJid
-      ? (message.groupSubject || (identity.display_name && !isSyntheticSelfLabel(identity.display_name) && !identity.display_name.startsWith("+120363") ? identity.display_name : "Grupo WhatsApp"))
-      : (!message.fromMe && message.pushName && !isSyntheticSelfLabel(message.pushName))
+      ? (message.groupSubject || (safeIdentityName && !safeIdentityName.startsWith("+120363") ? safeIdentityName : "Grupo WhatsApp"))
+      : (!message.fromMe && message.pushName && !isSyntheticSelfLabel(message.pushName) && !/^\+?\d{14,}$/.test(message.pushName.trim()))
         ? message.pushName
-        : (identity.display_name && !isSyntheticSelfLabel(identity.display_name) ? identity.display_name : message.phone);
+        : (safeIdentityName || message.phone || `Contato WhatsApp #${cleanDigits.slice(-4) || "LID"}`);
     const initialParticipants =
       isGroupJid && !message.fromMe && (message.senderPhone || message.pushName || message.senderJid)
         ? [{
@@ -385,12 +405,16 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       guest_name: safeGuestName,
       guest_email: syntheticEmail,
       group_subject: isGroupJid ? (message.groupSubject || null) : null,
-      primary_phone_e164: isGroupJid ? null : message.phone,
+      primary_phone_e164: isGroupJid || isLidJid ? null : message.phone,
       status: "open",
-      subject: isGroupJid ? (message.groupSubject ? `Grupo ${message.groupSubject}` : "Grupo WhatsApp") : `WhatsApp ${message.phone}`,
+      subject: isGroupJid
+        ? (message.groupSubject ? `Grupo ${message.groupSubject}` : "Grupo WhatsApp")
+        : `WhatsApp ${message.phone || safeGuestName}`,
       context_type: "whatsapp",
       thread_type: isGroupJid ? "group" : "store",
-      entity_id: isGroupJid ? (message.groupJid || message.externalUserId) : message.phone,
+      entity_id: isGroupJid
+        ? (message.groupJid || message.externalUserId)
+        : (message.phone || message.externalUserId),
       department: "geral",
       priority: "normal",
       ...(message.fromMe ? {} : { last_customer_message_at: message.occurredAt }),
@@ -398,7 +422,9 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       last_message_at: message.occurredAt,
       metadata: {
         is_group: isGroupJid,
+        is_lid: isLidJid,
         remote_jid: message.externalUserId,
+        whatsapp_jid: message.externalUserId,
         ...(isGroupJid && message.groupSubject ? { group_subject: message.groupSubject } : {}),
         ...(initialParticipants.length > 0 ? { participants: initialParticipants } : {}),
         ...(!isGroupJid && message.pushName ? { push_name: message.pushName } : {}),
@@ -544,6 +570,27 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
     }).select("id").single();
     if (deviceInsertError) throw deviceInsertError;
 
+    if (
+      createdDeviceMsg?.id &&
+      provider === "evolution_api" &&
+      message.externalMessageId &&
+      message.media?.type &&
+      isBrokenOrMissingMediaUri(message.media.url, message.messageType)
+    ) {
+      await hydrateMediaFromEvolution({
+        db,
+        storeId,
+        instance,
+        threadId: thread.id,
+        messageId: createdDeviceMsg.id,
+        externalMessageId: message.externalMessageId,
+        remoteJid: message.externalUserId,
+        fromMe: true,
+        messageType: message.messageType,
+        preferredMime: message.media.mimetype,
+      }).catch(() => null);
+    }
+
     const currentThreadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, unknown>;
     await db.from("chat_threads").update({
       last_message_text: message.text.slice(0, 200),
@@ -603,6 +650,27 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
     }).select("id").single();
     if (insertError) throw insertError;
     insertedMessageId = createdMsg?.id || null;
+
+    if (
+      insertedMessageId &&
+      provider === "evolution_api" &&
+      message.externalMessageId &&
+      message.media?.type &&
+      isBrokenOrMissingMediaUri(message.media.url, message.messageType)
+    ) {
+      await hydrateMediaFromEvolution({
+        db,
+        storeId,
+        instance,
+        threadId: thread.id,
+        messageId: insertedMessageId,
+        externalMessageId: message.externalMessageId,
+        remoteJid: message.externalUserId,
+        fromMe: false,
+        messageType: message.messageType,
+        preferredMime: message.media.mimetype,
+      }).catch(() => null);
+    }
   }
   if (insertedMessageId) {
     const existingMeta = ((thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>);
@@ -611,7 +679,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
     const shouldHealGuestName = !hasManualOverride && Boolean(
       isGroupJid
         ? (message.groupSubject && (!thread.guest_name || thread.guest_name === "Grupo WhatsApp" || /^\+?\d+$/.test(String(thread.guest_name).trim())))
-        : (message.pushName && !isSyntheticSelfLabel(message.pushName) && (isSyntheticSelfLabel(thread.guest_name) || thread.guest_name === message.phone || thread.guest_name === cleanDigits))
+        : (message.pushName && !isSyntheticSelfLabel(message.pushName) && !/^\+?\d{14,}$/.test(message.pushName.trim()) && (isSyntheticSelfLabel(thread.guest_name) || thread.guest_name === message.phone || thread.guest_name === cleanDigits || /^\+?\d{10,}$/.test(String(thread.guest_name || "").trim()) || String(thread.guest_name || "").startsWith("Contato WhatsApp")))
     );
 
     let nextParticipants = Array.isArray(existingMeta.participants) ? [...existingMeta.participants] : [];
@@ -772,10 +840,24 @@ export function verifyUnofficialWebhookAuth(params: {
   masterApiKey: string | null;
   allowUnsigned?: boolean;
 }): boolean {
+  let bodyApiKey: string | null = null;
+  try {
+    const parsed = JSON.parse(params.rawBody) as Record<string, unknown>;
+    bodyApiKey = firstString(
+      parsed?.apikey,
+      parsed?.api_key,
+      parsed?.token,
+      (parsed?.data as Record<string, unknown> | undefined)?.apikey,
+    );
+  } catch {
+    bodyApiKey = null;
+  }
+
   const receivedApiKey = firstString(
     params.headers.get("apikey"),
     params.headers.get("x-api-key"),
     params.headers.get("authorization")?.replace(/^Bearer\s+/i, ""),
+    bodyApiKey,
   );
 
   if (
@@ -820,24 +902,39 @@ export async function handleUnofficialWhatsAppWebhook(request: Request, provider
   let body: JsonObject;
   try { body = JSON.parse(rawBody) as JsonObject; } catch { return json({ error: "Invalid JSON payload" }, 400); }
   const db = getServerClient();
+  const bodyInstanceName = firstString(body.instance, body.data?.instance, body.instanceName);
+  const lookupClauses = [
+    `instance_key.eq.${instanceKey}`,
+    `external_instance_id.eq.${instanceKey}`,
+    ...(bodyInstanceName && bodyInstanceName !== instanceKey
+      ? [`instance_key.eq.${bodyInstanceName}`, `external_instance_id.eq.${bodyInstanceName}`]
+      : []),
+  ];
   const { data: instance, error: instanceError } = await db
     .from("whatsapp_channel_instances")
-    .select("id, store_id, provider, instance_key, external_instance_id, secret_payload_encrypted, is_active, public_config")
+    .select("id, store_id, provider, instance_key, external_instance_id, secret_payload_encrypted, is_active, status, public_config")
     .eq("provider", provider)
-    .or(`instance_key.eq.${instanceKey},external_instance_id.eq.${instanceKey}`)
+    .or(lookupClauses.join(","))
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (instanceError || !instance || !instance.is_active) return json({ error: "Unknown or inactive WhatsApp instance" }, 404);
+  if (instanceError || !instance) return json({ error: "Unknown WhatsApp instance" }, 404);
   const secrets = secretConfig(instance.secret_payload_encrypted);
   const secret = firstString(secrets.webhook_secret, secrets.webhookSecret, secrets.secret, secrets.api_key);
   const masterApiKey = process.env.EVOLUTION_API_KEY?.trim() || null;
   const allowUnsigned = Boolean((instance.public_config as Record<string, unknown> | null)?.allow_unsigned_webhook);
 
+  const reqUrl = new URL(request.url, "https://waesy.com.br");
+  const queryApiKey = firstString(reqUrl.searchParams.get("apikey"), reqUrl.searchParams.get("token"));
+  const effectiveHeaders = new Headers(request.headers);
+  if (queryApiKey && !effectiveHeaders.has("apikey")) {
+    effectiveHeaders.set("apikey", queryApiKey);
+  }
+
   const isVerified = verifyUnofficialWebhookAuth({
     provider,
     rawBody,
-    headers: request.headers,
+    headers: effectiveHeaders,
     secret,
     masterApiKey,
     allowUnsigned,

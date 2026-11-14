@@ -53,41 +53,39 @@ function BlackboardBlock({ code, title }: { code: string; title?: string }) {
   };
 
   return (
-    <div className="my-3 rounded-xl border border-slate-700/80 bg-slate-950/95 text-slate-100  overflow-hidden font-sans">
-      {/* Moldura superior da lousa com giz e ferramentas */}
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-300">
+    <div className="my-3 rounded-2xl border border-border bg-surface-card text-foreground overflow-hidden font-sans">
+      <div className="flex items-center justify-between px-4 py-2 bg-surface-subtle border-b border-border text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <div className="size-5 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+          <div className="size-6 rounded-lg bg-surface-raised text-foreground flex items-center justify-center border border-border">
             <ChalkboardTeacher className="size-3.5" weight="bold" />
           </div>
-          <span className="font-semibold text-2xs tracking-wide uppercase text-slate-300">
-            {title || "Lousa Interativa do Assessor"}
+          <span className="font-semibold text-2xs tracking-wide uppercase text-muted-foreground">
+            {title || "Quadro de Raciocínio"}
           </span>
         </div>
 
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-2 px-2 py-1 rounded text-2xs text-slate-400 hover:text-slate-100 hover:bg-slate-800/80 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400 cursor-pointer"
-          title="Copiar conteúdo da lousa"
+          className="flex items-center gap-2 px-3 min-h-11 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+          title="Copiar conteúdo"
         >
           {copied ? (
             <>
-              <Check className="size-3 text-emerald-400" />
-              <span className="text-emerald-400">Copiado</span>
+              <Check className="size-3.5 text-success" />
+              <span className="text-success">Copiado</span>
             </>
           ) : (
             <>
-              <Copy className="size-3" />
+              <Copy className="size-3.5" />
               <span>Copiar</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Superfície da Lousa com efeito sutil de giz e tipografia nítida */}
-      <div className="p-4 overflow-x-auto scroll-area-carousel text-xs sm:text-sm font-mono leading-relaxed space-y-2 text-emerald-300/90 selection:bg-emerald-500/30">
-        <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm text-slate-200">
+      <div className="p-4 overflow-x-auto scroll-area-carousel text-xs sm:text-sm font-mono leading-relaxed space-y-2 text-foreground">
+        <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm text-foreground">
           {code}
         </pre>
       </div>
@@ -108,22 +106,22 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
   };
 
   return (
-    <div className="my-2 rounded-lg border border-border/60 bg-muted/50 overflow-hidden text-xs font-mono">
-      <div className="flex items-center justify-between px-3 py-2 bg-muted/80 border-b border-border/40 text-2xs text-muted-foreground">
+    <div className="my-3 rounded-2xl border border-border bg-surface-card overflow-hidden text-xs font-mono">
+      <div className="flex items-center justify-between px-4 py-1 bg-surface-subtle border-b border-border text-2xs text-muted-foreground">
         <div className="flex items-center gap-2 font-semibold uppercase tracking-wider">
-          <CodeIcon className="size-3 text-primary" />
+          <CodeIcon className="size-3.5 text-muted-foreground" />
           <span>{language || "código"}</span>
         </div>
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer"
+          className="flex items-center gap-2 px-2 min-h-11 text-muted-foreground hover:text-foreground transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
         >
-          {copied ? <Check className="size-3 text-primary" /> : <Copy className="size-3" />}
+          {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
           <span>{copied ? "Copiado" : "Copiar"}</span>
         </button>
       </div>
-      <pre className="p-3 overflow-x-auto scroll-area-carousel leading-relaxed text-foreground/90 font-mono text-2xs sm:text-xs">
+      <pre className="p-4 overflow-x-auto scroll-area-carousel leading-relaxed text-foreground font-mono text-2xs sm:text-xs">
         {code}
       </pre>
     </div>
@@ -212,36 +210,36 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
             </blockquote>
           ),
 
-          // Tabelas limpas e responsivas
+          // Tabelas limpas padrão editorial ChatGPT (sem caixa externa pesada)
           table: ({ children }) => (
-            <div className="my-3 overflow-x-auto scroll-area-carousel rounded-lg border border-border/50 bg-card">
-              <table className="w-full border-collapse text-2xs sm:text-xs">
+            <div className="my-4 overflow-x-auto scroll-area-carousel">
+              <table className="w-full border-collapse text-xs sm:text-sm">
                 {children}
               </table>
             </div>
           ),
           thead: ({ children }) => (
-            <thead className="bg-muted/60 border-b border-border/60 text-foreground font-semibold">
+            <thead className="border-b border-border text-foreground font-semibold">
               {children}
             </thead>
           ),
           tbody: ({ children }) => (
-            <tbody className="divide-y divide-border/30 text-foreground/90">
+            <tbody className="divide-y divide-border text-foreground">
               {children}
             </tbody>
           ),
           tr: ({ children }) => (
-            <tr className="hover:bg-muted/20 transition-colors">
+            <tr className="hover:bg-surface-hover transition-colors">
               {children}
             </tr>
           ),
           th: ({ children }) => (
-            <th className="p-2 sm:p-3 text-left font-bold text-foreground">
+            <th className="py-2 px-3 text-left font-semibold text-foreground whitespace-nowrap">
               {children}
             </th>
           ),
           td: ({ children }) => (
-            <td className="p-2 sm:p-3 text-left">
+            <td className="py-2 px-3 text-left text-muted-foreground">
               {children}
             </td>
           ),
@@ -252,7 +250,7 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
               href={href}
               target={href?.startsWith("http") ? "_blank" : undefined}
               rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
-              className="text-primary font-medium underline underline-offset-2 hover:text-primary/80 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded"
+              className="text-primary font-medium underline underline-offset-2 hover:text-primary/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded inline-flex items-center min-h-11 sm:min-h-0"
             >
               {children}
             </a>

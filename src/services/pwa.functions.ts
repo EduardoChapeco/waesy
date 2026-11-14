@@ -3,6 +3,7 @@ import { getRequest } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { getRealClientIP } from "@/lib/network-telemetry.server";
 import type { StorePwaConfig } from "@/types/wms-workflows-reputation";
 
@@ -27,8 +28,8 @@ export const saveStorePwaConfig = createServerFn({ method: "POST" })
       appName: z.string().min(2).max(100),
       shortName: z.string().min(1).max(30),
       description: z.string().optional(),
-      themeColor: z.string().default("#0F172A"),
-      backgroundColor: z.string().default("#000000"),
+      themeColor: z.string().default(TOKEN_HEX.neutral900),
+      backgroundColor: z.string().default(TOKEN_HEX.neutral950),
       icon192Url: z.string().url().optional().nullable(),
       icon512Url: z.string().url().optional().nullable(),
       splashImageUrl: z.string().url().optional().nullable(),
@@ -93,8 +94,8 @@ export const getPublicPwaManifest = createServerFn({ method: "GET" })
         short_name: "Waesy",
         start_url: "/",
         display: "standalone",
-        background_color: "#000000",
-        theme_color: "#0F172A",
+        background_color: TOKEN_HEX.neutral950,
+        theme_color: TOKEN_HEX.neutral900,
         icons: [],
       };
     }
@@ -114,8 +115,8 @@ export const getPublicPwaManifest = createServerFn({ method: "GET" })
       start_url: pwa.start_url || "/",
       display: pwa.display_mode || "standalone",
       orientation: pwa.orientation || "portrait",
-      background_color: pwa.background_color || "#000000",
-      theme_color: pwa.theme_color || "#0F172A",
+      background_color: pwa.background_color || TOKEN_HEX.neutral950,
+      theme_color: pwa.theme_color || TOKEN_HEX.neutral900,
       icons,
     };
   });

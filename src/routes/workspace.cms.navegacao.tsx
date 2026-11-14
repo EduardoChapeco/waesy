@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { getNavigationMenus, upsertNavigationMenu } from "@/services/cms.functions";
 
 export const Route = createFileRoute("/workspace/cms/navegacao")({
@@ -15,10 +15,13 @@ export const Route = createFileRoute("/workspace/cms/navegacao")({
   loader: async () => {
     try {
       const res = await getNavigationMenus();
-      return res || [];
-    } catch (err) {
+      return { menus: res || [], loadError: null as string | null };
+    } catch (err: any) {
       console.error("[loader:workspace.cms.navegacao] Unhandled loader error:", err);
-      return null as any;
+      return {
+        menus: null as any,
+        loadError: err?.message || "Não foi possível carregar os menus de navegação.",
+      };
     }
   },
   component: CmsNavigationPage,
@@ -47,7 +50,9 @@ const CANONICAL_MENU_PRESETS: Array<{ handle: string; name: string }> = [
 
 function CmsNavigationPage() {
   const router = useRouter();
-  const menus = Route.useLoaderData();
+  const loaderData = Route.useLoaderData() as any;
+  const menus = Array.isArray(loaderData) ? loaderData : loaderData?.menus;
+  const loadError = !Array.isArray(loaderData) ? loaderData?.loadError : null;
 
   const initialMenuList: any[] = Array.isArray(menus) ? menus : [];
   const defaultMenu: any =
@@ -64,13 +69,16 @@ function CmsNavigationPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Guard defensivo para null
-  if (!menus) {
+  // Guard defensivo para erro ou null
+  if (loadError || !menus) {
     return (
-      <EmptyState
-        title="Não foi possível carregar os menus"
-        description="Tente recarregar a página."
-      />
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Não foi possível carregar os menus"
+          description={loadError || "Tente recarregar a página."}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
     );
   }
 

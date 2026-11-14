@@ -4,6 +4,7 @@ import { getServerIdentity } from "@/lib/server-access";
 import { z } from "zod";
 import crypto from "node:crypto";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 import { getOrSetMicroCache, invalidateMicroCache } from "@/lib/cache/micro-cache";
 
@@ -32,18 +33,14 @@ async function requirePlatformAdmin() {
  return { ...identity, role: "platform_admin" };
  }
 
- const { data: userData } = await db.auth.admin.getUserById(identity.id).catch(() => ({ data: { user: null } }));
+ const { isBootstrapPlatformAdminEmail } = await import("@/lib/identity.server");
+ const { data: userData, error: userFetchError } = await db.auth.admin.getUserById(identity.id);
+ if (userFetchError) {
+ console.warn("[master] Falha ao consultar e-mail do usuário na auth admin:", userFetchError.message);
+ }
  const email = userData?.user?.email?.toLowerCase();
- const MASTER_EMAILS = [
- "contato@usewaesy.com",
- "admin@usewaesy.com",
- "meuwaesy@gmail.com",
- "meuwider@gmail.com",
- "excelenciatour.smo@gmail.com",
- "admin@jah.com",
- ];
 
- if (email && MASTER_EMAILS.includes(email)) {
+ if (email && isBootstrapPlatformAdminEmail(email)) {
  const { error: promotionError } = await db.from("profiles").update({ role: "platform_admin" }).eq("id", identity.id);
  if (promotionError) {
  console.error("[master] Falha ao persistir promoção para platform_admin:", promotionError);
@@ -985,9 +982,9 @@ export const getPublicBrandSettings = createServerFn({ method: "GET" }).handler(
         state: brandRow.state || null,
         seo_title: brandRow.seo_title || "Waesy",
         seo_description: brandRow.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
-        primary_color: brandRow.primary_color || "#09090b",
-        accent_color: brandRow.accent_color || "#0066FF",
-        secondary_color: brandRow.secondary_color || "#0052CC",
+        primary_color: brandRow.primary_color || TOKEN_HEX.neutral950,
+        accent_color: brandRow.accent_color || TOKEN_HEX.accentDefault,
+        secondary_color: brandRow.secondary_color || TOKEN_HEX.accentHover,
         theme_style: brandRow.theme_style || "azure_minimal",
       };
     }
@@ -1019,9 +1016,9 @@ export const getPublicBrandSettings = createServerFn({ method: "GET" }).handler(
       state: store?.state || null,
       seo_title: store?.seo_title || "Waesy",
       seo_description: store?.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
-      primary_color: settings.primary_color || settings.primaryColor || "#09090b",
-      accent_color: settings.accent_color || settings.accentColor || "#0066FF",
-      secondary_color: settings.secondary_color || settings.secondaryColor || "#0052CC",
+      primary_color: settings.primary_color || settings.primaryColor || TOKEN_HEX.neutral950,
+      accent_color: settings.accent_color || settings.accentColor || TOKEN_HEX.accentDefault,
+      secondary_color: settings.secondary_color || settings.secondaryColor || TOKEN_HEX.accentHover,
       theme_style: settings.theme_style || "azure_minimal",
     };
   }, 60_000);
@@ -1068,9 +1065,9 @@ export const getPlatformBrandSettings = createServerFn({ method: "GET" }).handle
       state: brandRow.state || store?.state || null,
       seo_title: brandRow.seo_title || "Waesy",
       seo_description: brandRow.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
-      primary_color: brandRow.primary_color || "#09090b",
-      accent_color: brandRow.accent_color || "#0066FF",
-      secondary_color: brandRow.secondary_color || "#0052CC",
+      primary_color: brandRow.primary_color || TOKEN_HEX.neutral950,
+      accent_color: brandRow.accent_color || TOKEN_HEX.accentDefault,
+      secondary_color: brandRow.secondary_color || TOKEN_HEX.accentHover,
       theme_style: brandRow.theme_style || "azure_minimal",
     };
   }
@@ -1101,9 +1098,9 @@ export const getPlatformBrandSettings = createServerFn({ method: "GET" }).handle
     state: store?.state || null,
     seo_title: store?.seo_title || "Waesy",
     seo_description: store?.seo_description || "Plataforma Comunitária de Comércio Local, Serviços, Turismo e Comunidade",
-    primary_color: settings.primary_color || settings.primaryColor || "#09090b",
-    accent_color: settings.accent_color || settings.accentColor || "#0066FF",
-    secondary_color: settings.secondary_color || settings.secondaryColor || "#0052CC",
+    primary_color: settings.primary_color || settings.primaryColor || TOKEN_HEX.neutral950,
+    accent_color: settings.accent_color || settings.accentColor || TOKEN_HEX.accentDefault,
+    secondary_color: settings.secondary_color || settings.secondaryColor || TOKEN_HEX.accentHover,
     theme_style: settings.theme_style || "azure_minimal",
   };
 });

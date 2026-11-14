@@ -307,7 +307,9 @@ function CriarNegocioPage() {
 
  if (result?.storeId) {
     setClientContextCookies({ context: "store", storeId: result.storeId });
-    await setTenantContext({ data: { store_id: result.storeId } }).catch(() => null);
+    await setTenantContext({ data: { store_id: result.storeId } }).catch((err) => {
+      console.warn("[criar-negocio.avancado] Falha não bloqueante ao sincronizar tenant SSR:", err);
+    });
   }
 
   toast.success(`Negócio "${result?.storeName || name}" cadastrado com sucesso! Redirecionando...`);
@@ -420,19 +422,19 @@ function CriarNegocioPage() {
  {step === 1 && (
  <div className="space-y-6">
  <div className="text-center max-w-2xl mx-auto space-y-2 py-4">
- <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3 py-1">
+ <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-medium px-3 py-1 rounded-xl">
  Etapa 1 • Escolha seu Segmento
  </Badge>
- <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+ <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
  Criar Negócio
  </h1>
  <p className="text-xs sm:text-sm text-muted-foreground">
- Selecione o segmento principal para configurarmos automaticamente o catálogo, estoque, PDV e regras operacionais.
+ Selecione o segmento principal para configurar catálogo, estoque, PDV e regras operacionais.
  </p>
  </div>
 
  {/* Filtros e Busca */}
- <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
+ <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
  <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
  {BUSINESS_CATEGORIES.map((cat) => (
  <button
@@ -440,9 +442,9 @@ function CriarNegocioPage() {
  type="button"
  onClick={() => setActiveCategoryFilter(cat.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors duration-200",
+ "min-h-11 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-colors duration-200 cursor-pointer",
  activeCategoryFilter === cat.id
- ? "bg-foreground text-background font-bold"
+ ? "bg-foreground text-background font-semibold"
  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
  )}
  >
@@ -452,12 +454,12 @@ function CriarNegocioPage() {
  </div>
 
  <div className="relative w-full sm:w-64 shrink-0">
- <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+ <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
  <Input
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Buscar segmento..."
- className="h-9 pl-9 rounded-lg text-xs bg-background"
+ className="h-11 min-h-11 pl-10 rounded-xl text-xs bg-background"
  />
  </div>
  </div>
@@ -473,10 +475,10 @@ function CriarNegocioPage() {
  key={segment.id}
  onClick={() => handleSelectNicheAndProceed(segment.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "group relative h-64 rounded-lg overflow-hidden cursor-pointer transition-colors duration-200 duration-200 border flex flex-col justify-between p-5 select-none active:scale-98",
+ "group relative h-64 rounded-2xl overflow-hidden cursor-pointer transition-colors duration-200 border flex flex-col justify-between p-5 select-none active:scale-98",
  isSelected
- ? "border-primary ring-2 ring-primary shadow-xs"
- : "border-border/60 hover:border-foreground/30 hover:shadow-xs"
+ ? "border-primary ring-2 ring-primary"
+ : "border-border/60 hover:border-foreground/30"
  )}
  >
  <img
@@ -487,16 +489,16 @@ function CriarNegocioPage() {
  <div className="absolute inset-0 bg-neutral-950/75" />
 
  <div className="relative z-10 flex items-start justify-between gap-2">
- <div className="size-9 rounded-lg flex items-center justify-center bg-neutral-900 border border-neutral-700 text-neutral-50">
+ <div className="size-9 rounded-xl flex items-center justify-center bg-neutral-900 border border-neutral-700 text-neutral-50">
  <IconComp className="size-4" />
  </div>
- <Badge className="bg-neutral-900 text-neutral-50 border-neutral-700 text-2xs font-semibold px-2 py-1">
+ <Badge className="bg-neutral-900 text-neutral-50 border-neutral-700 text-2xs font-medium px-2 py-1 rounded-xl">
  {segment.badge}
  </Badge>
  </div>
 
  <div className="relative z-10 space-y-1 text-neutral-50">
- <h3 className="font-bold text-sm tracking-tight leading-snug">
+ <h3 className="font-semibold text-sm tracking-tight leading-snug">
  {segment.title}
  </h3>
  <p className="text-2xs text-neutral-200 line-clamp-2 leading-relaxed">
@@ -509,8 +511,8 @@ function CriarNegocioPage() {
  </div>
 
  {filteredSegments.length === 0 && (
- <div className="p-12 text-center bg-card rounded-lg border border-dashed border-border/80 space-y-2">
- <p className="text-sm font-bold text-foreground">Nenhum segmento encontrado</p>
+ <div className="p-12 text-center bg-card rounded-2xl border border-dashed border-border/80 space-y-2">
+ <p className="text-sm font-semibold text-foreground">Nenhum segmento encontrado</p>
  <p className="text-xs text-muted-foreground">
  Tente buscar com outros termos ou selecione "Todas as Categorias".
  </p>
@@ -521,7 +523,7 @@ function CriarNegocioPage() {
  setActiveCategoryFilter("todas");
  setSearchQuery("");
  }}
- className="mt-2 rounded-lg text-xs font-bold"
+ className="mt-2 h-11 min-h-11 px-4 rounded-xl text-xs font-semibold"
  >
  Limpar Filtros
  </Button>
@@ -715,16 +717,16 @@ function CriarNegocioPage() {
 
  <div className="absolute inset-x-0 bottom-0 p-5 text-neutral-50 space-y-2">
  <div className="flex items-center gap-2">
- <Badge className="bg-emerald-700 text-emerald-50 text-2xs font-extrabold px-3 py-1 border border-emerald-600">
+ <Badge className="bg-emerald-700 text-emerald-50 text-2xs font-semibold px-3 py-1 rounded-xl border border-emerald-600">
  Zero Taxa de Intermediação
  </Badge>
  </div>
- <h2 className="text-base sm:text-xl font-black tracking-tight text-neutral-50">
+ <h2 className="text-base sm:text-xl font-semibold tracking-tight text-neutral-50">
  {logisticsInfo?.title || "Logística"}
  </h2>
  <p className="text-xs text-neutral-200 line-clamp-2 leading-relaxed">
  {logisticsInfo?.subtitle ||
- "Conecte-se aos entregadores autônomos da sua cidade com 1 clique sem taxas abusivas."}
+ "Entregas integradas com autônomos da sua cidade sem taxas de intermediação."}
  </p>
  </div>
  </div>
@@ -1110,17 +1112,17 @@ function CriarNegocioPage() {
  <div className="p-5 border-b border-border/40 bg-card">
  <div className="flex items-center justify-between gap-3">
  {/* Logotipo Redondo/Squircle */}
- <div className="size-16 sm:size-20 rounded-lg overflow-hidden border-2 border-border/60 bg-background flex items-center justify-center shrink-0 shadow-2xs">
+ <div className="size-16 sm:size-20 rounded-xl overflow-hidden border-2 border-border/60 bg-background flex items-center justify-center shrink-0">
  {logoUrl ? (
  <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover" />
  ) : (
- <div className={cn("size-full flex items-center justify-center font-black text-xl text-foreground", selectedSegment.gradient)}>
+ <div className={cn("size-full flex items-center justify-center font-semibold text-xl text-foreground", selectedSegment.gradient)}>
  {name ? name.charAt(0).toUpperCase() : <Store className="size-8 text-foreground/80" />}
  </div>
  )}
  </div>
 
- <Badge className="bg-primary/10 text-primary border-primary/20 text-2xs font-bold gap-1">
+ <Badge className="bg-primary/10 text-primary border-primary/20 text-2xs font-medium gap-1 rounded-xl">
  <selectedSegment.icon className="size-3" />
  <span>{selectedSegment.badge}</span>
  </Badge>
@@ -1131,7 +1133,7 @@ function CriarNegocioPage() {
  <div className="p-5 space-y-4">
  <div className="flex items-end justify-between mb-2">
 
- <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-2xs font-bold gap-1">
+ <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-2xs font-medium gap-1 rounded-xl">
  <ShieldCheck className="size-3" />
  <span>Verificado</span>
  </Badge>
@@ -1139,7 +1141,7 @@ function CriarNegocioPage() {
 
  {/* Nome & Detalhes */}
  <div className="space-y-1">
- <h3 className="text-base sm:text-lg font-black text-foreground tracking-tight leading-snug truncate">
+ <h3 className="text-base sm:text-lg font-semibold text-foreground tracking-tight leading-snug truncate">
  {name || "Nome do seu negócio..."}
  </h3>
  <p className="text-xs text-muted-foreground flex items-center gap-1">

@@ -10,6 +10,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
 import { generatePixBrCode } from "@/lib/pix-payload";
 import { saveCopilotArtifactRecord } from "./copilot-memory.functions";
+import { extractCreativePostSpecFromPrompt } from "@/lib/builder/canva-post-templates";
 import type { ChatArtifactData } from "@/types/chat";
 
 // ============================================================
@@ -217,10 +218,29 @@ export function buildWebsitePayload(title: string, userPrompt: string): {
   };
 }
 
+import type {
+  CreativeArchetype,
+  CreativeAspectRatio,
+  CreativeThemeId,
+} from "@/components/studio/creative-artboard-renderer";
+
 export function buildSocialPostPayload(title: string, userPrompt: string): {
   platform: string;
-  format: string;
+  format: "story" | "portrait" | "landscape" | "feed";
+  aspectRatio: CreativeAspectRatio;
+  archetype: CreativeArchetype;
+  themeId: CreativeThemeId;
   headline: string;
+  subheadline: string;
+  badge: string;
+  offerBadge: string;
+  offerPrice?: string;
+  installments?: string;
+  bullets: string[];
+  storeName: string;
+  locationLabel?: string;
+  ctaText: string;
+  caption: string;
   copyFeed: string;
   copyStory: string;
   hashtags: string[];
@@ -228,6 +248,8 @@ export function buildSocialPostPayload(title: string, userPrompt: string): {
   callToAction: string;
   theme: "dark" | "light" | "brand" | "swiss" | "cyber" | "gourmet";
 } {
+  const spec = extractCreativePostSpecFromPrompt(userPrompt, { headline: title });
+  const generatedCaption = `${spec.headline}\n\n${spec.subheadline}\n\n${spec.bullets.map((b) => `• ${b}`).join("\n")}\n\n${spec.ctaText}\n\n${spec.hashtags.join(" ")}`;
   const lower = userPrompt.toLowerCase();
   const theme: "dark" | "light" | "brand" | "swiss" | "cyber" | "gourmet" =
     lower.includes("cyber") || lower.includes("tech")
@@ -242,13 +264,26 @@ export function buildSocialPostPayload(title: string, userPrompt: string): {
 
   return {
     platform: "instagram",
-    format: "feed_and_story",
-    headline: title,
-    copyFeed: `Destaque: ${title.toUpperCase()}! Preparamos condições especiais para você aproveitar hoje mesmo. Qualidade, agilidade e o melhor atendimento da região.\n\nAcesse o link e garanta enquanto durarem os estoques.`,
-    copyStory: `ATENÇÃO: ${title}! Não fique de fora. Toque no link para pedir direto pelo WhatsApp.`,
-    hashtags: ["#waesy", "#promocao", "#comerciolocal", "#chapeco", "#qualidade", "#ofertas"],
-    visualPrompt: "Design moderno, tipografia limpa estilo Apple, foco no produto principal, sem poluição visual, paleta elegante.",
-    callToAction: "Ver no WhatsApp / Pedir no App",
+    format: spec.format,
+    aspectRatio: spec.aspectRatio,
+    archetype: spec.archetype,
+    themeId: spec.themeId,
+    headline: spec.headline,
+    subheadline: spec.subheadline,
+    badge: spec.badge,
+    offerBadge: spec.offerBadge,
+    offerPrice: spec.offerPrice,
+    installments: spec.installments,
+    bullets: spec.bullets,
+    storeName: spec.brandName,
+    locationLabel: spec.locationLabel,
+    ctaText: spec.ctaText,
+    caption: generatedCaption,
+    copyFeed: generatedCaption,
+    copyStory: `${spec.badge}: ${spec.headline}\n${spec.subheadline}\n${spec.ctaText}`,
+    hashtags: spec.hashtags,
+    visualPrompt: "Design moderno, tipografia limpa estilo Apple, foco na proposta de valor, paleta editorial sem poluição visual.",
+    callToAction: spec.ctaText,
     theme,
   };
 }
@@ -651,7 +686,12 @@ export async function createBuilderArtifactFromCopilot(params: {
   // 2. Converte para o modelo de ChatArtifactData canônico
   const chatArtifact: ChatArtifactData = {
     id: savedDoc.id,
-    type: docType === "travel_itinerary" ? "travel_itinerary" : (docType as any),
+    type:
+      docType === "travel_itinerary"
+        ? "travel_itinerary"
+        : docType === "social_post"
+          ? "creative_post"
+          : (docType as any),
     title,
     version: savedDoc.currentVersion,
     totalVersions: 1,

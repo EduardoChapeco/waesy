@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 export type AtendimentoSubmoduleKey =
   | "overview"
   | "whatsapp"
+  | "grupos"
   | "filas"
   | "atendentes"
   | "horarios";
@@ -34,6 +35,12 @@ const SUBMODULE_TABS: Array<{
     label: "Canais WhatsApp",
     to: "/workspace/atendimento/whatsapp",
     icon: Smartphone,
+  },
+  {
+    key: "grupos",
+    label: "Grupos & Canais",
+    to: "/workspace/atendimento/grupos",
+    icon: Users,
   },
   {
     key: "filas",
@@ -88,17 +95,17 @@ export function AtendimentoSubmoduleHeader({
           {showPrimaryChatCta ? (
             <Link
               to={"/workspace/atendimento/chat" as any}
-              className="px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold inline-flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="min-h-11 px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold inline-flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <MessageSquare className="size-3.5" />
+              <MessageSquare className="size-4" />
               <span>Abrir Chat Ao Vivo</span>
             </Link>
           ) : (
             <Link
               to={"/workspace/atendimento/chat" as any}
-              className="px-3 py-1 rounded-lg border border-border/70 bg-card hover:bg-muted/60 text-foreground text-xs font-medium inline-flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="min-h-11 px-3 py-2 rounded-lg border border-border/70 bg-card hover:bg-muted/60 text-foreground text-xs font-medium inline-flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <MessageSquare className="size-3.5" />
+              <MessageSquare className="size-4" />
               <span>Chat Ao Vivo</span>
             </Link>
           )}
@@ -117,13 +124,13 @@ export function AtendimentoSubmoduleHeader({
               key={tab.key}
               to={tab.to as any}
               className={cn(
-                "px-3 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-2 shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "min-h-11 px-3 py-2 rounded-lg text-xs font-medium inline-flex items-center gap-2 shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 isActive
                   ? "bg-muted text-foreground font-semibold border border-border/60"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
               )}
             >
-              <Icon className="size-3.5 shrink-0" />
+              <Icon className="size-4 shrink-0" />
               <span>{tab.label}</span>
             </Link>
           );

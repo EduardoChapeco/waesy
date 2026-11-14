@@ -2365,7 +2365,7 @@ export const upsertEventSector = createServerFn({ method: "POST" })
       eventId: z.string().uuid(),
       nome: z.string().min(1),
       capacidade: z.number().int().optional().nullable(),
-      corHex: z.string().default("#6366f1"),
+      corHex: z.string().default("var(--color-indigo-500)"),
       coordenadas: z.record(z.any()).default({}),
       descricao: z.string().optional().nullable(),
     }),

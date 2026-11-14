@@ -717,7 +717,7 @@ function cleanAddressSegment(text: string): string {
                   onError={() => setLogoLoadError(true)}
                 />
               ) : (
-                <span className="text-xl sm:text-2xl font-black bg-muted text-foreground font-mono">
+                <span className="text-xl sm:text-2xl font-semibold bg-muted text-foreground font-mono">
                   {(store.name || store.business_name || "WD").slice(0, 2).toUpperCase()}
                 </span>
               )}
@@ -738,19 +738,19 @@ function cleanAddressSegment(text: string): string {
           {/* Stats em Linha Horizontal Limpa (Padrão Threads / Instagram) */}
           <div className="flex items-center gap-4 sm:gap-8 flex-1 justify-around max-w-sm">
             <div className="text-center">
-              <p className="text-base sm:text-lg font-black text-foreground font-mono tabular-nums leading-none">
+              <p className="text-base sm:text-lg font-semibold text-foreground font-mono tabular-nums leading-none">
                 {catalog?.length || 0}
               </p>
               <p className="text-xs text-muted-foreground font-medium mt-1">Produtos</p>
             </div>
             <div className="text-center">
-              <p className="text-base sm:text-lg font-black text-foreground font-mono tabular-nums leading-none">
+              <p className="text-base sm:text-lg font-semibold text-foreground font-mono tabular-nums leading-none">
                 {store.followers_count || store.followersCount || 0}
               </p>
               <p className="text-xs text-muted-foreground font-medium mt-1">Seguidores</p>
             </div>
             <div className="text-center">
-              <p className="text-base sm:text-lg font-black text-foreground font-mono tabular-nums leading-none">
+              <p className="text-base sm:text-lg font-semibold text-foreground font-mono tabular-nums leading-none">
                 {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc, p) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
               </p>
               <p className="text-xs text-muted-foreground font-medium mt-1">Curtidas</p>
@@ -809,7 +809,7 @@ function cleanAddressSegment(text: string): string {
               {store.is_verified && (
                 <>
                   <span className="text-muted-foreground/40">•</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Verificado</span>
+                  <span className="text-success font-medium">Verificado</span>
                 </>
               )}
             </div>
@@ -950,7 +950,7 @@ function cleanAddressSegment(text: string): string {
                     }
                     className="w-full h-11 min-h-11 px-3 rounded-lg font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-2 shadow-none cursor-pointer"
                   >
-                    <WhatsappLogo size={15} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <WhatsappLogo size={15} weight="bold" className="text-success shrink-0" />
                     <span>WhatsApp</span>
                   </Button>
                 )}
@@ -999,7 +999,7 @@ function cleanAddressSegment(text: string): string {
 
                     {hasQuoted ? (
                       <div className="py-6 text-center space-y-3">
-                        <CheckCircle className="size-12 text-emerald-500 mx-auto" />
+                        <CheckCircle className="size-12 text-success mx-auto" />
                         <h4 className="font-bold text-sm">Solicitação Enviada!</h4>
                         <p className="text-xs text-muted-foreground">
                           A empresa recebeu sua mensagem e responderá pelo telefone ou e-mail informado.
@@ -1524,7 +1524,7 @@ function cleanAddressSegment(text: string): string {
                                   </div>
                                   <div className="p-4 space-y-1 min-w-0">
                                     <h4 className="text-xs font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{p.title}</h4>
-                                    <p className="text-sm font-black text-foreground font-mono">
+                                    <p className="text-sm font-semibold text-foreground font-mono">
                                       {formatMoney(priceCents)}
                                     </p>
                                   </div>
@@ -1789,7 +1789,7 @@ function cleanAddressSegment(text: string): string {
                             {p.description && (
                               <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
                             )}
-                            <div className="text-xs font-black font-mono text-foreground">
+                            <div className="text-xs font-semibold font-mono text-foreground">
                               {formatMoney(priceCents)}
                             </div>
                           </div>
@@ -1850,7 +1850,7 @@ function cleanAddressSegment(text: string): string {
                                 </p>
                               )}
                               <div className="pt-2">
-                                <span className="text-sm font-black text-foreground font-mono">
+                                <span className="text-sm font-semibold text-foreground font-mono">
                                   {formatMoney(priceCents)}
                                 </span>
                               </div>
@@ -1971,7 +1971,7 @@ function cleanAddressSegment(text: string): string {
                     {employerStats.avgRating && (
                       <div className="flex items-center gap-2 bg-warning/10 text-warning-strong px-3 py-2 rounded-lg border border-warning/20 shrink-0">
                         <Star className="size-4 fill-warning text-muted-foreground" />
-                        <span className="text-sm font-black font-mono">{employerStats.avgRating} / 5.0</span>
+                        <span className="text-sm font-semibold font-mono">{employerStats.avgRating} / 5.0</span>
                       </div>
                     )}
                   </div>
@@ -1981,7 +1981,7 @@ function cleanAddressSegment(text: string): string {
                       <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                         <Award className="size-4 text-primary" /> Recomendação
                       </span>
-                      <p className="text-base font-black text-foreground font-mono">
+                      <p className="text-base font-semibold text-foreground font-mono">
                         {employerStats.recommendRate != null ? `${employerStats.recommendRate}%` : null}
                       </p>
                       <span className="text-xs text-muted-foreground block">
@@ -1991,9 +1991,9 @@ function cleanAddressSegment(text: string): string {
 
                     <div className="p-4 rounded-lg bg-muted/30 border border-border/40 space-y-1">
                       <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
-                        <Briefcase className="size-4 text-emerald-600" /> Média Salarial
+                        <Briefcase className="size-4 text-success" /> Média Salarial
                       </span>
-                      <p className="text-base font-black text-foreground font-mono">
+                      <p className="text-base font-semibold text-foreground font-mono">
                         {employerStats.avgSalaryCents ? formatMoney(employerStats.avgSalaryCents) : null}
                       </p>
                       <span className="text-xs text-muted-foreground block">
@@ -2005,7 +2005,7 @@ function cleanAddressSegment(text: string): string {
                       <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                         <FileCheck className="size-4 text-sky-600" /> Avaliações
                       </span>
-                      <p className="text-base font-black text-foreground font-mono">
+                      <p className="text-base font-semibold text-foreground font-mono">
                         {employerStats.reviewsCount > 0 ? employerStats.reviewsCount : null}
                       </p>
                       <span className="text-xs text-muted-foreground block">
@@ -2110,7 +2110,7 @@ function cleanAddressSegment(text: string): string {
                           )}
                         </div>
                         <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                          <span className="text-sm font-black font-mono text-foreground">
+                          <span className="text-sm font-semibold font-mono text-foreground">
                             {ad.price_cents ? formatMoney(ad.price_cents) : "Sob Consulta"}
                           </span>
                           <span className="text-xs text-primary font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
@@ -2131,7 +2131,7 @@ function cleanAddressSegment(text: string): string {
               <div className="space-y-4">
                 <div className="p-5 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-12 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center font-black text-xl font-mono">
+                    <div className="size-12 rounded-lg bg-warning/10 text-warning-strong flex items-center justify-center font-semibold text-xl font-mono">
                       {store.rating ? Number(store.rating).toFixed(1) : "—"}
                     </div>
                     <div>
@@ -2345,7 +2345,7 @@ function cleanAddressSegment(text: string): string {
                         className={cn(
                           "text-xs font-mono font-bold",
                           openStatus.isOpenNow
-                            ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
+                            ? "border-success/40 text-success bg-success/10"
                             : "border-border/60 text-muted-foreground bg-muted/20"
                         )}
                       >
@@ -2448,7 +2448,7 @@ function cleanAddressSegment(text: string): string {
                   <div className="space-y-2 text-xs">
                     <div className="flex items-center justify-between py-1 border-b border-border/30">
                       <span className="text-muted-foreground">PIX Instantâneo</span>
-                      <span className="font-semibold text-emerald-600">Disponível</span>
+                      <span className="font-semibold text-success">Disponível</span>
                     </div>
                     <div className="flex items-center justify-between py-1 border-b border-border/30">
                       <span className="text-muted-foreground">Cartões de Crédito / Débito</span>
@@ -2490,7 +2490,7 @@ function cleanAddressSegment(text: string): string {
                     {whatsappNumber && (
                       <div className="flex items-center justify-between py-1 border-b border-border/30">
                         <span className="text-muted-foreground flex items-center gap-2">
-                          <WhatsappLogo size={14} className="text-emerald-500" /> WhatsApp
+                          <WhatsappLogo size={14} className="text-success" /> WhatsApp
                         </span>
                         <span className="font-mono font-medium text-foreground">{whatsappNumber}</span>
                       </div>
@@ -2557,7 +2557,7 @@ function cleanAddressSegment(text: string): string {
                                 dept.is24h
                                   ? "border-blue-500/40 text-blue-600 bg-blue-500/10"
                                   : dept.isOpenNow
-                                  ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
+                                  ? "border-success/40 text-success bg-success/10"
                                   : "border-border/60 text-muted-foreground bg-muted/20"
                               )}
                             >
@@ -2600,7 +2600,7 @@ function cleanAddressSegment(text: string): string {
                               }}
                               className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer border-border/70 hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary"
                             >
-                              <WhatsappLogo size={16} className="text-emerald-500 shrink-0" />
+                              <WhatsappLogo size={16} className="text-success shrink-0" />
                               <span className="truncate">Falar com {dept.name.split(" ")[0]}</span>
                             </Button>
                           )}
@@ -2777,7 +2777,7 @@ function cleanAddressSegment(text: string): string {
                             className={
                               isCompleted
                                 ? "bg-muted text-muted-foreground font-mono text-xs"
-                                : "bg-emerald-600 text-foreground font-mono text-xs font-bold"
+                                : "bg-success text-success-foreground font-mono text-xs font-semibold"
                             }
                           >
                             {isCompleted ? "Sorteio Encerrado" : "Sorteio Aberto"}

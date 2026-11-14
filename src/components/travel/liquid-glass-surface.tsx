@@ -168,7 +168,7 @@ export function LiquidGlassSurface({
             background: optics.specularGradientCss,
             opacity: normalized.edgeHighlight.intensity,
             WebkitMask:
-              "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+              "linear-gradient(black 0 0) content-box, linear-gradient(black 0 0)",
             WebkitMaskComposite: "xor",
             maskComposite: "exclude",
           }}
@@ -184,7 +184,7 @@ export function LiquidGlassSurface({
             opacity: normalized.noise.opacity,
             filter: !exportSafe ? `url(#${noiseFilterId})` : undefined,
             backgroundImage: exportSafe
-              ? "radial-gradient(rgba(255,255,255,0.22) 1px, transparent 0)"
+              ? "radial-gradient(color-mix(in oklab, var(--color-neutral-50) 22%, transparent) 1px, transparent 0)"
               : undefined,
             backgroundSize: exportSafe ? "3px 3px" : undefined,
           }}

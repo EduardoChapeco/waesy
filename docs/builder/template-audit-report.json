@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T16:46:13.200Z",
+  "generatedAt": "2026-11-14T19:32:07.851Z",
   "summary": {
     "total": 22,
     "passed": 5,
@@ -36,7 +36,7 @@
       "findings": [],
       "metrics": {
         "blockCount": 10,
-        "serializedBytes": 6656,
+        "serializedBytes": 6652,
         "imageReferences": 0,
         "externalImageReferences": 0,
         "assetsWithProvenance": 0
@@ -93,7 +93,7 @@
       "findings": [],
       "metrics": {
         "blockCount": 6,
-        "serializedBytes": 3744,
+        "serializedBytes": 3740,
         "imageReferences": 0,
         "externalImageReferences": 0,
         "assetsWithProvenance": 0
@@ -481,7 +481,7 @@
       ],
       "metrics": {
         "blockCount": 9,
-        "serializedBytes": 10642,
+        "serializedBytes": 10640,
         "imageReferences": 0,
         "externalImageReferences": 0,
         "assetsWithProvenance": 0

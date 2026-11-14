@@ -1147,7 +1147,7 @@ function AdminOrdersPage() {
                         <DropdownMenuItem asChild>
                           <Link to={`/workspace/pedidos/${order.id}` as never}>
                             <Eye className="size-4 mr-2" />
-                            {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
+                            {isTourism ? "Ver Ficha do Passageiro" : "Ver Detalhes do Pedido"}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
@@ -1308,7 +1308,7 @@ function AdminOrdersPage() {
                               <DropdownMenuItem asChild>
                                 <Link to={`/workspace/pedidos/${order.id}` as never}>
                                   <Eye className="size-4 mr-2" />
-                                  {isTourism ? "Ver Ficha do Passageiro" : "Ver Ficha 360 do Pedido"}
+                                  {isTourism ? "Ver Ficha do Passageiro" : "Ver Detalhes do Pedido"}
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>

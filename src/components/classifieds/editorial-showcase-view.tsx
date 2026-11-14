@@ -37,6 +37,8 @@ export interface EditorialShowcaseViewProps {
   onEditClassified?: () => void;
   onOpenCompanionCard?: () => void;
   previewViewport?: "mobile" | "desktop";
+  ctaLabelOverride?: string;
+  ctaDisabled?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -58,6 +60,8 @@ export function EditorialShowcaseView({
   onEditClassified,
   onOpenCompanionCard,
   previewViewport,
+  ctaLabelOverride,
+  ctaDisabled = false,
 }: EditorialShowcaseViewProps) {
   const isForcedMobile = previewViewport === "mobile";
   const isForcedDesktop = previewViewport === "desktop";
@@ -161,45 +165,42 @@ export function EditorialShowcaseView({
   const travelPromoInclusions = React.useMemo(() => {
     const list: string[] = [];
     const flight = attrs.flight_details;
-    if (flight?.departure_iata || flight?.arrival_iata || flight?.transport_type === "airplane" || isTravel) {
+    if (flight?.departure_iata || flight?.arrival_iata || flight?.transport_type === "airplane") {
       const origin = flight?.departure_iata ? `desde ${flight.departure_iata}` : "";
       list.push(`Aéreos ${origin}`.trim());
     }
 
+    const lodgingsList = Array.isArray(attrs.lodgings) ? attrs.lodgings : [];
+    const hasLodging = lodgingsList.length > 0 || Boolean(attrs.meal_plan);
     if (attrs.meal_plan) {
       if (attrs.meal_plan === "all_inclusive") list.push("Hospedagem All Inclusive");
       else if (attrs.meal_plan === "cafe") list.push("Hospedagem com café");
       else if (attrs.meal_plan === "meia_pensao") list.push("Hospedagem meia pensão");
       else if (attrs.meal_plan === "completa") list.push("Hospedagem pensão completa");
       else list.push(`Hospedagem (${attrs.meal_plan})`);
-    } else {
+    } else if (hasLodging) {
       list.push("Hospedagem inclusa");
     }
 
     const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
-    let addedTransfer = false;
-    let addedTour = false;
     bioBullets.forEach((bullet) => {
       const b = String(bullet).trim();
-      if (!b) return;
-      const lower = b.toLowerCase();
-      if ((lower.includes("traslado") || lower.includes("transfer")) && !addedTransfer) {
-        list.push(b);
-        addedTransfer = true;
-      } else if ((lower.includes("passeio") || lower.includes("ingresso") || lower.includes("park") || lower.includes("guia")) && !addedTour) {
-        list.push(b);
-        addedTour = true;
-      } else if (list.length < 4 && !list.includes(b)) {
-        list.push(b);
+      if (!b || list.length >= 4 || list.includes(b)) return;
+      list.push(b);
+    });
+
+    const realTransfersAndTours: any[] = Array.isArray(attrs.transfers_and_tours)
+      ? attrs.transfers_and_tours
+      : [];
+    realTransfersAndTours.forEach((item: any) => {
+      const title = String(item?.title || "").trim();
+      if (title && item?.type !== "optional" && list.length < 4 && !list.includes(title)) {
+        list.push(title);
       }
     });
 
-    if (!addedTransfer && list.length < 4) {
-      list.push("Traslados ao aeroporto");
-    }
-
     return list.slice(0, 4);
-  }, [attrs.flight_details, attrs.meal_plan, attrs.bio_bullets, isTravel]);
+  }, [attrs.flight_details, attrs.lodgings, attrs.meal_plan, attrs.bio_bullets, attrs.transfers_and_tours]);
   const isGoods = nicheId === "goods" || nicheId.includes("goods") || nicheId.includes("desapego") || attrs.desapego_subcategory || (!isTravel && !isHospitality && !nicheId.includes("veic") && !nicheId.includes("imov") && !nicheId.includes("serv") && !nicheId.includes("vaga") && !nicheId.includes("food") && !nicheId.includes("doacao") && !nicheId.includes("digit") && !nicheId.includes("assinatura") && !nicheId.includes("equip"));
 
   // ── Modalidade de Preço & Dinamismo ──────────────────────────────────────────
@@ -242,7 +243,7 @@ export function EditorialShowcaseView({
   const tradeNotes = attrs.trade_notes || "";
   const acceptsFinancing = !!attrs.accepts_financing;
   const financingNotes = attrs.financing_notes || "";
-  const cancellationPolicy = attrs.cancellation_policy || "flexible";
+  const cancellationPolicy = String(attrs.cancellation_policy || "").trim();
 
   // ── Anunciante / Loja Parceira / Verificação (Isolamento Estrito Empresa vs Anunciante) ──
   const store = classified?.store;
@@ -548,6 +549,7 @@ export function EditorialShowcaseView({
   );
 
   const getPrimaryCtaLabel = () => {
+    if (ctaLabelOverride) return ctaLabelOverride;
     if (isTravel) {
       if (isCustomOrUnlistedQuote) return "Aceitar Orçamento e Reservar";
       if (transportType === "airplane" || transportType === "aereo") return "Consultar e Reservar";
@@ -576,7 +578,9 @@ export function EditorialShowcaseView({
   };
 
   const handleOpenAction = async () => {
-    if (classified?.id) {
+    if (ctaDisabled) return;
+
+    if (classified?.id && !isCustomOrUnlistedQuote) {
       try {
         registerClassifiedLead({
           data: {
@@ -590,6 +594,11 @@ export function EditorialShowcaseView({
 
     if (classified?.lead_form || classified?.form_id || classified?.attributes?.inquiry_config?.enabled) {
       setIsLeadFormModalOpen(true);
+      return;
+    }
+
+    if (isCustomOrUnlistedQuote && onOpenBookingModal) {
+      onOpenBookingModal(selectedDeparture || undefined);
       return;
     }
 
@@ -1770,6 +1779,103 @@ export function EditorialShowcaseView({
                     )}
                   </div>
 
+                  {/* Precificação por Pessoa, por Adulto & Tarifário por Quarto */}
+                  {(Number(attrs.price_per_person_cents) > 0 ||
+                    Number(attrs.price_per_adult_cents) > 0 ||
+                    (Array.isArray(attrs.rooms) && attrs.rooms.length > 0) ||
+                    (attrs.room_rates && typeof attrs.room_rates === "object")) && (
+                    <div className="pt-3 mt-2 border-t border-border/50 space-y-3">
+                      {(Number(attrs.price_per_person_cents) > 0 || Number(attrs.price_per_adult_cents) > 0) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {Number(attrs.price_per_person_cents) > 0 && (
+                            <div className="p-3 rounded-lg bg-background border border-border/60 flex items-center justify-between gap-2">
+                              <span className="text-xs font-semibold text-muted-foreground">Valor por Pessoa</span>
+                              <strong className="text-sm font-black font-mono text-foreground">
+                                {formatMoney(Number(attrs.price_per_person_cents))}
+                              </strong>
+                            </div>
+                          )}
+                          {Number(attrs.price_per_adult_cents) > 0 && (
+                            <div className="p-3 rounded-lg bg-background border border-border/60 flex items-center justify-between gap-2">
+                              <span className="text-xs font-semibold text-muted-foreground">Valor por Adulto</span>
+                              <strong className="text-sm font-black font-mono text-primary">
+                                {formatMoney(Number(attrs.price_per_adult_cents))}
+                              </strong>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {Array.isArray(attrs.rooms) && attrs.rooms.length > 0 ? (
+                        <div className="space-y-2">
+                          <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                            Distribuição e Valores por Quarto
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {attrs.rooms.map((rm: any, rmIdx: number) => (
+                              <div
+                                key={rm.id || rmIdx}
+                                className="p-3 rounded-lg bg-background border border-border/60 flex items-center justify-between gap-2 text-xs"
+                              >
+                                <div className="min-w-0">
+                                  <p className="font-bold text-foreground truncate">
+                                    {rm.roomType ? `Quarto ${rm.roomNumber || rmIdx + 1} • ${rm.roomType}` : `Quarto ${rm.roomNumber || rmIdx + 1}`}
+                                  </p>
+                                  <p className="text-2xs text-muted-foreground">
+                                    {rm.adults ?? 2} adulto(s){Number(rm.children) > 0 ? ` + ${rm.children} criança(s)` : ""}
+                                  </p>
+                                </div>
+                                {Number(rm.price_cents) > 0 && (
+                                  <div className="text-right shrink-0">
+                                    <span className="font-mono font-black text-foreground block">
+                                      {formatMoney(Number(rm.price_cents))}
+                                    </span>
+                                    {Number(rm.price_per_person_cents) > 0 && (
+                                      <span className="text-2xs font-mono text-muted-foreground block">
+                                        {formatMoney(Number(rm.price_per_person_cents))}/pax
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : attrs.room_rates && typeof attrs.room_rates === "object" ? (
+                        (() => {
+                          const rateItems = [
+                            { label: "Individual (Single)", value: Number(attrs.room_rates.single_cents) },
+                            { label: "Duplo / Casal", value: Number(attrs.room_rates.double_cents) },
+                            { label: "Triplo", value: Number(attrs.room_rates.triple_cents) },
+                            { label: "Quádruplo", value: Number(attrs.room_rates.quad_cents) },
+                            { label: "Criança", value: Number(attrs.room_rates.child_cents) },
+                          ].filter((r) => Number.isFinite(r.value) && r.value > 0);
+                          if (rateItems.length === 0) return null;
+                          return (
+                            <div className="space-y-2">
+                              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                                Tarifário por Acomodação
+                              </span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {rateItems.map((item) => (
+                                  <div
+                                    key={item.label}
+                                    className="p-3 rounded-lg bg-background border border-border/60 flex items-center justify-between gap-2 text-xs"
+                                  >
+                                    <span className="font-medium text-muted-foreground">{item.label}</span>
+                                    <strong className="font-mono font-bold text-foreground">
+                                      {formatMoney(item.value)}
+                                    </strong>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()
+                      ) : null}
+                    </div>
+                  )}
+
                   {/* Disclaimer legal em destaque */}
                   {disclaimerText && (
                     <p className="text-xs text-muted-foreground flex items-start gap-1 pt-1">
@@ -1970,10 +2076,57 @@ export function EditorialShowcaseView({
                   </div>
 
                   {/* Política de Cancelamento */}
-                  <div className="pt-2 border-t border-border/30 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Política de Cancelamento:</span>
-                    <span className="font-bold text-foreground capitalize">{cancellationPolicy}</span>
-                  </div>
+                  {cancellationPolicy && (
+                    <div className="pt-2 border-t border-border/30 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                      <span className="shrink-0">Política de Cancelamento:</span>
+                      <span className="font-bold text-foreground text-right whitespace-pre-line">{cancellationPolicy}</span>
+                    </div>
+                  )}
+
+                  {/* Requisitos de Embarque, Logística e Campos Customizados */}
+                  {(attrs.boarding_requirements ||
+                    attrs.gateway_logistics ||
+                    (Array.isArray(attrs.custom_field_entries) && attrs.custom_field_entries.length > 0)) && (
+                    <div className="pt-3 border-t border-border/30 space-y-3">
+                      {attrs.boarding_requirements && (
+                        <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                          <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                            Requisitos de Embarque e Documentação
+                          </span>
+                          <p className="text-xs text-foreground whitespace-pre-line leading-relaxed">
+                            {String(attrs.boarding_requirements)}
+                          </p>
+                        </div>
+                      )}
+                      {attrs.gateway_logistics && (
+                        <div className="p-3 rounded-lg bg-background border border-border/60 space-y-1">
+                          <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                            Logística de Embarque e Gateway
+                          </span>
+                          <p className="text-xs text-foreground whitespace-pre-line leading-relaxed">
+                            {String(attrs.gateway_logistics)}
+                          </p>
+                        </div>
+                      )}
+                      {Array.isArray(attrs.custom_field_entries) && attrs.custom_field_entries.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {attrs.custom_field_entries.map((entry: any, eIdx: number) => (
+                            <div
+                              key={entry.key || eIdx}
+                              className="p-3 rounded-lg bg-background border border-border/60 space-y-1"
+                            >
+                              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
+                                {entry.label}
+                              </span>
+                              <span className="text-xs font-semibold text-foreground whitespace-pre-line block">
+                                {entry.value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2437,6 +2590,26 @@ export function EditorialShowcaseView({
                       </div>
                     );
                   })()}
+                  {(Number(attrs.price_per_person_cents) > 0 || Number(attrs.price_per_adult_cents) > 0) && (
+                    <div className="pt-2 border-t border-border/40 mt-1 grid grid-cols-2 gap-2 text-xs">
+                      {Number(attrs.price_per_person_cents) > 0 && (
+                        <div className="p-2 rounded-md bg-background/80 border border-border/50">
+                          <span className="text-2xs text-muted-foreground block">Por Pessoa</span>
+                          <strong className="font-mono font-bold text-foreground">
+                            {formatMoney(Number(attrs.price_per_person_cents))}
+                          </strong>
+                        </div>
+                      )}
+                      {Number(attrs.price_per_adult_cents) > 0 && (
+                        <div className="p-2 rounded-md bg-background/80 border border-border/50">
+                          <span className="text-2xs text-muted-foreground block">Por Adulto</span>
+                          <strong className="font-mono font-bold text-primary">
+                            {formatMoney(Number(attrs.price_per_adult_cents))}
+                          </strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <span className="text-xl font-bold text-foreground">Consulte Valores</span>
@@ -2489,8 +2662,10 @@ export function EditorialShowcaseView({
           {/* ── 6. Botões de Conversão Primária Desktop ── */}
           <div className="space-y-2 pt-1 border-t border-border/40">
             <Button
+              type="button"
+              disabled={ctaDisabled}
               onClick={handleOpenAction}
-              className="w-full h-12 sm:h-13 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight active:scale-98 transition-colors cursor-pointer"
+              className="w-full h-12 sm:h-13 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight active:scale-98 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {getPrimaryCtaLabel()}
             </Button>
@@ -2643,8 +2818,9 @@ export function EditorialShowcaseView({
           {/* Lado Direito: Botão Primário Responsivo */}
           <Button
             type="button"
+            disabled={ctaDisabled}
             onClick={handlePrimaryCtaClick}
-            className="h-11 px-5 sm:px-7 rounded-lg bg-foreground text-background hover:opacity-90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer"
+            className="h-11 px-5 sm:px-7 rounded-lg bg-foreground text-background hover:opacity-90 font-extrabold text-xs tracking-tight active:scale-95 transition-colors shrink-0 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {getPrimaryCtaLabel()}
           </Button>

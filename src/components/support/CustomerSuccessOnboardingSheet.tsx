@@ -264,6 +264,16 @@ export function CustomerSuccessOnboardingSheet({
                                 )}
                                 {row.entity_trace_hash}
                               </span>
+                              {row.pnr_locator && (
+                                <span className="px-2 py-1 rounded bg-muted text-foreground font-mono text-xs font-semibold">
+                                  PNR {row.pnr_locator}
+                                </span>
+                              )}
+                              {row.operator_package_id && (
+                                <span className="px-2 py-1 rounded bg-muted/60 text-muted-foreground font-mono text-xs">
+                                  #{row.operator_package_id}
+                                </span>
+                              )}
                               <span className="font-semibold text-foreground truncate max-w-44">
                                 {row.title}
                               </span>

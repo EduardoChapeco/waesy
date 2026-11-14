@@ -62,10 +62,15 @@ import {
   type TravelProposalDTO,
   type ProposalCanvasFormat,
   type FlightSegmentDTO,
+  type HotelDTO,
+  type TourOptionDTO,
   type TransferDTO,
 } from "@/services/travel-proposal.functions";
+import { sanitizeLeadCustomFieldsForProposal } from "@/lib/tourism/proposal-custom-fields";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
-import { listCustomers, createCustomer } from "@/services/crm.functions";
+import { createCustomer } from "@/services/crm.functions";
+import { CustomerSearchCombobox } from "@/components/crm/CustomerSearchCombobox";
+import { PassHubLiveQuoterPanel } from "@/components/tourism/quotes/passhub-live-quoter-panel";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { listTravelSuppliers } from "@/services/travel-suppliers.functions";
 import { getAgencySalesAndCommissionConfigFn } from "@/services/travel-pre-boarding-and-commissions.functions";
@@ -86,10 +91,13 @@ import {
 } from "@/services/infotravel";
 import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal-share-whatsapp-modal";
 import { TRAVEL_PACKAGE_TEMPLATES, type TravelPackageTemplate } from "@/lib/tourism/tourism-templates";
+import { normalizeProposalNicheId } from "@/lib/tourism/proposal-theme-palettes";
 import type { UnifiedBridgeCatalogContext } from "@/lib/niches/unified-field-bridge";
 
 export interface UnifiedProposalWorkspaceLead {
   id: string;
+  customerId?: string | null;
+  customer_id?: string | null;
   fullName?: string;
   email?: string | null;
   phone?: string | null;
@@ -193,8 +201,10 @@ export function UnifiedProposalWorkspace({
   const [clientName, setClientName] = useState(lead?.fullName || initialClientName);
   const [clientPhone, setClientPhone] = useState(lead?.phone || initialClientPhone);
   const [clientEmail, setClientEmail] = useState(lead?.email || initialClientEmail);
-  const [clientDocument, setClientDocument] = useState("");
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [clientDocument, setClientDocument] = useState(lead?.clientDocument || "");
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+    lead?.customerId || lead?.customer_id || null,
+  );
   const [isCreatingInlineCustomer, setIsCreatingInlineCustomer] = useState(false);
   const [customTitle, setCustomTitle] = useState(sourcePackageTitle || "");
   const [canvasFormat, setCanvasFormat] = useState<ProposalCanvasFormat>("a4-portrait");
@@ -214,17 +224,6 @@ export function UnifiedProposalWorkspace({
     enabled: open,
   });
 
-  const { data: crmCustomersRes, refetch: refetchCustomers } = useQuery({
-    queryKey: ["crm-customers-proposal-workspace"],
-    queryFn: () => listCustomers({ data: {} }).catch(() => ({ customers: [] })),
-    enabled: open,
-  });
-  const crmCustomers: any[] = Array.isArray((crmCustomersRes as any)?.customers)
-    ? (crmCustomersRes as any).customers
-    : Array.isArray(crmCustomersRes)
-      ? (crmCustomersRes as any)
-      : [];
-
   const handleQuickCreateCustomer = async () => {
     if (!clientName.trim()) {
       toast.error("Informe o nome do passageiro antes de salvar no CRM.");
@@ -243,7 +242,6 @@ export function UnifiedProposalWorkspace({
       if ((created as any)?.id) {
         setSelectedCustomerId((created as any).id);
       }
-      await refetchCustomers();
       toast.success(`Cliente "${clientName.trim()}" cadastrado e vinculado no CRM!`);
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível cadastrar o cliente no CRM.");
@@ -301,8 +299,12 @@ export function UnifiedProposalWorkspace({
     );
   };
 
-  // Transporte Rodoviário & Terrestre (Ônibus Leito DD / Frota / Transfers)
+  // Transporte Rodoviário, Passeios & Cotação Multi-API PassHub
   const [proposalTransfers, setProposalTransfers] = useState<TransferDTO[]>([]);
+  const [proposalTours, setProposalTours] = useState<TourOptionDTO[]>([]);
+  const [passHubHotelsByName, setPassHubHotelsByName] = useState<Record<string, HotelDTO>>({});
+  const [passHubQuoteSessionId, setPassHubQuoteSessionId] = useState<string>("");
+  const [isPassHubQuoterExpanded, setIsPassHubQuoterExpanded] = useState<boolean>(true);
 
   // Autocomplete do Banco de Hotéis
   const [hotelQuery, setHotelQuery] = useState("");
@@ -320,7 +322,16 @@ export function UnifiedProposalWorkspace({
   const [selectedExclusions, setSelectedExclusions] = useState<string[]>([]);
   const [newExclusionInput, setNewExclusionInput] = useState("");
   const [proposalItinerary, setProposalItinerary] = useState<
-    Array<{ day: number; title: string; description: string; meals?: string }>
+    Array<{
+      day: number;
+      title: string;
+      description: string;
+      meals?: string;
+      image_url?: string;
+      images?: string[];
+      location?: string;
+      highlight?: string;
+    }>
   >([]);
 
   const toggleInclusionTag = (tag: string) => {
@@ -342,6 +353,7 @@ export function UnifiedProposalWorkspace({
   useEffect(() => {
     if (open) {
       if (lead) {
+        setSelectedCustomerId(lead.customerId || lead.customer_id || null);
         if (lead.fullName) setClientName(lead.fullName);
         if (lead.phone) setClientPhone(lead.phone);
         if (lead.email) setClientEmail(lead.email);
@@ -418,8 +430,10 @@ export function UnifiedProposalWorkspace({
       adultsCount: lead?.passenger_count ? Math.max(1, lead.passenger_count) : 2,
       childrenCount: 0,
       childrenAges: [],
-       baseAdultPriceCents: lead?.estimated_value_cents ? Math.round(lead.estimated_value_cents / 2) : 0,
-       baseChildPriceCents: 0,
+      baseAdultPriceCents: lead?.estimated_value_cents
+        ? Math.round(lead.estimated_value_cents / Math.max(1, lead?.passenger_count || 2))
+        : 0,
+      baseChildPriceCents: 0,
       addons: [],
       payerName: lead?.fullName || initialClientName || "",
     },
@@ -434,16 +448,18 @@ export function UnifiedProposalWorkspace({
       operatorSlug: string;
       adultPriceCents: number;
       isRecommended: boolean;
-       quoteSessionId?: string;
-       offerSnapshotId?: string;
+      quoteSessionId?: string;
+      offerSnapshotId?: string;
     }>
   >([
     {
       optionLabel: "Opção 1 — Seleção Principal",
-       hotelName: "",
-       airlineDesc: "",
-       operatorSlug: "",
-       adultPriceCents: lead?.estimated_value_cents ? Math.round(lead.estimated_value_cents / 2) : 0,
+      hotelName: "",
+      airlineDesc: "",
+      operatorSlug: "",
+      adultPriceCents: lead?.estimated_value_cents
+        ? Math.round(lead.estimated_value_cents / Math.max(1, lead?.passenger_count || 2))
+        : 0,
       isRecommended: true,
     },
   ]);
@@ -551,12 +567,24 @@ export function UnifiedProposalWorkspace({
 
     if (Array.isArray(item.itinerary) && item.itinerary.length > 0) {
       setProposalItinerary(
-        item.itinerary.map((d: any, idx: number) => ({
-          day: d.day || d.day_number || idx + 1,
-          title: d.title || `Dia ${idx + 1}`,
-          description: d.description || "",
-          meals: Array.isArray(d.meals) ? d.meals.join(", ") : d.meals || "Conforme roteiro",
-        })),
+        item.itinerary.map((d: any, idx: number) => {
+          const singleImg = d.image_url || d.imageUrl || "";
+          const dayImages = Array.isArray(d.images) && d.images.length > 0
+            ? d.images.filter(Boolean)
+            : singleImg
+              ? [singleImg]
+              : [];
+          return {
+            day: d.day || d.day_number || idx + 1,
+            title: d.title || `Dia ${idx + 1}`,
+            description: d.description || "",
+            meals: Array.isArray(d.meals) ? d.meals.join(", ") : d.meals || "Conforme roteiro",
+            image_url: singleImg || dayImages[0] || undefined,
+            images: dayImages,
+            location: d.location || undefined,
+            highlight: d.highlight || undefined,
+          };
+        }),
       );
     }
 
@@ -649,12 +677,24 @@ export function UnifiedProposalWorkspace({
 
     if (Array.isArray(pkg.itinerary) && pkg.itinerary.length > 0) {
       setProposalItinerary(
-        pkg.itinerary.map((d: any, idx: number) => ({
-          day: d.day || idx + 1,
-          title: d.title || `Dia ${idx + 1}`,
-          description: d.description || "",
-          meals: d.meals || "Café da Manhã",
-        }))
+        pkg.itinerary.map((d: any, idx: number) => {
+          const singleImg = d.image_url || d.imageUrl || "";
+          const dayImages = Array.isArray(d.images) && d.images.length > 0
+            ? d.images.filter(Boolean)
+            : singleImg
+              ? [singleImg]
+              : [];
+          return {
+            day: d.day || idx + 1,
+            title: d.title || `Dia ${idx + 1}`,
+            description: d.description || "",
+            meals: d.meals || "Café da Manhã",
+            image_url: singleImg || dayImages[0] || undefined,
+            images: dayImages,
+            location: d.location || undefined,
+            highlight: d.highlight || undefined,
+          };
+        })
       );
     }
 
@@ -1666,7 +1706,7 @@ export function UnifiedProposalWorkspace({
                 childrenAges: r.childrenAges,
               })),
               trip_type: "air_package",
-              quote_session_id: bundleOptions[0]?.quoteSessionId || null,
+              quote_session_id: bundleOptions[0]?.quoteSessionId || passHubQuoteSessionId || null,
               quote_amount_cents: calculation.grandTotalCents || null,
               agency_notes: [mainHotel, fullSummary].filter(Boolean).join("\n"),
               source: "workspace_unified_proposal",
@@ -1679,12 +1719,10 @@ export function UnifiedProposalWorkspace({
         }
       }
 
-      // Salva a proposta canônica (incluindo roteiro, transfers, passeios e tema do template selecionado)
-      const matchedPkgTemplate = TRAVEL_PACKAGE_TEMPLATES.find(
-        (t) =>
-          t.id === selectedPackageTemplateId ||
-          t.destinationCity.toLowerCase() === destinationQuery.toLowerCase(),
-      );
+      // Aplica template de pacote somente se explicitamente escolhido pelo agente
+      const matchedPkgTemplate = selectedPackageTemplateId
+        ? TRAVEL_PACKAGE_TEMPLATES.find((t) => t.id === selectedPackageTemplateId)
+        : undefined;
       const effectiveTitle =
         customTitle.trim() ||
         (sourcePackageTitle
@@ -1718,39 +1756,112 @@ export function UnifiedProposalWorkspace({
             lead?.cover_image ||
             matchedPkgTemplate?.coverImageUrl ||
             undefined,
-          customFields: lead?.customFields || undefined,
+          customFields: {
+            ...sanitizeLeadCustomFieldsForProposal(selectedSourceCatalogItem?.rawAttributes || {}),
+            ...(selectedSourceCatalogItem?.nicheId
+              ? { proposal_niche: normalizeProposalNicheId(selectedSourceCatalogItem.nicheId) }
+              : {}),
+            ...sanitizeLeadCustomFieldsForProposal(lead?.customFields || {}),
+            ...(gatewayResolution
+              ? {
+                  gateway_logistics: `Desembarque em ${gatewayResolution.primaryAirportIata} (${gatewayResolution.primaryAirportName}) + ${gatewayResolution.recommendedTransferType.replace("_", " ")} (${gatewayResolution.primaryDistanceKm} km / ${gatewayResolution.primaryTransferDurationMins} min).`,
+                }
+              : {}),
+            show_price_per_person: true,
+            show_price_per_room: true,
+          },
           sourceListingId: selectedSourceCatalogItem?.id || lead?.sourceListingId || undefined,
           sourceListingOrigin:
             selectedSourceCatalogItem?.origin ||
             (lead?.sourceListingOrigin === "product" || lead?.sourceListingOrigin === "classified"
               ? lead.sourceListingOrigin
               : undefined),
-          initialNotes: fullSummary,
+          initialNotes: notes.trim() || undefined,
           flights: proposalFlights.length > 0 ? proposalFlights : (matchedPkgTemplate?.flights || []),
-          hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt, idx) => ({
-            id: opt.offerSnapshotId || `hotel-${idx + 1}`,
-            hotel_name: opt.hotelName,
-            name: opt.hotelName,
-            stars: matchedPkgTemplate?.hotels?.[0]?.stars,
-            destination: destinationQuery,
-            checkin_date: departureDate,
-            checkout_date: returnDate,
-            check_in: departureDate,
-            check_out: returnDate,
-            nights_count: departureDate && returnDate
-              ? Math.max(1, Math.ceil((new Date(returnDate).getTime() - new Date(departureDate).getTime()) / 86400000))
-              : undefined,
-            room_type: calculation.rooms.map((r) => r.roomLabel).join(" | "),
-            board_basis: calculation.rooms[0]?.mealPlan || "",
-            image_url: matchedPkgTemplate?.hotels?.[0]?.image_url || matchedPkgTemplate?.coverImageUrl,
-            amenities: matchedPkgTemplate?.hotels?.[0]?.amenities || [],
-          })),
+          hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt, idx) => {
+            const passHubHotel = passHubHotelsByName[opt.hotelName.trim().toLowerCase()];
+            const sourceHotel: any =
+              passHubHotel ||
+              (selectedSourceCatalogItem?.hotels as any)?.[idx] ||
+              (selectedSourceCatalogItem?.hotels as any)?.[0] ||
+              matchedPkgTemplate?.hotels?.[idx] ||
+              matchedPkgTemplate?.hotels?.[0];
+            const hotelImages = Array.isArray(sourceHotel?.images)
+              ? sourceHotel.images.filter(Boolean)
+              : sourceHotel?.image_url
+                ? [sourceHotel.image_url]
+                : [];
+            return {
+              id: opt.offerSnapshotId || `hotel-${idx + 1}`,
+              hotel_name: opt.hotelName,
+              name: opt.hotelName,
+              stars: sourceHotel?.stars ?? matchedPkgTemplate?.hotels?.[0]?.stars,
+              destination: destinationQuery,
+              checkin_date: sourceHotel?.checkin_date || departureDate,
+              checkout_date: sourceHotel?.checkout_date || returnDate,
+              check_in: sourceHotel?.checkin_date || departureDate,
+              check_out: sourceHotel?.checkout_date || returnDate,
+              nights_count:
+                sourceHotel?.nights_count ||
+                (departureDate && returnDate
+                  ? Math.max(1, Math.ceil((new Date(returnDate).getTime() - new Date(departureDate).getTime()) / 86400000))
+                  : undefined),
+              room_type: sourceHotel?.room_type || calculation.rooms.map((r) => r.roomLabel).join(" | "),
+              board_basis: sourceHotel?.board_basis || calculation.rooms[0]?.mealPlan || "",
+              image_url:
+                sourceHotel?.image_url ||
+                hotelImages[0] ||
+                matchedPkgTemplate?.hotels?.[0]?.image_url ||
+                matchedPkgTemplate?.coverImageUrl,
+              images: hotelImages,
+              amenities: sourceHotel?.amenities || matchedPkgTemplate?.hotels?.[0]?.amenities || [],
+              price_cents: sourceHotel?.price_cents,
+            };
+          }),
           itinerary:
             proposalItinerary.length > 0
               ? proposalItinerary
               : (matchedPkgTemplate?.itinerary || []),
           transfers: proposalTransfers.length > 0 ? proposalTransfers : ((matchedPkgTemplate?.transfers as any) || []),
-          tours: matchedPkgTemplate?.tours || [],
+          tours: proposalTours.length > 0 ? proposalTours : (matchedPkgTemplate?.tours || []),
+          options:
+            bundleOptions.length > 1
+              ? bundleOptions.map((opt, idx) => {
+                  const passHubHotel = passHubHotelsByName[opt.hotelName.trim().toLowerCase()];
+                  const optTotalCents =
+                    opt.adultPriceCents > 0
+                      ? opt.adultPriceCents * Math.max(1, calculation.totalAdults)
+                      : calculation.grandTotalCents;
+                  return {
+                    id: `opt-${idx + 1}`,
+                    name: opt.optionLabel || `Opção ${idx + 1}`,
+                    badge: opt.isRecommended ? "Recomendada" : undefined,
+                    hotel_name: opt.hotelName || undefined,
+                    hotel_stars: passHubHotel?.stars,
+                    room_type: passHubHotel?.room_type || calculation.rooms[0]?.roomLabel,
+                    meal_plan: passHubHotel?.board_basis || calculation.rooms[0]?.mealPlan,
+                    airline: opt.airlineDesc || proposalFlights[0]?.airline_name || proposalFlights[0]?.airline,
+                    flights: proposalFlights.length > 0 ? proposalFlights : undefined,
+                    hotels: opt.hotelName.trim()
+                      ? [{ ...(passHubHotel || {}), hotel_name: opt.hotelName }]
+                      : undefined,
+                    transfers: proposalTransfers.length > 0 ? proposalTransfers : undefined,
+                    tours: proposalTours.length > 0 ? proposalTours : undefined,
+                    includes: selectedInclusions.length > 0 ? selectedInclusions : undefined,
+                    is_recommended: opt.isRecommended,
+                    pricing: {
+                      currency,
+                      base_price_cents: optTotalCents,
+                      boarding_tax_cents: 0,
+                      other_taxes_cents: 0,
+                      discount_cents: 0,
+                      total_price_cents: optTotalCents,
+                      total_cents: optTotalCents,
+                      installments_options: [],
+                    },
+                  };
+                })
+              : undefined,
           rooms: calculation.rooms.map((r) => ({
             id: `room-${r.roomNumber}`,
             roomNumber: r.roomNumber,
@@ -1758,6 +1869,11 @@ export function UnifiedProposalWorkspace({
             adults: r.adultsCount,
             children: r.childrenCount,
             childrenAges: r.childrenAges,
+            price_cents: r.roomTotalCents,
+            price_per_person_cents: Math.round(
+              r.roomTotalCents / Math.max(1, r.adultsCount + r.childrenCount),
+            ),
+            board_basis: r.mealPlan || undefined,
           })),
           pricing: {
             currency,
@@ -1819,18 +1935,32 @@ export function UnifiedProposalWorkspace({
         travel_start_date: departureDate || null,
         travel_end_date: returnDate || null,
         flights: proposalFlights.length > 0 ? proposalFlights : (matchedPkgTemplate?.flights || []),
-        hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt) => ({
-          hotel_name: opt.hotelName,
-        })),
+        hotels: bundleOptions.filter((opt) => opt.hotelName.trim()).map((opt) => {
+          const passHubHotel = passHubHotelsByName[opt.hotelName.trim().toLowerCase()];
+          return {
+            ...(passHubHotel || {}),
+            hotel_name: opt.hotelName,
+          };
+        }),
         itinerary: (proposalItinerary.length > 0 ? proposalItinerary : (matchedPkgTemplate?.itinerary || [])).map(
-          (d: any, idx: number) => ({
-            id: d.id || `day-${idx + 1}`,
-            day_number: d.day_number ?? d.day ?? idx + 1,
-            day: d.day ?? d.day_number ?? idx + 1,
-            title: d.title || `Dia ${idx + 1}`,
-            description: d.description || "",
-            meals: d.meals || "",
-          })
+          (d: any, idx: number) => {
+            const singleImg = d.image_url || d.imageUrl || undefined;
+            const dayImgs = Array.isArray(d.images) && d.images.length > 0
+              ? d.images.filter(Boolean)
+              : singleImg
+                ? [singleImg]
+                : [];
+            return {
+              id: d.id || `day-${idx + 1}`,
+              day_number: d.day_number ?? d.day ?? idx + 1,
+              day: d.day ?? d.day_number ?? idx + 1,
+              title: d.title || `Dia ${idx + 1}`,
+              description: d.description || "",
+              meals: d.meals || "",
+              image_url: singleImg || dayImgs[0],
+              images: dayImgs,
+            };
+          }
         ),
         transfers: proposalTransfers.length > 0 ? proposalTransfers : ((matchedPkgTemplate?.transfers || []).map((t: any) => ({
           type: t.type,
@@ -1838,13 +1968,18 @@ export function UnifiedProposalWorkspace({
           date: t.date,
           notes: t.notes || t.description,
         }))),
-        tours: matchedPkgTemplate?.tours || [],
+        tours: proposalTours.length > 0 ? proposalTours : (matchedPkgTemplate?.tours || []),
         rooms: calculation.rooms.map((room) => ({
           roomNumber: room.roomNumber,
           roomType: room.roomLabel,
           adults: room.adultsCount,
           children: room.childrenCount,
           childrenAges: room.childrenAges,
+          price_cents: room.roomTotalCents,
+          price_per_person_cents: Math.round(
+            room.roomTotalCents / Math.max(1, room.adultsCount + room.childrenCount),
+          ),
+          board_basis: room.mealPlan || undefined,
         })),
         includes: selectedInclusions,
         excludes: selectedExclusions.length > 0 ? selectedExclusions : (matchedPkgTemplate?.excludes || []),
@@ -1891,6 +2026,10 @@ export function UnifiedProposalWorkspace({
       toast.success("Proposta criada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
       queryClient.invalidateQueries({ queryKey: ["workspace-crm-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["lead-dossier"] });
+      queryClient.invalidateQueries({ queryKey: ["customer-360-profile"] });
       queryClient.invalidateQueries({ queryKey: ["agency-quotes"] });
 
       if (onCreated) {
@@ -2213,9 +2352,9 @@ export function UnifiedProposalWorkspace({
             <div className="xl:col-span-8 overflow-y-auto p-4 sm:p-6 space-y-6 [scrollbar-width:thin]">
             {/* Banner Informativo de OCR Recém-Processado */}
             {lastOcrExtraction && (
-              <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                <div className="flex items-start sm:items-center gap-2.5">
-                  <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary shrink-0 mt-0.5 sm:mt-0">
+              <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="size-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary shrink-0 mt-1 sm:mt-0">
                     <Zap className="size-4" />
                   </div>
                   <div>
@@ -2236,18 +2375,18 @@ export function UnifiedProposalWorkspace({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                   {proposalFlights.length > 0 && (
-                    <Button size="sm" variant="outline" className="h-8 text-2xs font-semibold" onClick={() => setStepTab("aereo")}>
+                    <Button size="sm" variant="outline" className="min-h-11 h-11 text-2xs font-semibold" onClick={() => setStepTab("aereo")}>
                       <Plane className="size-3 mr-1" />
                       Revisar Voos
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" className="h-8 text-2xs font-semibold" onClick={() => setStepTab("quartos")}>
+                  <Button size="sm" variant="outline" className="min-h-11 h-11 text-2xs font-semibold" onClick={() => setStepTab("quartos")}>
                     <Building2 className="size-3 mr-1" />
                     Quartos
                   </Button>
-                  <Button size="sm" variant="ghost" className="size-8 p-0 text-muted-foreground hover:text-foreground" onClick={() => setLastOcrExtraction(null)}>
+                  <Button size="sm" variant="ghost" className="size-11 p-0 text-muted-foreground hover:text-foreground" onClick={() => setLastOcrExtraction(null)}>
                     <X className="size-3.5" />
                   </Button>
                 </div>
@@ -2292,30 +2431,21 @@ export function UnifiedProposalWorkspace({
                     </Button>
                   </div>
 
-                  {crmCustomers.length > 0 && (
-                    <select
-                      value={selectedCustomerId || ""}
-                      onChange={(e) => {
-                        const cid = e.target.value;
-                        setSelectedCustomerId(cid || null);
-                        const found = crmCustomers.find((c: any) => c.id === cid);
-                        if (found) {
-                          setClientName(found.full_name || found.name || "");
-                          setClientPhone(found.phone || found.whatsapp || "");
-                          setClientEmail(found.email || "");
-                          setClientDocument(found.document_number || found.cpf || "");
-                        }
-                      }}
-                      className="w-full h-11 rounded-lg bg-background border border-border px-3 text-xs text-foreground"
-                    >
-                      <option value="">Selecionar cliente existente do CRM ou preencher abaixo...</option>
-                      {crmCustomers.slice(0, 60).map((c: any) => (
-                        <option key={c.id} value={c.id}>
-                          {c.full_name || c.name} {c.phone ? `· ${c.phone}` : ""}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <CustomerSearchCombobox
+                    value={selectedCustomerId || ""}
+                    selectedLabel={clientName || undefined}
+                    placeholder="Buscar cliente existente do CRM ou preencher abaixo..."
+                    searchPlaceholder="Digite nome, telefone ou CPF..."
+                    onSelectCustomer={(found) => {
+                      setSelectedCustomerId(found?.id || null);
+                      if (found) {
+                        setClientName(found.full_name || found.name || "");
+                        setClientPhone(found.phone || found.whatsapp || "");
+                        setClientEmail(found.email || "");
+                        setClientDocument(found.document_number || found.cpf || found.document || "");
+                      }
+                    }}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2429,6 +2559,253 @@ export function UnifiedProposalWorkspace({
                     </p>
                   </div>
                 )}
+
+                {/* Buscador Multi-API Ao Vivo (PassHub: Wooba GDS + InfoTravel + Banco Real) */}
+                <div className="space-y-3 pt-3 border-t border-border/50">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Search className="size-4 text-primary" />
+                      <span className="text-xs font-bold text-foreground">
+                        Cotador Ao Vivo PassHub (Voos, Hotéis, Pacotes & Passeios)
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsPassHubQuoterExpanded((prev) => !prev)}
+                      className="h-11 sm:h-9 px-3 text-xs font-semibold rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {isPassHubQuoterExpanded ? "Ocultar Buscador" : "Abrir Buscador PassHub"}
+                    </Button>
+                  </div>
+
+                  {isPassHubQuoterExpanded && (
+                    <PassHubLiveQuoterPanel
+                      compact
+                      initialOriginIata={
+                        originCity.match(/\(([A-Z]{3})\)/)?.[1] ||
+                        (/^[A-Za-z]{3}$/.test(originCity.trim()) ? originCity.trim().toUpperCase() : "")
+                      }
+                      initialDestinationIata={
+                        destinationQuery.match(/\(([A-Z]{3})\)/)?.[1] ||
+                        gatewayResolution?.primaryAirportIata ||
+                        ""
+                      }
+                      initialDestinationCity={destinationQuery}
+                      initialDepartureDate={departureDate}
+                      initialReturnDate={returnDate}
+                      initialRooms={rooms.map((r) => ({
+                        adults: r.adultsCount,
+                        childrenAges: r.childrenAges || [],
+                      }))}
+                      onAddFlight={(flight, meta) => {
+                        setProposalFlights((prev) => [...prev, flight]);
+                        if (meta.quoteSessionId) setPassHubQuoteSessionId(meta.quoteSessionId);
+                        const perAdultDelta = meta.priceCents > 0
+                          ? Math.round(meta.priceCents / Math.max(1, calculation.totalAdults))
+                          : 0;
+                        setBundleOptions((prev) =>
+                          prev.map((opt, idx) =>
+                            idx === 0
+                              ? {
+                                  ...opt,
+                                  airlineDesc: opt.airlineDesc || flight.airline_name || flight.airline || "",
+                                  operatorSlug: opt.operatorSlug || meta.providerCode,
+                                  quoteSessionId: meta.quoteSessionId || opt.quoteSessionId,
+                                  adultPriceCents: opt.adultPriceCents === 0 && perAdultDelta > 0 ? perAdultDelta : opt.adultPriceCents,
+                                }
+                              : opt,
+                          ),
+                        );
+                        if (perAdultDelta > 0) {
+                          setRooms((prev) =>
+                            prev.map((r, idx) =>
+                              idx === 0 && r.baseAdultPriceCents === 0
+                                ? { ...r, baseAdultPriceCents: perAdultDelta }
+                                : r,
+                            ),
+                          );
+                        }
+                        if (flight.origin_iata && !originCity.trim()) setOriginCity(flight.origin_iata);
+                        if (flight.destination_iata && !destinationQuery.trim()) setDestinationQuery(flight.destination_iata);
+                        toast.success(`Voo ${flight.airline_name || flight.airline} (${flight.origin_iata} → ${flight.destination_iata}) adicionado!`);
+                      }}
+                      onAddHotel={(hotel, meta) => {
+                        const hotelKey = (hotel.hotel_name || "").trim().toLowerCase();
+                        if (hotelKey) {
+                          setPassHubHotelsByName((prev) => ({ ...prev, [hotelKey]: hotel }));
+                        }
+                        if (meta.quoteSessionId) setPassHubQuoteSessionId(meta.quoteSessionId);
+                        if (hotel.destination && !destinationQuery.trim()) setDestinationQuery(hotel.destination);
+                        if (hotel.checkin_date && !departureDate) setDepartureDate(hotel.checkin_date);
+                        if (hotel.checkout_date && !returnDate) setReturnDate(hotel.checkout_date);
+                        const perAdultDelta = meta.priceCents > 0
+                          ? Math.round(meta.priceCents / Math.max(1, calculation.totalAdults))
+                          : 0;
+                        setBundleOptions((prev) => {
+                          const first = prev[0];
+                          if (!first || !first.hotelName.trim()) {
+                            return prev.map((opt, idx) =>
+                              idx === 0
+                                ? {
+                                    ...opt,
+                                    hotelName: hotel.hotel_name || "",
+                                    operatorSlug: meta.providerCode,
+                                    quoteSessionId: meta.quoteSessionId || opt.quoteSessionId,
+                                    adultPriceCents: perAdultDelta > 0 && opt.adultPriceCents === 0 ? perAdultDelta : opt.adultPriceCents,
+                                  }
+                                : opt,
+                            );
+                          }
+                          return [
+                            ...prev,
+                            {
+                              optionLabel: `Opção ${prev.length + 1} — ${hotel.hotel_name}`,
+                              hotelName: hotel.hotel_name || "",
+                              airlineDesc: first.airlineDesc,
+                              operatorSlug: meta.providerCode,
+                              adultPriceCents: perAdultDelta > 0 ? perAdultDelta : first.adultPriceCents,
+                              isRecommended: false,
+                              quoteSessionId: meta.quoteSessionId,
+                            },
+                          ];
+                        });
+                        if (perAdultDelta > 0) {
+                          setRooms((prev) =>
+                            prev.map((r, idx) =>
+                              idx === 0 && r.baseAdultPriceCents === 0
+                                ? { ...r, baseAdultPriceCents: perAdultDelta }
+                                : r,
+                            ),
+                          );
+                        }
+                        toast.success(`Hotel ${hotel.hotel_name} vinculado ao pacote!`);
+                      }}
+                      onAddTransfer={(transfer, meta) => {
+                        setProposalTransfers((prev) => [...prev, transfer]);
+                        if (meta.quoteSessionId) setPassHubQuoteSessionId(meta.quoteSessionId);
+                        toast.success(`Transfer "${transfer.route_name || transfer.vehicle || "Executivo"}" adicionado!`);
+                      }}
+                      onAddTour={(tour, meta) => {
+                        setProposalTours((prev) => [...prev, tour]);
+                        if (meta.quoteSessionId) setPassHubQuoteSessionId(meta.quoteSessionId);
+                        if (tour.included && tour.title) {
+                          setSelectedInclusions((prev) =>
+                            prev.includes(tour.title) ? prev : [...prev, tour.title],
+                          );
+                        }
+                        toast.success(`Passeio "${tour.title}" adicionado à proposta!`);
+                      }}
+                      onAddCar={(car, meta) => {
+                        setProposalTransfers((prev) => [
+                          ...prev,
+                          {
+                            id: car.id,
+                            type: "Locação de Veículo",
+                            vehicle: `${car.vehicleModelExample || car.vehicleCategory} (${car.rentalCompany})`,
+                            route: car.pickupLocation,
+                            price_cents: car.totalPriceCents,
+                            notes: `${car.vehicleCategory} · ${car.transmission}`,
+                          },
+                        ]);
+                        if (meta.quoteSessionId) setPassHubQuoteSessionId(meta.quoteSessionId);
+                        toast.success(`Locação "${car.vehicleModelExample || car.vehicleCategory}" adicionada ao terrestre!`);
+                      }}
+                      onImportPackage={(pkg, meta) => {
+                        if (pkg.destination) setDestinationQuery(pkg.destination);
+                        if (!customTitle.trim()) setCustomTitle(pkg.packageName);
+                        if (pkg.departureDate) setDepartureDate(pkg.departureDate);
+                        if (pkg.returnDate) setReturnDate(pkg.returnDate);
+                        if (meta.quoteSessionId) setPassHubQuoteSessionId(meta.quoteSessionId);
+                        const perAdultCents = pkg.priceTotalCents > 0
+                          ? Math.round(pkg.priceTotalCents / Math.max(1, calculation.totalAdults))
+                          : 0;
+                        if (pkg.hotelName) {
+                          const key = pkg.hotelName.trim().toLowerCase();
+                          setPassHubHotelsByName((prev) => ({
+                            ...prev,
+                            [key]: {
+                              hotel_name: pkg.hotelName || "",
+                              destination: pkg.destination,
+                              checkin_date: pkg.departureDate,
+                              checkout_date: pkg.returnDate,
+                              nights_count: pkg.nights,
+                              board_basis: pkg.boardType || undefined,
+                              image_url: pkg.imageUrl || undefined,
+                              price_cents: pkg.priceTotalCents,
+                            },
+                          }));
+                        }
+                        setBundleOptions((prev) => [
+                          {
+                            optionLabel: "Opção 1 — Pacote Selecionado",
+                            hotelName: pkg.hotelName || prev[0]?.hotelName || "",
+                            airlineDesc: pkg.includesFlight ? "Aéreo Incluso no Pacote" : prev[0]?.airlineDesc || "",
+                            operatorSlug: pkg.operatorSlug,
+                            adultPriceCents: perAdultCents > 0 ? perAdultCents : (prev[0]?.adultPriceCents || 0),
+                            isRecommended: true,
+                            quoteSessionId: meta.quoteSessionId,
+                          },
+                          ...prev.slice(1),
+                        ]);
+                        if (perAdultCents > 0) {
+                          setRooms((prev) =>
+                            prev.map((r, idx) =>
+                              idx === 0 ? { ...r, baseAdultPriceCents: perAdultCents } : r,
+                            ),
+                          );
+                        }
+                        if (Array.isArray(pkg.includedItems) && pkg.includedItems.length > 0) {
+                          setSelectedInclusions((prev) =>
+                            Array.from(new Set([...prev, ...pkg.includedItems])),
+                          );
+                        }
+                        toast.success(`Pacote "${pkg.packageName}" importado para montagem!`);
+                      }}
+                      onAddComparativeOption={(optionPayload) => {
+                        if (optionPayload.quoteSessionId) setPassHubQuoteSessionId(optionPayload.quoteSessionId);
+                        if (optionPayload.hotel) {
+                          const key = (optionPayload.hotel.hotel_name || "").trim().toLowerCase();
+                          if (key) {
+                            setPassHubHotelsByName((prev) => ({ ...prev, [key]: optionPayload.hotel! }));
+                          }
+                        }
+                        const perAdultCents = optionPayload.totalPriceCents > 0
+                          ? Math.round(optionPayload.totalPriceCents / Math.max(1, calculation.totalAdults))
+                          : 0;
+                        setBundleOptions((prev) => {
+                          if (prev.length === 1 && !prev[0].hotelName.trim() && !prev[0].airlineDesc.trim()) {
+                            return [
+                              {
+                                optionLabel: optionPayload.optionLabel,
+                                hotelName: optionPayload.hotelName,
+                                airlineDesc: optionPayload.airlineDesc,
+                                operatorSlug: optionPayload.operatorSlug,
+                                adultPriceCents: perAdultCents,
+                                isRecommended: true,
+                                quoteSessionId: optionPayload.quoteSessionId,
+                              },
+                            ];
+                          }
+                          return [
+                            ...prev,
+                            {
+                              optionLabel: optionPayload.optionLabel,
+                              hotelName: optionPayload.hotelName,
+                              airlineDesc: optionPayload.airlineDesc,
+                              operatorSlug: optionPayload.operatorSlug,
+                              adultPriceCents: perAdultCents,
+                              isRecommended: false,
+                              quoteSessionId: optionPayload.quoteSessionId,
+                            },
+                          ];
+                        });
+                        toast.success(`"${optionPayload.optionLabel}" adicionada às opções comparativas!`);
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             )}
 
@@ -2450,7 +2827,7 @@ export function UnifiedProposalWorkspace({
                     size="sm"
                     variant="outline"
                     onClick={handleAddFlight}
-                    className="h-11 min-h-11 px-3 text-xs gap-1.5 font-semibold"
+                    className="h-11 min-h-11 px-3 text-xs gap-2 font-semibold"
                   >
                     <Plus className="size-3.5" />
                     <span>Adicionar Trecho</span>
@@ -2756,7 +3133,7 @@ export function UnifiedProposalWorkspace({
                               addons: [...room.addons, newAddon],
                             });
                           }}
-                          className="h-8 px-2 text-2xs text-primary font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                          className="min-h-11 h-11 px-3 text-2xs text-primary font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Plus className="size-3" />
                           <span>Adicionar Item</span>
@@ -2800,7 +3177,7 @@ export function UnifiedProposalWorkspace({
                                   const updated = room.addons.filter((_, i) => i !== adIdx);
                                   handleUpdateRoom(room.roomNumber, { addons: updated });
                                 }}
-                                className="size-8 rounded-md text-muted-foreground hover:text-destructive cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                className="size-11 rounded-md text-muted-foreground hover:text-destructive cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                                 title="Remover adicional"
                               >
                                 <X className="size-3.5" />
@@ -2810,8 +3187,8 @@ export function UnifiedProposalWorkspace({
                         </div>
                       )}
 
-                      {/* Sugestões Rápidas (Zero Valores Hardcoded - Linha Única com Scroll Horizontal) */}
-                      <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1.5 py-1">
+                      {/* Sugestões Rápidas */}
+                      <div className="flex flex-wrap items-center gap-2 py-1">
                         <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
                         {SUGGESTED_ROOM_ADDONS.map((sug) => {
                           const alreadyAdded = room.addons.some(
@@ -2832,7 +3209,7 @@ export function UnifiedProposalWorkspace({
                                   addons: [...room.addons, newAddon],
                                 });
                               }}
-                              className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                              className={`min-h-11 h-11 px-3 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                                 alreadyAdded
                                   ? "bg-muted text-muted-foreground/60 cursor-default"
                                   : "bg-muted/40 hover:bg-muted text-foreground border border-border/30 hover:border-border/60"
@@ -2976,7 +3353,7 @@ export function UnifiedProposalWorkspace({
                         }
                         setNewInclusionInput("");
                       }}
-                      className="h-11 min-h-11 px-3.5 text-xs font-bold gap-1 shrink-0 cursor-pointer"
+                      className="h-11 min-h-11 px-4 text-xs font-bold gap-1 shrink-0 cursor-pointer"
                     >
                       <Plus className="size-3.5" />
                       <span>Adicionar</span>
@@ -3141,7 +3518,7 @@ export function UnifiedProposalWorkspace({
                       Paridade completa com o criador de pacotes e excursões rodoviárias
                     </p>
                   </div>
-                  <span className="text-2xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                  <span className="text-2xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary">
                     Multimodal
                   </span>
                 </div>
@@ -3165,7 +3542,7 @@ export function UnifiedProposalWorkspace({
                           },
                         ])
                       }
-                      className="h-10 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-11 h-11 px-4 text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Plus className="size-3.5" />
                       <span>Incluir Ônibus / Transfer Rodoviário</span>
@@ -3180,7 +3557,7 @@ export function UnifiedProposalWorkspace({
                         variant="ghost"
                         size="sm"
                         onClick={() => setProposalTransfers([])}
-                        className="h-8 px-2 text-2xs text-destructive hover:text-destructive cursor-pointer"
+                        className="min-h-11 h-11 px-3 text-2xs text-destructive hover:text-destructive cursor-pointer"
                       >
                         Remover Transporte
                       </Button>
@@ -3355,7 +3732,7 @@ export function UnifiedProposalWorkspace({
                     placeholder="Operadora ou fornecedor"
                     className="h-11 min-h-11 rounded-lg text-xs font-medium"
                   />
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     {registeredSuppliers.length > 0 ? (
                       <>
                         <span className="text-2xs text-muted-foreground mr-1">Fornecedores da Agência:</span>
@@ -3476,7 +3853,7 @@ export function UnifiedProposalWorkspace({
                               <select
                                 value={downpaymentType}
                                 onChange={(e) => setDownpaymentType(e.target.value as any)}
-                                className="h-10 rounded-lg bg-background border border-border px-1.5 text-2xs text-foreground"
+                                className="h-10 rounded-lg bg-background border border-border px-2 text-2xs text-foreground"
                               >
                                 <option value="percentage">%</option>
                                 <option value="fixed_cents">R$</option>
@@ -3587,7 +3964,7 @@ export function UnifiedProposalWorkspace({
                   </div>
 
                   {/* Texto Final das Condições Comerciais (100% Livre e Editável) */}
-                  <div className="space-y-1.5 pt-1">
+                  <div className="space-y-2 pt-1">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold text-foreground">
                         Texto de Apresentação das Condições ao Cliente
@@ -3754,7 +4131,7 @@ export function UnifiedProposalWorkspace({
                     </div>
                   </div>
 
-                  <div className="p-3 rounded bg-muted/40 border border-border/40 text-2xs text-muted-foreground space-y-1.5">
+                  <div className="p-3 rounded bg-muted/40 border border-border/40 text-2xs text-muted-foreground space-y-2">
                     {enableBoleto && (
                       <div>
                         <strong className="text-foreground">Opção Boleto:</strong>{" "}
@@ -3798,7 +4175,7 @@ export function UnifiedProposalWorkspace({
               {proposalFlights.length > 0 ? (
                 <div className="p-3 rounded-lg bg-card border border-border/60 space-y-2">
                   <div className="flex items-center justify-between text-2xs font-bold text-primary">
-                    <span className="flex items-center gap-1.5"><Plane className="size-3" /> Malha Aérea ({proposalFlights.length} trechos)</span>
+                    <span className="flex items-center gap-2"><Plane className="size-3" /> Malha Aérea ({proposalFlights.length} trechos)</span>
                     <span className="text-muted-foreground font-normal">{proposalFlights[0].airline}</span>
                   </div>
                   {proposalFlights.map((fl, fIdx) => (
@@ -3814,7 +4191,7 @@ export function UnifiedProposalWorkspace({
                   ))}
                 </div>
               ) : (
-                <div className="p-2.5 rounded-lg border border-dashed border-border/60 text-2xs text-muted-foreground flex items-center gap-2">
+                <div className="p-3 rounded-lg border border-dashed border-border/60 text-2xs text-muted-foreground flex items-center gap-2">
                   <Plane className="size-3.5 text-muted-foreground/60" />
                   <span>Nenhum voo configurado.</span>
                 </div>
@@ -3824,14 +4201,14 @@ export function UnifiedProposalWorkspace({
               {bundleOptions[0]?.hotelName ? (
                 <div className="p-3 rounded-lg bg-card border border-border/60 space-y-1 text-xs">
                   <div className="flex items-center justify-between text-2xs font-bold text-primary">
-                    <span className="flex items-center gap-1.5"><Building2 className="size-3" /> Hospedagem</span>
+                    <span className="flex items-center gap-2"><Building2 className="size-3" /> Hospedagem</span>
                     <span className="text-emerald-600 font-bold">Confirmada</span>
                   </div>
                   <p className="font-bold text-foreground truncate">{bundleOptions[0].hotelName}</p>
                   <p className="text-2xs text-muted-foreground">{rooms[0]?.roomLabel || "Quarto Casal"} • {departureDate ? `${departureDate} a ${returnDate}` : "Datas flexíveis"}</p>
                 </div>
               ) : (
-                <div className="p-2.5 rounded-lg border border-dashed border-border/60 text-2xs text-muted-foreground flex items-center gap-2">
+                <div className="p-3 rounded-lg border border-dashed border-border/60 text-2xs text-muted-foreground flex items-center gap-2">
                   <Building2 className="size-3.5 text-muted-foreground/60" />
                   <span>Nenhum hotel selecionado.</span>
                 </div>
@@ -3900,9 +4277,9 @@ export function UnifiedProposalWorkspace({
                     type="button"
                     onClick={() => saveProposalMutation.mutate({ openStudioAfterSave: true })}
                     disabled={saveProposalMutation.isPending}
-                    className="w-full h-11 text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer"
+                    className="w-full h-11 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer"
                   >
-                    {saveProposalMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Layers className="size-4" />}
+                    {saveProposalMutation.isPending ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Layers className="size-4" />}
                     <span>Salvar & Abrir Studio</span>
                   </Button>
 

@@ -44,9 +44,9 @@ export function buildBaseViewModel(p: Proposal, agencyData: any): BaseViewModel 
       whatsapp: agencyData?.whatsapp,
       phone: agencyData?.phone,
       email: agencyData?.email,
-      brand_color: agencyData?.brand_color || "#3b82f6",
-      brand_color_fg: agencyData?.brand_color_fg || "#ffffff",
-      brand_color_light: agencyData?.brand_color_light || "#eff6ff",
+      brand_color: agencyData?.brand_color || "var(--color-blue-500)",
+      brand_color_fg: agencyData?.brand_color_fg || "var(--color-neutral-50)",
+      brand_color_light: agencyData?.brand_color_light || "var(--color-blue-50)",
     },
     client: {
       name: (p as any).client_name || "",

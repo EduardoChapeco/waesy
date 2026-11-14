@@ -21,7 +21,17 @@ import {
   Car,
   Utensils,
 } from "lucide-react";
-import { DocumentPage } from "./blocks/UI";
+import {
+  DocumentPage,
+  getTourMetaLine,
+  getTransferBadgeLabel,
+  getTransferMetaLine,
+  ProposalAdaptiveImage,
+  ProposalAgencyLogo,
+  ProposalItineraryMediaGrid,
+  ProposalMultiNicheSpecsBlock,
+  ProposalPricingBreakdownBlock,
+} from "./blocks/UI";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -84,11 +94,13 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
       <DocumentPage format={format} className="relative flex-col justify-between p-10 sm:p-14">
         {p.cover_image_url ? (
           <>
-            <img
+            <ProposalAdaptiveImage
               src={p.cover_image_url}
               alt={p.title || "Capa"}
-              crossOrigin="anonymous"
-              className="absolute inset-0 w-full h-full object-cover"
+              objectPosition={theme.coverCrop.objectPosition}
+              scale={theme.coverCrop.scale}
+              fit={theme.coverCrop.fit}
+              className="absolute inset-0 w-full h-full"
             />
             <div className="absolute inset-0 p-surface-hero-overlay" />
           </>
@@ -98,26 +110,17 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
 
         {/* Logo / Nome da Agência no Topo */}
         <div className="relative z-10 flex items-center justify-between gap-4">
-          {vm.agency.logo_url ? (
-            <img
-              src={vm.agency.logo_url}
-              crossOrigin="anonymous"
-              alt={vm.agency.name}
-              className="h-12 w-auto max-w-44 object-contain"
-              width={176}
-              height={48}
-            />
-          ) : (
-            <div
-              className={`text-2xl font-bold uppercase tracking-tight ${p.cover_image_url ? "p-text-on-dark" : "p-text-ink"}`}
-            >
-              {vm.agency.name}
-            </div>
-          )}
+          <ProposalAgencyLogo
+            agency={vm.agency}
+            theme={theme}
+            variant={p.cover_image_url ? "hero" : "surface"}
+          />
           <div
             className={`text-right ${p.cover_image_url ? "p-text-on-dark-muted" : "p-text-muted"}`}
           >
-            <div className="text-xs font-bold uppercase tracking-widest">Lâmina Executiva</div>
+            <div className="text-xs font-bold uppercase tracking-widest">
+              {theme.nicheCopy.heroKicker}
+            </div>
             <div className="text-base font-mono font-bold p-text-brand">#{p.number}</div>
           </div>
         </div>
@@ -251,6 +254,12 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                           {d.description}
                         </p>
                       )}
+                      <ProposalItineraryMediaGrid
+                        images={d.images}
+                        title={d.title}
+                        objectPosition={(d as any).object_position}
+                        scale={(d as any).image_scale}
+                      />
                     </div>
                   );
                 })}
@@ -443,53 +452,50 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {theme.isSectionVisible("transfers") &&
-                p.transfers?.map((t, idx) => (
-                  <div
-                    key={`tr-${idx}`}
-                    className="p-surface-card border p-border-main rounded-xl p-5 flex flex-col gap-2"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="p-text-ink font-bold text-base">
-                        {t.description || "Transfer"}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
-                        {t.type === "shared" ? "Regular" : "Privativo"}
-                      </span>
-                    </div>
-                    <div className="text-xs p-text-muted">
-                      {t.vehicle && (
-                        <span>
-                          Veículo: <strong className="p-text-ink">{t.vehicle}</strong>{" "}
+                p.transfers?.map((t, idx) => {
+                  const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
+                  return (
+                    <div
+                      key={`tr-${idx}`}
+                      className="p-surface-card border p-border-main rounded-xl p-5 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="p-text-ink font-bold text-base">
+                          {t.description || (t as any).route || "Transfer"}
                         </span>
-                      )}
-                      {t.date && <span>· Data: {formatDate(t.date)}</span>}
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
+                          {getTransferBadgeLabel(t.type)}
+                        </span>
+                      </div>
+                      {transferMeta && <div className="text-xs p-text-muted">{transferMeta}</div>}
+                      {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
                     </div>
-                    {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
-                  </div>
-                ))}
+                  );
+                })}
 
               {theme.isSectionVisible("tours") &&
-                p.tours?.map((tour, idx) => (
-                  <div
-                    key={`to-${idx}`}
-                    className="p-surface-card border p-border-main rounded-xl p-5 flex flex-col gap-2"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="p-text-ink font-bold text-base">
-                        {tour.description || (tour as any).title || "Passeio"}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-subtle border p-border-subtle p-text-muted">
-                        Experiência
-                      </span>
+                p.tours?.map((tour, idx) => {
+                  const tourMeta = getTourMetaLine(tour as Record<string, any>);
+                  return (
+                    <div
+                      key={`to-${idx}`}
+                      className="p-surface-card border p-border-main rounded-xl p-5 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="p-text-ink font-bold text-base">
+                          {tour.description || (tour as any).title || "Passeio"}
+                        </span>
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-subtle border p-border-subtle p-text-muted">
+                          Experiência
+                        </span>
+                      </div>
+                      {tourMeta && <div className="text-xs p-text-muted">{tourMeta}</div>}
+                      {tour.notes && (
+                        <p className="text-xs p-text-faint whitespace-pre-wrap">{tour.notes}</p>
+                      )}
                     </div>
-                    {tour.date && (
-                      <div className="text-xs p-text-muted">Duração / Data: {tour.date}</div>
-                    )}
-                    {tour.notes && (
-                      <p className="text-xs p-text-faint whitespace-pre-wrap">{tour.notes}</p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
 
@@ -571,7 +577,20 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                     </div>
                   )}
                 </div>
-                {p.terms && <p className="p-text-faint whitespace-pre-line">{p.terms}</p>}
+                {customEntries.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {customEntries.map((entry) => (
+                      <div
+                        key={entry.key}
+                        className="p-surface-card p-3 rounded-lg border p-border-subtle"
+                      >
+                        <div className="text-xs uppercase font-bold p-text-faint">{entry.label}</div>
+                        <div className="text-xs font-semibold p-text-ink mt-1 whitespace-pre-line">{entry.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {p.terms && <p className="p-text-muted whitespace-pre-line leading-relaxed">{p.terms}</p>}
               </div>
             )}
           </div>
@@ -646,6 +665,14 @@ export default function TemplateLandscape({ proposal: p, agency }: TemplateProps
                 </div>
               </div>
             </div>
+
+            <ProposalPricingBreakdownBlock
+              totals={vm.totals}
+              theme={theme}
+              formatCurrency={formatCurrency}
+              currency={p.currency}
+            />
+            <ProposalMultiNicheSpecsBlock theme={theme} className="mt-6" />
           </div>
 
           {/* Footer com Assinatura / Consultor */}

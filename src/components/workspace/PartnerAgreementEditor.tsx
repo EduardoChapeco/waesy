@@ -139,11 +139,17 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
                   <SelectValue placeholder="Selecione um profissional" />
                 </SelectTrigger>
                 <SelectContent className="rounded-lg">
-                  {members.map((m) => (
-                    <SelectItem key={m.id} value={m.id} className="text-xs">
-                      {m.full_name || m.email || "Sem nome"} ({m.role})
+                  {members.length === 0 ? (
+                    <SelectItem value="none" disabled className="text-xs">
+                      Nenhum profissional disponível
                     </SelectItem>
-                  ))}
+                  ) : (
+                    members.map((m) => (
+                      <SelectItem key={m.id} value={m.id} className="text-xs">
+                        {m.full_name || m.email || "Sem nome"} ({m.role})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

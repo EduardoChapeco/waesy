@@ -304,6 +304,75 @@ export const createGroupTour = createServerFn({ method: "POST" })
     return { success: true, id: inserted.id };
   });
 
+export const duplicateGroupTour = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid("ID de excursão inválido.") }))
+  .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autorizado.");
+
+    const { data: src, error: fetchErr } = await supabase
+      .from("tourism_experiences")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+
+    if (fetchErr || !src) throw new Error("Excursão não encontrada para duplicação.");
+    if (src.store_id !== identity.store_id && identity.role !== "platform_admin") {
+      throw new Error("Acesso não autorizado a esta excursão.");
+    }
+
+    const totalSeats = Number(src.total_seats) || 46;
+    const rawSeats = Array.isArray(src.seats) ? src.seats : [];
+    const resetSeats = rawSeats.map((seat: any) => ({
+      ...seat,
+      status: seat?.status === "blocked" ? "blocked" : "free",
+      passenger_name: null,
+      passenger_document: null,
+      passenger_phone: null,
+    }));
+
+    const { data: inserted, error: insErr } = await supabase
+      .from("tourism_experiences")
+      .insert({
+        store_id: src.store_id,
+        author_profile_id: identity.id,
+        title: `${src.title} (Cópia)`,
+        subtitle: src.subtitle,
+        category: src.category || "group_tour",
+        destination: src.destination,
+        destination_city: src.destination_city,
+        departure_city: src.departure_city,
+        departure_date: src.departure_date,
+        departure_time: src.departure_time,
+        return_date: src.return_date,
+        return_time: src.return_time,
+        location: src.location,
+        price_cents: src.price_cents,
+        price_display: src.price_display,
+        duration: src.duration,
+        total_seats: totalSeats,
+        available_seats: totalSeats,
+        seats: resetSeats,
+        rooms: [],
+        included_items: src.included_items || [],
+        excluded_items: src.excluded_items || [],
+        cover_image_url: src.cover_image_url || null,
+        image_url: src.image_url || null,
+        notes: src.notes || null,
+        status: "draft",
+        description: src.description,
+      })
+      .select("id")
+      .single();
+
+    if (insErr || !inserted) {
+      throw new Error("Erro ao duplicar excursão: " + (insErr?.message || "desconhecido"));
+    }
+
+    return { success: true, id: inserted.id };
+  });
+
 // ─── 2. Buscar Grupo Terrestre por ID (Workspace) ─────────────────────────────
 
 export const getGroupTourById = createServerFn({ method: "GET" })

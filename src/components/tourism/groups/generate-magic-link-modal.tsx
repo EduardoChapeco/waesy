@@ -218,7 +218,7 @@ export function GenerateMagicLinkModal({
           <TabsContent value="store_form" className="space-y-4">
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Utilize os formulários dinâmicos customizados no módulo de Formulários de Onboarding da sua agência. As respostas sincronizam com o Lead CRM e Ficha 360°.
+                Utilize os formulários dinâmicos customizados no módulo de Formulários de Onboarding da sua agência. As respostas sincronizam com o Lead CRM e Perfil do Cliente.
               </p>
 
               {storeForms.length > 0 ? (

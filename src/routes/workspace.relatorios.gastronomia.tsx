@@ -47,7 +47,7 @@ function KpiCard({
  "rounded-lg border p-5 flex flex-col gap-3 transition-shadow",
  highlight
  ? "bg-primary/5 border-primary/30"
- : "bg-card border-border/80 shadow-2xs",
+ : "bg-card border-border/80",
  )}
  >
  <div className="flex items-center justify-between">
@@ -57,7 +57,7 @@ function KpiCard({
  </div>
  </div>
  <div>
- <p className={cn("text-2xl font-black tracking-tight", highlight ? "text-primary" : "text-foreground")}>
+ <p className={cn("text-2xl font-semibold tracking-tight", highlight ? "text-primary" : "text-foreground")}>
  {value}
  </p>
  {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
@@ -77,7 +77,7 @@ function PeakHoursHeatmap({ peakHoursMap }: { peakHoursMap: Record<string, numbe
  if (pct < 0.25) return "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400";
  if (pct < 0.5) return "bg-warning/25 text-warning-strong ";
  if (pct < 0.75) return "bg-orange-500/30 text-orange-700 dark:text-orange-400";
- return "bg-red-500/40 text-red-700 dark:text-red-400 font-black";
+ return "bg-red-500/40 text-red-700 dark:text-red-400 font-semibold";
  };
 
  return (
@@ -93,7 +93,7 @@ function PeakHoursHeatmap({ peakHoursMap }: { peakHoursMap: Record<string, numbe
  title={`${hour}h — ${count} pedidos`}
  >
  <span className="text-xs font-bold font-mono">{hour}h</span>
- <span className="text-xs font-black">{count}</span>
+ <span className="text-xs font-semibold">{count}</span>
  </div>
  ))}
  </div>
@@ -142,7 +142,7 @@ function ProductBar({
  <div className="flex items-center gap-3">
  <span
  className={cn(
- "w-6 text-center text-xs font-black font-mono shrink-0",
+ "w-6 text-center text-xs font-semibold font-mono shrink-0",
  isTop3 ? "text-primary" : "text-muted-foreground",
  )}
  >
@@ -297,9 +297,9 @@ function GastronomyReportsPage() {
  {/* ── Linha: Canais + Top Produtos ── */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {/* Canal Breakdown (hoje) */}
- <div className="bg-card rounded-lg border border-border/80 p-5 shadow-2xs space-y-4">
+ <div className="bg-card rounded-lg border border-border/80 p-5 space-y-4">
  <div className="flex items-center justify-between">
- <h2 className="text-sm font-black">Pedidos por Canal</h2>
+ <h2 className="text-sm font-semibold">Pedidos por Canal</h2>
  <Badge variant="outline" className="text-xs font-mono">hoje</Badge>
  </div>
  {totalChannelToday === 0 ? (
@@ -314,9 +314,9 @@ function GastronomyReportsPage() {
  </div>
 
  {/* Status da Cozinha em Tempo Real */}
- <div className="bg-card rounded-lg border border-border/80 p-5 shadow-2xs space-y-4">
+ <div className="bg-card rounded-lg border border-border/80 p-5 space-y-4">
  <div className="flex items-center justify-between">
- <h2 className="text-sm font-black">Status da Cozinha</h2>
+ <h2 className="text-sm font-semibold">Status da Cozinha</h2>
  <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/30 bg-emerald-500/10 font-mono">
  ao vivo
  </Badge>
@@ -324,12 +324,12 @@ function GastronomyReportsPage() {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30 text-center">
  <Flame className="size-6 text-blue-600 mx-auto mb-1" />
- <p className="text-2xl font-black text-blue-700 dark:text-blue-400">{reports.ordersInProgress}</p>
+ <p className="text-2xl font-semibold text-blue-700 dark:text-blue-400">{reports.ordersInProgress}</p>
  <p className="text-xs font-bold text-muted-foreground">Em Preparo</p>
  </div>
  <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-center">
  <PackageCheck className="size-6 text-emerald-600 mx-auto mb-1" />
- <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">{reports.ordersReady}</p>
+ <p className="text-2xl font-semibold text-emerald-700 dark:text-emerald-400">{reports.ordersReady}</p>
  <p className="text-xs font-bold text-muted-foreground">Prontos</p>
  </div>
  </div>
@@ -337,9 +337,9 @@ function GastronomyReportsPage() {
  </div>
 
  {/* ── Horário de Pico ── */}
- <div className="bg-card rounded-lg border border-border/80 p-5 shadow-2xs space-y-4">
+ <div className="bg-card rounded-lg border border-border/80 p-5 space-y-4">
  <div className="flex items-center justify-between">
- <h2 className="text-sm font-black">Horário de Pico</h2>
+ <h2 className="text-sm font-semibold">Horário de Pico</h2>
  <Badge variant="outline" className="text-xs font-mono">últimos 30 dias</Badge>
  </div>
  {Object.values(reports.peakHoursMap).every((v) => v === 0) ? (
@@ -350,9 +350,9 @@ function GastronomyReportsPage() {
  </div>
 
  {/* ── Top Produtos do Mês ── */}
- <div className="bg-card rounded-lg border border-border/80 p-5 shadow-2xs space-y-4">
+ <div className="bg-card rounded-lg border border-border/80 p-5 space-y-4">
  <div className="flex items-center justify-between">
- <h2 className="text-sm font-black">Produtos Mais Vendidos</h2>
+ <h2 className="text-sm font-semibold">Produtos Mais Vendidos</h2>
  <Badge variant="outline" className="text-xs font-mono">este mês</Badge>
  </div>
  {reports.topProducts.length === 0 ? (

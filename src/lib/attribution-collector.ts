@@ -17,6 +17,8 @@ export interface ClientAttributionSnapshot {
   fbc?: string;
   fbclid?: string;
   gclid?: string;
+  gbraid?: string;
+  wbraid?: string;
   ttclid?: string;
   ctwaClid?: string;
   utmSource?: string;
@@ -120,8 +122,11 @@ export function collectClientAttribution(): ClientAttributionSnapshot {
   }
   if (fbc) persistParam("waesy_fbc", fbc);
 
-  // 3. Google / TikTok / Click-to-WhatsApp Click IDs
-  const gclid = persistParam("waesy_gclid", urlParams.get("gclid") || urlParams.get("wbraid") || urlParams.get("gbraid") || undefined);
+  // 3. Google / TikTok / Click-to-WhatsApp Click IDs (suporta gclid, gbraid, wbraid iOS)
+  const rawGclid = urlParams.get("gclid") || undefined;
+  const gbraid = persistParam("waesy_gbraid", urlParams.get("gbraid") || undefined);
+  const wbraid = persistParam("waesy_wbraid", urlParams.get("wbraid") || undefined);
+  const gclid = persistParam("waesy_gclid", rawGclid || wbraid || gbraid || undefined);
   const ttclid = persistParam("waesy_ttclid", urlParams.get("ttclid") || undefined);
   const ctwaClid = persistParam("waesy_ctwa_clid", urlParams.get("ctwa_clid") || undefined);
 
@@ -178,6 +183,8 @@ export function collectClientAttribution(): ClientAttributionSnapshot {
     fbc,
     fbclid,
     gclid,
+    gbraid,
+    wbraid,
     ttclid,
     ctwaClid,
     utmSource,
@@ -206,6 +213,8 @@ export function buildAttributionCustomFields(attr: ClientAttributionSnapshot): R
   if (attr.fbc) out.fbc = attr.fbc;
   if (attr.fbclid) out.fbclid = attr.fbclid;
   if (attr.gclid) out.gclid = attr.gclid;
+  if (attr.gbraid) out.gbraid = attr.gbraid;
+  if (attr.wbraid) out.wbraid = attr.wbraid;
   if (attr.ttclid) out.ttclid = attr.ttclid;
   if (attr.ctwaClid) out.ctwa_clid = attr.ctwaClid;
   if (attr.utmSource) out.utm_source = attr.utmSource;

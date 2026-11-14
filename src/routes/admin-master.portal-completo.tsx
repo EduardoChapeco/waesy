@@ -37,11 +37,12 @@ function AdminMasterPortalCompletoPage() {
   const [activeTab, setActiveTab] = useState<"waitlist" | "content">("waitlist");
 
   // Waitlist Query
-  const { data: waitlistData, refetch: refetchWaitlist } = useQuery({
+  const { data: waitlistData, isLoading: isWaitlistLoading, refetch: refetchWaitlist } = useQuery({
     queryKey: ["admin-workspace-waitlist"],
     queryFn: () => listWorkspaceWaitlist(),
     initialData: initialWaitlist || [],
   });
+  void isWaitlistLoading;
 
   const waitlist = (Array.isArray(waitlistData) ? waitlistData : (waitlistData as any)?.waitlist) || [];
 
@@ -98,14 +99,9 @@ function AdminMasterPortalCompletoPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-foreground">Portal Completo</h1>
-            <Badge variant="outline" className="text-2xs font-mono">
-              BETA MANAGEMENT
-            </Badge>
-          </div>
+          <h1 className="text-xl font-semibold text-foreground">Portal Completo</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Gerencie a landing page de apresentação dos módulos avançados e aprove a migração de empresas em 1 clique.
+            Gerencie a landing page dos módulos avançados e aprove a migração de empresas.
           </p>
         </div>
 

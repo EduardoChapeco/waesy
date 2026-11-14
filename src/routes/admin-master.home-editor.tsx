@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { ErrorState } from "@/components/state/states";
 import {
   Plus,
   Trash2,
@@ -68,13 +69,21 @@ export const Route = createFileRoute("/admin-master/home-editor")({
   loader: async () => {
     try {
       const [sections, menus] = await Promise.all([
-        listAdminHomePageSections().catch(() => []),
-        getNavigationMenus().catch(() => []),
+        listAdminHomePageSections(),
+        getNavigationMenus(),
       ]);
-      return { sections, menus };
-    } catch (err) {
+      return {
+        sections: sections || [],
+        menus: menus || [],
+        loadError: null as string | null,
+      };
+    } catch (err: any) {
       console.error("[loader:admin-master.home-editor] Erro:", err);
-      return { sections: [], menus: [] };
+      return {
+        sections: [],
+        menus: [],
+        loadError: err?.message || "Não foi possível carregar as seções e menus da Home.",
+      };
     }
   },
   component: AdminMasterHomeEditorPage,
@@ -125,6 +134,7 @@ export const CANONICAL_PRESETS = [
 ];
 
 function AdminMasterHomeEditorPage() {
+  const router = useRouter();
   const loaderData = (Route.useLoaderData?.() as any) || {};
   const [sections, setSections] = useState<HomePageSectionDTO[]>(loaderData.sections || []);
   const [menus, setMenus] = useState<any[]>(loaderData.menus || []);
@@ -190,7 +200,7 @@ function AdminMasterHomeEditorPage() {
     try {
       const [data, navData] = await Promise.all([
         listAdminHomePageSections(),
-        getNavigationMenus().catch(() => []),
+        getNavigationMenus(),
       ]);
       setSections(data || []);
       if (navData && navData.length > 0) setMenus(navData);
@@ -528,6 +538,18 @@ function AdminMasterHomeEditorPage() {
     }
     return true;
   });
+
+  if (loaderData.loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar editor da Home"
+          description={loaderData.loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-6 pb-20">

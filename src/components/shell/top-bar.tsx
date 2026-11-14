@@ -5,7 +5,6 @@ import { LocationMasterPill } from "@/components/location/location-master-pill";
 import { UtilityCluster } from "@/components/shell/utility-cluster";
 import { MagnifyingGlass, List, Plus } from "@phosphor-icons/react";
 import { drawerStore } from "@/lib/drawer-store";
-import { BetaExplanationModal } from "@/components/shell/beta-explanation-modal";
 import { openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
 import { openWhatsAppUnifiedSearch } from "@/components/shell/WhatsAppUnifiedSearchModal";
 
@@ -27,7 +26,6 @@ export interface TopBarProps {
  * - Zero vazamento de breakpoints: chips mobile redundantes erradicados (a navegação mobile pertence à MobileNav)
  */
 export function TopBar({ session, brandSettings }: TopBarProps) {
-  const [betaModalOpen, setBetaModalOpen] = React.useState(false);
   const location = useLocation();
 
   const platformDisplayName =
@@ -75,21 +73,11 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
               />
             ) : null}
             {(brandSettings?.show_name !== false || !brandSettings?.logo_url) && (
-              <span className="font-display font-black text-lg sm:text-xl tracking-tight text-foreground leading-none truncate max-w-28 sm:max-w-none">
+              <span className="font-display font-semibold text-lg sm:text-xl tracking-tight text-foreground leading-none truncate max-w-28 sm:max-w-none">
                 {platformDisplayName}
               </span>
             )}
           </Link>
-
-          {/* Badge BETA Silencioso (Apenas Desktop/Tablet para não comprimir o header mobile) */}
-          <button
-            type="button"
-            onClick={() => setBetaModalOpen(true)}
-            title="Versão Beta"
-            className="hidden sm:inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border bg-muted hover:bg-accent transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            BETA
-          </button>
 
           {/* Location Master Pill — exibido a partir de telas sm para garantir 100% de largura nativa sem transbordamento no mobile */}
           <LocationMasterPill className="hidden sm:flex max-w-36 sm:max-w-52" />
@@ -131,8 +119,6 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           <UtilityCluster session={session} embedded={true} />
         </div>
       </div>
-
-      <BetaExplanationModal open={betaModalOpen} onOpenChange={setBetaModalOpen} />
     </header>
   );
 }

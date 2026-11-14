@@ -1,18 +1,26 @@
 import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal-share-whatsapp-modal";
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { getTravelProposalById, updateTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
+import {
+  getTravelProposalById,
+  updateTravelProposal,
+  duplicateTravelProposal,
+  deleteTravelProposal,
+  type TravelProposalDTO,
+  type ProposalCanvasFormat,
+} from "@/services/travel-proposal.functions";
 import { createContractFromProposal } from "@/services/travel-contract.functions";
 import { issueCustomizedContractFromProposal } from "@/services/contract-compiler.functions";
 import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templates";
@@ -22,6 +30,7 @@ import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-can
 import { StudioSidebarEditor } from "@/components/tourism/studio/studio-sidebar-editor";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
+import { DocumentExportMenu } from "@/components/documents/DocumentExportMenu";
 import { cn } from "@/lib/utils";
 
 type EditableProposalPatch = Omit<Partial<TravelProposalDTO>, "status"> & {
@@ -29,7 +38,7 @@ type EditableProposalPatch = Omit<Partial<TravelProposalDTO>, "status"> & {
 };
 
 function toEditableProposalPatch(patch: Partial<TravelProposalDTO>): EditableProposalPatch {
-  const { status, ...rest } = patch;
+  const { status, selected_customer_label: _ignoredLabel, ...rest } = patch;
   return status === "approved" ? rest : { ...rest, status };
 }
 
@@ -56,6 +65,8 @@ export const Route = createFileRoute("/workspace/turismo/propostas/$id")({
 function WorkspaceProposalStudioPage() {
   const { proposal: initialProposal } = ((Route.useLoaderData?.() as any) || {});
   const navigate = useNavigate();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [proposal, setProposal] = useState<TravelProposalDTO | null>(initialProposal || null);
  const [isExportingPdf, setIsExportingPdf] = useState(false);
  const [isExportingImage, setIsExportingImage] = useState(false);
@@ -84,6 +95,15 @@ function WorkspaceProposalStudioPage() {
  const [zoomScale, setZoomScale] = useState<number | null>(null);
  const [autoFitScale, setAutoFitScale] = useState<number>(0.85);
 
+ const syncProposalCaches = useCallback(async () => {
+   await Promise.all([
+     queryClient.invalidateQueries({ queryKey: ["agency-proposals"] }),
+     queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] }),
+     queryClient.invalidateQueries({ queryKey: ["crm-leads"] }),
+     router.invalidate(),
+   ]);
+ }, [queryClient, router]);
+
  const saveMutation = useMutation({
  mutationFn: (patch: Partial<TravelProposalDTO>) =>
  updateTravelProposal({
@@ -93,17 +113,53 @@ function WorkspaceProposalStudioPage() {
  },
  }),
  onMutate: () => setIsSaving(true),
+ onSuccess: () => {
+   void queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+ },
  onSettled: () => setIsSaving(false),
  onError: (err: any) => toast.error(err?.message || "Erro ao salvar alterações"),
  });
 
  const publishMutation = useMutation({
-   mutationFn: () => updateTravelProposal({ data: { id: proposal!.id, patch: { status: "sent" } } }),
+   mutationFn: () => {
+     const validUntil = proposal?.valid_until && Date.parse(proposal.valid_until) > Date.now()
+       ? proposal.valid_until
+       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+     return updateTravelProposal({
+       data: {
+         id: proposal!.id,
+         patch: { status: "sent", valid_until: validUntil },
+       },
+     });
+   },
    onSuccess: () => {
      setProposal((current) => current ? { ...current, status: "sent" } : current);
      toast.success("Proposta publicada para aceite. Reserva e pagamento ainda dependem de confirmação separada.");
+     void syncProposalCaches();
    },
    onError: (err: any) => toast.error(err?.message || "Não foi possível publicar a proposta."),
+ });
+
+ const duplicateMutation = useMutation({
+   mutationFn: () => duplicateTravelProposal({ data: { id: proposal!.id } }),
+   onSuccess: async (res) => {
+     toast.success("Proposta duplicada! Abrindo nova versão no Studio...");
+     await syncProposalCaches();
+     if (res?.id) {
+       navigate({ to: "/workspace/turismo/propostas/$id", params: { id: res.id } });
+     }
+   },
+   onError: (err: any) => toast.error(err?.message || "Erro ao duplicar proposta."),
+ });
+
+ const deleteMutation = useMutation({
+   mutationFn: () => deleteTravelProposal({ data: { id: proposal!.id } }),
+   onSuccess: async () => {
+     toast.success("Proposta excluída permanentemente!");
+     await syncProposalCaches();
+     navigate({ to: "/workspace/turismo/propostas" });
+   },
+   onError: (err: any) => toast.error(err?.message || "Erro ao excluir proposta."),
  });
 
  const handleChange = useCallback(
@@ -119,12 +175,8 @@ function WorkspaceProposalStudioPage() {
  const handlePublishForAcceptance = () => {
    if (!proposal) return;
    const validUntil = proposal.valid_until ? Date.parse(proposal.valid_until) : Number.NaN;
-   if (!proposal.snapshot_hash) {
-     toast.error("Identificador único da proposta não encontrado. Salve as alterações e tente novamente.");
-     return;
-   }
-   if (!Number.isFinite(validUntil) || validUntil <= Date.now()) {
-     toast.error("Defina uma validade futura antes de publicar a proposta.");
+   if (proposal.valid_until && Number.isFinite(validUntil) && validUntil <= Date.now()) {
+     toast.error("A validade definida está no passado. Ajuste a data de validade antes de publicar.");
      return;
    }
    publishMutation.mutate();
@@ -213,15 +265,24 @@ function WorkspaceProposalStudioPage() {
 
  const publicUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/proposta/${proposal.public_token}`;
 
- const handleCopyLink = () => {
-   if (proposal.status !== "sent") {
-     toast.info("Publique a proposta para habilitar o aceite antes de compartilhar o link.");
-     return;
+ const handleCopyLink = async () => {
+   let publishedNow = false;
+   if (proposal.status === "draft") {
+     try {
+       await publishMutation.mutateAsync();
+       publishedNow = true;
+     } catch {
+       return;
+     }
    }
    if (typeof navigator !== "undefined") {
- navigator.clipboard.writeText(publicUrl);
- toast.success("Link público da proposta copiado!");
- }
+     await navigator.clipboard.writeText(publicUrl);
+     toast.success(
+       publishedNow
+         ? "Proposta publicada e link público copiado!"
+         : "Link público da proposta copiado!",
+     );
+   }
  };
 
  const handleExportPdf = async () => {
@@ -256,6 +317,25 @@ function WorkspaceProposalStudioPage() {
  const currentTemplate = proposal.template_theme || (proposal as any).template || "editorial-flat";
  const activeCanvasTheme = resolveProposalCanvasTheme(proposal as unknown as Record<string, any>);
  const displayZoom = Math.round((zoomScale !== null ? zoomScale : autoFitScale) * 100);
+ const proposalExportMarkdown = [
+ `# ${proposal.title}`,
+ "",
+ `**Cliente:** ${proposal.client_name}`,
+ `**Destino:** ${proposal.destination_city || "A definir"}`,
+ proposal.travel_start_date
+ ? `**Período:** ${proposal.travel_start_date} a ${proposal.travel_end_date || ""}`
+ : "",
+ proposal.subtitle ? `\n## Apresentação\n${proposal.subtitle}` : "",
+ proposal.special_notes ? `\n## Observações & Roteiro\n${proposal.special_notes}` : "",
+ proposal.includes?.length
+ ? `\n## Itens Inclusos\n${proposal.includes.map((item: string) => `- ${item}`).join("\n")}`
+ : "",
+ proposal.pricing?.payment_terms
+ ? `\n## Condições Comerciais\n${proposal.pricing.payment_terms}`
+ : "",
+ ]
+ .filter(Boolean)
+ .join("\n");
 
  return (
  <div className="flex h-dvh w-screen flex-col overflow-hidden bg-background select-none font-sans">
@@ -352,6 +432,17 @@ function WorkspaceProposalStudioPage() {
  <span className="hidden waesy-expanded-flex">{isExportingPdf ? "Gerando..." : "PDF"}</span>
  </Button>
 
+ <DocumentExportMenu
+ filenameBase={proposal.title || `proposta-${proposal.id.slice(0, 8)}`}
+ title={proposal.title}
+ subtitle={`${proposal.client_name} · ${proposal.destination_city || ""}`}
+ agencyName={proposal.agency_name || "Organização Emissora"}
+ elementId="proposal-canvas"
+ markdownContent={proposalExportMarkdown}
+ pageFormat={proposal.canvas_format}
+ compact
+ />
+
  <Button
  type="button"
  size="sm"
@@ -392,12 +483,26 @@ function WorkspaceProposalStudioPage() {
  </Button>
 
  <Button
+ asChild
  type="button"
  size="sm"
- disabled={proposal.status !== "sent"}
+ variant="outline"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-3 cursor-pointer"
+ title="Abrir Página Web da Proposta"
+ >
+   <a href={`/proposta/${proposal.public_token}`} target="_blank" rel="noreferrer">
+     <ExternalLink className="size-3.5 text-primary" />
+     <span className="hidden waesy-expanded-flex">Ver Web</span>
+   </a>
+ </Button>
+
+ <Button
+ type="button"
+ size="sm"
+ disabled={publishMutation.isPending}
  onClick={handleCopyLink}
- className="rounded-lg text-xs font-bold gap-2 h-11 px-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
- title={proposal.status === "sent" ? "Copiar link público da proposta" : "Publique a proposta antes de compartilhar o link"}
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+ title={proposal.status === "draft" ? "Publicar e copiar link público da proposta" : "Copiar link público da proposta"}
  >
  <Copy className="size-3.5" />
  </Button>
@@ -406,21 +511,35 @@ function WorkspaceProposalStudioPage() {
  <Button
  type="button"
  size="sm"
- disabled={proposal.status !== "sent"}
- onClick={() => {
-   if (proposal.status !== "sent") {
-     toast.info("Publique a proposta para habilitar o aceite antes de compartilhar.");
-     return;
+ onClick={async () => {
+   if (proposal.status === "draft") {
+     try {
+       await publishMutation.mutateAsync();
+     } catch {
+       return;
+     }
    }
    setWhatsappModalOpen(true);
  }}
- className="rounded-lg text-xs font-bold gap-2 h-11 px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+ className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
  title="Enviar Proposta WhatsApp"
  >
  <Send className="size-3.5" />
  <span className="hidden waesy-expanded-flex">WhatsApp</span>
  </Button>
  )}
+
+ <CrudActionsMenu
+   entityName="Proposta"
+   viewUrl={`/proposta/${proposal.public_token}`}
+   viewLabel="Ver Página Web"
+   onDuplicate={() => duplicateMutation.mutate()}
+   onDelete={async () => {
+     await deleteMutation.mutateAsync();
+   }}
+   deleteConfirmTitle={`Excluir proposta "${proposal.title}"?`}
+   deleteConfirmDescription="Esta ação removerá permanentemente a proposta do Studio e do CRM."
+ />
  </div>
  </header>
 

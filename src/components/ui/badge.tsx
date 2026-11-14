@@ -13,14 +13,14 @@ const badgeVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-accent",
         destructive:
-          "bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-200 border border-rose-200 dark:border-rose-800",
+          "bg-destructive/10 text-destructive border border-destructive/20",
         outline: "bg-card text-foreground border border-border hover:bg-muted",
         /** Informational status (e.g. "Approved", "Processing") */
-        info: "bg-sky-50 text-sky-800 dark:bg-sky-950 dark:text-sky-200 border border-sky-200 dark:border-sky-800",
+        info: "bg-info/10 text-info border border-info/20",
         /** Success status (e.g. "Refunded", "Delivered") */
-        success: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800",
+        success: "bg-success/10 text-success border border-success/20",
         /** Warning status (e.g. "Pending review") */
-        warning: "bg-muted text-warning-strong border border-border",
+        warning: "bg-warning/15 text-warning-foreground border border-warning/30",
       },
     },
     defaultVariants: {

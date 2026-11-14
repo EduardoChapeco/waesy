@@ -628,10 +628,10 @@ function CarteiraClientesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setSelectedDrawerCustomer(c)}
-                      className="h-11 min-h-11 sm:h-8 px-2 text-xs font-bold text-primary gap-1 cursor-pointer"
+                      className="h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 sm:px-2 rounded-lg text-xs font-semibold text-primary gap-1 cursor-pointer"
                     >
                       <ShieldCheck className="size-3.5" />
-                      <span>Ficha 360°</span>
+                      <span>Perfil do Cliente</span>
                     </Button>
 
                     <div className="flex items-center gap-1">
@@ -702,9 +702,9 @@ function CarteiraClientesPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setSelectedDrawerCustomer(c)}
-                                className="h-11 min-h-11 sm:h-8 px-2 text-xs font-semibold text-primary"
+                                className="h-11 min-h-11 sm:h-8 sm:min-h-8 px-2 rounded-lg text-xs font-semibold text-primary"
                               >
-                                Ficha 360°
+                                Perfil do Cliente
                               </Button>
                               {c.phone && (
                                 <Button

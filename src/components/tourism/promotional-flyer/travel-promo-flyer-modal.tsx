@@ -734,9 +734,11 @@ export function TravelPromoFlyerModal({
     const el = document.getElementById("travel-promo-canvas-artboard");
     if (!el) throw new Error("Elemento de arte promocional não encontrado no DOM.");
 
+    const resolvedCanvasBg =
+      getComputedStyle(document.documentElement).getPropertyValue("--color-slate-900").trim() || "black";
     const canvas = await renderElementToCanvasSafe(el, {
       scale: 2,
-      backgroundColor: "#0a192f",
+      backgroundColor: resolvedCanvasBg,
     });
 
     return new Promise((resolve, reject) => {
@@ -765,9 +767,16 @@ export function TravelPromoFlyerModal({
       const el = document.getElementById("travel-promo-canvas-artboard");
       if (!el) throw new Error("Elemento de arte promocional não encontrado.");
 
+      const resolvedVideoBg =
+        getComputedStyle(document.documentElement).getPropertyValue("--color-slate-900").trim() || "black";
+      const resolvedFrameBg =
+        getComputedStyle(document.documentElement).getPropertyValue("--color-slate-950").trim() || "black";
+      const resolvedGoldBar =
+        getComputedStyle(document.documentElement).getPropertyValue("--warning").trim() || "gold";
+
       const baseCanvas = await renderElementToCanvasSafe(el, {
         scale: 1.5,
-        backgroundColor: "#0a192f",
+        backgroundColor: resolvedVideoBg,
       });
 
       const videoWidth = baseCanvas.width;
@@ -811,7 +820,7 @@ export function TravelPromoFlyerModal({
         const zoom = 1 + progress * 0.05;
         const alpha = Math.min(progress * 4, 1);
 
-        ctx.fillStyle = "#070b12";
+        ctx.fillStyle = resolvedFrameBg;
         ctx.fillRect(0, 0, videoWidth, videoHeight);
 
         ctx.save();
@@ -823,8 +832,11 @@ export function TravelPromoFlyerModal({
         ctx.restore();
 
         const pulseAlpha = 0.3 + 0.2 * Math.sin(progress * Math.PI * 4);
-        ctx.fillStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+        ctx.save();
+        ctx.globalAlpha = pulseAlpha;
+        ctx.fillStyle = resolvedGoldBar;
         ctx.fillRect(0, videoHeight - 8, videoWidth * progress, 8);
+        ctx.restore();
 
         await new Promise((r) => setTimeout(r, 33));
       }
@@ -1059,17 +1071,15 @@ export function TravelPromoFlyerModal({
           {/* ── Coluna Esquerda/Central: O Canvas de Arte 1080×1920 + Barra IA ── */}
           <div
             ref={previewWrapperRef}
-            style={{ backgroundColor: "rgb(7, 11, 18)" }}
-            className="flex-1 min-h-0 flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 relative overflow-hidden select-none"
+            className="flex-1 min-h-0 flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 relative overflow-hidden select-none bg-slate-950"
           >
             {/* Container escalado responsivamente sem cortes */}
             <div
               style={{
                 width: `${artDimensions.width * previewScale}px`,
                 height: `${artDimensions.height * previewScale}px`,
-                backgroundColor: "rgb(10, 25, 47)",
               }}
-              className="relative rounded-lg border border-border transition-transform duration-150 overflow-hidden"
+              className="relative rounded-lg border border-border transition-transform duration-150 overflow-hidden bg-slate-900"
             >
               <div
                 style={{

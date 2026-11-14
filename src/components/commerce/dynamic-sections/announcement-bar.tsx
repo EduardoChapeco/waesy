@@ -10,8 +10,8 @@ export function AnnouncementBar({ content }: { content: Record<string, unknown> 
 
  return (
  <div
- className="py-2 text-center text-xs font-medium"
- style={{ backgroundColor: bgColor, color: textColor }}
+ className="py-2 text-center text-xs font-medium waesy-dyn-bg waesy-dyn-fg"
+ style={{ "--dyn-bg": bgColor, "--dyn-fg": textColor } as React.CSSProperties}
  >
  {link ? (
  <Link to={link as never} className="underline-offset-2 hover:underline">

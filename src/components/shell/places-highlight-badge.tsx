@@ -17,7 +17,7 @@ export function PlacesHighlightBadge({ className, subtle = false, style }: Place
   return (
     <span style={style} className={cn("inline-flex items-center gap-2 font-bold tracking-tight text-foreground", className)}>
       <span>Places</span>
-      <span className="relative inline-block px-1 text-neutral-950 dark:text-neutral-950 font-bold text-[0.82em] leading-tight select-none">
+      <span className="relative inline-block px-1 text-neutral-950 dark:text-neutral-950 font-bold text-xs leading-tight select-none">
         <span
           className={cn(
             "absolute inset-x-0 bottom-0.5 top-0.5 bg-warning/90 -rotate-1 rounded-xs -z-10 shadow-2xs transition-transform",

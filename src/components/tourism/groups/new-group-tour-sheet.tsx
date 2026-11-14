@@ -636,15 +636,15 @@ export function NewGroupTourSheet({
  }
  setNewInclusionInput("");
  }}
- className="h-10 px-3 text-xs font-semibold gap-1 shrink-0"
+ className="min-h-11 h-11 px-3 text-xs font-semibold gap-1 shrink-0"
  >
  <Plus className="size-3.5" />
  <span>Adicionar</span>
  </Button>
  </div>
 
- {/* Sugestões Rápidas em Linha Única com Scroll Horizontal */}
- <div className="flex flex-nowrap overflow-x-auto no-scrollbar items-center gap-1.5 py-1">
+ {/* Sugestões Rápidas em Quebra Limpa */}
+ <div className="flex flex-wrap items-center gap-2 py-1">
  <span className="text-2xs text-muted-foreground mr-1 shrink-0">Sugestões rápidas:</span>
  {COMMON_INCLUSIONS.filter((item) =>
  !newInclusionInput.trim() || item.toLowerCase().includes(newInclusionInput.toLowerCase())
@@ -655,10 +655,10 @@ export function NewGroupTourSheet({
  key={item}
  type="button"
  onClick={() => toggleInclusion(item)}
- className={`h-7 px-2.5 rounded-full text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
+ className={`min-h-11 h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-2xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 ${
  isSelected
- ? "bg-primary text-primary-foreground font-bold"
- : "bg-muted/40 hover:bg-muted text-foreground border border-border/40 hover:border-border"
+ ? "bg-primary text-primary-foreground font-semibold"
+ : "bg-muted/40 hover:bg-muted text-foreground border border-border/60 hover:border-border"
  }`}
  >
  {isSelected ? <CheckCircle2 className="size-3" /> : <Plus className="size-3" />}
@@ -670,22 +670,23 @@ export function NewGroupTourSheet({
 
  {/* Lista de Itens Inclusos Ativos */}
  {includedItems.length > 0 && (
- <div className="space-y-1.5 pt-2 border-t border-border/30">
+ <div className="space-y-2 pt-2 border-t border-border/30">
  <span className="text-2xs font-bold text-muted-foreground block">
  Itens Ativos no Pacote ({includedItems.length}):
  </span>
- <div className="flex flex-wrap gap-1.5">
+ <div className="flex flex-wrap gap-2">
  {includedItems.map((item) => (
  <span
  key={item}
- className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-primary/10 text-primary border border-primary/20 font-medium"
+ className="inline-flex items-center gap-2 pl-3 pr-1 min-h-11 rounded-md text-xs bg-primary/10 text-primary border border-primary/20 font-medium"
  >
  <span>{item}</span>
  <button
  type="button"
  onClick={() => setIncludedItems(includedItems.filter((i) => i !== item))}
- className="size-4 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="size-11 rounded hover:bg-primary/20 flex items-center justify-center cursor-pointer text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Remover"
+ aria-label={`Remover ${item}`}
  >
  <X className="size-3" />
  </button>

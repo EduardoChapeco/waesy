@@ -173,7 +173,7 @@ export function CardSettingsDrawer({
           {/* ── 1. Preview Visual do Cartão Verde-Limão (Tela 4 Anexa) ── */}
           <div
             className={cn(
-              "relative w-full aspect-[1.586/1] rounded-3xl p-5 flex flex-col justify-between overflow-hidden shadow-overlay transition-colors duration-300",
+              "relative w-full aspect-credit-card rounded-3xl p-5 flex flex-col justify-between overflow-hidden shadow-overlay transition-colors duration-300",
               isLocked
                 ? "bg-zinc-800 text-zinc-400 grayscale border border-zinc-700/60"
                 : "bg-warning text-zinc-950 border border-warning/80"

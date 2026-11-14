@@ -35,13 +35,17 @@ export interface FullViewportKanbanProps<T = any> {
   columns: KanbanColumnDefinition<T>[];
   className?: string;
   columnWidthClass?: string;
+  onDropItem?: (itemId: string, targetColumnId: string) => void;
 }
 
 export function FullViewportKanban<T = any>({
   columns,
   className,
   columnWidthClass = "w-76 sm:w-80",
+  onDropItem,
 }: FullViewportKanbanProps<T>) {
+  const [dragOverColId, setDragOverColId] = React.useState<string | null>(null);
+
   return (
     <div
       className={cn(
@@ -49,58 +53,80 @@ export function FullViewportKanban<T = any>({
         className
       )}
     >
-      {columns.map((col) => (
-        <div
-          key={col.id}
-          className={cn(
-            "flex flex-col h-full min-h-144 shrink-0 rounded-2xl bg-muted/50 dark:bg-muted/30 transition-colors overflow-hidden",
-            columnWidthClass
-          )}
-        >
-          {/* ── Header da Coluna (Fixo no topo da coluna, sem barra neon) ── */}
-          <div className="flex items-center justify-between px-4 py-3 bg-transparent shrink-0">
-            <div className="flex items-center gap-2 min-w-0">
-              {col.color && (
-                <span
-                  className={cn("size-2 rounded-full shrink-0", getColumnColorClass(col.color))}
-                />
+      {columns.map((col) => {
+        const isDragOver = dragOverColId === col.id;
+        return (
+          <div
+            key={col.id}
+            onDragOver={(e) => {
+              if (!onDropItem) return;
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+              if (dragOverColId !== col.id) setDragOverColId(col.id);
+            }}
+            onDragLeave={() => {
+              if (dragOverColId === col.id) setDragOverColId(null);
+            }}
+            onDrop={(e) => {
+              if (!onDropItem) return;
+              e.preventDefault();
+              setDragOverColId(null);
+              const itemId = e.dataTransfer.getData("text/waesy-kanban-id") || e.dataTransfer.getData("text/plain");
+              if (itemId) {
+                onDropItem(itemId, col.id);
+              }
+            }}
+            className={cn(
+              "flex flex-col h-full min-h-144 shrink-0 rounded-2xl bg-muted/50 dark:bg-muted/30 transition-colors overflow-hidden",
+              isDragOver && "ring-2 ring-primary/40 bg-primary/5",
+              columnWidthClass
+            )}
+          >
+            {/* ── Header da Coluna (Sem truncamento prematuro) ── */}
+            <div className="flex items-center justify-between px-4 py-3 bg-transparent shrink-0 gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                {col.color && (
+                  <span
+                    className={cn("size-2 rounded-full shrink-0", getColumnColorClass(col.color))}
+                  />
+                )}
+                <h3 className="text-xs font-bold text-foreground leading-tight break-words line-clamp-2" title={col.title}>
+                  {col.title}
+                </h3>
+                <span className="text-2xs font-mono tabular-nums font-bold text-foreground bg-card px-2 py-0 h-5 inline-flex items-center rounded-md border border-border/60 shrink-0">
+                  {col.count ?? col.items.length}
+                </span>
+              </div>
+
+              {col.headerAction && (
+                <div className="shrink-0 flex items-center">{col.headerAction}</div>
               )}
-              <h3 className="text-xs font-bold text-foreground truncate">
-                {col.title}
-              </h3>
-              <span className="text-2xs font-mono tabular-nums font-bold text-foreground bg-card px-2 py-1 rounded-full shrink-0">
-                {col.count ?? col.items.length}
-              </span>
             </div>
 
-            {col.headerAction && (
-              <div className="shrink-0 flex items-center">{col.headerAction}</div>
-            )}
-          </div>
+            {/* ── Área de Cards com Scroll Interno Independente ── */}
+            <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pb-3 space-y-3">
+              {col.items.map((item, idx) => (
+                <React.Fragment key={(item as any)?.id || idx}>
+                  {col.renderItem(item, idx)}
+                </React.Fragment>
+              ))}
 
-          {/* ── Área de Cards com Scroll Interno Independente ── */}
-          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pb-3 space-y-3">
-            {col.items.map((item, idx) => (
-              <React.Fragment key={(item as any)?.id || idx}>
-                {col.renderItem(item, idx)}
-              </React.Fragment>
-            ))}
+              {col.items.length === 0 && (
+                <div className="min-h-28 flex flex-col items-center justify-center p-4 text-center rounded-xl border border-dashed border-border/50 bg-transparent text-muted-foreground/70 text-xs gap-1">
+                  {col.emptyState || <span>Sem registros</span>}
+                </div>
+              )}
+            </div>
 
-            {col.items.length === 0 && (
-              <div className="h-full min-h-48 flex flex-col items-center justify-center p-4 text-center rounded-2xl bg-card text-muted-foreground/60 text-xs gap-2">
-                {col.emptyState || <span>Nenhum item nesta etapa</span>}
+            {/* ── Footer da Coluna (Fixo no rodapé da coluna) ── */}
+            {col.footerAction && (
+              <div className="p-3 border-t border-border/40 bg-transparent shrink-0">
+                {col.footerAction}
               </div>
             )}
           </div>
-
-          {/* ── Footer da Coluna (Fixo no rodapé da coluna) ── */}
-          {col.footerAction && (
-            <div className="p-3 border-t border-border/40 bg-transparent shrink-0">
-              {col.footerAction}
-            </div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

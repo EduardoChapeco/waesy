@@ -1032,7 +1032,7 @@ function PdvComandasPage() {
  {/* Botão Flutuante Mobile: Abrir Comanda Rápida (Thumb Zone) */}
  <div className="md:hidden fixed bottom-6 right-6 z-40">
  <Button
- className="size-14 rounded-full shadow-xs bg-primary text-primary-foreground flex items-center justify-center p-0"
+ className="size-14 min-h-11 min-w-11 rounded-xl shadow-xs bg-primary text-primary-foreground flex items-center justify-center p-0"
  onClick={() => {
  const firstFree = salonData?.tables?.find((t: any) => t.status === "free");
  if (firstFree) {

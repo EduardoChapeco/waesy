@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { ErrorState } from "@/components/state/states";
 import { toast } from "sonner";
 import {
   CheckCircle2,
@@ -64,16 +65,21 @@ export const Route = createFileRoute("/workspace/atendimento/whatsapp")({
   head: () => ({ meta: [{ title: "Canais WhatsApp — Atendimento" }] }),
   loader: async () => {
     try {
-      const store = await getStoreSettings().catch(() => null);
+      const store = await getStoreSettings();
       const instances = await listWorkspaceWhatsAppInstances({
         data: { store_id: store?.id },
-      }).catch(() => []);
+      });
       return {
         store,
         instances: (instances || []) as WhatsAppChannelInstanceDTO[],
+        loadError: null as string | null,
       };
-    } catch {
-      return { store: null, instances: [] as WhatsAppChannelInstanceDTO[] };
+    } catch (err: any) {
+      return {
+        store: null,
+        instances: [] as WhatsAppChannelInstanceDTO[],
+        loadError: err?.message || "Falha ao carregar instâncias de WhatsApp.",
+      };
     }
   },
   component: WorkspaceAtendimentoWhatsAppPage,
@@ -81,7 +87,7 @@ export const Route = createFileRoute("/workspace/atendimento/whatsapp")({
 
 function getStatusMeta(inst: WhatsAppChannelInstanceDTO) {
   if (inst.is_active && inst.status === "connected") {
-    return { label: "Conectado", dotClass: "bg-emerald-500", tone: "text-emerald-700 dark:text-emerald-300" };
+    return { label: "Conectado", dotClass: "bg-success", tone: "text-success" };
   }
   if (inst.status === "revoked") {
     return { label: "Sessão Revogada", dotClass: "bg-destructive", tone: "text-destructive" };
@@ -96,7 +102,9 @@ function getStatusMeta(inst: WhatsAppChannelInstanceDTO) {
 }
 
 function WorkspaceAtendimentoWhatsAppPage() {
+  const router = useRouter();
   const loaderData = (Route.useLoaderData?.() as any) || {};
+  const loadError = loaderData.loadError || null;
   const store = loaderData.store || null;
   const [instances, setInstances] = useState<WhatsAppChannelInstanceDTO[]>(
     loaderData.instances || [],
@@ -193,7 +201,7 @@ function WorkspaceAtendimentoWhatsAppPage() {
   const handleSyncInstance = async (inst: WhatsAppChannelInstanceDTO) => {
     try {
       const res = await syncWhatsAppInstanceStatus({ data: { id: inst.id } });
-      await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id } }).catch(() => null);
+      await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id, forceImport: true } });
       toast.success(`Canal sincronizado: ${res.state}`);
       await reloadInstances();
     } catch (err: any) {
@@ -254,6 +262,13 @@ function WorkspaceAtendimentoWhatsAppPage() {
 
   return (
     <div className="w-full px-0 sm:px-4 space-y-6">
+      {loadError ? (
+        <ErrorState
+          title="Falha ao carregar canais WhatsApp"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      ) : null}
       <AtendimentoSubmoduleHeader
         activeKey="whatsapp"
         title="Canais WhatsApp"

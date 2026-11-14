@@ -292,7 +292,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
         columns={columns.map((col) => ({
           id: col.id,
           title: col.nome,
-          color: col.cor_hex || "#6366f1",
+          color: col.cor_hex || "var(--color-indigo-500)",
           items: tasks.filter((t) => t.coluna_id === col.id),
           renderItem: (task: any) => (
             <Card
@@ -365,7 +365,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
           ),
           emptyState: <span className="text-2xs">Nenhuma tarefa nesta etapa</span>,
         }))}
-        className="h-[calc(100dvh-13rem)] sm:h-[calc(100dvh-12rem)] pb-2"
+        className="waesy-kanban-viewport pb-2"
       />
     </div>
   );

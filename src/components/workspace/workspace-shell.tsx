@@ -24,6 +24,7 @@ import { resolveWorkspaceNavigation, getSidebarConfig, getMasterSidebarPillars, 
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getNicheTranslation } from "@/lib/niche-dictionary";
 import { WorkspaceAccountSwitcher } from "./workspace-account-switcher";
+import { NotificationBell } from "./notification-bell";
 import { WorkspaceAllToolsDialog } from "./workspace-all-tools-dialog";
 import { WorkspaceSidebarFlyout } from "./workspace-sidebar-flyout";
 import { WorkspaceAccessDenied } from "./workspace-access-denied";
@@ -653,8 +654,29 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
               })}
             </div>
 
-            {/* Rodapé do Trilho Fino: Ferramentas Rápidas e Conta Pessoal */}
+            {/* Rodapé do Trilho Fino: Sites, Ferramentas, Indicador e Conta Squircle */}
             <div className="w-full pt-2 border-t border-sidebar-border flex flex-col items-center gap-1 px-1 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={"/workspace/builder" as never}
+                    aria-label="Sites"
+                    aria-current={currentPath.startsWith("/workspace/builder") ? "page" : undefined}
+                    className={cn(
+                      "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      currentPath.startsWith("/workspace/builder")
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
+                    )}
+                  >
+                    <LayoutTemplate className="size-5 shrink-0" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  Sites
+                </TooltipContent>
+              </Tooltip>
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -673,6 +695,23 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
               <Tooltip>
                 <TooltipTrigger asChild>
+                  <Link
+                    to={"/workspace/inteligencia/ia" as never}
+                    aria-label="Capacidade Operacional"
+                    className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="relative size-5 rounded-full border-2 border-muted-foreground/40 flex items-center justify-center">
+                      <span className="size-2 rounded-full bg-success" />
+                    </span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  Sistema Operacional Ativo
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <button
                     type="button"
                     onClick={() => requestSwitchToPersonal("/conta")}
@@ -684,10 +723,10 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                         src={rawAvatarUrl}
                         alt={userDisplayName}
                         onError={() => setRailAvatarFailed(true)}
-                        className="size-7 rounded-full object-cover bg-muted"
+                        className="size-8 rounded-xl object-cover bg-muted"
                       />
                     ) : (
-                      <span className="size-7 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center">
+                      <span className="size-8 rounded-xl bg-foreground text-background text-xs font-bold flex items-center justify-center">
                         {userInitial}
                       </span>
                     )}
@@ -704,19 +743,31 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
         {/* 1B. COLUNA 2 — SIDEBAR SECUNDÁRIA CONTEXTUAL (EXPANDE SOB DEMANDA - 224px) */}
         {isSubSidebarOpen && (
           <div className="w-56 bg-sidebar border-r border-sidebar-border flex flex-col justify-between h-dvh shrink-0 overflow-hidden">
-            {/* Topo da Sidebar Secundária (h-14): Alternar Loja */}
-            <div className="h-14 px-3 flex items-center shrink-0">
-              <WorkspaceAccountSwitcher
-                memberships={memberships}
-                activeStoreId={activeStoreId}
-                activeStore={activeStore}
-                userDisplayName={userDisplayName}
-                userEmail={session?.email}
-                userAvatarUrl={rawAvatarUrl}
-                isSwitching={isSwitching}
-                onSwitchStore={handleSwitchStore}
-                onSwitchToPersonal={confirmSwitchToPersonal}
-              />
+            {/* Topo da Sidebar Secundária (h-14): Alternar Loja + Notificações + Busca */}
+            <div className="h-14 px-2 flex items-center gap-1 shrink-0">
+              <div className="flex-1 min-w-0">
+                <WorkspaceAccountSwitcher
+                  memberships={memberships}
+                  activeStoreId={activeStoreId}
+                  activeStore={activeStore}
+                  userDisplayName={userDisplayName}
+                  userEmail={session?.email}
+                  userAvatarUrl={rawAvatarUrl}
+                  isSwitching={isSwitching}
+                  onSwitchStore={handleSwitchStore}
+                  onSwitchToPersonal={confirmSwitchToPersonal}
+                />
+              </div>
+              <NotificationBell />
+              <button
+                type="button"
+                onClick={() => setIsAllToolsOpen(true)}
+                aria-label="Buscar ferramentas (Ctrl+K)"
+                title="Buscar ferramentas (Ctrl+K)"
+                className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Search className="size-4 shrink-0" />
+              </button>
             </div>
 
             {/* Submódulos do Setor Ativo */}
@@ -1094,7 +1145,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
         <main
           id="workspace-main-content"
-          className="main-container-query flex-1 w-full min-h-0 overflow-y-auto no-scrollbar flex flex-col bg-background"
+          className="main-container-query flex-1 w-full min-h-0 overflow-y-auto scrollbar-waesy flex flex-col bg-background"
         >
           <div
             className={cn(

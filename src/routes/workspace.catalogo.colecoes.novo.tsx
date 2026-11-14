@@ -111,9 +111,9 @@ function NewCollectionPage() {
  {/* Coluna 1 e 2: Dados e Regras */}
  <div className="md:col-span-2 space-y-6">
  {/* 1. Dados Básicos */}
- <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
+ <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-4">
  <div className="pb-3 border-b border-border/40">
- <h3 className="text-sm font-bold text-foreground">Dados Básicos da Coleção</h3>
+ <h3 className="text-sm font-semibold text-foreground">Dados Básicos da Coleção</h3>
  <p className="text-xs text-muted-foreground mt-1">
  Defina o nome, identificador na URL e descrição.
  </p>
@@ -121,7 +121,7 @@ function NewCollectionPage() {
 
  <div className="space-y-4">
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Nome da Coleção *</Label>
+ <Label className="text-xs font-semibold text-foreground">Nome da Coleção *</Label>
  <Input
  placeholder="Ex: Ofertas da Semana, Queima de Estoque, Mais Vendidos"
  {...register("name", { required: "Nome é obrigatório" })}
@@ -131,7 +131,7 @@ function NewCollectionPage() {
  setValue("slug", generateSlug(e.target.value));
  }
  }}
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-xl"
  />
  {errors.name && (
  <span className="text-xs text-destructive font-medium block">
@@ -142,24 +142,24 @@ function NewCollectionPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Slug da URL *</Label>
+ <Label className="text-xs font-semibold text-foreground">Slug da URL *</Label>
  <Input
  placeholder="ofertas-da-semana"
  {...register("slug", { required: "Slug é obrigatório" })}
- className="h-10 text-xs rounded-lg font-mono"
+ className="h-11 min-h-11 text-xs rounded-xl font-mono"
  />
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Status de Exibição</Label>
+ <Label className="text-xs font-semibold text-foreground">Status de Exibição</Label>
  <Select
  defaultValue="active"
  onValueChange={(val) => setValue("status", val)}
  >
- <SelectTrigger className="h-10 text-xs rounded-lg">
+ <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl">
  <SelectValue placeholder="Selecione o status" />
  </SelectTrigger>
- <SelectContent className="rounded-lg">
+ <SelectContent className="rounded-xl">
  <SelectItem value="active">● Ativa na Vitrine</SelectItem>
  <SelectItem value="inactive">● Inativa / Oculta</SelectItem>
  </SelectContent>
@@ -168,12 +168,12 @@ function NewCollectionPage() {
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Selo / Badge Promocional</Label>
+ <Label className="text-xs font-semibold text-foreground">Selo / Badge Promocional</Label>
  <Input
  placeholder="Ex: 20% OFF, LIMITADO, EXCLUSIVO"
  value={badgeText}
  onChange={(e) => setBadgeText(e.target.value.toUpperCase())}
- className="h-10 text-xs rounded-lg font-mono uppercase"
+ className="h-11 min-h-11 text-xs rounded-xl font-mono uppercase"
  />
  <p className="text-xs text-muted-foreground">
  Selo tátil exibido em cima dos cards na vitrine pública.

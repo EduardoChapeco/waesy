@@ -3,6 +3,7 @@ import {
   mergeCustomFieldMaps,
   normalizeCustomFieldMap,
 } from "@/lib/niches/unified-field-bridge";
+import { resolveKanbanStageSynonym } from "@/lib/niches/kanban-niche-taxonomy";
 
 export interface OmnichannelLeadInput {
   storeId: string;
@@ -25,7 +26,7 @@ export interface OmnichannelLeadInput {
   estimatedValueCents?: number | null;
   message?: string | null;
   notes?: string | null;
-  status?: "new" | "contacted" | "qualified" | "proposal" | "negotiation";
+  status?: string;
   sourceListingId?: string | null;
   sourceListingOrigin?: "product" | "classified" | "experience" | "builder" | "form" | null;
   sourceListingTitle?: string | null;
@@ -117,6 +118,8 @@ export async function ingestOmnichannelLead(
   // 2. Extrair campos semanticos das respostas dinamicas
   const semantic = extractSemanticLeadFieldsFromAnswers(input.customFields, fieldLabelsMap);
 
+  const resolvedStage = resolveKanbanStageSynonym(input.status || "new", undefined, input.nicheId || undefined);
+
   const mergedCustomFields = mergeCustomFieldMaps(semantic.customFields, {
     ...(input.sourceListingId ? { source_listing_id: input.sourceListingId } : {}),
     ...(input.sourceListingOrigin ? { source_listing_origin: input.sourceListingOrigin } : {}),
@@ -127,6 +130,8 @@ export async function ingestOmnichannelLead(
     ...(input.sourceSubmissionId ? { source_submission_id: input.sourceSubmissionId } : {}),
     ...(input.departureOption ? { departure_option: input.departureOption } : {}),
     ...(input.boardingPoint ? { boarding_point: input.boardingPoint } : {}),
+    kanban_stage_key: resolvedStage.matchedStageKey,
+    kanban_stage_purpose: resolvedStage.purpose,
     ...(cleanEmail ? { email_provided: true } : { email_provided: false }),
   });
 
@@ -177,7 +182,20 @@ export async function ingestOmnichannelLead(
         .from("leads_crm")
         .select("id, customer_id, custom_fields, notes, message, status, phone, email")
         .eq("store_id", input.storeId)
-        .in("status", ["new", "contacted", "qualified", "proposal", "negotiation"])
+        .in("status", [
+          "new",
+          "contact",
+          "contacted",
+          "briefing",
+          "qualified",
+          "visit_scheduled",
+          "screening",
+          "in_service",
+          "proposal",
+          "negotiation",
+          "pending",
+          "confirmed",
+        ])
         .order("created_at", { ascending: false })
         .limit(5);
 
@@ -274,7 +292,7 @@ export async function ingestOmnichannelLead(
       estimated_value_cents: resolvedValueCents,
       source: input.source,
       lead_source_detail: input.sourceDetail || input.sourceListingTitle || null,
-      status: input.status || "new",
+      status: resolvedStage.matchedStageKey,
       custom_fields: mergedCustomFields,
       last_contacted_at: now,
       created_at: now,
@@ -290,7 +308,7 @@ export async function ingestOmnichannelLead(
       .single();
 
     if (insertRes.error) {
-      // Fallback caso alguma coluna estendida opcional falhe em ambiente antigo
+      // Fallback caso coluna opcional falhe ou constraint de status antiga rejeite slug de nicho
       const minimalPayload = {
         store_id: input.storeId,
         full_name: cleanName,
@@ -299,7 +317,7 @@ export async function ingestOmnichannelLead(
         message: input.message?.trim() || combinedNotes || null,
         notes: combinedNotes,
         destination: resolvedDestination,
-        status: input.status || "new",
+        status: resolvedStage.canonicalBucket,
         source: input.source,
         custom_fields: mergedCustomFields,
         estimated_value_cents: resolvedValueCents,

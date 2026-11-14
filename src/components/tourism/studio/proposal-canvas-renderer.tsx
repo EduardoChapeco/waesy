@@ -2,25 +2,16 @@ import React from "react";
 import type { TravelProposalDTO } from "@/services/travel-proposal.functions";
 import { getProposalTemplate } from "@/components/tourism/proposals/templates";
 import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
-import {
-  formatDynamicFieldLabel,
-  formatFieldPrimitiveValue,
-  normalizeCustomFieldMap,
-} from "@/lib/niches/unified-field-bridge";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
-
-const INTERNAL_STUDIO_CUSTOM_KEYS = new Set([
-  "canvas_bg_color",
-  "canvas_brand_color",
-  "canvas_font_preset",
-  "hidden_sections",
-  "boarding_requirements",
-  "cancellation_policy",
-  "agent_name",
-  "agent_whatsapp",
-  "agency_name",
-  "agency_logo_url",
-]);
+import {
+  extractGatewayLogisticsFromNotes,
+  sanitizeLegacyProposalSummaryNotes,
+} from "@/lib/tourism/pricing";
+import {
+  buildVisibleProposalCustomFieldEntries,
+  formatProposalPaymentTermsForDisplay,
+  sanitizeProposalCustomFields,
+} from "@/lib/tourism/proposal-custom-fields";
 
 interface ProposalCanvasRendererProps {
   proposal: TravelProposalDTO;
@@ -40,6 +31,8 @@ function normalizeTemplateId(id: string): string {
     "landscape-presentation": "landscape-presentation",
     "vertical-premium": "vertical-premium",
     "group-catalog": "group-catalog",
+    bento: "bento-grid",
+    "bento-grid": "bento-grid",
   };
   return MAP[id] ?? id;
 }
@@ -211,13 +204,23 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     price: Number(t.price ?? (t.price_cents ? t.price_cents / 100 : 0)),
   }));
 
-  const normalizedTours = (proposal.tours || []).map((t: any) => ({
-    ...t,
-    description: t.description || t.title || "Passeio / Experiência",
-    title: t.title || t.description || "Passeio / Experiência",
-    date: t.date || t.duration || "",
-    price: Number(t.price ?? (t.price_cents ? t.price_cents / 100 : 0)),
-  }));
+  const normalizedTours = (proposal.tours || []).map((t: any) => {
+    const tourImages =
+      Array.isArray(t.images) && t.images.length > 0
+        ? t.images.filter(Boolean)
+        : t.image_url
+          ? [t.image_url]
+          : [];
+    return {
+      ...t,
+      description: t.description || t.title || "Passeio / Experiência",
+      title: t.title || t.description || "Passeio / Experiência",
+      date: t.date || t.duration || "",
+      image_url: t.image_url || tourImages[0] || undefined,
+      images: tourImages,
+      price: Number(t.price ?? (t.price_cents ? t.price_cents / 100 : 0)),
+    };
+  });
 
   const lineItemsSum =
     normalizedFlights.reduce((acc, f) => acc + f.price, 0) +
@@ -244,15 +247,10 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     ...(raw.custom_fields && typeof raw.custom_fields === "object" ? raw.custom_fields : {}),
   } as Record<string, unknown>;
 
-  const normalizedCustomFields = normalizeCustomFieldMap(rawCustomFields);
-  const customFieldEntries = Object.entries(normalizedCustomFields)
-    .filter(([key]) => !INTERNAL_STUDIO_CUSTOM_KEYS.has(key))
-    .map(([key, value]) => ({
-      key,
-      label: formatDynamicFieldLabel(key),
-      value: formatFieldPrimitiveValue(value),
-    }))
-    .filter((entry) => Boolean(entry.value));
+  const normalizedCustomFields = sanitizeProposalCustomFields(rawCustomFields, {
+    allowDocumentForStaffStorage: false,
+  });
+  const customFieldEntries = buildVisibleProposalCustomFieldEntries(normalizedCustomFields);
 
   const customAgentName =
     typeof rawCustomFields.agent_name === "string" && rawCustomFields.agent_name.trim()
@@ -266,6 +264,45 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     typeof rawCustomFields.agency_name === "string" && rawCustomFields.agency_name.trim()
       ? rawCustomFields.agency_name.trim()
       : proposal.agency_name;
+  const customAgencyLogo =
+    typeof rawCustomFields.agency_logo_url === "string" && rawCustomFields.agency_logo_url.trim()
+      ? rawCustomFields.agency_logo_url.trim()
+      : proposal.agency_logo_url;
+
+  const rawCombinedNotes = String(raw.notes || proposal.special_notes || proposal.subtitle || "");
+  const cleanHeroNotes = sanitizeLegacyProposalSummaryNotes(
+    proposal.subtitle || raw.notes || proposal.special_notes || "",
+  );
+  const cleanTerms = formatProposalPaymentTermsForDisplay(
+    sanitizeLegacyProposalSummaryNotes(
+      raw.terms || pricing.payment_terms || proposal.special_notes || "",
+    ),
+  );
+  const extractedGateway =
+    (typeof rawCustomFields.gateway_logistics === "string"
+      ? rawCustomFields.gateway_logistics.trim()
+      : "") || extractGatewayLogisticsFromNotes(rawCombinedNotes);
+
+  if (extractedGateway && normalizedTransfers.length === 0) {
+    normalizedTransfers.push({
+      id: "gateway-transfer-auto",
+      description: "Logística Regional de Aeroporto Gateway",
+      type: "shared",
+      vehicle: "Transfer Regional",
+      date: proposal.travel_start_date || "",
+      notes: extractedGateway,
+      price: 0,
+    });
+  }
+
+  const rawGalleryStr =
+    typeof rawCustomFields.destination_gallery_urls === "string"
+      ? rawCustomFields.destination_gallery_urls
+      : "";
+  const destinationGallery = rawGalleryStr
+    .split(/[\n,|]+/)
+    .map((u) => u.trim())
+    .filter((u) => u.startsWith("http://") || u.startsWith("https://"));
 
   return {
     ...proposal,
@@ -275,6 +312,7 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     agent_name: customAgentName,
     agent_whatsapp: customAgentWhatsapp,
     agency_name: customAgencyName,
+    agency_logo_url: customAgencyLogo,
     number:
       raw.number ||
       proposal.quote_id?.slice(0, 8).toUpperCase() ||
@@ -294,18 +332,20 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     pix_discount_percent: pixDiscountPercent,
     installments_card: bestCard?.installments_count || Number(raw.installments_card || 10),
     installments_boleto: bestBoleto?.installments_count || Number(raw.installments_boleto || 1),
-    notes: raw.notes || proposal.special_notes || proposal.subtitle || "",
-    terms: raw.terms || pricing.payment_terms || proposal.special_notes || "",
+    raw_special_notes: rawCombinedNotes,
+    notes: cleanHeroNotes,
+    terms: cleanTerms,
+    gateway_logistics: extractedGateway || undefined,
+    destination_gallery: destinationGallery,
     flights: normalizedFlights,
     hotels: normalizedHotels,
     itinerary: normalizedItinerary,
     transfers: normalizedTransfers,
     tours: normalizedTours,
+    rooms: Array.isArray(proposal.rooms) ? proposal.rooms : [],
+    options: Array.isArray(proposal.options) ? proposal.options : [],
     custom_payments: customPayments,
-    custom_fields: {
-      ...normalizedCustomFields,
-      ...rawCustomFields,
-    },
+    custom_fields: normalizedCustomFields,
     custom_field_entries: customFieldEntries,
     boarding_requirements:
       typeof rawCustomFields.boarding_requirements === "string"
@@ -330,7 +370,7 @@ export function ProposalCanvasRenderer({ proposal }: ProposalCanvasRendererProps
 
   const baseAgency = {
     name: normalizedProposal.agency_name || proposal.agency_name || "Agência",
-    logo_url: proposal.agency_logo_url,
+    logo_url: normalizedProposal.agency_logo_url || proposal.agency_logo_url,
     brand_color: (proposal as any)?.agency_brand_color,
     phone: proposal.agency_phone,
     email: proposal.agency_email,

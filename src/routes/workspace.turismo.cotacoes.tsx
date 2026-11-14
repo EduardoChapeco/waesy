@@ -1,12 +1,9 @@
-import { Tag, Plane, Compass } from "lucide-react";
+import { Tag, Plane, Compass, ExternalLink, Copy } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   TravelIntentCard,
-  FlightSearchWidget,
-  TravelSearchResults,
-  type FlightOfferCardProps,
 } from "@/design-system/travel";
 import { AirplaneTilt, MapPin, CalendarDots, Users, WhatsappLogo, CheckCircle, Clock, CurrencyCircleDollar, SuitcaseSimple, ShieldCheck, ChatCircleDots, FileText, Plus, PencilSimple, Trash, ChartLineUp, Funnel, Buildings, Columns, SquaresFour, CaretRight, CaretLeft } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -19,9 +16,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { listAgencyTravelQuotes, createAgencyTravelQuote, updateAgencyTravelQuote, deleteAgencyTravelQuote, type TravelQuoteRequestDTO } from "@/services/tourism.functions";
-import { createTravelProposal } from "@/services/travel-proposal.functions";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import {
+  createTravelProposal,
+  type FlightSegmentDTO,
+  type HotelDTO,
+  type TourOptionDTO,
+  type TransferDTO,
+  type TravelProposalOptionDTO,
+} from "@/services/travel-proposal.functions";
 import { listDestinations } from "@/services/travel-catalog.functions";
-import { searchAgencyGdsFlightsFn } from "@/services/infotravel";
+import { PassHubLiveQuoterPanel } from "@/components/tourism/quotes/passhub-live-quoter-panel";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { UnifiedProposalWorkspace } from "@/components/tourism/unified-proposal-workspace";
@@ -85,6 +90,22 @@ const TRIP_TYPE_OPTIONS = [
  { id: "visa_assistance", label: "Assessoria de Visto / Passaporte" },
 ];
 
+function parseQuoteReaisToCents(raw: string): number | null {
+  const trimmed = (raw || "").trim();
+  if (!trimmed) return null;
+  const cleaned = trimmed.replace(/[^\d.,]/g, "");
+  if (!cleaned) return null;
+  let normalized = cleaned;
+  if (cleaned.includes(",")) {
+    normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
+    normalized = cleaned.replace(/\./g, "");
+  }
+  const num = Number.parseFloat(normalized);
+  if (!Number.isFinite(num) || num < 0) return null;
+  return Math.round(num * 100);
+}
+
 export default function AgencyQuotesPage() {
  const { quotes: initialQuotes, destinations: initialDestinations, store } = ((Route.useLoaderData?.() as any) || {});
  const searchParams = Route.useSearch();
@@ -96,6 +117,8 @@ export default function AgencyQuotesPage() {
  const [tripTypeFilter, setTripTypeFilter] = useState("all");
  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
  const [viewMode, setViewMode] = useState<"kanban" | "grid">("kanban");
+ const [draggingQuoteId, setDraggingQuoteId] = useState<string | null>(null);
+ const [dragOverQuoteCol, setDragOverQuoteCol] = useState<string | null>(null);
  const [isOcrLoading, setIsOcrLoading] = useState(false);
  const [ocrProgressText, setOcrProgressText] = useState("Lendo...");
 
@@ -109,13 +132,23 @@ export default function AgencyQuotesPage() {
  const [editAgencyNotes, setEditAgencyNotes] = useState("");
  const [editQuoteAmount, setEditQuoteAmount] = useState("");
  const [isFlightSimulatorOpen, setIsFlightSimulatorOpen] = useState(false);
- const [flightOffers, setFlightOffers] = useState<FlightOfferCardProps[]>([]);
- const [flightSearchFeedback, setFlightSearchFeedback] = useState<{
-   searched: boolean;
-   isConfigured: boolean;
-   message?: string;
- }>({ searched: false, isConfigured: true });
- const [isSearchingFlights, setIsSearchingFlights] = useState(false);
+ const [selectedQuoteSegments, setSelectedQuoteSegments] = useState<{
+   flights: FlightSegmentDTO[];
+   hotels: HotelDTO[];
+   transfers: TransferDTO[];
+   tours: TourOptionDTO[];
+   includes: string[];
+   options: TravelProposalOptionDTO[];
+   quoteSessionId: string;
+ }>({
+   flights: [],
+   hotels: [],
+   transfers: [],
+   tours: [],
+   includes: [],
+   options: [],
+   quoteSessionId: "",
+ });
 
  const { data: quotes } = useQuery({
  queryKey: ["agency-travel-quotes", selectedStatus],
@@ -162,10 +195,17 @@ export default function AgencyQuotesPage() {
  }, [quotes, selectedStatus, tripTypeFilter, search]);
 
  // Mutações
+ const invalidateAllQuoteCaches = () => {
+ queryClient.invalidateQueries({ queryKey: ["agency-travel-quotes"] });
+ queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
+ queryClient.invalidateQueries({ queryKey: ["lead-dossier"] });
+ queryClient.invalidateQueries({ queryKey: ["customer-360"] });
+ };
+
  const updateQuoteMutation = useMutation({
  mutationFn: () => {
  if (!managingQuote) throw new Error("Cotação não selecionada.");
- const amountCents = editQuoteAmount ? Math.round(parseFloat(editQuoteAmount.replace(/\D/g, ""))) : null;
+ const amountCents = parseQuoteReaisToCents(editQuoteAmount);
  return updateAgencyTravelQuote({
  data: {
  id: managingQuote.id,
@@ -177,72 +217,165 @@ export default function AgencyQuotesPage() {
  },
  onSuccess: () => {
  toast.success("Lead atualizado com sucesso!");
- queryClient.invalidateQueries({ queryKey: ["agency-travel-quotes"] });
+ invalidateAllQuoteCaches();
  setManagingQuote(null);
  },
  onError: (err: any) => toast.error(err?.message || "Erro ao atualizar lead."),
+ });
+
+ const duplicateQuoteMutation = useMutation({
+ mutationFn: (q: TravelQuoteRequestDTO) => {
+ const rawOccupancies = Array.isArray(q.room_occupancies) ? q.room_occupancies : [];
+ const roomOccupancies = rawOccupancies
+ .slice(0, 8)
+ .map((r: any) => ({
+ adults: Math.max(1, Math.min(9, Number(r?.adults ?? 2))),
+ childrenAges: Array.isArray(r?.childrenAges)
+ ? r.childrenAges.slice(0, 8).map((a: any) => Math.max(0, Math.min(17, Number(a || 0))))
+ : Array.isArray(r?.children_ages)
+ ? r.children_ages.slice(0, 8).map((a: any) => Math.max(0, Math.min(17, Number(a || 0))))
+ : [],
+ }));
+ return createAgencyTravelQuote({
+ data: {
+ store_id: store?.id || q.store_id || undefined,
+ lead_id: q.lead_id || undefined,
+ contact_name: `${(q.contact_name || "Cliente").trim()} (Cópia)`,
+ contact_whatsapp: (q.contact_whatsapp || "").trim().length >= 8 ? q.contact_whatsapp.trim() : "000000000",
+ contact_email: q.contact_email || null,
+ origin_city: q.origin_city || "Chapecó",
+ origin_iata: q.origin_iata || null,
+ destination_city: (q.destination_city || "").trim().length >= 2 ? q.destination_city.trim() : "A Definir",
+ destination_iata: q.destination_iata || null,
+ departure_date: q.departure_date || null,
+ return_date: q.return_date || null,
+ adults_count: Math.max(1, Number(q.adults_count || 2)),
+ children_count: Math.max(0, Number(q.children_count || 0)),
+ children_ages: Array.isArray(q.children_ages) ? q.children_ages : undefined,
+ room_occupancies: roomOccupancies,
+ flexible_dates: Boolean(q.flexible_dates),
+ rooms_count: Math.max(1, Number(q.rooms_count || 1)),
+ trip_type: (q.trip_type || "air_package") as any,
+ budget_tier: (q.budget_tier || "standard") as any,
+ special_notes: q.special_notes || null,
+ agency_notes: q.agency_notes || null,
+ source: "workspace",
+ quote_amount_cents: typeof q.quote_amount_cents === "number" ? q.quote_amount_cents : null,
+ status: "new",
+ },
+ });
+ },
+ onSuccess: () => {
+ toast.success("Cotação duplicada com sucesso!");
+ invalidateAllQuoteCaches();
+ },
+ onError: (err: any) => toast.error(err?.message || "Erro ao duplicar cotação."),
  });
 
  const deleteQuoteMutation = useMutation({
  mutationFn: (id: string) => deleteAgencyTravelQuote({ data: { id } }),
  onSuccess: () => {
  toast.success("Cotação removida!");
- queryClient.invalidateQueries({ queryKey: ["agency-travel-quotes"] });
+ invalidateAllQuoteCaches();
  setManagingQuote(null);
  },
  onError: (err: any) => toast.error(err?.message || "Erro ao remover cotação."),
  });
 
  const createProposalMutation = useMutation({
- mutationFn: (q: TravelQuoteRequestDTO) =>
- createTravelProposal({
- data: {
- quoteId: q.id,
- leadId: q.lead_id || undefined,
- title: `Proposta: ${q.destination_city} (${q.adults_count} adultos)`,
- clientName: q.contact_name,
- clientWhatsapp: q.contact_whatsapp,
- clientEmail: q.contact_email || undefined,
- destinationCity: q.destination_city,
- travelStartDate: q.departure_date || undefined,
- travelEndDate: q.return_date || undefined,
- adultsCount: q.adults_count,
- childrenCount: q.children_count,
- initialNotes: [q.special_notes, q.agency_notes].filter(Boolean).join("\n") || undefined,
- customFields: {
- ...(q.origin_city ? { origin_city: q.origin_city } : {}),
- ...(q.origin_iata ? { origin_iata: q.origin_iata } : {}),
- ...(q.destination_iata ? { destination_iata: q.destination_iata } : {}),
- ...(q.trip_type ? { trip_type: q.trip_type } : {}),
- ...(q.budget_tier ? { budget_tier: q.budget_tier } : {}),
- ...(typeof q.flexible_dates === "boolean" ? { flexible_dates: q.flexible_dates } : {}),
- ...(q.rooms_count ? { rooms_count: q.rooms_count } : {}),
- ...(q.source ? { source: q.source } : {}),
+ mutationFn: (q: TravelQuoteRequestDTO) => {
+   const isActiveManaged = managingQuote?.id === q.id;
+   const manualCents = isActiveManaged ? parseQuoteReaisToCents(editQuoteAmount) : null;
+   const resolvedAmountCents =
+     manualCents && manualCents > 0
+       ? manualCents
+       : q.quote_amount_cents && q.quote_amount_cents > 0
+         ? q.quote_amount_cents
+         : null;
+   const resolvedNotes = [
+     q.special_notes,
+     isActiveManaged ? editAgencyNotes : q.agency_notes,
+   ]
+     .filter(Boolean)
+     .join("\n");
+
+   return createTravelProposal({
+     data: {
+       quoteId: q.id,
+       leadId: q.lead_id || undefined,
+       title: `Proposta: ${q.destination_city} (${q.adults_count} adultos)`,
+       clientName: q.contact_name,
+       clientWhatsapp: q.contact_whatsapp,
+       clientEmail: q.contact_email || undefined,
+       destinationCity: q.destination_city,
+       travelStartDate: q.departure_date || undefined,
+       travelEndDate: q.return_date || undefined,
+       adultsCount: q.adults_count,
+       childrenCount: q.children_count,
+       initialNotes: resolvedNotes || undefined,
+       customFields: {
+         ...(q.origin_city ? { origin_city: q.origin_city } : {}),
+         ...(q.origin_iata ? { origin_iata: q.origin_iata } : {}),
+         ...(q.destination_iata ? { destination_iata: q.destination_iata } : {}),
+         ...(q.trip_type ? { trip_type: q.trip_type } : {}),
+         ...(q.budget_tier ? { budget_tier: q.budget_tier } : {}),
+         ...(typeof q.flexible_dates === "boolean" ? { flexible_dates: q.flexible_dates } : {}),
+         ...(q.rooms_count ? { rooms_count: q.rooms_count } : {}),
+       },
+       flights:
+         isActiveManaged && selectedQuoteSegments.flights.length > 0
+           ? selectedQuoteSegments.flights
+           : undefined,
+       hotels:
+         isActiveManaged && selectedQuoteSegments.hotels.length > 0
+           ? selectedQuoteSegments.hotels
+           : undefined,
+       transfers:
+         isActiveManaged && selectedQuoteSegments.transfers.length > 0
+           ? selectedQuoteSegments.transfers
+           : undefined,
+       tours:
+         isActiveManaged && selectedQuoteSegments.tours.length > 0
+           ? selectedQuoteSegments.tours
+           : undefined,
+       includes:
+         isActiveManaged && selectedQuoteSegments.includes.length > 0
+           ? selectedQuoteSegments.includes
+           : undefined,
+       options:
+         isActiveManaged && selectedQuoteSegments.options.length > 0
+           ? selectedQuoteSegments.options
+           : undefined,
+       rooms: Array.isArray(q.room_occupancies) && q.room_occupancies.length > 0
+         ? q.room_occupancies.map((r: any, idx: number) => ({
+             id: r.id || `room-${idx + 1}`,
+             type: r.room_type || r.type || "Duplo",
+             adults: Number(r.adults ?? 2),
+             children: Number(r.children ?? (Array.isArray(r.childrenAges) ? r.childrenAges.length : 0)),
+             child_ages: Array.isArray(r.children_ages)
+               ? r.children_ages
+               : Array.isArray(r.childrenAges)
+                 ? r.childrenAges
+                 : [],
+           }))
+         : undefined,
+       pricing: resolvedAmountCents
+         ? {
+             base_price_cents: resolvedAmountCents,
+             total_price_cents: resolvedAmountCents,
+             base_price_per_person: Math.round(resolvedAmountCents / 100 / Math.max(1, q.adults_count || 1)),
+             total_price: Math.round(resolvedAmountCents / 100),
+           }
+         : undefined,
+     },
+   });
  },
- rooms: Array.isArray(q.room_occupancies) && q.room_occupancies.length > 0
-   ? q.room_occupancies.map((r: any, idx: number) => ({
-       id: r.id || `room-${idx + 1}`,
-       type: r.room_type || r.type || "Duplo",
-       adults: Number(r.adults ?? 2),
-       children: Number(r.children ?? (Array.isArray(r.childrenAges) ? r.childrenAges.length : 0)),
-       child_ages: Array.isArray(r.children_ages)
-         ? r.children_ages
-         : Array.isArray(r.childrenAges)
-           ? r.childrenAges
-           : [],
-     }))
-   : undefined,
- pricing: q.quote_amount_cents && q.quote_amount_cents > 0
-   ? {
-       base_price_cents: q.quote_amount_cents,
-       total_price_cents: q.quote_amount_cents,
-       base_price_per_person: Math.round(q.quote_amount_cents / 100 / Math.max(1, q.adults_count || 1)),
-       total_price: Math.round(q.quote_amount_cents / 100),
-     }
-   : undefined,
- },
- }),
  onSuccess: (res) => {
+ queryClient.invalidateQueries({ queryKey: ["agency-travel-quotes"] });
+ queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+ queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
+ queryClient.invalidateQueries({ queryKey: ["lead-dossier"] });
+ queryClient.invalidateQueries({ queryKey: ["customer-360"] });
  toast.success("Lâmina criada! Abrindo Studio...");
  navigate({ to: "/workspace/turismo/propostas/$id", params: { id: res.id } });
  },
@@ -269,6 +402,15 @@ export default function AgencyQuotesPage() {
  setEditStatus(q.status as any);
  setEditAgencyNotes(q.agency_notes || "");
  setEditQuoteAmount(q.quote_amount_cents ? (q.quote_amount_cents / 100).toFixed(2) : "");
+ setSelectedQuoteSegments({
+   flights: [],
+   hotels: [],
+   transfers: [],
+   tours: [],
+   includes: [],
+   options: [],
+   quoteSessionId: "",
+ });
  };
 
  return (
@@ -311,112 +453,108 @@ export default function AgencyQuotesPage() {
           ]}
           onMetricsClick={() => setIsDashboardOpen(true)}
           metricsBadge={metrics.totalVolumeCents > 0 ? formatMoney(metrics.totalVolumeCents) : undefined}
-          secondaryAction={{
-            label: "Ver Lâminas / Studio",
-            icon: FileText,
-            onClick: () => navigate({ to: "/workspace/turismo/propostas" }),
-          }}
+          secondaryActions={[
+            {
+              label: "Ver Lâminas / Studio",
+              icon: FileText,
+              onClick: () => navigate({ to: "/workspace/turismo/propostas" }),
+            },
+            {
+              label: "Radar de Oportunidades",
+              icon: Compass,
+              onClick: () => navigate({ to: "/workspace/turismo/oportunidades" }),
+            },
+            {
+              label: isOcrLoading ? ocrProgressText : "Importar Operadora (OCR)",
+              icon: FileText,
+              disabled: isOcrLoading,
+              onClick: () => document.getElementById("quote-ocr-file-input")?.click(),
+            },
+          ]}
           primaryAction={{
             label: "Nova Cotação",
             icon: Plus,
             onClick: () => setIsNewSheetOpen(true),
           }}
+          viewSwitcher={
+            <div className="flex items-center gap-1 bg-muted/40 border border-border/60 p-1 rounded-lg">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setViewMode("kanban")}
+                className={cn(
+                  "h-11 min-h-11 sm:h-7 sm:min-h-7 px-3 rounded-lg text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                  viewMode === "kanban"
+                    ? "bg-background text-foreground font-semibold"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <Columns size={14} weight="bold" />
+                <span className="hidden sm:inline">Kanban</span>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "h-11 min-h-11 sm:h-7 sm:min-h-7 px-3 rounded-lg text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring",
+                  viewMode === "grid"
+                    ? "bg-background text-foreground font-semibold"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <SquaresFour size={14} weight="bold" />
+                <span className="hidden sm:inline">Grade</span>
+              </Button>
+            </div>
+          }
         />
 
-        {/* ── 4. Alternador de Visualização: Funil Kanban vs Grade + Importar OCR ── */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-          <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-lg border border-border/40">
-            <button
-              type="button"
-              onClick={() => setViewMode("kanban")}
-              className={`flex items-center gap-2 px-3 py-2 h-11 min-h-11 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                viewMode === "kanban"
-                  ? "bg-background text-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Columns size={14} weight="bold" />
-              <span>Funil Kanban</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              className={`flex items-center gap-2 px-3 py-2 h-11 min-h-11 rounded-lg text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                viewMode === "grid"
-                  ? "bg-background text-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <SquaresFour size={14} weight="bold" />
-              <span>Grade de Cards</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => navigate({ to: "/workspace/turismo/oportunidades" })} className="h-11 min-h-11 px-4 gap-2 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring"><Compass className="size-4 text-primary" /><span>Radar de Oportunidades</span></Button>
-            <input
-              type="file"
-              id="quote-ocr-file-input"
-              accept="application/pdf,image/*"
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (file.size > 25 * 1024 * 1024) {
-                  toast.error("Arquivo muito grande. O limite máximo para OCR é de 25MB.");
-                  e.target.value = "";
-                  return;
-                }
-                const isLarge = file.size > 4 * 1024 * 1024;
-                setOcrProgressText(isLarge ? "Lendo PDF grande..." : "Carregando arquivo...");
-                setIsOcrLoading(true);
-                try {
-                  const reader = new FileReader();
-                  const dataUrl = await new Promise<string>((resolve, reject) => {
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = () => reject(reader.error || new Error("Falha ao ler o arquivo."));
-                    reader.readAsDataURL(file);
-                  });
-                  const base64 = dataUrl.split(",")[1];
-                  setOcrProgressText("Processando IA / OCR...");
-                  const res = await ingestTravelDocument({
-                    data: {
-                      fileBase64: base64,
-                      fileMime: file.type,
-                      fileName: file.name,
-                      sourceKind: "operator_quote",
-                    },
-                  });
-                  if (res.success && res.data) {
-                    toast.success(`Cotação da ${res.data.operator_name} para ${res.data.destination} extraída e salva para revisão (documento ${res.ingestionId.slice(0, 8)}).`);
-                    setIsNewSheetOpen(true);
-                  }
-                } catch (err: any) {
-                  toast.error(err?.message || "Erro ao processar cotação.");
-                } finally {
-                  setIsOcrLoading(false);
-                  e.target.value = "";
-                }
-              }}
-            />
-
-            <Button
-              type="button"
-              variant="outline"
-
-              disabled={isOcrLoading}
-              onClick={() => document.getElementById("quote-ocr-file-input")?.click()}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <FileText size={14} />
-              <span>{isOcrLoading ? ocrProgressText : "Importar Operadora (OCR)"}</span>
-            </Button>
-
-            <span className="text-xs text-muted-foreground font-mono hidden sm:inline">
-              {filteredQuotes.length} cotações encontradas
-            </span>
-          </div>
-        </div>
+        <input
+          type="file"
+          id="quote-ocr-file-input"
+          accept="application/pdf,image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            if (file.size > 25 * 1024 * 1024) {
+              toast.error("Arquivo muito grande. O limite máximo para OCR é de 25MB.");
+              e.target.value = "";
+              return;
+            }
+            const isLarge = file.size > 4 * 1024 * 1024;
+            setOcrProgressText(isLarge ? "Lendo PDF grande..." : "Carregando arquivo...");
+            setIsOcrLoading(true);
+            try {
+              const reader = new FileReader();
+              const dataUrl = await new Promise<string>((resolve, reject) => {
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => reject(reader.error || new Error("Falha ao ler o arquivo."));
+                reader.readAsDataURL(file);
+              });
+              const base64 = dataUrl.split(",")[1];
+              setOcrProgressText("Processando IA / OCR...");
+              const res = await ingestTravelDocument({
+                data: {
+                  fileBase64: base64,
+                  fileMime: file.type,
+                  fileName: file.name,
+                  sourceKind: "operator_quote",
+                },
+              });
+              if (res.success && res.data) {
+                toast.success(`Cotação da ${res.data.operator_name} para ${res.data.destination} extraída e salva para revisão (documento ${res.ingestionId.slice(0, 8)}).`);
+                setIsNewSheetOpen(true);
+              }
+            } catch (err: any) {
+              toast.error(err?.message || "Erro ao processar cotação.");
+            } finally {
+              setIsOcrLoading(false);
+              e.target.value = "";
+            }
+          }}
+        />
 
         {/* ── 5. Conteúdo: Funil Kanban ou Lista ── */}
         {filteredQuotes.length === 0 ? (
@@ -448,10 +586,35 @@ export default function AgencyQuotesPage() {
             ].map((col) => {
               const colQuotes = filteredQuotes.filter((q: any) => q.status === col.id);
               const ColIcon = col.icon;
+              const isDragOver = dragOverQuoteCol === col.id;
               return (
                 <div
                   key={col.id}
-                  className="flex-none w-80 min-h-144 bg-muted/50 dark:bg-muted/30 rounded-2xl flex flex-col overflow-hidden"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverQuoteCol !== col.id) setDragOverQuoteCol(col.id);
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverQuoteCol === col.id) setDragOverQuoteCol(null);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOverQuoteCol(null);
+                    const droppedId = e.dataTransfer.getData("text/plain") || draggingQuoteId;
+                    setDraggingQuoteId(null);
+                    if (!droppedId) return;
+                    const quoteItem = filteredQuotes.find((q: any) => q.id === droppedId);
+                    if (!quoteItem || quoteItem.status === col.id) return;
+                    quickMoveStageMutation.mutate({
+                      id: droppedId,
+                      nextStatus: col.id as TravelQuoteRequestDTO["status"],
+                    });
+                  }}
+                  className={cn(
+                    "flex-none w-80 min-h-144 bg-muted/50 dark:bg-muted/30 rounded-2xl flex flex-col overflow-hidden transition-colors",
+                    isDragOver && "ring-2 ring-primary/40 bg-primary/5"
+                  )}
                 >
                   {/* Cabeçalho da Coluna */}
                   <div className="px-4 py-3 flex items-center justify-between shrink-0">
@@ -459,7 +622,7 @@ export default function AgencyQuotesPage() {
                       <ColIcon size={16} className={col.textClass} weight="bold" />
                       <h3 className="text-xs font-bold text-foreground">{col.title}</h3>
                     </div>
-                    <Badge variant="outline" className="font-mono text-xs h-5 px-2 bg-card">
+                    <Badge variant="outline" className="font-mono text-2xs h-5 px-2 rounded-md border-border/60 bg-card tabular-nums">
                       {colQuotes.length}
                     </Badge>
                   </div>
@@ -467,8 +630,8 @@ export default function AgencyQuotesPage() {
                   {/* Cards da Coluna */}
                   <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3 no-scrollbar">
                     {colQuotes.length === 0 ? (
-                      <div className="h-28 rounded-xl bg-card flex items-center justify-center text-xs text-muted-foreground text-center p-3">
-                        Nenhum lead nesta etapa
+                      <div className="min-h-28 rounded-xl border border-dashed border-border/50 bg-transparent flex items-center justify-center text-2xs font-medium text-muted-foreground/70 text-center p-4 select-none">
+                        Arraste uma cotação para esta etapa
                       </div>
                     ) : (
                       colQuotes.map((q: any) => {
@@ -479,7 +642,20 @@ export default function AgencyQuotesPage() {
                         return (
                           <Card
                             key={q.id}
-                            className="p-4 rounded-2xl bg-card space-y-3 transition-colors duration-150 flex flex-col justify-between select-none"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", q.id);
+                              e.dataTransfer.effectAllowed = "move";
+                              setDraggingQuoteId(q.id);
+                            }}
+                            onDragEnd={() => {
+                              setDraggingQuoteId(null);
+                              setDragOverQuoteCol(null);
+                            }}
+                            className={cn(
+                              "p-4 rounded-2xl bg-card space-y-3 transition-colors duration-150 flex flex-col justify-between select-none cursor-grab active:cursor-grabbing",
+                              draggingQuoteId === q.id && "opacity-50 ring-2 ring-primary/40"
+                            )}
                           >
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-1">
@@ -517,6 +693,38 @@ export default function AgencyQuotesPage() {
                                 <span>•</span>
                                 <span className="capitalize">{q.budget_tier}</span>
                               </div>
+
+                              {(q.linked_proposals_count || 0) > 0 && Array.isArray(q.linked_proposals) && (
+                                <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+                                  <Link
+                                    to="/workspace/turismo/propostas/$id"
+                                    params={{ id: q.linked_proposals[0].id }}
+                                    className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 min-h-11 -my-2 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  >
+                                    <FileText size={12} weight="bold" />
+                                    <span>
+                                      {q.linked_proposals_count === 1
+                                        ? "1 lâmina vinculada"
+                                        : `${q.linked_proposals_count} lâminas vinculadas`}
+                                    </span>
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    title="Copiar link da última proposta"
+                                    aria-label="Copiar link da última proposta"
+                                    onClick={() => {
+                                      const token = q.linked_proposals?.[0]?.public_token;
+                                      if (!token) return;
+                                      const url = `${window.location.origin}/proposta/${token}`;
+                                      navigator.clipboard.writeText(url);
+                                      toast.success("Link da proposta vinculada copiado!");
+                                    }}
+                                    className="size-11 min-h-11 min-w-11 -my-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 inline-flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  >
+                                    <Copy className="size-3.5" />
+                                  </button>
+                                </div>
+                              )}
                             </div>
 
                             {/* Ações Rápidas no Card */}
@@ -536,7 +744,7 @@ export default function AgencyQuotesPage() {
                                       };
                                       quickMoveStageMutation.mutate({ id: q.id, nextStatus: prev[col.id] || "new" });
                                     }}
-                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer size-11 min-h-11 min-w-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   >
                                     <CaretLeft size={13} weight="bold" />
                                   </button>
@@ -553,7 +761,7 @@ export default function AgencyQuotesPage() {
                                       };
                                       quickMoveStageMutation.mutate({ id: q.id, nextStatus: next[col.id] || "won" });
                                     }}
-                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer size-11 min-h-11 min-w-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                   >
                                     <CaretRight size={13} weight="bold" />
                                   </button>
@@ -566,31 +774,48 @@ export default function AgencyQuotesPage() {
                                     href={`https://wa.me/55${cleanWhatsapp}?text=${waMessage}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-1 rounded-md text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+                                    className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-border/60 text-emerald-600 hover:bg-emerald-500/10 inline-flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     title="WhatsApp"
+                                    aria-label={`Conversar no WhatsApp com ${q.contact_name}`}
                                   >
                                     <WhatsappLogo size={14} weight="bold" />
                                   </a>
                                 )}
                                 <Button
                                   type="button"
-                    
                                   variant="ghost"
+                                  size="sm"
                                   onClick={() => createProposalMutation.mutate(q)}
-                                  className="h-11 min-h-11 px-3 text-xs rounded-lg font-bold text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                                  className="h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 text-xs rounded-lg font-medium text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                                   title="Criar Proposta no Studio"
                                 >
                                   Lâmina
                                 </Button>
                                 <Button
                                   type="button"
-                    
                                   variant="outline"
+                                  size="sm"
                                   onClick={() => openManageModal(q)}
-                                  className="h-11 min-h-11 px-3 text-xs rounded-lg font-bold gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                                  className="h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 text-xs rounded-lg border-border/70 font-medium gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                   Gerenciar
                                 </Button>
+                                <CrudActionsMenu
+                                  entityName="Cotação"
+                                  onEdit={() => openManageModal(q)}
+                                  onDuplicate={() => duplicateQuoteMutation.mutate(q)}
+                                  onDelete={() => deleteQuoteMutation.mutate(q.id)}
+                                  deleteTitle="Excluir cotação?"
+                                  deleteDescription={`Remover permanentemente a cotação de ${q.contact_name} (${q.destination_city})?`}
+                                  customActions={[
+                                    {
+                                      id: "create-proposal",
+                                      label: "Criar Lâmina no Studio",
+                                      icon: FileText,
+                                      onClick: () => createProposalMutation.mutate(q),
+                                    },
+                                  ]}
+                                />
                               </div>
                             </div>
                           </Card>
@@ -608,14 +833,14 @@ export default function AgencyQuotesPage() {
  const cleanWhatsapp = (q.contact_whatsapp || "").replace(/\D/g, "");
  const tripTypeLabel =
  q.trip_type === "air_package"
- ? "️ Voo + Hotel"
+ ? "Aéreo + Hotel"
  : q.trip_type === "hotel_only"
- ? " Somente Hotel"
+ ? "Somente Hotel"
  : q.trip_type === "cruise"
- ? " Cruzeiro"
+ ? "Cruzeiro"
  : q.trip_type === "bus"
- ? " Rodoviário"
- : " Visto Americano";
+ ? "Rodoviário"
+ : "Vistos e Assessoria";
 
  const waMessage = encodeURIComponent(
  `Olá ${q.contact_name}! Sou da agência de viagens no Waesy e recebi sua solicitação de cotação para ${q.destination_city} (${q.adults_count} adultos${q.children_count > 0 ? `, ${q.children_count} crianças` : ""}). Preparei algumas opções incríveis para você!`
@@ -728,6 +953,49 @@ export default function AgencyQuotesPage() {
  <span>{q.agency_notes}</span>
  </div>
  )}
+
+ {(q.linked_proposals_count || 0) > 0 && Array.isArray(q.linked_proposals) && (
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-center justify-between gap-2">
+   <Link
+     to="/workspace/turismo/propostas/$id"
+     params={{ id: q.linked_proposals[0].id }}
+     className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-2 min-h-11 -my-2 py-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+   >
+     <FileText size={14} weight="bold" />
+     <span>
+       {q.linked_proposals_count === 1
+         ? `Proposta: ${q.linked_proposals[0].title}`
+         : `${q.linked_proposals_count} propostas criadas (${q.linked_proposals[0].title})`}
+     </span>
+   </Link>
+   <div className="flex items-center gap-1 shrink-0">
+     <button
+       type="button"
+       title="Copiar link da proposta"
+       aria-label="Copiar link da proposta"
+       onClick={() => {
+         const token = q.linked_proposals?.[0]?.public_token;
+         if (!token) return;
+         navigator.clipboard.writeText(`${window.location.origin}/proposta/${token}`);
+         toast.success("Link da proposta copiado!");
+       }}
+       className="size-11 min-h-11 min-w-11 -my-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background inline-flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+     >
+       <Copy className="size-3.5" />
+     </button>
+     <a
+       href={`/proposta/${q.linked_proposals[0].public_token}`}
+       target="_blank"
+       rel="noopener noreferrer"
+       title="Abrir página da proposta"
+       aria-label="Abrir página da proposta"
+       className="size-11 min-h-11 min-w-11 -my-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background inline-flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+     >
+       <ExternalLink className="size-3.5" />
+     </a>
+   </div>
+ </div>
+ )}
  </div>
  </div>
 
@@ -770,8 +1038,8 @@ export default function AgencyQuotesPage() {
 
                     <Button
                       asChild
-        
-                      className="w-full sm:w-auto rounded-lg font-bold text-xs h-11 min-h-11 px-4 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      variant="outline"
+                      className="w-full sm:w-auto rounded-lg font-bold text-xs h-11 min-h-11 px-4 border-border hover:bg-muted text-foreground gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <a
                         href={`https://wa.me/55${cleanWhatsapp}?text=${waMessage}`}
@@ -782,6 +1050,22 @@ export default function AgencyQuotesPage() {
                         <span>WhatsApp</span>
                       </a>
                     </Button>
+                    <CrudActionsMenu
+                      entityName="Cotação"
+                      onEdit={() => openManageModal(q)}
+                      onDuplicate={() => duplicateQuoteMutation.mutate(q)}
+                      onDelete={() => deleteQuoteMutation.mutate(q.id)}
+                      deleteTitle="Excluir cotação?"
+                      deleteDescription={`Remover permanentemente a cotação de ${q.contact_name} (${q.destination_city})?`}
+                      customActions={[
+                        {
+                          id: "create-proposal",
+                          label: "Criar Lâmina no Studio",
+                          icon: FileText,
+                          onClick: () => createProposalMutation.mutate(q),
+                        },
+                      ]}
+                    />
                   </div>
                 </div>
               </Card>
@@ -870,137 +1154,217 @@ export default function AgencyQuotesPage() {
          />
        )}
 
-       {/* ── SIMULADOR DE VOOS CANÔNICO (GDS & CONSOLIDADORA) ── */}
+       {/* ── MOTOR DE COTAÇÃO MULTI-API PASSHUB (WOOBA GDS + INFOTRAVEL + BANCO REAL) ── */}
        {managingQuote && (
-         <div className="rounded-lg border border-border/70 bg-card p-4 space-y-3">
-           <div className="flex items-center justify-between">
+         <div className="space-y-3 pt-2 border-t border-border/60">
+           <div className="flex flex-wrap items-center justify-between gap-2">
              <div className="flex items-center gap-2">
                <Plane className="size-4 text-primary" />
                <span className="text-xs font-bold text-foreground">
-                 Simulação de Voos e Tarifas Aéreas (GDS)
+                 Cotação Multi-API PassHub (Voos, Hotéis, Pacotes & Passeios)
                </span>
              </div>
              <Button
                type="button"
- 
                variant="outline"
                onClick={() => setIsFlightSimulatorOpen((prev) => !prev)}
                className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
              >
-               {isFlightSimulatorOpen ? "Ocultar Simulador" : "Buscar Voos GDS"}
+               {isFlightSimulatorOpen ? "Ocultar Cotador PassHub" : "Cotar Pacote nas APIs"}
              </Button>
            </div>
 
+           {(selectedQuoteSegments.flights.length > 0 ||
+             selectedQuoteSegments.hotels.length > 0 ||
+             selectedQuoteSegments.transfers.length > 0 ||
+             selectedQuoteSegments.tours.length > 0 ||
+             selectedQuoteSegments.options.length > 0) && (
+             <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-primary/5 border border-primary/20 px-3 py-2 text-xs">
+               <div className="flex flex-wrap items-center gap-2">
+                 <span className="font-semibold text-foreground">Selecionados:</span>
+                 {selectedQuoteSegments.flights.length > 0 && (
+                   <Badge variant="secondary">{selectedQuoteSegments.flights.length} Voo(s)</Badge>
+                 )}
+                 {selectedQuoteSegments.hotels.length > 0 && (
+                   <Badge variant="secondary">{selectedQuoteSegments.hotels.length} Hotel(is)</Badge>
+                 )}
+                 {selectedQuoteSegments.transfers.length > 0 && (
+                   <Badge variant="secondary">{selectedQuoteSegments.transfers.length} Terrestre(s)</Badge>
+                 )}
+                 {selectedQuoteSegments.tours.length > 0 && (
+                   <Badge variant="secondary">{selectedQuoteSegments.tours.length} Passeio(s)</Badge>
+                 )}
+                 {selectedQuoteSegments.options.length > 0 && (
+                   <Badge variant="secondary">{selectedQuoteSegments.options.length} Opção(ões)</Badge>
+                 )}
+               </div>
+               <Button
+                 type="button"
+                 size="sm"
+                 disabled={createProposalMutation.isPending}
+                 onClick={() => createProposalMutation.mutate(managingQuote)}
+                 className="h-11 sm:h-9 gap-2 font-semibold"
+               >
+                 <FileText size={14} weight="bold" />
+                 <span>Gerar Lâmina com Seleções</span>
+               </Button>
+             </div>
+           )}
+
            {isFlightSimulatorOpen && (
-             <div className="space-y-4 pt-1 animate-in fade-in duration-200">
-               <FlightSearchWidget
-                 initialParams={{
-                   origin: `${managingQuote.origin_city || "Chapecó"}${managingQuote.origin_iata ? ` (${managingQuote.origin_iata})` : ""}`,
-                   destination: `${managingQuote.destination_city || "Recife"}${managingQuote.destination_iata ? ` (${managingQuote.destination_iata})` : ""}`,
-                   departureDate: managingQuote.departure_date || "2026-11-15",
-                   returnDate: managingQuote.return_date || "2026-11-22",
-                   passengers: managingQuote.adults_count || 2,
-                   isRoundTrip: Boolean(managingQuote.return_date),
-                   travelClass: (managingQuote.budget_tier === "luxury" ? "business" : managingQuote.budget_tier === "premium" ? "premium" : "economy") as any,
-                 }}
-                 isLoading={isSearchingFlights}
-                 onSearch={async (params) => {
-                   setIsSearchingFlights(true);
-                   try {
-                     const res = await searchAgencyGdsFlightsFn({
-                       data: {
-                         origin: params.origin,
-                         destination: params.destination,
-                         departureDate: params.departureDate,
-                         returnDate: params.returnDate,
-                         passengers: params.passengers,
-                       },
-                     });
-                     const mapped: FlightOfferCardProps[] = (res.offers || []).map((o) => ({
-                       airline: o.airline,
-                       flightNumber: o.flightNumber,
-                       departureTime: o.departureTime,
-                       departureAirport: o.departureAirport,
-                       arrivalTime: o.arrivalTime,
-                       arrivalAirport: o.arrivalAirport,
-                       duration: o.duration,
-                       stops: o.stops,
-                       stopsDescription: o.stopsDescription,
-                       baggageIncluded: o.baggageIncluded,
-                       price: o.priceCents > 0 ? formatMoney(o.priceCents) : "Sob consulta",
-                       pricePerPerson:
-                         o.pricePerPersonCents > 0
-                           ? `${formatMoney(o.pricePerPersonCents)} por pessoa`
-                           : "Bloqueio Agência",
-                       conditions: o.conditions,
-                       isBestOption: o.isBestOption,
-                       isCheapest: o.isCheapest,
-                     }));
-                     setFlightOffers(mapped);
-                     setFlightSearchFeedback({
-                       searched: true,
-                       isConfigured: res.isWoobaConfigured,
-                       message: res.statusMessage,
-                     });
-                     if (mapped.length > 0) {
-                       toast.success(`${mapped.length} opções aéreas reais encontradas para ${params.destination}.`);
-                     } else {
-                       toast.info("Nenhum voo retornado nesta consulta.");
-                     }
-                   } catch (err: any) {
-                     toast.error(err?.message || "Erro ao consultar malha aérea GDS.");
-                   } finally {
-                     setIsSearchingFlights(false);
+             <div className="pt-1">
+               <PassHubLiveQuoterPanel
+                 key={managingQuote.id}
+                 compact
+                 initialOriginIata={managingQuote.origin_iata || ""}
+                 initialDestinationIata={managingQuote.destination_iata || ""}
+                 initialDestinationCity={managingQuote.destination_city || ""}
+                 initialDepartureDate={managingQuote.departure_date || ""}
+                 initialReturnDate={managingQuote.return_date || ""}
+                 initialRooms={
+                   Array.isArray(managingQuote.room_occupancies) && managingQuote.room_occupancies.length > 0
+                     ? managingQuote.room_occupancies.map((r: any) => ({
+                         adults: Math.max(1, Number(r?.adults || 2)),
+                         childrenAges: Array.isArray(r?.childrenAges)
+                           ? r.childrenAges.map(Number)
+                           : Array.isArray(r?.children_ages)
+                             ? r.children_ages.map(Number)
+                             : [],
+                       }))
+                     : [{ adults: Math.max(1, managingQuote.adults_count || 2), childrenAges: [] }]
+                 }
+                 onAddFlight={(flight, meta) => {
+                   setSelectedQuoteSegments((prev) => ({
+                     ...prev,
+                     flights: [...prev.flights, flight],
+                     quoteSessionId: meta.quoteSessionId || prev.quoteSessionId,
+                   }));
+                   if (meta.priceCents > 0) {
+                     const currentCents = parseQuoteReaisToCents(editQuoteAmount) || 0;
+                     setEditQuoteAmount(((currentCents + meta.priceCents) / 100).toFixed(2));
                    }
+                   const note = `Voo (${meta.providerCode}): ${flight.airline_name || flight.airline} ${flight.flight_number || ""} (${flight.origin_iata} ${flight.departure_time || ""} -> ${flight.destination_iata} ${flight.arrival_time || ""})`;
+                   setEditAgencyNotes((prev) => (prev ? `${prev}\n${note}` : note));
+                   toast.success(`Voo ${flight.airline_name || flight.airline} adicionado ao pacote da cotação!`);
+                 }}
+                 onAddHotel={(hotel, meta) => {
+                   setSelectedQuoteSegments((prev) => ({
+                     ...prev,
+                     hotels: [...prev.hotels, hotel],
+                     quoteSessionId: meta.quoteSessionId || prev.quoteSessionId,
+                   }));
+                   if (meta.priceCents > 0) {
+                     const currentCents = parseQuoteReaisToCents(editQuoteAmount) || 0;
+                     setEditQuoteAmount(((currentCents + meta.priceCents) / 100).toFixed(2));
+                   }
+                   const note = `Hotel (${meta.providerCode}): ${hotel.hotel_name} (${hotel.board_basis || "Regime sob consulta"})`;
+                   setEditAgencyNotes((prev) => (prev ? `${prev}\n${note}` : note));
+                   toast.success(`Hotel ${hotel.hotel_name} adicionado!`);
+                 }}
+                 onAddTransfer={(transfer, meta) => {
+                   setSelectedQuoteSegments((prev) => ({
+                     ...prev,
+                     transfers: [...prev.transfers, transfer],
+                     quoteSessionId: meta.quoteSessionId || prev.quoteSessionId,
+                   }));
+                   if (transfer.price_cents && transfer.price_cents > 0) {
+                     const currentCents = parseQuoteReaisToCents(editQuoteAmount) || 0;
+                     setEditQuoteAmount(((currentCents + transfer.price_cents) / 100).toFixed(2));
+                   }
+                   toast.success(`Transfer "${transfer.route_name || transfer.vehicle || "Executivo"}" adicionado!`);
+                 }}
+                 onAddTour={(tour, meta) => {
+                   setSelectedQuoteSegments((prev) => ({
+                     ...prev,
+                     tours: [...prev.tours, tour],
+                     includes: tour.included && tour.title && !prev.includes.includes(tour.title)
+                       ? [...prev.includes, tour.title]
+                       : prev.includes,
+                     quoteSessionId: meta.quoteSessionId || prev.quoteSessionId,
+                   }));
+                   if (tour.price_cents && tour.price_cents > 0) {
+                     const currentCents = parseQuoteReaisToCents(editQuoteAmount) || 0;
+                     setEditQuoteAmount(((currentCents + tour.price_cents) / 100).toFixed(2));
+                   }
+                   toast.success(`Passeio "${tour.title}" adicionado!`);
+                 }}
+                 onAddCar={(car, meta) => {
+                   const carAsTransfer: TransferDTO = {
+                     id: car.id,
+                     type: "Locação de Veículo",
+                     vehicle: `${car.vehicleModelExample || car.vehicleCategory} (${car.rentalCompany})`,
+                     route: car.pickupLocation,
+                     price_cents: car.totalPriceCents,
+                     notes: `${car.vehicleCategory} · ${car.transmission}`,
+                   };
+                   setSelectedQuoteSegments((prev) => ({
+                     ...prev,
+                     transfers: [...prev.transfers, carAsTransfer],
+                     quoteSessionId: meta.quoteSessionId || prev.quoteSessionId,
+                   }));
+                   if (car.totalPriceCents > 0) {
+                     const currentCents = parseQuoteReaisToCents(editQuoteAmount) || 0;
+                     setEditQuoteAmount(((currentCents + car.totalPriceCents) / 100).toFixed(2));
+                   }
+                   toast.success(`Veículo "${car.vehicleModelExample || car.vehicleCategory}" adicionado!`);
+                 }}
+                 onImportPackage={(pkg, meta) => {
+                   const nextHotels: HotelDTO[] = pkg.hotelName
+                     ? [
+                         {
+                           hotel_name: pkg.hotelName,
+                           destination: pkg.destination,
+                           checkin_date: pkg.departureDate,
+                           checkout_date: pkg.returnDate,
+                           nights_count: pkg.nights,
+                           board_basis: pkg.boardType || undefined,
+                           image_url: pkg.imageUrl || undefined,
+                           price_cents: pkg.priceTotalCents,
+                         },
+                       ]
+                     : [];
+                   setSelectedQuoteSegments((prev) => ({
+                     ...prev,
+                     hotels: nextHotels.length > 0 ? nextHotels : prev.hotels,
+                     includes: Array.from(new Set([...prev.includes, ...(pkg.includedItems || [])])),
+                     quoteSessionId: meta.quoteSessionId || prev.quoteSessionId,
+                   }));
+                   if (pkg.priceTotalCents > 0) {
+                     setEditQuoteAmount((pkg.priceTotalCents / 100).toFixed(2));
+                   }
+                   const note = `Pacote (${pkg.operatorSlug}): ${pkg.packageName}${pkg.hotelName ? ` · ${pkg.hotelName}` : ""}`;
+                   setEditAgencyNotes((prev) => (prev ? `${prev}\n${note}` : note));
+                   toast.success(`Pacote "${pkg.packageName}" aplicado!`);
+                 }}
+                 onAddComparativeOption={(opt) => {
+                   setSelectedQuoteSegments((prev) => ({
+                     ...prev,
+                     options: [
+                       ...prev.options,
+                       {
+                         id: `opt-${prev.options.length + 1}`,
+                         name: opt.optionLabel,
+                         hotel_name: opt.hotelName || undefined,
+                         airline: opt.airlineDesc || undefined,
+                         hotels: opt.hotel ? [opt.hotel] : undefined,
+                         flights: opt.flight ? [opt.flight] : undefined,
+                         is_recommended: prev.options.length === 0,
+                         pricing: {
+                           currency: "BRL",
+                           base_price_cents: opt.totalPriceCents,
+                           boarding_tax_cents: 0,
+                           other_taxes_cents: 0,
+                           discount_cents: 0,
+                           total_price_cents: opt.totalPriceCents,
+                           installments_options: [],
+                         },
+                       },
+                     ],
+                     quoteSessionId: opt.quoteSessionId || prev.quoteSessionId,
+                   }));
+                   toast.success(`"${opt.optionLabel}" salva nas opções comparativas!`);
                  }}
                />
-
-               {flightSearchFeedback.searched && flightOffers.length === 0 && (
-                 <div className="rounded-lg border border-border bg-muted/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                   <div className="space-y-1">
-                     <p className="text-xs font-bold text-foreground">
-                       {flightSearchFeedback.isConfigured
-                         ? "Nenhum voo Wooba encontrado para os filtros informados"
-                         : "Conector Wooba não configurado nesta agência"}
-                     </p>
-                     <p className="text-xs text-muted-foreground">
-                       {flightSearchFeedback.message ||
-                         (flightSearchFeedback.isConfigured
-                           ? "Tente alterar a data de embarque ou utilize o Studio Universal para importar tarifa via OCR."
-                           : "Ative suas credenciais Wooba no Hub de Integrações para consultar disponibilidade aérea em tempo real.")}
-                     </p>
-                   </div>
-                   {!flightSearchFeedback.isConfigured && (
-                     <Button
-                       asChild
-                       variant="outline"
-         
-                       className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold shrink-0"
-                     >
-                       <Link to="/workspace/configuracoes/integracoes">Configurar InfoTravel</Link>
-                     </Button>
-                   )}
-                 </div>
-               )}
-
-               {flightOffers.length > 0 && (
-                 <TravelSearchResults
-                   destination={managingQuote.destination_city}
-                   offers={flightOffers}
-                   onSelectOffer={(offer) => {
-                     const numPrice = offer.price.replace(/[^\d]/g, "");
-                     if (numPrice) {
-                       setEditQuoteAmount((parseFloat(numPrice) / 100).toFixed(2));
-                     }
-                     const flightNote = `Voo Selecionado: ${offer.airline} (${offer.departureAirport} ${offer.departureTime} → ${offer.arrivalAirport} ${offer.arrivalTime}), ${offer.price}. ${offer.baggageIncluded ? "Bagagem despachada inclusa" : "Sem bagagem despachada"}.`;
-                     setEditAgencyNotes((prev) => (prev ? `${prev}\n${flightNote}` : flightNote));
-                     toast.success(`Voo da ${offer.airline} selecionado e valor aplicado ao orçamento!`);
-                   }}
-                   onGenerateQuote={() => {
-                     createProposalMutation.mutate(managingQuote);
-                   }}
-                 />
-               )}
              </div>
            )}
          </div>

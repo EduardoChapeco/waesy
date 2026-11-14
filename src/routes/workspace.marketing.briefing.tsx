@@ -329,7 +329,11 @@ export function BrandBriefingPage() {
   // ── Score visual (transplantado do satélite) ─────────────────────────────
   const score = calculateCompleteness(form);
   const scoreColor =
-    score >= 80 ? "#10b981" : score >= 50 ? "#f59e0b" : "#ef4444";
+    score >= 80
+      ? "var(--color-emerald-500)"
+      : score >= 50
+      ? "var(--warning)"
+      : "var(--color-red-500)";
 
   // Dimensões do radar (transplantadas do satélite)
   const dimensions = [
@@ -602,7 +606,10 @@ export function BrandBriefingPage() {
                 />
               </svg>
               <div className="absolute text-center">
-                <p className="text-3xl font-black" style={{ color: scoreColor }}>
+                <p
+                  className="text-3xl font-black waesy-dyn-fg"
+                  style={{ "--dyn-fg": scoreColor } as React.CSSProperties}
+                >
                   {score}
                 </p>
                 <p className="text-xs text-muted-foreground font-mono">/ 100</p>

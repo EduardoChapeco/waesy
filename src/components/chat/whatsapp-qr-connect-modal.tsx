@@ -629,10 +629,10 @@ export function WhatsAppQrConnectModal({
                   />
                   <div className="text-xs space-y-1">
                     <span className="font-semibold block text-foreground">
-                      Importar conversas anteriores do aparelho
+                      Importar histórico antigo na conexão (Opcional)
                     </span>
                     <span className="text-muted-foreground block text-xs leading-relaxed">
-                      Sincroniza contatos, fotos e conversas existentes no aparelho para o atendimento.
+                      Desmarcado por padrão (apenas conversas novas) para poupar memória. Use o submódulo Histórico para importar retroativamente quando desejar.
                     </span>
                   </div>
                 </label>

@@ -32,9 +32,15 @@ import {
   Paperclip,
   CheckCircle2,
   Target,
+  ArrowLeft,
+  Smartphone,
+  FileSignature,
+  ClipboardList,
+  Sparkles,
 } from "lucide-react";
 import { formatBRL, cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
+import { isSyntheticMetaLid, isRawLidOrSyntheticName } from "@/lib/chat-media-attachment";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -68,6 +74,9 @@ import {
 } from "@/lib/entity-trace-hash";
 import { ThreadTagsPicker } from "@/components/chat/ThreadTagsPicker";
 import { CommercialBudgetPadSheet } from "@/components/documents/CommercialBudgetPadSheet";
+import { C360ProfileAndDocsView } from "@/components/chat/c360/C360ProfileAndDocsView";
+import { C360LeadAndCommerceView } from "@/components/chat/c360/C360LeadAndCommerceView";
+import { C360ContractsFinanceFormsView } from "@/components/chat/c360/C360ContractsFinanceFormsView";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -177,6 +186,9 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const [editCity, setEditCity] = useState("");
   const [editAvatarUrl, setEditAvatarUrl] = useState("");
   const [avatarImgFailed, setAvatarImgFailed] = useState(false);
+  const [activeC360Module, setActiveC360Module] = useState<
+    "overview" | "profile" | "docs" | "lead" | "quotes" | "vertical" | "contracts" | "finance" | "forms" | "support"
+  >("overview");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSyncingWhatsAppProfile, setIsSyncingWhatsAppProfile] = useState(false);
   const [isEditingAttribution, setIsEditingAttribution] = useState(false);
@@ -417,6 +429,18 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     }
   };
 
+  const openEditTravelDossier = (dossier: any) => {
+    setEditingDossierId(dossier.id || null);
+    setPnrLocator(dossier.pnr_locator || "");
+    setOperatorPackageId(dossier.operator_package_id || "");
+    setOperatorName(dossier.operator_name || "");
+    setAirlineName(dossier.airline_name || "");
+    setRouteSummary(dossier.route_summary || "");
+    setDepartureDate(dossier.departure_date || "");
+    setFlightStatus(dossier.flight_status || "confirmed");
+    setIsAddingDossier(true);
+  };
+
   const handleRemoveTravelDossier = async (dossierId: string) => {
     if (!threadId) return;
     try {
@@ -479,7 +503,14 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       setEmailSubject("");
       setEmailBody("");
       setEmailAttachmentUrl("");
-      toast.success("E-mail enviado e vinculado ao histórico 360º do cliente!");
+      if (res?.deliveredExternally) {
+        toast.success("E-mail disparado externamente (SMTP) e vinculado ao Perfil do Cliente!");
+      } else {
+        toast.warning(
+          res?.deliveryWarning ||
+            "E-mail registrado no Histórico do Cliente (configure RESEND_API_KEY para entrega externa SMTP).",
+        );
+      }
     } catch (err: any) {
       toast.error(err?.message || "Falha ao enviar e-mail vinculado.");
     } finally {
@@ -706,6 +737,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       const entityCode =
         newTicketEntityCode.trim() ||
         activeTrip?.trip_number ||
+        activeDossier?.pnr_locator ||
         activeDossier?.pnrLocator ||
         (activeOrder ? `PED-${String(activeOrder.id).slice(0, 6).toUpperCase()}` : "");
 
@@ -786,6 +818,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       const entityCode =
         newTaskEntityCode.trim() ||
         activeTrip?.trip_number ||
+        activeDossier?.pnr_locator ||
         activeDossier?.pnrLocator ||
         (activeOrder ? `PED-${String(activeOrder.id).slice(0, 6).toUpperCase()}` : "");
 
@@ -803,7 +836,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           entityType: activeTrip || activeDossier ? "trip" : activeOrder ? "order" : "customer",
           entityId: activeTrip?.id || activeOrder?.id || data?.profile?.id || null,
           entityCode: entityCode || null,
-          pnrLocator: activeDossier?.pnrLocator || null,
+          pnrLocator: activeDossier?.pnr_locator || activeDossier?.pnrLocator || null,
           isMyDay: true,
         },
       });
@@ -895,7 +928,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
     return (
       <div className="flex flex-col items-center justify-center p-8 text-muted-foreground gap-2">
         <Loader2 className="size-5 animate-spin motion-reduce:animate-none text-primary" />
-        <span className="text-xs">Carregando Ficha 360º...</span>
+        <span className="text-xs">Carregando Perfil do Cliente...</span>
       </div>
     );
   }
@@ -950,8 +983,18 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
   const activeChecklist = Array.isArray(activeOpportunity?.checklist) ? activeOpportunity.checklist : [];
   const effectiveAvatar = !avatarImgFailed ? (profile?.avatar_url || avatarUrl || null) : null;
   const rawEmailStr = String(profile?.email || "").trim();
-  const cleanCustomerEmail = !rawEmailStr || rawEmailStr.endsWith("@whatsapp.waesy") ? null : rawEmailStr;
-  const safeDisplayPhone = effectiveIsGroup || isChannel ? null : (profile?.phone || guestPhone || null);
+  const cleanCustomerEmail = !rawEmailStr || /@(grupo\.)?whatsap/i.test(rawEmailStr) ? null : rawEmailStr;
+  const rawDisplayPhone = effectiveIsGroup || isChannel ? null : (profile?.phone || guestPhone || null);
+  const safeDisplayPhone =
+    rawDisplayPhone && !isSyntheticMetaLid(rawDisplayPhone, rawDisplayPhone)
+      ? rawDisplayPhone
+      : null;
+  const rawDisplayName = profile?.full_name || data?.groupSubject || guestName || "";
+  const safeDisplayName = !isRawLidOrSyntheticName(rawDisplayName, rawDisplayPhone)
+    ? rawDisplayName
+    : effectiveIsGroup
+      ? "Grupo WhatsApp"
+      : `Contato WhatsApp #${String(rawDisplayName || rawDisplayPhone || "").replace(/\D/g, "").slice(-4) || "LID"}`;
 
   return (
     <div className={cn("space-y-4 p-3 text-xs font-sans", className)}>
@@ -959,7 +1002,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
       <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-3">
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
-            <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-base border border-primary/20 overflow-hidden">
+            <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-semibold text-base border border-primary/20 overflow-hidden">
               {effectiveAvatar ? (
                 <img
                   src={effectiveAvatar}
@@ -993,7 +1036,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             <div className="flex items-center justify-between gap-1">
               <div className="flex items-center gap-1 min-w-0">
                 <h4 className="font-bold text-foreground truncate text-sm">
-                  {profile?.full_name || data?.groupSubject || guestName || (effectiveIsGroup ? "Grupo WhatsApp" : "Contato")}
+                  {safeDisplayName || (effectiveIsGroup ? "Grupo WhatsApp" : "Contato")}
                 </h4>
                 <span className="px-2 py-1 rounded bg-primary/10 text-primary font-mono text-2xs font-bold shrink-0">
                   {effectiveTraceHash}
@@ -1131,9 +1174,228 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             </div>
           </div>
         )}
+
+        {/* Atalho App Próprio do Cliente (/conta) */}
+        {!effectiveIsGroup && !isChannel && data?.storeInfo?.portal_url && (
+          <div className="pt-2 border-t border-border/50 flex items-center justify-between gap-2">
+            <span className="text-xs text-muted-foreground inline-flex items-center gap-2 truncate">
+              <Smartphone className="size-3.5 text-primary shrink-0" />
+              <span className="truncate">App do Cliente</span>
+            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(data.storeInfo.portal_url);
+                  toast.success("Link do App do Cliente copiado!");
+                }}
+                className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-xs font-medium text-foreground inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Copy className="size-3" />
+                Copiar
+              </button>
+              <a
+                href={data.storeInfo.portal_url}
+                target="_blank"
+                rel="noreferrer"
+                className="min-h-11 sm:min-h-7 px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-xs font-medium text-primary inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <ArrowUpRight className="size-3" />
+                Abrir
+              </a>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 1.1 PARTICIPANTES DO GRUPO (QUANDO @g.us) */}
+      {/* BARRA DE NAVEGAÇÃO DRILL-DOWN OU MENU MODULAR 360° */}
+      {!effectiveIsGroup && !isChannel && (
+        activeC360Module !== "overview" ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-muted/30 px-3 py-2">
+              <button
+                type="button"
+                onClick={() => setActiveC360Module("overview")}
+                className="min-h-11 sm:min-h-8 px-3 rounded-lg border border-border/70 bg-background hover:bg-muted text-xs font-semibold text-foreground inline-flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <ArrowLeft className="size-3.5" />
+                Voltar
+              </button>
+              <span className="text-xs font-semibold text-foreground truncate">
+                {activeC360Module === "profile" && "Perfil Completo & App"}
+                {activeC360Module === "docs" && "Documentos (Carteira)"}
+                {activeC360Module === "lead" && "Lead & Funil Kanban"}
+                {activeC360Module === "quotes" && "Cotações & Propostas"}
+                {activeC360Module === "vertical" &&
+                  (/turis|viag|agenc/i.test(niche || data?.storeInfo?.niche || "")
+                    ? "Viagens, Embarque & Pedidos"
+                    : "Pedidos, Agenda & Serviços")}
+                {activeC360Module === "contracts" && "Contratos & Anamnese"}
+                {activeC360Module === "finance" && "Financeiro, Faturas & Carnês"}
+                {activeC360Module === "forms" && "Formulários & Landing Pages"}
+                {activeC360Module === "support" && "Suporte & Chamados"}
+              </span>
+            </div>
+
+            {(activeC360Module === "profile" || activeC360Module === "docs") && (
+              <C360ProfileAndDocsView
+                data={data}
+                profile={profile}
+                portalUrl={data?.storeInfo?.portal_url || "https://waesy.com.br/conta"}
+                defaultTab={activeC360Module === "docs" ? "docs" : "profile"}
+                onQuickSendMessage={onQuickSendMessage}
+                onSaveProfile={async (payload) => {
+                  const res = await updateCustomerProfileFromChat({
+                    data: {
+                      customerId: resolvedCustomerId || null,
+                      threadId: threadId || null,
+                      isGroup: false,
+                      fullName: payload.fullName.trim() || safeDisplayName || "Cliente",
+                      phone: payload.phone.trim() || null,
+                      email: payload.email.trim() || null,
+                      documentCpf: payload.documentCpf.trim() || null,
+                      city: payload.city.trim() || null,
+                    },
+                  });
+                  setData((prev: any) =>
+                    prev ? { ...prev, profile: { ...(prev.profile || {}), ...res.profile } } : prev,
+                  );
+                  onProfileSynced?.({
+                    fullName: payload.fullName.trim(),
+                    phone: res?.profile?.phone || payload.phone.trim() || null,
+                    isGroup: false,
+                  });
+                  toast.success("Ficha do cliente atualizada!");
+                }}
+              />
+            )}
+
+            {(activeC360Module === "lead" || activeC360Module === "quotes" || activeC360Module === "vertical") && (
+              <C360LeadAndCommerceView
+                mode={activeC360Module}
+                niche={niche || data?.storeInfo?.niche || "general"}
+                data={data}
+                onQuickSendMessage={onQuickSendMessage}
+                onOpenQuickComposerModal={onOpenQuickComposerModal}
+                onFunnelStageChange={async (leadId, nextStage) => {
+                  await updateCustomerFunnelStage({ data: { storeId, leadId, status: nextStage } });
+                  setData((prev: any) =>
+                    prev
+                      ? {
+                          ...prev,
+                          linkedLead:
+                            prev.linkedLead?.id === leadId
+                              ? { ...prev.linkedLead, status: nextStage }
+                              : prev.linkedLead,
+                        }
+                      : prev,
+                  );
+                  toast.success("Fase do lead atualizada!");
+                }}
+              />
+            )}
+
+            {(activeC360Module === "contracts" ||
+              activeC360Module === "finance" ||
+              activeC360Module === "forms" ||
+              activeC360Module === "support") && (
+              <C360ContractsFinanceFormsView
+                mode={activeC360Module}
+                data={data}
+                onQuickSendMessage={onQuickSendMessage}
+                onOpenQuickComposerModal={onOpenQuickComposerModal}
+              />
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                {
+                  id: "profile",
+                  label: "Perfil & App",
+                  count: null,
+                  icon: User,
+                },
+                {
+                  id: "docs",
+                  label: "Documentos",
+                  count: documents.length,
+                  icon: CreditCard,
+                },
+                {
+                  id: "lead",
+                  label: "Lead & Card",
+                  count: opportunities.length,
+                  icon: Target,
+                },
+                {
+                  id: "quotes",
+                  label: "Cotações",
+                  count: quotes.length,
+                  icon: Sparkles,
+                },
+                {
+                  id: "vertical",
+                  label: /turis|viag|agenc/i.test(niche || data?.storeInfo?.niche || "")
+                    ? "Viagens"
+                    : "Pedidos",
+                  count: trips.length + orders.length,
+                  icon: /turis|viag|agenc/i.test(niche || data?.storeInfo?.niche || "") ? Plane : ShoppingBag,
+                },
+                {
+                  id: "contracts",
+                  label: "Contratos",
+                  count: contracts.length,
+                  icon: FileSignature,
+                },
+                {
+                  id: "finance",
+                  label: "Financeiro",
+                  count: invoices.length + (Array.isArray(data?.installmentPlans) ? data.installmentPlans.length : 0),
+                  icon: Receipt,
+                },
+                {
+                  id: "forms",
+                  label: "Formulários",
+                  count: Array.isArray(data?.formSubmissions) ? data.formSubmissions.length : 0,
+                  icon: ClipboardList,
+                },
+                {
+                  id: "support",
+                  label: "Suporte SAC",
+                  count: tickets.length,
+                  icon: ShieldAlert,
+                },
+              ] as const
+            ).map((mod) => {
+              const Icon = mod.icon;
+              return (
+                <button
+                  key={mod.id}
+                  type="button"
+                  onClick={() => setActiveC360Module(mod.id)}
+                  className="min-h-11 rounded-xl border border-border/70 bg-card hover:bg-muted/40 px-3 py-2 flex items-center justify-between gap-2 text-left transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <span className="inline-flex items-center gap-2 min-w-0">
+                    <Icon className="size-3.5 text-primary shrink-0" />
+                    <span className="text-xs font-semibold text-foreground truncate">{mod.label}</span>
+                  </span>
+                  {mod.count !== null && (
+                    <span className="px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground shrink-0">
+                      {mod.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )
+      )}
+
+      {activeC360Module === "overview" && (
+        <>
+          {/* 1.1 PARTICIPANTES DO GRUPO (QUANDO @g.us) */}
       {effectiveIsGroup && groupParticipants.length > 0 && (
         <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2">
           <div className="flex items-center justify-between gap-2">
@@ -1635,14 +1897,24 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                         <Mail className="size-3 text-primary" />
                         <span>Consultar Operadora por E-mail</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTravelDossier(dos.id)}
-                        className="p-1 rounded-md text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        title="Remover localizador"
-                      >
-                        <Trash2 className="size-3" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => openEditTravelDossier(dos)}
+                          className="px-2 py-1 rounded-md border border-border/70 bg-background hover:bg-muted text-2xs font-semibold text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          title="Editar PNR / Reserva"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTravelDossier(dos.id)}
+                          className="p-1 rounded-md text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          title="Remover localizador"
+                        >
+                          <Trash2 className="size-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1760,32 +2032,50 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
         )}
 
         {/* Listagem Compacta de Orçamentos, Contratos, Faturas e Pedidos */}
-        {(quotes.length > 0 || contracts.length > 0 || invoices.length > 0 || orders.length > 0 || documents.length > 0) && (
+        {(quotes.length > 0 || contracts.length > 0 || invoices.length > 0 || orders.length > 0 || documents.length > 0) && (() => {
+          const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+          return (
           <div className="space-y-1 max-h-48 overflow-y-auto no-scrollbar pt-1 border-t border-border/50">
-            {quotes.map((q: any) => (
-              <div key={q.id} className="px-2 py-1 rounded-lg bg-muted/20 border border-border/60 flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <span className="font-semibold text-foreground text-2xs block truncate">
-                    {q.title || q.destination || `Cotação #${q.quote_number || String(q.id).slice(0, 6)}`}
-                  </span>
-                  <span className="text-2xs font-mono text-primary font-bold">
-                    {formatBRL((q.total_cents || 0) / 100)}
-                  </span>
+            {quotes.map((q: any) => {
+              const safeToken =
+                typeof q.public_token === "string" && q.public_token.trim().length > 0
+                  ? q.public_token.trim()
+                  : null;
+              return (
+                <div key={q.id} className="px-2 py-1 rounded-lg bg-muted/20 border border-border/60 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="font-semibold text-foreground text-2xs block truncate">
+                      {q.title || q.destination || `Cotação #${q.quote_number || String(q.id).slice(0, 6)}`}
+                    </span>
+                    <span className="text-2xs font-mono text-primary font-bold">
+                      {formatBRL((q.total_cents || 0) / 100)}
+                    </span>
+                  </div>
+                  {safeToken ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSendOrCopyLink(
+                          `Olá ${profile?.full_name || "Cliente"}! Segue o link da sua proposta (${formatBRL((q.total_cents || 0) / 100)}): ${origin}/proposta/${safeToken}`,
+                        )
+                      }
+                      className="px-2 py-1 rounded-md border border-border/70 bg-background text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Send className="size-3" />
+                      <span>Enviar</span>
+                    </button>
+                  ) : (
+                    <a
+                      href="/workspace/turismo/cotacoes"
+                      className="px-2 py-1 rounded-md border border-border/70 bg-background text-2xs font-semibold inline-flex items-center gap-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <ArrowUpRight className="size-3" />
+                      <span>Cotar</span>
+                    </a>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleSendOrCopyLink(
-                      `Olá ${profile?.full_name || "Cliente"}! Segue o link da sua proposta (${formatBRL((q.total_cents || 0) / 100)}): https://waesy.app/orcamento/${q.id}`,
-                    )
-                  }
-                  className="px-2 py-1 rounded-md border border-border/70 bg-background text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <Send className="size-3" />
-                  <span>Enviar</span>
-                </button>
-              </div>
-            ))}
+              );
+            })}
 
             {contracts.map((c: any) => (
               <div key={c.id} className="px-2 py-1 rounded-lg bg-muted/20 border border-border/60 flex items-center justify-between gap-2">
@@ -1799,7 +2089,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                   type="button"
                   onClick={() =>
                     handleSendOrCopyLink(
-                      `Olá ${profile?.full_name || "Cliente"}! Acesse seu contrato digital: https://waesy.app/contrato/${c.public_token || c.id}`,
+                      `Olá ${profile?.full_name || "Cliente"}! Acesse seu contrato digital: ${origin}/contrato/${c.public_token || c.id}`,
                     )
                   }
                   className="px-2 py-1 rounded-md border border-border/70 bg-background text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -1810,16 +2100,35 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               </div>
             ))}
 
-            {invoices.map((inv: any) => (
+            {invoices.map((inv: any) => {
+              const invUrl = inv.public_token ? `${origin}/fatura/${inv.public_token}` : null;
+              return (
               <div key={inv.id} className="px-2 py-1 rounded-lg bg-muted/20 border border-border/60 flex items-center justify-between gap-2">
-                <span className="text-2xs font-medium text-foreground truncate">
-                  {inv.description || "Fatura"}
-                </span>
-                <span className="text-2xs font-mono font-bold text-foreground shrink-0">
-                  {formatBRL((inv.amount_cents || 0) / 100)}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <span className="text-2xs font-medium text-foreground truncate block">
+                    {inv.invoice_code ? `${inv.invoice_code} • ` : ""}{inv.description || "Fatura"}
+                  </span>
+                  <span className="text-2xs font-mono font-bold text-foreground">
+                    {formatBRL((inv.amount_cents || 0) / 100)}
+                  </span>
+                </div>
+                {invUrl && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSendOrCopyLink(
+                        `Olá ${profile?.full_name || "Cliente"}! Segue sua fatura (${formatBRL((inv.amount_cents || 0) / 100)}): ${invUrl}`,
+                      )
+                    }
+                    className="px-2 py-1 rounded-md border border-border/70 bg-background text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <Send className="size-3" />
+                    <span>Link</span>
+                  </button>
+                )}
               </div>
-            ))}
+              );
+            })}
 
             {orders.map((o: any) => {
               const shortOrder = typeof o.id === "string" ? o.id.slice(0, 8) : "";
@@ -1833,7 +2142,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                     type="button"
                     onClick={() =>
                       handleSendOrCopyLink(
-                        `Olá ${profile?.full_name || "Cliente"}! Acompanhe seu pedido #${shortOrder}: https://waesy.app/pedido/${o.id}`,
+                        `Olá ${profile?.full_name || "Cliente"}! Acompanhe seu pedido #${shortOrder}: ${origin}/pedido/${o.public_token || o.id}/confirmacao`,
                       )
                     }
                     className="px-2 py-1 rounded-md border border-border/70 bg-background text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -1845,7 +2154,8 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
               );
             })}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* 6. E-MAILS VINCULADOS AO CLIENTE / OPERADORA / CIA AÉREA / TICKET */}
@@ -1979,19 +2289,34 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             </p>
           ) : (
             <div className="space-y-1 max-h-48 overflow-y-auto no-scrollbar pr-1">
-              {linkedEmails.map((eml: any) => (
+              {linkedEmails.map((eml: any) => {
+                const isSentExternally =
+                  eml.delivery_provider === "resend_smtp" || Boolean(eml.external_id);
+                return (
                 <div key={eml.id} className="p-2 rounded-lg bg-muted/20 border border-border/60 space-y-1">
                   <div className="flex items-center justify-between gap-1">
-                    <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-2xs font-bold uppercase leading-none">
-                      {eml.recipient_type === "operator"
-                        ? "Operadora"
-                        : eml.recipient_type === "airline"
-                          ? "Cia Aérea"
-                          : eml.recipient_type === "support"
-                            ? "Suporte"
-                            : "Cliente"}
-                    </span>
-                    <span className="text-2xs font-mono text-muted-foreground">
+                    <div className="flex items-center gap-1 min-w-0">
+                      <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-2xs font-bold uppercase leading-none shrink-0">
+                        {eml.recipient_type === "operator"
+                          ? "Operadora"
+                          : eml.recipient_type === "airline"
+                            ? "Cia Aérea"
+                            : eml.recipient_type === "support"
+                              ? "Suporte"
+                              : "Cliente"}
+                      </span>
+                      <span
+                        className={cn(
+                          "px-2 py-1 rounded-md text-2xs font-semibold leading-none shrink-0",
+                          isSentExternally
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                            : "bg-warning/15 text-warning-strong",
+                        )}
+                      >
+                        {isSentExternally ? "SMTP Enviado" : "Registro Local"}
+                      </span>
+                    </div>
+                    <span className="text-2xs font-mono text-muted-foreground shrink-0">
                       {eml.pnr_locator ? `PNR ${eml.pnr_locator}` : eml.operator_package_id ? `#${eml.operator_package_id}` : formatDate(eml.created_at)}
                     </span>
                   </div>
@@ -1999,7 +2324,8 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                   <p className="text-2xs text-muted-foreground truncate">Para: {eml.recipient_email}</p>
                   <p className="text-2xs text-muted-foreground line-clamp-2">{eml.body_text}</p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -2335,7 +2661,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
           {tickets.length > 0 && (
             <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1">
               {tickets.map((t: any) => {
-                const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.app";
+                const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
                 const publicTicketUrl = `${origin}/chamado/${t.id}`;
                 return (
                   <div key={t.id} className="p-2 rounded-lg bg-muted/30 border border-border/60 space-y-1">
@@ -2518,6 +2844,8 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* Drawer de Orçamento Comercial / Pedido / Fatura */}

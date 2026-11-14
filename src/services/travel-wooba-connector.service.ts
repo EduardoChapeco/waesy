@@ -402,12 +402,21 @@ export async function searchWoobaBusRoutes(
   const json = await response.json();
   const schedules: any[] = json.Schedules || json.Trips || [];
 
-  return schedules.map((item: any) => {
-    const net = Math.round(Number(item.Price || 0) * 100);
+  return schedules.flatMap((item: any) => {
+    const tripScheduleId = String(item?.Id || item?.ScheduleId || "").trim();
+    const companyName = String(item?.CompanyName || "").trim();
+    const departureTime = String(item?.DepartureTime || "").trim();
+    const arrivalTime = String(item?.ArrivalTime || "").trim();
+    const rawPrice = Number(item?.Price);
+    if (!tripScheduleId || !companyName || !departureTime || !arrivalTime || !Number.isFinite(rawPrice) || rawPrice <= 0) {
+      return [];
+    }
+
+    const net = Math.round(rawPrice * 100);
     const markupPct = credentials.default_markup_percent;
     const selling = Math.round(net + (net * markupPct) / 100);
 
-    const serviceClassLower = (item.ServiceClass || "executivo").toLowerCase();
+    const serviceClassLower = String(item?.ServiceClass || "").toLowerCase();
     const serviceClass =
       serviceClassLower.includes("cama")
         ? "leito_cama"
@@ -415,24 +424,26 @@ export async function searchWoobaBusRoutes(
         ? "leito"
         : serviceClassLower.includes("semi")
         ? "semi_leito"
-        : serviceClassLower.includes("exec")
-        ? "executivo"
-        : "convencional";
+        : serviceClassLower.includes("conv")
+        ? "convencional"
+        : "executivo";
 
-    return {
-      tripScheduleId: String(item.Id || item.ScheduleId),
-      companyName: item.CompanyName || "Viação Rodoviária",
-      serviceClass,
-      departureTime: item.DepartureTime || "08:00",
-      arrivalTime: item.ArrivalTime || "14:30",
-      departureTerminalName: item.OriginTerminalName || "Rodoviária Origem",
-      arrivalTerminalName: item.DestinationTerminalName || "Rodoviária Destino",
-      durationMinutes: Number(item.DurationMinutes || 360),
-      availableSeatsCount: Number(item.AvailableSeats || 12),
-      netPriceCents: net,
-      sellingTotalCents: selling,
-      sellingTotalDisplay: formatMoney(selling),
-    };
+    return [
+      {
+        tripScheduleId,
+        companyName,
+        serviceClass,
+        departureTime,
+        arrivalTime,
+        departureTerminalName: String(item?.OriginTerminalName || "").trim(),
+        arrivalTerminalName: String(item?.DestinationTerminalName || "").trim(),
+        durationMinutes: Number(item?.DurationMinutes || 0),
+        availableSeatsCount: Number(item?.AvailableSeats ?? 0),
+        netPriceCents: net,
+        sellingTotalCents: selling,
+        sellingTotalDisplay: formatMoney(selling),
+      },
+    ];
   });
 }
 
@@ -631,11 +642,22 @@ export async function searchWoobaCars(
   const json = await response.json().catch(() => ({}));
   const rawCars: any[] = json.Cars || json.Vehicles || json.Offers || [];
 
-  return rawCars.map((car: any, idx: number): TravelOfferDTO => {
-    const dailyNetBrl = Number(car.DailyRate || car.daily_rate || car.NetDaily || 145);
-    const totalNetBrl = Number(car.TotalPrice || car.net_price || dailyNetBrl * rentalDays);
+  return rawCars.flatMap((car: any, idx: number): TravelOfferDTO[] => {
+    const rentalCompany = String(car?.RentalCompany || car?.VendorName || "").trim();
+    const vehicleCategory = String(car?.CategoryName || car?.AcrissGroup || "").trim();
+    const dailyRaw = Number(car?.DailyRate ?? car?.daily_rate ?? car?.NetDaily);
+    const totalRaw = Number(car?.TotalPrice ?? car?.net_price);
+    const hasValidDaily = Number.isFinite(dailyRaw) && dailyRaw > 0;
+    const hasValidTotal = Number.isFinite(totalRaw) && totalRaw > 0;
+
+    if (!rentalCompany || !vehicleCategory || (!hasValidDaily && !hasValidTotal)) {
+      return [];
+    }
+
+    const totalNetBrl = hasValidTotal ? totalRaw : dailyRaw * rentalDays;
     const netCents = Math.round(totalNetBrl * 100);
-    const taxesCents = Math.round(Number(car.Taxes || car.taxes || totalNetBrl * 0.12) * 100);
+    const taxesRaw = Number(car?.Taxes ?? car?.taxes ?? 0);
+    const taxesCents = Number.isFinite(taxesRaw) && taxesRaw > 0 ? Math.round(taxesRaw * 100) : 0;
 
     const pricing = calculateNormalizedPricing({
       netAmountCents: netCents,
@@ -648,46 +670,46 @@ export async function searchWoobaCars(
 
     const dailySellingCents = Math.round(pricing.selling_total_cents / rentalDays);
     const threeDayTotalCents = dailySellingCents * 3;
-    const rentalCompany = String(car.RentalCompany || car.VendorName || "Localiza Corporate");
-    const vehicleCategory = String(car.CategoryName || car.AcrissGroup || "Sedã Executivo");
-    const vehicleModelExample = String(car.ModelExample || car.VehicleName || "Toyota Corolla ou similar");
-    const billingModality = String(car.BillingModality || "faturado_corporativo_15_30d");
+    const vehicleModelExample = String(car?.ModelExample || car?.VehicleName || vehicleCategory).trim();
+    const billingModality = String(car?.BillingModality || "").trim();
 
-    return {
-      offer_id: `wooba_car_${car.OfferId || car.Id || idx}_${Date.now()}`,
-      provider_code: "wooba",
-      product_type: "car",
-      pricing,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      revalidate_required: false,
-      policy_status: "within_policy",
-      policy_violation_reasons: [],
-      rules: {
-        cancellation_policy: "Cancelamento grátis até 24h antes da retirada sem multa contratual",
-        change_penalty: "Alteração sem taxa dentro do acordo corporativo",
-        is_refundable: true,
-        fare_family: "Corporate Negotiated",
+    return [
+      {
+        offer_id: `wooba_car_${car.OfferId || car.Id || idx}_${Date.now()}`,
+        provider_code: "wooba",
+        product_type: "car",
+        pricing,
+        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        revalidate_required: false,
+        policy_status: "within_policy",
+        policy_violation_reasons: [],
+        rules: {
+          cancellation_policy: car?.CancellationPolicy ? String(car.CancellationPolicy) : undefined,
+          change_penalty: car?.ChangePenalty ? String(car.ChangePenalty) : undefined,
+          is_refundable: typeof car?.IsRefundable === "boolean" ? car.IsRefundable : undefined,
+          fare_family: car?.FareFamily ? String(car.FareFamily) : undefined,
+        },
+        details: {
+          rental_company: rentalCompany,
+          vehicle_category: vehicleCategory,
+          vehicle_model_example: vehicleModelExample,
+          transmission: car?.Transmission === "Manual" ? "Manual" : "Automático",
+          pickup_location: pickupClean,
+          dropoff_location: dropoffClean,
+          rental_days: rentalDays,
+          daily_rate_cents: dailySellingCents,
+          daily_rate_brl: Math.round(dailySellingCents / 100),
+          three_day_total_cents: threeDayTotalCents,
+          total_three_days_brl: Math.round(threeDayTotalCents / 100),
+          ...(billingModality ? { billing_modality: billingModality } : {}),
+          corporate_negotiated_rate: Boolean(car?.CorporateNegotiatedRate),
+          free_cancellation: typeof car?.FreeCancellation === "boolean" ? car.FreeCancellation : undefined,
+          payment_timing: car?.PaymentTiming ? String(car.PaymentTiming) : undefined,
+          includes_unlimited_mileage: car?.UnlimitedMileage === true,
+          includes_full_protection: car?.FullProtection === true,
+        },
       },
-      details: {
-        rental_company: rentalCompany,
-        vehicle_category: vehicleCategory,
-        vehicle_model_example: vehicleModelExample,
-        transmission: car.Transmission === "Manual" ? "Manual" : "Automático",
-        pickup_location: pickupClean,
-        dropoff_location: dropoffClean,
-        rental_days: rentalDays,
-        daily_rate_cents: dailySellingCents,
-        daily_rate_brl: Math.round(dailySellingCents / 100),
-        three_day_total_cents: threeDayTotalCents,
-        total_three_days_brl: Math.round(threeDayTotalCents / 100),
-        billing_modality: billingModality,
-        corporate_negotiated_rate: true,
-        free_cancellation: true,
-        payment_timing: "pay_at_pickup",
-        includes_unlimited_mileage: car.UnlimitedMileage !== false,
-        includes_full_protection: car.FullProtection !== false,
-      },
-    };
+    ];
   });
 }
 
@@ -735,15 +757,28 @@ export async function createWoobaCarHold(
   }
 
   const json = await response.json();
-  const locator = json.RecordLocator || json.Locator || `WBCAR${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-  const totalCents = Math.round(Number(json.TotalAmount || 516) * 100);
-  const dailyCents = Math.round(totalCents / Math.max(1, Number(json.RentalDays || 3)));
+  const locator = String(json?.RecordLocator || json?.Locator || "").trim();
+  const totalRaw = Number(json?.TotalAmount);
+  const rentalCompany = String(json?.RentalCompany || json?.VendorName || "").trim();
+  const vehicleCategory = String(json?.CategoryName || json?.AcrissGroup || "").trim();
+
+  if (!locator || !Number.isFinite(totalRaw) || totalRaw <= 0 || !rentalCompany || !vehicleCategory) {
+    throw new WoobaConnectorError(
+      "CAR_HOLD_INCOMPLETE_RESPONSE",
+      "Wooba retornou pré-reserva de veículo sem localizador, valor, locadora ou categoria reais.",
+      false,
+      response.status
+    );
+  }
+
+  const totalCents = Math.round(totalRaw * 100);
+  const dailyCents = Math.round(totalCents / Math.max(1, Number(json.RentalDays) || 1));
 
   return {
     locator,
-    timeLimit: json.TimeLimit || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    rentalCompany: json.RentalCompany || "Localiza Corporate",
-    vehicleCategory: json.CategoryName || "Sedã Executivo",
+    timeLimit: String(json.TimeLimit || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()),
+    rentalCompany,
+    vehicleCategory,
     billingModality: params.billingModality || "corporate_invoice",
     totalPriceCents: totalCents,
     totalPriceDisplay: formatMoney(totalCents),

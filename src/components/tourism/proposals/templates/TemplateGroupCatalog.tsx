@@ -8,6 +8,17 @@ import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import {
+  getTourMetaLine,
+  getTransferBadgeLabel,
+  getTransferMetaLine,
+  ProposalAdaptiveImage,
+  ProposalAgencyLogo,
+  ProposalDestinationGallerySection,
+  ProposalItineraryMediaGrid,
+  ProposalMultiNicheSpecsBlock,
+  ProposalPricingBreakdownBlock,
+} from "./blocks/UI";
+import {
   Users,
   MapPin,
   Calendar,
@@ -33,6 +44,10 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
     { ...raw, template: raw.template || "group-catalog" },
     vm.agency,
   );
+  const nc = theme.nicheCopy;
+  const destinationGallery: string[] = Array.isArray(raw.destination_gallery)
+    ? raw.destination_gallery.filter(Boolean)
+    : [];
   const customEntries: Array<{ key: string; label: string; value: string }> = Array.isArray(
     raw.custom_field_entries,
   )
@@ -53,11 +68,13 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
       {/* CAPA - ESTILO BANNER DE CATÁLOGO */}
       <div className="relative w-full min-h-96 break-inside-avoid overflow-hidden border-b p-border-main">
         {p.cover_image_url ? (
-          <img
+          <ProposalAdaptiveImage
             src={p.cover_image_url}
             alt={p.title || "Capa"}
-            crossOrigin="anonymous"
-            className="absolute inset-0 w-full h-full object-cover"
+            objectPosition={theme.coverCrop.objectPosition}
+            scale={theme.coverCrop.scale}
+            fit={theme.coverCrop.fit}
+            className="absolute inset-0 w-full h-full"
           />
         ) : (
           <div className="absolute inset-0 w-full h-full p-surface-subtle" />
@@ -66,22 +83,9 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
 
         <div className="relative z-10 flex flex-col justify-between min-h-96 p-8 sm:p-12 p-text-on-dark">
           <div className="flex items-center justify-between gap-4">
-            {vm.agency.logo_url ? (
-              <img
-                src={vm.agency.logo_url}
-                crossOrigin="anonymous"
-                alt={vm.agency.name}
-                className="h-10 w-auto max-w-40 object-contain"
-                width={160}
-                height={40}
-              />
-            ) : (
-              <div className="text-xl font-bold tracking-tight p-text-on-dark uppercase">
-                {vm.agency.name}
-              </div>
-            )}
+            <ProposalAgencyLogo agency={vm.agency} theme={theme} variant="hero" />
             <div className="text-right text-xs font-mono uppercase tracking-widest p-text-on-dark-muted">
-              Cotação #{p.number}
+              {nc.heroKicker} #{p.number}
             </div>
           </div>
 
@@ -124,6 +128,9 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
       <div className="px-8 sm:px-12 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* COLUNA ESQUERDA - DESCRIÇÃO, LOGÍSTICA E ROTEIRO (Ocupa 2 colunas) */}
         <div className="lg:col-span-2 space-y-8">
+          <ProposalMultiNicheSpecsBlock theme={theme} />
+          <ProposalDestinationGallerySection images={destinationGallery} theme={theme} />
+
           {theme.isSectionVisible("summary") && (
             <div className="p-surface-card rounded-xl p-6 sm:p-8 border p-border-main break-inside-avoid space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b p-border-subtle pb-3">
@@ -190,23 +197,29 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
 
               {theme.isSectionVisible("transfers") && vm.hasTransfers && (
                 <div className="space-y-3">
-                  {p.transfers!.map((t, idx) => (
-                    <div
-                      key={`tr-${idx}`}
-                      className="p-surface-subtle border p-border-subtle rounded-lg p-4 space-y-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                          <Bus className="size-4 p-text-brand shrink-0" />
-                          <span>{t.description || "Transporte Rodoviário / Transfer"}</span>
+                  {p.transfers!.map((t, idx) => {
+                    const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
+                    return (
+                      <div
+                        key={`tr-${idx}`}
+                        className="p-surface-subtle border p-border-subtle rounded-lg p-4 space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
+                            <Bus className="size-4 p-text-brand shrink-0" />
+                            <span>
+                              {t.description || (t as any).route || "Transporte Rodoviário / Transfer"}
+                            </span>
+                          </div>
+                          <span className="text-xs font-bold uppercase px-2 py-1 rounded p-surface-brand-soft p-text-brand">
+                            {t.vehicle || getTransferBadgeLabel(t.type)}
+                          </span>
                         </div>
-                        <span className="text-xs font-bold uppercase px-2 py-1 rounded p-surface-brand-soft p-text-brand">
-                          {t.vehicle || (t.type === "shared" ? "Regular" : "Privativo")}
-                        </span>
+                        {transferMeta && <div className="text-xs p-text-muted">{transferMeta}</div>}
+                        {t.notes && <p className="text-xs p-text-muted">{t.notes}</p>}
                       </div>
-                      {t.notes && <p className="text-xs p-text-muted">{t.notes}</p>}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -275,6 +288,12 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                           {d.description}
                         </p>
                       )}
+                      <ProposalItineraryMediaGrid
+                        images={d.images}
+                        title={d.title}
+                        objectPosition={(d as any).object_position}
+                        scale={(d as any).image_scale}
+                      />
                       {Array.isArray(d.meals || (d as any).included_meals) &&
                         (d.meals || (d as any).included_meals).length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2">
@@ -320,7 +339,20 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                   </div>
                 )}
               </div>
-              {p.terms && <p className="text-xs p-text-faint whitespace-pre-line">{p.terms}</p>}
+              {customEntries.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {customEntries.map((entry) => (
+                    <div
+                      key={entry.key}
+                      className="p-surface-subtle p-3 rounded-lg border p-border-subtle"
+                    >
+                      <div className="text-xs uppercase font-bold p-text-faint">{entry.label}</div>
+                      <div className="text-xs font-semibold p-text-ink mt-1 whitespace-pre-line">{entry.value}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {p.terms && <p className="text-xs p-text-muted whitespace-pre-line leading-relaxed">{p.terms}</p>}
             </div>
           )}
         </div>
@@ -370,6 +402,13 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                   {raw.remaining_spots} vagas disponíveis
                 </div>
               )}
+
+              <ProposalPricingBreakdownBlock
+                totals={vm.totals}
+                theme={theme}
+                formatCurrency={formatCurrency}
+                currency={p.currency}
+              />
             </div>
           )}
 
@@ -421,7 +460,7 @@ export default function TemplateGroupCatalog({ proposal: p, agency }: TemplatePr
                       <Compass className="size-4 p-text-brand shrink-0 mt-1" />
                       <span>
                         {tour.description || tour.name || tour.title}
-                        {tour.date ? ` (${tour.date})` : ""}
+                        {getTourMetaLine(tour) ? ` (${getTourMetaLine(tour)})` : ""}
                       </span>
                     </li>
                   ))}

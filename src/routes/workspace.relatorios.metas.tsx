@@ -234,7 +234,7 @@ function RevenueGoalsPage() {
       />
 
       {/* ── CARD HERO: PROGRESSO GLOBAL & FORECAST ── */}
-      <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6 shadow-2xs">
+      <div className="p-6 rounded-lg bg-card border border-border/70 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border/50 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -293,7 +293,7 @@ function RevenueGoalsPage() {
 
       {/* ── GRID DE 4 KPIS DE PERFORMANCE E PROJEÇÃO ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Target className="size-3.5 text-blue-600" />
             Meta Mensal
@@ -306,7 +306,7 @@ function RevenueGoalsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <DollarSign className="size-3.5 text-emerald-600" />
             Realizado Atual
@@ -319,7 +319,7 @@ function RevenueGoalsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="size-3.5 text-purple-600" />
             Forecast de Fechamento
@@ -335,7 +335,7 @@ function RevenueGoalsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1 shadow-2xs">
+        <div className="p-4 rounded-lg bg-card border border-border/70 space-y-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowUpRight className="size-3.5 text-warning-strong" />
             Meta Diária Necessária
@@ -353,7 +353,7 @@ function RevenueGoalsPage() {
       {/* ── SEÇÃO SECUNDÁRIA: PEDIDOS E TICKET MÉDIO ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Volume de Pedidos */}
-        <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
+        <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <ShoppingCart className="size-4 text-blue-600" />
@@ -390,7 +390,7 @@ function RevenueGoalsPage() {
         </div>
 
         {/* Ticket Médio */}
-        <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3 shadow-2xs">
+        <div className="p-5 rounded-lg bg-card border border-border/70 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <Receipt className="size-4 text-emerald-600" />
@@ -428,7 +428,7 @@ function RevenueGoalsPage() {
       </div>
 
       {/* ── METAS SEGMENTADAS POR CANAL DE VENDA ── */}
-      <div className="rounded-lg border border-border/70 bg-card overflow-hidden shadow-2xs space-y-4 p-5">
+      <div className="rounded-lg border border-border/70 bg-card overflow-hidden space-y-4 p-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/50 pb-3">
           <div>
             <h3 className="text-base font-bold text-foreground">

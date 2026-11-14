@@ -13,6 +13,7 @@ import {
 } from "@/services/chat.functions";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { ErrorState } from "@/components/state/states";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,20 +32,27 @@ import { Linkedin, Loader2 } from "lucide-react";
 import { listWorkspaceWhatsAppInstances, saveWorkspaceWhatsAppInstance, toggleWorkspaceWhatsAppInstance, type WhatsAppChannelInstanceDTO } from "@/services/whatsapp-channel-instances.functions";
 import { WhatsAppQrConnectModal } from "@/components/chat/whatsapp-qr-connect-modal";
 import { WhatsAppTeamSectorsDrawer } from "@/components/chat/whatsapp-team-sectors-drawer";
-import { QrCode } from "lucide-react";
+import { QrCode, KeyRound } from "lucide-react";
 import { testCurrentInfotravelConnection } from "@/services/infotravel";
+import {
+  TRAVEL_GDS_PROVIDER_CATALOG,
+  listTravelGdsIntegrationsFn,
+  type TravelGdsIntegrationStatusItem,
+} from "@/services/travel-gds-workbench.functions";
+import { TravelGdsConnectorsPanel } from "@/components/settings/travel-gds-connectors-panel";
 
 export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
   head: () => ({ meta: [{ title: "Integrações | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [integrations, secrets, marketplaceConnectors, gmbStatus, linkedInStatus, whatsappInstances] = await Promise.all([
-        listIntegrationSettings().catch(() => []),
-        listConfiguredSecrets().catch(() => []),
-        listMarketplaceConnectors().catch(() => []),
-        getGmbStatus().catch(() => null),
-        getWorkspaceLinkedInStatus().catch(() => null),
-        listWorkspaceWhatsAppInstances().catch(() => []),
+      const [integrations, secrets, marketplaceConnectors, gmbStatus, linkedInStatus, whatsappInstances, travelGdsData] = await Promise.all([
+        listIntegrationSettings(),
+        listConfiguredSecrets(),
+        listMarketplaceConnectors(),
+        getGmbStatus(),
+        getWorkspaceLinkedInStatus(),
+        listWorkspaceWhatsAppInstances(),
+        listTravelGdsIntegrationsFn().catch(() => ({ storeId: "", items: [], isAnyApiConfigured: false })),
       ]);
       return {
         integrations: integrations || [],
@@ -53,10 +61,21 @@ export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
         gmbStatus: gmbStatus || null,
         linkedInStatus: linkedInStatus || null,
         whatsappInstances: whatsappInstances || [],
+        travelGdsItems: travelGdsData?.items || [],
+        loadError: null as string | null,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error("[loader:workspace.configuracoes.integracoes] Erro no loader:", err);
-      return { integrations: [], secrets: [], marketplaceConnectors: [], gmbStatus: null, linkedInStatus: null, whatsappInstances: [] };
+      return {
+        integrations: [],
+        secrets: [],
+        marketplaceConnectors: [],
+        gmbStatus: null,
+        linkedInStatus: null,
+        whatsappInstances: [],
+        travelGdsItems: [],
+        loadError: err?.message || "Não foi possível carregar o Hub de Integrações.",
+      };
     }
   },
   component: UnifiedIntegrationsHubPage,
@@ -556,11 +575,11 @@ function CorporateEmailHostingPanel() {
   const queryClient = useQueryClient();
   const { data: overview, isLoading } = useQuery({
     queryKey: ["corporate-email-hosting-overview"],
-    queryFn: () => getCorporateEmailHostingOverview({ data: {} }).catch(() => null),
+    queryFn: () => getCorporateEmailHostingOverview({ data: {} }),
   });
   const { data: teamMembers = [] } = useQuery({
     queryKey: ["workspace-team-members-email"],
-    queryFn: () => listTeamMembers().catch(() => []),
+    queryFn: () => listTeamMembers(),
   });
 
   const [showServerConfig, setShowServerConfig] = useState(false);
@@ -750,7 +769,7 @@ function CorporateEmailHostingPanel() {
             </Badge>
           </div>
           <CardDescription className="text-xs">
-            Crie contas de e-mail próprias (@{activeDomain}) via API cPanel/Cloudwebly, exclua caixas, vincule a usuários e setores igual ao WhatsApp e rastreie e-mails vinculados ao cliente, PNR, Cia Aérea e Tickets no Atendimento 360º.
+            Crie contas de e-mail próprias (@{activeDomain}) via API cPanel/Cloudwebly, exclua caixas, vincule a usuários e setores igual ao WhatsApp e rastreie e-mails vinculados ao cliente, PNR, Cia Aérea e Tickets no Atendimento Integrado.
           </CardDescription>
         </div>
 
@@ -758,17 +777,17 @@ function CorporateEmailHostingPanel() {
           <button
             type="button"
             onClick={() => setShowServerConfig((v) => !v)}
-            className="px-3 py-1 rounded-lg border border-border bg-muted/40 hover:bg-muted text-xs font-semibold text-foreground inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted text-xs font-medium text-foreground inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Globe2 className="size-3.5 text-primary" />
             <span>{showServerConfig ? "Ocultar Servidor cPanel" : "Configurar Cloudwebly / cPanel"}</span>
           </button>
           <Link
             to="/workspace/atendimento/chat"
-            className="px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold inline-flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+            className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold inline-flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
           >
             <MessageCircle className="size-3.5" />
-            <span>Abrir Atendimento 360º</span>
+            <span>Abrir Atendimento</span>
           </Link>
         </div>
       </CardHeader>
@@ -935,7 +954,7 @@ function CorporateEmailHostingPanel() {
                       </Badge>
                     </div>
                     <p className="text-2xs text-muted-foreground">
-                      Exibição: <strong>{mb.displayName}</strong> • Mensagens enviadas pelo Painel 360º deste setor usam esta caixa e vinculam respostas automaticamente ao cliente.
+                      Exibição: <strong>{mb.displayName}</strong> • Mensagens enviadas pelo Painel de Atendimento deste setor usam esta caixa e vinculam respostas automaticamente ao cliente.
                     </p>
                   </div>
 
@@ -1087,12 +1106,12 @@ function CorporateEmailHostingPanel() {
 
           <div className="flex items-center justify-between pt-1">
             <span className="text-2xs text-muted-foreground">
-              Ao criar, a caixa fica disponível no Painel Lateral 360º do Chat para envio e acompanhamento de e-mails vinculados ao cliente, PNR ou Ticket.
+              Ao criar, a caixa fica disponível no Perfil do Cliente do Chat para envio e acompanhamento de e-mails vinculados ao cliente, PNR ou Ticket.
             </span>
             <button
               type="submit"
               disabled={isCreatingMailbox}
-              className="px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-1 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold inline-flex items-center gap-1 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
             >
               <Plus className="size-3.5" />
               <span>{isCreatingMailbox ? "Criando..." : "Criar Caixa de E-mail"}</span>
@@ -1116,6 +1135,8 @@ function UnifiedIntegrationsHubPage() {
     gmbStatus = null,
     linkedInStatus = null,
     whatsappInstances = [],
+    travelGdsItems = [],
+    loadError = null,
   } = (Route.useLoaderData?.() as any) || {};
 
   const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false);
@@ -1392,6 +1413,18 @@ function UnifiedIntegrationsHubPage() {
     });
   };
 
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar Hub de Integrações"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -1462,11 +1495,15 @@ function UnifiedIntegrationsHubPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* GDS InfoTravel: credencial cifrada e contrato de endpoints explícito */}
-        <TabsContent value="travel_gds" className="space-y-4 outline-none">
+        {/* GDS InfoTravel & Wooba: credenciais cifradas AES-256-GCM */}
+        <TabsContent value="travel_gds" className="space-y-6 outline-none">
+          <TravelGdsConnectorsPanel
+            initialItems={travelGdsItems as TravelGdsIntegrationStatusItem[]}
+            onRefresh={() => router.invalidate()}
+          />
           <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-4 text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground">InfoTravel / GDS</p>
-            <p className="mt-1">Informe o endpoint homologado pelo provider. O token, usuário e senha são cifrados no servidor; URLs e caminhos de ação ficam somente como metadata operacional.</p>
+            <p className="font-semibold text-foreground">Modo Avançado de Rotas Edge InfoTravel</p>
+            <p className="mt-1">Opcional: personalize paths HTTP customizados do conector Edge InfoTravel quando sua operadora utilizar endpoints não-padrão.</p>
           </div>
           <div className="grid lg:grid-cols-2 gap-6">
             <IntegrationCard

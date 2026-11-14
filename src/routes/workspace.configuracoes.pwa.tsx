@@ -58,8 +58,8 @@ function PwaOmniBuilderPage() {
   const [appName, setAppName] = useState("Meu Negócio");
   const [shortName, setShortName] = useState("App");
   const [description, setDescription] = useState("");
-  const [themeColor, setThemeColor] = useState("#0F172A");
-  const [backgroundColor, setBackgroundColor] = useState("#000000");
+  const [themeColor, setThemeColor] = useState("var(--color-slate-900)");
+  const [backgroundColor, setBackgroundColor] = useState("var(--color-neutral-950)");
   const [icon192Url, setIcon192Url] = useState<string | null>(null);
   const [icon512Url, setIcon512Url] = useState<string | null>(null);
   const [splashImageUrl, setSplashImageUrl] = useState<string | null>(null);
@@ -110,8 +110,8 @@ function PwaOmniBuilderPage() {
       setAppName(config.app_name || "Meu Negócio");
       setShortName(config.short_name || "App");
       setDescription(config.description || "");
-      setThemeColor(config.theme_color || "#0F172A");
-      setBackgroundColor(config.background_color || "#000000");
+      setThemeColor(config.theme_color || "var(--color-slate-900)");
+      setBackgroundColor(config.background_color || "var(--color-neutral-950)");
       setIcon192Url(config.icon_192_url || null);
       setIcon512Url(config.icon_512_url || null);
       setSplashImageUrl(config.splash_image_url || null);
@@ -518,8 +518,8 @@ function PwaOmniBuilderPage() {
                           />
                         ) : (
                           <div
-                            style={{ backgroundColor: themeColor }}
-                            className="size-7 rounded-lg flex items-center justify-center font-bold text-xs text-foreground"
+                            style={{ "--dyn-bg": themeColor } as React.CSSProperties}
+                            className="size-7 rounded-lg flex items-center justify-center font-bold text-xs text-foreground waesy-dyn-bg"
                           >
                             {shortName.slice(0, 2).toUpperCase()}
                           </div>

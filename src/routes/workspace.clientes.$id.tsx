@@ -122,16 +122,16 @@ function CustomerDetailPage() {
     setIsExportingDossier(true);
     try {
       const cleanName = (data?.profile?.name || "cliente").replace(/\s+/g, "_");
-      await exportElementAsPdf("customer-360-dossier", `Dossie_360_${cleanName}.pdf`);
-      toast.success("Dossiê 360° em PDF baixado com sucesso!");
+      await exportElementAsPdf("customer-360-dossier", `Perfil_Cliente_${cleanName}.pdf`);
+      toast.success("Perfil do Cliente em PDF baixado com sucesso!");
     } catch (err: any) {
-      toast.error(err?.message || "Falha ao gerar Dossiê 360° em PDF.");
+      toast.error(err?.message || "Falha ao gerar Perfil do Cliente em PDF.");
     } finally {
       setIsExportingDossier(false);
     }
   };
 
-  // Modal de Prontuário / Anamnese (Padrão Belasis 360°)
+  // Modal de Prontuário / Anamnese (Padrão Completo)
   const [isClinicalModalOpen, setIsClinicalModalOpen] = useState(false);
   const [serviceTitle, setServiceTitle] = useState("");
   const [clinicalNotes, setClinicalNotes] = useState("");
@@ -1697,7 +1697,7 @@ function CustomerDetailPage() {
                 <span>Registro de Atendimento e Anamnese</span>
               </SheetTitle>
               <SheetDescription>
-                Dossiê clínico 360° para saúde, estética, odontologia, terapias e bem-estar.
+                Prontuário clínico completo para saúde, estética, odontologia, terapias e bem-estar.
               </SheetDescription>
             </SheetHeader>
             <form id="clinical-form" onSubmit={handleSaveClinical} className="space-y-4 py-2">

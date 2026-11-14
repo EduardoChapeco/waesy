@@ -15,7 +15,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CitySelect } from "@/components/ui/city-select";
 import { AddressField } from "@/components/ui/address-field";
-import { ThemeSelector } from "@/components/settings/theme-selector";
+import { ErrorState } from "@/components/state/states";
 import { BusinessHoursEditor } from "@/components/commerce/business-hours-editor";
 import { NeighborhoodsManager } from "@/components/commerce/neighborhoods-manager";
 import { DeliveryTimeAndRadiusMatrix, type DeliveryLogisticsConfig } from "@/components/commerce/delivery-time-and-radius-matrix";
@@ -30,27 +30,29 @@ import { MultiBrandEcosystemGovernanceCard } from "@/components/workspace/multi-
 export const Route = createFileRoute("/workspace/configuracoes/")({
  head: () => ({ meta: [{ title: "Configurações | Workspace Waesy" }] }),
  loader: async () => {
- try {
- const [settingsRes, hoursRes, policiesRes, manualMethodsRes] = await Promise.all([
- getStoreSettings().catch(() => null),
- getWorkingHours().catch(() => null),
- getPolicies().catch(() => null),
- listManualPaymentMethods().catch(() => []),
- ]);
- return {
- store: settingsRes,
- workingHours: hoursRes,
- policies: policiesRes?.policies || {},
- manualMethods: manualMethodsRes || [],
- };
- } catch {
- return {
- store: null,
- workingHours: null,
- policies: {},
- manualMethods: [],
- };
- }
+   try {
+     const [settingsRes, hoursRes, policiesRes, manualMethodsRes] = await Promise.all([
+       getStoreSettings(),
+       getWorkingHours(),
+       getPolicies(),
+       listManualPaymentMethods(),
+     ]);
+     return {
+       store: settingsRes,
+       workingHours: hoursRes,
+       policies: policiesRes?.policies || {},
+       manualMethods: manualMethodsRes || [],
+       loadError: settingsRes ? null : "Nenhuma loja vinculada ao workspace atual.",
+     };
+   } catch (err: any) {
+     return {
+       store: null,
+       workingHours: null,
+       policies: {},
+       manualMethods: [],
+       loadError: err?.message || "Erro ao carregar as configurações da loja.",
+     };
+   }
  },
  component: WorkspaceConfiguracoesPage,
 });
@@ -119,7 +121,46 @@ export default function WorkspaceConfiguracoesPage() {
     workingHours: initialHours,
     policies: initialPolicies,
     manualMethods: initialManualMethods,
+    loadError,
   } = ((Route.useLoaderData?.() as any) || {});
+  const router = useRouter();
+
+  if (loadError || !store) {
+    return (
+      <div className="py-8">
+        <ErrorState
+          title="Erro ao carregar configurações da loja"
+          description={
+            loadError ||
+            "Não foi possível obter os dados da loja. Verifique sua conexão e tente novamente."
+          }
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <WorkspaceConfiguracoesContent
+      store={store}
+      initialHours={initialHours}
+      initialPolicies={initialPolicies}
+      initialManualMethods={initialManualMethods}
+    />
+  );
+}
+
+function WorkspaceConfiguracoesContent({
+  store,
+  initialHours,
+  initialPolicies,
+  initialManualMethods,
+}: {
+  store: any;
+  initialHours: any;
+  initialPolicies: any;
+  initialManualMethods: any[];
+}) {
   const router = useRouter();
 
   // Estados da Loja
@@ -545,18 +586,18 @@ export default function WorkspaceConfiguracoesPage() {
         } as any,
       });
 
-      // 2. Salva Políticas
+      // 2. Salva Políticas e Horários sem silenciar falhas de persistência
       await savePolicies({
         data: {
           privacy_policy: privacyPolicy,
           return_policy: returnPolicy,
           terms,
         },
-      }).catch(() => null);
+      });
 
       // 3. Salva Horários se existirem
       if (hours && Object.keys(hours).length > 0) {
-        await saveWorkingHours({ data: hours }).catch(() => null);
+        await saveWorkingHours({ data: hours });
       }
 
       toast.success("Configurações da loja salvas com sucesso!");
@@ -602,22 +643,22 @@ export default function WorkspaceConfiguracoesPage() {
  eyebrow={`Loja • ${currentNiche.name}`}
  title="Configurações"
  actions={
- <div className="flex items-center gap-2">
-            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
+ <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" className="rounded-xl text-xs font-semibold gap-2 h-11 min-h-11">
               <Link to="/workspace/configuracoes/privacidade-loja">
                 <ShieldCheck className="size-4 text-primary" />
                 <span>Privacidade</span>
               </Link>
             </Button>
 
-            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
+            <Button asChild variant="outline" className="rounded-xl text-xs font-semibold gap-2 h-11 min-h-11">
               <Link to="/workspace/configuracoes/sessoes">
                 <ShieldCheck className="size-4 text-primary" />
                 <span>Sessões</span>
               </Link>
             </Button>
 
-            <Button asChild variant="outline" className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11">
+            <Button asChild variant="outline" className="rounded-xl text-xs font-semibold gap-2 h-11 min-h-11">
               <Link to="/workspace/configuracoes/equipe">
                 <Building2 className="size-4" />
                 <span>Equipe</span>
@@ -628,7 +669,7 @@ export default function WorkspaceConfiguracoesPage() {
  onClick={handleSaveAll}
  disabled={isSaving}
  size="sm"
- className="rounded-lg text-xs font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 h-11 min-h-11 cursor-pointer"
+ className="rounded-xl text-xs font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 h-11 min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  {isSaving ? (
  <>
@@ -648,34 +689,34 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ── 2. Abas de Governança Nichadas ── */}
  <Tabs defaultValue="geral" className="w-full space-y-6">
- <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x bg-muted/60 p-1 rounded-lg w-full gap-1">
- <TabsTrigger value="geral" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
+ <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x bg-muted/60 p-1 rounded-xl w-full gap-1">
+ <TabsTrigger value="geral" className="rounded-xl text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 flex items-center justify-center cursor-pointer">
  Vitrine
  </TabsTrigger>
- <TabsTrigger value="contato" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
+ <TabsTrigger value="contato" className="rounded-xl text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 flex items-center justify-center cursor-pointer">
  Contato
  </TabsTrigger>
  {hasDeliveryModule && (
- <TabsTrigger value="entrega" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
+ <TabsTrigger value="entrega" className="rounded-xl text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 flex items-center justify-center cursor-pointer">
  Entrega
  </TabsTrigger>
  )}
- <TabsTrigger value="horarios" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
+ <TabsTrigger value="horarios" className="rounded-xl text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 flex items-center justify-center cursor-pointer">
  Horários
  </TabsTrigger>
- <TabsTrigger value="politicas" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
+ <TabsTrigger value="politicas" className="rounded-xl text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 flex items-center justify-center cursor-pointer">
  Políticas
  </TabsTrigger>
- <TabsTrigger value="checkout" className="rounded-lg text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 min-h-11 flex items-center justify-center cursor-pointer">
+ <TabsTrigger value="checkout" className="rounded-xl text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 flex items-center justify-center cursor-pointer">
  Checkout
  </TabsTrigger>
  </TabsList>
 
  {/* ABA 1: Marca & Vitrine */}
  <TabsContent value="geral" className="space-y-6">
- <Card className="p-6 rounded-lg border-border bg-card space-y-6 ">
+ <Card className="p-6 rounded-2xl border-border bg-card space-y-6 ">
  <div className=" pb-4">
- <h2 className="text-base font-bold text-foreground">Identidade Visual</h2>
+ <h2 className="text-base font-semibold text-foreground">Identidade Visual</h2>
  <p className="text-xs text-muted-foreground">
  Estes elementos aparecem na vitrine pública, no cabeçalho e nas sacolas de compras.
  </p>
@@ -734,12 +775,12 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* Nome Comercial */}
  <div className="space-y-2 pt-2">
- <Label className="text-xs font-bold text-foreground">Nome Comercial da Loja *</Label>
+ <Label className="text-xs font-semibold text-foreground">Nome Comercial da Loja *</Label>
  <Input
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Ex: Waesy Store"
- className="rounded-lg text-xs h-10 font-bold"
+ className="rounded-xl text-xs h-11 min-h-11 font-semibold"
  required
  />
  </div>
@@ -901,27 +942,16 @@ export default function WorkspaceConfiguracoesPage() {
  </Card>
 
  {/* Canal de Distribuição no Marketplace */}
- <Card className="p-6 rounded-lg border-border bg-card space-y-5">
+ <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
    <MultiBrandEcosystemGovernanceCard storeId={store?.id} mode="workspace" onUpdated={() => router.invalidate()} />
- </Card>
-
- {/* Tema do Workspace */}
- <Card className="p-6 rounded-lg border-border bg-card space-y-4">
- <div>
- <h2 className="text-base font-bold text-foreground">Tema do Painel</h2>
- <p className="text-xs text-muted-foreground">
- Escolha a preferência visual para a navegação do seu painel e vitrines.
- </p>
- </div>
- <ThemeSelector />
  </Card>
  </TabsContent>
 
  {/* ABA 2: Contato & Endereço */}
  <TabsContent value="contato" className="space-y-6">
- <Card className="p-6 rounded-lg border-border bg-card space-y-5 ">
+ <Card className="p-6 rounded-2xl border-border bg-card space-y-5 ">
  <div className=" pb-4">
- <h2 className="text-base font-bold text-foreground">Contato e Localização</h2>
+ <h2 className="text-base font-semibold text-foreground">Contato e Localização</h2>
  <p className="text-xs text-muted-foreground">
  Dados utilizados para emissão de pedidos, frete local e comunicação com o cliente.
  </p>
@@ -1663,22 +1693,22 @@ export default function WorkspaceConfiguracoesPage() {
  {paymentProcessingMode === "direct_store" && (
  <div className="space-y-4 pt-2 border-t border-border/40 animate-in fade-in duration-150">
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Chave Pix da Loja (Recebimento Direto)</Label>
+ <Label className="text-xs font-semibold text-foreground">Chave Pix da Loja (Recebimento Direto)</Label>
  <Input
  value={pixKey}
  onChange={(e) => setPixKey(e.target.value)}
  placeholder="CPF, CNPJ, E-mail, Telefone ou Chave Aleatória"
- className="h-10 text-xs rounded-lg font-mono"
+ className="h-11 min-h-11 text-xs rounded-xl font-mono"
  />
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Instruções de Pagamento aos Clientes</Label>
+ <Label className="text-xs font-semibold text-foreground">Instruções de Pagamento aos Clientes</Label>
  <Textarea
  value={paymentInstructions}
  onChange={(e) => setPaymentInstructions(e.target.value)}
  placeholder="Ex: Efetue o Pix e envie o comprovante pelo WhatsApp da loja, ou pague com maquininha no momento da entrega."
- className="min-h-20 text-xs rounded-lg"
+ className="min-h-20 text-xs rounded-xl"
  />
  </div>
  </div>
@@ -1686,10 +1716,10 @@ export default function WorkspaceConfiguracoesPage() {
  </Card>
 
  {/* ── Formas de Pagamento na Entrega / Balcão (Venda Direta) ── */}
- <Card className="p-6 rounded-lg border-border bg-card space-y-6">
- <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/40">
+ <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+ <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
  <div>
- <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
  <CreditCard className="size-4 text-primary" />
  <span>Pagamento na Entrega</span>
  </h2>
@@ -1702,9 +1732,9 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  size="sm"
  onClick={() => setIsAddingMethod(!isAddingMethod)}
- className="rounded-lg text-xs font-bold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer"
+ className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Nova Forma</span>
  </Button>
  </div>
@@ -1759,21 +1789,21 @@ export default function WorkspaceConfiguracoesPage() {
  {isAddingMethod && (
  <div className="p-4 rounded-lg bg-muted/40 border border-border/70 space-y-3 animate-in fade-in-50">
  <div className="space-y-1">
- <Label className="text-xs font-bold text-foreground">Nome da Forma *</Label>
+ <Label className="text-xs font-semibold text-foreground">Nome da Forma *</Label>
  <Input
  value={newMethodName}
  onChange={(e) => setNewMethodName(e.target.value)}
  placeholder="Ex: Maquininha de Cartão na Entrega, Dinheiro..."
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-xl"
  />
  </div>
  <div className="space-y-1">
- <Label className="text-xs font-bold text-foreground">Instruções ao Cliente (Opcional)</Label>
+ <Label className="text-xs font-semibold text-foreground">Instruções ao Cliente (Opcional)</Label>
  <Input
  value={newMethodInstructions}
  onChange={(e) => setNewMethodInstructions(e.target.value)}
  placeholder="Ex: Aceitamos débito, crédito e vale refeição..."
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-xl"
  />
  </div>
  <div className="flex justify-end gap-2 pt-1">
@@ -1786,7 +1816,7 @@ export default function WorkspaceConfiguracoesPage() {
  setNewMethodName("");
  setNewMethodInstructions("");
  }}
- className="rounded-lg text-xs"
+ className="h-11 min-h-11 px-4 rounded-xl text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Cancelar
  </Button>
@@ -1794,7 +1824,7 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  size="sm"
  onClick={handleCreateManualMethod}
- className="rounded-lg text-xs font-bold"
+ className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  Salvar Opção
  </Button>
@@ -1838,10 +1868,11 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  variant="ghost"
  size="sm"
+ aria-label={`Remover forma de pagamento ${method.name}`}
  onClick={() => handleDeleteManualMethod(method.id)}
- className="size-11 min-h-11 min-w-11 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+ className="size-11 min-h-11 min-w-11 p-0 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- <Trash2 className="size-3.5" />
+ <Trash2 className="size-4" />
  </Button>
  </div>
  </div>
@@ -1850,10 +1881,10 @@ export default function WorkspaceConfiguracoesPage() {
  )}
  </Card>
 
- <Card className="p-6 rounded-lg border-border bg-card space-y-6">
- <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/40">
+ <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+ <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
  <div>
- <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+ <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
  <ListChecks className="size-4 text-primary" />
  <span>Campos ({currentNiche.name})</span>
  </h2>
@@ -1878,9 +1909,9 @@ export default function WorkspaceConfiguracoesPage() {
  },
  ]);
  }}
- className="rounded-lg text-xs font-bold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer"
+ className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold gap-2 shrink-0 bg-primary text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar Campo</span>
  </Button>
  </div>
@@ -1999,12 +2030,13 @@ export default function WorkspaceConfiguracoesPage() {
  type="button"
  size="icon"
  variant="ghost"
+ aria-label={`Remover pergunta ${idx + 1}`}
  onClick={() => {
  setCustomFields((prev) => prev.filter((_, i) => i !== idx));
  }}
- className="size-11 min-h-11 min-w-11 text-rose-500 hover:bg-rose-500/10 rounded-lg"
+ className="size-11 min-h-11 min-w-11 text-destructive hover:bg-destructive/10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- <Trash2 className="size-3.5" />
+ <Trash2 className="size-4" />
  </Button>
  </div>
 

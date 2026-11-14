@@ -437,7 +437,11 @@ function AdminAdsNetworkPage() {
           <>
             {/* Mobile View: WhatsApp List Pattern */}
             <div className="block sm:hidden bg-card border-y border-border/40 divide-y divide-border/30">
-              {filteredCampaigns.length > 0 ? (
+              {filteredCampaigns.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground px-4">
+                  Nenhuma campanha ativa no momento.
+                </div>
+              ) : (
                 filteredCampaigns.map((c: any) => (
                   <div
                     key={c.id}
@@ -499,10 +503,6 @@ function AdminAdsNetworkPage() {
                     </div>
                   </div>
                 ))
-              ) : (
-                <div className="py-8 text-center text-xs text-muted-foreground px-4">
-                  Nenhuma campanha ativa no momento.
-                </div>
               )}
             </div>
 

@@ -612,8 +612,11 @@ export const listStoreLeadForms = createServerFn({ method: "GET" })
       .eq("store_id", storeId)
       .order("created_at", { ascending: false });
 
-    if (error || !rows) {
+    if (error) {
       console.error("[lead-forms] Erro ao listar lead_forms:", error);
+      throw new Error(error.message || "Não foi possível carregar os formulários de captura.");
+    }
+    if (!rows) {
       return [];
     }
 

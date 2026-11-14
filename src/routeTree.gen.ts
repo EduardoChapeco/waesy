@@ -126,6 +126,7 @@ import { Route as ApiWebmcpDotjsonRouteImport } from './routes/api.webmcp[.]json
 import { Route as AssinarTokenRouteImport } from './routes/assinar.$token'
 import { Route as AssinaturaTokenRouteImport } from './routes/assinatura.$token'
 import { Route as CStoreSlugRouteImport } from './routes/c.$storeSlug'
+import { Route as GSlugRouteImport } from './routes/g.$slug'
 import { Route as ReclamarNovoRouteImport } from './routes/reclamar.novo'
 import { Route as VerificarSerialRouteImport } from './routes/verificar.$serial'
 import { Route as ViajanteTokenRouteImport } from './routes/viajante.$token'
@@ -272,6 +273,7 @@ import { Route as WorkspaceAtendimentoIndexRouteImport } from './routes/workspac
 import { Route as WorkspaceAtendimentoAtendentesRouteImport } from './routes/workspace.atendimento.atendentes'
 import { Route as WorkspaceAtendimentoChatRouteImport } from './routes/workspace.atendimento.chat'
 import { Route as WorkspaceAtendimentoFilasRouteImport } from './routes/workspace.atendimento.filas'
+import { Route as WorkspaceAtendimentoGruposRouteImport } from './routes/workspace.atendimento.grupos'
 import { Route as WorkspaceAtendimentoHorariosRouteImport } from './routes/workspace.atendimento.horarios'
 import { Route as WorkspaceAtendimentoWhatsappRouteImport } from './routes/workspace.atendimento.whatsapp'
 import { Route as WorkspaceB2bIndexRouteImport } from './routes/workspace.b2b.index'
@@ -1059,6 +1061,11 @@ const CStoreSlugRoute = CStoreSlugRouteImport.update({
   path: '/c/$storeSlug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GSlugRoute = GSlugRouteImport.update({
+  id: '/g/$slug',
+  path: '/g/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReclamarNovoRoute = ReclamarNovoRouteImport.update({
   id: '/reclamar/novo',
   path: '/reclamar/novo',
@@ -1802,6 +1809,12 @@ const WorkspaceAtendimentoFilasRoute =
   WorkspaceAtendimentoFilasRouteImport.update({
     id: '/atendimento/filas',
     path: '/atendimento/filas',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceAtendimentoGruposRoute =
+  WorkspaceAtendimentoGruposRouteImport.update({
+    id: '/atendimento/grupos',
+    path: '/atendimento/grupos',
     getParentRoute: () => WorkspaceRoute,
   } as any)
 const WorkspaceAtendimentoHorariosRoute =
@@ -3041,6 +3054,7 @@ export interface FileRoutesByFullPath {
   '/assinar/$token': typeof AssinarTokenRoute
   '/assinatura/$token': typeof AssinaturaTokenRoute
   '/c/$storeSlug': typeof CStoreSlugRoute
+  '/g/$slug': typeof GSlugRoute
   '/reclamar/novo': typeof ReclamarNovoRoute
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
@@ -3172,6 +3186,7 @@ export interface FileRoutesByFullPath {
   '/workspace/atendimento/atendentes': typeof WorkspaceAtendimentoAtendentesRoute
   '/workspace/atendimento/chat': typeof WorkspaceAtendimentoChatRoute
   '/workspace/atendimento/filas': typeof WorkspaceAtendimentoFilasRoute
+  '/workspace/atendimento/grupos': typeof WorkspaceAtendimentoGruposRoute
   '/workspace/atendimento/horarios': typeof WorkspaceAtendimentoHorariosRoute
   '/workspace/atendimento/whatsapp': typeof WorkspaceAtendimentoWhatsappRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
@@ -3495,6 +3510,7 @@ export interface FileRoutesByTo {
   '/assinar/$token': typeof AssinarTokenRoute
   '/assinatura/$token': typeof AssinaturaTokenRoute
   '/c/$storeSlug': typeof CStoreSlugRoute
+  '/g/$slug': typeof GSlugRoute
   '/reclamar/novo': typeof ReclamarNovoRoute
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
@@ -3626,6 +3642,7 @@ export interface FileRoutesByTo {
   '/workspace/atendimento/atendentes': typeof WorkspaceAtendimentoAtendentesRoute
   '/workspace/atendimento/chat': typeof WorkspaceAtendimentoChatRoute
   '/workspace/atendimento/filas': typeof WorkspaceAtendimentoFilasRoute
+  '/workspace/atendimento/grupos': typeof WorkspaceAtendimentoGruposRoute
   '/workspace/atendimento/horarios': typeof WorkspaceAtendimentoHorariosRoute
   '/workspace/atendimento/whatsapp': typeof WorkspaceAtendimentoWhatsappRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
@@ -3957,6 +3974,7 @@ export interface FileRoutesById {
   '/assinar/$token': typeof AssinarTokenRoute
   '/assinatura/$token': typeof AssinaturaTokenRoute
   '/c/$storeSlug': typeof CStoreSlugRoute
+  '/g/$slug': typeof GSlugRoute
   '/reclamar/novo': typeof ReclamarNovoRoute
   '/verificar/$serial': typeof VerificarSerialRoute
   '/viajante/$token': typeof ViajanteTokenRoute
@@ -4089,6 +4107,7 @@ export interface FileRoutesById {
   '/workspace/atendimento/atendentes': typeof WorkspaceAtendimentoAtendentesRoute
   '/workspace/atendimento/chat': typeof WorkspaceAtendimentoChatRoute
   '/workspace/atendimento/filas': typeof WorkspaceAtendimentoFilasRoute
+  '/workspace/atendimento/grupos': typeof WorkspaceAtendimentoGruposRoute
   '/workspace/atendimento/horarios': typeof WorkspaceAtendimentoHorariosRoute
   '/workspace/atendimento/whatsapp': typeof WorkspaceAtendimentoWhatsappRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
@@ -4422,6 +4441,7 @@ export interface FileRouteTypes {
     | '/assinar/$token'
     | '/assinatura/$token'
     | '/c/$storeSlug'
+    | '/g/$slug'
     | '/reclamar/novo'
     | '/verificar/$serial'
     | '/viajante/$token'
@@ -4553,6 +4573,7 @@ export interface FileRouteTypes {
     | '/workspace/atendimento/atendentes'
     | '/workspace/atendimento/chat'
     | '/workspace/atendimento/filas'
+    | '/workspace/atendimento/grupos'
     | '/workspace/atendimento/horarios'
     | '/workspace/atendimento/whatsapp'
     | '/workspace/captacao/ndas'
@@ -4876,6 +4897,7 @@ export interface FileRouteTypes {
     | '/assinar/$token'
     | '/assinatura/$token'
     | '/c/$storeSlug'
+    | '/g/$slug'
     | '/reclamar/novo'
     | '/verificar/$serial'
     | '/viajante/$token'
@@ -5007,6 +5029,7 @@ export interface FileRouteTypes {
     | '/workspace/atendimento/atendentes'
     | '/workspace/atendimento/chat'
     | '/workspace/atendimento/filas'
+    | '/workspace/atendimento/grupos'
     | '/workspace/atendimento/horarios'
     | '/workspace/atendimento/whatsapp'
     | '/workspace/captacao/ndas'
@@ -5337,6 +5360,7 @@ export interface FileRouteTypes {
     | '/assinar/$token'
     | '/assinatura/$token'
     | '/c/$storeSlug'
+    | '/g/$slug'
     | '/reclamar/novo'
     | '/verificar/$serial'
     | '/viajante/$token'
@@ -5469,6 +5493,7 @@ export interface FileRouteTypes {
     | '/workspace/atendimento/atendentes'
     | '/workspace/atendimento/chat'
     | '/workspace/atendimento/filas'
+    | '/workspace/atendimento/grupos'
     | '/workspace/atendimento/horarios'
     | '/workspace/atendimento/whatsapp'
     | '/workspace/captacao/ndas'
@@ -5706,6 +5731,7 @@ export interface RootRouteChildren {
   AssinarTokenRoute: typeof AssinarTokenRoute
   AssinaturaTokenRoute: typeof AssinaturaTokenRoute
   CStoreSlugRoute: typeof CStoreSlugRoute
+  GSlugRoute: typeof GSlugRoute
   ReclamarNovoRoute: typeof ReclamarNovoRoute
   VerificarSerialRoute: typeof VerificarSerialRoute
   ViajanteTokenRoute: typeof ViajanteTokenRoute
@@ -6566,6 +6592,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$storeSlug'
       fullPath: '/c/$storeSlug'
       preLoaderRoute: typeof CStoreSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/g/$slug': {
+      id: '/g/$slug'
+      path: '/g/$slug'
+      fullPath: '/g/$slug'
+      preLoaderRoute: typeof GSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reclamar/novo': {
@@ -7588,6 +7621,13 @@ declare module '@tanstack/react-router' {
       path: '/atendimento/filas'
       fullPath: '/workspace/atendimento/filas'
       preLoaderRoute: typeof WorkspaceAtendimentoFilasRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/atendimento/grupos': {
+      id: '/workspace/atendimento/grupos'
+      path: '/atendimento/grupos'
+      fullPath: '/workspace/atendimento/grupos'
+      preLoaderRoute: typeof WorkspaceAtendimentoGruposRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/atendimento/horarios': {
@@ -9606,6 +9646,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAtendimentoAtendentesRoute: typeof WorkspaceAtendimentoAtendentesRoute
   WorkspaceAtendimentoChatRoute: typeof WorkspaceAtendimentoChatRoute
   WorkspaceAtendimentoFilasRoute: typeof WorkspaceAtendimentoFilasRoute
+  WorkspaceAtendimentoGruposRoute: typeof WorkspaceAtendimentoGruposRoute
   WorkspaceAtendimentoHorariosRoute: typeof WorkspaceAtendimentoHorariosRoute
   WorkspaceAtendimentoWhatsappRoute: typeof WorkspaceAtendimentoWhatsappRoute
   WorkspaceCaptacaoNdasRoute: typeof WorkspaceCaptacaoNdasRoute
@@ -9798,6 +9839,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAtendimentoAtendentesRoute: WorkspaceAtendimentoAtendentesRoute,
   WorkspaceAtendimentoChatRoute: WorkspaceAtendimentoChatRoute,
   WorkspaceAtendimentoFilasRoute: WorkspaceAtendimentoFilasRoute,
+  WorkspaceAtendimentoGruposRoute: WorkspaceAtendimentoGruposRoute,
   WorkspaceAtendimentoHorariosRoute: WorkspaceAtendimentoHorariosRoute,
   WorkspaceAtendimentoWhatsappRoute: WorkspaceAtendimentoWhatsappRoute,
   WorkspaceCaptacaoNdasRoute: WorkspaceCaptacaoNdasRoute,
@@ -10011,6 +10053,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssinarTokenRoute: AssinarTokenRoute,
   AssinaturaTokenRoute: AssinaturaTokenRoute,
   CStoreSlugRoute: CStoreSlugRoute,
+  GSlugRoute: GSlugRoute,
   ReclamarNovoRoute: ReclamarNovoRoute,
   VerificarSerialRoute: VerificarSerialRoute,
   ViajanteTokenRoute: ViajanteTokenRoute,

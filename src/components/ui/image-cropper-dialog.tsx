@@ -240,7 +240,7 @@ export function ImageCropperDialog({
             )}
 
             {/* Viewport Amplo do Cropper com Máscara e Puxa/Arrasta Livre */}
-            <div className="relative w-full h-75 sm:h-95 overflow-hidden rounded-xl bg-[#09090b] select-none border border-border/40">
+            <div className="relative w-full h-75 sm:h-95 overflow-hidden rounded-xl bg-zinc-950 select-none border border-border/40">
               <Suspense
                 fallback={
                   <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground font-mono">
@@ -265,13 +265,11 @@ export function ImageCropperDialog({
                   onCropComplete={onCropComplete}
                   onZoomChange={setZoom}
                   onRotationChange={setRotation}
-                  style={{
-                    containerStyle: { background: "#09090b" },
-                    cropAreaStyle: {
-                      border: "2px solid #ffffff",
-                      borderRadius: isRound ? "50%" : "12px",
-                      boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)",
-                    },
+                  classes={{
+                    containerClassName: "waesy-cropper-container",
+                    cropAreaClassName: isRound
+                      ? "waesy-cropper-area waesy-cropper-area-round"
+                      : "waesy-cropper-area",
                   }}
                 />
               </Suspense>

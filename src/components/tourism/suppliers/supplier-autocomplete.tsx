@@ -42,7 +42,7 @@ export function SupplierAutocomplete({
  <div className="relative w-full">
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  onClick={() => setIsOpen(!isOpen)}
- className="w-full h-10 px-3 rounded-lg border border-border bg-background text-xs flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="w-full min-h-11 h-11 px-3 rounded-lg border border-border bg-background text-xs flex items-center justify-between cursor-pointer hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <div className="flex items-center gap-2 truncate">
  <Building2 className="size-3.5 text-muted-foreground shrink-0" />

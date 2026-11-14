@@ -12,7 +12,6 @@ import {
   FileText,
   Plus,
   Trash2,
-  Printer,
   Copy,
   Check,
   FileSignature,
@@ -42,7 +41,15 @@ import {
   type StoreCommercialPaymentConfig,
 } from "@/services/commercial-invoices.functions";
 import { BudgetCorporateClean } from "./templates/BudgetCorporateClean";
+import { ProposalEditorialAgency } from "./templates/ProposalEditorialAgency";
+import { COMMERCIAL_DOCUMENT_TEMPLATES } from "./registry";
 import type { CommercialDocumentData, CommercialBudgetItem } from "./types";
+import { StudioFrame } from "@/components/tourism/studio/studio-frame";
+import { DocumentExportMenu } from "@/components/documents/DocumentExportMenu";
+import { useAgency } from "@/lib/agency-context";
+import { getStoreSettings } from "@/services/store.functions";
+import { resolveTenantDocumentIdentity } from "@/lib/documents/document-studio-catalog";
+import { cn } from "@/lib/utils";
 import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templates";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -92,8 +99,25 @@ export function CommercialBudgetPadSheet({
 }: CommercialBudgetPadSheetProps) {
   const navigate = useNavigate();
 
-  // Modo: "edit" (Bloco de Notas / Talonário) ou "preview" (Folha de Papel A4 Oficial)
+  // Modo responsivo mobile: "edit" ou "preview"; Desktop exibe Studio Split-Pane ao vivo
   const [activeView, setActiveView] = useState<"edit" | "preview">("edit");
+  const [templateVariant, setTemplateVariant] = useState<
+    "budget_corporate_clean" | "proposal_editorial_agency"
+  >("budget_corporate_clean");
+  const [zoomScale, setZoomScale] = useState<number | null>(null);
+  const { agency, brandKit, companyProfile } = useAgency();
+  const [storeIdentitySettings, setStoreIdentitySettings] = useState<Record<string, any> | null>(null);
+
+  const tenantIdentity = useMemo(
+    () =>
+      resolveTenantDocumentIdentity({
+        agency,
+        brandKit,
+        companyProfile,
+        storeSettings: storeIdentitySettings,
+      }),
+    [agency, brandKit, companyProfile, storeIdentitySettings],
+  );
 
   // Código Sequencial
   const [invoiceCode, setInvoiceCode] = useState<string>("#ORC-2026-0001");
@@ -158,7 +182,13 @@ export function CommercialBudgetPadSheet({
         if (isMounted) setIsLoadingCode(false);
       });
 
-    // 2. Configurações Reais de Pagamento da Loja (SSOT)
+    // 2. Configurações Reais de Pagamento & Identidade da Loja (SSOT)
+    getStoreSettings()
+      .then((s) => {
+        if (isMounted && s) setStoreIdentitySettings(s);
+      })
+      .catch(() => {});
+
     getStoreCommercialPaymentConfig({})
       .then((cfg) => {
         if (isMounted && cfg) {
@@ -394,7 +424,7 @@ export function CommercialBudgetPadSheet({
       toast.info("Salve o orçamento para gerar o link público compartilhável.");
       return;
     }
-    const url = `${window.location.origin}/_store/fatura/${savedInvoice.public_token}`;
+    const url = `${window.location.origin}/fatura/${savedInvoice.public_token}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     toast.success("Link público do orçamento copiado!");
@@ -410,7 +440,7 @@ export function CommercialBudgetPadSheet({
     }
 
     const url = savedInvoice?.public_token
-      ? `${window.location.origin}/_store/fatura/${savedInvoice.public_token}`
+      ? `${window.location.origin}/fatura/${savedInvoice.public_token}`
       : "";
 
     const msg = `Olá ${clientName.trim()}! Segue seu orçamento ${invoiceCode} no valor total de ${formatMoney(totalCents)}.\n${url ? `Acesse os detalhes e aceite em: ${url}` : ""}`;
@@ -432,13 +462,15 @@ export function CommercialBudgetPadSheet({
       issueDate: new Intl.DateTimeFormat("pt-BR").format(new Date()),
       validUntilDate: new Intl.DateTimeFormat("pt-BR").format(validUntilDate),
       issuer: (savedInvoice?.issuer_snapshot as any) || {
-        companyName: "Minha Empresa Parceira",
-        cnpjOrCpf: "00.000.000/0001-00",
-        address: "Av. Brasil, Centro",
-        cityState: "São Miguel do Oeste - SC",
-        phoneOrWhatsapp: "(49) 99999-0000",
-        email: "contato@waesy.com",
-        pixKey: storePaymentConfig?.pixKey || "",
+        companyName: tenantIdentity.companyName,
+        tradingName: tenantIdentity.tradingName,
+        cnpjOrCpf: tenantIdentity.documentNumber || "Emissor Verificado",
+        address: tenantIdentity.address,
+        cityState: tenantIdentity.cityState,
+        phoneOrWhatsapp: tenantIdentity.phone,
+        email: tenantIdentity.email,
+        logoUrl: tenantIdentity.logoUrl || undefined,
+        pixKey: storePaymentConfig?.pixKey || tenantIdentity.pixKey || "",
       },
       client: {
         name: clientName || "Nome do Cliente",
@@ -495,23 +527,47 @@ export function CommercialBudgetPadSheet({
     notes,
   ]);
 
+  const exportMarkdown = useMemo(() => {
+    const itemLines = calculatedItems
+      .map(
+        (it: { name?: string; title?: string; quantity: number; totalCents?: number; totalPriceCents?: number }) =>
+          `- **${it.title || it.name || "Item"}** (${it.quantity}x): ${formatMoney(it.totalPriceCents ?? it.totalCents ?? 0)}`,
+      )
+      .join("\n");
+    return [
+      `# ${docType === "invoice" ? "Fatura" : docType === "receipt" ? "Recibo" : docType === "work_order" ? "Ordem de Serviço" : "Orçamento"} — ${invoiceCode}`,
+      "",
+      `**Emissor:** ${tenantIdentity.companyName}${tenantIdentity.documentNumber ? ` (${tenantIdentity.documentNumber})` : ""}`,
+      `**Cliente:** ${clientName || "A definir"}${clientPhone ? ` | ${clientPhone}` : ""}`,
+      "",
+      "## Itens & Serviços",
+      itemLines || "- Sem itens especificados",
+      "",
+      `## Total Líquido: ${formatMoney(totalCents)}`,
+      paymentNotes ? `\n**Condições de Pagamento:** ${paymentNotes}` : "",
+      notes ? `\n**Observações:** ${notes}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }, [calculatedItems, clientName, clientPhone, docType, invoiceCode, notes, paymentNotes, tenantIdentity, totalCents]);
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-4xl p-0 flex flex-col h-full bg-background">
-          {/* Header Superior com Alternador de Visualização */}
-          <SheetHeader className="p-4 sm:p-6 border-b border-border bg-card shrink-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
+        <SheetContent side="right" className="w-full sm:max-w-none max-w-none p-0 flex flex-col h-full bg-background">
+          {/* Header Studio Split-Pane com Template Switcher, Zoom e Exportação Multi-Formato */}
+          <SheetHeader className="p-4 sm:px-6 sm:py-4 border-b border-border bg-card shrink-0">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+              <div className="space-y-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline" className="font-mono text-xs px-2 py-1 border-primary/30 text-primary">
                     {isLoadingCode ? "Carregando..." : invoiceCode}
                   </Badge>
                   <Select
                     value={docType}
-                    onValueChange={(val: any) => setDocType(val)}
+                    onValueChange={(val: "budget" | "invoice" | "receipt" | "work_order") => setDocType(val)}
                   >
-                    <SelectTrigger className="h-11 min-h-11 text-xs w-36 border-dashed">
+                    <SelectTrigger className="h-11 min-h-11 text-xs w-40 border-dashed">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -521,62 +577,121 @@ export function CommercialBudgetPadSheet({
                       <SelectItem value="work_order">Ordem de Serviço</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Select
+                    value={templateVariant}
+                    onValueChange={(val: string) =>
+                      setTemplateVariant(
+                        val === "proposal_editorial_agency"
+                          ? "proposal_editorial_agency"
+                          : "budget_corporate_clean",
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-11 min-h-11 text-xs w-60">
+                      <SelectValue placeholder="Layout Visual A4" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMERCIAL_DOCUMENT_TEMPLATES.map((tpl) => (
+                        <SelectItem key={tpl.id} value={tpl.id}>
+                          {tpl.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <SheetTitle className="text-lg sm:text-xl font-bold tracking-tight">
-                  Bloco de Orçamento & Fatura Comercial
+                <SheetTitle className="text-lg font-bold tracking-tight truncate">
+                  Studio de Orçamentos & Faturas Comerciais
                 </SheetTitle>
-                <SheetDescription className="text-xs text-muted-foreground">
-                  Preencha os itens no bloco tipo papel, calcule totais em tempo real e integre a contratos com 1 clique.
+                <SheetDescription className="text-xs text-muted-foreground hidden sm:block">
+                  Edite os itens ao lado esquerdo com cálculo automático e prévia editorial ao vivo pronta para exportação.
                 </SheetDescription>
               </div>
 
-              {/* Botões de Alternância: Modo Bloco vs Modo Fatura A4 */}
-              <div className="flex items-center gap-2 self-start sm:self-auto bg-muted p-1 rounded-lg">
-                <Button
-                  type="button"
-                  variant={activeView === "edit" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setActiveView("edit")}
-                  className="h-11 min-h-11 text-xs font-medium px-4"
-                >
-                  <Edit3 className="size-4 mr-2" />
-                  Bloco de Notas
-                </Button>
-                <Button
-                  type="button"
-                  variant={activeView === "preview" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setActiveView("preview")}
-                  className="h-11 min-h-11 text-xs font-medium px-4"
-                >
-                  <Eye className="size-4 mr-2" />
-                  Fatura de Papel A4
-                </Button>
+              <div className="flex flex-wrap items-center gap-2 self-start xl:self-auto">
+                {/* Zoom Desktop */}
+                <div className="hidden lg:flex items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setZoomScale((prev) => Number(Math.max(0.45, (prev ?? 0.85) - 0.1).toFixed(2)))}
+                    className="h-11 w-11 min-h-11 p-0 text-xs font-mono"
+                    aria-label="Reduzir zoom"
+                  >
+                    -
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setZoomScale(null)}
+                    className="h-11 min-h-11 px-3 text-xs font-mono"
+                  >
+                    {zoomScale ? `${Math.round(zoomScale * 100)}%` : "Auto"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setZoomScale((prev) => Number(Math.min(1.3, (prev ?? 0.85) + 0.1).toFixed(2)))}
+                    className="h-11 w-11 min-h-11 p-0 text-xs font-mono"
+                    aria-label="Aumentar zoom"
+                  >
+                    +
+                  </Button>
+                </div>
+
+                {/* Alternância Mobile Compacta (< lg) */}
+                <div className="flex lg:hidden items-center gap-1 bg-muted p-1 rounded-lg">
+                  <Button
+                    type="button"
+                    variant={activeView === "edit" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setActiveView("edit")}
+                    className="h-11 min-h-11 text-xs font-medium px-3"
+                  >
+                    <Edit3 className="size-4 mr-1" />
+                    Campos
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activeView === "preview" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setActiveView("preview")}
+                    className="h-11 min-h-11 text-xs font-medium px-3"
+                  >
+                    <Eye className="size-4 mr-1" />
+                    Papel A4
+                  </Button>
+                </div>
+
+                <DocumentExportMenu
+                  elementId="commercial-budget-a4-canvas"
+                  filenameBase={invoiceCode || "orcamento-comercial"}
+                  title={`${docType === "invoice" ? "Fatura" : docType === "receipt" ? "Recibo" : docType === "work_order" ? "Ordem de Serviço" : "Orçamento"} ${invoiceCode}`}
+                  subtitle={clientName || undefined}
+                  agencyName={tenantIdentity.companyName}
+                  agencyDocument={tenantIdentity.documentNumber}
+                  agencyContact={[tenantIdentity.phone, tenantIdentity.email].filter(Boolean).join(" | ")}
+                  agencyLogoUrl={tenantIdentity.logoUrl}
+                  markdownContent={exportMarkdown}
+                  pageFormat={templateVariant === "proposal_editorial_agency" ? "a4-landscape" : "a4-portrait"}
+                  variant="default"
+                  label="Exportar Documento"
+                />
               </div>
             </div>
           </SheetHeader>
 
-          {/* Conteúdo Rolável Principal */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-            {activeView === "preview" ? (
-              // ── MODO 1: PRÉVIA DA FOLHA DE PAPEL A4 ──
-              <div className="bg-muted/30 p-4 rounded-lg flex flex-col items-center">
-                <div className="w-full flex justify-end gap-2 mb-4 print:hidden">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-11 min-h-11 px-4 text-xs font-bold"
-                    onClick={() => window.print()}
-                  >
-                    <Printer className="size-4 mr-2" />
-                    Imprimir A4
-                  </Button>
-                </div>
-                <BudgetCorporateClean data={previewDocumentData} />
-              </div>
-            ) : (
-              // ── MODO 2: EDIÇÃO INTERATIVA NO BLOCO DE PEDIDOS ──
+          {/* Split-Pane Studio Principal (Editor Contextual Esquerda + Canvas A4 Direita) */}
+          <div className="flex-1 min-h-0 flex overflow-hidden">
+            {/* Painel Esquerdo — Bloco de Edição de Itens & Condições */}
+            <div
+              className={cn(
+                "flex-1 lg:flex-none lg:w-1/2 xl:w-5/12 min-w-0 overflow-y-auto p-4 sm:p-6 space-y-6 lg:border-r lg:border-border",
+                activeView === "preview" ? "hidden lg:block" : "block",
+              )}
+            >
               <div className="space-y-6">
                 {/* 1. Bloco de Dados do Cliente */}
                 <div className="border border-border/70 rounded-lg p-4 bg-card/60 space-y-3">
@@ -921,7 +1036,27 @@ export function CommercialBudgetPadSheet({
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* Painel Direito — Canvas Real-Time em StudioFrame (Sempre visível em Desktop) */}
+            <div
+              className={cn(
+                "flex-1 lg:w-1/2 xl:w-7/12 min-w-0 bg-muted/40 overflow-hidden flex-col",
+                activeView === "preview" ? "flex" : "hidden lg:flex",
+              )}
+            >
+              <StudioFrame
+                format={templateVariant === "proposal_editorial_agency" ? "a4-landscape" : "a4-portrait"}
+                canvasId="commercial-budget-a4-canvas"
+                zoomScale={zoomScale}
+              >
+                {templateVariant === "proposal_editorial_agency" ? (
+                  <ProposalEditorialAgency data={previewDocumentData} />
+                ) : (
+                  <BudgetCorporateClean data={previewDocumentData} />
+                )}
+              </StudioFrame>
+            </div>
           </div>
 
           {/* Rodapé Fixo com Ações Canônicas (Altura 44px / Piso WCAG) */}

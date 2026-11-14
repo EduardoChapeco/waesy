@@ -105,6 +105,11 @@ export function StoreHours({
  )}
  </div>
 
+ {storeHours.hours.length === 0 ? (
+ <div className="py-6 text-center text-muted-foreground text-sm">
+ Nenhum horário cadastrado.
+ </div>
+ ) : (
  <div className="divide-y divide-border rounded-lg overflow-hidden">
  {storeHours.hours.map((day) => (
  <div
@@ -126,6 +131,7 @@ export function StoreHours({
  </div>
  ))}
  </div>
+ )}
 
  {storeHours.holiday_exceptions && storeHours.holiday_exceptions.length > 0 && (
  <div className="mt-4">

@@ -441,3 +441,21 @@ O "Efeito Sanfona" (Accordion Jank) — caracterizado pelo empurrão súbito de 
 1. **Proibição Absoluta de Duplicar ou Simplificar Painéis:** É expressamente proibido criar novos painéis paralelos ou simplificar fluxos existentes para contornar integrações complexas. Todo módulo existente (`workspace.turismo.*`, `workspace.clientes.*`, `workspace.financeiro.*`) DEVE ser preservado, conectado de ponta a ponta e aprimorado cirurgicamente sobre sua base canônica.
 2. **Módulos Especializados e Interconectados:** Cada etapa do ciclo operacional possui seu módulo dedicado (Atendimento Kanban, Radar de Oportunidades, Cotações Aéreas/Terrestres, Construtor de Propostas, Viagens Confirmadas, Embarques D-X, Empresas B2B, Operadoras/InfoTravel, Contratos, Documentos OCR e Comissões), mantendo navegação fluida sem perda de contexto.
 3. **Proibição de `Sparkles` e Cards Conversacionais:** Fica banido o uso do ícone `Sparkles` e de botões conversacionais com frases explicativas. Controles devem usar verbos diretos de até 3 palavras e ícones semânticos de domínio (`Compass`, `Plane`, `Building2`, `FileText`, `CheckCircle2`, `TrendingUp`).
+
+---
+
+## C.22 Diretriz Soberana do Conselho Sênior: Tipografia Única Inter, Squircles Limpos e Anti-Compressão Mobile
+
+Consolidado arquitetural e normativo para todo o ecossistema Waesy (SuperApp Civil, Workspace e Admin Master):
+
+1. **Família Tipográfica Única (`Inter`) e Pesos Equilibrados:**
+   - `--font-sans`, `--font-display`, `--font-editorial` e `--p-heading-font` convergem em **`Inter`** (`--font-mono` reservada a `JetBrains Mono` em valores tabulares e código).
+   - Pesos padronizados exclusivamente entre **Regular (`400`)**, **Medium (`500`)** e **Semibold (`600`)**. É vedado importar fontes serifadas decorativas (`Playfair Display`) ou de display pesado (`Oswald`, `Fraunces`) na casca principal da plataforma.
+2. **Estética Silenciosa e Geometria Squircle (Apple HIG / Linear / Figma / Avec / iFood):**
+   - Cantos semiarredondados contínuos (`rounded-xl` / `rounded-2xl` / `rounded-3xl`), superfícies foscas sem sombras decorativas ou gradientes saturados e redução drástica de caixas de ícone decorativas em cards e cabeçalhos.
+   - Cabeçalhos iniciais devem permanecer silenciosos e livres de controles supérfluos (ex.: alternadores de tema e badges ornamentais como `BETA` na barra principal).
+3. **Respeito Absoluto à Viewport Mobile (`< 600px`) e Anti-Compressão:**
+   - É estritamente proibido achatar grades de 3 a 5 colunas dentro da largura móvel. Seções que exibem 4 cards lado a lado no desktop DEVEM quebrar suavemente no mobile (`grid-cols-1` para cards horizontais/densos ou `grid-cols-2 gap-3` para cards compactos, expandindo apenas em `sm:`/`lg:`).
+   - Apenas carrosséis e trilhos explícitos podem sangrar lateralmente com rolagem tátil (`overflow-x-auto snap-x`), enquanto títulos, textos, formulários e botões permanecem rigorosamente alinhados dentro da margem segura, sem truncamento nem extravasamento lateral e com piso mínimo de 44px (`h-11 min-h-11`).
+4. **Integridade Real em 4 Camadas:**
+   - Zero mocks, zero dados estáticos disfarçados de produção, zero captura silenciosa de erro como vazio (`catch(() => [])`) e persistência verificável em Supabase (Schema + RLS) -> Server Functions (`Zod`) -> UI + recarregamento de página.

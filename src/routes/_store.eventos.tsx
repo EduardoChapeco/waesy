@@ -439,7 +439,7 @@ function EventosPage() {
         targetUrl: b.link_url || b.target_url || "/eventos",
         badgeText: b.badge_text || null,
         actionText: b.button_label || "Conferir",
-        bgColor: b.bg_color || "#0284c7",
+        bgColor: b.bg_color || "var(--color-sky-600)",
         imageUrl: b.image_url || null,
       }));
     }
@@ -472,7 +472,7 @@ function EventosPage() {
         <EventsShowcaseMobileView
           activeCity={activeCity}
           coverImageUrl={heroCoverConfig.background_image_url}
-          themeColor={heroCoverConfig.theme_color || "#0284c7"}
+          themeColor={heroCoverConfig.theme_color || "var(--color-sky-600)"}
           calloutTitle={heroCoverConfig.callout_title || "Aqui tem desconto pra quem é Clube!"}
           partnerLogoUrl={heroCoverConfig.partner_logo_url}
           activeCategory={selectedCategory}

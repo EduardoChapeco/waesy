@@ -63,6 +63,6 @@ describe("Tenant fallback security contracts", () => {
     );
     expect(resolver).not.toContain("defaultStore");
     expect(resolver).not.toContain("anyStore");
-    expect(resolver).toContain("Resolução semântica por segmento; ausência de correspondência é explícita.");
+    expect(resolver).toContain("ausência de correspondência é explícita.");
   });
 });

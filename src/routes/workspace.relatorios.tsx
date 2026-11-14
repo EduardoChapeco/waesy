@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useChildMatches, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { TrendingUp, TrendingDown, ShoppingCart, Users, Package, DollarSign, BarChart3, RefreshCw, ArrowUpRight, ArrowDownRight, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -19,8 +19,16 @@ export const Route = createFileRoute("/workspace/relatorios")({
       return null as any;
     }
   },
-  component: RelatoriosPage,
+  component: RelatoriosRouteSwitch,
 });
+
+function RelatoriosRouteSwitch() {
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) {
+    return <Outlet />;
+  }
+  return <RelatoriosPage />;
+}
 
 function RelatoriosPage() {
   const data = Route.useLoaderData() as any;
@@ -79,7 +87,7 @@ function RelatoriosPage() {
             </span>
             <DollarSign className="size-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-black text-foreground">
+          <div className="text-2xl font-semibold text-foreground">
             {formatMoney(data.salesTodayCents)}
           </div>
           <span className="text-xs text-muted-foreground">
@@ -95,7 +103,7 @@ function RelatoriosPage() {
             </span>
             <BarChart3 className="size-4 text-primary" />
           </div>
-          <div className="text-2xl font-black text-foreground">
+          <div className="text-2xl font-semibold text-foreground">
             {formatMoney(data.salesMonthCents)}
           </div>
           {growth !== null && (
@@ -122,7 +130,7 @@ function RelatoriosPage() {
             </span>
             <Users className="size-4 text-violet-500" />
           </div>
-          <div className="text-2xl font-black text-foreground">
+          <div className="text-2xl font-semibold text-foreground">
             {data.newCustomers30d}
           </div>
           <span className="text-xs text-muted-foreground">Últimos 30 dias</span>
@@ -136,7 +144,7 @@ function RelatoriosPage() {
             </span>
             <ShoppingCart className="size-4 text-warning-strong" />
           </div>
-          <div className="text-2xl font-black text-warning-strong">
+          <div className="text-2xl font-semibold text-warning-strong">
             {data.abandonedCartsCount}
           </div>
           <span className="text-xs text-muted-foreground">Últimos 7 dias</span>
@@ -241,7 +249,7 @@ function RelatoriosPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <AlertTriangle className="size-3.5 text-destructive" />
-                    <span className="text-xs font-black text-destructive">
+                    <span className="text-xs font-semibold text-destructive">
                       {item.stockOnHand} un.
                     </span>
                   </div>
@@ -278,7 +286,7 @@ function RelatoriosPage() {
                 </div>
                 <div className="text-right shrink-0">
                   {activity.totalCents && (
-                    <span className="text-xs font-black text-foreground block">
+                    <span className="text-xs font-semibold text-foreground block">
                       {formatMoney(activity.totalCents)}
                     </span>
                   )}
@@ -296,7 +304,7 @@ function RelatoriosPage() {
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Faturamento Mês Anterior
           </span>
-          <div className="text-2xl font-black text-muted-foreground">
+          <div className="text-2xl font-semibold text-muted-foreground">
             {formatMoney(data.salesLastMonthCents)}
           </div>
           <span className="text-xs text-muted-foreground">Referência para cálculo de crescimento</span>
@@ -305,7 +313,7 @@ function RelatoriosPage() {
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Pedidos no Mês
           </span>
-          <div className="text-2xl font-black text-foreground">{data.ordersMonthCount}</div>
+          <div className="text-2xl font-semibold text-foreground">{data.ordersMonthCount}</div>
           <span className="text-xs text-muted-foreground">Total de pedidos abertos neste mês</span>
         </div>
       </div>

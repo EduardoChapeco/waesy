@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from "sonner";
 import { FileAttachmentUpload } from "@/components/ui/file-attachment-upload";
 import { createCustomerDocument, deleteCustomerDocument } from "@/services/crm.functions";
+import { formatDateOnlyBr } from "@/lib/datetime";
 
 const DOC_TYPES = [
  { value: "passport", label: "Passaporte" },
@@ -25,6 +26,8 @@ const DOC_TYPES = [
 export interface CustomerDoc {
  id: string;
  doc_type: string;
+ title?: string | null;
+ traveler_name?: string | null;
  doc_number: string | null;
  issued_at: string | null;
  expires_at: string | null;
@@ -87,7 +90,6 @@ export function DocumentsPanel({
  };
 
  const handleDelete = async (docId: string) => {
- if (!confirm("Deseja realmente remover este documento?")) return;
  try {
  await deleteCustomerDocument({ data: { documentId: docId } });
  toast.success("Documento removido.");
@@ -204,15 +206,22 @@ export function DocumentsPanel({
  <button
  type="button"
  onClick={() => handleDelete(doc.id)}
- className="text-muted-foreground hover:text-destructive transition-colors p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ aria-label="Excluir documento"
+ className="min-h-11 min-w-11 sm:min-h-8 sm:min-w-8 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-destructive transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  title="Excluir documento"
  >
  <Trash2 className="size-3.5" />
  </button>
  </div>
 
+ {(doc.title || doc.traveler_name) && (
+ <p className="text-xs font-medium text-muted-foreground mt-1">
+ {doc.title || typeLabel}{doc.traveler_name ? ` • ${doc.traveler_name}` : ""}
+ </p>
+ )}
+
  {doc.doc_number && (
- <p className="font-mono text-xs font-bold text-foreground mt-1">
+ <p className="font-mono text-xs font-semibold text-foreground mt-1">
  Nº {doc.doc_number}
  </p>
  )}
@@ -222,7 +231,7 @@ export function DocumentsPanel({
  <div>
  <span className="text-xs block text-muted-foreground/80">Emissão</span>
  <span className="font-medium text-foreground">
- {new Date(doc.issued_at + "T00:00:00").toLocaleDateString("pt-BR")}
+ {formatDateOnlyBr(doc.issued_at)}
  </span>
  </div>
  )}
@@ -230,8 +239,8 @@ export function DocumentsPanel({
  {doc.expires_at && (
  <div>
  <span className="text-xs block text-muted-foreground/80">Validade</span>
- <span className={`font-bold ${isExpired ? "text-destructive" : isSoon ? "text-warning-strong" : "text-foreground"}`}>
- {new Date(doc.expires_at + "T00:00:00").toLocaleDateString("pt-BR")}
+ <span className={`font-semibold ${isExpired ? "text-destructive" : isSoon ? "text-warning-strong" : "text-foreground"}`}>
+ {formatDateOnlyBr(doc.expires_at)}
  </span>
  </div>
  )}
@@ -331,7 +340,7 @@ export function DocumentsPanel({
  label="Arquivo / Documento Digitalizado (Opcional)"
  helperText="Envie a foto ou PDF do documento (RG, Passaporte, Visto ou Contrato)"
  accept="image/*,application/pdf"
- bucket="cms-media"
+ bucket="identity-vault"
  compact
  />
 

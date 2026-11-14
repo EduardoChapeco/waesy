@@ -299,7 +299,7 @@ function AdminUsuariosPage() {
       setDossierData(res);
     } catch (e: unknown) {
       toast.error(
-        e instanceof Error ? e.message : "Erro ao carregar Dossiê 360º de governança."
+        e instanceof Error ? e.message : "Erro ao carregar Histórico de Governança."
       );
     } finally {
       setIsLoadingDossier(false);
@@ -682,7 +682,7 @@ function AdminUsuariosPage() {
                         "h-11 min-h-11 px-3 text-xs font-bold gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-primary",
                         u.is_verified
                           ? "border-sky-500/40 text-sky-600 hover:bg-sky-500/10"
-                          : "bg-sky-600 hover:bg-sky-700 text-white"
+                          : "bg-sky-700 hover:bg-sky-800 text-neutral-50"
                       )}
                       onClick={() => {
                         setVerificationModalUser(u);
@@ -712,7 +712,7 @@ function AdminUsuariosPage() {
                       onClick={() => handleOpenDossier(u)}
                     >
                       <FileText className="size-4" />
-                      Dossiê 360º
+                      Histórico
                     </Button>
 
                     <Button
@@ -735,7 +735,7 @@ function AdminUsuariosPage() {
         </div>
       </div>
 
-      {/* SheetPage de Dossiê 360º com 7 Abas Operacionais */}
+      {/* SheetPage de Histórico de Governança com 7 Abas Operacionais */}
       <SheetPage
         open={!!dossierData || isLoadingDossier}
         onOpenChange={(open) => {
@@ -744,7 +744,7 @@ function AdminUsuariosPage() {
             setSelectedUser(null);
           }
         }}
-        title="Dossiê 360º de Governança & Atividade Integral"
+        title="Histórico de Governança & Atividade Integral"
         size="lg"
         footer={
           <Button
@@ -755,14 +755,14 @@ function AdminUsuariosPage() {
             }}
             className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold focus-visible:ring-2 focus-visible:ring-primary"
           >
-            Fechar Dossiê
+            Fechar Histórico
           </Button>
         }
       >
         {isLoadingDossier ? (
           <div className="py-16 flex flex-col justify-center items-center gap-3 text-sm text-muted-foreground">
             <Loader2 className="size-6 animate-spin text-primary" />
-            <span>Consolidando Dossiê 360º nas 7 dimensões forenses...</span>
+            <span>Consolidando histórico nas 7 dimensões forenses...</span>
           </div>
         ) : dossierData ? (
           <div className="space-y-4 py-2 text-xs">
@@ -1486,7 +1486,7 @@ function AdminUsuariosPage() {
                     </Button>
                     <Button
                       type="button"
-                      className="h-11 min-h-11 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white"
+                      className="h-11 min-h-11 text-xs font-bold bg-sky-700 hover:bg-sky-800 text-neutral-50"
                       onClick={() =>
                         handleSaveVerification(
                           verificationModalUser,
@@ -1502,7 +1502,7 @@ function AdminUsuariosPage() {
                 ) : (
                   <Button
                     type="button"
-                    className="w-full h-11 min-h-11 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white"
+                    className="w-full h-11 min-h-11 text-xs font-bold bg-sky-700 hover:bg-sky-800 text-neutral-50"
                     onClick={() =>
                       handleSaveVerification(
                         verificationModalUser,

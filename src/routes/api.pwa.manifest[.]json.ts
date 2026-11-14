@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 import type {} from "@tanstack/react-start";
 export const Route = createFileRoute("/api/pwa/manifest.json")({
@@ -37,8 +38,8 @@ export const Route = createFileRoute("/api/pwa/manifest.json")({
               display: "standalone",
               display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
               orientation: "portrait-primary",
-              background_color: "#ffffff",
-              theme_color: "#09090b",
+              background_color: TOKEN_HEX.white,
+              theme_color: TOKEN_HEX.neutral950,
               lang: "pt-BR",
               dir: "ltr",
               categories: ["shopping", "business", "lifestyle", "travel"],
@@ -63,11 +64,11 @@ export const Route = createFileRoute("/api/pwa/manifest.json")({
               ],
               theme_color_adaptive: [
                 {
-                  color: "#ffffff",
+                  color: TOKEN_HEX.white,
                   media: "(prefers-color-scheme: light)",
                 },
                 {
-                  color: "#09090b",
+                  color: TOKEN_HEX.neutral950,
                   media: "(prefers-color-scheme: dark)",
                 },
               ],
@@ -191,7 +192,7 @@ export const Route = createFileRoute("/api/pwa/manifest.json")({
             settings.coverUrl ||
             "/icons/icon-512x512.png";
 
-          const primaryColor = settings.primaryColor || settings.primary_color || "#09090b";
+          const primaryColor = settings.primaryColor || settings.primary_color || TOKEN_HEX.neutral950;
           const shortName = store.name.length > 12 ? store.name.slice(0, 12).trim() : store.name;
           const storeStartUrl = `/perfil-da-loja?storeId=${store.id}&source=pwa`;
 
@@ -207,7 +208,7 @@ export const Route = createFileRoute("/api/pwa/manifest.json")({
             scope: `/`,
             display: "standalone",
             display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
-            background_color: "#ffffff",
+            background_color: TOKEN_HEX.white,
             theme_color: primaryColor,
             orientation: "portrait-primary",
             lang: "pt-BR",

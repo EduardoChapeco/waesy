@@ -4,24 +4,63 @@ import { createHash } from "node:crypto";
 import { getServerClient } from "@/lib/supabase";
 import { enforceRateLimit } from "@/lib/rate-limiter";
 import { BuilderAssetRefSchema, STUDIO_UPLOAD_RIGHTS_ATTESTATION_VERSION, type BuilderAssetRef } from "@/lib/builder/asset-contract";
+import { classifyChatFile, extensionForMime, resolveNormalizedMimeType } from "@/lib/chat-media-attachment";
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
+  "image/jpg",
   "image/png",
   "image/webp",
   "image/gif",
   "image/svg+xml",
   "image/avif",
+  "image/bmp",
   "video/mp4",
   "video/webm",
   "video/quicktime",
+  "video/x-matroska",
+  "video/x-msvideo",
+  "video/3gpp",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/ogg",
+  "audio/opus",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/webm",
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/aac",
   "application/pdf",
   "text/plain",
   "text/csv",
+  "text/rtf",
+  "application/rtf",
+  "application/json",
+  "application/xml",
+  "text/xml",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "application/zip",
+  "application/x-zip-compressed",
+  "application/vnd.rar",
+  "application/x-rar-compressed",
+  "application/x-7z-compressed",
   "application/octet-stream",
+]);
+
+const PRIVATE_SIGNED_BUCKETS = new Set([
+  "payment-proofs",
+  "rma-proofs",
+  "legal-documents",
+  "receipts",
+  "order-receipts",
+  "identity-vault",
+  "copilot-uploads",
 ]);
 
 const ALLOWED_BFF_BUCKETS = new Set([
@@ -79,14 +118,9 @@ function validateMimeType(contentType: string) {
   const cleanType = contentType.toLowerCase().split(";")[0].trim();
   if (!ALLOWED_MIME_TYPES.has(cleanType)) {
     throw new Error(
-      `Tipo de arquivo não permitido (${contentType}). Aceitos: imagens, vídeos, PDFs, documentos (DOC/DOCX) e textos/logs.`,
+      `Tipo de arquivo não permitido (${contentType}). Aceitos: imagens, GIFs, vídeos, áudios, PDFs, planilhas, apresentações, documentos e arquivos compactados.`,
     );
   }
-}
-
-function extensionForMime(contentType: string): string {
-  const map: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/avif": "avif", "image/svg+xml": "svg", "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov" };
-  return map[contentType.toLowerCase().split(";")[0].trim()] || "bin";
 }
 
 function inspectImageDimensions(buffer: Buffer, contentType: string): { width: number | null; height: number | null } {
@@ -140,10 +174,11 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: { fileName, bucket, contentType } }) => {
     try {
-      validateMimeType(contentType);
+      const normalizedType = resolveNormalizedMimeType(contentType, fileName);
+      validateMimeType(normalizedType);
 
       const supabase = getServerClient();
-      const ext = fileName.split(".").pop() || "png";
+      const ext = extensionForMime(normalizedType, fileName);
 
       const { getServerIdentity } = await import("@/lib/server-access");
       const { store_id, id: userId } = await getServerIdentity();
@@ -268,15 +303,33 @@ export const uploadStoreMedia = createServerFn({ method: "POST" })
         upsert: true,
       });
 
+      if (uploadError && /bucket not found/i.test(uploadError.message || "")) {
+        await supabase.storage.createBucket(bucket, { public: !PRIVATE_SIGNED_BUCKETS.has(bucket) }).catch(() => null);
+        ({ error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
+          contentType: fileType,
+          upsert: true,
+        }));
+      }
+
       if (uploadError) {
         throw new Error(`Erro ao fazer upload da mídia: ${uploadError.message}`);
       }
 
       const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
+      let resolvedUrl = publicUrlData.publicUrl;
+      if (PRIVATE_SIGNED_BUCKETS.has(bucket)) {
+        const { data: signedData } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(uniqueName, 60 * 60 * 6);
+        if (signedData?.signedUrl) {
+          resolvedUrl = signedData.signedUrl;
+        }
+      }
 
       return {
-        url: publicUrlData.publicUrl,
+        url: resolvedUrl,
         path: uniqueName,
+        bucket,
       };
     } catch (e: any) {
       console.error("[storage] uploadStoreMedia error:", e);
@@ -408,7 +461,8 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
     try {
       assertAllowedBffBucket(bucket);
       assertSafeFolder(folder);
-      validateMimeType(fileType);
+      const normalizedType = resolveNormalizedMimeType(fileType, fileName);
+      validateMimeType(normalizedType);
       const { getServerIdentity, requireAdmin } = await import("@/lib/server-access");
       const identity = studioAsset ? await requireAdmin() : await getServerIdentity();
       if (!identity.id) throw new Error("Faça login para enviar mídia.");
@@ -417,7 +471,6 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
       if (studioAsset && (bucket !== "public_media" || folder !== "builder" || !identity.store_id)) {
         throw new Error("Upload Studio exige administrador de loja, pasta builder e bucket público aprovado.");
       }
-      const normalizedType = fileType.toLowerCase().split(";")[0].trim();
       if (studioAsset && !normalizedType.startsWith("image/")) {
         throw new Error("O ledger Studio aceita somente arquivos de imagem.");
       }
@@ -426,7 +479,7 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
       }
       const supabase = getServerClient();
       storageClient = supabase;
-      const ext = extensionForMime(normalizedType);
+      const ext = extensionForMime(normalizedType, fileName);
       const cleanName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
       const tenantNamespace = identity.store_id || identity.id;
       const uniqueName = `${tenantNamespace}/${folder}/${cleanName}`;
@@ -508,12 +561,20 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
         });
         studioUploadPath = null;
         studioLedgerId = null;
+      } else if (!PRIVATE_SIGNED_BUCKETS.has(bucket)) {
+        const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(uniqueName);
+        if (!publicUrlData?.publicUrl) {
+          throw new Error("Erro ao resolver URL pública da mídia.");
+        }
+        url = publicUrlData.publicUrl;
       } else {
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage.from(bucket).createSignedUrl(uniqueName, 60 * 60);
         if (signedUrlError || !signedUrlData?.signedUrl) throw new Error(`Erro ao gerar URL assinada da mídia: ${signedUrlError?.message || "URL ausente"}`);
         url = signedUrlData.signedUrl;
         signedUrl = signedUrlData.signedUrl;
       }
+
+      const classified = classifyChatFile({ name: fileName, type: normalizedType });
 
       return {
         id: cleanName,
@@ -522,13 +583,13 @@ export const uploadMediaUniversal = createServerFn({ method: "POST" })
         assetRef,
         path: uniqueName,
         name: fileName,
-        type: normalizedType.startsWith("video/") ? ("video" as const) : ("image" as const),
+        type: classified.outboundMessageType,
         mimeType: normalizedType,
         byteSize: buffer.byteLength,
         sha256,
         width: dimensions.width,
         height: dimensions.height,
-        expiresInSeconds: 60 * 60,
+        expiresInSeconds: PRIVATE_SIGNED_BUCKETS.has(bucket) ? 60 * 60 : 0,
       };
     } catch (e: any) {
       if (studioLedgerId && storageClient) {

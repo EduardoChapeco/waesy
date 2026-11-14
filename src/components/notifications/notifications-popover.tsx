@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { listUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, type NotificationItemDTO, type NotificationType } from "@/services/notifications.functions";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +28,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  const queryClient = useQueryClient();
  const navigate = useNavigate();
 
- const { data: notifications = [] } = useQuery({
+ const { data: notifications = [], isLoading, isError, refetch } = useQuery({
  queryKey: ["user-notifications", activeTab],
  queryFn: () =>
  listUserNotifications({
@@ -175,7 +176,16 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
 
  {/* ── 3. Lista de Notificações com Scroll Interno Nativo ── */}
  <div className="max-h-95 overflow-y-auto divide-y divide-border/40 overscroll-contain">
- {notifications.length > 0 ? (
+ {isError ? (
+ <ErrorState
+ minimal
+ title="Falha ao carregar notificações"
+ description="Não foi possível buscar seus avisos no servidor."
+ onRetry={() => refetch()}
+ />
+ ) : isLoading ? (
+ <div className="py-10 text-center text-xs text-muted-foreground">Carregando notificações...</div>
+ ) : notifications.length > 0 ? (
  <div className="p-1 space-y-1">
  {notifications.map((item) => (
  <div
@@ -249,13 +259,12 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  ))}
  </div>
  ) : (
- <div className="py-12 px-4 text-center space-y-2">
- <Bell className="size-8 text-muted-foreground/40 mx-auto" />
- <p className="text-xs font-bold text-foreground">Nenhuma notificação no momento</p>
- <p className="text-2xs text-muted-foreground">
- Avisos de pedidos, interações e ofertas aparecerão aqui.
- </p>
- </div>
+ <EmptyState
+ minimal
+ icon={Bell}
+ title="Nenhuma notificação no momento"
+ description="Avisos de pedidos, interações e ofertas aparecerão aqui."
+ />
  )}
  </div>
 

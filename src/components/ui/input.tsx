@@ -16,7 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
  // Base — layout e tipografia
  "flex h-11 min-h-11 w-full rounded-lg border border-input px-4 py-2 text-base md:text-sm",
  // Aparência — usa tokens do design system
- "bg-input text-foreground",
+ "bg-background text-foreground",
  // Comportamento
  "transition-colors",
  "placeholder:text-muted-foreground",
@@ -25,7 +25,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
  // Desabilitado
  "disabled:cursor-not-allowed disabled:opacity-50",
  // File input
- "file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-foreground",
+ "file:border-0 file:bg-transparent file:text-sm file:font-semibold file:text-foreground",
  // Estado de erro — sobrescreve border e ring
  hasError && "border-destructive focus-visible:ring-destructive",
  className,

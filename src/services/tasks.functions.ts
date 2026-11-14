@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -591,10 +592,10 @@ export const listTaskColumns = createServerFn({ method: "GET" })
 
  if (!columns || columns.length === 0) {
  return [
- { id: "col-todo", store_id: data.store_id, column_key: "todo", name: "A Fazer", color: "#64748b", sort_order: 0, limit_wip: 0, is_done_column: false },
- { id: "col-in_progress", store_id: data.store_id, column_key: "in_progress", name: "Em Andamento", color: "#3b82f6", sort_order: 1, limit_wip: 0, is_done_column: false },
- { id: "col-review", store_id: data.store_id, column_key: "review", name: "Revisão / Bloqueado", color: "#f59e0b", sort_order: 2, limit_wip: 0, is_done_column: false },
- { id: "col-done", store_id: data.store_id, column_key: "done", name: "Concluído", color: "#10b981", sort_order: 3, limit_wip: 0, is_done_column: true },
+ { id: "col-todo", store_id: data.store_id, column_key: "todo", name: "A Fazer", color: TOKEN_HEX.neutral500, sort_order: 0, limit_wip: 0, is_done_column: false },
+ { id: "col-in_progress", store_id: data.store_id, column_key: "in_progress", name: "Em Andamento", color: TOKEN_HEX.blue500, sort_order: 1, limit_wip: 0, is_done_column: false },
+ { id: "col-review", store_id: data.store_id, column_key: "review", name: "Revisão / Bloqueado", color: TOKEN_HEX.amber500, sort_order: 2, limit_wip: 0, is_done_column: false },
+ { id: "col-done", store_id: data.store_id, column_key: "done", name: "Concluído", color: TOKEN_HEX.green500, sort_order: 3, limit_wip: 0, is_done_column: true },
  ];
  }
  return columns;
@@ -608,7 +609,7 @@ export const saveTaskColumns = createServerFn({ method: "POST" })
  z.object({
  name: z.string().min(1),
  column_key: z.string().min(1),
- color: z.string().default("#6366f1"),
+ color: z.string().default(TOKEN_HEX.blue600),
  sort_order: z.number().default(0),
  limit_wip: z.number().default(0),
  is_done_column: z.boolean().default(false),

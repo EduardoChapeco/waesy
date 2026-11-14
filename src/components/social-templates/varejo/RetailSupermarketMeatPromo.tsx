@@ -20,7 +20,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-[#E62429] text-foreground overflow-hidden font-sans select-none flex flex-col justify-between p-10 ${className}`}
+      className={`relative bg-red-600 text-foreground overflow-hidden font-sans select-none flex flex-col justify-between p-10 ${className}`}
     >
       {/* ── 1. Topo: Identidade da Loja e Título OFERTAS ── */}
       <div className="flex items-center justify-between pt-6 px-4">
@@ -34,14 +34,14 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
         </div>
 
         <div className="text-right">
-          <span className="text-7xl sm:text-8xl font-black uppercase tracking-tighter text-foreground drop-shadow-[0_6px_0_#000000]">
+          <span className="text-7xl sm:text-8xl font-black uppercase tracking-tighter text-foreground waesy-poster-text-shadow">
             {data.promoBadge || "OFERTAS"}
           </span>
         </div>
       </div>
 
       {/* ── 2. Centro: Polígono Amarelo Chanfrado (Estilo Encarte de Carnes El Zonda) ── */}
-      <div className="relative my-4 flex-1 flex flex-col items-center justify-between bg-[#FEE101] text-slate-950 rounded-3xl border-8 border-slate-950 p-8  overflow-hidden">
+      <div className="relative my-4 flex-1 flex flex-col items-center justify-between bg-warning text-slate-950 rounded-3xl border-8 border-slate-950 p-8  overflow-hidden">
         {/* Título Principal no Topo do Card Amarelo */}
         <div className="w-full text-center pb-4 border-b-4 border-slate-950">
           <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight text-slate-950 leading-tight">
@@ -83,7 +83,7 @@ export function RetailSupermarketMeatPromo({ data, scale = 1, className = "" }: 
                 >
                   <polygon points="50,2 62,14 78,8 84,24 99,25 97,42 108,50 97,58 99,75 84,76 78,92 62,86 50,98 38,86 22,92 16,76 1,75 3,58 -8,50 3,42 1,25 16,24 22,8 38,14" />
                 </svg>
-                <div className="relative z-10 text-center text-[#E62429]">
+                <div className="relative z-10 text-center text-red-600">
                   <span className="text-2xl font-black block leading-none">R$</span>
                   <span className="text-6xl font-black tracking-tighter block leading-none font-mono">
                     {Math.floor(data.priceCents / 100)}

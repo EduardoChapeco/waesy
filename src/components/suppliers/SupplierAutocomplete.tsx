@@ -75,7 +75,7 @@ export function SupplierAutocomplete({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const { data: results, isFetching } = useQuery({
+  const { data: results, isFetching, isLoading, isError } = useQuery({
     enabled: isOpen && debouncedSearch.length >= 2,
     queryKey: ["supplier_search", agencyId, debouncedSearch, filterKind],
     queryFn: async () => {
@@ -157,7 +157,19 @@ export function SupplierAutocomplete({
             </div>
           )}
 
-          {debouncedSearch.length >= 2 && !isFetching && results?.length === 0 && (
+          {debouncedSearch.length >= 2 && isLoading && (
+            <div className="px-4 py-3 text-xs text-muted-foreground">
+              Buscando fornecedores...
+            </div>
+          )}
+
+          {debouncedSearch.length >= 2 && isError && (
+            <div className="px-4 py-3 text-xs text-destructive">
+              Erro ao buscar fornecedores.
+            </div>
+          )}
+
+          {debouncedSearch.length >= 2 && !isFetching && !isError && results?.length === 0 && (
             <div className="px-4 py-3 text-xs text-muted-foreground">
               Nenhum fornecedor encontrado para "{debouncedSearch}"
             </div>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatMoney } from '@/lib/money';
+import { formatDateOnlyBr } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
 export interface LeadCardProps {
@@ -99,13 +100,13 @@ export function LeadCard({
     };
   }, [lead.pax_adults, lead.pax_children, lead.pax_infants]);
 
-  // Travel dates formatting
+  // Travel dates formatting (civil date-only, sem shift -1 dia em UTC-3)
   const travelPeriod = useMemo(() => {
     if (lead.interest_period) return lead.interest_period;
     if (!lead.travel_start) return null;
-    const start = new Date(lead.travel_start).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    const start = formatDateOnlyBr(lead.travel_start, { shortMonth: true });
     if (!lead.travel_end) return start;
-    const end = new Date(lead.travel_end).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    const end = formatDateOnlyBr(lead.travel_end, { shortMonth: true });
     return `${start} a ${end}`;
   }, [lead.interest_period, lead.travel_start, lead.travel_end]);
 
@@ -196,6 +197,12 @@ export function LeadCard({
     <div
       role="button"
       tabIndex={0}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/waesy-kanban-id', String(lead.id));
+        e.dataTransfer.setData('text/plain', String(lead.id));
+        e.dataTransfer.effectAllowed = 'move';
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -203,7 +210,7 @@ export function LeadCard({
         }
       }}
       onClick={() => onOpenDetails?.(lead)}
-      className="p-4 rounded-2xl bg-card transition-colors duration-150 space-y-3 text-xs group cursor-pointer relative select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="p-4 rounded-2xl bg-card transition-colors duration-150 space-y-3 text-xs group cursor-grab active:cursor-grabbing relative select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {/* Topo do Card: Nome em Destaque + WhatsApp 1-Clique + Menu Contextual */}
       <div className="flex items-start justify-between gap-2">
@@ -226,7 +233,7 @@ export function LeadCard({
               target="_blank"
               rel="noreferrer"
               /* design-lint-ignore DL-14 reason:"Gatilho compacto em card denso de Kanban; card inteiro ja possui area tatil ampla" expiry:"2027-12-31" */
-              className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-transparent hover:border-border/70 flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Iniciar conversa no WhatsApp"
             >
               <MessageSquare className="size-3.5" />
@@ -237,9 +244,9 @@ export function LeadCard({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
+                size="iconSm"
                 /* design-lint-ignore DL-14 reason:"Menu contextual secundario dentro de card denso de Kanban" expiry:"2027-12-31" */
-                className="size-7 rounded-lg text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-transparent hover:border-border/70 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <MoreVertical className="size-3.5" />
               </Button>
@@ -247,7 +254,7 @@ export function LeadCard({
             <DropdownMenuContent align="end" className="text-xs w-52 p-2 rounded-xl">
               <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onOpenDetails?.(lead)} className="cursor-pointer font-medium">
                 <Edit3 className="size-3.5 mr-2" />
-                Abrir Ficha 360°
+                Abrir Perfil do Cliente
               </DropdownMenuItem>
               {onGenerateProposal && (
                 <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */ onClick={() => onGenerateProposal(lead)} className="cursor-pointer font-medium text-primary">
@@ -376,34 +383,34 @@ export function LeadCard({
           </span>
         </div>
 
-        {/* Avatar do Responsável + Botões de Avanço Rápido 44px */}
-        <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-          <Avatar className="size-6 rounded-full border border-border/60" title={assignedMember?.full_name || assignedMember?.name || lead.full_name}>
-            <AvatarFallback className="text-3xs font-bold bg-muted text-foreground">
+        {/* Avatar do Responsável + Botões de Avanço Rápido Squircle Simétricos */}
+        <div /* design-lint-ignore DL-15 reason:"Conteiner nao interativo; onClick apenas isola propagacao de evento" expiry:"2027-12-31" */ className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <Avatar className="size-7 rounded-lg border border-border/60" title={assignedMember?.full_name || assignedMember?.name || lead.full_name}>
+            <AvatarFallback className="text-3xs font-bold rounded-lg bg-muted text-foreground">
               {assignedInitials}
             </AvatarFallback>
           </Avatar>
 
           {prevStageId && (
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
+              size="iconSm"
               onClick={() => onStageChange?.(lead.id, prevStageId)}
-              className="h-11 min-h-11 w-9 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border-border/60 text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               title="Voltar etapa"
             >
-              <ChevronLeft className="size-4" />
+              <ChevronLeft className="size-3.5" />
             </Button>
           )}
           {nextStageId && (
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
+              size="iconSm"
               onClick={() => onStageChange?.(lead.id, nextStageId)}
-              className="h-11 min-h-11 w-9 rounded-lg text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border-primary/25 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
               title="Avançar etapa"
             >
-              <ChevronRight className="size-4" />
+              <ChevronRight className="size-3.5" />
             </Button>
           )}
         </div>

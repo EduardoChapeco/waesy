@@ -50,8 +50,8 @@ export default function LoyaltyDashboardPage() {
  const [targetStamps, setTargetStamps] = useState(10);
  const [welcomeStamps, setWelcomeStamps] = useState(0);
  const [rewardDesc, setRewardDesc] = useState("");
- const [cardBgColor, setCardBgColor] = useState("#18181B");
- const [cardTextColor, setCardTextColor] = useState("#FFFFFF");
+ const [cardBgColor, setCardBgColor] = useState("var(--color-zinc-900)");
+ const [cardTextColor, setCardTextColor] = useState("var(--color-neutral-50)");
  const [stampIcon, setStampIcon] = useState("star");
  const [proximityAlerts, setProximityAlerts] = useState(false);
 
@@ -93,8 +93,8 @@ export default function LoyaltyDashboardPage() {
  setTargetStamps(program.target_stamps || 10);
  setWelcomeStamps(program.welcome_stamps || 0);
  setRewardDesc(program.reward_description || "");
- setCardBgColor(program.card_bg_color || "#18181B");
- setCardTextColor(program.card_text_color || "#FFFFFF");
+ setCardBgColor(program.card_bg_color || "var(--color-zinc-900)");
+ setCardTextColor(program.card_text_color || "var(--color-neutral-50)");
  setStampIcon(program.stamp_icon || "star");
  setProximityAlerts(program.proximity_alerts_enabled || false);
  }
@@ -401,8 +401,8 @@ export default function LoyaltyDashboardPage() {
  <div className="w-full max-w-full max-w-85 bg-card rounded-lg border-4 border-foreground/10 p-4 shadow-xs space-y-4">
  {/* Cartão de Fidelidade Digital (Wallet Pass) */}
  <div
- style={{ backgroundColor: cardBgColor, color: cardTextColor }}
- className="rounded-lg p-5 shadow-xs flex flex-col justify-between min-h-90 relative overflow-hidden transition-colors duration-200 duration-300"
+ style={{ "--dyn-bg": cardBgColor, "--dyn-fg": cardTextColor } as React.CSSProperties}
+ className="rounded-lg p-5 shadow-xs flex flex-col justify-between min-h-90 relative overflow-hidden transition-colors duration-200 duration-300 waesy-dyn-bg waesy-dyn-fg"
  >
  {/* Topo do Cartão */}
  <div className="flex items-start justify-between">

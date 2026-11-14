@@ -117,7 +117,7 @@ function PublicTravelContractSignaturePage() {
  {contract.contract_title}
  </span>
  {isAlreadySigned ? (
- <Badge className="bg-emerald-600 text-foreground text-2xs font-bold">
+ <Badge className="bg-success text-success-foreground text-2xs font-bold">
   Assinado Eletronicamente
  </Badge>
  ) : (
@@ -240,14 +240,14 @@ function PublicTravelContractSignaturePage() {
  </div>
 
  {/* Resumo Financeiro & Condições de Pagamento */}
- <div className="space-y-2 p-4 rounded-lg bg-slate-900 text-foreground text-xs">
- <span className="text-2xs font-mono uppercase tracking-wider text-slate-400 block">
+ <div className="space-y-2 p-4 rounded-lg bg-foreground text-background text-xs">
+ <span className="text-2xs font-mono uppercase tracking-wider text-background/70 block">
  3. PREÇO e CONDIÇÕES DE PAGAMENTO
  </span>
  <div className="text-2xl font-black font-mono">
  {formatMoney(contract.total_value_cents)}
  </div>
- <p className="text-slate-300 text-2xs leading-relaxed">
+ <p className="text-background/85 text-2xs leading-relaxed">
  {contract.payment_conditions}
  </p>
  </div>

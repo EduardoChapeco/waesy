@@ -1,19 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
+function toDateInputValue(raw?: string | null): string {
+  if (!raw) return "";
+  const trimmed = String(raw).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.slice(0, 10);
+  const brMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+  return "";
+}
+
+function parseReaisToCents(raw: string): number | null {
+  const cleaned = raw.replace(/[^\d.,]/g, "").replace(",", ".");
+  if (!cleaned) return 0;
+  const valFloat = Number.parseFloat(cleaned);
+  if (!Number.isFinite(valFloat) || valFloat < 0) return null;
+  return Math.round(valFloat * 100);
+}
 import { useQuery } from "@tanstack/react-query";
 import type {
   TravelProposalDTO,
   FlightSegmentDTO,
+  HotelDTO,
   HotelOptionDTO,
   ItineraryDayDTO,
   ProposalRoomItem,
   ProposalCanvasFormat,
+  TourOptionDTO,
+  TransferDTO,
+  TravelProposalOptionDTO,
 } from "@/services/travel-proposal.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
-import { listCustomers } from "@/services/crm.functions";
+import { CustomerSearchCombobox } from "@/components/crm/CustomerSearchCombobox";
 import { listGroupTours } from "@/services/group-tours.functions";
 import { CANONICAL_DESTINATIONS } from "@/lib/destinations-catalog";
-import { FAMOUS_HOTEL_PRESETS, type HotelPreset } from "@/lib/hotel-presets";
+import { PassHubLiveQuoterPanel } from "@/components/tourism/quotes/passhub-live-quoter-panel";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -22,15 +44,23 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Users, LayoutTemplate, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette, Type, Eye, EyeOff, RotateCcw } from "lucide-react";
-import { formatDynamicFieldLabel, normalizeCustomFieldMap } from "@/lib/niches/unified-field-bridge";
+import { Plus, Minus, Trash, Copy, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble, Car, Users, LayoutTemplate, LayoutGrid, Check, X, Bus, Moon, Briefcase, Monitor, FileText, Tag, Palette, Type, Eye, EyeOff, RotateCcw, Sparkles, Image as ImageIcon, Layers, Search } from "lucide-react";
+import { formatDynamicFieldLabel } from "@/lib/niches/unified-field-bridge";
+import {
+  isEditableCustomFieldInProposalStudio,
+  sanitizeProposalCustomFields,
+} from "@/lib/tourism/proposal-custom-fields";
 import {
   CANVAS_BG_PRESETS,
   BRAND_COLOR_PRESETS,
   FONT_PRESET_OPTIONS,
+  PROPOSAL_NICHE_CATALOG,
   PROPOSAL_SECTION_CATALOG,
   TEMPLATE_DEFAULT_PALETTES,
+  normalizeProposalNicheId,
   resolveProposalCanvasTheme,
+  resolveProposalNicheCopy,
+  type ProposalNicheId,
   type ProposalSectionKey,
   type ProposalTemplateCanonicalId,
 } from "@/lib/tourism/proposal-theme-palettes";
@@ -45,6 +75,23 @@ const STUDIO_RESERVED_FIELD_KEYS = new Set([
   "agent_name",
   "agent_whatsapp",
   "agency_name",
+  "agency_logo_url",
+  "logo_shape",
+  "logo_size",
+  "logo_position",
+  "logo_object_position",
+  "logo_scale",
+  "cover_object_position",
+  "cover_scale",
+  "cover_aspect_mode",
+  "proposal_niche",
+  "show_price_per_person",
+  "show_price_per_adult",
+  "show_price_per_room",
+  "custom_price_per_person_cents",
+  "destination_gallery_urls",
+  "gateway_logistics",
+  ...Object.values(PROPOSAL_NICHE_CATALOG).flatMap((n) => n.specFields.map((s) => s.key)),
 ]);
 
 function buildColorSwatchStyle(hexColor: string): React.CSSProperties {
@@ -54,6 +101,7 @@ function buildColorSwatchStyle(hexColor: string): React.CSSProperties {
 }
 
 const TEMPLATE_CATALOG = [
+  { id: "bento-grid", label: "Bento Grid Visual", desc: "Mosaico modular 100% preenchido, multi-nicho e visual", icon: LayoutGrid },
   { id: "editorial-flat", label: "Clean Apple", desc: "Design minimalista, foco em tipografia e fotos amplas", icon: LayoutTemplate },
   { id: "dark-premium", label: "Dark Luxo", desc: "Capa cinematográfica escura, acabamento sofisticado", icon: Moon },
   { id: "executivo-b2b", label: "Executivo B2B", desc: "Tabela corporativa limpa, direto ao ponto", icon: Briefcase },
@@ -97,26 +145,16 @@ interface StudioSidebarEditorProps {
 }
 
 export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorProps) {
- const { data: hotelsBank = [] } = useQuery({
- queryKey: ["hotels-bank-studio"],
- queryFn: () => listHotelsBank().catch(() => []),
- });
+  const { data: hotelsBank = [], isLoading: isLoadingHotelsBank } = useQuery({
+    queryKey: ["hotels-bank-studio"],
+    queryFn: () => listHotelsBank().catch(() => []),
+  });
 
- // Estado local para input de preço em Reais amigável
- const { data: customersRes, isLoading: isLoadingCrm } = useQuery({
-   queryKey: ["crm-customers-studio"],
-   queryFn: () => listCustomers({ data: {} }).catch(() => ({ customers: [] })),
- });
- const crmCustomers: any[] = Array.isArray((customersRes as any)?.customers)
-   ? (customersRes as any).customers
-   : Array.isArray(customersRes)
-     ? (customersRes as any)
-     : [];
-
- const { data: groupTours = [] } = useQuery({
-   queryKey: ["group-tours-studio"],
-   queryFn: () => listGroupTours({ data: {} }).catch(() => []),
- });
+  // Estado local para input de preço em Reais amigável
+  const { data: groupTours = [], isLoading: isLoadingGroupTours } = useQuery({
+    queryKey: ["group-tours-studio"],
+    queryFn: () => listGroupTours({ data: {} }).catch(() => []),
+  });
 
  const [newIncludeText, setNewIncludeText] = useState("");
  const [newExcludeText, setNewExcludeText] = useState("");
@@ -138,13 +176,45 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  });
  const [newCustomFieldKey, setNewCustomFieldKey] = useState<string>("");
  const [newCustomFieldVal, setNewCustomFieldVal] = useState<string>("");
+ const [activeTab, setActiveTab] = useState<string>("design");
+ const [passHubTabOpen, setPassHubTabOpen] = useState<"voos" | "hotel" | "servicos" | "opcoes" | null>(null);
+ const [newOptionName, setNewOptionName] = useState<string>("");
 
-  const studioCustomFields = normalizeCustomFieldMap({
-    ...(proposal.custom_fields && typeof proposal.custom_fields === "object" ? proposal.custom_fields : {}),
-    ...((proposal.pricing as any)?.custom_fields && typeof (proposal.pricing as any).custom_fields === "object"
-      ? (proposal.pricing as any).custom_fields
-      : {}),
-  } as Record<string, unknown>) as Record<string, string>;
+ useEffect(() => {
+   const expectedBase = proposal.pricing?.base_price_cents || proposal.pricing?.total_price_cents || 0;
+   const expectedTax = proposal.pricing?.boarding_tax_cents || 0;
+   const expectedDiscount = proposal.pricing?.discount_cents || 0;
+   const expectedTotal = proposal.pricing?.total_price_cents || 0;
+
+   setBasePriceReais((prev) =>
+     parseReaisToCents(prev) === expectedBase ? prev : expectedBase > 0 ? (expectedBase / 100).toFixed(2) : "",
+   );
+   setBoardingTaxReais((prev) =>
+     parseReaisToCents(prev) === expectedTax ? prev : expectedTax > 0 ? (expectedTax / 100).toFixed(2) : "",
+   );
+   setDiscountReais((prev) =>
+     parseReaisToCents(prev) === expectedDiscount ? prev : expectedDiscount > 0 ? (expectedDiscount / 100).toFixed(2) : "",
+   );
+   setPriceInputReais((prev) =>
+     parseReaisToCents(prev) === expectedTotal ? prev : expectedTotal > 0 ? (expectedTotal / 100).toFixed(2) : "",
+   );
+ }, [
+   proposal.id,
+   proposal.pricing?.base_price_cents,
+   proposal.pricing?.boarding_tax_cents,
+   proposal.pricing?.discount_cents,
+   proposal.pricing?.total_price_cents,
+ ]);
+
+  const studioCustomFields = sanitizeProposalCustomFields(
+    {
+      ...(proposal.custom_fields && typeof proposal.custom_fields === "object" ? proposal.custom_fields : {}),
+      ...((proposal.pricing as any)?.custom_fields && typeof (proposal.pricing as any).custom_fields === "object"
+        ? (proposal.pricing as any).custom_fields
+        : {}),
+    } as Record<string, unknown>,
+    { allowDocumentForStaffStorage: true },
+  ) as Record<string, string>;
 
   const updateStudioCustomField = (key: string, value: string | null) => {
     const cleanKey = key.trim();
@@ -170,6 +240,38 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
     brandColorProp: (proposal as any).brand_color,
   });
 
+  const currentNicheId: ProposalNicheId = normalizeProposalNicheId(studioCustomFields.proposal_niche);
+  const nicheCopy = resolveProposalNicheCopy(currentNicheId);
+
+  const destinationGalleryUrls: string[] = (() => {
+    const raw = studioCustomFields.destination_gallery_urls;
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
+    } catch {
+      // CSV or newline fallback
+    }
+    return String(raw)
+      .split(/[\n,|]+/)
+      .map((u) => u.trim())
+      .filter((u) => u.startsWith("http") || u.startsWith("/") || u.startsWith("data:"));
+  })();
+
+  const handleAddDestinationGalleryPhoto = (url: string) => {
+    if (!url.trim()) return;
+    const next = Array.from(new Set([...destinationGalleryUrls, url.trim()]));
+    updateStudioCustomField("destination_gallery_urls", JSON.stringify(next));
+  };
+
+  const handleRemoveDestinationGalleryPhoto = (idx: number) => {
+    const next = destinationGalleryUrls.filter((_, i) => i !== idx);
+    updateStudioCustomField(
+      "destination_gallery_urls",
+      next.length > 0 ? JSON.stringify(next) : null,
+    );
+  };
+
   const defaultTemplatePalette =
     TEMPLATE_DEFAULT_PALETTES[(proposal.template_theme || "editorial-flat") as ProposalTemplateCanonicalId] ||
     TEMPLATE_DEFAULT_PALETTES["editorial-flat"];
@@ -187,7 +289,20 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
   const applyValidityDaysOffset = (days: number) => {
     const targetDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    onChange({ valid_until: targetDate.toLocaleDateString("pt-BR") });
+    onChange({ valid_until: targetDate.toISOString().slice(0, 10) });
+  };
+
+  const updatePrimaryRodoviarioTransfer = (patch: Record<string, any>) => {
+    const existingList = Array.isArray(proposal.transfers) ? proposal.transfers : [];
+    const current = existingList[0] || {
+      id: "bus-main",
+      type: "Ônibus Leito DD",
+      route: "",
+      date: "",
+      included: true,
+    };
+    const next = [{ ...current, ...patch }, ...existingList.slice(1)];
+    onChange({ transfers: next });
   };
 
  const handlePriceChange = (valStr: string) => {
@@ -294,6 +409,44 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  onChange({ rooms: newRooms });
  };
 
+ const handleUpdateRoomPriceReais = (roomId: string, rawReais: string) => {
+   const cents = parseReaisToCents(rawReais);
+   const newRooms = currentRooms.map((r) => {
+     if (r.id !== roomId) return r;
+     const pax = Math.max(1, (r.adults || 1) + (r.children || 0));
+     return {
+       ...r,
+       price_cents: cents && cents > 0 ? cents : undefined,
+       price_per_person_cents: cents && cents > 0 ? Math.round(cents / pax) : undefined,
+     };
+   });
+   onChange({ rooms: newRooms });
+ };
+
+ const handleAutoDistributeRoomPrices = () => {
+   const totalCents = proposal.pricing?.total_price_cents || 0;
+   if (totalCents <= 0) {
+     toast.error("Defina primeiro o Valor Total da Proposta para ratear entre os quartos.");
+     return;
+   }
+   const totalWeight = currentRooms.reduce(
+     (acc, r) => acc + Math.max(1, r.adults || 1) + Math.max(0, r.children || 0) * 0.5,
+     0,
+   );
+   const newRooms = currentRooms.map((r) => {
+     const weight = Math.max(1, r.adults || 1) + Math.max(0, r.children || 0) * 0.5;
+     const roomCents = Math.round((totalCents * weight) / Math.max(1, totalWeight));
+     const pax = Math.max(1, (r.adults || 1) + (r.children || 0));
+     return {
+       ...r,
+       price_cents: roomCents,
+       price_per_person_cents: Math.round(roomCents / pax),
+     };
+   });
+   onChange({ rooms: newRooms });
+   toast.success("Valores por quarto calculados proporcionalmente aos hóspedes!");
+ };
+
  const handleImportHotelFromBank = (hotelId: string) => {
  const hotel = (hotelsBank || []).find((h: any) => h.id === hotelId);
  if (!hotel) return;
@@ -320,25 +473,6 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  }
  onChange(patch);
  toast.success(`Hotel ${hotel.name} importado com sucesso do Banco de Hotéis!`);
- };
-
- const handleImportPresetHotel = (preset: HotelPreset) => {
- const newHotel: HotelOptionDTO = {
- id: "ht_" + Math.random().toString(36).substring(2, 7),
- hotel_name: preset.name,
- stars: preset.stars || 5,
- room_type: "Apartamento Luxo / Bangalô",
- board_basis: (preset.regime_options?.[0] as any) || "all_inclusive",
- checkin_date: proposal.travel_start_date || "",
- checkout_date: proposal.travel_end_date || "",
- nights_count: 5,
- amenities: preset.badges || ["Piscina", "Wi-Fi", "Pé na Areia"],
- };
-
- onChange({
- hotels: [...proposal.hotels, newHotel],
- cover_image_url: proposal.cover_image_url || preset.cover_photo_url || "",
- });
  };
 
  // Helpers de Voos
@@ -415,10 +549,53 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    if (field === "hotel_name") next.name = val;
    if (field === "checkin_date") next.checkin = val;
    if (field === "checkout_date") next.checkout = val;
-   if (field === "image_url") next.images = val ? [val] : [];
+   if (field === "image_url") {
+     const existingImgs = Array.isArray(h.images) ? h.images.filter(Boolean) : [];
+     next.images = val ? Array.from(new Set([val, ...existingImgs])) : existingImgs;
+   }
    return next;
  }),
  });
+ };
+
+ const handleAddHotelPhoto = (id: string | undefined, url: string) => {
+   if (!id || !url.trim()) return;
+   onChange({
+     hotels: proposal.hotels.map((h) => {
+       if (h.id !== id) return h;
+       const existing = Array.isArray(h.images)
+         ? h.images.filter(Boolean)
+         : h.image_url
+           ? [h.image_url]
+           : [];
+       const nextImages = Array.from(new Set([...existing, url.trim()]));
+       return {
+         ...h,
+         image_url: nextImages[0] || "",
+         images: nextImages,
+       };
+     }),
+   });
+ };
+
+ const handleRemoveHotelPhoto = (id: string | undefined, imgIdx: number) => {
+   if (!id) return;
+   onChange({
+     hotels: proposal.hotels.map((h) => {
+       if (h.id !== id) return h;
+       const existing = Array.isArray(h.images)
+         ? h.images.filter(Boolean)
+         : h.image_url
+           ? [h.image_url]
+           : [];
+       const nextImages = existing.filter((_, idx) => idx !== imgIdx);
+       return {
+         ...h,
+         image_url: nextImages[0] || "",
+         images: nextImages,
+       };
+     }),
+   });
  };
 
  // Helpers de Roteiro
@@ -445,7 +622,60 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  });
  };
 
+ const handleAddItineraryPhoto = (id: string | undefined, url: string) => {
+   if (!id || !url.trim()) return;
+   onChange({
+     itinerary: proposal.itinerary.map((it) => {
+       if (it.id !== id) return it;
+       const existing = Array.isArray(it.images)
+         ? it.images.filter(Boolean)
+         : it.image_url
+           ? [it.image_url]
+           : [];
+       const nextImages = Array.from(new Set([...existing, url.trim()]));
+       return {
+         ...it,
+         image_url: nextImages[0] || "",
+         images: nextImages,
+       };
+     }),
+   });
+ };
+
+ const handleRemoveItineraryPhoto = (id: string | undefined, imgIdx: number) => {
+   if (!id) return;
+   onChange({
+     itinerary: proposal.itinerary.map((it) => {
+       if (it.id !== id) return it;
+       const existing = Array.isArray(it.images)
+         ? it.images.filter(Boolean)
+         : it.image_url
+           ? [it.image_url]
+           : [];
+       const nextImages = existing.filter((_, idx) => idx !== imgIdx);
+       return {
+         ...it,
+         image_url: nextImages[0] || "",
+         images: nextImages,
+       };
+     }),
+   });
+ };
+
  const handleGenerateItineraryFromDestination = () => {
+ if (currentTours.length > 0) {
+ const fromTours: ItineraryDayDTO[] = currentTours.map((t: any, idx: number) => ({
+ id: "day_" + Math.random().toString(36).substring(2, 7),
+ day_number: idx + 1,
+ date: t.date || undefined,
+ title: t.title || `Dia ${idx + 1}`,
+ description: t.description || t.notes || "",
+ }));
+ onChange({ itinerary: fromTours });
+ toast.success(`Roteiro preenchido a partir de ${fromTours.length} passeio(s) selecionados.`);
+ return;
+ }
+
  const matched = CANONICAL_DESTINATIONS.find((d) =>
  proposal.destination_city.toLowerCase().includes(d.city.toLowerCase()) ||
  d.name.toLowerCase().includes(proposal.destination_city.toLowerCase())
@@ -456,18 +686,12 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  id: "day_" + Math.random().toString(36).substring(2, 7),
  day_number: idx + 1,
  title: `Dia ${idx + 1} • ${h}`,
- description: `Passeio imperdível em ${matched.name}. Roteiro planejado para aproveitar as melhores atrações de ${h} com tranquilidade e conforto.`,
+ description: `${h} — ${matched.name}`,
  }));
  onChange({ itinerary: generated });
+ toast.success(`Roteiro sugerido carregado para ${matched.name}.`);
  } else {
- // Fallback inteligente
- const defaultDays: ItineraryDayDTO[] = [
- { id: "day_1", day_number: 1, title: "Dia 1 • Chegada e Check-in", description: "Recepção no aeroporto, transfer privativo para a hospedagem e descanso para aproveitar o resort." },
- { id: "day_2", day_number: 2, title: "Dia 2 • Tour de Reconhecimento e Praias", description: "Passeio pelas principais praias da região com parada para almoço em restaurante típico." },
- { id: "day_3", day_number: 3, title: "Dia 3 • Dia Livre e Experiências", description: "Aproveite a estrutura de lazer, piscinas e gastronomia ou faça passeios opcionais de barco/buggy." },
- { id: "day_4", day_number: 4, title: "Dia 4 • Check-out e Retorno", description: "Manhã livre para últimas fotos e compras locais, seguido de transfer de retorno ao aeroporto." },
- ];
- onChange({ itinerary: defaultDays });
+ toast.info("Nenhum passeio ou roteiro pré-cadastrado encontrado para este destino. Importe atividades reais na busca PassHub ou adicione os dias manualmente.");
  }
  };
 
@@ -520,8 +744,115 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    onChange({ tours: next });
  };
 
+ const handleAddTourPhoto = (idx: number, url: string) => {
+   if (!url.trim()) return;
+   const tour = currentTours[idx];
+   if (!tour) return;
+   const existing = Array.isArray(tour.images)
+     ? tour.images.filter(Boolean)
+     : tour.image_url
+       ? [tour.image_url]
+       : [];
+   const nextImages = Array.from(new Set([...existing, url.trim()]));
+   handleUpdateTour(idx, {
+     image_url: nextImages[0] || "",
+     images: nextImages,
+   });
+ };
+
+ const handleRemoveTourPhoto = (idx: number, imgIdx: number) => {
+   const tour = currentTours[idx];
+   if (!tour) return;
+   const existing = Array.isArray(tour.images)
+     ? tour.images.filter(Boolean)
+     : tour.image_url
+       ? [tour.image_url]
+       : [];
+   const nextImages = existing.filter((_: string, i: number) => i !== imgIdx);
+   handleUpdateTour(idx, {
+     image_url: nextImages[0] || "",
+     images: nextImages,
+   });
+ };
+
+ const handleDuplicateFlight = (id?: string) => {
+   if (!id) return;
+   const idx = proposal.flights.findIndex((f) => f.id === id);
+   if (idx < 0) return;
+   const src = proposal.flights[idx];
+   const clone: FlightSegmentDTO = {
+     ...src,
+     id: "fl_" + Math.random().toString(36).substring(2, 8),
+   };
+   const next = [...proposal.flights];
+   next.splice(idx + 1, 0, clone);
+   onChange({ flights: next });
+   toast.success("Trecho de voo duplicado.");
+ };
+
+ const handleDuplicateHotel = (id?: string) => {
+   if (!id) return;
+   const idx = proposal.hotels.findIndex((h) => h.id === id);
+   if (idx < 0) return;
+   const src = proposal.hotels[idx];
+   const clone: HotelOptionDTO = {
+     ...src,
+     id: "ht_" + Math.random().toString(36).substring(2, 8),
+     hotel_name: src.hotel_name ? `${src.hotel_name} (Cópia)` : "Nova Opção",
+     images: Array.isArray(src.images) ? [...src.images] : undefined,
+     amenities: Array.isArray(src.amenities) ? [...src.amenities] : undefined,
+   };
+   const next = [...proposal.hotels];
+   next.splice(idx + 1, 0, clone);
+   onChange({ hotels: next });
+   toast.success("Hospedagem/bloco duplicado.");
+ };
+
+ const handleDuplicateItineraryDay = (id?: string) => {
+   if (!id) return;
+   const idx = proposal.itinerary.findIndex((d) => d.id === id);
+   if (idx < 0) return;
+   const src = proposal.itinerary[idx];
+   const clone: ItineraryDayDTO = {
+     ...src,
+     id: "day_" + Math.random().toString(36).substring(2, 8),
+     day_number: proposal.itinerary.length + 1,
+     title: src.title ? `${src.title} (Cópia)` : `Dia ${proposal.itinerary.length + 1}`,
+     images: Array.isArray(src.images) ? [...src.images] : undefined,
+     included_meals: Array.isArray(src.included_meals) ? [...src.included_meals] : undefined,
+   };
+   const next = [...proposal.itinerary];
+   next.splice(idx + 1, 0, clone);
+   onChange({ itinerary: next });
+   toast.success("Etapa do roteiro duplicada.");
+ };
+
+ const handleDuplicateTransfer = (idx: number) => {
+   const src = currentTransfers[idx];
+   if (!src) return;
+   const clone = { ...src, id: `tr_${Date.now()}` };
+   const next = [...currentTransfers];
+   next.splice(idx + 1, 0, clone);
+   onChange({ transfers: next as any });
+   toast.success("Traslado/item duplicado.");
+ };
+
  const handleRemoveTour = (idx: number) => {
    onChange({ tours: currentTours.filter((_, i) => i !== idx) });
+ };
+
+ const handleDuplicateTour = (idx: number) => {
+   const src: any = currentTours[idx];
+   if (!src) return;
+   const clone = {
+     ...src,
+     id: `tour_${Date.now()}`,
+     title: src.title ? `${src.title} (Cópia)` : "Passeio (Cópia)",
+   };
+   const next = [...currentTours];
+   next.splice(idx + 1, 0, clone);
+   onChange({ tours: next });
+   toast.success("Passeio/serviço duplicado.");
  };
 
  const handleImportGroupTour = (groupId: string) => {
@@ -619,22 +950,96 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  </div>
 
- <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
- <Tabs defaultValue="design" className="space-y-4">
- <TabsList className="grid grid-cols-2 sm:grid-cols-3 gap-1 w-full h-auto p-1 rounded-lg bg-muted/50 text-xs">
-          <TabsTrigger value="design" className="h-9 text-xs px-2 rounded-md font-bold">Modelos</TabsTrigger>
-          <TabsTrigger value="dados" className="h-9 text-xs px-2 rounded-md font-bold">Geral</TabsTrigger>
-          <TabsTrigger value="voos" className="h-9 text-xs px-2 rounded-md font-bold">Voos</TabsTrigger>
-          <TabsTrigger value="hotel" className="h-9 text-xs px-2 rounded-md font-bold">Hotel</TabsTrigger>
-          <TabsTrigger value="rodoviario" className="h-9 text-xs px-2 rounded-md font-bold">Rodoviário</TabsTrigger>
-          <TabsTrigger value="roteiro" className="h-9 text-xs px-2 rounded-md font-bold">Roteiro</TabsTrigger>
-          <TabsTrigger value="servicos" className="h-9 text-xs px-2 rounded-md font-bold">Serviços</TabsTrigger>
-          <TabsTrigger value="inclusoes" className="h-9 text-xs px-2 rounded-md font-bold">Inclusões</TabsTrigger>
-          <TabsTrigger value="preco" className="h-9 text-xs px-2 rounded-md font-bold">Preço</TabsTrigger>
-        </TabsList>
+ <Tabs
+   value={activeTab}
+   onValueChange={setActiveTab}
+   className="flex-1 flex flex-col sm:flex-row overflow-hidden"
+ >
+   <TabsList
+     aria-label="Seções do Editor de Proposta"
+     className="waesy-tab-strip flex flex-row sm:flex-col w-full sm:w-20 shrink-0 h-auto justify-start overflow-x-auto sm:overflow-y-auto no-scrollbar gap-1 p-2 sm:py-3 rounded-none border-b sm:border-b-0 sm:border-r border-border/60 bg-muted/30"
+   >
+     {[
+       { id: "design", label: "Design", icon: LayoutTemplate },
+       { id: "dados", label: "Geral", icon: FileText },
+       ...(nicheCopy.showAviationAndHotelTerms ? [{ id: "voos", label: "Voos", icon: Plane }] : []),
+       {
+         id: "hotel",
+         label:
+           nicheCopy.shortLabel === "Turismo"
+             ? "Hotel"
+             : currentNicheId === "real_estate"
+               ? "Imóvel"
+               : currentNicheId === "automotive"
+                 ? "Veículo"
+                 : currentNicheId === "projects"
+                   ? "Escopo"
+                   : "Itens",
+         icon: Building2,
+       },
+       ...(nicheCopy.showAviationAndHotelTerms ? [{ id: "rodoviario", label: "Rodov.", icon: Bus }] : []),
+       { id: "roteiro", label: nicheCopy.showAviationAndHotelTerms ? "Roteiro" : "Etapas", icon: Calendar },
+       { id: "servicos", label: nicheCopy.showAviationAndHotelTerms ? "Serviços" : "Extras", icon: Compass },
+       { id: "inclusoes", label: "Inclusões", icon: CheckCircle },
+       { id: "opcoes", label: "Opções", icon: Layers },
+       { id: "preco", label: "Preço", icon: DollarSign },
+     ].map((item) => {
+       const NavIcon = item.icon;
+       return (
+         <TabsTrigger
+           key={item.id}
+           value={item.id}
+           className="min-h-11 min-w-14 sm:w-full flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-lg text-2xs font-bold leading-tight shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+         >
+           <NavIcon className="size-4 shrink-0" />
+           <span className="truncate max-w-full">{item.label}</span>
+         </TabsTrigger>
+       );
+     })}
+   </TabsList>
 
-        {/* ── ABA 0: MODELOS & DESIGN DO CANVAS ── */}
-        <TabsContent value="design" className="space-y-4">
+   <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
+        {/* ── ABA 0: MODELOS, NICHO & DESIGN DO CANVAS ── */}
+        <TabsContent value="design" className="space-y-4 mt-0">
+          {/* ── SELETOR DE NICHO / SEGMENTO COMERCIAL ── */}
+          <div className="p-3 rounded-xl border border-border/70 bg-muted/20 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                <Sparkles className="size-4 text-primary" />
+                <span>Segmento / Nicho da Proposta</span>
+              </Label>
+              <span className="text-2xs font-mono text-primary font-semibold uppercase">
+                {nicheCopy.shortLabel}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {Object.values(PROPOSAL_NICHE_CATALOG).map((niche) => {
+                const isActive = currentNicheId === niche.id;
+                return (
+                  <button
+                    key={niche.id}
+                    type="button"
+                    onClick={() => {
+                      updateStudioCustomField("proposal_niche", niche.id);
+                      if (!niche.showAviationAndHotelTerms && (activeTab === "voos" || activeTab === "rodoviario")) {
+                        setActiveTab("dados");
+                      }
+                    }}
+                    className={cn(
+                      "min-h-11 sm:min-h-9 px-2 py-2 rounded-lg border text-left text-2xs font-semibold transition-colors cursor-pointer flex items-center justify-between gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isActive
+                        ? "border-primary bg-primary/10 text-primary ring-1 ring-primary"
+                        : "border-border/60 bg-card text-foreground hover:bg-muted/40"
+                    )}
+                  >
+                    <span className="truncate">{niche.shortLabel}</span>
+                    {isActive && <Check className="size-3 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-2">
@@ -683,6 +1088,200 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* ── IDENTIDADE VISUAL, LOGO DA AGÊNCIA/EMPRESA & RECORTE ── */}
+          <div className="p-3 rounded-xl border border-border/70 bg-muted/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                <ImageIcon className="size-4 text-primary" />
+                <span>Logo da Empresa & Recorte Visual</span>
+              </Label>
+              <span className="text-2xs text-muted-foreground">Recorte, tamanho e posição</span>
+            </div>
+
+            <ImageUpload
+              value={String(studioCustomFields.agency_logo_url || proposal.agency_logo_url || "")}
+              onChange={(url) => {
+                updateStudioCustomField("agency_logo_url", url);
+                onChange({ agency_logo_url: url });
+              }}
+              onRemove={() => {
+                updateStudioCustomField("agency_logo_url", null);
+                onChange({ agency_logo_url: "" });
+              }}
+              aspectPreset="free"
+              bucket="cms-media"
+              label="Logo da Agência / Empresa"
+              helperText="Use 'Editar / Recortar' para ajustar proporção, fundo e zoom da logo"
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Formato</Label>
+                <select
+                  value={activeCanvasTheme.logoConfig.shape}
+                  onChange={(e) => updateStudioCustomField("logo_shape", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="contain">Original</option>
+                  <option value="wide">Horizontal</option>
+                  <option value="square">Quadrado 1:1</option>
+                  <option value="circle">Circular</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Tamanho</Label>
+                <select
+                  value={activeCanvasTheme.logoConfig.size}
+                  onChange={(e) => updateStudioCustomField("logo_size", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="sm">Pequeno (SM)</option>
+                  <option value="md">Médio (MD)</option>
+                  <option value="lg">Grande (LG)</option>
+                  <option value="xl">Destaque (XL)</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Posição</Label>
+                <select
+                  value={activeCanvasTheme.logoConfig.position}
+                  onChange={(e) => updateStudioCustomField("logo_position", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="left">Esquerda</option>
+                  <option value="center">Centralizada</option>
+                  <option value="right">Direita</option>
+                  <option value="badge">Medalhão / Selo</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Foco da Logo</Label>
+                <select
+                  value={activeCanvasTheme.logoConfig.objectPosition}
+                  onChange={(e) => updateStudioCustomField("logo_object_position", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="center center">Centro</option>
+                  <option value="center top">Topo</option>
+                  <option value="center bottom">Base</option>
+                  <option value="left center">Esquerda</option>
+                  <option value="right center">Direita</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Zoom da Logo</Label>
+                <select
+                  value={String(activeCanvasTheme.logoConfig.scale)}
+                  onChange={(e) => updateStudioCustomField("logo_scale", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="0.8">80% (Recuada)</option>
+                  <option value="1">100% (Original)</option>
+                  <option value="1.15">115% (Amplificada)</option>
+                  <option value="1.3">130% (Preencher)</option>
+                  <option value="1.5">150% (Close)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* ── ENQUADRAMENTO DA CAPA POR TEMPLATE & GALERIA VISUAL ── */}
+          <div className="p-3 rounded-xl border border-border/70 bg-muted/20 space-y-3">
+            <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+              <ImageIcon className="size-4 text-primary" />
+              <span>Foto de Capa & Enquadramento por Modelo</span>
+            </Label>
+
+            <ImageUpload
+              value={proposal.cover_image_url || ""}
+              onChange={(url) => onChange({ cover_image_url: url })}
+              onRemove={() => onChange({ cover_image_url: "" })}
+              aspectPreset="free"
+              bucket="cms-media"
+              helperText="Troque ou recorte a imagem de capa para se ajustar ao template ativo"
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Ponto Focal</Label>
+                <select
+                  value={activeCanvasTheme.coverCrop.objectPosition}
+                  onChange={(e) => updateStudioCustomField("cover_object_position", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="center center">Centro</option>
+                  <option value="center top">Topo</option>
+                  <option value="center bottom">Base</option>
+                  <option value="left center">Esquerda</option>
+                  <option value="right center">Direita</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Zoom da Capa</Label>
+                <select
+                  value={String(activeCanvasTheme.coverCrop.scale)}
+                  onChange={(e) => updateStudioCustomField("cover_scale", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="1">100% (Padrão)</option>
+                  <option value="1.08">108% (Suave)</option>
+                  <option value="1.15">115% (Médio)</option>
+                  <option value="1.25">125% (Close-up)</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-2xs text-muted-foreground">Preenchimento</Label>
+                <select
+                  value={activeCanvasTheme.coverCrop.fit}
+                  onChange={(e) => updateStudioCustomField("cover_aspect_mode", e.target.value)}
+                  className="w-full h-8 rounded-lg border border-border bg-background px-2 text-2xs font-semibold"
+                >
+                  <option value="cover">Preencher 100%</option>
+                  <option value="contain">Ajustar Inteira</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Galeria Visual do Destino / Imóvel / Projeto */}
+            <div className="pt-2 border-t border-border/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-2xs font-bold text-foreground">
+                  Galeria de Fotos do {currentNicheId === "tourism" ? "Destino / Cidade" : nicheCopy.label} ({destinationGalleryUrls.length})
+                </span>
+              </div>
+              <ImageUpload
+                value=""
+                onChange={(url) => handleAddDestinationGalleryPhoto(url)}
+                aspectPreset="widescreen"
+                bucket="cms-media"
+                label="Adicionar Foto na Galeria Mosaico"
+              />
+              {destinationGalleryUrls.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                  {destinationGalleryUrls.map((imgUrl, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group h-16 rounded-lg overflow-hidden border border-border"
+                    >
+                      <img src={imgUrl} alt={`Galeria ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDestinationGalleryPhoto(idx)}
+                        className="absolute top-1 right-1 min-h-11 min-w-11 sm:min-h-6 sm:min-w-6 rounded-full bg-background/90 text-destructive flex items-center justify-center shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title="Remover foto"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -933,26 +1532,27 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
           </div>
         </TabsContent>
 
-        <TabsContent value="dados" className="space-y-3">
+        <TabsContent value="dados" className="space-y-3 mt-0">
  <div className="space-y-1">
  <Label className="text-2xs font-bold">Título da Proposta *</Label>
  <Input
  value={proposal.title}
  onChange={(e) => onChange({ title: e.target.value })}
- placeholder="Ex: Férias em Porto de Galinhas"
+ placeholder="Ex: Férias em Porto de Galinhas / Apresentação Executiva"
  className="h-9 text-xs rounded-lg"
  />
  </div>
 
  <div className="space-y-1">
- <Label className="text-2xs font-bold">Destino Principal *</Label>
+ <Label className="text-2xs font-bold">{nicheCopy.destinationLabel} *</Label>
  <Input
  value={proposal.destination_city}
  onChange={(e) => onChange({ destination_city: e.target.value })}
- placeholder="Ex: Porto de Galinhas, PE"
+ placeholder={nicheCopy.destinationPlaceholder}
  className="h-9 text-xs rounded-lg"
  />
  {/* Chips Rápidos de Destinos Canônicos */}
+ {currentNicheId === "tourism" && (
  <div className="flex flex-wrap gap-1 pt-1">
  {CANONICAL_DESTINATIONS.slice(0, 5).map((d) => (
  <button
@@ -965,15 +1565,44 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </button>
  ))}
  </div>
+ )}
+ </div>
+
+ {/* ── FICHA TÉCNICA MULTI-NICHO DINÂMICA ── */}
+ <div className="p-3 rounded-xl border border-primary/25 bg-primary/5 space-y-3">
+   <div className="flex items-center justify-between">
+     <span className="text-xs font-bold text-foreground flex items-center gap-2">
+       <Sparkles className="size-3.5 text-primary" />
+       <span>{nicheCopy.specsSectionTitle}</span>
+     </span>
+     <span className="text-2xs font-semibold px-2 py-1 rounded-full bg-background border border-border text-primary">
+       {nicheCopy.label}
+     </span>
+   </div>
+   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+     {nicheCopy.specFields.map((spec) => (
+       <div key={spec.key} className="space-y-1">
+         <Label className="text-2xs font-semibold text-muted-foreground">
+           {spec.label} {spec.unit ? `(${spec.unit})` : ""}
+         </Label>
+         <Input
+           value={String(studioCustomFields[spec.key] || "")}
+           onChange={(e) => updateStudioCustomField(spec.key, e.target.value)}
+           placeholder={spec.placeholder}
+           className="h-8 text-xs rounded-lg bg-background"
+         />
+       </div>
+     ))}
+   </div>
  </div>
 
  <div className="grid grid-cols-2 gap-2">
  <div className="space-y-1">
- <Label className="text-2xs font-bold">Nome do Passageiro *</Label>
+ <Label className="text-2xs font-bold">{currentNicheId === "tourism" ? "Nome do Passageiro *" : "Nome do Cliente *"}</Label>
  <Input
  value={proposal.client_name}
  onChange={(e) => onChange({ client_name: e.target.value })}
- placeholder="Nome do passageiro"
+ placeholder={currentNicheId === "tourism" ? "Nome do passageiro" : "Nome ou Razão Social"}
  className="h-9 text-xs rounded-lg"
  />
  </div>
@@ -990,7 +1619,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <div className="grid grid-cols-2 gap-2">
  <div className="space-y-1">
- <Label className="text-2xs font-bold">Data de Ida</Label>
+ <Label className="text-2xs font-bold">{nicheCopy.startDateLabel}</Label>
  <Input
  type="date"
  value={proposal.travel_start_date || ""}
@@ -999,7 +1628,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  />
  </div>
  <div className="space-y-1">
- <Label className="text-2xs font-bold">Data de Retorno</Label>
+ <Label className="text-2xs font-bold">{nicheCopy.endDateLabel}</Label>
  <Input
  type="date"
  value={proposal.travel_end_date || ""}
@@ -1011,14 +1640,26 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  {/* ── Distribuição de Quartos & Passageiros (Rooming List) ── */}
  <div className="p-4 rounded-lg border border-border/70 bg-card space-y-3">
- <div className="flex items-center justify-between">
+ <div className="flex items-center justify-between gap-2 flex-wrap">
  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
  <BedDouble className="size-3.5 text-primary" />
- <span>Quartos e Hóspedes</span>
+ <span>{nicheCopy.roomsTitle}</span>
  </div>
+ <div className="flex items-center gap-2">
  <span className="text-2xs text-muted-foreground font-medium">
- {currentRooms.length} {currentRooms.length === 1 ? "quarto" : "quartos"} • {totalAdults} adt{totalChildren > 0 ? `, ${totalChildren} chd` : ""}
+ {currentRooms.length} {currentRooms.length === 1 ? "bloco" : "blocos"} • {totalAdults} adt{totalChildren > 0 ? `, ${totalChildren} chd` : ""}
  </span>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={handleAutoDistributeRoomPrices}
+ className="min-h-11 sm:min-h-0 h-11 sm:h-7 px-3 text-2xs rounded-md font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ title="Ratear o valor total da proposta automaticamente entre os quartos/unidades"
+ >
+ Rateio automático
+ </Button>
+ </div>
  </div>
 
  <div className="space-y-3">
@@ -1027,13 +1668,16 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  key={room.id}
  className="p-3 rounded-lg border border-border/50 bg-muted/20 space-y-2"
  >
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-2">
- <span className="text-2xs font-bold text-foreground">Quarto {room.roomNumber}</span>
+ <div className="flex items-center justify-between gap-2">
+ <div className="flex items-center gap-2 flex-1 min-w-0">
+ <span className="text-2xs font-bold text-foreground shrink-0">
+ {nicheCopy.showAviationAndHotelTerms ? `Quarto ${room.roomNumber}` : `Bloco ${room.roomNumber}`}
+ </span>
+ {nicheCopy.showAviationAndHotelTerms ? (
  <select
  value={room.roomType || "Casal"}
  onChange={(e) => handleUpdateRoomType(room.id, e.target.value)}
- className="h-6 rounded border border-border/60 bg-background px-2 text-2xs text-muted-foreground"
+ className="min-h-11 sm:min-h-0 h-11 sm:h-7 rounded border border-border/60 bg-background px-2 text-2xs text-muted-foreground"
  >
  <option value="Casal">Casal</option>
  <option value="Duplo Solteiro">2 Solteiro</option>
@@ -1041,6 +1685,14 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <option value="Triplo Solteiro">3 Solteiro</option>
  <option value="Família (Suíte)">Família</option>
  </select>
+ ) : (
+ <Input
+ value={room.roomType || ""}
+ onChange={(e) => handleUpdateRoomType(room.id, e.target.value)}
+ placeholder="Ex: Lote / Fase / Item"
+ className="min-h-11 sm:min-h-0 h-11 sm:h-7 text-2xs rounded bg-background flex-1"
+ />
+ )}
  </div>
 
  {currentRooms.length > 1 && (
@@ -1111,6 +1763,30 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  </div>
 
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center pt-1">
+ <div className="space-y-1">
+ <Label className="text-3xs font-mono uppercase text-muted-foreground">
+ {nicheCopy.showAviationAndHotelTerms ? "Valor deste Quarto (R$)" : "Valor deste Bloco (R$)"}
+ </Label>
+ <Input
+ type="text"
+ placeholder="Automático ou valor em R$"
+ value={
+ typeof room.price_cents === "number" && room.price_cents > 0
+ ? (room.price_cents / 100).toFixed(2).replace(".", ",")
+ : ""
+ }
+ onChange={(e) => handleUpdateRoomPriceReais(room.id, e.target.value)}
+ className="min-h-11 sm:min-h-0 h-11 sm:h-8 text-xs font-mono rounded-lg bg-background"
+ />
+ </div>
+ {typeof room.price_per_person_cents === "number" && room.price_per_person_cents > 0 && (
+ <div className="text-2xs text-muted-foreground font-mono pt-3">
+ Por pessoa: <strong className="text-foreground">{formatMoney(room.price_per_person_cents)}</strong>
+ </div>
+ )}
+ </div>
+
  {room.children > 0 && (
  <div className="pt-2 border-t border-border/30 space-y-1">
  <span className="text-3xs font-semibold text-muted-foreground">Idade das crianças:</span>
@@ -1173,41 +1849,43 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    className="h-11 text-xs rounded-lg mb-2"
  />
 
- {(isLoadingCrm || crmCustomers.length > 0) && (
-   <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2 mb-2">
-     <Label className="text-xs font-bold text-primary flex items-center gap-2">
-       <Users className="size-3.5" />
-       <span>Importar Cliente do CRM da Agência</span>
-     </Label>
-     {isLoadingCrm ? (
-       <div className="h-9 rounded-lg bg-muted/40 animate-pulse motion-reduce:transition-none" />
-     ) : (
-       <select
-         defaultValue=""
-         onChange={(e) => {
-           const cust = crmCustomers.find((c: any) => c.id === e.target.value);
-           if (cust) {
-             onChange({
-               client_name: cust.full_name || cust.name || proposal.client_name,
-               client_whatsapp: cust.phone || cust.whatsapp || proposal.client_whatsapp,
-               client_email: cust.email || proposal.client_email,
-             });
-             toast.success(`Dados de ${cust.full_name || cust.name} vinculados à proposta!`);
-           }
-           e.target.value = "";
-         }}
-         className="w-full h-11 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
-       >
-         <option value="" disabled>Buscar cliente cadastrado no CRM...</option>
-         {crmCustomers.slice(0, 50).map((c: any) => (
-           <option key={c.id} value={c.id}>
-             {c.full_name || c.name} {c.phone ? `(${c.phone})` : ""}
-           </option>
-         ))}
-       </select>
-     )}
-   </div>
- )}
+ <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2 mb-2">
+   <Label className="text-xs font-bold text-primary flex items-center gap-2">
+     <Users className="size-3.5" />
+     <span>Importar Cliente do CRM da Agência</span>
+   </Label>
+   <CustomerSearchCombobox
+     value={proposal.customer_id || ""}
+     selectedLabel={
+       proposal.customer_id
+         ? proposal.selected_customer_label || proposal.client_name || proposal.customer_name || undefined
+         : undefined
+     }
+     placeholder="Buscar cliente cadastrado no CRM..."
+     searchPlaceholder="Digite nome, telefone ou CPF..."
+     onSelectCustomer={(cust) => {
+       if (cust) {
+         onChange({
+           customer_id: cust.id,
+           selected_customer_label: cust.full_name || cust.legal_name || cust.name || null,
+           client_name:
+             cust.full_name || cust.legal_name || cust.name || proposal.client_name,
+           client_whatsapp:
+             cust.phone || cust.mobile || cust.whatsapp || proposal.client_whatsapp,
+           client_email: cust.email || proposal.client_email,
+           client_document:
+             cust.document ||
+             cust.document_number ||
+             cust.cpf ||
+             proposal.client_document,
+         });
+         toast.success(`Dados de ${cust.full_name || cust.name} vinculados à proposta!`);
+         return;
+       }
+       onChange({ customer_id: null, selected_customer_label: null });
+     }}
+   />
+ </div>
 
  <div className="space-y-1 mb-2">
    <Label className="text-xs font-bold">E-mail do Passageiro</Label>
@@ -1216,7 +1894,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      value={proposal.client_email || ""}
      onChange={(e) => onChange({ client_email: e.target.value })}
      placeholder="cliente@email.com"
-     className="h-11 text-xs rounded-lg"
+     className="h-11 min-h-11 text-base md:text-xs rounded-lg"
    />
  </div>
 
@@ -1229,32 +1907,64 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      <div className="space-y-1">
        <Label className="text-2xs font-semibold text-muted-foreground">Nome da Agência</Label>
        <Input
-         value={String(studioCustomFields.agency_name || proposal.agency_name || "")}
+         value={String(studioCustomFields.agency_name ?? proposal.agency_name ?? "")}
          onChange={(e) => {
-           updateStudioCustomField("agency_name", e.target.value);
-           onChange({ agency_name: e.target.value });
+           const val = e.target.value;
+           const next = { ...studioCustomFields };
+           if (!val.trim()) delete next.agency_name;
+           else next.agency_name = val.trim();
+           onChange({
+             agency_name: val,
+             custom_fields: next,
+             pricing: { ...proposal.pricing, custom_fields: next } as any,
+           });
          }}
          placeholder="Ex: Excelência Tour"
-         className="h-9 text-xs rounded-lg bg-background"
+         className="h-11 min-h-11 sm:h-10 text-base md:text-xs rounded-lg bg-background"
        />
      </div>
-     <div className="grid grid-cols-2 gap-2">
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
        <div className="space-y-1">
          <Label className="text-2xs font-semibold text-muted-foreground">Consultor Responsável</Label>
          <Input
-           value={String(studioCustomFields.agent_name || (proposal as any).agent_name || "")}
-           onChange={(e) => updateStudioCustomField("agent_name", e.target.value)}
+           value={String(studioCustomFields.agent_name ?? proposal.agent_name ?? "")}
+           onChange={(e) => {
+             const val = e.target.value;
+             const next = { ...studioCustomFields };
+             if (!val.trim()) delete next.agent_name;
+             else next.agent_name = val.trim();
+             onChange({
+               agent_name: val,
+               custom_fields: next,
+               pricing: { ...proposal.pricing, custom_fields: next } as any,
+             });
+           }}
            placeholder="Ex: Consultor Especialista"
-           className="h-9 text-xs rounded-lg bg-background"
+           className="h-11 min-h-11 sm:h-10 text-base md:text-xs rounded-lg bg-background"
          />
        </div>
        <div className="space-y-1">
          <Label className="text-2xs font-semibold text-muted-foreground">WhatsApp da Agência</Label>
          <Input
-           value={String(studioCustomFields.agent_whatsapp || (proposal as any).agent_whatsapp || "")}
-           onChange={(e) => updateStudioCustomField("agent_whatsapp", e.target.value)}
+           value={String(
+             studioCustomFields.agent_whatsapp ??
+               proposal.agent_whatsapp ??
+               proposal.agency_whatsapp ??
+               "",
+           )}
+           onChange={(e) => {
+             const val = e.target.value;
+             const next = { ...studioCustomFields };
+             if (!val.trim()) delete next.agent_whatsapp;
+             else next.agent_whatsapp = val.trim();
+             onChange({
+               agent_whatsapp: val,
+               custom_fields: next,
+               pricing: { ...proposal.pricing, custom_fields: next } as any,
+             });
+           }}
            placeholder="(49) 99999-9999"
-           className="h-9 text-xs rounded-lg bg-background"
+           className="h-11 min-h-11 sm:h-10 text-base md:text-xs rounded-lg bg-background"
          />
        </div>
      </div>
@@ -1270,7 +1980,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
            key={days}
            type="button"
            onClick={() => applyValidityDaysOffset(days)}
-           className="px-2 py-1 rounded bg-muted hover:bg-primary/10 text-2xs font-mono font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+           className="min-h-11 sm:min-h-8 px-3 sm:px-2 py-1 rounded bg-muted hover:bg-primary/10 text-2xs font-mono font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
          >
            +{days}d
          </button>
@@ -1278,10 +1988,10 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      </div>
    </div>
    <Input
-     value={proposal.valid_until || ""}
-     onChange={(e) => onChange({ valid_until: e.target.value })}
-     placeholder="Ex: Até 24h ou 15/10/2026"
-     className="h-9 text-xs rounded-lg"
+     type="date"
+     value={toDateInputValue(proposal.valid_until)}
+     onChange={(e) => onChange({ valid_until: e.target.value || undefined })}
+     className="h-11 min-h-11 sm:h-10 text-base md:text-xs rounded-lg"
    />
  </div>
  </div>
@@ -1289,8 +1999,18 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  {/* ── ABA 2: VOOS & MALHA AÉREA ── */}
  <TabsContent value="voos" className="space-y-3">
- <div className="flex items-center justify-between">
+ <div className="flex flex-wrap items-center justify-between gap-2">
  <span className="text-2xs font-bold text-foreground">Trechos de Voo</span>
+ <div className="flex items-center gap-2">
+ <Button
+ type="button"
+ size="sm"
+ variant={passHubTabOpen === "voos" ? "default" : "outline"}
+ onClick={() => setPassHubTabOpen((prev) => (prev === "voos" ? null : "voos"))}
+ className="h-11 sm:h-8 text-xs rounded-lg gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Search className="size-3.5" /> Cotar PassHub
+ </Button>
  <Button
  type="button"
  size="sm"
@@ -1301,20 +2021,58 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <Plus className="size-3.5" /> Adicionar Trecho
  </Button>
  </div>
+ </div>
+
+ {passHubTabOpen === "voos" && (
+ <PassHubLiveQuoterPanel
+ compact
+ defaultCategories={["flights", "packages"]}
+ initialOriginIata={proposal.flights[0]?.origin_iata || ""}
+ initialDestinationIata={proposal.flights[0]?.destination_iata || ""}
+ initialDestinationCity={proposal.destination_city || ""}
+ initialDepartureDate={proposal.travel_start_date || ""}
+ initialReturnDate={proposal.travel_end_date || ""}
+ onAddFlight={(flight) => {
+ onChange({ flights: [...proposal.flights, flight] });
+ toast.success(`Voo ${flight.airline_name || flight.airline} importado para a proposta!`);
+ }}
+ onImportPackage={(pkg) => {
+ if (pkg.includedItems?.length) {
+ onChange({ includes: Array.from(new Set([...(proposal.includes || []), ...pkg.includedItems])) });
+ }
+ toast.success(`Pacote "${pkg.packageName}" consultado via PassHub!`);
+ }}
+ />
+ )}
 
  {proposal.flights.map((f, idx) => (
  <div key={f.id} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
- <div className="flex items-center justify-between text-xs font-bold">
+ <div className="flex items-center justify-between gap-2 text-xs font-bold">
  <span>Trecho #{idx + 1} ({f.type === "outbound" ? "Ida" : "Volta"})</span>
+ <div className="flex items-center gap-1 shrink-0">
  <Button
  type="button"
  variant="ghost"
  size="sm"
+ title="Duplicar trecho"
+ aria-label="Duplicar trecho"
+ onClick={() => handleDuplicateFlight(f.id)}
+ className="h-7 size-7 p-0 text-muted-foreground hover:text-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Copy className="size-3.5" />
+ </Button>
+ <Button
+ type="button"
+ variant="ghost"
+ size="sm"
+ title="Remover trecho"
+ aria-label="Remover trecho"
  onClick={() => handleRemoveFlight(f.id)}
- className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash className="size-3.5" />
  </Button>
+ </div>
  </div>
 
  <div className="grid grid-cols-2 gap-2">
@@ -1397,23 +2155,37 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  ))}
  </TabsContent>
 
- {/* ── ABA 3: HOTELARIA & HOSPEDAGENS ── */}
+ {/* ── ABA 3: HOTELARIA / UNIDADE / FICHA ── */}
  <TabsContent value="hotel" className="space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-2xs font-bold text-foreground">Hotéis e Pousadas</span>
+ <span className="text-2xs font-bold text-foreground">{nicheCopy.hotelsTitle}</span>
+ <div className="flex items-center gap-2">
+ <Button
+ type="button"
+ size="sm"
+ variant={passHubTabOpen === "hotel" ? "default" : "outline"}
+ onClick={() => setPassHubTabOpen((prev) => (prev === "hotel" ? null : "hotel"))}
+ className="h-11 sm:h-8 text-xs rounded-lg gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Search className="size-3.5" /> Cotar PassHub
+ </Button>
  <Button
  type="button"
  size="sm"
  variant="outline"
  onClick={handleAddHotel}
- className="h-8 text-xs rounded-lg gap-1 min-h-11 sm:min-h-0"
+ className="h-11 sm:h-8 text-xs rounded-lg gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
- <Plus className="size-3.5" /> Adicionar Manual
+ <Plus className="size-3.5" /> Adicionar {nicheCopy.showAviationAndHotelTerms ? "Manual" : "Item"}
  </Button>
+ </div>
  </div>
 
  {/* Importar do Banco de Hotéis */}
- {hotelsBank && hotelsBank.length > 0 && (
+ {nicheCopy.showAviationAndHotelTerms && isLoadingHotelsBank && (
+ <Skeleton className="h-20 w-full rounded-lg" />
+ )}
+ {nicheCopy.showAviationAndHotelTerms && !isLoadingHotelsBank && hotelsBank && hotelsBank.length > 0 && (
  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
  <div className="flex items-center gap-2 text-primary text-2xs font-bold">
  <Building2 className="size-3.5" />
@@ -1427,7 +2199,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  }
  }}
  defaultValue=""
- className="w-full h-8 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
+ className="w-full h-11 sm:h-8 text-xs rounded-lg bg-background border border-border px-2 text-foreground"
  >
  <option value="" disabled>Escolha um hotel/resort cadastrado...</option>
  {hotelsBank.map((hb: any) => (
@@ -1439,25 +2211,55 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  )}
 
- {/* Presets de Resorts Famosos (1-Toque) */}
- <div className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-2">
- <span className="text-2xs font-bold text-foreground flex items-center gap-1">
- <Zap className="size-3 text-warning-strong" />
- <span>Presets de Resorts Famosos:</span>
- </span>
- <div className="flex flex-wrap gap-1">
- {FAMOUS_HOTEL_PRESETS.slice(0, 4).map((p) => (
- <button
- key={p.id}
- type="button"
- onClick={() => handleImportPresetHotel(p)}
- className="px-2 py-1 rounded-md bg-background border border-border/60 hover:border-primary/50 text-2xs font-semibold text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- >
- {p.name.split(" ")[0]}
- </button>
- ))}
- </div>
- </div>
+ {/* Buscador PassHub para Hotéis & Pacotes Reais */}
+ {passHubTabOpen === "hotel" && (
+ <PassHubLiveQuoterPanel
+ compact
+ defaultCategories={["hotels", "packages"]}
+ initialDestinationCity={proposal.destination_city || ""}
+ initialDepartureDate={proposal.travel_start_date || ""}
+ initialReturnDate={proposal.travel_end_date || ""}
+ onAddHotel={(hotel: HotelDTO) => {
+ const hotelOption: HotelOptionDTO = {
+ id: hotel.id || `ht_${Date.now()}`,
+ hotel_name: hotel.hotel_name || "Hotel",
+ stars: hotel.stars,
+ room_type: hotel.room_type,
+ board_basis: hotel.board_basis,
+ checkin_date: hotel.checkin_date || proposal.travel_start_date || "",
+ checkout_date: hotel.checkout_date || proposal.travel_end_date || "",
+ nights_count: hotel.nights_count,
+ image_url: hotel.image_url,
+ amenities: hotel.amenities,
+ };
+ onChange({
+ hotels: [...proposal.hotels, hotelOption],
+ cover_image_url: proposal.cover_image_url || hotel.image_url || "",
+ });
+ toast.success(`Hotel ${hotelOption.hotel_name} importado do PassHub!`);
+ }}
+ onImportPackage={(pkg) => {
+ if (pkg.hotelName) {
+ onChange({
+ hotels: [
+ ...proposal.hotels,
+ {
+ id: `ht_${Date.now()}`,
+ hotel_name: pkg.hotelName,
+ checkin_date: pkg.departureDate || proposal.travel_start_date || "",
+ checkout_date: pkg.returnDate || proposal.travel_end_date || "",
+ nights_count: pkg.nights || 1,
+ board_basis: pkg.boardType || undefined,
+ image_url: pkg.imageUrl || undefined,
+ },
+ ],
+ includes: Array.from(new Set([...(proposal.includes || []), ...(pkg.includedItems || [])])),
+ });
+ }
+ toast.success(`Pacote "${pkg.packageName}" importado!`);
+ }}
+ />
+ )}
 
  {proposal.hotels.map((h) => {
  const matchedBankHotel = hotelsBank.find((hb: any) =>
@@ -1467,37 +2269,53 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  return (
  <div key={h.id} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
- <div className="flex items-center justify-between text-xs font-bold">
- <span>{h.hotel_name || "Novo Hotel"}</span>
+ <div className="flex items-center justify-between gap-2 text-xs font-bold">
+ <span className="truncate">{h.hotel_name || `Novo ${nicheCopy.hotelBadgeLabel}`}</span>
+ <div className="flex items-center gap-1 shrink-0">
  <Button
  type="button"
  variant="ghost"
  size="sm"
+ title="Duplicar item"
+ aria-label="Duplicar item"
+ onClick={() => handleDuplicateHotel(h.id)}
+ className="h-7 size-7 p-0 text-muted-foreground hover:text-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Copy className="size-3.5" />
+ </Button>
+ <Button
+ type="button"
+ variant="ghost"
+ size="sm"
+ title="Remover item"
+ aria-label="Remover item"
  onClick={() => handleRemoveHotel(h.id)}
- className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash className="size-3.5" />
  </Button>
  </div>
+ </div>
 
  <Input
- placeholder="Nome do Hotel / Resort"
+ placeholder={nicheCopy.hotelNamePlaceholder}
  value={h.hotel_name}
  onChange={(e) => handleHotelChange(h.id, "hotel_name", e.target.value)}
  className="h-8 text-xs rounded-lg"
  />
 
- <div className="grid grid-cols-2 gap-2">
+ <div className={nicheCopy.showAviationAndHotelTerms ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-2"}>
  <Input
- placeholder="Quarto (Ex: Vista Mar)"
+ placeholder={nicheCopy.showAviationAndHotelTerms ? "Quarto (Ex: Vista Mar)" : "Especificação / Versão / Padrão"}
  value={h.room_type}
  onChange={(e) => handleHotelChange(h.id, "room_type", e.target.value)}
- className="h-8 text-xs rounded-lg"
+ className="h-11 sm:h-8 text-xs rounded-lg"
  />
+ {nicheCopy.showAviationAndHotelTerms && (
  <select
  value={h.board_basis}
  onChange={(e) => handleHotelChange(h.id, "board_basis", e.target.value)}
- className="h-8 text-xs rounded-lg bg-background border border-border px-2"
+ className="h-11 sm:h-8 text-xs rounded-lg bg-background border border-border px-2"
  >
  <option value="all_inclusive">All Inclusive</option>
  <option value="full_board">Pensão Completa</option>
@@ -1505,7 +2323,9 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <option value="breakfast">Café da Manhã</option>
  <option value="none">Sem Alimentação</option>
  </select>
+ )}
  </div>
+ {nicheCopy.showAviationAndHotelTerms && (
  <div className="grid grid-cols-2 gap-2">
    <div>
      <label className="text-3xs font-mono uppercase text-muted-foreground">Check-in</label>
@@ -1513,7 +2333,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
        type="date"
        value={h.checkin_date || h.check_in || ""}
        onChange={(e) => handleHotelChange(h.id, "checkin_date", e.target.value)}
-       className="h-8 text-xs rounded-lg mt-1"
+       className="h-11 sm:h-8 text-xs rounded-lg mt-1"
      />
    </div>
    <div>
@@ -1522,10 +2342,11 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
        type="date"
        value={h.checkout_date || h.check_out || ""}
        onChange={(e) => handleHotelChange(h.id, "checkout_date", e.target.value)}
-       className="h-8 text-xs rounded-lg mt-1"
+       className="h-11 sm:h-8 text-xs rounded-lg mt-1"
      />
    </div>
  </div>
+ )}
 
  {/* Seleção de Quartos Cadastrados no Banco */}
  {matchedBankHotel && matchedBankHotel.room_categories && matchedBankHotel.room_categories.length > 0 && (
@@ -1553,6 +2374,50 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  </div>
  )}
+
+ {/* Fotos do Hotel / Unidade / Produto */}
+ {(() => {
+ const hotelPhotos = Array.isArray(h.images)
+ ? h.images.filter(Boolean)
+ : h.image_url
+ ? [h.image_url]
+ : [];
+ return (
+ <div className="pt-2 border-t border-border/40 space-y-2">
+ <span className="text-2xs font-bold text-foreground flex items-center gap-1">
+ <ImageIcon className="size-3 text-primary" />
+ <span>Fotos ({hotelPhotos.length})</span>
+ </span>
+ <ImageUpload
+ value=""
+ onChange={(url) => handleAddHotelPhoto(h.id, url)}
+ aspectPreset="widescreen"
+ bucket="cms-media"
+ label="Adicionar Foto do Bloco"
+ />
+ {hotelPhotos.length > 0 && (
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+ {hotelPhotos.map((imgUrl, imgIdx) => (
+ <div key={imgIdx} className="relative h-20 rounded-lg overflow-hidden border border-border">
+ <img src={imgUrl} alt={`${h.hotel_name || "Foto"} ${imgIdx + 1}`} className="w-full h-full object-cover" />
+ <button
+ type="button"
+ aria-label="Remover foto"
+ onClick={() => handleRemoveHotelPhoto(h.id, imgIdx)}
+ className="absolute top-0 right-0 size-11 min-h-11 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+ title="Remover foto"
+ >
+ <span className="size-6 rounded-full bg-background/90 text-destructive border border-border flex items-center justify-center">
+ <X className="size-3" />
+ </span>
+ </button>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ );
+ })()}
  </div>
  );
  })}
@@ -1578,11 +2443,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                 <Label className="text-2xs font-bold">Tipo de Frota / Veículo</Label>
                 <select
                   value={proposal.transfers?.[0]?.type || "Ônibus Leito DD"}
-                  onChange={(e) => {
-                    const current = proposal.transfers?.[0] || { id: "bus-main", route: "", date: "", included: true };
-                    const next = [{ ...current, type: e.target.value }];
-                    onChange({ transfers: next });
-                  }}
+                  onChange={(e) => updatePrimaryRodoviarioTransfer({ type: e.target.value })}
                   className="w-full h-9 rounded-lg bg-background border border-border text-xs px-2"
                 >
                   <option value="Ônibus Leito DD">Ônibus Leito DD (Double Decker)</option>
@@ -1598,11 +2459,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                 <Input
                   placeholder="Ex: Expresso São Miguel / Frota Própria"
                   value={proposal.transfers?.[0]?.route || ""}
-                  onChange={(e) => {
-                    const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", date: "", included: true };
-                    const next = [{ ...current, route: e.target.value }];
-                    onChange({ transfers: next });
-                  }}
+                  onChange={(e) => updatePrimaryRodoviarioTransfer({ route: e.target.value })}
                   className="h-9 text-xs rounded-lg"
                 />
               </div>
@@ -1614,11 +2471,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                 <Input
                   placeholder="Ex: Chapecó - Posto Bertaso (20:00)"
                   value={proposal.transfers?.[0]?.pickup_time || ""}
-                  onChange={(e) => {
-                    const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", route: "", date: "", included: true };
-                    const next = [{ ...current, pickup_time: e.target.value }];
-                    onChange({ transfers: next });
-                  }}
+                  onChange={(e) => updatePrimaryRodoviarioTransfer({ pickup_time: e.target.value })}
                   className="h-9 text-xs rounded-lg"
                 />
               </div>
@@ -1628,11 +2481,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                 <Input
                   placeholder="Ex: Curitiba - Hotel Bourbon (06:00)"
                   value={proposal.transfers?.[0]?.dropoff_time || ""}
-                  onChange={(e) => {
-                    const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", route: "", date: "", included: true };
-                    const next = [{ ...current, dropoff_time: e.target.value }];
-                    onChange({ transfers: next });
-                  }}
+                  onChange={(e) => updatePrimaryRodoviarioTransfer({ dropoff_time: e.target.value })}
                   className="h-9 text-xs rounded-lg"
                 />
               </div>
@@ -1643,11 +2492,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
               <Textarea
                 placeholder="Ex: São Miguel do Oeste (18:30) • Maravilha (19:15) • Chapecó (20:00) • Xanxerê (21:00)"
                 value={proposal.transfers?.[0]?.notes || ""}
-                onChange={(e) => {
-                  const current = proposal.transfers?.[0] || { id: "bus-main", type: "Ônibus Leito DD", route: "", date: "", included: true };
-                  const next = [{ ...current, notes: e.target.value }];
-                  onChange({ transfers: next });
-                }}
+                onChange={(e) => updatePrimaryRodoviarioTransfer({ notes: e.target.value })}
                 className="text-xs rounded-lg min-h-16"
               />
             </div>
@@ -1699,23 +2544,38 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  ) : (
  proposal.itinerary.map((day, idx) => (
  <div key={day.id} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
- <div className="flex items-center justify-between text-xs font-bold">
+ <div className="flex items-center justify-between gap-2 text-xs font-bold">
  <span className="text-primary font-mono text-2xs">
- Dia {day.day_number || idx + 1}
+ {nicheCopy.itineraryStepPrefix} {day.day_number || idx + 1}
  </span>
+ <div className="flex items-center gap-1 shrink-0">
  <Button
  type="button"
  variant="ghost"
  size="sm"
+ title="Duplicar etapa"
+ aria-label="Duplicar etapa"
+ onClick={() => handleDuplicateItineraryDay(day.id)}
+ className="h-7 size-7 p-0 text-muted-foreground hover:text-primary min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
+ >
+ <Copy className="size-3.5" />
+ </Button>
+ <Button
+ type="button"
+ variant="ghost"
+ size="sm"
+ title="Remover etapa"
+ aria-label="Remover etapa"
  onClick={() => handleRemoveItineraryDay(day.id)}
- className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="h-7 size-7 p-0 text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 focus-visible:ring-2 focus-visible:ring-ring"
  >
  <Trash className="size-3.5" />
  </Button>
  </div>
+ </div>
 
  <Input
- placeholder="Título da Atividade (Ex: Tour Piscinas Naturais)"
+ placeholder={nicheCopy.itineraryTitlePlaceholder}
  value={day.title}
  onChange={(e) => handleItineraryChange(day.id, "title", e.target.value)}
  className="h-8 text-xs rounded-lg font-semibold"
@@ -1735,7 +2595,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      className="h-8 text-xs rounded-lg"
    />
    <Input
-     placeholder="Refeições (Ex: Café, Almoço)"
+     placeholder="Refeições / Inclusos (opcional)"
      value={(day.included_meals || (day as any).meals || []).join(", ")}
      onChange={(e) =>
        handleItineraryChange(
@@ -1750,6 +2610,50 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      className="h-8 text-xs rounded-lg"
    />
  </div>
+
+ {/* Fotos da Etapa do Roteiro */}
+ {(() => {
+   const dayPhotos = Array.isArray(day.images)
+     ? day.images.filter(Boolean)
+     : day.image_url
+       ? [day.image_url]
+       : [];
+   return (
+     <div className="pt-2 border-t border-border/40 space-y-2">
+       <span className="text-2xs font-bold text-foreground flex items-center gap-1">
+         <ImageIcon className="size-3 text-primary" />
+         <span>Fotos do Dia / Bloco ({dayPhotos.length})</span>
+       </span>
+       <ImageUpload
+         value=""
+         onChange={(url) => handleAddItineraryPhoto(day.id, url)}
+         aspectPreset="widescreen"
+         bucket="cms-media"
+         label="Adicionar Foto"
+       />
+       {dayPhotos.length > 0 && (
+         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+           {dayPhotos.map((imgUrl, imgIdx) => (
+             <div key={imgIdx} className="relative h-20 rounded-lg overflow-hidden border border-border">
+               <img src={imgUrl} alt={`${day.title || "Etapa"} ${imgIdx + 1}`} className="w-full h-full object-cover" />
+               <button
+                 type="button"
+                 aria-label="Remover foto"
+                 onClick={() => handleRemoveItineraryPhoto(day.id, imgIdx)}
+                 className="absolute top-0 right-0 size-11 min-h-11 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+                 title="Remover foto"
+               >
+                 <span className="size-6 rounded-full bg-background/90 text-destructive border border-border flex items-center justify-center">
+                   <X className="size-3" />
+                 </span>
+               </button>
+             </div>
+           ))}
+         </div>
+       )}
+     </div>
+   );
+ })()}
  </div>
  ))
  )}
@@ -1762,18 +2666,68 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      <div className="flex items-center justify-between">
        <span className="text-xs font-bold text-foreground flex items-center gap-2">
          <Car className="size-3.5 text-primary" />
-         <span>Traslados / Receptivo ({currentTransfers.length})</span>
+         <span>{nicheCopy.transfersTitle} ({currentTransfers.length})</span>
        </span>
-       <Button
-         type="button"
-         size="sm"
-         variant="outline"
-         onClick={handleAddTransfer}
-         className="h-11 text-xs rounded-lg gap-1"
-       >
-         <Plus className="size-3.5" /> Traslado
-       </Button>
+       <div className="flex items-center gap-2">
+         <Button
+           type="button"
+           size="sm"
+           variant={passHubTabOpen === "servicos" ? "default" : "outline"}
+           onClick={() => setPassHubTabOpen((prev) => (prev === "servicos" ? null : "servicos"))}
+           className="h-11 text-xs rounded-lg gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+         >
+           <Search className="size-3.5" /> Cotar PassHub
+         </Button>
+         <Button
+           type="button"
+           size="sm"
+           variant="outline"
+           onClick={handleAddTransfer}
+           className="h-11 text-xs rounded-lg gap-1"
+         >
+           <Plus className="size-3.5" /> Traslado
+         </Button>
+       </div>
      </div>
+
+     {passHubTabOpen === "servicos" && (
+       <PassHubLiveQuoterPanel
+         compact
+         defaultCategories={["transfers", "activities", "cars"]}
+         initialDestinationCity={proposal.destination_city || ""}
+         initialDepartureDate={proposal.travel_start_date || ""}
+         initialReturnDate={proposal.travel_end_date || ""}
+         onAddTransfer={(transfer: TransferDTO) => {
+           onChange({ transfers: [...currentTransfers, transfer] });
+           toast.success(`Transfer "${transfer.route_name || transfer.vehicle || "Executivo"}" adicionado!`);
+         }}
+         onAddTour={(tour: TourOptionDTO) => {
+           onChange({
+             tours: [...currentTours, tour],
+             ...(tour.included && tour.title && !currentIncludes.includes(tour.title)
+               ? { includes: [...currentIncludes, tour.title] }
+               : {}),
+           });
+           toast.success(`Passeio "${tour.title}" adicionado ao roteiro de experiências!`);
+         }}
+         onAddCar={(car) => {
+           onChange({
+             transfers: [
+               ...currentTransfers,
+               {
+                 id: car.id,
+                 type: "Locação de Veículo",
+                 vehicle: `${car.vehicleModelExample || car.vehicleCategory} (${car.rentalCompany})`,
+                 route: car.pickupLocation,
+                 price_cents: car.totalPriceCents,
+                 notes: `${car.vehicleCategory} · ${car.transmission}`,
+               },
+             ],
+           });
+           toast.success(`Locação "${car.vehicleModelExample || car.vehicleCategory}" adicionada!`);
+         }}
+       />
+     )}
 
      {currentTransfers.length === 0 ? (
        <div className="p-3 text-center rounded-lg bg-muted/30 border border-dashed border-border/60 text-xs text-muted-foreground">
@@ -1781,18 +2735,33 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
        </div>
      ) : (
        currentTransfers.map((tr: any, idx: number) => (
-         <div key={idx} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+         <div key={tr.id || idx} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
            <div className="flex items-center justify-between text-xs font-bold">
              <span>Traslado #{idx + 1}</span>
-             <Button
-               type="button"
-               variant="ghost"
-               size="sm"
-               onClick={() => handleRemoveTransfer(idx)}
-               className="h-11 size-11 p-0 text-destructive"
-             >
-               <Trash className="size-3.5" />
-             </Button>
+             <div className="flex items-center gap-1">
+               <Button
+                 type="button"
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => handleDuplicateTransfer(idx)}
+                 title="Duplicar traslado"
+                 aria-label="Duplicar traslado"
+                 className="h-11 size-11 p-0 text-muted-foreground hover:text-primary"
+               >
+                 <Copy className="size-3.5" />
+               </Button>
+               <Button
+                 type="button"
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => handleRemoveTransfer(idx)}
+                 title="Remover traslado"
+                 aria-label="Remover traslado"
+                 className="h-11 size-11 p-0 text-destructive"
+               >
+                 <Trash className="size-3.5" />
+               </Button>
+             </div>
            </div>
            <Input
              placeholder="Descrição (Ex: Aeroporto ↔ Resort Privativo)"
@@ -1839,26 +2808,29 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
      )}
    </div>
 
-   {/* Bloco 2: Passeios & Experiências */}
+   {/* Bloco 2: Passeios, Experiências & Adicionais */}
    <div className="space-y-2 pt-3 border-t border-border/60">
      <div className="flex items-center justify-between">
        <span className="text-xs font-bold text-foreground flex items-center gap-2">
          <Compass className="size-3.5 text-primary" />
-         <span>Passeios & Experiências ({currentTours.length})</span>
+         <span>{nicheCopy.toursTitle} ({currentTours.length})</span>
        </span>
        <Button
          type="button"
          size="sm"
          variant="outline"
          onClick={handleAddTour}
-         className="h-11 text-xs rounded-lg gap-1"
+         className="h-11 sm:h-9 text-xs rounded-lg gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
        >
-         <Plus className="size-3.5" /> Passeio
+         <Plus className="size-3.5" /> {nicheCopy.showAviationAndHotelTerms ? "Passeio" : "Item"}
        </Button>
      </div>
 
      {/* Importar de Excursões / Grupos da Agência */}
-     {Array.isArray(groupTours) && groupTours.length > 0 && (
+     {nicheCopy.showAviationAndHotelTerms && isLoadingGroupTours && (
+       <Skeleton className="h-20 w-full rounded-lg" />
+     )}
+     {nicheCopy.showAviationAndHotelTerms && !isLoadingGroupTours && Array.isArray(groupTours) && groupTours.length > 0 && (
        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
          <span className="text-xs font-bold text-primary block">
            Importar Excursão / Promoção da Agência
@@ -1885,32 +2857,57 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
      {currentTours.length === 0 ? (
        <div className="p-3 text-center rounded-lg bg-muted/30 border border-dashed border-border/60 text-xs text-muted-foreground">
-         Nenhum passeio ou ingresso cadastrado.
+         Nenhum item ou experiência cadastrada.
        </div>
      ) : (
-       currentTours.map((tour: any, idx: number) => (
+       currentTours.map((tour: any, idx: number) => {
+         const tourPhotos: string[] = Array.isArray(tour.images)
+           ? tour.images.filter(Boolean)
+           : tour.image_url
+             ? [tour.image_url]
+             : [];
+         return (
          <div key={tour.id || idx} className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
            <div className="flex items-center justify-between text-xs font-bold">
-             <span>Passeio #{idx + 1}</span>
-             <Button
-               type="button"
-               variant="ghost"
-               size="sm"
-               onClick={() => handleRemoveTour(idx)}
-               className="h-11 size-11 p-0 text-destructive"
-             >
-               <Trash className="size-3.5" />
-             </Button>
+             <span>{nicheCopy.showAviationAndHotelTerms ? "Passeio" : "Item"} #{idx + 1}</span>
+             <div className="flex items-center gap-1">
+               <Button
+                 type="button"
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => handleDuplicateTour(idx)}
+                 title="Duplicar item"
+                 aria-label="Duplicar item"
+                 className="h-11 size-11 p-0 text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+               >
+                 <Copy className="size-3.5" />
+               </Button>
+               <Button
+                 type="button"
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => handleRemoveTour(idx)}
+                 title="Remover item"
+                 aria-label="Remover item"
+                 className="h-11 size-11 p-0 text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+               >
+                 <Trash className="size-3.5" />
+               </Button>
+             </div>
            </div>
            <Input
-             placeholder="Nome do Passeio (Ex: Catamarã Maragogi + Mergulho)"
+             placeholder={
+               nicheCopy.showAviationAndHotelTerms
+                 ? "Nome do Passeio (Ex: Catamarã Maragogi + Mergulho)"
+                 : "Nome do Item / Entregável / Adicional"
+             }
              value={tour.title || tour.description || ""}
              onChange={(e) => handleUpdateTour(idx, { title: e.target.value })}
              className="h-11 text-xs rounded-lg"
            />
            <div className="grid grid-cols-2 gap-2">
              <Input
-               placeholder="Duração / Data (Ex: Dia inteiro)"
+               placeholder="Duração / Prazo (Ex: Dia inteiro)"
                value={tour.duration || tour.date || ""}
                onChange={(e) => handleUpdateTour(idx, { duration: e.target.value })}
                className="h-11 text-xs rounded-lg"
@@ -1925,12 +2922,44 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                }
                className="h-11 text-xs rounded-lg bg-background border border-border px-2"
              >
-               <option value="included">Incluso no Pacote</option>
+               <option value="included">Incluso na Proposta</option>
                <option value="optional">Opcional Sugerido</option>
              </select>
            </div>
+
+           {/* Fotos do Passeio / Experiência / Item */}
+           <div className="pt-2 border-t border-border/40 space-y-2">
+             <span className="text-2xs font-bold text-foreground flex items-center gap-1">
+               <ImageIcon className="size-3 text-primary" />
+               <span>Fotos ({tourPhotos.length})</span>
+             </span>
+             <ImageUpload
+               value=""
+               onChange={(url) => handleAddTourPhoto(idx, url)}
+               aspectPreset="widescreen"
+               bucket="cms-media"
+               label="Adicionar Foto do Passeio / Item"
+             />
+             {tourPhotos.length > 0 && (
+               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                 {tourPhotos.map((imgUrl, imgIdx) => (
+                   <div key={imgIdx} className="relative h-14 rounded-lg overflow-hidden border border-border">
+                     <img src={imgUrl} alt={`${tour.title || "Item"} ${imgIdx + 1}`} className="w-full h-full object-cover" />
+                     <button
+                       type="button"
+                       onClick={() => handleRemoveTourPhoto(idx, imgIdx)}
+                       className="absolute top-1 right-1 min-h-11 min-w-11 sm:min-h-6 sm:min-w-6 rounded-full bg-background/90 text-destructive flex items-center justify-center shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                       title="Remover foto"
+                     >
+                       <X className="size-3" />
+                     </button>
+                   </div>
+                 ))}
+               </div>
+             )}
+           </div>
          </div>
-       ))
+       )})
      )}
    </div>
  </TabsContent>
@@ -2301,6 +3330,96 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  )}
  </div>
 
+ {/* ── OPÇÕES DE EXIBIÇÃO DO PREÇO NA LÂMINA ── */}
+ <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">
+ <div className="flex items-center justify-between gap-2">
+   <span className="text-xs font-bold text-foreground block">Exibição de Valores na Proposta</span>
+   <span className="text-2xs font-mono font-bold text-primary">
+     {currentRooms.length} {nicheCopy.showAviationAndHotelTerms ? (currentRooms.length === 1 ? "quarto" : "quartos") : "itens"}
+   </span>
+ </div>
+
+ {/* Preview automático calculado em tempo real */}
+ {(() => {
+   const totalCents = proposal.pricing?.total_price_cents || 0;
+   const paxCount = Math.max(1, totalAdults + totalChildren);
+   const adultsCountSafe = Math.max(1, totalAdults);
+   const customUnit = activeCanvasTheme.pricingDisplay.customPerPersonCents;
+   const computedPerPerson = customUnit && customUnit > 0 ? customUnit : Math.round(totalCents / paxCount);
+   const computedPerAdult = customUnit && customUnit > 0 ? customUnit : Math.round(totalCents / adultsCountSafe);
+   return (
+     <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-background border border-border/60 text-2xs">
+       <div>
+         <span className="text-muted-foreground block">Por Pessoa ({paxCount} pax)</span>
+         <strong className="font-mono text-xs text-foreground">{formatMoney(computedPerPerson)}</strong>
+       </div>
+       <div>
+         <span className="text-muted-foreground block">Por Adulto ({adultsCountSafe} adt)</span>
+         <strong className="font-mono text-xs text-primary">{formatMoney(computedPerAdult)}</strong>
+       </div>
+     </div>
+   );
+ })()}
+
+ <div className="grid grid-cols-1 gap-2 text-xs">
+ <label className="min-h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-background border border-border/50 cursor-pointer">
+ <span className="font-medium text-foreground">Mostrar valor por pessoa</span>
+ <input
+ type="checkbox"
+ checked={activeCanvasTheme.pricingDisplay.showPerPerson}
+ onChange={(e) =>
+ updateStudioCustomField("show_price_per_person", e.target.checked ? "true" : "false")
+ }
+ className="size-4 accent-primary cursor-pointer"
+ />
+ </label>
+ <label className="min-h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-background border border-border/50 cursor-pointer">
+ <span className="font-medium text-foreground">Mostrar valor por adulto</span>
+ <input
+ type="checkbox"
+ checked={activeCanvasTheme.pricingDisplay.showPerAdult}
+ onChange={(e) =>
+ updateStudioCustomField("show_price_per_adult", e.target.checked ? "true" : "false")
+ }
+ className="size-4 accent-primary cursor-pointer"
+ />
+ </label>
+ <label className="min-h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-background border border-border/50 cursor-pointer">
+ <span className="font-medium text-foreground">Mostrar detalhamento por quarto/bloco</span>
+ <input
+ type="checkbox"
+ checked={activeCanvasTheme.pricingDisplay.showPerRoom}
+ onChange={(e) =>
+ updateStudioCustomField("show_price_per_room", e.target.checked ? "true" : "false")
+ }
+ className="size-4 accent-primary cursor-pointer"
+ />
+ </label>
+ </div>
+ <div className="space-y-1">
+ <Label className="text-2xs text-muted-foreground">
+ Valor por {nicheCopy.perPersonLabel} (opcional, R$)
+ </Label>
+ <Input
+ type="text"
+ value={
+ activeCanvasTheme.pricingDisplay.customPerPersonCents
+ ? (activeCanvasTheme.pricingDisplay.customPerPersonCents / 100).toFixed(2).replace(".", ",")
+ : ""
+ }
+ onChange={(e) => {
+ const parsed = parseReaisToCents(e.target.value);
+ updateStudioCustomField(
+ "custom_price_per_person_cents",
+ parsed && parsed > 0 ? String(parsed) : null,
+ );
+ }}
+ placeholder="Automático (Total / Viajantes)"
+ className="min-h-11 sm:min-h-0 h-11 sm:h-9 text-xs font-mono rounded-lg bg-background"
+ />
+ </div>
+ </div>
+
  <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">
  <div className="flex items-center justify-between gap-2">
  <span className="text-xs font-bold text-foreground flex items-center gap-2">
@@ -2333,11 +3452,11 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  {Object.entries(studioCustomFields).filter(
- ([k]) => !STUDIO_RESERVED_FIELD_KEYS.has(k),
+ ([k, v]) => isEditableCustomFieldInProposalStudio(k, v, STUDIO_RESERVED_FIELD_KEYS),
  ).length > 0 && (
  <div className="space-y-2 pt-2 border-t border-border/40">
  {Object.entries(studioCustomFields)
- .filter(([k]) => !STUDIO_RESERVED_FIELD_KEYS.has(k))
+ .filter(([k, v]) => isEditableCustomFieldInProposalStudio(k, v, STUDIO_RESERVED_FIELD_KEYS))
  .map(([fieldKey, fieldValue]) => (
  <div key={fieldKey} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
  <span
@@ -2403,8 +3522,262 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  </div>
  </TabsContent>
+
+ {/* ── ABA OPÇÕES COMPARATIVAS (MULTI-CENÁRIOS + PASSHUB) ── */}
+ <TabsContent value="opcoes" className="space-y-4">
+   <div className="flex flex-wrap items-center justify-between gap-2">
+     <div>
+       <span className="text-xs font-bold text-foreground block">
+         Opções Comparativas ({Array.isArray(proposal.options) ? proposal.options.length : 0})
+       </span>
+       <span className="text-2xs text-muted-foreground">
+         O cliente pode alternar entre cenários na página pública e no PDF.
+       </span>
+     </div>
+     <Button
+       type="button"
+       size="sm"
+       variant={passHubTabOpen === "opcoes" ? "default" : "outline"}
+       onClick={() => setPassHubTabOpen((prev) => (prev === "opcoes" ? null : "opcoes"))}
+       className="h-11 sm:h-8 text-xs rounded-lg gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+     >
+       <Search className="size-3.5" /> Buscar Opção PassHub
+     </Button>
+   </div>
+
+   <div className="flex gap-2">
+     <Input
+       value={newOptionName}
+       onChange={(e) => setNewOptionName(e.target.value)}
+       placeholder="Nome da opção (ex: Opção Comfort · Hotel B)"
+       className="h-11 sm:h-9 text-xs flex-1 rounded-lg"
+     />
+     <Button
+       type="button"
+       size="sm"
+       variant="outline"
+       onClick={() => {
+         const existing = Array.isArray(proposal.options) ? proposal.options : [];
+         const nextIdx = existing.length + 1;
+         const nextOpt: TravelProposalOptionDTO = {
+           id: `opt_${Date.now()}`,
+           name: newOptionName.trim() || `Opção ${nextIdx}`,
+           airline: proposal.flights[0]?.airline_name || proposal.flights[0]?.airline || undefined,
+           hotel_name: proposal.hotels[0]?.hotel_name || undefined,
+           hotel_stars: proposal.hotels[0]?.stars,
+           room_type: proposal.hotels[0]?.room_type,
+           meal_plan: proposal.hotels[0]?.board_basis,
+           flights: proposal.flights,
+           hotels: proposal.hotels,
+           transfers: currentTransfers,
+           tours: currentTours,
+           includes: currentIncludes,
+           excludes: currentExcludes,
+           is_recommended: existing.length === 0,
+           pricing: {
+             currency: proposal.pricing?.currency || "BRL",
+             base_price_cents: proposal.pricing?.base_price_cents || proposal.pricing?.total_price_cents || 0,
+             boarding_tax_cents: proposal.pricing?.boarding_tax_cents || 0,
+             other_taxes_cents: proposal.pricing?.other_taxes_cents || 0,
+             discount_cents: proposal.pricing?.discount_cents || 0,
+             total_price_cents: proposal.pricing?.total_price_cents || 0,
+             installments_options: proposal.pricing?.installments_options || [],
+           },
+         };
+         onChange({ options: [...existing, nextOpt] });
+         setNewOptionName("");
+         toast.success(`"${nextOpt.name}" adicionada às opções comparativas.`);
+       }}
+       className="h-11 sm:h-9 text-xs rounded-lg gap-1 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+     >
+       <Plus className="size-3.5" /> Criar Opção
+     </Button>
+   </div>
+
+   {passHubTabOpen === "opcoes" && (
+     <PassHubLiveQuoterPanel
+       compact
+       defaultCategories={["packages", "hotels", "flights"]}
+       initialOriginIata={proposal.flights[0]?.origin_iata || ""}
+       initialDestinationIata={proposal.flights[0]?.destination_iata || ""}
+       initialDestinationCity={proposal.destination_city || ""}
+       initialDepartureDate={proposal.travel_start_date || ""}
+       initialReturnDate={proposal.travel_end_date || ""}
+       onAddComparativeOption={(opt) => {
+         const existing = Array.isArray(proposal.options) ? proposal.options : [];
+         const nextOpt: TravelProposalOptionDTO = {
+           id: `opt_${Date.now()}`,
+           name: opt.optionLabel,
+           airline: opt.airlineDesc || undefined,
+           hotel_name: opt.hotelName || undefined,
+           hotel_stars: opt.hotel?.stars,
+           room_type: opt.hotel?.room_type,
+           meal_plan: opt.hotel?.board_basis,
+           hotels: opt.hotel ? [opt.hotel] : undefined,
+           flights: opt.flight ? [opt.flight] : proposal.flights,
+           transfers: currentTransfers,
+           tours: currentTours,
+           includes: currentIncludes,
+           is_recommended: existing.length === 0,
+           pricing: {
+             currency: proposal.pricing?.currency || "BRL",
+             base_price_cents: opt.totalPriceCents,
+             boarding_tax_cents: 0,
+             other_taxes_cents: 0,
+             discount_cents: 0,
+             total_price_cents: opt.totalPriceCents,
+             installments_options: [],
+           },
+         };
+         onChange({ options: [...existing, nextOpt] });
+         toast.success(`"${opt.optionLabel}" adicionada via PassHub!`);
+       }}
+     />
+   )}
+
+   {(!proposal.options || proposal.options.length === 0) ? (
+     <div className="p-4 text-center rounded-lg bg-muted/30 border border-dashed border-border/60 text-xs text-muted-foreground">
+       Nenhuma opção comparativa cadastrada. Crie cenários diferentes (ex: Hotel 4 Estrelas vs Resort All Inclusive) ou importe direto do PassHub acima.
+     </div>
+   ) : (
+     <div className="space-y-3">
+       {proposal.options.map((opt, idx) => {
+         const currentTotalReais = ((opt.pricing?.total_price_cents || 0) / 100).toFixed(2);
+         const updateOpt = (patch: Partial<TravelProposalOptionDTO>) => {
+           const next = (proposal.options || []).map((item, i) => (i === idx ? { ...item, ...patch } : item));
+           onChange({ options: next });
+         };
+         return (
+           <div key={opt.id || idx} className="p-3 rounded-lg bg-muted/40 border border-border/50 space-y-3">
+             <div className="flex items-center justify-between gap-2">
+               <button
+                 type="button"
+                 onClick={() => {
+                   const next = (proposal.options || []).map((item, i) => ({
+                     ...item,
+                     is_recommended: i === idx,
+                   }));
+                   onChange({ options: next });
+                 }}
+                 className={cn(
+                   "h-11 sm:h-7 px-3 rounded-md text-2xs font-bold inline-flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                   opt.is_recommended
+                     ? "bg-primary text-primary-foreground"
+                     : "bg-background border border-border text-muted-foreground hover:text-foreground",
+                 )}
+               >
+                 <CheckCircle className="size-3" />
+                 <span>{opt.is_recommended ? "Recomendada" : "Marcar Recomendada"}</span>
+               </button>
+
+               <div className="flex items-center gap-1">
+                 <Button
+                   type="button"
+                   variant="ghost"
+                   size="sm"
+                   title="Sincronizar voos, hotéis e inclusões da aba principal"
+                   onClick={() => {
+                     updateOpt({
+                       flights: proposal.flights,
+                       hotels: proposal.hotels,
+                       transfers: currentTransfers,
+                       tours: currentTours,
+                       includes: currentIncludes,
+                       excludes: currentExcludes,
+                     });
+                     toast.success(`Conteúdo base sincronizado em "${opt.name}".`);
+                   }}
+                   className="h-11 sm:h-7 px-2 text-2xs font-medium text-primary"
+                 >
+                   Sincronizar Base
+                 </Button>
+                 <Button
+                   type="button"
+                   variant="ghost"
+                   size="sm"
+                   aria-label="Remover opção"
+                   onClick={() => {
+                     const next = (proposal.options || []).filter((_, i) => i !== idx);
+                     onChange({ options: next });
+                   }}
+                   className="h-11 w-11 sm:h-7 sm:w-7 p-0 text-destructive"
+                 >
+                   <Trash className="size-3.5" />
+                 </Button>
+               </div>
+             </div>
+
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+               <Input
+                 value={opt.name}
+                 onChange={(e) => updateOpt({ name: e.target.value })}
+                 placeholder="Nome da opção"
+                 className="h-11 sm:h-8 text-xs font-semibold"
+               />
+               <Input
+                 value={opt.badge || ""}
+                 onChange={(e) => updateOpt({ badge: e.target.value })}
+                 placeholder="Selo (ex: Mais Vendida)"
+                 className="h-11 sm:h-8 text-xs"
+               />
+               <Input
+                 value={opt.hotel_name || ""}
+                 onChange={(e) => updateOpt({ hotel_name: e.target.value })}
+                 placeholder="Hotel / Resort principal"
+                 className="h-11 sm:h-8 text-xs"
+               />
+               <Input
+                 value={opt.airline || ""}
+                 onChange={(e) => updateOpt({ airline: e.target.value })}
+                 placeholder="Cia aérea / Transporte"
+                 className="h-11 sm:h-8 text-xs"
+               />
+             </div>
+
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+               <Input
+                 value={opt.meal_plan || ""}
+                 onChange={(e) => updateOpt({ meal_plan: e.target.value })}
+                 placeholder="Regime (ex: All Inclusive)"
+                 className="h-11 sm:h-8 text-xs"
+               />
+               <Input
+                 type="number"
+                 step="0.01"
+                 min="0"
+                 value={currentTotalReais}
+                 onChange={(e) => {
+                   const parsedCents = parseReaisToCents(e.target.value);
+                   if (parsedCents !== null) {
+                     updateOpt({
+                       pricing: {
+                         ...(opt.pricing || {
+                           currency: proposal.pricing?.currency || "BRL",
+                           base_price_cents: parsedCents,
+                           boarding_tax_cents: 0,
+                           other_taxes_cents: 0,
+                           discount_cents: 0,
+                           total_price_cents: parsedCents,
+                           installments_options: [],
+                         }),
+                         base_price_cents: parsedCents,
+                         total_price_cents: parsedCents,
+                       },
+                     });
+                   }
+                 }}
+                 placeholder="Valor total R$"
+                 className="h-11 sm:h-8 text-xs font-mono"
+               />
+             </div>
+           </div>
+         );
+       })}
+     </div>
+   )}
+ </TabsContent>
+   </div>
  </Tabs>
- </div>
  </div>
  );
 }

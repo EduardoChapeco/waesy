@@ -147,7 +147,7 @@ export function VitrineLateralMenuSheet({
   onClose,
   greetingTitle = "Menu",
   greetingSubtitle,
-  showViewModeToggle = true,
+  showViewModeToggle = false,
   defaultViewMode = "grid",
   items = [],
   session,
@@ -354,7 +354,7 @@ export function VitrineLateralMenuSheet({
           {showProfileCard && (
             <div>
               {isAuthenticated ? (
-                <div className="rounded-2xl border border-border/60 bg-muted/20 p-3 space-y-3 shadow-2xs">
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-3 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="size-10 min-w-10 min-h-10 rounded-xl bg-muted flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden border border-border/50">
                       {userAvatar ? (
@@ -406,7 +406,7 @@ export function VitrineLateralMenuSheet({
                   </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-border/60 bg-muted/20 p-3 flex items-center justify-between gap-2 shadow-2xs">
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-3 flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <span className="text-xs font-bold text-foreground block truncate">
                       Acesse sua Conta
@@ -459,7 +459,7 @@ export function VitrineLateralMenuSheet({
                               key={item.slug || item.id || item.title}
                               type="button"
                               onClick={() => handleNavigate(item.target_route)}
-                              className="group relative flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/60 active-press transition-colors duration-200 border border-border/40 text-left min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs"
+                              className="group relative flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/60 active-press transition-colors duration-200 border border-border/40 text-left min-h-14 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                               <div className="size-10 min-h-10 min-w-10 rounded-xl flex items-center justify-center shrink-0 border border-border/40 bg-background overflow-hidden">
                                 {customIcon ? (
@@ -507,12 +507,12 @@ export function VitrineLateralMenuSheet({
                               key={item.slug || item.id || item.title}
                               type="button"
                               onClick={() => handleNavigate(item.target_route)}
-                              className="group relative flex flex-col items-center justify-center p-2 rounded-2xl bg-muted/30 hover:bg-muted/60 active:scale-95 transition-transform duration-200 border border-border/40 text-center min-h-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs"
+                              className="group relative flex flex-col items-center justify-center p-2 rounded-2xl bg-muted/30 hover:bg-muted/60 active:scale-95 transition-transform duration-200 border border-border/40 text-center min-h-20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                               {/* Ícone Squircle com Badge no canto superior esquerdo (ex: "Novo" como no iFood) */}
                               <div className="relative size-10 min-h-10 min-w-10 rounded-xl flex items-center justify-center mb-1 shrink-0 bg-background border border-border/40">
                                 {badge ? (
-                                  <span className="absolute -top-1.5 -left-1.5 px-2 py-1 rounded-full text-3xs font-black tracking-wider uppercase bg-destructive text-destructive-foreground shadow-xs z-10 leading-none">
+                                  <span className="absolute -top-1.5 -left-1.5 px-2 py-1 rounded-full text-3xs font-semibold tracking-wider uppercase bg-destructive text-destructive-foreground z-10 leading-none">
                                     {badge}
                                   </span>
                                 ) : null}
@@ -558,7 +558,7 @@ export function VitrineLateralMenuSheet({
                               key={item.slug || item.id || item.title}
                               type="button"
                               onClick={() => handleNavigate(item.target_route || "/classificados")}
-                              className="w-full h-14 min-h-14 px-4 rounded-2xl border border-border/60 bg-muted/20 hover:bg-muted/40 active-press transition-colors duration-200 flex items-center justify-between gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs cursor-pointer"
+                              className="w-full h-14 min-h-14 px-4 rounded-2xl border border-border/60 bg-muted/20 hover:bg-muted/40 active-press transition-colors duration-200 flex items-center justify-between gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                             >
                               <div className="flex items-center gap-3 min-w-0">
                                 <div className="size-10 min-h-10 min-w-10 rounded-xl flex items-center justify-center shrink-0 border border-border/40 bg-background overflow-hidden">
@@ -591,7 +591,7 @@ export function VitrineLateralMenuSheet({
                 </div>
               ) : (
                 /* ── MODO LISTA: Formato Linhas Suaves com Ícone e Chevron ── */
-                <div className="rounded-2xl border border-border/50 bg-muted/15 divide-y divide-border/40 overflow-hidden shadow-2xs">
+                <div className="rounded-2xl border border-border/50 bg-muted/15 divide-y divide-border/40 overflow-hidden">
                   {section.items.map((item) => {
                     const IconComp =
                       (item.icon_name && LATERAL_ICON_MAP[item.icon_name]) || LayoutGrid;
@@ -621,7 +621,7 @@ export function VitrineLateralMenuSheet({
                             {item.title}
                           </span>
                           {badge ? (
-                            <span className="px-2 py-1 rounded-full text-3xs font-black tracking-wider uppercase bg-destructive text-destructive-foreground shadow-xs shrink-0 leading-none">
+                            <span className="px-2 py-1 rounded-full text-3xs font-semibold tracking-wider uppercase bg-destructive text-destructive-foreground shrink-0 leading-none">
                               {badge}
                             </span>
                           ) : null}

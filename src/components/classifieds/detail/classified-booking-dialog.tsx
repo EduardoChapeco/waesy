@@ -135,18 +135,19 @@ export function ClassifiedBookingDialog({
                       const retDate = opt.return_date ? new Date(opt.return_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
                       const isSelected = selectedDeparture ? selectedDeparture.id === opt.id : i === 0;
                       return (
-                        <div
+                        <button
                           key={opt.id || i}
-                          onClick={() => setSelectedDeparture(opt)} /* focus-visible: */
+                          type="button"
+                          onClick={() => setSelectedDeparture(opt)}
                           className={cn(
-                            "p-3 rounded-lg border text-left transition-colors cursor-pointer flex flex-col gap-2",
+                            "w-full min-h-11 p-3 rounded-lg border text-left transition-colors cursor-pointer flex flex-col gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             isSelected
                               ? "border-primary ring-2 ring-primary/25 bg-primary/5"
                               : "border-border/70 hover:border-primary/40 bg-card"
                           )}
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
+                          <span className="flex w-full items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 flex-wrap">
                               <span className="text-xs font-bold text-foreground">
                                 {opt.label || `Opção ${i + 1}`}
                               </span>
@@ -158,23 +159,23 @@ export function ClassifiedBookingDialog({
                               <span className={cn("text-xs font-bold px-2 py-1 rounded-full border", cfg.color)}>
                                 {cfg.icon} {cfg.label}
                               </span>
-                            </div>
+                            </span>
                             {opt.price_override_cents && opt.price_override_cents > 0 ? (
                               <span className="font-mono font-bold text-xs text-foreground">
                                 {formatMoney(opt.price_override_cents)}
                               </span>
                             ) : null}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
                             {depDate}{depDate && retDate && " — "}{retDate}
                             {opt.departure_time && <span className="font-mono ml-1 font-semibold text-foreground">• Embarque: {opt.departure_time}</span>}
-                          </p>
+                          </span>
                           {opt.available_seats !== undefined && opt.available_seats > 0 && (
                             <span className="text-xs text-muted-foreground">
                               {opt.available_seats} vagas restantes
                             </span>
                           )}
-                        </div>
+                        </button>
                       );
                     })}
                   </div>

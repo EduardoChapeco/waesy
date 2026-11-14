@@ -46,7 +46,7 @@ export function BetaExplanationModal({
           <Button
             size="sm"
             onClick={handleOpenWhatsApp}
-            className="w-full sm:w-auto h-11 min-h-11 rounded-lg text-xs font-bold bg-foreground text-background hover:bg-foreground/90 flex items-center justify-center gap-2"
+            className="w-full sm:w-auto h-11 min-h-11 rounded-lg text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 flex items-center justify-center gap-2"
           >
             <MessageCircle className="size-3.5" />
             Enviar Feedback

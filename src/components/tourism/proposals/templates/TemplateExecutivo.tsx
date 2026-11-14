@@ -6,6 +6,17 @@ import type React from "react";
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import {
+  getTourMetaLine,
+  getTransferBadgeLabel,
+  getTransferMetaLine,
+  ProposalAdaptiveImage,
+  ProposalAgencyLogo,
+  ProposalDestinationGallerySection,
+  ProposalItineraryMediaGrid,
+  ProposalMultiNicheSpecsBlock,
+  ProposalPricingBreakdownBlock,
+} from "./blocks/UI";
+import {
   Plane,
   Hotel,
   Car,
@@ -32,6 +43,10 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
     { ...raw, template: raw.template || "executivo-b2b" },
     vm.agency,
   );
+  const nc = theme.nicheCopy;
+  const destinationGallery: string[] = Array.isArray(raw.destination_gallery)
+    ? raw.destination_gallery.filter(Boolean)
+    : [];
   const customEntries: Array<{ key: string; label: string; value: string }> = Array.isArray(
     raw.custom_field_entries,
   )
@@ -51,21 +66,10 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
     >
       {/* HEADER DA CAPA */}
       <div className="flex justify-between items-start mb-8 pb-6 border-b p-border-main break-inside-avoid">
-        {vm.agency.logo_url ? (
-          <img
-            src={vm.agency.logo_url}
-            crossOrigin="anonymous"
-            alt={vm.agency.name}
-            className="h-11 w-auto max-w-44 object-contain"
-            width={176}
-            height={44}
-          />
-        ) : (
-          <div className="text-2xl font-bold tracking-tight p-text-ink">{vm.agency.name}</div>
-        )}
+        <ProposalAgencyLogo agency={vm.agency} theme={theme} variant="surface" />
         <div className="text-right">
           <div className="text-xs uppercase font-bold tracking-widest p-text-faint">
-            Cotação Corporativa
+            {nc.heroKicker}
           </div>
           <div className="text-2xl font-mono font-bold p-text-brand">#{p.number}</div>
         </div>
@@ -75,11 +79,13 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
       <div className="w-full h-56 rounded-xl overflow-hidden relative mb-8 flex items-center justify-center break-inside-avoid border p-border-main p-surface-brand">
         {p.cover_image_url && (
           <>
-            <img
+            <ProposalAdaptiveImage
               src={p.cover_image_url}
               alt={p.title || "Proposta"}
-              crossOrigin="anonymous"
-              className="absolute inset-0 w-full h-full object-cover"
+              objectPosition={theme.coverCrop.objectPosition}
+              scale={theme.coverCrop.scale}
+              fit={theme.coverCrop.fit}
+              className="absolute inset-0 w-full h-full"
             />
             <div className="absolute inset-0 p-surface-hero-overlay" />
           </>
@@ -139,10 +145,13 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
 
       {/* CORPO DE SERVIÇOS */}
       <div className="space-y-10">
+        <ProposalMultiNicheSpecsBlock theme={theme} />
+        <ProposalDestinationGallerySection images={destinationGallery} theme={theme} />
+
         {theme.isSectionVisible("flights") && vm.hasFlights && (
           <section className="break-inside-avoid space-y-4">
             <h2 className="text-lg font-bold p-text-ink flex items-center gap-2 pb-2 border-b p-border-main p-heading-font">
-              <Plane className="size-4 p-text-brand" /> Malha Aérea
+              <Plane className="size-4 p-text-brand" /> {nc.flightsTitle}
             </h2>
             <div className="space-y-3">
               {p.flights!.map((f, i) => (
@@ -300,6 +309,12 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                       {d.description}
                     </p>
                   )}
+                  <ProposalItineraryMediaGrid
+                    images={d.images}
+                    title={d.title}
+                    objectPosition={(d as any).object_position}
+                    scale={(d as any).image_scale}
+                  />
                 </div>
               ))}
             </div>
@@ -314,41 +329,50 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {theme.isSectionVisible("transfers") &&
-                p.transfers!.map((t, i) => (
-                  <div
-                    key={`tr-${i}`}
-                    className="border p-border-main p-surface-card rounded-xl p-4 flex items-start gap-3 break-inside-avoid"
-                  >
-                    <div className="w-9 h-9 rounded-lg p-surface-brand-soft flex items-center justify-center shrink-0">
-                      <Car className="size-4 p-text-brand" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="font-bold p-text-ink text-sm">{t.description}</div>
-                      <div className="text-xs p-text-muted">
-                        {t.type === "private" ? "Privativo" : "Regular"}
-                        {t.vehicle ? ` · ${t.vehicle}` : ""}
-                        {t.date ? ` · ${formatDate(t.date)}` : ""}
+                p.transfers!.map((t, i) => {
+                  const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
+                  return (
+                    <div
+                      key={`tr-${i}`}
+                      className="border p-border-main p-surface-card rounded-xl p-4 flex items-start gap-3 break-inside-avoid"
+                    >
+                      <div className="w-9 h-9 rounded-lg p-surface-brand-soft flex items-center justify-center shrink-0">
+                        <Car className="size-4 p-text-brand" />
                       </div>
-                      {t.notes && <div className="text-xs p-text-faint">{t.notes}</div>}
+                      <div className="space-y-1">
+                        <div className="font-bold p-text-ink text-sm">
+                          {t.description || (t as any).route || "Transfer"}
+                        </div>
+                        <div className="text-xs p-text-muted">
+                          {getTransferBadgeLabel(t.type)}
+                          {transferMeta ? ` · ${transferMeta}` : ""}
+                        </div>
+                        {t.notes && <div className="text-xs p-text-faint">{t.notes}</div>}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               {theme.isSectionVisible("tours") &&
-                p.tours!.map((t, i) => (
-                  <div
-                    key={`to-${i}`}
-                    className="border p-border-main p-surface-card rounded-xl p-4 flex items-start gap-3 break-inside-avoid"
-                  >
-                    <div className="w-9 h-9 rounded-lg p-surface-brand-soft flex items-center justify-center shrink-0">
-                      <Compass className="size-4 p-text-brand" />
+                p.tours!.map((t, i) => {
+                  const tourMeta = getTourMetaLine(t as Record<string, any>);
+                  return (
+                    <div
+                      key={`to-${i}`}
+                      className="border p-border-main p-surface-card rounded-xl p-4 flex items-start gap-3 break-inside-avoid"
+                    >
+                      <div className="w-9 h-9 rounded-lg p-surface-brand-soft flex items-center justify-center shrink-0">
+                        <Compass className="size-4 p-text-brand" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="font-bold p-text-ink text-sm">
+                          {t.description || (t as any).title || "Passeio"}
+                        </div>
+                        {tourMeta && <div className="text-xs p-text-muted">{tourMeta}</div>}
+                        {t.notes && <div className="text-xs p-text-faint">{t.notes}</div>}
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="font-bold p-text-ink text-sm">{t.description}</div>
-                      {t.date && <div className="text-xs p-text-muted">{t.date}</div>}
-                      {t.notes && <div className="text-xs p-text-faint">{t.notes}</div>}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </section>
         )}
@@ -413,7 +437,7 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
               )}
             </div>
             {customEntries.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 {customEntries.map((entry) => (
                   <div
                     key={entry.key}
@@ -481,6 +505,13 @@ export default function TemplateExecutivo({ proposal: p, agency }: TemplateProps
                   </div>
                 </div>
               </div>
+
+              <ProposalPricingBreakdownBlock
+                totals={vm.totals}
+                theme={theme}
+                formatCurrency={formatCurrency}
+                currency={p.currency}
+              />
             </div>
 
             {p.terms && (

@@ -1297,33 +1297,34 @@ export const CANONICAL_DRAWER_MODULES = [
 export const listDrawerModules = createServerFn({ method: "GET" })
   .validator((d: { city?: string } = {}) => d)
   .handler(async ({ data }) => {
-    try {
-      const supabase = getAnonServerClient();
-      const { data: rows, error } = await supabase
-        .from("hotpages")
-        .select("*")
-        .eq("template_type", "drawer_module")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true });
+    const supabase = getAnonServerClient();
+    const { data: rows, error } = await supabase
+      .from("hotpages")
+      .select("*")
+      .eq("template_type", "drawer_module")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
 
-      if (error || !rows || rows.length === 0) {
-        return CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
-      }
+    if (error) {
+      console.error("[listDrawerModules] Erro ao consultar hotpages:", error);
+      throw new Error(error.message || "Falha ao carregar módulos de navegação.");
+    }
 
-      const filtered = rows.filter((r) => {
-        if (!isCampaignActive(r)) return false;
-        if (data?.city && r.city_filter && r.city_filter !== "all" && r.city_filter !== data.city) {
-          return false;
-        }
-        return true;
-      });
-
-      return filtered.length > 0
-        ? filtered.map(mapHotpageDTO)
-        : CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
-    } catch {
+    if (!rows || rows.length === 0) {
       return CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
     }
+
+    const filtered = rows.filter((r) => {
+      if (!isCampaignActive(r)) return false;
+      if (data?.city && r.city_filter && r.city_filter !== "all" && r.city_filter !== data.city) {
+        return false;
+      }
+      return true;
+    });
+
+    return filtered.length > 0
+      ? filtered.map(mapHotpageDTO)
+      : CANONICAL_DRAWER_MODULES.map(mapHotpageDTO);
   });
 
 export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(async () => {

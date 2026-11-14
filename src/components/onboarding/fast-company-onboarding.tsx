@@ -519,35 +519,35 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
       {/* Coluna Esquerda: Formulário de Entrada Ágil Estruturado (7 cols) */}
       <div className="lg:col-span-7 space-y-6">
         <div className="space-y-2">
-          <Badge variant="outline" className="text-xs font-bold gap-2 border-primary/30 text-primary bg-primary/5">
-            <Zap className="size-3.5" />
-            <span>Cadastro Rápido de Presença Comercial</span>
+          <Badge variant="outline" className="text-xs font-medium gap-2 rounded-xl border-primary/30 text-primary bg-primary/5">
+            <Zap className="size-4" />
+            <span>Cadastro Rápido</span>
           </Badge>
-          <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight">
             Cadastrar Novo Negócio
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Cadastre sua empresa, selecione o segmento comercial e ative suas ferramentas de vendas, eventos ou serviços no ecossistema Waesy.
+            Cadastre sua empresa, selecione o segmento e ative suas ferramentas comerciais.
           </p>
         </div>
 
-        {/* ── Bloco Assistente de Preenchimento com IA (Opcional & Recolhível) ── */}
-        <div className="rounded-2xl sm:rounded-3xl bg-card border border-border/80 shadow-2xs overflow-hidden">
+        {/* ── Bloco Assistente de Preenchimento por Link (Opcional & Recolhível) ── */}
+        <div className="rounded-2xl bg-card border border-border/80 overflow-hidden">
           <button
             type="button"
             onClick={() => setShowAiAssistant((prev) => !prev)}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full p-4 min-h-11 flex items-center justify-between text-left hover:bg-muted/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="flex items-center gap-3">
-              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <Zap className="size-4" />
               </div>
               <div>
-                <span className="text-xs font-bold text-foreground block">
-                  Preencher dados automaticamente com IA via link
+                <span className="text-xs font-semibold text-foreground block">
+                  Preencher dados pelo site ou Instagram
                 </span>
                 <span className="text-2xs text-muted-foreground block">
-                  Cole o site ou Instagram da sua empresa para preencher nome, bio e contatos em 1 clique
+                  Informe o endereço público para importar nome, bio e contatos automaticamente
                 </span>
               </div>
             </div>
@@ -559,15 +559,15 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           </button>
 
           {showAiAssistant && (
-            <div className="p-4 pt-1 border-t border-border/40 space-y-3 bg-muted/10">
+            <div className="p-4 pt-2 border-t border-border/40 space-y-3 bg-muted/10">
               <div className="flex flex-col sm:flex-row items-center gap-2">
                 <div className="relative w-full">
-                  <Globe className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Globe className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     value={aiUrlInput}
                     onChange={(e) => setAiUrlInput(e.target.value)}
                     placeholder="https://seusite.com.br ou @seuinstagram"
-                    className="h-11 min-h-11 pl-9 rounded-lg text-xs"
+                    className="h-11 min-h-11 pl-10 rounded-xl text-xs"
                     disabled={isExtractingAi}
                   />
                 </div>
@@ -575,17 +575,17 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   type="button"
                   onClick={() => handleStartAiExtraction()}
                   disabled={isExtractingAi || !aiUrlInput.trim()}
-                  className="w-full sm:w-auto h-11 min-h-11 px-5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs shrink-0 cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="w-full sm:w-auto h-11 min-h-11 px-5 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 cursor-pointer gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   {isExtractingAi ? (
                     <>
-                      <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
-                      <span>Minerando...</span>
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                      <span>Importando...</span>
                     </>
                   ) : (
                     <>
-                      <Zap className="size-3.5" />
-                      <span>Extrair com IA</span>
+                      <Zap className="size-4" />
+                      <span>Importar Dados</span>
                     </>
                   )}
                 </Button>
@@ -604,39 +604,39 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border border-border/80  space-y-6">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-8 rounded-2xl bg-card border border-border/80 space-y-6">
           {/* ── ETAPA 1: IDENTIFICAÇÃO COMERCIAL ── */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
               <Building2 className="size-4 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 1. Identificação Comercial
               </h3>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-foreground">Nome Fantasia da Empresa *</label>
+              <label className="text-xs font-semibold text-foreground">Nome Fantasia da Empresa *</label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Prime Eventos, Serra Sol Turismo, Restaurante Central..."
-                className="h-11 min-h-11 rounded-lg text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-xl text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               />
             </div>
 
             {/* CNPJ Opcional com Auto-preenchimento */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-foreground flex items-center justify-between">
+              <label className="text-xs font-semibold text-foreground flex items-center justify-between gap-2">
                 <span>CNPJ (Opcional)</span>
-                <span className="text-2xs font-normal text-muted-foreground">Preenchimento automático via Receita</span>
+                <span className="text-2xs font-normal text-muted-foreground">Consulta Receita</span>
               </label>
               <div className="flex items-center gap-2">
                 <Input
                   value={cnpj}
                   onChange={(e) => setCnpj(formatCnpj(e.target.value))}
                   placeholder="00.000.000/0000-00"
-                  className="h-11 min-h-11 rounded-lg text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   maxLength={18}
                 />
                 <Button
@@ -644,12 +644,12 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   variant="outline"
                   onClick={handleLookupCnpj}
                   disabled={isSearchingCnpj || cleanDocument(cnpj).length !== 14}
-                  className="h-11 min-h-11 px-4 text-xs font-bold shrink-0 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
+                  className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold shrink-0 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
                 >
                   {isSearchingCnpj ? (
-                    <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   ) : (
-                    <Search className="size-3.5" />
+                    <Search className="size-4" />
                   )}
                   <span>Buscar CNPJ</span>
                 </Button>
@@ -661,7 +661,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           <div className="space-y-4 pt-2">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
               <Ticket className="size-4 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 2. Segmento & Nicho de Atuação *
               </h3>
             </div>
@@ -688,14 +688,14 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   >
                     <div
                       className={cn(
-                        "size-9 rounded-lg flex items-center justify-center shrink-0 mt-1",
+                        "size-9 rounded-xl flex items-center justify-center shrink-0 mt-1",
                         isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
                       <Icon className="size-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs font-bold block text-foreground truncate">{c.label}</span>
+                      <span className="text-xs font-semibold block text-foreground truncate">{c.label}</span>
                       <span className="text-2xs text-muted-foreground break-words text-wrap leading-tight">
                         {c.description}
                       </span>
@@ -710,7 +710,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           <div className="space-y-4 pt-2">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
               <MapPin className="size-4 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 3. Endereço & Localização no Mapa *
               </h3>
             </div>
@@ -718,7 +718,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             {/* CEP com Busca Automática */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
               <div className="sm:col-span-6 space-y-2">
-                <label className="text-xs font-bold text-foreground">CEP Comercial</label>
+                <label className="text-xs font-semibold text-foreground">CEP Comercial</label>
                 <div className="flex items-center gap-2">
                   <Input
                     value={cep}
@@ -730,7 +730,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                       }
                     }}
                     placeholder="00000-000"
-                    className="h-11 min-h-11 rounded-lg text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="h-11 min-h-11 rounded-xl text-base md:text-sm font-mono focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     maxLength={9}
                   />
                   <Button
@@ -738,9 +738,9 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                     variant="outline"
                     onClick={() => handleLookupCep()}
                     disabled={isSearchingCep || cep.replace(/\D/g, "").length !== 8}
-                    className="h-11 min-h-11 px-3 text-xs font-bold shrink-0 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
+                    className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold shrink-0 gap-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
                   >
-                    {isSearchingCep ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Search className="size-3.5" />}
+                    {isSearchingCep ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Search className="size-4" />}
                     <span>Buscar CEP</span>
                   </Button>
                 </div>
@@ -748,7 +748,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
               {/* Cidade e Estado Canônicos */}
               <div className="sm:col-span-6 space-y-2">
-                <label className="text-xs font-bold text-foreground">Cidade de Atuação *</label>
+                <label className="text-xs font-semibold text-foreground">Cidade de Atuação *</label>
                 <CityCombobox
                   value={city && state ? `${city} - ${state}` : city}
                   onChange={(formatted, structured) => {
@@ -761,54 +761,54 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
             {/* Logradouro (Rua/Avenida) */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-foreground">Logradouro (Rua, Avenida, Praça)</label>
+              <label className="text-xs font-semibold text-foreground">Logradouro (Rua, Avenida, Praça)</label>
               <Input
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
                 placeholder="Ex: Av. Getúlio Vargas, Rua Marechal Deodoro..."
-                className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-xl text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             </div>
 
             {/* Número, Complemento e Bairro */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               <div className="sm:col-span-4 space-y-2">
-                <label className="text-xs font-bold text-foreground">Número *</label>
+                <label className="text-xs font-semibold text-foreground">Número *</label>
                 <Input
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
                   placeholder="Ex: 120 ou S/N"
-                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
               <div className="sm:col-span-4 space-y-2">
-                <label className="text-xs font-bold text-foreground">Complemento</label>
+                <label className="text-xs font-semibold text-foreground">Complemento</label>
                 <Input
                   value={complement}
                   onChange={(e) => setComplement(e.target.value)}
                   placeholder="Ex: Sala 402, Bloco B"
-                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
               <div className="sm:col-span-4 space-y-2">
-                <label className="text-xs font-bold text-foreground">Bairro</label>
+                <label className="text-xs font-semibold text-foreground">Bairro</label>
                 <Input
                   value={neighborhood}
                   onChange={(e) => setNeighborhood(e.target.value)}
                   placeholder="Ex: Centro, Jardim..."
-                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
             </div>
 
             {/* Mini Mapa Interativo com Marcador Arrastável */}
             <div className="space-y-2 pt-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-foreground flex items-center gap-2">
-                  <MapPin className="size-3.5 text-primary" />
-                  <span>Ponto no Mapa (Arraste o marcador para ajuste fino)</span>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <MapPin className="size-4 text-primary" />
+                  <span>Ponto no Mapa (arraste para ajustar)</span>
                 </label>
                 {latitude && longitude && (
                   <span className="text-2xs font-mono text-muted-foreground">
@@ -816,7 +816,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   </span>
                 )}
               </div>
-              <div className="h-44 sm:h-52 w-full rounded-lg border border-border/70 overflow-hidden relative shadow-2xs">
+              <div className="h-44 sm:h-52 w-full rounded-xl border border-border/70 overflow-hidden relative shadow-2xs">
                 <div ref={mapContainer} className="size-full" />
               </div>
             </div>
@@ -826,35 +826,35 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           <div className="space-y-4 pt-2">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
               <Phone className="size-4 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 4. Atendimento & Apresentação
               </h3>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Phone className="size-3.5 text-primary" />
+              <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                <Phone className="size-4 text-primary" />
                 <span>WhatsApp Comercial de Atendimento *</span>
               </label>
               <Input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(49) 99999-9999"
-                className="h-11 min-h-11 rounded-lg text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-11 min-h-11 rounded-xl text-base md:text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-foreground">Apresentação / Bio da Empresa</label>
+                <label className="text-xs font-semibold text-foreground">Apresentação / Bio da Empresa</label>
                 <span className="text-2xs text-muted-foreground font-mono">{bio.length}/600</span>
               </div>
               <Textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Descreva suas especialidades, diferenciais, horário de atendimento ou principais atrações/serviços..."
-                className="min-h-20 rounded-lg text-xs resize-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder="Descreva especialidades, diferenciais ou horário de atendimento..."
+                className="min-h-20 rounded-xl text-xs resize-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 maxLength={600}
               />
             </div>
@@ -869,7 +869,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://suaempresa.com.br"
-                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
 
@@ -882,7 +882,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   placeholder="@suaempresa"
-                  className="h-11 min-h-11 rounded-lg text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="h-11 min-h-11 rounded-xl text-base md:text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
             </div>
@@ -892,7 +892,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           <div className="space-y-4 pt-2">
             <div className="flex items-center gap-2 border-b border-border/40 pb-2">
               <Store className="size-4 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 5. Identidade Visual (Opcional)
               </h3>
             </div>
@@ -920,7 +920,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 min-h-12 rounded-lg text-xs sm:text-sm font-black gap-2 bg-foreground text-background hover:bg-foreground/90 shadow-xs active:scale-99 transition-transform duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full h-12 min-h-12 rounded-xl text-xs sm:text-sm font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 active:scale-99 transition-transform duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {isSubmitting ? (
                 <>
@@ -940,26 +940,26 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
       {/* Coluna Direita: Live Public Profile Preview (5 cols) */}
       <div className="lg:col-span-5 sticky top-24 space-y-4">
-        <div className="p-4 bg-muted/40 rounded-lg border border-border/60 flex items-center justify-between">
+        <div className="p-4 bg-muted/40 rounded-2xl border border-border/60 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Store className="size-4 text-primary" />
-            <span className="text-xs font-bold text-foreground">Prévia Real do Perfil Comercial</span>
+            <span className="text-xs font-semibold text-foreground">Prévia do Perfil Comercial</span>
           </div>
-          <Badge variant="outline" className="text-2xs font-mono">
+          <Badge variant="outline" className="text-2xs font-mono rounded-xl">
             Ao Vivo
           </Badge>
         </div>
 
-        {/* Card do Perfil Público Canônico (Padrão Threads / Instagram — Sem Capa Decorativa) */}
-        <div className="rounded-lg border border-border/60 bg-card overflow-hidden shadow-2xs space-y-0">
+        {/* Card do Perfil Público Canônico */}
+        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden space-y-0">
           <div className="p-4 sm:p-5 bg-card border-b border-border/40">
             <div className="flex items-center justify-between gap-4">
               {/* Logo Squircle 1:1 */}
-              <div className="size-16 sm:size-20 rounded-lg border-2 border-border/60 bg-background overflow-hidden flex items-center justify-center shadow-2xs shrink-0">
+              <div className="size-16 sm:size-20 rounded-xl border-2 border-border/60 bg-background overflow-hidden flex items-center justify-center shrink-0">
                 {logoUrl ? (
                   <img src={logoUrl} alt={name || "Logo"} className="size-full object-cover select-none" />
                 ) : (
-                  <div className="size-full bg-foreground text-background flex items-center justify-center font-black text-xl select-none">
+                  <div className="size-full bg-foreground text-background flex items-center justify-center font-semibold text-xl select-none">
                     {name ? name.charAt(0).toUpperCase() : "E"}
                   </div>
                 )}
@@ -967,7 +967,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
               {/* Badges de Categoria e Modalidade */}
               <div className="flex items-center gap-2">
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-2xs font-bold gap-1">
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-2xs font-medium gap-1 rounded-xl">
                   <CatIcon className="size-3" />
                   <span>{selectedCat.label}</span>
                 </Badge>
@@ -980,17 +980,17 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-black text-base text-foreground tracking-tight truncate">
+                  <h3 className="font-semibold text-base text-foreground tracking-tight truncate">
                     {name || "Nome da Sua Empresa"}
                   </h3>
-                  <ShieldCheck className="size-3.5 text-primary" />
+                  <ShieldCheck className="size-4 text-primary" />
                 </div>
                 <span className="text-2xs font-mono text-muted-foreground block truncate">
                   @{cleanSlug}
                 </span>
               </div>
 
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-2xs font-bold gap-1 shrink-0">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-2xs font-medium gap-1 shrink-0 rounded-xl">
                 <ShieldCheck className="size-3" />
                 <span>Ativo</span>
               </Badge>

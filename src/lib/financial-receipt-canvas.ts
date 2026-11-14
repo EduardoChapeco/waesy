@@ -10,6 +10,7 @@
  */
 
 import { formatCents } from "@/lib/utils";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 export interface FinancialReceiptData {
   transactionId: string;
@@ -47,15 +48,15 @@ export async function renderFinancialReceiptCanvas(
   ctx.scale(scale, scale);
 
   // Fundo Branco Limpo
-  ctx.fillStyle = "#FFFFFF";
+  ctx.fillStyle = TOKEN_HEX.white;
   ctx.fillRect(0, 0, width, height);
 
   // Faixa Superior Suave
-  ctx.fillStyle = "#F8FAFC";
+  ctx.fillStyle = TOKEN_HEX.neutral50;
   ctx.fillRect(0, 0, width, 180);
 
   // Linha divisória suave
-  ctx.strokeStyle = "#E2E8F0";
+  ctx.strokeStyle = TOKEN_HEX.neutral200;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(0, 180);
@@ -63,16 +64,16 @@ export async function renderFinancialReceiptCanvas(
   ctx.stroke();
 
   // Marca Waesy Bank
-  ctx.fillStyle = "#0F172A";
+  ctx.fillStyle = TOKEN_HEX.neutral900;
   ctx.font = "bold 26px system-ui, -apple-system, sans-serif";
   ctx.fillText("WAESY BANK", 60, 70);
 
-  ctx.fillStyle = "#64748B";
+  ctx.fillStyle = TOKEN_HEX.neutral500;
   ctx.font = "500 14px system-ui, -apple-system, sans-serif";
   ctx.fillText("Comprovante Oficial de Transferência Pix", 60, 95);
 
   // Status Concluído
-  ctx.fillStyle = "#10B981";
+  ctx.fillStyle = TOKEN_HEX.green500;
   ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
   ctx.fillText(" CONCLUÍDO", 60, 140);
 
@@ -88,16 +89,16 @@ export async function renderFinancialReceiptCanvas(
           second: "2-digit",
         });
 
-  ctx.fillStyle = "#64748B";
+  ctx.fillStyle = TOKEN_HEX.neutral500;
   ctx.font = "500 13px system-ui, -apple-system, sans-serif";
   ctx.fillText(formattedDate, 180, 140);
 
   // Valor em Destaque
-  ctx.fillStyle = "#64748B";
+  ctx.fillStyle = TOKEN_HEX.neutral500;
   ctx.font = "600 14px system-ui, -apple-system, sans-serif";
   ctx.fillText("VALOR DA TRANSFERÊNCIA", 60, 230);
 
-  ctx.fillStyle = "#0F172A";
+  ctx.fillStyle = TOKEN_HEX.neutral900;
   ctx.font = "black 38px monospace, system-ui, sans-serif";
   ctx.fillText(formatCents(data.amountCents), 60, 275);
 
@@ -105,12 +106,12 @@ export async function renderFinancialReceiptCanvas(
 
   function drawSection(title: string, rows: Array<[string, string]>) {
     if (!ctx) return;
-    ctx.fillStyle = "#0F172A";
+    ctx.fillStyle = TOKEN_HEX.neutral900;
     ctx.font = "bold 16px system-ui, -apple-system, sans-serif";
     ctx.fillText(title, 60, curY);
     curY += 12;
 
-    ctx.strokeStyle = "#E2E8F0";
+    ctx.strokeStyle = TOKEN_HEX.neutral200;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(60, curY);
@@ -119,11 +120,11 @@ export async function renderFinancialReceiptCanvas(
     curY += 24;
 
     for (const [label, val] of rows) {
-      ctx.fillStyle = "#64748B";
+      ctx.fillStyle = TOKEN_HEX.neutral500;
       ctx.font = "500 13px system-ui, -apple-system, sans-serif";
       ctx.fillText(label, 60, curY);
 
-      ctx.fillStyle = "#0F172A";
+      ctx.fillStyle = TOKEN_HEX.neutral900;
       ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
       const valWidth = ctx.measureText(val).width;
       ctx.fillText(val, width - 60 - valWidth, curY);
@@ -156,14 +157,14 @@ export async function renderFinancialReceiptCanvas(
   ]);
 
   // Rodapé Oficial
-  ctx.strokeStyle = "#E2E8F0";
+  ctx.strokeStyle = TOKEN_HEX.neutral200;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(60, height - 90);
   ctx.lineTo(width - 60, height - 90);
   ctx.stroke();
 
-  ctx.fillStyle = "#94A3B8";
+  ctx.fillStyle = TOKEN_HEX.neutral400;
   ctx.font = "500 11px system-ui, -apple-system, sans-serif";
   ctx.fillText(
     "Comprovante gerado digitalmente pela Waesy Plataforma IP • Válido em todo território nacional.",

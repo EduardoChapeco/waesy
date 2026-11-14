@@ -50,7 +50,7 @@ export interface EventsShowcaseMobileViewProps {
 export function EventsShowcaseMobileView({
   activeCity = "São Miguel do Oeste",
   coverImageUrl,
-  themeColor = "#0284c7",
+  themeColor = "var(--color-sky-600)",
   calloutTitle = "Aqui tem desconto pra quem é Clube!",
   partnerLogoUrl,
   categoryButtons,

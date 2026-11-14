@@ -120,7 +120,7 @@ export function OrderTimeline({ status, events = [], shippingMethod = "delivery"
         </span>
       </div>
 
-      <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-[11px] sm:before:left-[15px] before:top-2 before:bottom-2 before:w-0.5 before:bg-border/60">
+      <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-border/60">
         {STEPS.map((step, idx) => {
           const isDone = currentStepIdx > idx;
           const isCurrent = currentStepIdx === idx;

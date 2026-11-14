@@ -108,10 +108,10 @@ export function CopilotBackgroundTasksDrawer({
               {onRefresh && (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon"
+                  variant="outline"
+                  size="iconSm"
                   onClick={onRefresh}
-                  className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border-border/70 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   aria-label="Atualizar tarefas"
                 >
                   <RotateCw className="size-4" />

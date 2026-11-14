@@ -487,15 +487,16 @@ export function NewGroupTourWizard({
                 </div>
                 <Field label="Slug (URL Amigável)" error={errors.slug?.message}>
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground bg-surface-alt px-3 py-2 rounded-full border border-border text-sm">
+                    <span className="text-muted-foreground bg-surface-alt px-3 h-11 sm:h-9 inline-flex items-center rounded-lg border border-border/70 text-xs font-mono">
                       /tour/
                     </span>
                     <Input {...register("slug")} placeholder="reveillon-gramado-2027" />
                     <Button
-                      variant="ghost"
+                      variant="outline"
+                      size="sm"
                       type="button"
                       onClick={generateSlug}
-                      className="shrink-0 h-9 min-h-11 sm:min-h-0"
+                      className="shrink-0 h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg border-border/70"
                     >
                       Gerar
                     </Button>
@@ -602,6 +603,7 @@ export function NewGroupTourWizard({
                         <Button
                           key={amenity}
                           type="button"
+                          variant="outline"
                           onClick={() => {
                             const current = watchHotelAmenities || [];
                             const next = selected
@@ -609,10 +611,10 @@ export function NewGroupTourWizard({
                               : [...current, amenity];
                             setValue("hotelAmenities", next, { shouldValidate: true });
                           }}
-                          className={`px-3 py-2 rounded-full text-xs font-medium border transition-colors duration-200 duration-200 cursor-pointer ${
+                          className={`px-3 py-2 h-11 min-h-11 sm:h-8 sm:min-h-8 rounded-lg text-xs font-medium border transition-colors duration-200 cursor-pointer ${
                             selected
-                              ? "bg-brand/10 border-brand text-brand  shadow-brand/10"
-                              : "bg-surface-alt/55 border-border text-muted-foreground hover:border-muted-foreground/30"
+                              ? "bg-brand/10 border-brand text-brand shadow-brand/10"
+                              : "bg-surface-alt/55 border-border/70 text-muted-foreground hover:border-muted-foreground/30"
                           }`}
                         >
                           {amenity}

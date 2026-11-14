@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BADGE TEMPLATES
@@ -12,7 +13,7 @@ export const createBadgeTemplate = createServerFn({ method: "POST" })
     z.object({
       name: z.string().min(1),
       variant: z.enum(["standard", "vip", "staff", "press"]),
-      primary_color: z.string().default("#000000"),
+      primary_color: z.string().default(TOKEN_HEX.neutral950),
     })
   )
   .handler(async ({ data }) => {

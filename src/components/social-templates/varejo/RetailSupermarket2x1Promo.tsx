@@ -24,7 +24,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
       className={`relative bg-card text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
     >
       {/* ── 1. Topo: Bloco Turquesa/Ciano de Alto Impacto (OFERTA 2x1) ── */}
-      <div className="bg-[#0099B8] text-foreground pt-16 pb-12 px-12 text-center ">
+      <div className="bg-cyan-600 text-foreground pt-16 pb-12 px-12 text-center ">
         <h2 className="text-8xl sm:text-9xl font-black uppercase tracking-tight leading-none">
           {data.promoBadge || "OFERTA"}
         </h2>
@@ -38,7 +38,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
         {/* Lado Esquerdo: Chamada Comercial e Benefício */}
         <div className="flex-1 space-y-6">
           <div className="space-y-3">
-            <h3 className="text-4xl sm:text-5xl font-black text-[#0099B8] leading-tight">
+            <h3 className="text-4xl sm:text-5xl font-black text-cyan-600 leading-tight">
               Comprando 1<br />você leva 2
             </h3>
             <p className="text-2xl font-bold text-slate-600">
@@ -78,7 +78,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
       </div>
 
       {/* ── 3. Faixa de Desconto Adicional / Cupom ── */}
-      <div className="bg-[#0099B8] text-foreground py-5 px-14 flex items-center justify-between">
+      <div className="bg-cyan-600 text-foreground py-5 px-14 flex items-center justify-between">
         <span className="text-3xl font-black uppercase tracking-wider">
           + 25% DE DESCONTO NO APP OU COMPRA ONLINE
         </span>
@@ -96,7 +96,7 @@ export function RetailSupermarket2x1Promo({ data, scale = 1, className = "" }: S
           </span>
         </div>
 
-        <div className="bg-[#0099B8] text-foreground px-8 py-5 rounded-xl font-black text-xl flex items-center gap-3 ">
+        <div className="bg-cyan-600 text-foreground px-8 py-5 rounded-xl font-black text-xl flex items-center gap-3 ">
           <span>{data.ctaLabel || "Aproveitar Oferta"}</span>
           <ArrowRight className="w-6 h-6" />
         </div>

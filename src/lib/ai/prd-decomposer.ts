@@ -321,9 +321,7 @@ export function validateDecompositionMece(
   };
 }
 
-/**
- * Generates clean, human-readable Mermaid diagram of the DAG with critical path highlighting.
- */
+import { TOKEN_HEX } from "@/lib/design-tokens";
 export function generateMermaidDag(tasks: TaskSpec[], criticalPath: string[] = []): string {
   const criticalSet = new Set(criticalPath);
   const lines: string[] = ['```mermaid', 'graph TD'];
@@ -340,7 +338,7 @@ export function generateMermaidDag(tasks: TaskSpec[], criticalPath: string[] = [
   }
 
   if (criticalSet.size > 0) {
-    lines.push('  classDef critical stroke:#e11d48,stroke-width:2px,font-weight:bold;');
+    lines.push(`  classDef critical stroke:${TOKEN_HEX.red600},stroke-width:2px,font-weight:bold;`);
     const criticalList = tasks.filter((t) => criticalSet.has(t.id)).map((t) => t.id);
     if (criticalList.length > 0) {
       lines.push(`  class ${criticalList.join(',')} critical;`);

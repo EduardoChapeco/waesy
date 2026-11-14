@@ -1,3 +1,4 @@
+import { TOKEN_HEX } from '@/lib/design-tokens';
 import type { ExperienceNode, BlockType } from '@/lib/builder-types';
 
 export interface GenerateExperienceOptions {
@@ -45,8 +46,8 @@ export function generateExperienceFromPrompt(
  parent_id: null,
  sort_order: 0,
  design_tokens: {
- backgroundColor: options.theme === 'light' ? '#f8fafc' : '#0f172a',
- textColor: options.theme === 'light' ? '#0f172a' : '#ffffff',
+ backgroundColor: options.theme === 'light' ? TOKEN_HEX.neutral50 : TOKEN_HEX.neutral900,
+ textColor: options.theme === 'light' ? TOKEN_HEX.neutral900 : TOKEN_HEX.white,
  animation: { trigger: 'fade_up', speed: 'normal' },
  },
  });
@@ -87,7 +88,7 @@ export function generateExperienceFromPrompt(
  parent_id: null,
  sort_order: 1,
  design_tokens: {
- backgroundColor: options.theme === 'light' ? '#ffffff' : '#020617',
+ backgroundColor: options.theme === 'light' ? TOKEN_HEX.white : TOKEN_HEX.neutral950,
  animation: { trigger: 'fade_up', speed: 'normal', hover: 'lift' },
  },
  });
@@ -161,7 +162,7 @@ export function generateExperienceFromPrompt(
  parent_id: null,
  sort_order: 2,
  design_tokens: {
- backgroundColor: options.theme === 'light' ? '#f8fafc' : '#0f172a',
+ backgroundColor: options.theme === 'light' ? TOKEN_HEX.neutral50 : TOKEN_HEX.neutral900,
  animation: { trigger: 'fade_up', speed: 'fast' },
  },
  });

@@ -65,6 +65,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
+import { ErrorState } from "@/components/state/states";
 import {
   listExperienceDocuments,
   createExperienceDocument,
@@ -90,10 +91,13 @@ export const Route = createFileRoute("/workspace/cms/paginas/")({
   loader: async () => {
     try {
       const res = await listExperienceDocuments({ data: {} });
-      return res || [];
-    } catch (err) {
+      return { pages: res || [], loadError: null as string | null };
+    } catch (err: any) {
       console.error("[loader:workspace.cms.paginas.index] Unhandled loader error:", err);
-      return [];
+      return {
+        pages: [] as any[],
+        loadError: err?.message || "Não foi possível carregar as páginas do CMS.",
+      };
     }
   },
   component: CmsPagesPage,
@@ -139,7 +143,9 @@ const TEMPLATE_OPTIONS = [
 function CmsPagesPage() {
   const router = useRouter();
   const navigate = useNavigate();
-  const pages = Route.useLoaderData() || [];
+  const loaderData = Route.useLoaderData() as any;
+  const pages = Array.isArray(loaderData) ? loaderData : loaderData?.pages || [];
+  const loadError = !Array.isArray(loaderData) ? loaderData?.loadError : null;
   const isMobile = useIsMobile();
 
   const [search, setSearch] = useState("");
@@ -162,6 +168,18 @@ function CmsPagesPage() {
         p.slug?.toLowerCase().includes(term)
     );
   }, [pages, search]);
+
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar páginas"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   const handleTitleChange = (val: string) => {
     setTitle(val);

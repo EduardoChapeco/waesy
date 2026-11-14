@@ -21,7 +21,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-[#F9F7E8] text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between p-12 ${className}`}
+      className={`relative bg-stone-50 text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between p-12 ${className}`}
     >
       {/* ── 1. Topo: Título Editorial de Aluguel de Temporada ── */}
       <div className="pt-8 text-center space-y-3">
@@ -30,7 +30,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         </h1>
 
         {/* Badge Verde de Chamada (ex: Feriado de Carnaval Disponível) */}
-        <div className="inline-block bg-[#48BB78] text-foreground px-10 py-3 rounded-2xl ">
+        <div className="inline-block bg-emerald-500 text-foreground px-10 py-3 rounded-2xl ">
           <span className="text-3xl sm:text-4xl font-black uppercase tracking-wide">
             {data.promoBadge || data.subtitle || "Disponível para Temporada"}
           </span>
@@ -49,14 +49,14 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
             "GARAGEM COBERTA",
           ]).map((item, idx) => (
             <div key={idx} className="flex items-center gap-3 text-2xl font-black text-slate-800 uppercase">
-              <span className="size-3.5 rounded-full bg-[#48BB78] shrink-0" />
+              <span className="size-3.5 rounded-full bg-emerald-500 shrink-0" />
               <span>{item}</span>
             </div>
           ))}
         </div>
 
         {/* Lado Direito: Card Flutuante Verde de Preço por Diária ou Pacote */}
-        <div className="bg-[#48BB78] text-foreground p-8 rounded-3xl  text-center min-w-85 shrink-0">
+        <div className="bg-emerald-500 text-foreground p-8 rounded-3xl  text-center min-w-85 shrink-0">
           <span className="text-xl font-bold uppercase tracking-wider block text-foreground/90 mb-1">
             {data.pricingMode === "monthly" ? "Aluguel Mensal" : "Promoção por apenas"}
           </span>
@@ -114,7 +114,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
       {/* ── 4. Rodapé Verde de Localização & Telefone de Contato ── */}
       <div className="pt-6 border-t-2 border-slate-300 flex items-center justify-between px-2">
         <div className="flex items-center gap-4">
-          <div className="size-14 rounded-full bg-[#48BB78] flex items-center justify-center text-foreground shrink-0 shadow">
+          <div className="size-14 rounded-full bg-emerald-500 flex items-center justify-center text-foreground shrink-0 shadow">
             <MapPin className="size-8" />
           </div>
           <div>
@@ -128,7 +128,7 @@ export function RealEstateSeasonRentalGrid({ data, scale = 1, className = "" }: 
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="size-14 rounded-full bg-[#48BB78] flex items-center justify-center text-foreground shrink-0 shadow">
+          <div className="size-14 rounded-full bg-emerald-500 flex items-center justify-center text-foreground shrink-0 shadow">
             <Phone className="size-8" />
           </div>
           <div className="text-right">

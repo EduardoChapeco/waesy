@@ -223,7 +223,7 @@ export const listAdminProducts = createServerFn({ method: "GET" })
  } catch (e) {
  if (e instanceof SupabaseUnconfiguredError) throw e;
  console.error("[admin-catalog] listAdminProducts error:", e);
- return [];
+ throw new Error("Erro ao listar produtos do catálogo.");
  }
 });
 
@@ -766,7 +766,7 @@ export async function _listCollections(store_id?: string) {
 
  let query = db
  .from("collections")
- .select("id, name, slug, status, sort_order")
+ .select("id, name, slug, cover_url, status, sort_order")
  .order("sort_order", { ascending: true });
 
  if (store_id) {
@@ -2738,8 +2738,9 @@ export const listStoreBrands = createServerFn({ method: "GET" })
       });
       return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
     } catch (e) {
+      if (e instanceof SupabaseUnconfiguredError) throw e;
       console.error("[admin-catalog] listStoreBrands error:", e);
-      return [];
+      throw new Error("Erro ao listar marcas da loja.");
     }
   });
 

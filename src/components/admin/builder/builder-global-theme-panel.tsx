@@ -39,10 +39,9 @@ const PALETTE_PRESETS = [
 ];
 
 const FONT_PRESETS = [
- { id: "Inter, sans-serif", label: "Inter (Moderna e Neutra)" },
+ { id: "Inter, sans-serif", label: "Inter (Canônica e Neutra)" },
  { id: "'Plus Jakarta Sans', sans-serif", label: "Plus Jakarta Sans (Fintech/SaaS)" },
  { id: "Outfit, sans-serif", label: "Outfit (Geométrica e Elegante)" },
- { id: "'Playfair Display', serif", label: "Playfair Display (Editorial e Luxo)" },
  { id: "Montserrat, sans-serif", label: "Montserrat (Impacto e Títulos)" },
 ];
 

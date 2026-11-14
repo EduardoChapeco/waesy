@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { DollarSign, Plus, Search, Percent, TrendingDown, TrendingUp, Tag, ExternalLink, Edit2, Trash2, CheckCircle2, Package, Layers, Link as LinkIcon, Copy, Save } from "lucide-react";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { listPriceTables, createPriceTable, updatePriceTable, deletePriceTable, listPriceTableItems, upsertPriceTableItem, type PriceTableDTO, type PriceTableItemDTO } from "@/services/price-tables.functions";
 import { formatMoney } from "@/lib/money";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
@@ -19,11 +19,14 @@ export const Route = createFileRoute("/workspace/catalogo/tabelas")({
  head: () => ({ meta: [{ title: "Tabelas de Preços (B2B, Atacado, Varejo) | Workspace" }] }),
  loader: async () => {
    try {
- const tables = await listPriceTables().catch(() => []);
- return { tables };
-   } catch (err) {
+ const tables = await listPriceTables();
+ return { tables: tables || [], loadError: null as string | null };
+   } catch (err: any) {
      console.error("[loader:workspace.catalogo.tabelas] Unhandled loader error:", err);
-     return { tables: null };
+     return {
+       tables: [] as PriceTableDTO[],
+       loadError: err?.message || "Não foi possível carregar as tabelas de preços.",
+     };
    }
  },
  component: WorkspacePriceTablesPage,
@@ -215,7 +218,8 @@ function PriceTableItemsDesktopView({
 }
 
 function WorkspacePriceTablesPage() {
- const { tables: initialTables } = ((Route.useLoaderData?.() as any) || {});
+ const { tables: initialTables = [], loadError = null } = ((Route.useLoaderData?.() as any) || {});
+ const router = useRouter();
  const { isCompact } = useWindowSizeClass();
  const isMobile = isCompact;
  const [tables, setTables] = useState<PriceTableDTO[]>(initialTables || []);
@@ -255,11 +259,15 @@ function WorkspacePriceTablesPage() {
  };
 
  const refreshTables = async () => {
- const updated = await listPriceTables().catch(() => []);
+ try {
+ const updated = await listPriceTables();
  setTables(updated);
  if (updated.length > 0 && (!selectedTable || !updated.some((t) => t.id === selectedTable.id))) {
  setSelectedTable(updated[0]);
  loadItems(updated[0].id);
+ }
+ } catch (err: any) {
+ toast.error(err?.message || "Erro ao atualizar tabelas de preços.");
  }
  };
 
@@ -367,6 +375,13 @@ function WorkspacePriceTablesPage() {
  />
 
  {/* Grid Principal: Lista Lateral de Tabelas + Edição In-Page de Preços */}
+ {loadError && (
+ <ErrorState
+ title="Erro ao carregar tabelas de preços"
+ description={loadError}
+ onRetry={() => router.invalidate()}
+ />
+ )}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
  {/* Coluna 1: Lista de Tabelas (4 cols) */}
  <div className="lg:col-span-4 space-y-3">

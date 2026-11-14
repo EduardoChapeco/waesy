@@ -15,6 +15,9 @@ import {
   infotravelSearchCarRentals,
   infotravelSearchFlights,
   infotravelSearchHotels,
+  resolveStoreInfotravelCredentials,
+  sanitizeInfotravelSearchText,
+  type InfoTravelOperatorSlug,
 } from "@/services/infotravel";
 import type {
   TravelOfferDTO,
@@ -54,22 +57,112 @@ export function resolveProviderCodesForSearch(query: Pick<NormalizedSearchQuery,
  * Consulta de ofertas multi-fornecedor com tolerância a falhas parciais.
  * Se um provedor cair ou expirar, os demais continuam e o sistema reporta resultados sem jank.
  */
+const INFOTRAVEL_OPERATOR_SLUGS = new Set<string>([
+  "infotravel",
+  "infotravel_default",
+  "orinter",
+  "frt",
+  "incomum",
+  "cativa",
+  "befly",
+  "confianca",
+]);
+
+function normalizeInfoTravelOperatorSlug(code: string): InfoTravelOperatorSlug {
+  const clean = code.toLowerCase().replace(/^infotravel_/, "");
+  if (
+    clean === "orinter" ||
+    clean === "frt" ||
+    clean === "incomum" ||
+    clean === "cativa" ||
+    clean === "befly" ||
+    clean === "confianca" ||
+    clean === "infotravel_default"
+  ) {
+    return clean;
+  }
+  return "infotravel_default";
+}
+
 export async function executeMultiProviderSearch(
   query: NormalizedSearchQuery
 ): Promise<{ offers: TravelOfferDTO[]; providersResponded: string[]; errors: string[] }> {
   const supabase = getServerClient();
 
-  // 1. Carregar integrações ativas configuradas pela agência
-  const { data: integrations } = await supabase
-    .from("travel_operator_integrations")
-    .select("id, provider_code, display_name, engine_type, default_markup_percent, is_active, vault_secret_id")
+  // 1. Carregar integrações ativas configuradas pela agência (ambas tabelas canônicas)
+  const { data: integrations } = await (supabase.from("travel_operator_integrations") as any)
+    .select("id, provider_code, operator_slug, display_name, engine_type, default_markup_percent, is_active, vault_secret_id")
     .eq("store_id", query.agencyId)
     .eq("is_active", true);
 
+  let legacyCreds: Array<{ provider: string; is_active: boolean }> = [];
+  try {
+    const legacyRes = await (supabase.from("integration_credentials") as any)
+      ?.select?.("provider, is_active")
+      ?.eq?.("store_id", query.agencyId)
+      ?.eq?.("is_active", true);
+    if (Array.isArray(legacyRes?.data)) {
+      legacyCreds = legacyRes.data;
+    }
+  } catch {
+    legacyCreds = [];
+  }
+
+  type ActiveProviderEntry = {
+    provider_code: string;
+    operator_slug?: string | null;
+    engine_type?: string | null;
+    default_markup_percent?: number | null;
+    vault_secret_id?: string | null;
+    fromLegacyTable?: boolean;
+  };
+
+  const mergedProviders: ActiveProviderEntry[] = Array.isArray(integrations)
+    ? integrations.map((row: any) => ({ ...row }))
+    : [];
+
+  const seenCodes = new Set(mergedProviders.map((p) => String(p.provider_code || "").toLowerCase()));
+  for (const leg of legacyCreds) {
+    const rawProvider = String(leg.provider || "").toLowerCase();
+    if (!rawProvider) continue;
+    const isTravel =
+      rawProvider === "wooba" ||
+      rawProvider === "infotravel" ||
+      rawProvider.startsWith("infotravel_") ||
+      INFOTRAVEL_OPERATOR_SLUGS.has(rawProvider);
+    if (!isTravel) continue;
+    if (!seenCodes.has(rawProvider)) {
+      seenCodes.add(rawProvider);
+      const opSlug =
+        rawProvider.startsWith("infotravel_") || INFOTRAVEL_OPERATOR_SLUGS.has(rawProvider)
+          ? normalizeInfoTravelOperatorSlug(rawProvider)
+          : undefined;
+      mergedProviders.push({
+        provider_code: rawProvider === "wooba" ? "wooba" : opSlug === "infotravel_default" && rawProvider === "infotravel" ? "infotravel" : rawProvider,
+        operator_slug: opSlug || null,
+        engine_type: rawProvider === "wooba" ? "wooba_v2" : "infotravel_v1",
+        default_markup_percent: 10,
+        vault_secret_id: "__integration_credentials__",
+        fromLegacyTable: true,
+      });
+    }
+  }
+
   const allowedProviderCodes = resolveProviderCodesForSearch(query);
-  const activeProviders = (integrations || []).filter((provider) =>
-    !allowedProviderCodes || allowedProviderCodes.includes(provider.provider_code as any),
-  );
+  const activeProviders = mergedProviders.filter((provider) => {
+    const code = String(provider.provider_code || "").toLowerCase();
+    const isInfoFamily =
+      provider.engine_type === "infotravel_v1" ||
+      code.startsWith("infotravel_") ||
+      INFOTRAVEL_OPERATOR_SLUGS.has(code);
+    const channelCode = isInfoFamily ? "infotravel" : code;
+    return (
+      !allowedProviderCodes ||
+      allowedProviderCodes.includes(code as any) ||
+      allowedProviderCodes.includes(channelCode as any)
+    );
+  });
+
   if (activeProviders.length === 0) {
     return {
       offers: [],
@@ -87,21 +180,31 @@ export async function executeMultiProviderSearch(
   // 2. Despacho em paralelo com Promise.allSettled
   const searchPromises = activeProviders.map(async (provider) => {
     try {
-      if (!provider.vault_secret_id) {
+      const codeLower = String(provider.provider_code || "").toLowerCase();
+      const isInfoTravelProvider =
+        provider.engine_type === "infotravel_v1" ||
+        codeLower.startsWith("infotravel_") ||
+        INFOTRAVEL_OPERATOR_SLUGS.has(codeLower);
+
+      if (!provider.vault_secret_id && !isInfoTravelProvider) {
         errors.push(`${provider.provider_code}: BLOCKED — PROVIDER CREDENTIAL REQUIRED (credenciais ausentes no cofre)`);
         return;
       }
 
-      if (provider.provider_code === "infotravel" || provider.engine_type === "infotravel_v1") {
-        // Chamada ao conector InfoTravel REST/JSON
+      if (isInfoTravelProvider) {
+        const opSlug = normalizeInfoTravelOperatorSlug(String(provider.operator_slug || codeLower));
+        const providerTag = codeLower === "infotravel" ? "infotravel" : opSlug;
         const markupPct = Number(provider.default_markup_percent ?? 10);
+        let ranHandler = false;
+
         if (query.productType === "car") {
           const pickupLoc = query.destinationIata || query.originIata || query.destinationTerminalId;
           const dropoffDate = query.returnDate;
           if (!pickupLoc || !dropoffDate) {
-            errors.push("infotravel: local e data de devolução são obrigatórios para cotar carro");
+            errors.push(`${providerTag}: local e data de devolução são obrigatórios para cotar carro`);
             return;
           }
+          ranHandler = true;
           const carQuotes = await infotravelSearchCarRentals({
             data: {
               pickupAirportOrCity: pickupLoc,
@@ -113,7 +216,7 @@ export async function executeMultiProviderSearch(
             const dailyAmountBrl = Number(car.dailyRateBrl);
             const totalAmountBrl = Number(car.totalRateBrl);
             if (!Number.isFinite(dailyAmountBrl) || dailyAmountBrl <= 0 || !Number.isFinite(totalAmountBrl) || totalAmountBrl <= 0) {
-              errors.push(`infotravel: oferta de carro ${car.id} sem tarifa válida`);
+              errors.push(`${providerTag}: oferta de carro ${car.id} sem tarifa válida`);
               continue;
             }
             const dailyCents = Math.round(dailyAmountBrl * 100);
@@ -123,7 +226,7 @@ export async function executeMultiProviderSearch(
               agencyMarkupPercent: markupPct,
             });
             offers.push({
-              offer_id: `infotravel_car_${car.id}`,
+              offer_id: `${providerTag}_car_${car.id}`,
               provider_code: "infotravel",
               product_type: "car",
               pricing,
@@ -132,10 +235,11 @@ export async function executeMultiProviderSearch(
               policy_status: "within_policy",
               policy_violation_reasons: [],
               rules: {
-                cancellation_policy: "Cancelamento grátis até 24h antes da retirada",
+                cancellation_policy: "Cancelamento conforme regra da locadora",
                 is_refundable: true,
               },
               details: {
+                operator_slug: opSlug,
                 rental_company: car.rentalCompany,
                 vehicle_category: car.vehicleCategory,
                 vehicle_model_example: car.vehicleModelExample,
@@ -145,12 +249,11 @@ export async function executeMultiProviderSearch(
                 daily_rate_cents: dailyCents,
                 daily_rate_brl: dailyAmountBrl,
                 total_rate_brl: totalAmountBrl,
-                free_cancellation: undefined,
-                payment_timing: undefined,
               },
             });
           }
         } else if (query.productType === "flight" && query.originIata && query.destinationIata) {
+          ranHandler = true;
           const gdsFlights = await infotravelSearchFlights(query.agencyId, {
             origin: query.originIata,
             destination: query.destinationIata,
@@ -160,7 +263,7 @@ export async function executeMultiProviderSearch(
             const flightNumber = String(f.flight_number || "").trim();
             const netAmount = Number(f.price);
             if (!flightNumber || !Number.isFinite(netAmount) || netAmount <= 0) {
-              errors.push("infotravel: oferta aérea sem identificador ou tarifa válida");
+              errors.push(`${providerTag}: oferta aérea sem identificador ou tarifa válida`);
               continue;
             }
             const netCents = Math.round(netAmount * 100);
@@ -169,7 +272,7 @@ export async function executeMultiProviderSearch(
               agencyMarkupPercent: markupPct,
             });
             offers.push({
-              offer_id: `infotravel_flt_${flightNumber}`,
+              offer_id: `${providerTag}_flt_${flightNumber}`,
               provider_code: "infotravel",
               product_type: "flight",
               pricing,
@@ -181,6 +284,8 @@ export async function executeMultiProviderSearch(
                 is_refundable: undefined,
               },
               details: {
+                operator_slug: opSlug,
+                airline: f.airline,
                 flight_number: f.flight_number,
                 origin: f.origin,
                 destination: f.destination,
@@ -190,9 +295,10 @@ export async function executeMultiProviderSearch(
         } else if (query.productType === "hotel" && query.destinationIata) {
           const checkout = query.returnDate;
           if (!checkout) {
-            errors.push("infotravel: data de checkout é obrigatória para cotar hotel");
+            errors.push(`${providerTag}: data de checkout é obrigatória para cotar hotel`);
             return;
           }
+          ranHandler = true;
           const gdsHotels = await infotravelSearchHotels(query.agencyId, {
             city: query.destinationIata,
             checkin: query.departureDate,
@@ -202,7 +308,7 @@ export async function executeMultiProviderSearch(
             const hotelName = String((h as any).name || "").trim();
             const netAmount = Number((h as any).price_per_night ?? (h as any).price);
             if (!hotelName || !Number.isFinite(netAmount) || netAmount <= 0) {
-              errors.push("infotravel: hotel sem identificação ou tarifa válida");
+              errors.push(`${providerTag}: hotel sem identificação ou tarifa válida`);
               continue;
             }
             const netCents = Math.round(netAmount * 100);
@@ -211,7 +317,7 @@ export async function executeMultiProviderSearch(
               agencyMarkupPercent: markupPct,
             });
             offers.push({
-              offer_id: `infotravel_htl_${hotelName}`,
+              offer_id: `${providerTag}_htl_${hotelName}`,
               provider_code: "infotravel",
               product_type: "hotel",
               pricing,
@@ -223,16 +329,91 @@ export async function executeMultiProviderSearch(
                 is_refundable: undefined,
               },
               details: {
+                operator_slug: opSlug,
                 hotel_name: hotelName,
                 city: query.destinationIata,
               },
             });
           }
+        } else if (query.productType === "package") {
+          const destTarget = sanitizeInfotravelSearchText(query.destinationIata || query.destinationTerminalId || "");
+          if (!destTarget || !query.returnDate) {
+            errors.push(`${providerTag}: destino e data de volta são obrigatórios para cotar pacote`);
+            return;
+          }
+          const directCreds = await resolveStoreInfotravelCredentials(query.agencyId, opSlug);
+          if (!directCreds) {
+            errors.push(`${providerTag}: BLOCKED — PROVIDER CREDENTIAL REQUIRED (credenciais InfoTravel ausentes ou incompletas)`);
+            return;
+          }
+          ranHandler = true;
+          const pkgRes = await fetch(`${directCreds.baseUrl}/api/v1/utility/packageAvail`, {
+            method: "POST",
+            headers: directCreds.authHeader,
+            body: JSON.stringify({
+              destination: destTarget,
+              departure: query.departureDate,
+              arrival: query.returnDate,
+              occupancies: [{ adults: query.adultsCount, childrenAges: [] }],
+              operator: opSlug,
+            }),
+            signal: AbortSignal.timeout(20000),
+          });
+          if (!pkgRes.ok) {
+            const errTxt = await pkgRes.text().catch(() => "");
+            errors.push(`${providerTag}: Erro HTTP ${pkgRes.status} na consulta de pacotes (${errTxt.slice(0, 120)})`);
+            return;
+          }
+          const pkgJson = await pkgRes.json().catch(() => ({}));
+          const rawPkgs = Array.isArray(pkgJson?.packageAvail) ? pkgJson.packageAvail : [];
+          for (const pkg of rawPkgs) {
+            const pkgId = String(pkg?.id || "").trim();
+            const pkgName = String(pkg?.name || pkg?.hotel?.name || "").trim();
+            const priceTotalBrl = Number(pkg?.price?.amount);
+            if (!pkgId || !pkgName || !Number.isFinite(priceTotalBrl) || priceTotalBrl <= 0) {
+              continue;
+            }
+            const taxesBrl = Math.max(0, Number(pkg?.taxes?.amount) || 0);
+            const netBrl = Math.max(0, priceTotalBrl - taxesBrl);
+            const pricing = calculateNormalizedPricing({
+              netAmountCents: Math.round(netBrl * 100),
+              taxAmountCents: Math.round(taxesBrl * 100),
+              agencyMarkupPercent: markupPct,
+            });
+            offers.push({
+              offer_id: `${providerTag}_pkg_${pkgId}`,
+              provider_code: "infotravel",
+              product_type: "package",
+              pricing,
+              expires_at: new Date(Date.now() + 20 * 60 * 1000).toISOString(),
+              revalidate_required: true,
+              policy_status: "within_policy",
+              policy_violation_reasons: [],
+              rules: {
+                fare_family: pkg?.board?.name ? String(pkg.board.name) : undefined,
+              },
+              details: {
+                operator_slug: opSlug,
+                package_name: pkgName,
+                destination: destTarget,
+                hotel_name: typeof pkg?.hotel?.name === "string" ? pkg.hotel.name : undefined,
+                board_type: typeof pkg?.board?.name === "string" ? pkg.board.name : undefined,
+                includes_flight: Boolean(pkg?.includesFlight),
+                includes_hotel: Boolean(pkg?.includesHotel),
+                includes_transfer: Boolean(pkg?.includesTransfer),
+                image_url: typeof pkg?.hotel?.imageUrl === "string" ? pkg.hotel.imageUrl : typeof pkg?.imageUrl === "string" ? pkg.imageUrl : undefined,
+              },
+            });
+          }
         }
-        providersResponded.push("infotravel");
-      } else if (provider.provider_code === "wooba") {
+        if (ranHandler) {
+          providersResponded.push(providerTag);
+        }
+      } else if (codeLower === "wooba") {
+        let ranWooba = false;
         // Chamada ao conector Wooba Travellink
-        if (query.productType === "flight" && query.originIata && query.destinationIata) {
+        if ((query.productType === "flight" || query.productType === "package") && query.originIata && query.destinationIata) {
+          ranWooba = true;
           const woobaOffers = await searchWoobaFlights({
             agencyId: query.agencyId,
             originIata: query.originIata,
@@ -245,19 +426,22 @@ export async function executeMultiProviderSearch(
           offers.push(...woobaOffers);
         }
         if (query.productType === "car") {
-          const pickupLoc = query.destinationIata || query.originIata || query.destinationTerminalId || "CGH";
-          const dropoffDate =
-            query.returnDate ||
-            new Date(new Date(query.departureDate).getTime() + 3 * 86400000).toISOString().slice(0, 10);
+          const pickupLoc = query.destinationIata || query.originIata || query.destinationTerminalId;
+          if (!pickupLoc || !query.returnDate) {
+            errors.push("wooba: local e data de devolução são obrigatórios para cotar carro");
+            return;
+          }
+          ranWooba = true;
           const woobaCarOffers = await searchWoobaCars({
             agencyId: query.agencyId,
             pickupLocationCode: pickupLoc,
             dropoffLocationCode: pickupLoc,
             pickupDate: query.departureDate,
-            dropoffDate,
+            dropoffDate: query.returnDate,
           });
           offers.push(...woobaCarOffers);
         } else if (query.productType === "bus" && query.originTerminalId && query.destinationTerminalId) {
+          ranWooba = true;
           const busRoutes = await searchWoobaBusRoutes({
             agencyId: query.agencyId,
             originTerminalCityId: query.originTerminalId,
@@ -297,12 +481,11 @@ export async function executeMultiProviderSearch(
             });
           }
         }
-        providersResponded.push("wooba");
-      } else if (provider.provider_code === "rexturadvance") {
-        // Chamada ao conector RexturAdvance / RAIAX
-        providersResponded.push("rexturadvance");
+        if (ranWooba) {
+          providersResponded.push("wooba");
+        }
       } else {
-        errors.push(`${provider.provider_code}: Provedor não suportado`);
+        errors.push(`${provider.provider_code}: Conector não implementado ou sem contrato operacional ativo`);
       }
     } catch (err: any) {
       errors.push(`${provider.provider_code}: ${err?.message || "Timeout de conexão"}`);

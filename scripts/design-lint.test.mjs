@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import { lintSource, evaluateRatchet, parseInlineExemptions, getModule, hasTopLevelJsxAttribute } from './design-lint.mjs';
+import { lintSource, evaluateRatchet, parseInlineExemptions, getModule, hasTopLevelJsxAttribute, isTestOrGeneratedFile } from './design-lint.mjs';
 
 console.log(`\n======================================================================`);
-console.log(`SUÍTE DE TESTES NORMATIVOS — DESIGN LINT V2 (DL-01 a DL-30)`);
+console.log(`SUÍTE DE TESTES NORMATIVOS — DESIGN LINT V2 (DL-01 a DL-33)`);
 console.log(`======================================================================\n`);
 
 let passedTests = 0;
@@ -49,7 +49,8 @@ const testConfig = {
     'DL-29': { severity: 'P2', enabled: true },
     'DL-30': { severity: 'P2', enabled: true },
     'DL-31': { severity: 'P0', enabled: true },
-    'DL-32': { severity: 'P1', enabled: true }
+    'DL-32': { severity: 'P1', enabled: true },
+    'DL-33': { severity: 'P1', enabled: true }
   },
   allowlist: [
     {
@@ -492,6 +493,131 @@ runTest('Catraca: Rejeita quando houver aumento de violações (regressão)', ()
   const result = evaluateRatchet(current, baseline);
   assert.strictEqual(result.passed, false);
   assert.ok(result.regressions.length >= 3, 'Deve listar regressões em total, severidade, regra e módulo');
+});
+
+// 28. Precisão contra falsos positivos e cobertura positiva (DL-01, DL-02, DL-07, Generics TS, Testes)
+runTest('DL-01: Ignora entidades HTML &#123; e códigos numéricos #8921, mas flagra cores reais', () => {
+  const code = `
+    const entity = "&#123;&#160;";
+    const orderLabel = <span>Pedido #8921 e Lote #8596</span>;
+    const realHex = <div className="bg-[#ffffff]" />;
+  `;
+  const violations = lintSource(code, 'src/components/app/orders.tsx', testConfig).filter(v => v.id === 'DL-01');
+  assert.strictEqual(violations.length, 1);
+  assert.strictEqual(violations[0].match, '#ffffff');
+});
+
+runTest('DL-02: Ignora variantes Tailwind group-[...] e has-[...], plus regexes JS, mas flagra w-[...]', () => {
+  const code = `
+    const toaster = "group-[.toaster]:bg-card has-[:disabled]:opacity-50";
+    const keyRe = /\\bsk-[A-Za-z0-9]{32,}\\b/g;
+    const bad = <div className="w-[327px]" />;
+  `;
+  const violations = lintSource(code, 'src/components/ui/toaster.tsx', testConfig).filter(v => v.id === 'DL-02');
+  assert.strictEqual(violations.length, 1);
+  assert.strictEqual(violations[0].match, 'w-[327px]');
+});
+
+runTest('DL-07: Permite supressão explícita box-shadow: none em CSS e bloqueia shadow-md em TSX', () => {
+  const cssCode = `
+    --shadow-sm: none;
+    .shadow-sm,
+    .shadow-md {
+      box-shadow: none;
+    }
+  `;
+  const tsxCode = `<div className="bg-card shadow-md">Card</div>`;
+  const cssViolations = lintSource(cssCode, 'src/styles.css', testConfig).filter(v => v.id === 'DL-07');
+  const tsxViolations = lintSource(tsxCode, 'src/components/app/card.tsx', testConfig).filter(v => v.id === 'DL-07');
+  assert.strictEqual(cssViolations.length, 0);
+  assert.strictEqual(tsxViolations.length, 1);
+});
+
+runTest('Escopo: isTestOrGeneratedFile exclui testes, routeTree.gen.ts e supabase/types.ts, mantendo rotas e componentes', () => {
+  assert.strictEqual(isTestOrGeneratedFile('src/services/foo.test.ts'), true);
+  assert.strictEqual(isTestOrGeneratedFile('src/components/__tests__/bar.tsx'), true);
+  assert.strictEqual(isTestOrGeneratedFile('src/routeTree.gen.ts'), true);
+  assert.strictEqual(isTestOrGeneratedFile('src/integrations/supabase/types.ts'), true);
+  assert.strictEqual(isTestOrGeneratedFile('src/components/app/Card.tsx'), false);
+  assert.strictEqual(isTestOrGeneratedFile('src/styles.css'), false);
+});
+
+runTest('DL-15: Reconhece primitivas DS e Button asChild, ignora stopPropagation wrapper, mas bloqueia div/a interativo sem foco', () => {
+  const code = `
+    <div>
+      <DropdownMenuItem onClick={() => act()}>Abrir</DropdownMenuItem>
+      <div onClick={(e) => e.stopPropagation()}><Button size="default">Ok</Button></div>
+      <Button asChild><a href="/x" onClick={nav}>Ir</a></Button>
+      <div className="cursor-pointer" onClick={() => danger()}>Clicavel Sem Foco</div>
+      <a href="/y" onClick={() => danger()}>Link Sem Foco</a>
+    </div>
+  `;
+  const violations = lintSource(code, 'src/components/app/actions.tsx', testConfig).filter(v => v.id === 'DL-15');
+  assert.strictEqual(violations.length, 2, 'Apenas div onClick e link onClick sem focus-visible devem falhar DL-15');
+});
+
+runTest('DL-14: Ignora icon={<Plane className="size-5"/>} e checkbox nativo, mas flagra DropdownMenuItem h-9', () => {
+  const code = `
+    <div>
+      <ActionCard onClick={go} icon={<Plane className="size-5" />} />
+      <input type="checkbox" className="h-4 w-4" onChange={toggle} />
+      <DropdownMenuItem className="h-9" onClick={act}>Compacto</DropdownMenuItem>
+    </div>
+  `;
+  const violations = lintSource(code, 'src/components/app/items.tsx', testConfig).filter(v => v.id === 'DL-14');
+  assert.strictEqual(violations.length, 1);
+  assert.strictEqual(violations[0].match, 'h-9');
+});
+
+runTest('DL-12: Ignora [1, 2, 3].map estático e metadata?.slug, e reconhece "Nenhuma" capitalizado como EmptyState', () => {
+  const staticSkeletonCode = `
+    export function Page() {
+      const { isLoading, isError } = useQuery({ queryKey: ['k'] });
+      const slug = metadata?.slug;
+      if (isLoading) return <div>{[1, 2, 3].map(i => <span key={i} />)}</div>;
+      if (isError) return <div>Erro</div>;
+      return <div>{slug}</div>;
+    }
+  `;
+  const capitalizedEmptyCode = `
+    export function ListPage() {
+      const { data: items, isLoading, isError } = useQuery({ queryKey: ['items'] });
+      if (isLoading) return <Skeleton />;
+      if (isError) return <div>Erro</div>;
+      if (!items) return <div>Nenhuma oferta encontrada</div>;
+      return <div>{items.map(i => <span key={i.id}>{i.name}</span>)}</div>;
+    }
+  `;
+  assert.strictEqual(lintSource(staticSkeletonCode, 'src/routes/page.tsx', testConfig).filter(v => v.id === 'DL-12').length, 0);
+  assert.strictEqual(lintSource(capitalizedEmptyCode, 'src/routes/list.tsx', testConfig).filter(v => v.id === 'DL-12').length, 0);
+});
+
+runTest('DL-30: Permite overflow-x-auto em role="tablist" e waesy-tab-strip, mas bloqueia div comum', () => {
+  const code = `
+    <div>
+      <div role="tablist" className="flex overflow-x-auto">Abas</div>
+      <div className="waesy-tab-strip overflow-x-auto">Pills</div>
+      <div className="flex overflow-x-auto">Vazamento Horizontal</div>
+    </div>
+  `;
+  const violations = lintSource(code, 'src/components/app/tabs.tsx', testConfig).filter(v => v.id === 'DL-30');
+  assert.strictEqual(violations.length, 1);
+});
+
+runTest('DL-33: Detecta paleta crua amber/yellow/lime e permite tokens semanticos warning/warning-strong', () => {
+  const badCode = `<div className="bg-amber-50 text-amber-800 border-yellow-300">Aviso cru</div>`;
+  const goodCode = `<div className="bg-warning/15 text-warning-strong border-warning/30">Aviso tokenizado</div>`;
+  const badViolations = lintSource(badCode, 'src/components/app/alert.tsx', testConfig).filter(v => v.id === 'DL-33');
+  const goodViolations = lintSource(goodCode, 'src/components/app/alert.tsx', testConfig).filter(v => v.id === 'DL-33');
+  assert.strictEqual(badViolations.length, 3);
+  assert.strictEqual(goodViolations.length, 0);
+});
+
+runTest('DL-04: Ignora negação JS !loading e !== em arquivos TS/TSX, mas flagra !p-4 e !block', () => {
+  const safeCode = `export function ok(loading: boolean, val: string) { if (!loading && val !== 'x') return 1; return 0; }`;
+  const badCode = `<div className="!p-4 !block">Forçado</div>`;
+  assert.strictEqual(lintSource(safeCode, 'src/services/safe.ts', testConfig).filter(v => v.id === 'DL-04').length, 0);
+  assert.strictEqual(lintSource(badCode, 'src/components/app/bad.tsx', testConfig).filter(v => v.id === 'DL-04').length, 2);
 });
 
 console.log(`\n----------------------------------------------------------------------`);

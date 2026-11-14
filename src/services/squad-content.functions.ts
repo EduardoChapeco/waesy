@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getServerClient } from '@/lib/supabase';
 import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
+import { TOKEN_HEX } from '@/lib/design-tokens';
 import { executeUnifiedAiCall } from '@/services/api-orchestrator.functions';
 
 export type PostFormat = 'single' | 'carousel' | 'story_reels';
@@ -73,20 +74,20 @@ export function renderSlideHTML5(params: {
   cta?: string | null;
 }): string {
   const { headline, body, slideIndex, totalSlides, companyName, template, cta } = params;
-  const primaryColor = /^#[0-9a-fA-F]{6}$/.test(params.primaryColor || "") ? params.primaryColor! : '#4f46e5';
+  const primaryColor = /^#[0-9a-fA-F]{6}$/.test(params.primaryColor || "") ? params.primaryColor! : TOKEN_HEX.blue600;
 
-  let bgStyle = 'background: #090d16; color: #f8fafc;';
+  let bgStyle = `background: ${TOKEN_HEX.neutral950}; color: ${TOKEN_HEX.neutral50};`;
   let fontImport = '@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap");';
   let fontFamily = "'Plus Jakarta Sans', sans-serif";
 
   if (template === 'clean-white') {
-    bgStyle = 'background: #ffffff; color: #0f172a;';
+    bgStyle = `background: ${TOKEN_HEX.white}; color: ${TOKEN_HEX.neutral900};`;
   } else if (template === 'bold-color') {
-    bgStyle = `background: radial-gradient(circle at top right, ${primaryColor}33, #090d16 70%); color: #ffffff;`;
+    bgStyle = `background: radial-gradient(circle at top right, ${primaryColor}33, ${TOKEN_HEX.neutral950} 70%); color: ${TOKEN_HEX.white};`;
   } else if (template === 'editorial') {
-    fontImport = '@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,900;1,400&family=Inter:wght@400;600&display=swap");';
-    fontFamily = "'Playfair Display', serif";
-    bgStyle = 'background: #0f172a; color: #f1f5f9;';
+    fontImport = '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");';
+    fontFamily = "'Inter', sans-serif";
+    bgStyle = `background: ${TOKEN_HEX.neutral900}; color: ${TOKEN_HEX.neutral100};`;
   }
 
   return `<!DOCTYPE html>
@@ -155,7 +156,7 @@ export function renderSlideHTML5(params: {
       padding: 16px 36px;
       border-radius: 20px;
       background: ${primaryColor};
-      color: #ffffff;
+      color: ${TOKEN_HEX.white};
       font-size: 22px;
       font-weight: 800;
     }
@@ -163,7 +164,7 @@ export function renderSlideHTML5(params: {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid ${TOKEN_HEX.neutral800};
       padding-top: 32px;
       font-size: 20px;
       font-weight: 600;

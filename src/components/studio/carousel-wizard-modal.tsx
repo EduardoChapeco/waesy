@@ -74,7 +74,7 @@ export function CarouselWizardModal({
  badge: 'Chamada Final',
  title: 'Garanta Sua Vaga ou Condição Especial',
  subtitle: 'Acesse nosso portal agora mesmo.',
- body: 'Entre com seu CPF ou Magic Link e tenha acesso completo à sua central 360 graus.',
+ body: 'Entre com seu CPF ou Magic Link e tenha acesso completo à sua central de atendimento.',
  ctaText: 'Acessar Agora',
  backgroundColor: H('0a0f1d'),
  accentColor: H('f59e0b'),

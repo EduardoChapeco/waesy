@@ -1,4 +1,5 @@
 import { getSignedUploadUrl } from "@/services/storage.functions";
+import { resolveNormalizedMimeType } from "@/lib/chat-media-attachment";
 
 /**
  * Realiza upload direto para o Supabase Storage via Signed URL,
@@ -11,15 +12,16 @@ export async function directUploadMedia({
 }: {
  file: File | Blob;
  fileName: string;
- bucket: "product-media" | "cms-media" | "payment-proofs" | "rma-proofs";
-}): Promise<{ url: string }> {
+ bucket: "product-media" | "cms-media" | "payment-proofs" | "rma-proofs" | "post-media" | "public_media";
+}): Promise<{ url: string; mimeType: string }> {
+ const contentType = resolveNormalizedMimeType(file.type, fileName);
  try {
  // 1. Solicita a URL assinada ao servidor
  const res = await getSignedUploadUrl({
  data: {
  fileName,
  bucket,
- contentType: file.type || "application/octet-stream",
+ contentType,
  },
  });
 
@@ -32,7 +34,7 @@ export async function directUploadMedia({
  method: "PUT",
  body: file,
  headers: {
- "Content-Type": file.type || "application/octet-stream",
+ "Content-Type": contentType,
  },
  });
 
@@ -41,7 +43,7 @@ export async function directUploadMedia({
  }
 
  // 3. Retorna a URL pública ou caminho
- return { url: res.publicUrl || res.path };
+ return { url: res.publicUrl || res.path, mimeType: contentType };
  } catch (err: unknown) {
  console.error("[directUploadMedia]", err);
  throw new Error((err instanceof Error ? err.message : String(err)) || "Erro no upload direto");

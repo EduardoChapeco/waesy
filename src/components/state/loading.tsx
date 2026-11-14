@@ -82,7 +82,7 @@ export function ProductRailSkeleton({
  {Array.from({ length: count }).map((_, i) => (
  <div
  key={i}
- className="min-w-0 flex-[0_0_80%] @sm:flex-[0_0_40%] @md:flex-[0_0_33.33%] @lg:flex-[0_0_25%] shrink-0"
+ className="min-w-0 grow-0 basis-4/5 @sm:basis-2/5 @md:basis-1/3 @lg:basis-1/4 shrink-0"
  >
  <ProductCardSkeleton />
  </div>

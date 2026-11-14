@@ -56,12 +56,12 @@ export function GlobalTripCompanionWidget() {
 
   return (
     <>
-      {/* 1. DESKTOP CAPSULE PILL (>= 640px) */}
+      {/* 1. DESKTOP CAPSULE SQUIRCLE (>= 640px) */}
       <div className="hidden sm:flex items-center">
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="h-11 min-h-11 px-4 rounded-full border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg border border-primary/25 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center gap-2 text-xs font-semibold text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Luggage className="size-4 text-primary shrink-0" />
           <div className="flex items-center gap-2 truncate max-w-48">
@@ -75,7 +75,7 @@ export function GlobalTripCompanionWidget() {
               )}
             </span>
           </div>
-          <Badge className="bg-primary/15 text-primary text-3xs px-2 py-0 border-0">
+          <Badge className="bg-primary/15 text-primary text-3xs px-2 py-0 rounded-md border-0">
             Minha Viagem
           </Badge>
         </button>
@@ -86,7 +86,7 @@ export function GlobalTripCompanionWidget() {
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="size-12 min-h-11 min-w-11 rounded-full bg-primary text-primary-foreground border border-primary-foreground/20 flex items-center justify-center cursor-pointer transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="size-12 min-h-11 min-w-11 rounded-xl bg-primary text-primary-foreground border border-primary-foreground/20 flex items-center justify-center cursor-pointer transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="Abrir assistente da Minha Viagem"
         >
           <Luggage className="size-5" />

@@ -3,7 +3,7 @@
  * Design Padrão Apple HIG, integrado com CanonicalStoreProfileView e Proteção por Senha.
  */
 
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { LockKey, ArrowLeft, Storefront } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -175,8 +175,16 @@ export const Route = createFileRoute("/_store/loja/$slug")({
     }
   },
 
-  component: StoreSlugCanonicalPage,
+  component: StoreSlugRouteSwitch,
 });
+
+function StoreSlugRouteSwitch() {
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) {
+    return <Outlet />;
+  }
+  return <StoreSlugCanonicalPage />;
+}
 
 function StoreSlugCanonicalPage() {
   const data = Route.useLoaderData() as any;

@@ -1,5 +1,19 @@
 import { type Proposal } from "@/services/proposals";
 
+export interface ProposalRoomBreakdownItem {
+  id: string;
+  roomNumber: number;
+  roomType: string;
+  label: string;
+  adults: number;
+  children: number;
+  childrenAges: number[];
+  totalReais: number;
+  perPersonReais: number;
+  boardBasis?: string;
+  notes?: string;
+}
+
 export type QuoteTotals = {
   subtotal: number;
   total: number;
@@ -9,8 +23,13 @@ export type QuoteTotals = {
   valorParcelaCartao: number;
   parcelasBoleto: number;
   valorParcelaBoleto: number;
+  paxTotal: number;
   passageirosTotal: number;
+  adultosTotal: number;
+  criancasTotal: number;
   valorPorPessoa: number;
+  valorPorAdulto: number;
+  roomsBreakdown: ProposalRoomBreakdownItem[];
   breakdown: {
     voos: number;
     hoteis: number;
@@ -21,6 +40,78 @@ export type QuoteTotals = {
     extrasOpcionais: number;
   };
 };
+
+export function parsePtBrCurrencyToReais(raw: string): number {
+  const clean = String(raw || "")
+    .replace(/[^\d.,]/g, "")
+    .trim();
+  if (!clean) return 0;
+  if (clean.includes(",")) {
+    const normalized = clean.replace(/\./g, "").replace(",", ".");
+    const num = Number(normalized);
+    return Number.isFinite(num) && num >= 0 ? num : 0;
+  }
+  const num = Number(clean);
+  return Number.isFinite(num) && num >= 0 ? num : 0;
+}
+
+export function extractLegacyRoomsFromNotes(
+  notes?: string | null,
+): ProposalRoomBreakdownItem[] {
+  if (!notes || typeof notes !== "string") return [];
+  const results: ProposalRoomBreakdownItem[] = [];
+  const regex =
+    /Quarto\s+(\d+)\s*(?:[—-]\s*([^(:\n]+))?\s*(?:\((\d+)\s*Adultos?(?:\s*\+\s*(\d+)\s*Crian[çc]as?)?\))?\s*:\s*R\$\s*([\d.,]+)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(notes)) !== null) {
+    const roomNumber = Math.max(1, parseInt(match[1], 10) || results.length + 1);
+    const roomType = (match[2] || "Standard").trim();
+    const adults = Math.max(1, parseInt(match[3], 10) || 2);
+    const children = Math.max(0, parseInt(match[4], 10) || 0);
+    const totalReais = parsePtBrCurrencyToReais(match[5]);
+    const paxCount = Math.max(1, adults + children);
+    if (totalReais > 0) {
+      results.push({
+        id: `legacy_room_${roomNumber}`,
+        roomNumber,
+        roomType,
+        label: `Quarto ${roomNumber}${roomType ? ` — ${roomType}` : ""}`,
+        adults,
+        children,
+        childrenAges: [],
+        totalReais,
+        perPersonReais: totalReais / paxCount,
+      });
+    }
+  }
+  return results;
+}
+
+export function extractGatewayLogisticsFromNotes(notes?: string | null): string | null {
+  if (!notes || typeof notes !== "string") return null;
+  const match = notes.match(/Logística Regional de Aeroporto Gateway:\s*([^\n]+)/i);
+  return match?.[1]?.trim() || null;
+}
+
+export function sanitizeLegacyProposalSummaryNotes(notes?: string | null): string {
+  if (!notes || typeof notes !== "string") return "";
+  let cleaned = notes;
+  cleaned = cleaned.replace(/Proposta de Viagem\s*\([^)]*\)\.?\s*/gi, "");
+  cleaned = cleaned.replace(
+    /Divis[ãa]o por Quartos:[\s\S]*?(?=Itens Inclusos:|Log[íi]stica Regional de Aeroporto Gateway:|$)/gi,
+    "",
+  );
+  cleaned = cleaned.replace(
+    /(?:•\s*)?Quarto\s+\d+\s*[—-][^\n]*?R\$\s*[\d.,]+[\s\S]*?(?=Itens Inclusos:|Log[íi]stica Regional de Aeroporto Gateway:|$)/gi,
+    "",
+  );
+  cleaned = cleaned.replace(
+    /Itens Inclusos:[\s\S]*?(?=Log[íi]stica Regional de Aeroporto Gateway:|$)/gi,
+    "",
+  );
+  cleaned = cleaned.replace(/Log[íi]stica Regional de Aeroporto Gateway:[^\n]*/gi, "");
+  return cleaned.trim();
+}
 
 export function calculateQuoteTotals(state: Partial<Proposal>): QuoteTotals {
   // Safe extraction of arrays
@@ -165,15 +256,108 @@ export function calculateQuoteTotals(state: Partial<Proposal>): QuoteTotals {
       : total / parcelasBoleto;
 
   // Passengers
-  const paxAdults = Number(state.pax_adults ?? (state as any).adults_count) || 0;
-  const paxSeniors = Number(state.pax_seniors) || 0;
-  const paxChildren = Number(state.pax_children ?? (state as any).children_count) || 0;
-  const paxInfants = Number(state.pax_infants) || 0;
-  const passageirosTotal = paxAdults + paxSeniors + paxChildren + paxInfants;
+  const rawRooms: any[] = Array.isArray((state as any).rooms) ? (state as any).rooms : [];
+  const rawNotesText = String(
+    (state as any).raw_special_notes ||
+      (state as any).special_notes ||
+      state.notes ||
+      (state as any).subtitle ||
+      "",
+  );
+  const legacyRoomsFromNotes = extractLegacyRoomsFromNotes(rawNotesText);
 
-  // Value per person (paying). Usually infants don't pay full, but for general average:
-  const payingPax = paxAdults + paxSeniors + paxChildren;
-  const valorPorPessoa = payingPax > 0 ? total / payingPax : total;
+  const roomsSumAdults = rawRooms.reduce((acc, r) => acc + (Number(r?.adults) || 0), 0);
+  const roomsSumChildren = rawRooms.reduce((acc, r) => acc + (Number(r?.children) || 0), 0);
+
+  const paxAdults =
+    Number(state.pax_adults ?? (state as any).adults_count) ||
+    roomsSumAdults ||
+    legacyRoomsFromNotes.reduce((acc, r) => acc + r.adults, 0) ||
+    0;
+  const paxSeniors = Number(state.pax_seniors) || 0;
+  const paxChildren =
+    Number(state.pax_children ?? (state as any).children_count) ||
+    roomsSumChildren ||
+    legacyRoomsFromNotes.reduce((acc, r) => acc + r.children, 0) ||
+    0;
+  const paxInfants = Number(state.pax_infants) || 0;
+  const adultosTotal = paxAdults + paxSeniors;
+  const criancasTotal = paxChildren;
+  const passageirosTotal = adultosTotal + criancasTotal + paxInfants;
+
+  const customFields: Record<string, any> = {
+    ...(dtoPricing?.custom_fields && typeof dtoPricing.custom_fields === "object"
+      ? dtoPricing.custom_fields
+      : {}),
+    ...((state as any).custom_fields && typeof (state as any).custom_fields === "object"
+      ? (state as any).custom_fields
+      : {}),
+  };
+  const customPerPersonCents = Number(customFields.custom_price_per_person_cents || 0);
+
+  // Value per person (paying) and per adult
+  const payingPax = adultosTotal + criancasTotal;
+  const valorPorPessoa =
+    customPerPersonCents > 0
+      ? customPerPersonCents / 100
+      : payingPax > 0
+        ? total / payingPax
+        : total;
+  const valorPorAdulto =
+    customPerPersonCents > 0
+      ? customPerPersonCents / 100
+      : adultosTotal > 0
+        ? total / (adultosTotal + criancasTotal * 0.5)
+        : valorPorPessoa;
+
+  let roomsBreakdown: ProposalRoomBreakdownItem[] = [];
+  if (rawRooms.length > 0) {
+    const validRooms = rawRooms.filter((r) => Number(r?.adults) > 0 || Number(r?.roomNumber) > 0);
+    const totalOccupancyWeight = validRooms.reduce(
+      (acc, r) => acc + Math.max(1, (Number(r?.adults) || 1) + (Number(r?.children) || 0) * 0.5),
+      0,
+    );
+    roomsBreakdown = validRooms.map((r, idx) => {
+      const roomNumber = Number(r?.roomNumber) || idx + 1;
+      const adults = Math.max(1, Number(r?.adults) || 1);
+      const children = Math.max(0, Number(r?.children) || 0);
+      const childrenAges = Array.isArray(r?.childrenAges) ? r.childrenAges.map(Number) : [];
+      const roomType = String(r?.roomType || r?.type || (adults === 1 ? "Single" : adults === 2 ? "Duplo / Casal" : "Familiar"));
+      const explicitCents = Number(r?.price_cents ?? r?.roomTotalCents ?? 0);
+      const legacyMatch = legacyRoomsFromNotes.find((lr) => lr.roomNumber === roomNumber);
+      const weight = Math.max(1, adults + children * 0.5);
+      const roomTotalReais =
+        explicitCents > 0
+          ? explicitCents / 100
+          : legacyMatch && legacyMatch.totalReais > 0
+            ? legacyMatch.totalReais
+            : totalOccupancyWeight > 0
+              ? (total * weight) / totalOccupancyWeight
+              : total / Math.max(1, validRooms.length);
+      const explicitPerPersonCents = Number(r?.price_per_person_cents ?? r?.perPersonCents ?? 0);
+      const paxInRoom = Math.max(1, adults + children);
+      const perPersonReais =
+        explicitPerPersonCents > 0 ? explicitPerPersonCents / 100 : roomTotalReais / paxInRoom;
+      return {
+        id: String(r?.id || `room_${roomNumber}`),
+        roomNumber,
+        roomType,
+        label:
+          typeof r?.label === "string" && r.label.trim()
+            ? r.label.trim()
+            : `Quarto ${roomNumber}${roomType ? ` — ${roomType}` : ""}`,
+        adults,
+        children,
+        childrenAges,
+        totalReais: roomTotalReais,
+        perPersonReais,
+        boardBasis: typeof r?.board_basis === "string" ? r.board_basis : undefined,
+        notes: typeof r?.notes === "string" && r.notes.trim() ? r.notes.trim() : undefined,
+      };
+    });
+  } else if (legacyRoomsFromNotes.length > 0) {
+    roomsBreakdown = legacyRoomsFromNotes;
+  }
 
   return {
     subtotal,
@@ -184,8 +368,13 @@ export function calculateQuoteTotals(state: Partial<Proposal>): QuoteTotals {
     valorParcelaCartao,
     parcelasBoleto,
     valorParcelaBoleto,
+    paxTotal: passageirosTotal,
     passageirosTotal,
+    adultosTotal,
+    criancasTotal,
     valorPorPessoa,
+    valorPorAdulto,
+    roomsBreakdown,
     breakdown: {
       voos,
       hoteis,

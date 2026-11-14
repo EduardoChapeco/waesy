@@ -13,9 +13,24 @@ export type ProposalTemplateCanonicalId =
   | "executivo-b2b"
   | "landscape-presentation"
   | "vertical-premium"
-  | "group-catalog";
+  | "group-catalog"
+  | "bento-grid";
 
-export type ProposalFontPresetId = "editorial" | "modern" | "corporate";
+export type ProposalFontPresetId =
+  | "editorial"
+  | "modern"
+  | "corporate"
+  | "luxury"
+  | "geometric";
+
+export type ProposalNicheId =
+  | "tourism"
+  | "real_estate"
+  | "automotive"
+  | "projects"
+  | "services"
+  | "events"
+  | "retail";
 
 export type ProposalSectionKey =
   | "summary"
@@ -28,6 +43,355 @@ export type ProposalSectionKey =
   | "conditions"
   | "financial"
   | "footer";
+
+export interface ProposalLogoConfig {
+  shape: "contain" | "square" | "circle" | "wide";
+  size: "sm" | "md" | "lg" | "xl";
+  position: "left" | "center" | "right" | "badge";
+  objectPosition: string;
+  scale: number;
+}
+
+export interface ProposalCoverCropConfig {
+  objectPosition: string;
+  scale: number;
+  aspectMode: "auto" | "cover" | "contain";
+  fit: "cover" | "contain";
+}
+
+export interface ProposalPricingDisplayConfig {
+  showPerPerson: boolean;
+  showPerAdult: boolean;
+  showPerRoom: boolean;
+  customPerPersonCents?: number;
+  customPricePerPersonCents?: number;
+}
+
+export interface ProposalNicheSpecField {
+  key: string;
+  label: string;
+  placeholder: string;
+  unit?: string;
+}
+
+export interface ProposalNicheCopy {
+  id: ProposalNicheId;
+  label: string;
+  shortLabel: string;
+  heroKicker: string;
+  badgeLabel: string;
+  specsSectionTitle: string;
+  destinationLabel: string;
+  destinationPlaceholder: string;
+  paxLabel: string;
+  startDateLabel: string;
+  endDateLabel: string;
+  flightsTitle: string;
+  hotelsTitle: string;
+  hotelBadgeLabel: string;
+  hotelNamePlaceholder: string;
+  hotelLocationPlaceholder: string;
+  itineraryTitle: string;
+  itineraryStepPrefix: string;
+  itineraryTitlePlaceholder: string;
+  transfersTitle: string;
+  toursTitle: string;
+  includesTitle: string;
+  excludesTitle: string;
+  conditionsTitle: string;
+  boardingReqLabel: string;
+  financialTitle: string;
+  perPersonLabel: string;
+  roomsTitle: string;
+  showAviationAndHotelTerms: boolean;
+  specFields: ProposalNicheSpecField[];
+}
+
+export const PROPOSAL_NICHE_CATALOG: Record<ProposalNicheId, ProposalNicheCopy> = {
+  tourism: {
+    id: "tourism",
+    label: "Turismo, Viagens & Hotelaria",
+    shortLabel: "Turismo",
+    heroKicker: "Roteiro Curado & Cotação Exclusiva",
+    badgeLabel: "Roteiro & Cotação de Viagem",
+    specsSectionTitle: "Especificações da Viagem",
+    destinationLabel: "Destino",
+    destinationPlaceholder: "Ex: Porto de Galinhas, PE",
+    paxLabel: "Viajantes",
+    startDateLabel: "Saída",
+    endDateLabel: "Retorno",
+    flightsTitle: "Malha Aérea",
+    hotelsTitle: "Hospedagem Selecionada",
+    hotelBadgeLabel: "Hotel & Resort",
+    hotelNamePlaceholder: "Nome do Hotel / Resort",
+    hotelLocationPlaceholder: "Cidade / Praia / Região",
+    itineraryTitle: "Roteiro Dia a Dia",
+    itineraryStepPrefix: "Dia",
+    itineraryTitlePlaceholder: "Ex: Dia 1 • Chegada e Check-in",
+    transfersTitle: "Traslados & Receptivo",
+    toursTitle: "Passeios & Experiências",
+    includesTitle: "O que está incluso",
+    excludesTitle: "Não incluso",
+    conditionsTitle: "Condições Comerciais & Embarque",
+    boardingReqLabel: "Requisitos de Embarque & Documentos",
+    financialTitle: "Investimento da Viagem",
+    perPersonLabel: "Valor por Adulto / Pessoa",
+    roomsTitle: "Divisão e Valores por Quarto",
+    showAviationAndHotelTerms: true,
+    specFields: [
+      { key: "bagagem_franquia", label: "Franquia de Bagagem", placeholder: "Ex: 1 mala 10kg + 1 despachada 23kg" },
+      { key: "seguro_viagem", label: "Seguro Viagem", placeholder: "Ex: Cobertura USD 60.000 inclusa" },
+      { key: "aeroporto_embarque", label: "Aeroporto de Embarque", placeholder: "Ex: Chapecó (XAP) ou Florianópolis (FLN)" },
+      { key: "regime_alimentar", label: "Regime Alimentar Principal", placeholder: "Ex: All Inclusive / Café da Manhã" },
+    ],
+  },
+  real_estate: {
+    id: "real_estate",
+    label: "Imóveis, Arquitetura & Incorporação",
+    shortLabel: "Imóveis",
+    heroKicker: "Dossiê Imobiliário & Apresentação",
+    badgeLabel: "Apresentação & Proposta Imobiliária",
+    specsSectionTitle: "Ficha Técnica do Imóvel",
+    destinationLabel: "Localização / Bairro",
+    destinationPlaceholder: "Ex: Centro / Beira-Mar Norte, Florianópolis",
+    paxLabel: "Configuração",
+    startDateLabel: "Disponibilidade",
+    endDateLabel: "Entrega das Chaves",
+    flightsTitle: "Localização & Mobilidade Urbana",
+    hotelsTitle: "Ficha do Imóvel & Empreendimento",
+    hotelBadgeLabel: "Unidade & Tipologia",
+    hotelNamePlaceholder: "Nome do Edifício / Condomínio / Imóvel",
+    hotelLocationPlaceholder: "Bairro, Cidade e Endereço",
+    itineraryTitle: "Ambientes, Memorial & Planta",
+    itineraryStepPrefix: "Ambiente",
+    itineraryTitlePlaceholder: "Ex: Living Integrado & Varanda Gourmet",
+    transfersTitle: "Infraestrutura do Condomínio",
+    toursTitle: "Diferenciais & Áreas de Lazer",
+    includesTitle: "Acabamentos & Itens Inclusos",
+    excludesTitle: "Taxas & Custos de Escritura/ITBI",
+    conditionsTitle: "Documentação & Condições de Negociação",
+    boardingReqLabel: "Situação Documental, Matrícula & Financiamento",
+    financialTitle: "Valor do Imóvel & Condições",
+    perPersonLabel: "Valor por Unidade / Fração",
+    roomsTitle: "Unidades, Suítes & Tipologias Cotadas",
+    showAviationAndHotelTerms: false,
+    specFields: [
+      { key: "area_privativa_m2", label: "Área Privativa", placeholder: "Ex: 148 m² privativos (210 m² total)", unit: "m²" },
+      { key: "dormitorios_suites", label: "Dormitórios & Suítes", placeholder: "Ex: 3 Suítes + Lavabo" },
+      { key: "vagas_garagem", label: "Vagas de Garagem", placeholder: "Ex: 2 vagas cobertas + Hobby Box" },
+      { key: "condominio_iptu", label: "Condomínio & IPTU", placeholder: "Ex: Cond. R$ 890/mês · IPTU R$ 2.400/ano" },
+      { key: "posicao_solar_andar", label: "Posição Solar & Andar", placeholder: "Ex: Sol da manhã (Leste/Norte) · 12º andar" },
+      { key: "matricula_incorporacao", label: "Matrícula / Registro", placeholder: "Ex: Escritura pública imediata · Aceita financiamento" },
+    ],
+  },
+  automotive: {
+    id: "automotive",
+    label: "Veículos, Seminovos & Frotas",
+    shortLabel: "Veículos",
+    heroKicker: "Especificação Técnica & Condição Especial",
+    badgeLabel: "Ficha Técnica & Proposta Veicular",
+    specsSectionTitle: "Ficha Técnica do Veículo",
+    destinationLabel: "Unidade / Pátio",
+    destinationPlaceholder: "Ex: Showroom Matriz — Chapecó, SC",
+    paxLabel: "Ocupantes / Porte",
+    startDateLabel: "Disponibilidade",
+    endDateLabel: "Entrega Prevista",
+    flightsTitle: "Logística de Entrega & Frete",
+    hotelsTitle: "Veículo & Configuração Principal",
+    hotelBadgeLabel: "Ficha do Veículo",
+    hotelNamePlaceholder: "Ex: Toyota Hilux SRX 2.8 4x4 Diesel Aut.",
+    hotelLocationPlaceholder: "Loja / Cidade de Faturamento",
+    itineraryTitle: "Destaques, Revisões & Laudo Técnico",
+    itineraryStepPrefix: "Destaque",
+    itineraryTitlePlaceholder: "Ex: Motorização, Segurança Ativa e Interior",
+    transfersTitle: "Documentação, IPVA & Transferência",
+    toursTitle: "Acessórios, Opcionais & Blindagem/Estética",
+    includesTitle: "Itens de Série, Garantia & Revisão",
+    excludesTitle: "Custos de Transferência / Emplacamento",
+    conditionsTitle: "Garantia Mecânica, Troca & Financiamento",
+    boardingReqLabel: "Laudo Cautelar, Vistoria & Requisitos de Faturamento",
+    financialTitle: "Investimento & Condições de Compra",
+    perPersonLabel: "Valor por Unidade / Frota",
+    roomsTitle: "Unidades ou Versões na Proposta",
+    showAviationAndHotelTerms: false,
+    specFields: [
+      { key: "ano_modelo", label: "Ano Fabricação / Modelo", placeholder: "Ex: 2025 / 2026" },
+      { key: "quilometragem", label: "Quilometragem Atual", placeholder: "Ex: 0 km ou 18.400 km", unit: "km" },
+      { key: "motor_cambio", label: "Motorização & Câmbio", placeholder: "Ex: 2.0 Turbo 252cv · Automático 8 marchas" },
+      { key: "combustivel_cor", label: "Combustível & Cor", placeholder: "Ex: Híbrido / Flex · Branco Pérola" },
+      { key: "referencia_fipe", label: "Código / Referência FIPE", placeholder: "Ex: Abaixo da FIPE · Avaliação de troca inclusa" },
+      { key: "laudo_garantia", label: "Laudo Cautelar & Garantia", placeholder: "Ex: 100% Aprovado Dekra · Garantia de fábrica" },
+    ],
+  },
+  projects: {
+    id: "projects",
+    label: "Projetos, Engenharia, Solar & Arquitetura",
+    shortLabel: "Projetos",
+    heroKicker: "Escopo Executivo & Memorial Técnico",
+    badgeLabel: "Escopo Técnico & Proposta de Projeto",
+    specsSectionTitle: "Parâmetros Técnicos do Projeto",
+    destinationLabel: "Local da Obra / Projeto",
+    destinationPlaceholder: "Ex: Condomínio Alphaville — Chapecó, SC",
+    paxLabel: "Frentes Técnicas",
+    startDateLabel: "Início Previsto",
+    endDateLabel: "Entrega Final",
+    flightsTitle: "Mobilização & Visitas Técnicas",
+    hotelsTitle: "Objeto do Projeto & Infraestrutura",
+    hotelBadgeLabel: "Memorial & Escopo",
+    hotelNamePlaceholder: "Ex: Projeto Arquitetônico Executivo + Interiores",
+    hotelLocationPlaceholder: "Endereço / Empreendimento",
+    itineraryTitle: "Cronograma de Etapas & Entregas",
+    itineraryStepPrefix: "Etapa",
+    itineraryTitlePlaceholder: "Ex: Etapa 1 • Estudo Preliminar e Levantamento 3D",
+    transfersTitle: "Logística de Canteiro & Acompanhamento",
+    toursTitle: "Entregáveis, Pranchas & Módulos",
+    includesTitle: "Entregáveis Inclusos no Escopo",
+    excludesTitle: "Taxas de Prefeitura, ART/RRT & Execução Civil",
+    conditionsTitle: "SLA, Garantia Técnica & Condições Contratuais",
+    boardingReqLabel: "Responsabilidade Técnica (ART/RRT/CAU) & Premissas",
+    financialTitle: "Investimento do Projeto",
+    perPersonLabel: "Valor por Fase / Módulo",
+    roomsTitle: "Frentes de Projeto & Módulos Cotados",
+    showAviationAndHotelTerms: false,
+    specFields: [
+      { key: "area_intervencao", label: "Área / Capacidade do Projeto", placeholder: "Ex: 320 m² de área construída / 12,4 kWp" },
+      { key: "prazo_total_execucao", label: "Prazo Estimado de Entrega", placeholder: "Ex: 45 dias úteis divididos em 4 etapas" },
+      { key: "responsavel_registro", label: "Responsável Técnico (CREA/CAU)", placeholder: "Ex: Eng. / Arq. Responsável com ART/RRT inclusa" },
+      { key: "formato_entregaveis", label: "Formato dos Entregáveis", placeholder: "Ex: BIM / DWG + Caderno Executivo PDF + Render 4K" },
+      { key: "garantia_suporte", label: "Garantia & Acompanhamento", placeholder: "Ex: 5 anos de garantia + 3 visitas em obra" },
+    ],
+  },
+  services: {
+    id: "services",
+    label: "Serviços B2B, Consultoria & Agências",
+    shortLabel: "Serviços",
+    heroKicker: "Plano de Trabalho & Acordo de Nível",
+    badgeLabel: "Proposta Comercial & Escopo de Serviços",
+    specsSectionTitle: "Parâmetros de Atendimento",
+    destinationLabel: "Praça / Modalidade",
+    destinationPlaceholder: "Ex: Atendimento Híbrido / Nacional",
+    paxLabel: "Especialistas / Squad",
+    startDateLabel: "Kick-off",
+    endDateLabel: "Vigência / Entrega",
+    flightsTitle: "Alocação & Deslocamento",
+    hotelsTitle: "Solução & Pacote de Serviços",
+    hotelBadgeLabel: "Plano Selecionado",
+    hotelNamePlaceholder: "Ex: Assessoria Completa & Implementação",
+    hotelLocationPlaceholder: "Unidade de Atendimento",
+    itineraryTitle: "Plano de Ação & Cronograma",
+    itineraryStepPrefix: "Fase",
+    itineraryTitlePlaceholder: "Ex: Fase 1 • Diagnóstico, Onboarding e Setup",
+    transfersTitle: "Rotina de Reuniões & Governança",
+    toursTitle: "Serviços & Entregas Adicionais",
+    includesTitle: "O que está contemplado no contrato",
+    excludesTitle: "Custos de Terceiros / Verba de Mídia",
+    conditionsTitle: "SLA, Confidencialidade & Termos",
+    boardingReqLabel: "Requisitos de Onboarding & Acessos Necessários",
+    financialTitle: "Investimento Comercial",
+    perPersonLabel: "Valor por Frente / Licença",
+    roomsTitle: "Pacotes & Módulos da Proposta",
+    showAviationAndHotelTerms: false,
+    specFields: [
+      { key: "modalidade_contrato", label: "Modalidade de Contratação", placeholder: "Ex: Escopo Fechado ou Fee Mensal Recorrente" },
+      { key: "sla_atendimento", label: "SLA de Atendimento", placeholder: "Ex: Resposta em até 2h úteis · Gerente dedicado" },
+      { key: "carga_horaria_escopo", label: "Dedicação / Volume", placeholder: "Ex: 40h técnicas + relatórios quinzenais" },
+      { key: "prazo_fidelidade", label: "Vigência & Renovação", placeholder: "Ex: 6 meses sem multa após 90 dias" },
+    ],
+  },
+  events: {
+    id: "events",
+    label: "Eventos, Casamentos, Formaturas & Produções",
+    shortLabel: "Eventos",
+    heroKicker: "Projeto Cenográfico & Produção Completa",
+    badgeLabel: "Proposta de Evento & Produção",
+    specsSectionTitle: "Ficha Técnica do Evento",
+    destinationLabel: "Espaço / Cidade",
+    destinationPlaceholder: "Ex: Espaço Garden — Chapecó, SC",
+    paxLabel: "Convidados",
+    startDateLabel: "Data do Evento",
+    endDateLabel: "Desmontagem",
+    flightsTitle: "Logística de Equipe & Artistas",
+    hotelsTitle: "Espaço, Cenografia & Estrutura",
+    hotelBadgeLabel: "Espaço & Conceito",
+    hotelNamePlaceholder: "Ex: Salão Principal + Lounges Externos",
+    hotelLocationPlaceholder: "Localização do Evento",
+    itineraryTitle: "Roteiro & Cronograma do Evento",
+    itineraryStepPrefix: "Momento",
+    itineraryTitlePlaceholder: "Ex: Recepção, Cerimônia e Jantar Gastronômico",
+    transfersTitle: "Receptivo, Valet & Segurança",
+    toursTitle: "Gastronomia, Bar, Som & Iluminação",
+    includesTitle: "Serviços e Equipe Inclusos",
+    excludesTitle: "Taxas ECAD, Gerador Extra & Horas Adicionais",
+    conditionsTitle: "Reserva de Data, Contrato & Cancelamento",
+    boardingReqLabel: "Alvarás, Montagem & Regras do Espaço",
+    financialTitle: "Investimento do Evento",
+    perPersonLabel: "Valor por Convidado",
+    roomsTitle: "Setores, Mesas ou Pacotes de Adesão",
+    showAviationAndHotelTerms: false,
+    specFields: [
+      { key: "numero_convidados", label: "Número de Convidados", placeholder: "Ex: 200 convidados confirmados", unit: "pessoas" },
+      { key: "duracao_evento", label: "Duração da Festa / Evento", placeholder: "Ex: 8 horas de evento + 1h tolerância" },
+      { key: "gastronomia_bebidas", label: "Gastronomia & Open Bar", placeholder: "Ex: Buffet Completo + Ilha de Drinks" },
+      { key: "equipe_operacional", label: "Equipe Operacional", placeholder: "Ex: 1 Cerimonialista, 14 Garçons, 4 Seguranças" },
+    ],
+  },
+  retail: {
+    id: "retail",
+    label: "Comércio, Equipamentos & Orçamento Geral",
+    shortLabel: "Orçamento Geral",
+    heroKicker: "Cotação Oficial & Fornecimento Comercial",
+    badgeLabel: "Orçamento Comercial Detalhado",
+    specsSectionTitle: "Especificações Comerciais",
+    destinationLabel: "Cidade / Destino de Entrega",
+    destinationPlaceholder: "Ex: Entrega CIF — Santa Catarina",
+    paxLabel: "Volumes / Itens",
+    startDateLabel: "Emissão",
+    endDateLabel: "Previsão de Entrega",
+    flightsTitle: "Transporte & Expedição",
+    hotelsTitle: "Produtos & Equipamentos Principais",
+    hotelBadgeLabel: "Item / Linha",
+    hotelNamePlaceholder: "Nome do Produto, Kit ou Equipamento",
+    hotelLocationPlaceholder: "Fabricante / Origem",
+    itineraryTitle: "Detalhamento de Itens & Especificações",
+    itineraryStepPrefix: "Item",
+    itineraryTitlePlaceholder: "Ex: Item 1 • Especificação Técnica e Montagem",
+    transfersTitle: "Frete, Entrega & Instalação",
+    toursTitle: "Acessórios, Garantias & Suprimentos",
+    includesTitle: "Incluso no Fornecimento",
+    excludesTitle: "Adequações Elétricas / Civis no Local",
+    conditionsTitle: "Garantia, Faturamento & Condições de Entrega",
+    boardingReqLabel: "Dados de Faturamento, NFe & Recebimento",
+    financialTitle: "Resumo Financeiro do Orçamento",
+    perPersonLabel: "Valor Unitário Médio",
+    roomsTitle: "Lotes / Agrupamentos do Orçamento",
+    showAviationAndHotelTerms: false,
+    specFields: [
+      { key: "prazo_faturamento_entrega", label: "Prazo de Expedição / Entrega", placeholder: "Ex: Pronta entrega · Envio em 24h" },
+      { key: "garantia_fabricante", label: "Garantia Oficial", placeholder: "Ex: 12 meses de garantia integral" },
+      { key: "modalidade_frete", label: "Modalidade de Frete (CIF/FOB)", placeholder: "Ex: Frete CIF incluso até o endereço" },
+      { key: "validade_estoque", label: "Disponibilidade de Estoque", placeholder: "Ex: Lote reservado mediante aprovação" },
+    ],
+  },
+};
+
+export function normalizeProposalNicheId(raw?: string | null): ProposalNicheId {
+  const clean = String(raw || "").trim().toLowerCase();
+  if (clean === "real_estate" || clean === "imoveis" || clean === "imovel") return "real_estate";
+  if (clean === "automotive" || clean === "vehicles" || clean === "veiculos" || clean === "carro") {
+    return "automotive";
+  }
+  if (clean === "projects" || clean === "projetos" || clean === "engenharia" || clean === "arquitetura") {
+    return "projects";
+  }
+  if (clean === "services" || clean === "servicos" || clean === "consultoria") return "services";
+  if (clean === "events" || clean === "eventos") return "events";
+  if (clean === "retail" || clean === "comercio" || clean === "orcamento") return "retail";
+  return "tourism";
+}
+
+export function resolveProposalNicheCopy(raw?: string | null): ProposalNicheCopy {
+  return PROPOSAL_NICHE_CATALOG[normalizeProposalNicheId(raw)];
+}
 
 export interface ProposalTemplatePaletteConfig {
   id: ProposalTemplateCanonicalId;
@@ -94,6 +458,14 @@ export const TEMPLATE_DEFAULT_PALETTES: Record<
     fontPreset: "modern",
     tone: "light",
   },
+  "bento-grid": {
+    id: "bento-grid",
+    label: "Bento Grid Visual",
+    canvasBg: hex("F4F6FA"),
+    brandColor: hex("1E3A5F"),
+    fontPreset: "geometric",
+    tone: "light",
+  },
 };
 
 export interface ColorPresetOption {
@@ -135,23 +507,37 @@ export const FONT_PRESET_OPTIONS: Array<{
 }> = [
   {
     id: "editorial",
-    label: "Editorial Clássica",
-    desc: "Títulos em Playfair Display serifado e leitura em Inter",
-    headingFont: "'Playfair Display', Georgia, serif",
+    label: "Editorial & Serifada",
+    desc: "Títulos em Playfair Display serifada e leitura fluida em Inter",
+    headingFont: "'Playfair Display', Georgia, 'Times New Roman', serif",
     bodyFont: "'Inter', system-ui, -apple-system, sans-serif",
   },
   {
     id: "modern",
-    label: "Minimalista Limpa",
-    desc: "Geometria contemporânea sem serifa em toda a lâmina",
-    headingFont: "'Inter', system-ui, -apple-system, sans-serif",
+    label: "Moderna & Limpa",
+    desc: "Plus Jakarta Sans + Inter para máxima clareza em telas e mobile",
+    headingFont: "'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif",
     bodyFont: "'Inter', system-ui, -apple-system, sans-serif",
   },
   {
     id: "corporate",
     label: "Executiva B2B",
-    desc: "Foco analítico em tabelas, dados e precisão corporativa",
-    headingFont: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+    desc: "IBM Plex Sans analítica para tabelas, contratos e propostas técnicas",
+    headingFont: "'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, sans-serif",
+    bodyFont: "'IBM Plex Sans', 'Inter', system-ui, -apple-system, sans-serif",
+  },
+  {
+    id: "luxury",
+    label: "Clássica Boutique",
+    desc: "Cormorant Garamond + DM Sans para resorts, alta arquitetura e imóveis",
+    headingFont: "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+    bodyFont: "'DM Sans', 'Inter', system-ui, -apple-system, sans-serif",
+  },
+  {
+    id: "geometric",
+    label: "Geométrica Bento",
+    desc: "Outfit Geométrica + Inter para mosaicos Bento Grid e apresentações 16:9",
+    headingFont: "'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
     bodyFont: "'Inter', system-ui, -apple-system, sans-serif",
   },
 ];
@@ -182,6 +568,8 @@ export function normalizeCanonicalTemplateId(raw?: string | null): ProposalTempl
     "landscape-presentation": "landscape-presentation",
     "vertical-premium": "vertical-premium",
     "group-catalog": "group-catalog",
+    bento: "bento-grid",
+    "bento-grid": "bento-grid",
   };
   return map[raw || ""] || "editorial-flat";
 }
@@ -278,6 +666,12 @@ export interface ResolvedProposalCanvasTheme {
   fontPreset: ProposalFontPresetId;
   headingFont: string;
   bodyFont: string;
+  logoConfig: ProposalLogoConfig;
+  coverCrop: ProposalCoverCropConfig;
+  pricingDisplay: ProposalPricingDisplayConfig;
+  nicheId: ProposalNicheId;
+  nicheCopy: ProposalNicheCopy;
+  nicheSpecEntries: Array<{ key: string; label: string; value: string; unit?: string }>;
   hiddenSections: Set<ProposalSectionKey>;
   isSectionVisible: (key: ProposalSectionKey) => boolean;
   cssVars: Record<string, string>;
@@ -366,11 +760,63 @@ export function resolveProposalCanvasTheme(
   const rawFont = String(customFields.canvas_font_preset || defaultPalette.fontPreset);
   const normalizedFont = rawFont === "classic" ? "corporate" : rawFont;
   const fontPreset: ProposalFontPresetId =
-    normalizedFont === "modern" || normalizedFont === "corporate" || normalizedFont === "editorial"
+    normalizedFont === "modern" ||
+    normalizedFont === "corporate" ||
+    normalizedFont === "editorial" ||
+    normalizedFont === "luxury" ||
+    normalizedFont === "geometric"
       ? normalizedFont
       : defaultPalette.fontPreset;
   const fontMeta =
     FONT_PRESET_OPTIONS.find((f) => f.id === fontPreset) || FONT_PRESET_OPTIONS[0];
+
+  const rawShape = String(customFields.logo_shape || "contain");
+  const rawSize = String(customFields.logo_size || "md");
+  const rawPos = String(customFields.logo_position || "left");
+  const logoConfig: ProposalLogoConfig = {
+    shape:
+      rawShape === "square" || rawShape === "circle" || rawShape === "wide" ? rawShape : "contain",
+    size: rawSize === "sm" || rawSize === "lg" || rawSize === "xl" ? rawSize : "md",
+    position: rawPos === "center" || rawPos === "right" || rawPos === "badge" ? rawPos : "left",
+    objectPosition: String(customFields.logo_object_position || "center center"),
+    scale: Math.max(0.5, Math.min(2.5, Number(customFields.logo_scale) || 1)),
+  };
+
+  const rawCoverAspect = String(customFields.cover_aspect_mode || "auto");
+  const coverFit: "cover" | "contain" = rawCoverAspect === "contain" ? "contain" : "cover";
+  const coverCrop: ProposalCoverCropConfig = {
+    objectPosition: String(customFields.cover_object_position || "center center"),
+    scale: Math.max(0.8, Math.min(2.2, Number(customFields.cover_scale) || 1)),
+    aspectMode:
+      rawCoverAspect === "cover" || rawCoverAspect === "contain" ? rawCoverAspect : "auto",
+    fit: coverFit,
+  };
+
+  const customPerPersonRaw = Number(customFields.custom_price_per_person_cents);
+  const resolvedCustomPerPerson =
+    Number.isFinite(customPerPersonRaw) && customPerPersonRaw > 0
+      ? Math.round(customPerPersonRaw)
+      : undefined;
+  const pricingDisplay: ProposalPricingDisplayConfig = {
+    showPerPerson: customFields.show_price_per_person !== "false",
+    showPerAdult: customFields.show_price_per_adult !== "false",
+    showPerRoom: customFields.show_price_per_room !== "false",
+    customPerPersonCents: resolvedCustomPerPerson,
+    customPricePerPersonCents: resolvedCustomPerPerson,
+  };
+
+  const nicheId = normalizeProposalNicheId(
+    customFields.proposal_niche || proposal?.niche || proposal?.category,
+  );
+  const nicheCopy = resolveProposalNicheCopy(nicheId);
+  const nicheSpecEntries = nicheCopy.specFields
+    .map((f) => ({
+      key: f.key,
+      label: f.label,
+      unit: f.unit,
+      value: typeof customFields[f.key] === "string" ? customFields[f.key].trim() : "",
+    }))
+    .filter((item) => item.value.length > 0);
 
   const rawHidden = customFields.hidden_sections;
   const hiddenList: string[] = Array.isArray(rawHidden)
@@ -426,6 +872,12 @@ export function resolveProposalCanvasTheme(
     fontPreset,
     headingFont: fontMeta.headingFont,
     bodyFont: fontMeta.bodyFont,
+    logoConfig,
+    coverCrop,
+    pricingDisplay,
+    nicheId,
+    nicheCopy,
+    nicheSpecEntries,
     hiddenSections,
     isSectionVisible,
     cssVars,

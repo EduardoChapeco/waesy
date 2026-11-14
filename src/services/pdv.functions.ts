@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import type { 
  KdsStation, 
  RestaurantTable, 
@@ -35,7 +36,7 @@ export const saveKdsStation = createServerFn({ method: "POST" })
  id: z.string().uuid().optional(),
  name: z.string().min(2),
  slug: z.string().min(2),
- colorCode: z.string().default("#F97316"),
+ colorCode: z.string().default(TOKEN_HEX.amber500),
  icon: z.string().default("ChefHat"),
  targetPrepTimeMinutes: z.number().int().min(1).default(15),
  warningThresholdMinutes: z.number().int().min(1).default(10),

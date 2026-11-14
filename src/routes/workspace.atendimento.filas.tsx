@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { ErrorState } from "@/components/state/states";
 import {
   Bot,
   Layers,
@@ -56,24 +57,26 @@ export const Route = createFileRoute("/workspace/atendimento/filas")({
   head: () => ({ meta: [{ title: "Filas & Setores — Atendimento" }] }),
   loader: async () => {
     try {
-      const store = await getStoreSettings().catch(() => null);
+      const store = await getStoreSettings();
       const [departments, instances, members] = await Promise.all([
-        listChatDepartments({ data: { storeId: store?.id } }).catch(() => []),
-        listWorkspaceWhatsAppInstances({ data: { store_id: store?.id } }).catch(() => []),
-        listTeamMembers().catch(() => []),
+        listChatDepartments({ data: { storeId: store?.id } }),
+        listWorkspaceWhatsAppInstances({ data: { store_id: store?.id } }),
+        listTeamMembers(),
       ]);
       return {
         store,
         departments: (departments || []) as ChatDepartmentDTO[],
         instances: (instances || []) as WhatsAppChannelInstanceDTO[],
         members: members || [],
+        loadError: null as string | null,
       };
-    } catch {
+    } catch (err: any) {
       return {
         store: null,
         departments: [] as ChatDepartmentDTO[],
         instances: [] as WhatsAppChannelInstanceDTO[],
         members: [],
+        loadError: err?.message || "Falha ao carregar filas e setores de atendimento.",
       };
     }
   },
@@ -95,7 +98,9 @@ type TriageStageDraft = {
 };
 
 function WorkspaceAtendimentoFilasPage() {
+  const router = useRouter();
   const loaderData = (Route.useLoaderData?.() as any) || {};
+  const loadError: string | null = loaderData.loadError || null;
   const store = loaderData.store || null;
   const instances: WhatsAppChannelInstanceDTO[] = loaderData.instances || [];
   const members: any[] = loaderData.members || [];
@@ -141,8 +146,12 @@ function WorkspaceAtendimentoFilasPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const reloadDepartments = async () => {
-    const fresh = await listChatDepartments({ data: { storeId: store?.id } }).catch(() => null);
-    if (fresh) setDepartments(fresh);
+    try {
+      const fresh = await listChatDepartments({ data: { storeId: store?.id } });
+      if (fresh) setDepartments(fresh);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao recarregar setores.");
+    }
   };
 
   const handleOpenCreate = () => {
@@ -266,6 +275,13 @@ function WorkspaceAtendimentoFilasPage() {
 
   return (
     <div className="w-full px-0 sm:px-4 space-y-6">
+      {loadError && (
+        <ErrorState
+          title="Erro ao carregar filas e setores"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      )}
       <AtendimentoSubmoduleHeader
         activeKey="filas"
         title="Filas & Setores"

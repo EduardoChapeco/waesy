@@ -156,19 +156,72 @@ export function ArtifactBuilderEditor({
           />
         </div>
       ) : (
-        <div className="rounded-md border border-border/40 bg-muted/20 p-3 max-h-60 overflow-y-auto text-xs space-y-2">
+        <div className="rounded-xl border border-border bg-surface-subtle p-4 max-h-80 overflow-y-auto text-xs space-y-3">
           {initialContent.sections && Array.isArray(initialContent.sections) ? (
-            initialContent.sections.map((sec: any, idx: number) => (
-              <div key={idx} className="space-y-1 border-b border-border/30 pb-2 last:border-b-0">
-                <h5 className="font-bold text-foreground text-xs">{sec.heading || `Seção ${idx + 1}`}</h5>
-                {sec.paragraphs?.map((p: string, pIdx: number) => (
-                  <p key={pIdx} className="text-2xs text-muted-foreground leading-relaxed">{p}</p>
-                ))}
-              </div>
-            ))
+            initialContent.sections.map((sec: any, idx: number) => {
+              const sectionHeading =
+                sec.headline || sec.title || sec.heading || `Seção ${idx + 1}`;
+              const sectionSub = sec.subheadline || sec.subtitle;
+              const ctaText =
+                sec.ctaLabel || sec.content?.ctaPrimaryText;
+              const nestedItems =
+                Array.isArray(sec.items) ? sec.items : Array.isArray(sec.content?.items) ? sec.content.items : null;
+
+              return (
+                <div
+                  key={sec.id || idx}
+                  className="rounded-xl border border-border bg-card p-3 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h5 className="font-semibold text-foreground text-xs">{sectionHeading}</h5>
+                    {sec.type && (
+                      <Badge variant="secondary" className="text-3xs">
+                        {String(sec.type)}
+                      </Badge>
+                    )}
+                  </div>
+                  {sectionSub && (
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
+                      {sectionSub}
+                    </p>
+                  )}
+                  {sec.content && typeof sec.content === "string" && (
+                    <p className="text-2xs text-muted-foreground leading-relaxed">
+                      {sec.content}
+                    </p>
+                  )}
+                  {sec.paragraphs?.map((p: string, pIdx: number) => (
+                    <p key={pIdx} className="text-2xs text-muted-foreground leading-relaxed">
+                      {p}
+                    </p>
+                  ))}
+                  {nestedItems && nestedItems.length > 0 && (
+                    <div className="grid grid-cols-1 gap-2 pt-1">
+                      {nestedItems.slice(0, 4).map((it: any, iIdx: number) => (
+                        <div key={iIdx} className="rounded-lg bg-surface-subtle px-3 py-2 text-2xs">
+                          <p className="font-medium text-foreground">
+                            {typeof it === "string" ? it : it.title || it.label || `Item ${iIdx + 1}`}
+                          </p>
+                          {it?.description && (
+                            <p className="text-muted-foreground mt-1">{it.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {ctaText && (
+                    <div className="pt-1">
+                      <span className="inline-flex items-center px-3 py-1 rounded-lg bg-foreground text-background text-2xs font-medium">
+                        {ctaText}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })
           ) : initialContent.copyFeed ? (
             <div className="space-y-2">
-              <span className="text-2xs font-bold text-primary block uppercase">Legenda do Feed:</span>
+              <span className="text-2xs font-semibold text-primary block uppercase">Legenda do Feed:</span>
               <p className="text-2xs text-foreground whitespace-pre-wrap">{initialContent.copyFeed}</p>
               {initialContent.hashtags && (
                 <div className="flex flex-wrap gap-1">

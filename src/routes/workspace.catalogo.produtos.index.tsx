@@ -1,5 +1,5 @@
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { CatalogComplementsTab } from "@/components/commerce/catalog-complements-tab";
 import { ImportCatalogModal } from "@/components/admin/catalog/import-catalog-modal";
 import { listAdminProducts, duplicateProduct, toggleProductStatus, bulkUpdateProductStatus, updateProduct } from "@/services/admin-catalog.functions";
@@ -35,16 +35,21 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/")({
  loader: async () => {
    try {
  const [products, store] = await Promise.all([
- listAdminProducts().catch(() => []),
- getStoreSettings().catch(() => null),
+ listAdminProducts(),
+ getStoreSettings(),
  ]);
  return {
  products: products || [],
  store: store || null,
+ loadError: null as string | null,
  };
-   } catch (err) {
+   } catch (err: any) {
      console.error("[loader:workspace.catalogo.produtos.index] Unhandled loader error:", err);
-     return { products: [], store: null };
+     return {
+       products: [],
+       store: null,
+       loadError: err?.message || "Não foi possível carregar os produtos do catálogo.",
+     };
    }
  },
  component: AdminProductsPage,
@@ -205,7 +210,8 @@ const CATALOGO_TOUR_SLIDES: TourSlide[] = [
 ];
 
 function AdminProductsPage() {
-  const { products: initialProducts, store } = ((Route.useLoaderData?.() as any) || {});
+  const { products: initialProducts, store, loadError } = ((Route.useLoaderData?.() as any) || {});
+  const router = useRouter();
   const semantics = getNicheSemantics(store);
   const nicheCtx = getNicheCatalogContext(store);
 
@@ -255,6 +261,18 @@ function AdminProductsPage() {
       return matchesSearch && matchesStatus;
     });
  }, [products, searchQuery, statusFilter]);
+
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <ErrorState
+          title="Erro ao carregar produtos"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
  // Handle Select All
  const isAllSelected =
@@ -526,8 +544,12 @@ function AdminProductsPage() {
               onOpenChange={setIsClassifiedImportOpen}
               storeId={store.id}
               onProductCreated={async () => {
-                const reloaded = await listAdminProducts().catch(() => null);
-                if (reloaded) setProducts(reloaded);
+                try {
+                  const reloaded = await listAdminProducts();
+                  if (reloaded) setProducts(reloaded);
+                } catch (err: any) {
+                  toast.error(err?.message || "Erro ao recarregar produtos.");
+                }
               }}
             />
           )}

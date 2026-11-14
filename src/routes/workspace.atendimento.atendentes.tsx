@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Loader2, Settings2, Users } from "lucide-react";
+import { ErrorState } from "@/components/state/states";
 import { AtendimentoSubmoduleHeader } from "@/components/atendimento/AtendimentoSubmoduleHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,8 +32,11 @@ import {
 import { getStoreSettings } from "@/services/store.functions";
 import {
   listChatDepartments,
+  listInstanceMemberPermissions,
   listWorkspaceWhatsAppInstances,
+  upsertInstanceMemberPermissions,
   type ChatDepartmentDTO,
+  type InstanceMemberPermissionDTO,
   type WhatsAppChannelInstanceDTO,
 } from "@/services/whatsapp-channel-instances.functions";
 import { getAttendanceBusinessIntelligence } from "@/services/whatsapp-operations-metrics.functions";
@@ -42,14 +46,15 @@ export const Route = createFileRoute("/workspace/atendimento/atendentes")({
   head: () => ({ meta: [{ title: "Atendentes & Presença — Atendimento" }] }),
   loader: async () => {
     try {
-      const store = await getStoreSettings().catch(() => null);
-      const [members, departments, instances, bi] = await Promise.all([
-        listTeamMembers().catch(() => []),
-        listChatDepartments({ data: { storeId: store?.id } }).catch(() => []),
-        listWorkspaceWhatsAppInstances({ data: { store_id: store?.id } }).catch(() => []),
+      const store = await getStoreSettings();
+      const [members, departments, instances, bi, instancePermissions] = await Promise.all([
+        listTeamMembers(),
+        listChatDepartments({ data: { storeId: store?.id } }),
+        listWorkspaceWhatsAppInstances({ data: { store_id: store?.id } }),
         getAttendanceBusinessIntelligence({ data: { storeId: store?.id, rangeDays: 30 } }).catch(
           () => null,
         ),
+        listInstanceMemberPermissions({ data: { storeId: store?.id } }),
       ]);
       return {
         store,
@@ -57,14 +62,18 @@ export const Route = createFileRoute("/workspace/atendimento/atendentes")({
         departments: (departments || []) as ChatDepartmentDTO[],
         instances: (instances || []) as WhatsAppChannelInstanceDTO[],
         bi,
+        instancePermissions: (instancePermissions || []) as InstanceMemberPermissionDTO[],
+        loadError: null as string | null,
       };
-    } catch {
+    } catch (err: any) {
       return {
         store: null,
         members: [],
         departments: [] as ChatDepartmentDTO[],
         instances: [] as WhatsAppChannelInstanceDTO[],
         bi: null,
+        instancePermissions: [] as InstanceMemberPermissionDTO[],
+        loadError: err?.message || "Não foi possível carregar atendentes e canais.",
       };
     }
   },
@@ -72,11 +81,16 @@ export const Route = createFileRoute("/workspace/atendimento/atendentes")({
 });
 
 function WorkspaceAtendimentoAtendentesPage() {
+  const router = useRouter();
   const loaderData = (Route.useLoaderData?.() as any) || {};
+  const loadError: string | null = loaderData.loadError || null;
   const store = loaderData.store || null;
   const departments: ChatDepartmentDTO[] = loaderData.departments || [];
   const instances: WhatsAppChannelInstanceDTO[] = loaderData.instances || [];
   const [members, setMembers] = useState<any[]>(loaderData.members || []);
+  const [instancePermissions, setInstancePermissions] = useState<InstanceMemberPermissionDTO[]>(
+    loaderData.instancePermissions || [],
+  );
   const biAgentsMap = useMemo(() => {
     const map = new Map<string, any>();
     for (const a of loaderData.bi?.agents || []) {
@@ -94,18 +108,45 @@ function WorkspaceAtendimentoAtendentesPage() {
   const [editCanClose, setEditCanClose] = useState(true);
   const [editCanManageQr, setEditCanManageQr] = useState(false);
   const [editOnlySector, setEditOnlySector] = useState(false);
+  const [editPermCanView, setEditPermCanView] = useState(true);
+  const [editPermCanReply, setEditPermCanReply] = useState(true);
+  const [editPermCanManageGroups, setEditPermCanManageGroups] = useState(false);
+  const [editPermCanSyncHistory, setEditPermCanSyncHistory] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const hydrateChannelPerms = (profileId: string, selectedInstanceId: string, memberFallback?: any) => {
+    const resolvedInstanceId =
+      selectedInstanceId !== "none"
+        ? selectedInstanceId
+        : instances.find((i) => i.is_default)?.id || instances[0]?.id || "";
+    const existing = instancePermissions.find(
+      (p) => p.profile_id === profileId && p.instance_id === resolvedInstanceId,
+    );
+    setEditPermCanView(existing ? Boolean(existing.can_view) : true);
+    setEditPermCanReply(existing ? Boolean(existing.can_reply) : true);
+    setEditPermCanManageGroups(existing ? Boolean(existing.can_manage_groups) : false);
+    setEditPermCanSyncHistory(existing ? Boolean(existing.can_sync_history) : false);
+    if (existing) {
+      setEditCanManageQr(Boolean(existing.can_manage_qr));
+      setEditOnlySector(Boolean(existing.only_assigned_or_sector));
+    } else if (memberFallback) {
+      setEditCanManageQr(Boolean(memberFallback.can_manage_whatsapp_qr));
+      setEditOnlySector(Boolean(memberFallback.only_assigned_or_sector));
+    }
+  };
+
   const openEditDrawer = (m: any) => {
+    const initialWa = m.whatsapp_instance_id || "none";
     setEditingMember(m);
     setEditDepartmentId(m.department_id || "none");
-    setEditWhatsappId(m.whatsapp_instance_id || "none");
+    setEditWhatsappId(initialWa);
     setEditIsAgent(m.is_attendance_agent ?? true);
     setEditMaxConcurrent(Number(m.max_concurrent_chats || 10));
     setEditCanTransfer(m.can_transfer_chats ?? true);
     setEditCanClose(m.can_close_chats ?? true);
     setEditCanManageQr(Boolean(m.can_manage_whatsapp_qr));
     setEditOnlySector(Boolean(m.only_assigned_or_sector));
+    hydrateChannelPerms(m.id, initialWa, m);
   };
 
   const handlePresenceChange = async (
@@ -144,8 +185,33 @@ function WorkspaceAtendimentoAtendentesPage() {
           onlyAssignedOrSector: editOnlySector,
         },
       });
-      const updatedList = await listTeamMembers();
+      const resolvedInstanceId =
+        editWhatsappId !== "none"
+          ? editWhatsappId
+          : instances.find((i) => i.is_default)?.id || instances[0]?.id || "";
+      if (resolvedInstanceId) {
+        await upsertInstanceMemberPermissions({
+          data: {
+            storeId: store?.id,
+            instanceId: resolvedInstanceId,
+            profileId: editingMember.id,
+            canView: editPermCanView,
+            canReply: editPermCanView ? editPermCanReply : false,
+            canManageQr: editCanManageQr,
+            canManageGroups: editPermCanManageGroups,
+            canSyncHistory: editPermCanSyncHistory,
+            onlyAssignedOrSector: editOnlySector,
+            canTransfer: editCanTransfer,
+            canClose: editCanClose,
+          },
+        });
+      }
+      const [updatedList, updatedPerms] = await Promise.all([
+        listTeamMembers(),
+        listInstanceMemberPermissions({ data: { storeId: store?.id } }),
+      ]);
       setMembers(updatedList || []);
+      setInstancePermissions((updatedPerms || []) as InstanceMemberPermissionDTO[]);
       setEditingMember(null);
       toast.success("Vínculos operacionais atualizados.");
     } catch (err: any) {
@@ -173,7 +239,13 @@ function WorkspaceAtendimentoAtendentesPage() {
         }
       />
 
-      {members.length === 0 ? (
+      {loadError ? (
+        <ErrorState
+          title="Falha ao carregar atendentes"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      ) : members.length === 0 ? (
         <section className="rounded-xl border border-border/60 bg-card p-8 text-center space-y-3">
           <Users className="size-8 text-muted-foreground mx-auto" />
           <p className="text-sm font-semibold text-foreground">Nenhum colaborador na equipe</p>
@@ -227,7 +299,7 @@ function WorkspaceAtendimentoAtendentesPage() {
                         className={cn(
                           "size-2 rounded-full mr-2 shrink-0",
                           presence === "online"
-                            ? "bg-emerald-500"
+                            ? "bg-success"
                             : presence === "busy"
                               ? "bg-warning"
                               : "bg-muted-foreground",
@@ -313,7 +385,15 @@ function WorkspaceAtendimentoAtendentesPage() {
 
             <div className="space-y-1">
               <Label className="text-xs font-medium">Número WhatsApp Vinculado</Label>
-              <Select value={editWhatsappId} onValueChange={setEditWhatsappId}>
+              <Select
+                value={editWhatsappId}
+                onValueChange={(val) => {
+                  setEditWhatsappId(val);
+                  if (editingMember) {
+                    hydrateChannelPerms(editingMember.id, val, editingMember);
+                  }
+                }}
+              >
                 <SelectTrigger className="h-11 min-h-11 text-xs">
                   <SelectValue placeholder="Canal padrão da loja" />
                 </SelectTrigger>
@@ -390,6 +470,50 @@ function WorkspaceAtendimentoAtendentesPage() {
                   id="agent-restricted"
                   checked={editOnlySector}
                   onCheckedChange={setEditOnlySector}
+                />
+              </div>
+              <div className="py-3 flex items-center justify-between gap-2">
+                <Label htmlFor="perm-can-view" className="text-xs cursor-pointer">
+                  Visualizar mensagens do canal WhatsApp
+                </Label>
+                <Switch
+                  id="perm-can-view"
+                  checked={editPermCanView}
+                  onCheckedChange={(checked) => {
+                    setEditPermCanView(checked);
+                    if (!checked) setEditPermCanReply(false);
+                  }}
+                />
+              </div>
+              <div className="py-3 flex items-center justify-between gap-2">
+                <Label htmlFor="perm-can-reply" className="text-xs cursor-pointer">
+                  Enviar mensagens pelo canal WhatsApp
+                </Label>
+                <Switch
+                  id="perm-can-reply"
+                  disabled={!editPermCanView}
+                  checked={editPermCanView && editPermCanReply}
+                  onCheckedChange={setEditPermCanReply}
+                />
+              </div>
+              <div className="py-3 flex items-center justify-between gap-2">
+                <Label htmlFor="perm-can-manage-groups" className="text-xs cursor-pointer">
+                  Gerenciar grupos e campanhas WhatsApp
+                </Label>
+                <Switch
+                  id="perm-can-manage-groups"
+                  checked={editPermCanManageGroups}
+                  onCheckedChange={setEditPermCanManageGroups}
+                />
+              </div>
+              <div className="py-3 flex items-center justify-between gap-2">
+                <Label htmlFor="perm-can-sync-history" className="text-xs cursor-pointer">
+                  Sincronizar histórico completo do canal
+                </Label>
+                <Switch
+                  id="perm-can-sync-history"
+                  checked={editPermCanSyncHistory}
+                  onCheckedChange={setEditPermCanSyncHistory}
                 />
               </div>
             </div>

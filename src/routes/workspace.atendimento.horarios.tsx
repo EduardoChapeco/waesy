@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { ErrorState } from "@/components/state/states";
 import { toast } from "sonner";
 import {
   CheckCircle2,
@@ -34,21 +35,23 @@ export const Route = createFileRoute("/workspace/atendimento/horarios")({
   head: () => ({ meta: [{ title: "Horários & Mensagens — Atendimento" }] }),
   loader: async () => {
     try {
-      const store = await getStoreSettings().catch(() => null);
+      const store = await getStoreSettings();
       const [quickAnswers, departments] = await Promise.all([
-        listStoreQuickAnswers({ data: { storeId: store?.id } }).catch(() => []),
-        listChatDepartments({ data: { storeId: store?.id } }).catch(() => []),
+        listStoreQuickAnswers({ data: { storeId: store?.id } }),
+        listChatDepartments({ data: { storeId: store?.id } }),
       ]);
       return {
         store,
         quickAnswers: quickAnswers || [],
         departments: (departments || []) as ChatDepartmentDTO[],
+        loadError: null as string | null,
       };
-    } catch {
+    } catch (err: any) {
       return {
         store: null,
         quickAnswers: [],
         departments: [] as ChatDepartmentDTO[],
+        loadError: err?.message || "Falha ao carregar horários e respostas rápidas.",
       };
     }
   },
@@ -56,7 +59,9 @@ export const Route = createFileRoute("/workspace/atendimento/horarios")({
 });
 
 function WorkspaceAtendimentoHorariosPage() {
+  const router = useRouter();
   const loaderData = (Route.useLoaderData?.() as any) || {};
+  const loadError = loaderData.loadError || null;
   const store = loaderData.store || null;
   const departments: ChatDepartmentDTO[] = loaderData.departments || [];
   const initialSupport = (store?.settings as any)?.support_settings || {};
@@ -207,6 +212,13 @@ function WorkspaceAtendimentoHorariosPage() {
 
   return (
     <div className="w-full px-0 sm:px-4 space-y-6">
+      {loadError ? (
+        <ErrorState
+          title="Falha ao carregar horários e governança"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      ) : null}
       <AtendimentoSubmoduleHeader
         activeKey="horarios"
         title="Horários & Mensagens"

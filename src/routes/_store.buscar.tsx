@@ -785,7 +785,7 @@ function SearchPage() {
           )}
 
           {/* Atalhos Rápidos para Verticais */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1">
             {[
               { to: "/mercado", label: "Mercado e Feira", icon: ShoppingBag, color: "text-foreground bg-muted/30 border border-border/40" },
               { to: "/gastronomia", label: "Gastronomia", icon: Store, color: "text-foreground bg-muted/30 border border-border/40" },
@@ -797,12 +797,12 @@ function SearchPage() {
                 <Link
                   key={cat.to}
                   to={cat.to as any}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border/60 hover:bg-muted/40 transition-colors duration-200 group"
+                  className="flex items-center gap-3 p-3 min-h-11 rounded-lg bg-card border border-border/60 hover:bg-muted/40 transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div className={`flex size-9 items-center justify-center rounded-lg ${cat.color} shrink-0 group-hover:scale-105 transition-transform`}>
                     <Icon className="size-4.5" />
                   </div>
-                  <span className="text-xs font-bold text-foreground truncate">
+                  <span className="text-xs font-semibold text-foreground truncate">
                     {cat.label}
                   </span>
                 </Link>
@@ -814,7 +814,7 @@ function SearchPage() {
           {discoveryData?.products && discoveryData.products.length > 0 && (
             <div className="space-y-3 pt-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-black tracking-tight text-foreground">
+                <h3 className="text-sm font-semibold tracking-tight text-foreground">
                   Destaques da Comunidade
                 </h3>
                 <Link to="/mercado" className="text-xs font-semibold text-primary hover:underline">
@@ -827,7 +827,7 @@ function SearchPage() {
                     key={p.id}
                     to="/produto/$slug"
                     params={{ slug: p.slug || p.id }}
-                    className="flex flex-col rounded-lg overflow-hidden bg-card border border-border/60 hover:border-border transition-colors duration-200 group"
+                    className="flex flex-col rounded-lg overflow-hidden bg-card border border-border/60 hover:border-border transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className="aspect-square bg-muted overflow-hidden relative">
                       {p.cover_url ? (
@@ -843,10 +843,10 @@ function SearchPage() {
                       )}
                     </div>
                     <div className="p-3 space-y-1">
-                      <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                      <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                         {p.title}
                       </p>
-                      <p className="text-xs font-black font-mono text-foreground">
+                      <p className="text-xs font-semibold font-mono text-foreground">
                         {formatMoney(p.price_cents)}
                       </p>
                     </div>
@@ -860,14 +860,14 @@ function SearchPage() {
           {discoveryData?.stores && discoveryData.stores.length > 0 && (
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-black tracking-tight text-foreground">
+                <h3 className="text-sm font-semibold tracking-tight text-foreground">
                   Lojas e Negócios Locais
                 </h3>
                 <Link to="/diretorio" className="text-xs font-semibold text-primary hover:underline">
                   Guia completo
                 </Link>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {discoveryData.stores.slice(0, 4).map((s: any) => (
                   <Link
                     key={s.id}

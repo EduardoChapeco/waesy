@@ -24,9 +24,119 @@ const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", {
  minute: "2-digit",
 });
 
+const dateOnlyShortMonthFmt = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: TZ,
+  day: "2-digit",
+  month: "short",
+});
+
+export interface DateOnlyParts {
+  year: number;
+  month: number;
+  day: number;
+  iso: string;
+}
+
+/**
+ * Extrai ano, mês e dia civis sem aplicar shift de fuso horário em strings YYYY-MM-DD.
+ * Evita o erro clássico de "2027-09-25" (UTC 00:00) virar "24/09/2027" em America/Sao_Paulo (-03:00).
+ */
+export function parseDateOnlyParts(value: string | Date | null | undefined): DateOnlyParts | null {
+  if (!value) return null;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    const ymdMatch = /^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/.exec(trimmed);
+    if (ymdMatch) {
+      const year = Number(ymdMatch[1]);
+      const month = Number(ymdMatch[2]);
+      const day = Number(ymdMatch[3]);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return {
+          year,
+          month,
+          day,
+          iso: `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        };
+      }
+    }
+    const brMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+    if (brMatch) {
+      const day = Number(brMatch[1]);
+      const month = Number(brMatch[2]);
+      const year = Number(brMatch[3]);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return {
+          year,
+          month,
+          day,
+          iso: `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        };
+      }
+    }
+  }
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (!(d instanceof Date) || isNaN(d.getTime())) return null;
+  const parts = dateFmt.formatToParts(d);
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  const month = Number(parts.find((p) => p.type === "month")?.value);
+  const day = Number(parts.find((p) => p.type === "day")?.value);
+  if (!year || !month || !day) return null;
+  return {
+    year,
+    month,
+    day,
+    iso: `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+  };
+}
+
+/**
+ * Normaliza qualquer string/Data para YYYY-MM-DD (ideal para inputs `<input type="date">`).
+ */
+export function normalizeDateOnlyInput(value: string | Date | null | undefined): string {
+  return parseDateOnlyParts(value)?.iso ?? "";
+}
+
+/**
+ * Formata data civil (ex: `travel_start`, `travel_end`, `birth_date`, `expires_at`)
+ * no padrão pt-BR sem deslocamento de -1 dia em fusos negativos como -03:00.
+ */
+export function formatDateOnlyBr(
+  value: string | Date | null | undefined,
+  opts?: { shortMonth?: boolean },
+): string {
+  const parts = parseDateOnlyParts(value);
+  if (!parts) return "—";
+  const safeMiddayUtc = new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 15, 0, 0));
+  return opts?.shortMonth ? dateOnlyShortMonthFmt.format(safeMiddayUtc) : dateFmt.format(safeMiddayUtc);
+}
+
+/**
+ * Calcula idade civil em anos completos a partir de uma data-only YYYY-MM-DD sem drift de fuso.
+ */
+export function calculateAgeFromDateOnly(
+  birthDate: string | Date | null | undefined,
+  referenceDate: Date = new Date(),
+): number | null {
+  const parts = parseDateOnlyParts(birthDate);
+  if (!parts) return null;
+  const refParts = parseDateOnlyParts(referenceDate);
+  if (!refParts) return null;
+  let age = refParts.year - parts.year;
+  if (
+    refParts.month < parts.month ||
+    (refParts.month === parts.month && refParts.day < parts.day)
+  ) {
+    age -= 1;
+  }
+  return age >= 0 ? age : null;
+}
+
 export function formatDate(iso: string | Date | null | undefined): string {
   if (!iso) return "—";
   try {
+    if (typeof iso === "string" && /^\d{4}-\d{2}-\d{2}$/.test(iso.trim())) {
+      return formatDateOnlyBr(iso);
+    }
     const d = typeof iso === "string" ? new Date(iso) : iso;
     if (isNaN(d.getTime())) return "—";
     return dateFmt.format(d);

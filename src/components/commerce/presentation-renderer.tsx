@@ -56,7 +56,7 @@ export function PresentationRenderer({
  <img
  src={entity.image_url}
  alt={entity.title}
- className="w-full h-full object-cover grayscale-[20%] contrast-125"
+ className="w-full h-full object-cover grayscale-25 contrast-125"
  />
  ) : (
  <div className="w-full h-full flex items-center justify-center font-display opacity-30 text-4xl">

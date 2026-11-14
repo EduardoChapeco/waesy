@@ -40,9 +40,12 @@ const clientOnlyServerCoreGuard = {
       if (["react-easy-crop", "canvas-confetti", "libphonenumber-js"].includes(source)) {
         return serverClientNoopShim;
       }
+      const normalizedSource = source.replace(/\\/g, "/");
       if (
-        source === "@/components/builder/OmniEditor" ||
-        (source === "./OmniEditor" &&
+        normalizedSource === "@/components/builder/OmniEditor" ||
+        normalizedSource.endsWith("/components/builder/OmniEditor") ||
+        normalizedSource.endsWith("/components/builder/OmniEditor.tsx") ||
+        (normalizedSource === "./OmniEditor" &&
           importer?.replace(/\\/g, "/").endsWith("/components/builder/index.ts"))
       ) {
         return serverClientNoopShim;

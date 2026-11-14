@@ -45,7 +45,7 @@ export const createWalletPass = createServerFn({ method: 'POST' })
       title: z.string().min(2),
       subtitle: z.string().optional().nullable(),
       barcode_value: z.string().min(3),
-      color: z.string().default('#0f172a'),
+      color: z.string().default('var(--color-slate-900)'),
       expires_at: z.string().optional().nullable(),
       metadata: z.record(z.any()).optional().default({}),
     })

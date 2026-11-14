@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ShoppingBag, Package, Plane, Maximize2, Minimize2, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/state/states";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CanonicalPage, CanonicalSplit } from "@/components/ui/canonical/page-layout";
 import { listCategories, listProductTypes, listOptionGroups, listStoreBrands } from "@/services/admin-catalog.functions";
@@ -38,11 +39,11 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/novo")({
     try {
       const sessionStoreId = (context as any)?.session?.store_id;
       const [catsRes, typesRes, groupsRes, storeRes, brandsRes] = await Promise.all([
-        listCategories().catch(() => []),
-        listProductTypes().catch(() => []),
-        listOptionGroups().catch(() => []),
-        getStoreSettings(sessionStoreId ? { data: { store_id: sessionStoreId } } : undefined).catch(() => null),
-        listStoreBrands().catch(() => []),
+        listCategories(),
+        listProductTypes(),
+        listOptionGroups(),
+        getStoreSettings(sessionStoreId ? { data: { store_id: sessionStoreId } } : undefined),
+        listStoreBrands(),
       ]);
       return {
         categories: catsRes || [],
@@ -50,17 +51,26 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/novo")({
         optionGroupsList: groupsRes || [],
         store: storeRes,
         brands: brandsRes || [],
+        loadError: null as string | null,
       };
-    } catch (e) {
+    } catch (e: any) {
       console.warn("[workspace.catalogo.produtos.novo] Falha no loader:", e);
-      return { categories: [], productTypes: [], optionGroupsList: [], store: null, brands: [] };
+      return {
+        categories: [],
+        productTypes: [],
+        optionGroupsList: [],
+        store: null,
+        brands: [],
+        loadError: e?.message || "Não foi possível carregar os metadados do catálogo.",
+      };
     }
   },
   component: UnifiedNewProductPage,
 });
 
 export function UnifiedNewProductPage() {
-  const { categories, productTypes = [], optionGroupsList, store: loaderStore, brands = [] } = ((Route.useLoaderData?.() as any) || {});
+  const { categories, productTypes = [], optionGroupsList, store: loaderStore, brands = [], loadError } = ((Route.useLoaderData?.() as any) || {});
+  const router = useRouter();
   const clientTenant = typeof window !== "undefined" ? getClientActiveTenant() : null;
   const store = loaderStore || (clientTenant ? { id: clientTenant, name: "Minha Empresa" } : null);
   const semantics = getNicheSemantics(store);
@@ -68,6 +78,18 @@ export function UnifiedNewProductPage() {
 
   const editor = useProductEditor(categories, optionGroupsList, store, nicheCtx, semantics, brands);
   const [isWideMode, setIsWideMode] = useState(false);
+
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <ErrorState
+          title="Erro ao iniciar novo produto"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
   const selectedProductType = (productTypes || []).find(
     (pt: any) => pt.id === editor.formValues.type_id
   ) || null;

@@ -58,7 +58,7 @@ export function Customer360PrintableDossier({
         <div className="border-b-2 border-foreground/80 pb-5 flex items-start justify-between">
           <div className="space-y-1">
             <span className="text-xs font-mono font-bold tracking-widest text-primary uppercase">
-              Dossiê 360° do Cliente & Histórico Transacional
+              Perfil do Cliente & Histórico Transacional
             </span>
             <h1 className="text-2xl font-black uppercase text-foreground tracking-tight">
               {customer.fullName}
@@ -169,7 +169,7 @@ export function Customer360PrintableDossier({
       {/* ── 5. RODAPÉ DE AUDITORIA & SEGURANÇA ── */}
       <div className="border-t border-border/60 pt-4 mt-8 flex items-center justify-between text-xs text-muted-foreground">
         <div>
-          <span className="font-semibold text-foreground">Dossiê Confidencial 360°</span>
+          <span className="font-semibold text-foreground">Perfil Confidencial do Cliente</span>
           <p className="text-xs text-muted-foreground">
             Gerado eletronicamente em {emissionDate} às {emissionTime}
           </p>

@@ -39,7 +39,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
   const resolvedSpecs = highlights && highlights.length > 0 ? highlights.slice(0, 4) : defaultSpecs;
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-[#070b12] text-foreground select-none ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-slate-950 text-foreground select-none ${className}`}>
       {/* ── 1. Fotografia Full Bleed (100% da área) ── */}
       <div className="absolute inset-0 overflow-hidden">
         <img
@@ -51,7 +51,7 @@ export function RealEstateMinimalHero({ data, className = "" }: SocialTemplatePr
         {/* Gradiente escuro a partir dos 50% centrais até a base */}
         <div className="absolute inset-0 bg-slate-950/80" />
         {/* Vinheta superior suave para proteção da safe zone */}
-        <div className="absolute inset-x-0 top-0 h-40 bg-black/50" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-neutral-950/50" />
       </div>
 
       {/* ── 2. Conteúdo em Camadas (Safe Zones Instagram) ── */}

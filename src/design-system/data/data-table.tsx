@@ -249,10 +249,11 @@ export function DataTable<T>({
                   <th role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                     key={col.id}
                     scope="col"
-                    style={{ width: col.width }}
+                    style={col.width ? ({ "--dyn-w": col.width } as React.CSSProperties) : undefined}
                     onClick={() => col.isSortable && handleSort(col.id)}
                     className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
                       "px-4 py-3 font-semibold tracking-tight",
+                      col.width && "waesy-dyn-w",
                       col.align === "right" && "text-right",
                       col.align === "center" && "text-center",
                       col.isSortable && "cursor-pointer hover:text-foreground select-none"

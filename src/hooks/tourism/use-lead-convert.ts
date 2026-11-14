@@ -3,6 +3,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { promoteLeadToCustomer } from "@/services/crm.functions";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 export function useLeadConvert(
   lead: any | undefined,
@@ -61,7 +62,7 @@ export function useLeadConvert(
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ["#000000", "#ffffff", "#10b981", stageColor || "#3b82f6"],
+        colors: [TOKEN_HEX.neutral950, TOKEN_HEX.white, TOKEN_HEX.green500, stageColor || TOKEN_HEX.blue500],
         disableForReducedMotion: true,
       });
 

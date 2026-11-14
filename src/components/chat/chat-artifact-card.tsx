@@ -147,12 +147,12 @@ function ScoreBar({ value, max = 20 }: { value: number; max?: number }) {
   const pct = Math.round((value / max) * 100);
   const colorClass =
     pct >= 80
-      ? "bg-green-500"
+      ? "bg-success"
       : pct >= 60
       ? "bg-warning"
       : "bg-destructive";
   return (
-    <div className="h-1 w-full rounded-full bg-border/60 overflow-hidden">
+    <div className="h-1 w-full rounded-full bg-border overflow-hidden">
       <div
         className={cn("h-full rounded-full transition-colors", colorClass)}
         style={{ width: `${pct}%` }}
@@ -170,7 +170,7 @@ function QualityScorePanel({ rubric, totalScore }: { rubric: Record<string, numb
 
   const statusIcon =
     totalScore >= 80 ? (
-      <CheckCircle className="size-3.5 text-green-500 shrink-0" aria-hidden="true" />
+      <CheckCircle className="size-3.5 text-success shrink-0" aria-hidden="true" />
     ) : totalScore >= 60 ? (
       <AlertCircle className="size-3.5 text-warning-strong shrink-0" aria-hidden="true" />
     ) : (
@@ -189,11 +189,11 @@ function QualityScorePanel({ rubric, totalScore }: { rubric: Record<string, numb
   };
 
   return (
-    <div className="border border-border/40 rounded-md overflow-hidden">
-      <button /* focus-visible:ring-2 */
+    <div className="border border-border rounded-xl overflow-hidden bg-surface-card">
+      <button
         type="button"
-        onClick={() => setOpen(open === false)} /* focus-visible:ring-2 */
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md"
+        onClick={() => setOpen(open === false)}
+        className="w-full min-h-11 flex items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
         aria-expanded={open}
         aria-controls="rubric-panel"
       >
@@ -206,7 +206,7 @@ function QualityScorePanel({ rubric, totalScore }: { rubric: Record<string, numb
             className={cn(
               "font-mono tabular-nums",
               totalScore >= 80
-                ? "text-green-600"
+                ? "text-success"
                 : totalScore >= 60
                 ? "text-warning-strong"
                 : "text-destructive"
@@ -299,14 +299,14 @@ export function ChatArtifactCard({
       role="article"
       aria-label={`Artefato: ${artifact.title}`}
       className={cn(
-        "rounded-lg border border-border/70 bg-card p-3 space-y-3 text-card-foreground hover:border-border transition-colors",
+        "rounded-2xl border border-border bg-surface-subtle hover:bg-surface-hover p-4 space-y-3 text-card-foreground transition-colors",
         className
       )}
     >
       {/* ── Topo do Card: Icone Semantico, Tipo e Versao ── */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-10 rounded-xl bg-surface-raised text-foreground flex items-center justify-center shrink-0 border border-border">
             <Icon className="size-5" aria-hidden="true" />
           </div>
 
@@ -315,7 +315,7 @@ export function ChatArtifactCard({
               <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {config.label}
               </span>
-              <Badge variant="outline" className="text-2xs font-mono h-4 px-2 border-border/40">
+              <Badge variant="outline" className="text-2xs font-mono h-5 px-2 border-border">
                 v{artifact.version}
               </Badge>
               {artifact.totalVersions != null && artifact.totalVersions > 1 && (
@@ -337,7 +337,7 @@ export function ChatArtifactCard({
               {artifact.authorName}
             </span>
             {artifact.authorRole && (
-              <span className="text-2xs text-primary font-medium block line-clamp-1">
+              <span className="text-2xs text-muted-foreground font-medium block line-clamp-1">
                 {artifact.authorRole}
               </span>
             )}
@@ -352,25 +352,25 @@ export function ChatArtifactCard({
         </p>
       )}
 
-      {/* ── Painel de Qualidade Base44 (visivel apenas em artefatos de composicao) ── */}
+      {/* ── Painel de Qualidade (visivel apenas em artefatos de composicao) ── */}
       {rubricData != null && qualityScore != null && (
         <QualityScorePanel rubric={rubricData} totalScore={qualityScore} />
       )}
 
       {/* ── Acoes Nativas ── */}
-      <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border">
         <div className="flex items-center gap-2">
           {onViewVersions && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => onViewVersions(artifact)} /* focus-visible:ring-2 */
-              className="h-11 px-2 text-xs text-muted-foreground hover:text-foreground rounded-md gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onClick={() => onViewVersions(artifact)}
+              className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground rounded-xl gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Ver historico de versoes"
             >
               <History className="size-3.5" aria-hidden="true" />
-              <span className="hidden sm:inline">Versoes</span>
+              <span className="hidden sm:inline">Versões</span>
             </Button>
           )}
 
@@ -379,8 +379,8 @@ export function ChatArtifactCard({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={handleExport} /* focus-visible:ring-2 */
-              className="h-11 px-2 text-xs text-muted-foreground hover:text-foreground rounded-md gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onClick={handleExport}
+              className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground rounded-xl gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title={`Exportar como ${config.defaultExport.toUpperCase()}`}
             >
               <Download className="size-3.5" aria-hidden="true" />
@@ -392,12 +392,12 @@ export function ChatArtifactCard({
         <Button
           type="button"
           size="sm"
-          onClick={handleOpenBuilder} /* focus-visible:ring-2 */
-          className="h-11 px-3 text-xs font-semibold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          onClick={handleOpenBuilder}
+          className="h-11 min-h-11 px-4 text-xs font-semibold rounded-xl bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ExternalLink className="size-3.5" aria-hidden="true" />
           <span>
-            {artifact.type === "landing_page"
+            {artifact.type === "landing_page" || artifact.type === "website"
               ? "Abrir no Editor"
               : artifact.type === "spreadsheet"
               ? "Visualizar Dados"

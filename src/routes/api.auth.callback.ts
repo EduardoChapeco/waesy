@@ -26,11 +26,16 @@ export const Route = createFileRoute("/api/auth/callback")({
         if (code) {
           const supabase = await getSSRClient(capturedResHeaders);
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
+            console.error("[api.auth.callback] Falha no exchangeCodeForSession:", error.message);
+          }
           if (!error && data.session) {
             try {
               const { clearIdentityCache } = await import("@/lib/server-access");
               clearIdentityCache();
-            } catch {}
+            } catch (cacheErr) {
+              console.warn("[api.auth.callback] Falha ao limpar cache de identidade:", cacheErr);
+            }
             try {
               await mergeGuestCartLogic(
                 data.session.user.id,
@@ -38,7 +43,7 @@ export const Route = createFileRoute("/api/auth/callback")({
                 guestSessionToken,
               );
             } catch (err) {
-              console.error("Falha ao mesclar carrinho após OAuth (ignorado):", err);
+              console.error("[api.auth.callback] Falha ao mesclar carrinho após OAuth:", err);
             }
 
             const headers = new Headers();
@@ -59,7 +64,9 @@ export const Route = createFileRoute("/api/auth/callback")({
                   if (sc) headers.set("Set-Cookie", sc);
                 }
               }
-            } catch {}
+            } catch (headerErr) {
+              console.warn("[api.auth.callback] Falha ao encaminhar Set-Cookie:", headerErr);
+            }
 
             return new Response(null, {
               status: 302,

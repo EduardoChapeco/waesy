@@ -11,7 +11,8 @@ import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-cano
 import { toast } from 'sonner';
 import { useWorkspaceStore } from '@/lib/store-context';
 import { getStoreSettings } from '@/services/store.functions';
-import { listFlightItineraries, createFlightItinerary, deleteFlightItinerary } from '@/services/travel-flights.functions';
+import { listFlightItineraries, createFlightItinerary, updateFlightItinerary, duplicateFlightItinerary, deleteFlightItinerary } from '@/services/travel-flights.functions';
+import { CrudActionsMenu } from '@/components/ui/crud-actions-menu';
 import { listCustomers } from '@/services/crm.functions';
 import { listTravelSuppliers } from '@/services/travel-suppliers.functions';
 import type { TravelFlightItinerary, FlightCabin, FlightItineraryType } from '@/types/travel-flights';
@@ -55,6 +56,7 @@ export default function FlightsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isMetricsOpen, setIsMetricsOpen] = useState(false);
+  const [editingItineraryId, setEditingItineraryId] = useState<string | null>(null);
 
   // Form State — Emissão Agência de Turismo
   const [title, setTitle] = useState('');
@@ -158,7 +160,81 @@ export default function FlightsPage() {
     return fare + tax + fee;
   }, [fareAmount, taxAmount, agencyFee]);
 
-  const createMutation = useMutation({
+  const resetForm = () => {
+    setEditingItineraryId(null);
+    setTitle('');
+    setItineraryType('confirmed');
+    setConsolidator('RexturAdvance');
+    setCustomConsolidator('');
+    setSelectedCustomerId('');
+    setPassengerName('');
+    setTicketNumber('');
+    setRecordLocator('');
+    setAirlineCode('');
+    setAirlineName('');
+    setFlightNumber('');
+    setOriginIata('');
+    setOriginCity('');
+    setDestinationIata('');
+    setDestinationCity('');
+    setDepartureAt('');
+    setArrivalAt('');
+    setBaggage('');
+    setAirportTerminal('');
+    setCabin('economy');
+    setFareAmount('3500.00');
+    setTaxAmount('450.00');
+    setAgencyFee('180.00');
+    setAgencyCommission('250.00');
+  };
+
+  const toLocalDateTimeInput = (iso?: string | null) => {
+    if (!iso) return '';
+    return iso.length >= 16 ? iso.slice(0, 16) : iso;
+  };
+
+  const handleOpenEdit = (it: any) => {
+    let meta: any = it.meta || null;
+    if (!meta && it.notes) {
+      try {
+        meta = JSON.parse(it.notes);
+      } catch {
+        meta = null;
+      }
+    }
+    const seg = Array.isArray(it.segments) ? it.segments[0] : undefined;
+    const cons = meta?.consolidator || 'RexturAdvance';
+    const isPreset = activeConsolidators.includes(cons);
+    setEditingItineraryId(it.id);
+    setTitle(it.title || '');
+    setItineraryType((it.itinerary_type || 'confirmed') as FlightItineraryType);
+    setConsolidator(isPreset ? cons : 'custom');
+    setCustomConsolidator(isPreset ? '' : cons);
+    setSelectedCustomerId(meta?.customer_id || '');
+    setPassengerName(meta?.passenger_name || '');
+    setTicketNumber(seg?.ticket_number || '');
+    setRecordLocator(seg?.record_locator || '');
+    setAirlineCode(seg?.airline_code || '');
+    setAirlineName(seg?.airline_name || '');
+    setFlightNumber(seg?.flight_number || '');
+    setOriginIata(seg?.origin_iata || '');
+    setOriginCity(seg?.origin_city || '');
+    setDestinationIata(seg?.destination_iata || '');
+    setDestinationCity(seg?.destination_city || '');
+    setDepartureAt(toLocalDateTimeInput(seg?.departure_at));
+    setArrivalAt(toLocalDateTimeInput(seg?.arrival_at));
+    setBaggage(seg?.baggage || '');
+    setAirportTerminal(seg?.airport_terminal || '');
+    setCabin((seg?.cabin || 'economy') as FlightCabin);
+    const fin = meta?.financial || {};
+    setFareAmount(typeof fin.fare_cents === 'number' ? (fin.fare_cents / 100).toFixed(2) : '0.00');
+    setTaxAmount(typeof fin.tax_cents === 'number' ? (fin.tax_cents / 100).toFixed(2) : '0.00');
+    setAgencyFee(typeof fin.fee_cents === 'number' ? (fin.fee_cents / 100).toFixed(2) : '0.00');
+    setAgencyCommission(typeof fin.commission_cents === 'number' ? (fin.commission_cents / 100).toFixed(2) : '0.00');
+    setIsDialogOpen(true);
+  };
+
+  const saveMutation = useMutation({
     mutationFn: async () => {
       const chosenConsolidator = consolidator === 'custom' ? customConsolidator : consolidator;
       const passenger = activePassengerDisplay.trim() || 'Passageiro Geral';
@@ -177,47 +253,69 @@ export default function FlightsPage() {
       };
 
       if (!storeId) throw new Error('Loja não configurada; emissão não criada.');
+      const segmentPayload = {
+        airline_code: airlineCode.toUpperCase(),
+        airline_name: airlineName,
+        flight_number: flightNumber.toUpperCase(),
+        origin_iata: originIata.toUpperCase(),
+        origin_city: originCity,
+        destination_iata: destinationIata.toUpperCase(),
+        destination_city: destinationCity,
+        departure_at: departureAt,
+        arrival_at: arrivalAt,
+        cabin,
+        baggage,
+        record_locator: recordLocator.toUpperCase(),
+        ticket_number: ticketNumber.trim(),
+        airport_terminal: airportTerminal,
+      };
+      const resolvedTitle = title.trim() || `Bilhete ${recordLocator.toUpperCase() || 'GDS'} - ${passenger}`;
+
+      if (editingItineraryId) {
+        return updateFlightItinerary({
+          data: {
+            id: editingItineraryId,
+            title: resolvedTitle,
+            itinerary_type: itineraryType,
+            notes: JSON.stringify(agencyMetadata),
+            segments: [segmentPayload],
+          },
+        });
+      }
+
       return createFlightItinerary({
         data: {
           store_id: storeId,
-          title: title.trim() || `Bilhete ${recordLocator.toUpperCase() || 'GDS'} - ${passenger}`,
+          title: resolvedTitle,
           itinerary_type: itineraryType,
           status: 'active',
           notes: JSON.stringify(agencyMetadata),
-          segments: [
-            {
-              airline_code: airlineCode.toUpperCase(),
-              airline_name: airlineName,
-              flight_number: flightNumber.toUpperCase(),
-              origin_iata: originIata.toUpperCase(),
-              origin_city: originCity,
-              destination_iata: destinationIata.toUpperCase(),
-              destination_city: destinationCity,
-              departure_at: departureAt,
-              arrival_at: arrivalAt,
-              cabin,
-              baggage,
-              record_locator: recordLocator.toUpperCase(),
-              ticket_number: ticketNumber.trim(),
-              airport_terminal: airportTerminal,
-            },
-          ],
+          segments: [segmentPayload],
         },
       });
     },
     onSuccess: () => {
-      toast.success('Bilhete aéreo e localizador cadastrados com sucesso!');
+      toast.success(
+        editingItineraryId
+          ? 'Bilhete aéreo atualizado com sucesso!'
+          : 'Bilhete aéreo e localizador cadastrados com sucesso!',
+      );
       setIsDialogOpen(false);
-      setTitle('');
-      setTicketNumber('');
-      setRecordLocator('');
-      setSelectedCustomerId('');
-      setPassengerName('');
+      resetForm();
       queryClient.invalidateQueries({ queryKey: ['travel-flight-itineraries', storeId] });
     },
     onError: (err: any) => {
-      toast.error(err.message || 'Erro ao cadastrar emissão aérea.');
+      toast.error(err.message || 'Erro ao salvar emissão aérea.');
     },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: (id: string) => duplicateFlightItinerary({ data: { id } }),
+    onSuccess: () => {
+      toast.success('Emissão aérea duplicada com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['travel-flight-itineraries', storeId] });
+    },
+    onError: (err: any) => toast.error(err?.message || 'Erro ao duplicar emissão aérea.'),
   });
 
   const deleteMutation = useMutation({
@@ -318,7 +416,10 @@ export default function FlightsPage() {
         primaryAction={{
           label: "Nova Emissão / Bilhete",
           icon: Plus,
-          onClick: () => setIsDialogOpen(true),
+          onClick: () => {
+            resetForm();
+            setIsDialogOpen(true);
+          },
         }}
       />
 
@@ -330,7 +431,13 @@ export default function FlightsPage() {
       />
 
       {/* Sheet Lateral Ampliada (size="wide" -> 70% viewport) */}
-      <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Sheet
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) resetForm();
+        }}
+      >
         <SheetContent size="wide" className="w-full sm:max-w-4xl p-0 flex flex-col h-full bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <div className="flex items-center gap-3">
@@ -338,7 +445,9 @@ export default function FlightsPage() {
                 <Ticket className="size-5" />
               </div>
               <div>
-                <SheetTitle className="text-base font-bold">Registrar Emissão Aérea (GDS e Consolidadora)</SheetTitle>
+                <SheetTitle className="text-base font-bold">
+                  {editingItineraryId ? 'Editar Emissão Aérea (GDS e Consolidadora)' : 'Registrar Emissão Aérea (GDS e Consolidadora)'}
+                </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
                   Cadastre o bilhete eletrônico, PNR, rota, dados do passageiro e comissionamento da agência.
                 </SheetDescription>
@@ -608,15 +717,26 @@ export default function FlightsPage() {
           </div>
 
           <SheetFooter className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-muted/20 shrink-0">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="h-11 px-5 rounded-lg">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDialogOpen(false);
+                resetForm();
+              }}
+              className="h-11 px-5 rounded-lg"
+            >
               Cancelar
             </Button>
             <Button
-              onClick={() => createMutation.mutate()}
-              disabled={createMutation.isPending}
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending}
               className="h-11 px-6 font-bold rounded-lg bg-primary text-primary-foreground"
             >
-              {createMutation.isPending ? 'Salvando...' : 'Confirmar & Salvar Bilhete'}
+              {saveMutation.isPending
+                ? 'Salvando...'
+                : editingItineraryId
+                  ? 'Salvar Alterações do Bilhete'
+                  : 'Confirmar & Salvar Bilhete'}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -695,15 +815,14 @@ export default function FlightsPage() {
                       </span>
                     )}
 
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteMutation.mutate(it.id)}
-                      className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <CrudActionsMenu
+                      entityName="Emissão Aérea"
+                      onEdit={() => handleOpenEdit(it)}
+                      onDuplicate={() => duplicateMutation.mutate(it.id)}
+                      onDelete={() => deleteMutation.mutate(it.id)}
+                      deleteTitle="Excluir emissão aérea?"
+                      deleteDescription={`Remover permanentemente o bilhete "${it.title}" e seus trechos cadastrados?`}
+                    />
                   </div>
                 </div>
 

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "@/services/auth.functions";
 import { setTenantContext } from "@/services/identity.functions";
 import { setClientContextCookies, getClientActiveContext } from "@/lib/context-auth";
@@ -88,12 +87,13 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
     });
   };
 
-  const { data: creatorProfiles = [] } = useQuery({
+  const { data: creatorProfiles = [], isLoading: isLoadingCreatorProfiles } = useQuery({
     queryKey: ["my-creator-profiles-list"],
     queryFn: () => getMyCreatorProfilesList(),
     enabled: Boolean(session),
     staleTime: 60_000,
   });
+  void isLoadingCreatorProfiles;
 
   const rawContext = typeof window !== "undefined"
     ? (document.cookie.match(/waesy_active_context=([^;]+)/)?.[1] as any) || "civil"
@@ -225,9 +225,6 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
         {/* 3. Notificações */}
         <NotificationsPopover session={session} />
 
-        {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
-        {/* Tema gerenciado nas preferências */}
-
         <div className="hidden md:block h-4 w-px bg-border/60 mx-1" />
 
         {/* 6. Perfil / Auth Trigger (Drawer Tátil Universal) */}
@@ -247,7 +244,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                   onError={() => setAvatarError(true)}
                 />
               ) : (
-                <div className="size-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-black">
+                <div className="size-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-semibold">
                   {userInitial}
                 </div>
               )}
@@ -262,7 +259,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
                     {userAvatar && !avatarError ? (
                       <img src={userAvatar} alt={userName} className="size-full object-cover" onError={() => setAvatarError(true)} />
                     ) : (
-                      <span className="text-base font-black text-primary">{userInitial}</span>
+                      <span className="text-base font-semibold text-primary">{userInitial}</span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -858,7 +855,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar posts, produtos, classificados, eventos ou membros..."
-              className="h-12 pl-10 pr-4 text-sm bg-muted rounded-lg border-border focus-visible:ring-ring"
+              className="h-11 min-h-11 pl-10 pr-4 text-base md:text-sm bg-background rounded-lg border-border focus-visible:ring-ring"
             />
           </form>
         </DialogContent>

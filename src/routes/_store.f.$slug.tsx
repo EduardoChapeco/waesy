@@ -93,7 +93,7 @@ function LeadLandingPage() {
 
         {/* Imagem de Capa Opcional */}
         {form.cover_image_url && (
-          <div className="w-full aspect-21/9 sm:aspect-[2.5/1] rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative ">
+          <div className="w-full aspect-21/9 sm:aspect-5/2 rounded-lg overflow-hidden border border-border/50 bg-muted/20 relative ">
             <img
               src={form.cover_image_url}
               alt={form.title}

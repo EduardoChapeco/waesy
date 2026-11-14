@@ -26,6 +26,8 @@ export type AttributionPayload = {
   fbp?: string | null;
   fbc?: string | null;
   gclid?: string | null;
+  gbraid?: string | null;
+  wbraid?: string | null;
   ttclid?: string | null;
   utm_source?: string | null;
   utm_medium?: string | null;
@@ -333,6 +335,8 @@ export function cleanAttributionObject(raw: Record<string, any> | null | undefin
     "fbp",
     "fbc",
     "gclid",
+    "gbraid",
+    "wbraid",
     "ttclid",
     "utm_source",
     "utm_medium",
@@ -368,6 +372,8 @@ export function mergeAttributionPayloads(
     fbc: inc.fbc || b.fbc,
     fbclid: inc.fbclid || b.fbclid,
     gclid: inc.gclid || b.gclid,
+    gbraid: inc.gbraid || b.gbraid,
+    wbraid: inc.wbraid || b.wbraid,
     ttclid: inc.ttclid || b.ttclid,
     ctwa_clid: inc.ctwa_clid || b.ctwa_clid,
     ad_id: inc.ad_id || b.ad_id,
@@ -401,6 +407,8 @@ export async function recordAttributionTouchpoint(
     fbp?: string | null;
     fbc?: string | null;
     gclid?: string | null;
+    gbraid?: string | null;
+    wbraid?: string | null;
     ttclid?: string | null;
     utmSource?: string | null;
     utmMedium?: string | null;
@@ -439,6 +447,8 @@ export async function recordAttributionTouchpoint(
         input.fbc ||
         input.fbp ||
         input.gclid ||
+        input.gbraid ||
+        input.wbraid ||
         input.ttclid ||
         input.utmSource ||
         input.utmCampaign ||
@@ -455,56 +465,75 @@ export async function recordAttributionTouchpoint(
         ? "meta_ads"
         : input.fbclid || input.fbc
           ? "meta_ads"
-          : input.gclid
+          : input.gclid || input.gbraid || input.wbraid
             ? "google_ads"
             : input.ttclid
               ? "tiktok_ads"
               : input.utmSource || null);
 
-    const { data, error } = await (db.from("ad_attribution_touchpoints") as any)
-      .insert({
-        store_id: input.storeId || null,
-        device_id: input.deviceId || null,
-        visitor_id: input.visitorId || null,
-        profile_id: input.profileId || null,
-        phone_e164: phoneInfo.e164,
-        phone_digits: phoneInfo.digits || null,
-        email: input.email ? input.email.trim().toLowerCase() : null,
-        lead_code: input.leadCode || null,
-        ctwa_clid: input.ctwaClid || null,
-        fbclid: input.fbclid || null,
-        fbp: input.fbp || null,
-        fbc: input.fbc || null,
-        gclid: input.gclid || null,
-        ttclid: input.ttclid || null,
-        utm_source: input.utmSource || null,
-        utm_medium: input.utmMedium || null,
-        utm_campaign: input.utmCampaign || null,
-        utm_content: input.utmContent || null,
-        utm_term: input.utmTerm || null,
-        ad_platform: platform,
-        ad_id: input.adId || null,
-        adset_id: input.adsetId || null,
-        campaign_id: input.campaignId || null,
-        creative_id: input.creativeId || null,
-        form_id: input.formId || null,
-        ad_headline: input.adHeadline || null,
-        ad_body: input.adBody || null,
-        ad_media_url: input.adMediaUrl || null,
-        source_url: input.sourceUrl || null,
-        landing_url: input.landingUrl || null,
-        referrer: input.referrer || null,
-        entity_type: input.entityType || null,
-        entity_id: input.entityId || null,
-        entity_title: input.entityTitle || null,
-        captured_via: input.capturedVia || "web_visit",
-        lead_id: input.leadId || null,
-        customer_id: input.customerId || null,
-        thread_id: input.threadId || null,
-        metadata: input.metadata || {},
-      })
+    const baseRow: Record<string, unknown> = {
+      store_id: input.storeId || null,
+      device_id: input.deviceId || null,
+      visitor_id: input.visitorId || null,
+      profile_id: input.profileId || null,
+      phone_e164: phoneInfo.e164,
+      phone_digits: phoneInfo.digits || null,
+      email: input.email ? input.email.trim().toLowerCase() : null,
+      lead_code: input.leadCode || null,
+      ctwa_clid: input.ctwaClid || null,
+      fbclid: input.fbclid || null,
+      fbp: input.fbp || null,
+      fbc: input.fbc || null,
+      gclid: input.gclid || input.gbraid || input.wbraid || null,
+      ttclid: input.ttclid || null,
+      utm_source: input.utmSource || null,
+      utm_medium: input.utmMedium || null,
+      utm_campaign: input.utmCampaign || null,
+      utm_content: input.utmContent || null,
+      utm_term: input.utmTerm || null,
+      ad_platform: platform,
+      ad_id: input.adId || null,
+      adset_id: input.adsetId || null,
+      campaign_id: input.campaignId || null,
+      creative_id: input.creativeId || null,
+      form_id: input.formId || null,
+      ad_headline: input.adHeadline || null,
+      ad_body: input.adBody || null,
+      ad_media_url: input.adMediaUrl || null,
+      source_url: input.sourceUrl || null,
+      landing_url: input.landingUrl || null,
+      referrer: input.referrer || null,
+      entity_type: input.entityType || null,
+      entity_id: input.entityId || null,
+      entity_title: input.entityTitle || null,
+      captured_via: input.capturedVia || "web_visit",
+      lead_id: input.leadId || null,
+      customer_id: input.customerId || null,
+      thread_id: input.threadId || null,
+      metadata: {
+        ...(input.metadata || {}),
+        ...(input.gbraid ? { gbraid: input.gbraid } : {}),
+        ...(input.wbraid ? { wbraid: input.wbraid } : {}),
+      },
+    };
+
+    const fullRow = {
+      ...baseRow,
+      ...(input.gbraid ? { gbraid: input.gbraid } : {}),
+      ...(input.wbraid ? { wbraid: input.wbraid } : {}),
+    };
+
+    let { data, error } = await (db.from("ad_attribution_touchpoints") as any)
+      .insert(fullRow)
       .select("id")
       .maybeSingle();
+
+    if (error && /column|does not exist|schema/i.test(error.message || "")) {
+      ({ data, error } = await (db.from("ad_attribution_touchpoints") as any)
+        .insert(baseRow)
+        .select("id")
+        .maybeSingle());
+    }
 
     if (error) return null;
     return data?.id ? String(data.id) : null;
@@ -535,6 +564,10 @@ export async function dispatchServerSidePixelConversion(
     fbp?: string | null;
     fbc?: string | null;
     ctwaClid?: string | null;
+    gclid?: string | null;
+    gbraid?: string | null;
+    wbraid?: string | null;
+    deviceId?: string | null;
     sourceUrl?: string | null;
     clientIpAddress?: string | null;
     clientUserAgent?: string | null;
@@ -553,13 +586,12 @@ export async function dispatchServerSidePixelConversion(
       return { sent: existingLog.status === "delivered", reason: "already_dispatched" };
     }
 
-    const { data: pixelConfig } = await db
-      .from("store_pixel_configs")
-      .select("meta_pixel_id, meta_capi_token, meta_test_event_code, google_ads_id, track_quotes, track_whatsapp_leads")
+    const { data: pixelConfig } = await (db.from("store_pixel_configs") as any)
+      .select("meta_pixel_id, meta_capi_token, meta_test_event_code, google_ads_id, google_ads_conversion_label, ga4_measurement_id, track_quotes, track_whatsapp_leads")
       .eq("store_id", input.storeId)
       .maybeSingle();
 
-    if (!pixelConfig?.meta_pixel_id) {
+    if (!pixelConfig) {
       return { sent: false, reason: "pixel_not_configured" };
     }
     if (input.eventName === "Lead" && pixelConfig.track_quotes === false) {
@@ -569,103 +601,185 @@ export async function dispatchServerSidePixelConversion(
       return { sent: false, reason: "whatsapp_tracking_disabled" };
     }
 
-    // 2. Resolve access_token do cofre integration_credentials ou legado store_pixel_configs
-    let accessToken = "";
-    let testEventCode = String(pixelConfig.meta_test_event_code || "").trim();
-    const { data: cred } = await db
-      .from("integration_credentials")
-      .select("secret_payload_encrypted, token_payload")
-      .eq("store_id", input.storeId)
-      .eq("provider", "meta_pixel")
-      .eq("is_active", true)
-      .maybeSingle();
+    let metaDelivered = false;
+    let metaReason = "pixel_not_configured";
 
-    if (cred?.secret_payload_encrypted) {
-      try {
-        const parsed = JSON.parse(decryptSecret(cred.secret_payload_encrypted));
-        if (typeof parsed?.access_token === "string") accessToken = parsed.access_token.trim();
-        if (typeof parsed?.test_event_code === "string" && parsed.test_event_code.trim()) {
-          testEventCode = parsed.test_event_code.trim();
+    if (pixelConfig.meta_pixel_id) {
+      let accessToken = "";
+      let testEventCode = String(pixelConfig.meta_test_event_code || "").trim();
+      const { data: cred } = await db
+        .from("integration_credentials")
+        .select("secret_payload_encrypted, token_payload")
+        .eq("store_id", input.storeId)
+        .eq("provider", "meta_pixel")
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (cred?.secret_payload_encrypted) {
+        try {
+          const parsed = JSON.parse(decryptSecret(cred.secret_payload_encrypted));
+          if (typeof parsed?.access_token === "string") accessToken = parsed.access_token.trim();
+          if (typeof parsed?.test_event_code === "string" && parsed.test_event_code.trim()) {
+            testEventCode = parsed.test_event_code.trim();
+          }
+        } catch {}
+      }
+      if (!accessToken && typeof pixelConfig.meta_capi_token === "string") {
+        accessToken = pixelConfig.meta_capi_token.trim();
+      }
+      if (accessToken) {
+        const userData: Record<string, any> = {};
+        const phoneDigits = digitsOnly(normalizePhoneE164(input.phone) || input.phone);
+        if (phoneDigits.length >= 8) userData.ph = [sha256(phoneDigits)];
+        if (input.email && !input.email.endsWith("@whatsapp.waesy") && !input.email.endsWith("@sem-email.waesy.local")) {
+          userData.em = [sha256(input.email.trim().toLowerCase())];
         }
+        if (input.fullName && !/^\+?\d+$/.test(input.fullName.trim())) {
+          const parts = input.fullName.trim().toLowerCase().split(/\s+/);
+          if (parts[0]) userData.fn = [sha256(parts[0])];
+          if (parts.length > 1) userData.ln = [sha256(parts[parts.length - 1])];
+        }
+        if (input.fbp) userData.fbp = input.fbp;
+        if (input.fbc) userData.fbc = input.fbc;
+        if (input.ctwaClid) userData.ctwa_clid = input.ctwaClid;
+        if (input.clientIpAddress) userData.client_ip_address = input.clientIpAddress;
+        if (input.clientUserAgent) userData.client_user_agent = input.clientUserAgent;
+
+        const eventPayload: Record<string, any> = {
+          event_name: input.eventName,
+          event_id: input.eventId,
+          event_time: Math.floor(Date.now() / 1000),
+          action_source: input.ctwaClid ? "business_messaging" : "website",
+          ...(input.ctwaClid ? { messaging_channel: "whatsapp" } : {}),
+          ...(input.sourceUrl ? { event_source_url: input.sourceUrl } : {}),
+          user_data: userData,
+          custom_data: {
+            currency: "BRL",
+            lead_event_source: input.eventSource || "waesy_omnichannel",
+            ...(input.customData || {}),
+          },
+        };
+
+        const bodyPayload: Record<string, any> = {
+          data: [eventPayload],
+          ...(testEventCode ? { test_event_code: testEventCode } : {}),
+        };
+
+        let responseData: Record<string, any> = {};
+        try {
+          const capiRes = await fetch(
+            `https://graph.facebook.com/v19.0/${encodeURIComponent(pixelConfig.meta_pixel_id)}/events?access_token=${encodeURIComponent(accessToken)}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(bodyPayload),
+              signal: AbortSignal.timeout(6000),
+            },
+          );
+          responseData = (await capiRes.json().catch(() => ({}))) as Record<string, any>;
+          metaDelivered = capiRes.ok;
+          metaReason = metaDelivered ? "delivered" : "capi_error";
+        } catch (err: any) {
+          responseData = { error: err?.message || "network_error" };
+          metaReason = "capi_error";
+        }
+
+        await (db.from("lead_conversion_telemetry") as any)
+          .insert({
+            store_id: input.storeId,
+            lead_id: input.leadId || null,
+            thread_id: input.threadId || null,
+            event_name: input.eventName,
+            event_id: input.eventId,
+            event_source: input.eventSource || "waesy_omnichannel",
+            channel: "meta_capi",
+            status: metaDelivered ? "delivered" : "failed",
+            response_data: responseData,
+          })
+          .then(() => null, () => null);
+      } else {
+        metaReason = "capi_token_missing";
+      }
+    }
+
+    // 3. Disparo paralelo para GA4 Measurement Protocol / Google Ads offline quando configurado
+    let gaDelivered = false;
+    const gaMeasurementId = String(pixelConfig.ga4_measurement_id || "").trim();
+    if (gaMeasurementId) {
+      let gaApiSecret = "";
+      try {
+        const parsedLegacy = JSON.parse(String(pixelConfig.google_ads_id || "{}"));
+        if (typeof parsedLegacy?.api_secret === "string") gaApiSecret = parsedLegacy.api_secret.trim();
       } catch {}
-    }
-    if (!accessToken && typeof pixelConfig.meta_capi_token === "string") {
-      accessToken = pixelConfig.meta_capi_token.trim();
-    }
-    if (!accessToken) {
-      return { sent: false, reason: "capi_token_missing" };
+      if (!gaApiSecret) {
+        const { data: gaCred } = await db
+          .from("integration_credentials")
+          .select("secret_payload_encrypted")
+          .eq("store_id", input.storeId)
+          .eq("provider", "google_analytics")
+          .eq("is_active", true)
+          .maybeSingle();
+        if (gaCred?.secret_payload_encrypted) {
+          try {
+            const parsedGa = JSON.parse(decryptSecret(gaCred.secret_payload_encrypted));
+            if (typeof parsedGa?.api_secret === "string") gaApiSecret = parsedGa.api_secret.trim();
+          } catch {}
+        }
+      }
+
+      if (gaApiSecret) {
+        const gaEventName = input.eventName === "Purchase" ? "purchase" : "generate_lead";
+        const clientId = input.deviceId || input.gclid || input.gbraid || input.wbraid || input.leadId || `waesy.${Date.now()}`;
+        let gaRespData: Record<string, any> = {};
+        try {
+          const gaRes = await fetch(
+            `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(gaMeasurementId)}&api_secret=${encodeURIComponent(gaApiSecret)}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                client_id: String(clientId),
+                events: [
+                  {
+                    name: gaEventName,
+                    params: {
+                      currency: "BRL",
+                      value: Number(input.customData?.value || 0),
+                      transaction_id: input.eventId,
+                      gclid: input.gclid || undefined,
+                      gbraid: input.gbraid || undefined,
+                      wbraid: input.wbraid || undefined,
+                    },
+                  },
+                ],
+              }),
+              signal: AbortSignal.timeout(5000),
+            },
+          );
+          gaDelivered = gaRes.ok;
+          gaRespData = { status: gaRes.status };
+        } catch (err: any) {
+          gaRespData = { error: err?.message || "ga4_network_error" };
+        }
+
+        await (db.from("lead_conversion_telemetry") as any)
+          .insert({
+            store_id: input.storeId,
+            lead_id: input.leadId || null,
+            thread_id: input.threadId || null,
+            event_name: gaEventName,
+            event_id: `${input.eventId}_ga4`,
+            event_source: input.eventSource || "waesy_omnichannel",
+            channel: "ga4_mp",
+            status: gaDelivered ? "delivered" : "failed",
+            response_data: gaRespData,
+          })
+          .then(() => null, () => null);
+      }
     }
 
-    const userData: Record<string, any> = {};
-    const phoneDigits = digitsOnly(normalizePhoneE164(input.phone) || input.phone);
-    if (phoneDigits.length >= 8) userData.ph = [sha256(phoneDigits)];
-    if (input.email && !input.email.endsWith("@whatsapp.waesy") && !input.email.endsWith("@sem-email.waesy.local")) {
-      userData.em = [sha256(input.email.trim().toLowerCase())];
-    }
-    if (input.fullName && !/^\+?\d+$/.test(input.fullName.trim())) {
-      const parts = input.fullName.trim().toLowerCase().split(/\s+/);
-      if (parts[0]) userData.fn = [sha256(parts[0])];
-      if (parts.length > 1) userData.ln = [sha256(parts[parts.length - 1])];
-    }
-    if (input.fbp) userData.fbp = input.fbp;
-    if (input.fbc) userData.fbc = input.fbc;
-    if (input.ctwaClid) userData.ctwa_clid = input.ctwaClid;
-    if (input.clientIpAddress) userData.client_ip_address = input.clientIpAddress;
-    if (input.clientUserAgent) userData.client_user_agent = input.clientUserAgent;
-
-    const eventPayload: Record<string, any> = {
-      event_name: input.eventName,
-      event_id: input.eventId,
-      event_time: Math.floor(Date.now() / 1000),
-      action_source: input.ctwaClid ? "business_messaging" : "website",
-      ...(input.ctwaClid ? { messaging_channel: "whatsapp" } : {}),
-      ...(input.sourceUrl ? { event_source_url: input.sourceUrl } : {}),
-      user_data: userData,
-      custom_data: {
-        currency: "BRL",
-        lead_event_source: input.eventSource || "waesy_omnichannel",
-        ...(input.customData || {}),
-      },
-    };
-
-    const bodyPayload: Record<string, any> = {
-      data: [eventPayload],
-      ...(testEventCode ? { test_event_code: testEventCode } : {}),
-    };
-
-    let delivered = false;
-    let responseData: Record<string, any> = {};
-    try {
-      const capiRes = await fetch(
-        `https://graph.facebook.com/v19.0/${encodeURIComponent(pixelConfig.meta_pixel_id)}/events?access_token=${encodeURIComponent(accessToken)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(6000),
-        },
-      );
-      responseData = (await capiRes.json().catch(() => ({}))) as Record<string, any>;
-      delivered = capiRes.ok;
-    } catch (err: any) {
-      responseData = { error: err?.message || "network_error" };
-    }
-
-    await (db.from("lead_conversion_telemetry") as any)
-      .insert({
-        store_id: input.storeId,
-        lead_id: input.leadId || null,
-        thread_id: input.threadId || null,
-        event_name: input.eventName,
-        event_id: input.eventId,
-        event_source: input.eventSource || "waesy_omnichannel",
-        channel: "meta_capi",
-        status: delivered ? "delivered" : "failed",
-        response_data: responseData,
-      })
-      .then(() => null, () => null);
-
-    return { sent: delivered, reason: delivered ? "delivered" : "capi_error" };
+    const anySent = metaDelivered || gaDelivered;
+    return { sent: anySent, reason: anySent ? "delivered" : metaReason };
   } catch {
     return { sent: false, reason: "unexpected_error" };
   }
@@ -789,6 +903,8 @@ export async function correlateAndPersistInboundWhatsAppAttribution(
             fbp: tp.fbp,
             fbc: tp.fbc,
             gclid: tp.gclid,
+            gbraid: tp.gbraid || (tp.metadata as any)?.gbraid,
+            wbraid: tp.wbraid || (tp.metadata as any)?.wbraid,
             ttclid: tp.ttclid,
             lead_code: tp.lead_code,
             device_id: tp.device_id,

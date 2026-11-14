@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { listAdminStories, upsertStory, deleteStory } from "@/services/cms.functions";
 import { createStory } from "@/services/stories.functions";
@@ -24,16 +24,21 @@ export const Route = createFileRoute("/workspace/cms/stories")({
  loader: async () => {
    try {
  const [storiesRes, collabsRes] = await Promise.all([
- listAdminStories().catch(() => []),
- listStoreCollabs().catch(() => []),
+ listAdminStories(),
+ listStoreCollabs(),
  ]);
  return {
  stories: storiesRes || [],
  collabs: collabsRes || [],
+ loadError: null as string | null,
  };
-   } catch (err) {
+   } catch (err: any) {
      console.error("[loader:workspace.cms.stories] Unhandled loader error:", err);
-     return { stories: null, collabs: null };
+     return {
+       stories: [] as any[],
+       collabs: [] as StoryCollabDTO[],
+       loadError: err?.message || "Não foi possível carregar os stories.",
+     };
    }
  },
  component: CmsStoriesPage,
@@ -41,10 +46,14 @@ export const Route = createFileRoute("/workspace/cms/stories")({
 
 function CmsStoriesPage() {
  const router = useRouter();
- const { stories, collabs } = Route.useLoaderData() as {
+ const loaderData = Route.useLoaderData() as {
  stories: any[];
  collabs: StoryCollabDTO[];
+ loadError?: string | null;
  };
+ const stories = Array.isArray(loaderData?.stories) ? loaderData.stories : [];
+ const collabs = Array.isArray(loaderData?.collabs) ? loaderData.collabs : [];
+ const loadError = loaderData?.loadError || null;
 
  const [activeTab, setActiveTab] = useState("stories");
  const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,6 +70,18 @@ function CmsStoriesPage() {
  status: "active" as "active" | "inactive" | "archived",
  sort_order: 0,
  });
+
+ if (loadError) {
+   return (
+     <div className="p-6 max-w-4xl mx-auto">
+       <ErrorState
+         title="Erro ao carregar stories"
+         description={loadError}
+         onRetry={() => router.invalidate()}
+       />
+     </div>
+   );
+ }
 
  const handleOpenNew = () => {
  setFormData({
@@ -149,7 +170,7 @@ function CmsStoriesPage() {
  eyebrow="CMS"
  title="Stories"
  actions={
- <Button onClick={handleOpenNew} className="rounded-lg font-bold gap-2">
+ <Button onClick={handleOpenNew} className="h-11 min-h-11 rounded-lg font-semibold gap-2">
  <Plus className="size-4" />
  <span>Novo Story</span>
  </Button>
@@ -158,12 +179,12 @@ function CmsStoriesPage() {
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  <TabsList className="bg-muted/50 p-1 rounded-lg">
- <TabsTrigger value="stories" className="rounded-lg font-bold text-xs gap-2">
+ <TabsTrigger value="stories" className="rounded-lg font-semibold text-xs gap-2">
  <Video className="size-4" />
  <span>Stories Ativos ({stories.length})</span>
  </TabsTrigger>
- <TabsTrigger value="collabs" className="rounded-lg font-bold text-xs gap-2">
- <Share2 className="size-4 text-purple-500" />
+ <TabsTrigger value="collabs" className="rounded-lg font-semibold text-xs gap-2">
+ <Share2 className="size-4 text-primary" />
  <span>Co-Publicações & Influencers ({collabs.length})</span>
  </TabsTrigger>
  </TabsList>

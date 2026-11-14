@@ -1,5 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { AtendimentoChatWorkspace } from "@/components/atendimento/AtendimentoChatWorkspace";
+import { ErrorState } from "@/components/state/states";
 import { listSdrChatSessions } from "@/services/ai-sdr.functions";
 import { listChatQuickReplies, listChatThreads } from "@/services/chat.functions";
 import { listIntranetChannels } from "@/services/intranet.functions";
@@ -32,9 +33,7 @@ export const Route = createFileRoute("/workspace/atendimento/chat")({
   }),
   loader: async ({ deps }) => {
     try {
-      const store = await getStoreSettings({ data: { store_id: deps?.storeId } }).catch(
-        () => null,
-      );
+      const store = await getStoreSettings({ data: { store_id: deps?.storeId } });
       const storeId = store?.id || deps?.storeId || undefined;
       const [res, sdrData, instances, quickReplies, intranetChannels] = await Promise.all([
         listChatThreads({
@@ -42,14 +41,11 @@ export const Route = createFileRoute("/workspace/atendimento/chat")({
             store_id: storeId,
             channel_instance_id: deps?.channelInstanceId,
           },
-        }).catch(() => null),
-        listSdrChatSessions().catch(() => ({
-          sessions: [],
-          metrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
-        })),
-        listWorkspaceWhatsAppInstances({ data: { store_id: storeId } }).catch(() => []),
-        listChatQuickReplies().catch(() => [] as QuickReplyItem[]),
-        listIntranetChannels({ data: { store_id: storeId } }).catch(() => []),
+        }),
+        listSdrChatSessions(),
+        listWorkspaceWhatsAppInstances({ data: { store_id: storeId } }),
+        listChatQuickReplies(),
+        listIntranetChannels({ data: { store_id: storeId } }),
       ]);
       return {
         ...(res || {
@@ -63,9 +59,10 @@ export const Route = createFileRoute("/workspace/atendimento/chat")({
         whatsappInstances: (instances || []) as WhatsAppChannelInstanceDTO[],
         quickReplies: (quickReplies || []) as QuickReplyItem[],
         intranetChannels: (intranetChannels || []) as any[],
+        loadError: null as string | null,
       };
-    } catch (e) {
-      console.warn("[workspace.atendimento.chat] Fallback de segurança no loader:", e);
+    } catch (e: any) {
+      console.warn("[workspace.atendimento.chat] Erro no loader:", e);
       return {
         threads: [],
         metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 },
@@ -76,6 +73,7 @@ export const Route = createFileRoute("/workspace/atendimento/chat")({
         whatsappInstances: [] as WhatsAppChannelInstanceDTO[],
         quickReplies: [] as QuickReplyItem[],
         intranetChannels: [],
+        loadError: e?.message || "Não foi possível carregar o chat de atendimento.",
       };
     }
   },
@@ -86,6 +84,19 @@ function WorkspaceAtendimentoChatPage() {
   const loaderData = (Route.useLoaderData?.() as any) || {};
   const searchParams = Route.useSearch?.() || {};
   const navigate = useNavigate();
+  const router = useRouter();
+
+  if (loaderData.loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar chat ao vivo"
+          description={loaderData.loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <AtendimentoChatWorkspace

@@ -24,7 +24,7 @@ import { exportElementAsPdf } from '@/lib/pdf-export';
 import { listDepartureCards, getDepartureWithChecklist, createDepartureCard, updateDepartureStage, updateDepartureDetails, toggleChecklistItem, addChecklistItem, uploadBoardingDocument, deleteDepartureCard, AIRLINE_CHECKIN_LINKS, resolveAirlineCheckinUrl, type DepartureWithChecklist, type ChecklistItem, type BoardingDocument, type ChecklistCategory, type DocumentType } from '@/services/travel-departures.functions';
 import { DEPARTURE_STAGES, type DepartureStage } from '@/types/travel-departures';
 import { useWorkspaceStore } from '@/lib/store-context';
-import { listCustomers } from '@/services/crm.functions';
+import { CustomerSearchCombobox } from '@/components/crm/CustomerSearchCombobox';
 
 export const Route = createFileRoute('/workspace/turismo/embarques')({
   head: () => ({ meta: [{ title: 'Embarques & Calendário | Workspace' }] }),
@@ -180,13 +180,6 @@ function WorkspaceBoardingPage() {
     queryFn: () => getDepartureWithChecklist({ data: { departure_id: selectedDepartureId! } }),
     enabled: Boolean(selectedDepartureId),
   });
-
-  const { data: crmData } = useQuery({
-    queryKey: ['crm-customers-for-departures', storeId],
-    queryFn: () => listCustomers({ data: {} }),
-    enabled: Boolean(storeId),
-  });
-  const crmCustomers: any[] = Array.isArray(crmData) ? crmData : (crmData as any)?.customers || [];
 
   // ── Mutations ──
   const createMutation = useMutation({
@@ -839,29 +832,20 @@ function WorkspaceBoardingPage() {
             className="flex-1 flex flex-col overflow-hidden"
           >
             <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-4">
-              {crmCustomers.length > 0 && (
-                <div className="space-y-2 p-3 rounded-lg border border-border/70 bg-muted/20">
-                  <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">Vincular Cliente da Carteira (CRM)</Label>
-                  <select
-                    className="w-full h-9 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none"
-                    onChange={e => {
-                      const sel = crmCustomers.find((c: any) => c.id === e.target.value);
-                      if (sel) {
-                        setClientName(sel.full_name || sel.legal_name || "");
-                        if (sel.phone || sel.mobile) setClientPhone(sel.phone || sel.mobile || "");
-                      }
-                    }}
-                    defaultValue=""
-                  >
-                    <option value="">Selecionar cliente existente...</option>
-                    {crmCustomers.map((c: any) => (
-                      <option key={c.id} value={c.id}>
-                        {c.full_name || c.legal_name} {c.phone ? `(${c.phone})` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div className="space-y-2 p-3 rounded-lg border border-border/70 bg-muted/20">
+                <Label className="text-xs text-muted-foreground/75 font-semibold text-muted-foreground">Vincular Cliente da Carteira (CRM)</Label>
+                <CustomerSearchCombobox
+                  value=""
+                  placeholder="Selecionar cliente existente..."
+                  searchPlaceholder="Digite nome, telefone ou CPF..."
+                  onSelectCustomer={(sel) => {
+                    if (sel) {
+                      setClientName(sel.full_name || sel.legal_name || "");
+                      if (sel.phone || sel.mobile) setClientPhone(sel.phone || sel.mobile || "");
+                    }
+                  }}
+                />
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1 sm:col-span-2">
@@ -1170,7 +1154,7 @@ function DepartureCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  className="inline-flex items-center gap-1 min-h-11 px-2 rounded text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <ExternalLink className="size-3" />
                   <span>Check-in CIA</span>

@@ -8,6 +8,16 @@ import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import {
+  getTourMetaLine,
+  getTransferBadgeLabel,
+  getTransferMetaLine,
+  ProposalAdaptiveImage,
+  ProposalAgencyLogo,
+  ProposalDestinationGallerySection,
+  ProposalMultiNicheSpecsBlock,
+  ProposalPricingBreakdownBlock,
+} from "./blocks/UI";
+import {
   Check,
   X,
   PhoneCall,
@@ -33,6 +43,10 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
     { ...raw, template: raw.template || "vertical-premium" },
     vm.agency,
   );
+  const nc = theme.nicheCopy;
+  const destinationGallery: string[] = Array.isArray(raw.destination_gallery)
+    ? raw.destination_gallery.filter(Boolean)
+    : [];
   const customEntries: Array<{ key: string; label: string; value: string }> = Array.isArray(
     raw.custom_field_entries,
   )
@@ -106,11 +120,13 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           {/* Coluna Direita */}
           <div className="lg:col-span-6 relative flex justify-center lg:justify-end">
             {p.cover_image_url ? (
-              <img
+              <ProposalAdaptiveImage
                 src={p.cover_image_url}
                 alt={p.destination || "Destino Principal"}
-                crossOrigin="anonymous"
-                className="w-full h-72 sm:h-96 object-cover rounded-2xl border p-border-main"
+                objectPosition={theme.coverCrop.objectPosition}
+                scale={theme.coverCrop.scale}
+                fit={theme.coverCrop.fit}
+                className="w-full h-72 sm:h-96 rounded-2xl border p-border-main"
               />
             ) : (
               <div className="w-full h-72 sm:h-96 p-surface-subtle rounded-2xl border p-border-main flex items-center justify-center">
@@ -119,22 +135,17 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
             )}
 
             {/* Medalhão da Logo */}
-            {vm.agency.logo_url && (
-              <div className="absolute left-4 top-4 p-surface-card p-3 rounded-xl border p-border-main">
-                <img
-                  src={vm.agency.logo_url}
-                  alt={vm.agency.name}
-                  crossOrigin="anonymous"
-                  className="h-9 w-auto max-w-32 object-contain"
-                />
-              </div>
-            )}
+            <div className="absolute left-4 top-4">
+              <ProposalAgencyLogo agency={vm.agency} theme={theme} variant="surface" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* 2. CORPO VERTICAL */}
       <div className="px-6 sm:px-10 lg:px-14 py-10 space-y-12">
+        <ProposalMultiNicheSpecsBlock theme={theme} />
+        <ProposalDestinationGallerySection images={destinationGallery} theme={theme} />
         {/* MALHA AÉREA (Corrigido: antes era omitida no TemplateVerticalPremium) */}
         {theme.isSectionVisible("flights") && vm.hasFlights && (
           <section className="space-y-5 break-inside-avoid">
@@ -202,43 +213,69 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
           <section className="space-y-5 break-inside-avoid">
             <div>
               <div className="text-xs uppercase tracking-widest font-bold p-text-brand mb-1">
-                Conforto & Estadia
+                {nc.hotelBadgeLabel}
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold p-text-ink p-heading-font">
-                Hospedagens Previstas
+                {nc.hotelsTitle}
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {p.hotels!.map((h, i) => (
                 <div
                   key={i}
-                  className="p-surface-card rounded-xl p-5 border p-border-main space-y-4 break-inside-avoid"
+                  className={`p-surface-card rounded-xl overflow-hidden border p-border-main break-inside-avoid ${
+                    p.hotels!.length === 1 ? "sm:col-span-2" : ""
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="text-lg font-bold p-text-ink">{h.name}</h3>
-                      {h.city && (
-                        <div className="text-xs p-text-muted flex items-center gap-1 mt-1">
-                          <MapPin className="size-3.5 p-text-brand shrink-0" /> {h.city}
-                        </div>
-                      )}
+                  {h.images?.[0] && (
+                    <div
+                      className={`grid gap-1 border-b p-border-subtle ${
+                        h.images.length === 1 ? "grid-cols-1 h-48" : "grid-cols-2 h-48"
+                      }`}
+                    >
+                      {h.images.slice(0, 2).map((imgUrl: string, imgIdx: number) => (
+                        <ProposalAdaptiveImage
+                          key={imgIdx}
+                          src={imgUrl}
+                          alt={h.name}
+                          objectPosition={(h as any).object_position}
+                          scale={(h as any).image_scale}
+                          className="w-full h-full"
+                        />
+                      ))}
                     </div>
-                    <span className="p-surface-brand-soft border p-border-brand px-3 py-1 rounded-full text-xs font-bold p-text-brand">
-                      {h.meal_plan || "Café da Manhã"}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 p-surface-subtle p-4 rounded-lg border p-border-subtle text-xs">
-                    <div>
-                      <span className="block uppercase font-bold p-text-faint">Check-in</span>
-                      <span className="font-semibold p-text-ink">
-                        {h.checkin ? formatDate(h.checkin) : "—"}
+                  )}
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="text-lg font-bold p-text-ink">{h.name}</h3>
+                        {h.city && (
+                          <div className="text-xs p-text-muted flex items-center gap-1 mt-1">
+                            <MapPin className="size-3.5 p-text-brand shrink-0" /> {h.city}
+                          </div>
+                        )}
+                      </div>
+                      <span className="p-surface-brand-soft border p-border-brand px-3 py-1 rounded-full text-xs font-bold p-text-brand">
+                        {h.meal_plan || "Café da Manhã"}
                       </span>
                     </div>
-                    <div>
-                      <span className="block uppercase font-bold p-text-faint">Check-out</span>
-                      <span className="font-semibold p-text-ink">
-                        {h.checkout ? formatDate(h.checkout) : "—"}
-                      </span>
+                    <div className="grid grid-cols-2 gap-3 p-surface-subtle p-4 rounded-lg border p-border-subtle text-xs">
+                      <div>
+                        <span className="block uppercase font-bold p-text-faint">
+                          {nc.startDateLabel}
+                        </span>
+                        <span className="font-semibold p-text-ink">
+                          {h.checkin ? formatDate(h.checkin) : "—"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block uppercase font-bold p-text-faint">
+                          {nc.endDateLabel}
+                        </span>
+                        <span className="font-semibold p-text-ink">
+                          {h.checkout ? formatDate(h.checkout) : "—"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -255,7 +292,7 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                 Cronograma Completo
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold p-text-ink p-heading-font">
-                Programação Dia a Dia
+                {nc.itineraryTitle}
               </h2>
             </div>
 
@@ -363,31 +400,27 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                   Traslados & Receptivo
                 </h2>
                 <div className="space-y-3">
-                  {p.transfers!.map((t, idx) => (
-                    <div
-                      key={idx}
-                      className="p-surface-card rounded-xl p-5 border p-border-main space-y-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                          <Car className="size-4 shrink-0 p-text-brand" />
-                          <span>{t.description || "Transfer In/Out"}</span>
-                        </div>
-                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-subtle border p-border-subtle p-text-muted">
-                          {t.type === "shared" ? "Regular" : "Privativo"}
-                        </span>
-                      </div>
-                      <div className="text-xs p-text-muted">
-                        {t.vehicle && (
-                          <span>
-                            Veículo: <strong className="p-text-ink">{t.vehicle}</strong>{" "}
+                  {p.transfers!.map((t, idx) => {
+                    const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
+                    return (
+                      <div
+                        key={idx}
+                        className="p-surface-card rounded-xl p-5 border p-border-main space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
+                            <Car className="size-4 shrink-0 p-text-brand" />
+                            <span>{t.description || (t as any).route || "Transfer In/Out"}</span>
+                          </div>
+                          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-subtle border p-border-subtle p-text-muted">
+                            {getTransferBadgeLabel(t.type)}
                           </span>
-                        )}
-                        {t.date && <span>· Data: {formatDate(t.date)}</span>}
+                        </div>
+                        {transferMeta && <div className="text-xs p-text-muted">{transferMeta}</div>}
+                        {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
                       </div>
-                      {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -398,25 +431,26 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                   Passeios & Experiências
                 </h2>
                 <div className="space-y-3">
-                  {p.tours!.map((tour, idx) => (
-                    <div
-                      key={idx}
-                      className="p-surface-card rounded-xl p-5 border p-border-main space-y-2"
-                    >
-                      <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                        <Compass className="size-4 shrink-0 p-text-brand" />
-                        <span>
-                          {tour.description || (tour as any).title || "Passeio Turístico"}
-                        </span>
+                  {p.tours!.map((tour, idx) => {
+                    const tourMeta = getTourMetaLine(tour as Record<string, any>);
+                    return (
+                      <div
+                        key={idx}
+                        className="p-surface-card rounded-xl p-5 border p-border-main space-y-2"
+                      >
+                        <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
+                          <Compass className="size-4 shrink-0 p-text-brand" />
+                          <span>
+                            {tour.description || (tour as any).title || "Passeio Turístico"}
+                          </span>
+                        </div>
+                        {tourMeta && <div className="text-xs p-text-muted">{tourMeta}</div>}
+                        {tour.notes && (
+                          <p className="text-xs p-text-muted whitespace-pre-wrap">{tour.notes}</p>
+                        )}
                       </div>
-                      {tour.date && (
-                        <div className="text-xs p-text-muted">Programação: {tour.date}</div>
-                      )}
-                      {tour.notes && (
-                        <p className="text-xs p-text-muted whitespace-pre-wrap">{tour.notes}</p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -489,7 +523,20 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                 </div>
               )}
             </div>
-            {p.terms && <p className="text-xs p-text-faint whitespace-pre-line">{p.terms}</p>}
+            {customEntries.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {customEntries.map((entry) => (
+                  <div
+                    key={entry.key}
+                    className="p-surface-subtle p-3 rounded-lg border p-border-subtle"
+                  >
+                    <div className="text-xs uppercase font-bold p-text-faint">{entry.label}</div>
+                    <div className="text-xs font-semibold p-text-ink mt-1 whitespace-pre-line">{entry.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {p.terms && <p className="text-xs p-text-muted whitespace-pre-line leading-relaxed">{p.terms}</p>}
           </section>
         )}
 
@@ -529,6 +576,12 @@ export default function TemplateVerticalPremium({ proposal: p, agency }: Templat
                 )}
               </div>
             </div>
+            <ProposalPricingBreakdownBlock
+              totals={vm.totals}
+              theme={theme}
+              formatCurrency={formatCurrency}
+              currency={p.currency}
+            />
           </section>
         )}
       </div>

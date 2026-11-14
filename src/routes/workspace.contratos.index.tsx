@@ -346,36 +346,32 @@ function ContractsDashboard() {
       <CommercialBudgetPadSheet open={budgetPadOpen} onOpenChange={setBudgetPadOpen} />
 
       {quickEditorOpen && (
-        <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-lg w-full max-w-4xl max-h-screen overflow-y-auto p-6">
-            <ContractEditorSheet
-              onClose={() => setQuickEditorOpen(false)}
-              onSaveDocument={async (doc) => {
-                try {
-                  const res = await createContract({
-                    data: {
-                      title: doc.title || "Minuta Contratual",
-                      category: "service_agreement",
-                      contentMarkdown: doc.content || "Minuta contratual emitida.",
-                      clauses: [],
-                      variables: (doc as any).variables || {},
-                      signatureFields: [],
-                      pageCount: 1,
-                    },
-                  });
-                  toast.success("Minuta salva na Central de Contratos!");
-                  setQuickEditorOpen(false);
-                  await refetch();
-                  if (res?.contract?.id) {
-                    router.navigate({ to: "/workspace/contratos/$id/editor", params: { id: res.contract.id } });
-                  }
-                } catch (err: any) {
-                  toast.error(err?.message || "Erro ao salvar minuta no banco.");
-                }
-              }}
-            />
-          </div>
-        </div>
+        <ContractEditorSheet
+          onClose={() => setQuickEditorOpen(false)}
+          onSaveDocument={async (doc) => {
+            try {
+              const res = await createContract({
+                data: {
+                  title: doc.title || "Minuta Contratual",
+                  category: "service_agreement",
+                  contentMarkdown: doc.content || "Minuta contratual emitida.",
+                  clauses: [],
+                  variables: doc.variables || {},
+                  signatureFields: [],
+                  pageCount: 1,
+                },
+              });
+              toast.success("Minuta salva na Central de Contratos!");
+              setQuickEditorOpen(false);
+              await refetch();
+              if (res?.contract?.id) {
+                router.navigate({ to: "/workspace/contratos/$id/editor", params: { id: res.contract.id } });
+              }
+            } catch (err: any) {
+              toast.error(err?.message || "Erro ao salvar minuta no banco.");
+            }
+          }}
+        />
       )}
     </div>
   );

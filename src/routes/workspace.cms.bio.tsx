@@ -1,5 +1,6 @@
-import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, isRedirect, useRouter } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+import { ErrorState } from "@/components/state/states";
 import { getOrCreateBiolinkExperienceDocument } from "@/services/builder.functions";
 
 export const Route = createFileRoute("/workspace/cms/bio")({
@@ -13,20 +14,30 @@ export const Route = createFileRoute("/workspace/cms/bio")({
  params: { documentId: res.documentId },
  });
  }
+ return { loadError: "Documento Biolink não encontrado para esta loja." };
  } catch (e: any) {
  // If it's already a redirect, re-throw it
  if (isRedirect(e) || e?.to || e?.status) throw e;
+ return { loadError: e?.message || "Não foi possível carregar o editor Biolink." };
  }
-
- // Fallback: Redireciona para o Hub de Sites & Vitrines
- throw redirect({
- to: "/workspace/marketing/vitrine",
- });
  },
  component: BiolinkRedirectPage,
 });
 
 function BiolinkRedirectPage() {
+ const router = useRouter();
+ const loaderData = Route.useLoaderData() as any;
+ if (loaderData?.loadError) {
+   return (
+     <div className="p-6 max-w-4xl mx-auto">
+       <ErrorState
+         title="Erro ao abrir Biolink"
+         description={loaderData.loadError}
+         onRetry={() => router.invalidate()}
+       />
+     </div>
+   );
+ }
  return (
    <div className="flex flex-col items-center justify-center min-h-vh-60 gap-2 text-center">
      <Loader2 className="size-6 text-foreground/40 animate-spin motion-reduce:animate-none" />

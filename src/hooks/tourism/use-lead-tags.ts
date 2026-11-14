@@ -8,7 +8,7 @@ export function useLeadTags(
   qc: QueryClient,
 ) {
   const [newTagName, setNewTagName] = useState("");
-  const [newTagColor, setNewTagColor] = useState("#3b82f6");
+  const [newTagColor, setNewTagColor] = useState("var(--color-blue-500)");
 
   async function addTag(list: string[] | undefined) {
     if (!leadId || !newTagName.trim()) return;

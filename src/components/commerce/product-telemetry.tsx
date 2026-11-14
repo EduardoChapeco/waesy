@@ -33,38 +33,64 @@ export function ProductTelemetry({
   const trackedRef = useRef(false);
 
   // Busca configurações públicas de pixels da loja
-  const { data: pixelConfig } = useQuery({
+  const { data: pixelConfig, isLoading: isPixelLoading, isError: isPixelError } = useQuery({
     queryKey: ["public-store-pixels", storeId],
     queryFn: () => (storeId ? getPublicStorePixels({ data: { storeId } }) : null),
     enabled: Boolean(storeId),
     staleTime: 1000 * 60 * 10, // 10 minutos
   });
+  void isPixelLoading;
+  void isPixelError;
 
-  // 1. Injeta script do Meta Pixel dinamicamente se a loja tiver meta_pixel_id configurado
+  // 1. Injeta script do Meta Pixel + Google Ads/GA4 + TikTok dinamicamente se configurados
   useEffect(() => {
-    if (typeof window === "undefined" || !pixelConfig?.meta_pixel_id) return;
+    if (typeof window === "undefined" || !pixelConfig) return;
 
-    const pixelId = pixelConfig.meta_pixel_id;
-    const scriptId = `meta-pixel-${pixelId}`;
-
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.text = `
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '${pixelId}');
-        fbq('track', 'PageView');
-      `;
-      document.head.appendChild(script);
+    if (pixelConfig.meta_pixel_id) {
+      const pixelId = pixelConfig.meta_pixel_id;
+      const scriptId = `meta-pixel-${pixelId}`;
+      if (!document.getElementById(scriptId)) {
+        const script = document.createElement("script");
+        script.id = scriptId;
+        script.text = `
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init', '${pixelId}');
+          fbq('track', 'PageView');
+        `;
+        document.head.appendChild(script);
+      }
     }
-  }, [pixelConfig?.meta_pixel_id]);
+
+    const gaId = pixelConfig.google_analytics_id;
+    const adsId = pixelConfig.google_ads_id;
+    const primaryGoogleId = gaId || adsId;
+    if (primaryGoogleId && !document.getElementById("waesy-gtag-js")) {
+      const gtagLoader = document.createElement("script");
+      gtagLoader.id = "waesy-gtag-js";
+      gtagLoader.async = true;
+      gtagLoader.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(primaryGoogleId)}`;
+      document.head.appendChild(gtagLoader);
+
+      const gtagInit = document.createElement("script");
+      gtagInit.id = "waesy-gtag-config";
+      gtagInit.text = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){window.dataLayer.push(arguments);}
+        window.gtag = window.gtag || gtag;
+        gtag('js', new Date());
+        ${gaId ? `gtag('config', '${gaId}');` : ""}
+        ${adsId ? `gtag('config', '${adsId}');` : ""}
+      `;
+      document.head.appendChild(gtagInit);
+    }
+  }, [pixelConfig]);
 
   // 2. Dispara evento ViewContent (Browser + Server-Side CAPI)
   useEffect(() => {
@@ -264,7 +290,7 @@ export function trackPurchaseEvent({
 }) {
   const valueNum = totalCents ? totalCents / 100 : 0;
   const eventId = `purchase_${orderId}`;
-  const contentIds = items.map((it) => it.productId).filter(Boolean) as string[];
+  const contentIds = items.length === 0 ? [] : (items.map((it) => it.productId).filter(Boolean) as string[]);
   const numItems = items.reduce((acc, it) => acc + (it.quantity || 1), 0);
 
   // 1. Browser Meta Pixel

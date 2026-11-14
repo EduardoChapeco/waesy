@@ -38,7 +38,7 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  const createFn = createAppointment;
 
  // Queries
- const { data: servicesRes, isLoading: isLoadingServices } = useQuery({
+ const { data: servicesRes, isLoading: isLoadingServices, isError: isServicesError } = useQuery({
  queryKey: [
  "booking_services",
  typeof window !== "undefined" ? window.location.hostname : "ssr",
@@ -46,7 +46,7 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  queryFn: () => listServicesFn(),
  });
 
- const { data: slotsRes, isLoading: isLoadingSlots } = useQuery({
+ const { data: slotsRes, isLoading: isLoadingSlots, isError: isSlotsError } = useQuery({
  queryKey: [
  "booking_slots",
  typeof window !== "undefined" ? window.location.hostname : "ssr",
@@ -62,6 +62,8 @@ export function BookingCalendar({ content }: BookingCalendarProps) {
  }),
  enabled: !!selectedService && !!selectedDate && step === 2,
  });
+ void isServicesError;
+ void isSlotsError;
 
  // Mutations
  const bookMutation = useMutation({

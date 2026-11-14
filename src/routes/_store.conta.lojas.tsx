@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Store, Plus, ArrowRight, ExternalLink, CheckCircle2, Package, Building2, MapPin, ShieldCheck } from "lucide-react";
 import { getMyStoresList } from "@/services/store.functions";
@@ -8,24 +8,34 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { ErrorState } from "@/components/state/states";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/lojas")({
  head: () => ({ meta: [{ title: "Minhas Lojas e Negócios | Waesy" }] }),
  loader: async () => {
    try {
- const stores = await getMyStoresList().catch(() => []);
- return { stores: stores || [] };
-   } catch (err) {
+ const stores = await getMyStoresList();
+ return { stores: Array.isArray(stores) ? stores : [], loadError: null as string | null };
+   } catch (err: any) {
      console.error("[loader:_store.conta.lojas] Unhandled loader error:", err);
-     return { stores: null };
+     return { stores: null, loadError: err?.message || "Não foi possível carregar suas lojas." };
    }
  },
- component: ContaLojasPage,
+ component: ContaLojasRouteSwitch,
 });
 
+function ContaLojasRouteSwitch() {
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) {
+    return <Outlet />;
+  }
+  return <ContaLojasPage />;
+}
+
 export default function ContaLojasPage() {
- const { stores } = ((Route.useLoaderData?.() as any) || {});
+ const { stores, loadError } = ((Route.useLoaderData?.() as any) || {});
+ const storesList = Array.isArray(stores) ? stores : [];
  const router = useRouter();
  const [switchingId, setSwitchingId] = useState<string | null>(null);
 
@@ -33,7 +43,7 @@ export default function ContaLojasPage() {
  setSwitchingId(storeId);
  try {
       setClientContextCookies({ context: "store", storeId });
-      const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+      const res = await setTenantContext({ data: { store_id: storeId } });
       toast.success(`Acessando painel de ${res?.storeName || storeName}`);
       window.location.href = `/workspace?storeId=${encodeURIComponent(storeId)}`;
     } catch (err: any) {
@@ -52,9 +62,9 @@ export default function ContaLojasPage() {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Lojas
           </h1>
-          {stores.length > 0 && (
+          {storesList.length > 0 && (
             <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-1 rounded-full">
-              {stores.length}
+              {storesList.length}
             </Badge>
           )}
         </div>
@@ -67,8 +77,14 @@ export default function ContaLojasPage() {
         </Button>
       </div>
 
-      {/* ── Grid de Lojas / Empty State ── */}
-      {stores.length === 0 ? (
+      {/* ── Grid de Lojas / Empty State / Error State ── */}
+      {loadError || stores === null ? (
+        <ErrorState
+          title="Erro ao carregar lojas"
+          description={loadError || "Não foi possível carregar os negócios vinculados ao seu perfil."}
+          onRetry={() => router.invalidate()}
+        />
+      ) : storesList.length === 0 ? (
         <Card className="w-full p-5 sm:p-12 text-center rounded-lg border border-dashed border-border/80 bg-card space-y-4 my-4">
  <div className="size-16 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Store className="size-8" />
@@ -90,9 +106,9 @@ export default function ContaLojasPage() {
  </Button>
  </div>
  </Card>
- ) : (
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
- {stores.map((st: any) => {
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {storesList.map((st: any) => {
  const isCurrentActive = st.is_active_context;
  const isCurrentSwitching = switchingId === st.id;
 

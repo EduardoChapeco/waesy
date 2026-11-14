@@ -695,8 +695,28 @@ export interface TravelQuoteRequestDTO {
  status: "new" | "analyzing" | "quoted" | "won" | "lost";
  agency_notes?: string | null;
  quote_amount_cents?: number | null;
+ linked_proposals_count?: number;
+ linked_proposals?: Array<{
+   id: string;
+   title: string;
+   status: string;
+   public_token: string;
+   total_price_cents: number;
+   visibility_mode?: string;
+ }>;
  created_at: string;
 }
+
+const TRAVEL_QUOTE_TRIP_TYPES = [
+  "air_package",
+  "air_only",
+  "hotel_only",
+  "car_rental",
+  "corporate_b2b",
+  "cruise",
+  "bus",
+  "visa_assistance",
+] as const;
 
 export const requestTravelQuote = createServerFn({ method: "POST" })
   .validator(
@@ -712,7 +732,7 @@ export const requestTravelQuote = createServerFn({ method: "POST" })
       adults_count: z.number().default(2),
       children_count: z.number().default(0),
       children_ages: z.array(z.number()).default([]),
-      trip_type: z.enum(["air_package", "hotel_only", "cruise", "bus", "visa_assistance"]).default("air_package"),
+      trip_type: z.enum(TRAVEL_QUOTE_TRIP_TYPES).default("air_package"),
       flexible_dates: z.boolean().default(false),
       contact_name: z.string().min(1, "Nome obrigatório"),
       contact_whatsapp: z.string().min(8, "WhatsApp obrigatório"),
@@ -840,11 +860,30 @@ export const listAgencyTravelQuotes = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }): Promise<TravelQuoteRequestDTO[]> => {
     const supabase = getServerClient();
-    
+    const identity = await getServerIdentity().catch(() => null);
+    const agencyRoles = ["owner", "admin", "manager", "master", "platform_admin", "superadmin"];
+    const isPlatformMaster = Boolean(
+      identity &&
+        (["platform_admin", "master", "superadmin"].includes(identity.role) ||
+          Boolean((identity as any).isPlatformAdmin))
+    );
+    if (!identity?.store_id && (!identity || !agencyRoles.includes(identity.role))) {
+      throw new Error("Autenticação de agência obrigatória para listar cotações.");
+    }
+    if (
+      data.storeId &&
+      identity &&
+      data.storeId !== identity.store_id &&
+      !isPlatformMaster
+    ) {
+      throw new Error("Acesso negado às cotações de outra agência.");
+    }
+    const effectiveStoreId = data.storeId || identity?.store_id || null;
+
     let query = supabase.from("travel_quotes").select("*").order("created_at", { ascending: false }).limit(data.limit);
-    
-    if (data.storeId) {
-      query = query.or(`store_id.eq.${data.storeId},store_id.is.null`);
+
+    if (effectiveStoreId) {
+      query = query.eq("store_id", effectiveStoreId);
     }
 
     if (data.status !== "all") {
@@ -887,11 +926,11 @@ export const listAgencyTravelQuotes = createServerFn({ method: "GET" })
     });
 
     // Também sincroniza registros vindos de travel_quote_requests
-    if (data.storeId) {
+    if (effectiveStoreId) {
       let tqQuery = supabase
         .from("travel_quote_requests")
         .select("*")
-        .eq("store_id", data.storeId)
+        .eq("store_id", effectiveStoreId)
         .order("created_at", { ascending: false })
         .limit(data.limit);
 
@@ -913,6 +952,7 @@ export const listAgencyTravelQuotes = createServerFn({ method: "GET" })
           const meta = r.metadata || {};
           quotesMap.set(r.id, {
             id: r.id,
+            store_id: r.store_id,
             origin_city: meta.origin_city || "A definir",
             origin_iata: meta.origin_iata || null,
             destination_city: r.destination || "Destino a cotar",
@@ -937,6 +977,32 @@ export const listAgencyTravelQuotes = createServerFn({ method: "GET" })
           });
         }
       });
+
+      const quoteIds = Array.from(quotesMap.keys());
+      if (quoteIds.length > 0) {
+        const { data: linkedProps } = await supabase
+          .from("travel_proposals")
+          .select("id, quote_id, title, status, public_token, pricing, visibility_mode")
+          .eq("store_id", effectiveStoreId)
+          .in("quote_id", quoteIds)
+          .order("updated_at", { ascending: false });
+
+        (linkedProps || []).forEach((p: any) => {
+          const targetQuote = p.quote_id ? quotesMap.get(p.quote_id) : undefined;
+          if (!targetQuote) return;
+          const totalCents = Number(p.pricing?.total_price_cents ?? p.pricing?.total_cents ?? 0) || 0;
+          const summary = {
+            id: p.id,
+            title: p.title || "Proposta de Viagem",
+            status: p.status || "draft",
+            public_token: p.public_token || p.id,
+            total_price_cents: totalCents,
+            visibility_mode: p.visibility_mode || "public",
+          };
+          targetQuote.linked_proposals = [...(targetQuote.linked_proposals || []), summary];
+          targetQuote.linked_proposals_count = (targetQuote.linked_proposals_count || 0) + 1;
+        });
+      }
     }
 
     return Array.from(quotesMap.values());
@@ -964,7 +1030,7 @@ export const createAgencyTravelQuoteSchema = z.object({
  })).max(8).optional().default([]),
  flexible_dates: z.boolean().optional().default(false),
  rooms_count: z.number().int().min(1).default(1),
- trip_type: z.enum(["air_package", "hotel_only", "cruise", "bus", "visa_assistance"]).default("air_package"),
+ trip_type: z.enum(TRAVEL_QUOTE_TRIP_TYPES).default("air_package"),
  budget_tier: z.enum(["economy", "standard", "premium", "luxury"]).default("standard"),
  special_notes: z.string().optional().nullable(),
  agency_notes: z.string().optional().nullable(),
@@ -979,8 +1045,12 @@ export const createAgencyTravelQuote = createServerFn({ method: "POST" })
  .handler(async ({ data }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity().catch(() => null);
- const elevatedRoles = ["owner", "admin", "manager", "master", "platform_admin", "superadmin"];
- if (data.store_id && (!identity || (data.store_id !== identity.store_id && !elevatedRoles.includes(identity.role)))) {
+ const isPlatformMaster = Boolean(
+   identity &&
+     (["platform_admin", "master", "superadmin"].includes(identity.role) ||
+       Boolean((identity as any).isPlatformAdmin))
+ );
+ if (data.store_id && (!identity || (data.store_id !== identity.store_id && !isPlatformMaster))) {
    throw new Error("A loja informada não pertence ao contexto autenticado.");
  }
  const storeId = data.store_id || identity?.store_id || null;
@@ -1122,19 +1192,47 @@ export const updateAgencyTravelQuote = createServerFn({ method: "POST" })
  .validator(updateAgencyTravelQuoteSchema)
  .handler(async ({ data }) => {
  const supabase = getServerClient();
+ const identity = await getServerIdentity().catch(() => null);
+ if (!identity?.store_id) {
+   throw new Error("Acesso negado ao contexto da agência.");
+ }
  const { id, ...patch } = data;
 
- const { error } = await supabase
+ const { data: updatedRows, error } = await supabase
  .from("travel_quotes")
  .update({
  ...patch,
+ store_id: identity.store_id,
  updated_at: new Date().toISOString(),
  })
- .eq("id", id);
+ .eq("id", id)
+ .eq("store_id", identity.store_id)
+ .select("id");
 
  if (error) {
  console.error("[tourism.functions] Erro ao atualizar cotação:", error);
  throw new Error(error.message || "Erro ao atualizar cotação.");
+ }
+
+ if (!updatedRows || updatedRows.length === 0) {
+   const statusMap: Record<string, string> = {
+     new: "new",
+     analyzing: "quoting",
+     quoted: "proposal_sent",
+     won: "converted",
+     lost: "lost",
+   };
+   const tqPatch: Record<string, any> = { updated_at: new Date().toISOString() };
+   if (patch.status) tqPatch.status = statusMap[patch.status] || patch.status;
+   if (patch.quote_amount_cents !== undefined) tqPatch.budget_cents = patch.quote_amount_cents;
+   if (patch.departure_date !== undefined) tqPatch.departure_date = patch.departure_date;
+   if (patch.return_date !== undefined) tqPatch.return_date = patch.return_date;
+   const { error: tqErr } = await supabase
+     .from("travel_quote_requests")
+     .update(tqPatch)
+     .eq("id", id)
+     .eq("store_id", identity.store_id);
+   if (tqErr) throw new Error(tqErr.message || "Erro ao atualizar solicitação de cotação.");
  }
 
  return { success: true };
@@ -1144,11 +1242,29 @@ export const deleteAgencyTravelQuote = createServerFn({ method: "POST" })
  .validator(z.object({ id: z.string().uuid() }))
  .handler(async ({ data }) => {
  const supabase = getServerClient();
- const { error } = await supabase.from("travel_quotes").delete().eq("id", data.id);
+ const identity = await getServerIdentity().catch(() => null);
+ if (!identity?.store_id) {
+   throw new Error("Acesso negado ao contexto da agência.");
+ }
+ const { data: deletedRows, error } = await supabase
+   .from("travel_quotes")
+   .delete()
+   .eq("id", data.id)
+   .eq("store_id", identity.store_id)
+   .select("id");
 
  if (error) {
  console.error("[tourism.functions] Erro ao deletar cotação:", error);
  throw new Error(error.message || "Erro ao deletar cotação.");
+ }
+
+ if (!deletedRows || deletedRows.length === 0) {
+   const { error: tqErr } = await supabase
+     .from("travel_quote_requests")
+     .delete()
+     .eq("id", data.id)
+     .eq("store_id", identity.store_id);
+   if (tqErr) throw new Error(tqErr.message || "Erro ao remover cotação.");
  }
 
  return { success: true };

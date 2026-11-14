@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listReviews, updateReviewStatus } from "@/services/cms.functions";
 import { formatDate } from "@/lib/datetime";
@@ -16,10 +16,16 @@ export const Route = createFileRoute("/workspace/cms/avaliacoes")({
   loader: async () => {
     try {
       const res = await listReviews();
-      return Array.isArray(res) ? res : [];
-    } catch (err) {
+      return {
+        reviews: Array.isArray(res) ? res : [],
+        loadError: null as string | null,
+      };
+    } catch (err: any) {
       console.error("[loader:workspace.cms.avaliacoes]", err);
-      return [] as any[];
+      return {
+        reviews: [] as any[],
+        loadError: err?.message || "Não foi possível carregar as avaliações.",
+      };
     }
   },
   component: CmsAvaliacoesPage,
@@ -27,10 +33,24 @@ export const Route = createFileRoute("/workspace/cms/avaliacoes")({
 
 function CmsAvaliacoesPage() {
   const router = useRouter();
-  const reviews = Route.useLoaderData();
+  const loaderData = Route.useLoaderData() as any;
+  const reviews = Array.isArray(loaderData) ? loaderData : loaderData?.reviews || [];
+  const loadError = !Array.isArray(loaderData) ? loaderData?.loadError : null;
   const safeReviews = Array.isArray(reviews) ? reviews : [];
 
   const [filterStatus, setFilterStatus] = useState<string>("all");
+
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar avaliações"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   const filteredReviews = safeReviews.filter((r: any) =>
     filterStatus === "all" ? true : r.status === filterStatus,

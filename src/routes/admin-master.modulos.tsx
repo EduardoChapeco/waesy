@@ -1332,11 +1332,11 @@ function AdminMasterModulosPage() {
                 <span className="text-xs font-mono font-bold text-primary">R$ 89/mês</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Agenda multiprofissional com slots inteligentes, ficha de cliente 360°, confirmação WhatsApp e lembretes.
+                Agenda multiprofissional com slots inteligentes, perfil do cliente, confirmação WhatsApp e lembretes.
               </p>
               <div className="text-3xs font-mono text-muted-foreground space-y-1 border-t border-border/40 pt-2">
                 <div>Rotas: /workspace/agendamentos, /workspace/clientes</div>
-                <div>Módulos: Agenda 360°, module_omnichannel_whatsapp</div>
+                <div>Módulos: Agenda Integrada, module_omnichannel_whatsapp</div>
               </div>
             </div>
 

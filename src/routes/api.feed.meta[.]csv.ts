@@ -58,8 +58,12 @@ export const Route = createFileRoute("/api/feed/meta.csv")({
           }
 
           const publicProducts = (products || []).filter((p: any) => {
-            const vis = p?.attributes?.commercial_rules?.visibility_channel ?? p?.availability_channels?.visibility_channel;
-            return !["vip_only", "store_only", "hidden"].includes(String(vis || ""));
+            const vis =
+              p?.commercial_rules?.visibility_channel ??
+              p?.attributes?.commercial_rules?.visibility_channel ??
+              p?.availability_channels?.visibility_channel ??
+              p?.attributes?.visibility_channel;
+            return !["vip_only", "store_only", "hidden", "private", "draft"].includes(String(vis || ""));
           });
 
           // Header CSV canônico exigido pelo Facebook / Meta Commerce Manager

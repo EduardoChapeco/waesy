@@ -1129,7 +1129,7 @@ export default function WorkspaceDestinationsPage() {
  <button
  type="button"
  onClick={() => handleRemoveGalleryUrl(idx)}
- className="absolute top-1.5 right-1.5 size-11 min-h-11 sm:size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1 right-1 size-11 min-h-11 sm:size-7 sm:min-h-7 rounded-lg bg-foreground/75 text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  <X className="size-3.5" />
  </button>
@@ -1538,7 +1538,7 @@ export default function WorkspaceDestinationsPage() {
  <button
  type="button"
  onClick={() => handleRemoveReview(rev.id)}
- className="absolute top-2 right-2 size-11 min-h-11 sm:size-6 rounded-full bg-destructive/10 text-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-2 right-2 size-11 min-h-11 sm:size-7 sm:min-h-7 rounded-lg border border-destructive/20 bg-destructive/10 text-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  title="Remover avaliação"
  >
  <X className="size-3" />

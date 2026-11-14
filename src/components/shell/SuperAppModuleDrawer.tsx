@@ -10,6 +10,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { VitrineLateralMenuSheet } from "@/design-system/vitrine/vitrine-lateral-sheet";
 import { listDrawerModules, CANONICAL_DRAWER_MODULES, type HotpageDTO } from "@/services/hotpage.functions";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
@@ -32,7 +33,8 @@ export function SuperAppModuleDrawer({
   brandName,
 }: SuperAppModuleDrawerProps) {
   const navigate = useNavigate();
-  const [modules, setModules] = useState<HotpageDTO[]>(CANONICAL_DRAWER_MODULES as any);
+  const [modules, setModules] = useState<HotpageDTO[]>([]);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   const isAdmin =
     userRole === "platform_admin" ||
@@ -47,18 +49,24 @@ export function SuperAppModuleDrawer({
     listDrawerModules({ data: { city: activeCity } } as any)
       .then((data) => {
         if (!isMounted) return;
-        if (data && data.length > 0) {
-          setModules(data);
-        }
+        setModules(Array.isArray(data) ? data : []);
       })
-      .catch(() => {
-        if (isMounted) setModules(CANONICAL_DRAWER_MODULES as any);
+      .catch((err: any) => {
+        if (!isMounted) return;
+        console.error("[SuperAppModuleDrawer] Falha ao carregar módulos:", err);
+        toast.error(err?.message || "Erro ao carregar módulos do menu.", {
+          action: {
+            label: "Tentar novamente",
+            onClick: () => setReloadNonce((n) => n + 1),
+          },
+        });
+        setModules((prev) => (prev.length > 0 ? prev : (CANONICAL_DRAWER_MODULES as any)));
       });
 
     return () => {
       isMounted = false;
     };
-  }, [open, activeCity]);
+  }, [open, activeCity, reloadNonce]);
 
   const handleNavigate = (route: string) => {
     onOpenChange(false);
@@ -73,7 +81,7 @@ export function SuperAppModuleDrawer({
       onClose={() => onOpenChange(false)}
       greetingTitle={displayName}
       greetingSubtitle=""
-      showViewModeToggle={true}
+      showViewModeToggle={false}
       defaultViewMode="grid"
       items={modules as any}
       session={session}

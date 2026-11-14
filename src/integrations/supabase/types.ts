@@ -19722,7 +19722,9 @@ export type Database = {
           pax_list: Json
           pcd: boolean
           phone: string | null
+          pipeline_stage: string | null
           reduced_mobility: boolean
+          sort_order: number
           source: string | null
           staleness_status: string
           status: string
@@ -19778,7 +19780,9 @@ export type Database = {
           pax_list?: Json
           pcd?: boolean
           phone?: string | null
+          pipeline_stage?: string | null
           reduced_mobility?: boolean
+          sort_order?: number
           source?: string | null
           staleness_status?: string
           status?: string
@@ -19834,7 +19838,9 @@ export type Database = {
           pax_list?: Json
           pcd?: boolean
           phone?: string | null
+          pipeline_stage?: string | null
           reduced_mobility?: boolean
+          sort_order?: number
           source?: string | null
           staleness_status?: string
           status?: string
@@ -32411,11 +32417,15 @@ export type Database = {
           ga4_measurement_id: string | null
           google_ads_conversion_label: string | null
           google_ads_id: string | null
+          google_site_verification: string | null
+          gtm_id: string | null
           id: string
           meta_capi_token: string | null
+          meta_domain_verification: string | null
           meta_pixel_id: string | null
           meta_test_event_code: string | null
           store_id: string
+          tiktok_pixel_id: string | null
           track_catalog_views: boolean | null
           track_concursos: boolean | null
           track_page_views: boolean | null
@@ -32429,11 +32439,15 @@ export type Database = {
           ga4_measurement_id?: string | null
           google_ads_conversion_label?: string | null
           google_ads_id?: string | null
+          google_site_verification?: string | null
+          gtm_id?: string | null
           id?: string
           meta_capi_token?: string | null
+          meta_domain_verification?: string | null
           meta_pixel_id?: string | null
           meta_test_event_code?: string | null
           store_id: string
+          tiktok_pixel_id?: string | null
           track_catalog_views?: boolean | null
           track_concursos?: boolean | null
           track_page_views?: boolean | null
@@ -32447,11 +32461,15 @@ export type Database = {
           ga4_measurement_id?: string | null
           google_ads_conversion_label?: string | null
           google_ads_id?: string | null
+          google_site_verification?: string | null
+          gtm_id?: string | null
           id?: string
           meta_capi_token?: string | null
+          meta_domain_verification?: string | null
           meta_pixel_id?: string | null
           meta_test_event_code?: string | null
           store_id?: string
+          tiktok_pixel_id?: string | null
           track_catalog_views?: boolean | null
           track_concursos?: boolean | null
           track_page_views?: boolean | null

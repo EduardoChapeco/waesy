@@ -109,7 +109,7 @@ export function CopilotArtifactPanel({
     artifact.type === "travel_itinerary" ||
     artifact.type === "itinerary" ||
     artifact.type === ("travel_dossier" as any) ||
-    Boolean(data.destination);
+    (!["creative_post", "social_post"].includes(artifact.type) && Boolean(data.destination));
   const isDashboard =
     artifact.type === ("dashboard" as any) ||
     Boolean(data.kpis && Array.isArray(data.kpis));
@@ -119,7 +119,7 @@ export function CopilotArtifactPanel({
   const isCreativePost =
     artifact.type === ("creative_post" as any) ||
     artifact.type === "social_post" ||
-    Boolean(data.headline && (data.ctaText || data.hashtags));
+    Boolean(data.headline && (data.ctaText || data.cta_label || data.hashtags));
 
   return (
     <div className={cn("flex flex-col h-full bg-card space-y-3", className)}>
@@ -214,20 +214,26 @@ export function CopilotArtifactPanel({
         ) : isCreativePost ? (
           <ArtifactCreativePost
             title={artifact.title}
+            format={data.format}
+            aspectRatio={data.aspectRatio || data.aspect_ratio}
+            archetype={data.archetype}
+            themeId={data.themeId || data.theme_id || data.theme}
             badge={data.badge}
             headline={data.headline}
-            subheadline={data.subheadline}
+            subheadline={data.subheadline || data.body_text}
             bullets={data.bullets}
             quoteAuthor={data.quoteAuthor}
-            ctaText={data.ctaText}
-            storeName={data.storeName}
+            ctaText={data.ctaText || data.cta_label}
+            storeName={data.storeName || data.store_name}
             brandHandle={data.brandHandle}
             logoUrl={data.logoUrl}
             imageUrl={data.imageUrl}
             caption={data.caption}
             hashtags={data.hashtags}
-            offerPrice={data.offerPrice}
-            offerBadge={data.offerBadge}
+            offerPrice={data.offerPrice || data.offer_price}
+            offerBadge={data.offerBadge || data.offer_badge}
+            installments={data.installments}
+            locationLabel={data.locationLabel || data.location_label}
           />
         ) : (
           <ArtifactBuilderEditor

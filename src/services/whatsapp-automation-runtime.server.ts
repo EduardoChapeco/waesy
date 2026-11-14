@@ -421,6 +421,26 @@ export async function evaluateControlledAiInboundRuntime(input: {
   const mode: ControlledAiMode = aiConfig.mode || "disabled";
   const { intent, agentSlug } = detectInboundIntent(input.text);
 
+  // 3. Carrega thread e verifica especialista configurado, handoff humano, cooldown e limite de turnos
+  const { data: thread } = await db
+    .from("chat_threads")
+    .select("id, customer_id, guest_name, metadata")
+    .eq("id", input.threadId)
+    .eq("store_id", input.storeId)
+    .maybeSingle();
+
+  const meta = (thread?.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+  const configuredSpecialistMap: Record<string, string> = {
+    tourism_concierge: "tourism_concierge",
+    commercial_closer: "sales_closer",
+    financial_billing: "financial_assistant",
+    sac_triage: "sac_support",
+  };
+  const threadAgentOverride =
+    typeof meta.ai_agent_id === "string" ? configuredSpecialistMap[meta.ai_agent_id] || null : null;
+  const effectiveAgentSlug =
+    intent === "human_handoff" ? agentSlug : threadAgentOverride || agentSlug;
+
   if (mode === "disabled") {
     return {
       decisionId,
@@ -429,7 +449,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
       threadId: input.threadId,
       mode: "disabled",
       intent,
-      agentSlug,
+      agentSlug: effectiveAgentSlug,
       actionTaken: "halted_disabled",
       reason: "Automação de IA desativada por padrão em produção para esta loja.",
     };
@@ -438,7 +458,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
   if (
     Array.isArray(aiConfig.enabled_agents) &&
     aiConfig.enabled_agents.length > 0 &&
-    !aiConfig.enabled_agents.includes(agentSlug) &&
+    !aiConfig.enabled_agents.includes(effectiveAgentSlug) &&
     intent !== "human_handoff"
   ) {
     return {
@@ -448,21 +468,11 @@ export async function evaluateControlledAiInboundRuntime(input: {
       threadId: input.threadId,
       mode,
       intent,
-      agentSlug,
+      agentSlug: effectiveAgentSlug,
       actionTaken: "halted_disabled",
-      reason: `Agente ${agentSlug} desativado na configuração da loja.`,
+      reason: `Agente ${effectiveAgentSlug} desativado na configuração da loja.`,
     };
   }
-
-  // 3. Carrega thread e verifica handoff humano, cooldown e limite de turnos
-  const { data: thread } = await db
-    .from("chat_threads")
-    .select("id, customer_id, guest_name, metadata")
-    .eq("id", input.threadId)
-    .eq("store_id", input.storeId)
-    .maybeSingle();
-
-  const meta = (thread?.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
 
   if (meta.handoff_mode === "human_active" || meta.handoff_mode === "human_queue" || meta.ai_auto_reply_enabled === false) {
     return {
@@ -472,7 +482,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
       threadId: input.threadId,
       mode,
       intent,
-      agentSlug,
+      agentSlug: effectiveAgentSlug,
       actionTaken: "halted_human_active",
       reason: `Conversa sob controle humano (${meta.handoff_mode || "ai_paused"}).`,
     };
@@ -592,10 +602,12 @@ export async function evaluateControlledAiInboundRuntime(input: {
   let suggestedReply = "";
   if (packageInfoText || aviationInfoText) {
     suggestedReply = `Olá, ${customerName}! Aqui é o assistente virtual da ${storeName}.${packageInfoText}${aviationInfoText}\n\nPosso detalhar o roteiro completo ou conectar você com um dos nossos consultores para finalizar sua reserva?`;
-  } else if (intent === "quote_request") {
+  } else if (intent === "quote_request" || effectiveAgentSlug === "sales_closer" || effectiveAgentSlug === "tourism_concierge") {
     suggestedReply = `Olá, ${customerName}! Aqui é o assistente da ${storeName}. Identifiquei seu interesse em cotação/roteiro${opportunitiesCount > 0 ? ` (já localizei seu histórico comercial conosco)` : ""}. Qual destino e período você planeja para prepararmos sua proposta?`;
-  } else if (intent === "financial_query") {
+  } else if (intent === "financial_query" || effectiveAgentSlug === "financial_assistant") {
     suggestedReply = `Olá, ${customerName}! Recebi sua solicitação sobre pagamento/fatura na ${storeName}. Já estou verificando os detalhes financeiros do seu cadastro.`;
+  } else if (effectiveAgentSlug === "sac_support") {
+    suggestedReply = `Olá, ${customerName}! Recebi seu chamado na central de suporte da ${storeName}. Me conte os detalhes ou o código da reserva/pedido para agilizar o atendimento.`;
   } else {
     suggestedReply = `Olá, ${customerName}! Aqui é da ${storeName}. Como posso ajudar?`;
   }
@@ -609,7 +621,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
     threadId: input.threadId,
     mode,
     intent,
-    agentSlug,
+    agentSlug: effectiveAgentSlug,
     actionTaken: mode === "sandbox" ? "sandbox_outbox_queued" : "copilot_suggestion_saved",
     reason:
       mode === "sandbox"
@@ -639,7 +651,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
         payload: {
           text: suggestedReply,
           origin: "ai_sandbox",
-          agent_slug: agentSlug,
+          agent_slug: effectiveAgentSlug,
           intent,
         },
         status: "pending",

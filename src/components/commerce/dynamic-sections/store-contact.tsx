@@ -148,7 +148,11 @@ export function StoreContact({
  <div className="mx-auto max-w-xl px-4 @md:px-6">
  <h2 className="text-xl font-semibold mb-6">{title}</h2>
 
- {contactItems.length > 0 && (
+ {contactItems.length === 0 ? (
+ <div className="py-6 text-center text-muted-foreground text-sm">
+ Nenhum canal de contato disponível.
+ </div>
+ ) : (
  <div className="divide-y divide-border border overflow-hidden mb-6">
  {contactItems.map((item, i) => {
  const Icon = item.icon;

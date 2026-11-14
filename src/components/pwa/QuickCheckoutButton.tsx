@@ -13,7 +13,7 @@ export interface QuickCheckoutButtonProps {
 export const QuickCheckoutButton: React.FC<QuickCheckoutButtonProps> = ({
   itemCount = 0,
   totalCents = 0,
-  themeColor = "#0F172A",
+  themeColor = "var(--color-slate-900)",
   onCheckout,
   label = "Finalizar Pedido",
 }) => {
@@ -24,8 +24,8 @@ export const QuickCheckoutButton: React.FC<QuickCheckoutButtonProps> = ({
       <button
         type="button"
         onClick={onCheckout}
-        style={{ backgroundColor: themeColor }}
-        className="w-full min-h-11 rounded-lg px-4 py-2 text-neutral-50 font-bold text-xs flex items-center justify-between active:scale-98 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        style={{ "--dyn-bg": themeColor } as React.CSSProperties}
+        className="w-full min-h-11 rounded-lg px-4 py-2 text-neutral-50 font-bold text-xs flex items-center justify-between active:scale-98 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring waesy-dyn-bg"
       >
         <div className="flex items-center gap-2">
           <div className="size-6 rounded-md bg-neutral-900/50 border border-neutral-700 flex items-center justify-center text-xs font-black">

@@ -8,6 +8,17 @@ import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import {
+  getTourMetaLine,
+  getTransferBadgeLabel,
+  getTransferMetaLine,
+  ProposalAdaptiveImage,
+  ProposalAgencyLogo,
+  ProposalDestinationGallerySection,
+  ProposalItineraryMediaGrid,
+  ProposalMultiNicheSpecsBlock,
+  ProposalPricingBreakdownBlock,
+} from "./blocks/UI";
+import {
   Plane,
   Hotel,
   Car,
@@ -33,6 +44,10 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
     { ...raw, template: raw.template || "dark-premium" },
     vm.agency,
   );
+  const nc = theme.nicheCopy;
+  const destinationGallery: string[] = Array.isArray(raw.destination_gallery)
+    ? raw.destination_gallery.filter(Boolean)
+    : [];
   const customEntries: Array<{ key: string; label: string; value: string }> = Array.isArray(
     raw.custom_field_entries,
   )
@@ -53,11 +68,13 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
       {/* CAPA CINEMATOGRÁFICA */}
       <div className="relative w-full min-h-112 break-inside-avoid overflow-hidden border-b p-border-main">
         {p.cover_image_url ? (
-          <img
+          <ProposalAdaptiveImage
             src={p.cover_image_url}
             alt={p.title || "Capa da proposta"}
-            crossOrigin="anonymous"
-            className="absolute inset-0 w-full h-full object-cover"
+            objectPosition={theme.coverCrop.objectPosition}
+            scale={theme.coverCrop.scale}
+            fit={theme.coverCrop.fit}
+            className="absolute inset-0 w-full h-full"
           />
         ) : (
           <div className="absolute inset-0 w-full h-full p-surface-subtle" />
@@ -67,23 +84,10 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
         <div className="relative z-10 flex flex-col justify-between min-h-112 p-8 sm:p-12 p-text-on-dark">
           {/* TOPO: LOGO E REFERÊNCIA */}
           <div className="flex justify-between items-start gap-4">
-            {vm.agency.logo_url ? (
-              <img
-                src={vm.agency.logo_url}
-                crossOrigin="anonymous"
-                alt={vm.agency.name}
-                className="h-11 w-auto max-w-44 object-contain"
-                width={176}
-                height={44}
-              />
-            ) : (
-              <div className="text-xl font-bold tracking-widest uppercase p-text-on-dark">
-                {vm.agency.name}
-              </div>
-            )}
+            <ProposalAgencyLogo agency={vm.agency} theme={theme} variant="hero" />
             <div className="text-right">
               <div className="text-xs font-semibold uppercase tracking-widest p-text-on-dark-muted">
-                Proposta Oficial
+                {nc.heroKicker}
               </div>
               <div className="text-lg font-mono font-bold p-text-brand">#{p.number}</div>
             </div>
@@ -147,13 +151,16 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
 
       {/* CORPO DE CONTEÚDO */}
       <div className="pt-10 px-8 sm:px-12 space-y-12">
+        <ProposalMultiNicheSpecsBlock theme={theme} />
+        <ProposalDestinationGallerySection images={destinationGallery} theme={theme} />
+
         {/* VOOS */}
         {theme.isSectionVisible("flights") && vm.hasFlights && (
           <section className="break-inside-avoid space-y-5">
             <div className="flex items-center gap-3 pb-3 border-b p-border-main">
               <Plane className="size-5 p-text-brand shrink-0" />
               <h2 className="text-2xl font-bold p-text-ink p-heading-font">
-                Transporte Aéreo
+                {nc.flightsTitle}
               </h2>
             </div>
             <div className="space-y-4">
@@ -213,7 +220,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
             <div className="flex items-center gap-3 pb-3 border-b p-border-main">
               <Hotel className="size-5 p-text-brand shrink-0" />
               <h2 className="text-2xl font-bold p-text-ink p-heading-font">
-                Hospedagem Selecionada
+                {nc.hotelsTitle}
               </h2>
             </div>
             <div className="space-y-5">
@@ -224,7 +231,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 >
                   <div className="p-surface-brand-soft px-6 py-3 flex justify-between items-center border-b p-border-subtle">
                     <span className="text-xs font-bold uppercase tracking-widest p-text-brand">
-                      Hotel & Resort
+                      {nc.hotelBadgeLabel}
                     </span>
                     <span className="text-xs font-bold uppercase tracking-wider p-text-ink p-surface-card px-3 py-1 rounded-full border p-border-main">
                       {h.meal_plan || "Café da Manhã"}
@@ -244,7 +251,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-surface-subtle p-4 rounded-lg border p-border-subtle">
                       <div>
                         <div className="text-xs uppercase font-bold tracking-wider p-text-faint">
-                          Check-in
+                          {nc.startDateLabel}
                         </div>
                         <div className="font-semibold p-text-ink text-sm mt-1">
                           {h.checkin ? formatDate(h.checkin) : "—"}
@@ -252,7 +259,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                       </div>
                       <div>
                         <div className="text-xs uppercase font-bold tracking-wider p-text-faint">
-                          Check-out
+                          {nc.endDateLabel}
                         </div>
                         <div className="font-semibold p-text-ink text-sm mt-1">
                           {h.checkout ? formatDate(h.checkout) : "—"}
@@ -260,7 +267,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                       </div>
                       <div>
                         <div className="text-xs uppercase font-bold tracking-wider p-text-faint">
-                          Acomodação
+                          Categoria
                         </div>
                         <div className="font-semibold p-text-ink text-sm mt-1">
                           {h.rooms?.[0]
@@ -271,22 +278,32 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                     </div>
 
                     {h.images?.[0] && (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-48">
-                        <div className="sm:col-span-2 rounded-lg overflow-hidden border p-border-subtle">
-                          <img
+                      <div
+                        className={`grid gap-4 h-52 ${
+                          h.images.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-3"
+                        }`}
+                      >
+                        <div
+                          className={`${
+                            h.images.length === 1 ? "col-span-1" : "sm:col-span-2"
+                          } rounded-lg overflow-hidden border p-border-subtle h-full`}
+                        >
+                          <ProposalAdaptiveImage
                             src={h.images[0]}
                             alt={h.name}
-                            crossOrigin="anonymous"
-                            className="w-full h-full object-cover"
+                            objectPosition={(h as any).object_position}
+                            scale={(h as any).image_scale}
+                            className="w-full h-full"
                           />
                         </div>
                         {h.images[1] && (
-                          <div className="rounded-lg overflow-hidden border p-border-subtle">
-                            <img
+                          <div className="rounded-lg overflow-hidden border p-border-subtle h-full">
+                            <ProposalAdaptiveImage
                               src={h.images[1]}
                               alt={h.name}
-                              crossOrigin="anonymous"
-                              className="w-full h-full object-cover"
+                              objectPosition={(h as any).object_position}
+                              scale={(h as any).image_scale}
+                              className="w-full h-full"
                             />
                           </div>
                         )}
@@ -305,7 +322,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
             <div className="flex items-center gap-3 pb-3 border-b p-border-main">
               <Compass className="size-5 p-text-brand shrink-0" />
               <h2 className="text-2xl font-bold p-text-ink p-heading-font">
-                Roteiro Dia a Dia
+                {nc.itineraryTitle}
               </h2>
             </div>
             <div className="space-y-4">
@@ -316,7 +333,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 >
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="px-3 py-1 rounded-full text-xs uppercase tracking-wider font-bold p-surface-brand">
-                      {d.day || `Dia ${i + 1}`}
+                      {d.day || `${nc.itineraryStepPrefix} ${i + 1}`}
                     </span>
                     <h4 className="text-lg font-bold p-text-ink">{d.title}</h4>
                   </div>
@@ -353,6 +370,12 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                       {d.description}
                     </p>
                   )}
+                  <ProposalItineraryMediaGrid
+                    images={d.images}
+                    title={d.title}
+                    objectPosition={(d as any).object_position}
+                    scale={(d as any).image_scale}
+                  />
                 </div>
               ))}
             </div>
@@ -369,30 +392,28 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {p.transfers!.map((t, i) => (
-                <div
-                  key={i}
-                  className="p-5 rounded-xl border p-border-main p-surface-card space-y-2"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold p-text-ink text-sm">
-                      {t.description || "Transfer In/Out"}
-                    </span>
-                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
-                      {t.type === "shared" ? "Regular" : "Privativo"}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs p-text-muted">
-                    {t.vehicle && (
-                      <span>
-                        Veículo: <strong className="p-text-ink">{t.vehicle}</strong>
+              {p.transfers!.map((t, i) => {
+                const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
+                return (
+                  <div
+                    key={i}
+                    className="p-5 rounded-xl border p-border-main p-surface-card space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold p-text-ink text-sm">
+                        {t.description || (t as any).route || "Transfer In/Out"}
                       </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
+                        {getTransferBadgeLabel(t.type)}
+                      </span>
+                    </div>
+                    {transferMeta && (
+                      <div className="text-xs p-text-muted leading-relaxed">{transferMeta}</div>
                     )}
-                    {t.date && <span>Data: {formatDate(t.date)}</span>}
+                    {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
                   </div>
-                  {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -407,20 +428,23 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {p.tours!.map((tour, i) => (
-                <div
-                  key={i}
-                  className="p-5 rounded-xl border p-border-main p-surface-card space-y-2"
-                >
-                  <span className="font-bold p-text-ink text-sm block">
-                    {tour.description || (tour as any).title || "Passeio"}
-                  </span>
-                  {tour.date && <div className="text-xs p-text-muted">Programação: {tour.date}</div>}
-                  {tour.notes && (
-                    <p className="text-xs p-text-muted whitespace-pre-wrap">{tour.notes}</p>
-                  )}
-                </div>
-              ))}
+              {p.tours!.map((tour, i) => {
+                const tourMeta = getTourMetaLine(tour as Record<string, any>);
+                return (
+                  <div
+                    key={i}
+                    className="p-5 rounded-xl border p-border-main p-surface-card space-y-2"
+                  >
+                    <span className="font-bold p-text-ink text-sm block">
+                      {tour.description || (tour as any).title || "Passeio"}
+                    </span>
+                    {tourMeta && <div className="text-xs p-text-muted">{tourMeta}</div>}
+                    {tour.notes && (
+                      <p className="text-xs p-text-muted whitespace-pre-wrap">{tour.notes}</p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}
@@ -495,7 +519,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               )}
             </div>
             {customEntries.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 {customEntries.map((entry) => (
                   <div
                     key={entry.key}
@@ -563,6 +587,13 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   <div className="text-xs p-text-muted">Liquidação imediata com desconto</div>
                 </div>
               </div>
+
+              <ProposalPricingBreakdownBlock
+                totals={vm.totals}
+                theme={theme}
+                formatCurrency={formatCurrency}
+                currency={p.currency}
+              />
             </div>
           </section>
         )}

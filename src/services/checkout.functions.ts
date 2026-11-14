@@ -516,7 +516,7 @@ export const processCheckout = createServerFn({ method: "POST" })
 
         if (params.orderBump && params.orderBump.offerPriceCents > 0) {
           try {
-            await db.from('order_items').insert({
+            const { error: bumpInsertErr } = await db.from('order_items').insert({
               order_id: result.orderId,
               variant_id: params.orderBump.variantId,
               product_title: params.orderBump.title + ' (Oferta Exclusiva)',
@@ -525,16 +525,26 @@ export const processCheckout = createServerFn({ method: "POST" })
               unit_price_cents: params.orderBump.offerPriceCents,
               total_cents: params.orderBump.offerPriceCents,
             });
-            runningTotalCents += params.orderBump.offerPriceCents;
-            runningSubtotalCents += params.orderBump.offerPriceCents;
-            updatePayload.total_cents = runningTotalCents;
-            updatePayload.subtotal_cents = runningSubtotalCents;
+            if (bumpInsertErr) {
+              console.warn('[checkout.functions] Erro SQL ao gravar order bump item:', bumpInsertErr.message);
+            } else {
+              runningTotalCents += params.orderBump.offerPriceCents;
+              runningSubtotalCents += params.orderBump.offerPriceCents;
+              updatePayload.total_cents = runningTotalCents;
+              updatePayload.subtotal_cents = runningSubtotalCents;
+            }
           } catch (bumpErr) {
             console.warn('[checkout.functions] Falha ao gravar order bump item:', bumpErr);
           }
         }
 
-        await db.from("orders").update(updatePayload).eq("id", result.orderId);
+        const { error: orderMetaUpdateErr } = await db
+          .from("orders")
+          .update(updatePayload)
+          .eq("id", result.orderId);
+        if (orderMetaUpdateErr) {
+          console.warn("[checkout.functions] Erro SQL ao atualizar metadados do pedido:", orderMetaUpdateErr.message);
+        }
 
         // Abatimento Atômico de Saldo $WZ (Se solicitado pelo cliente autenticado)
         if (params.useWzBalance && result.orderId && (identity as any)?.id) {
@@ -585,8 +595,8 @@ export const processCheckout = createServerFn({ method: "POST" })
 
 
         // V113 ACID: Despacho Waesy Go MotoLink (Haversine Server-Side + PIN 4 dígitos + Telemetria IP)
-        await Promise.resolve(
-          db.rpc("finalize_order_and_dispatch_motolink_atomic", {
+        try {
+          const { error: dispatchErr } = await db.rpc("finalize_order_and_dispatch_motolink_atomic", {
             p_order_id: result.orderId,
             p_channel_origin: "vitrine_online",
             p_notes: params.notes || null,
@@ -596,18 +606,26 @@ export const processCheckout = createServerFn({ method: "POST" })
             p_niche_metadata: nicheMeta,
             p_client_ip: clientIp,
             p_actor_profile_id: (identity as any)?.userId || (identity as any)?.customer_id || null,
-          })
-        ).catch(() => null);
+          });
+          if (dispatchErr) {
+            console.warn("[checkout.functions] Aviso no despacho atomic MotoLink:", dispatchErr.message);
+          }
+        } catch (dispatchEx) {
+          console.warn("[checkout.functions] Exceção no despacho atomic MotoLink:", dispatchEx);
+        }
 
         // Se houver observações por item, persiste em order_items
         if (params.itemNotes && Object.keys(params.itemNotes).length > 0) {
           for (const [key, noteText] of Object.entries(params.itemNotes)) {
             if (Boolean(noteText) === false || typeof noteText !== "string" || Boolean(noteText.trim()) === false) continue;
-            await db
+            const { error: itemNoteErr } = await db
               .from("order_items")
               .update({ notes: noteText.trim() })
               .eq("order_id", result.orderId)
               .or(`item_id.eq.${key},id.eq.${key},variant_sku.eq.${key}`);
+            if (itemNoteErr) {
+              console.warn(`[checkout.functions] Falha ao salvar observação do item ${key}:`, itemNoteErr.message);
+            }
           }
         }
       } catch (orderUpdateErr) {
