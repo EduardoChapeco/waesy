@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { NativeBackButton } from "@/components/ui/native-back-button";
+import { ErrorState } from "@/components/state/states";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,8 @@ export const Route = createFileRoute("/workspace/catalogo/categorias/$id")({
  loader: async ({ params }) => {
  try {
  const [resCategory, resAll] = await Promise.all([
- getCategoryById({ data: { id: params.id } }).catch(() => null),
- listCategories().catch(() => []),
+ getCategoryById({ data: { id: params.id } }),
+ listCategories(),
  ]);
 
  const categoryData = resCategory?.id
@@ -28,14 +29,24 @@ export const Route = createFileRoute("/workspace/catalogo/categorias/$id")({
  ? resCategory.data
  : resCategory?.data || null;
 
+ if (!categoryData) {
  return {
- category: categoryData || { id: params.id, name: "", slug: "", status: "active" },
+ category: null,
  allCategories: resAll || [],
+ loadError: "Categoria não encontrada ou sem permissão de acesso.",
  };
- } catch {
+ }
+
  return {
- category: { id: params.id, name: "Categoria", slug: "categoria", status: "active" },
+ category: categoryData,
+ allCategories: resAll || [],
+ loadError: null as string | null,
+ };
+ } catch (err: any) {
+ return {
+ category: null,
  allCategories: [],
+ loadError: err?.message || "Não foi possível carregar os dados da categoria.",
  };
  }
  },
@@ -43,7 +54,28 @@ export const Route = createFileRoute("/workspace/catalogo/categorias/$id")({
 });
 
 function EditCategoryPage() {
- const { category, allCategories } = ((Route.useLoaderData?.() as any) || {});
+ const router = useRouter();
+ const { category, allCategories, loadError } = ((Route.useLoaderData?.() as any) || {});
+ if (loadError || !category) {
+ return (
+ <div className="space-y-8 max-w-2xl">
+ <PageHeader
+ eyebrow="Catálogo"
+ title="Editar Categoria"
+ actions={<NativeBackButton fallbackHref="/workspace/catalogo/categorias" />}
+ />
+ <ErrorState
+ title="Falha ao carregar categoria"
+ description={loadError || "Categoria não localizada."}
+ onRetry={() => router.invalidate()}
+ />
+ </div>
+ );
+ }
+ return <EditCategoryForm category={category} allCategories={allCategories || []} />;
+}
+
+function EditCategoryForm({ category, allCategories }: { category: any; allCategories: any[] }) {
  const navigate = useNavigate();
  const [isSubmitting, setIsSubmitting] = useState(false);
 

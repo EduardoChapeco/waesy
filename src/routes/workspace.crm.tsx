@@ -10,7 +10,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
 import { StorePersonasMatrix } from "@/components/workspace/crm/store-personas-matrix";
 import { WhatsAppLeadsInbox } from "@/components/workspace/crm/whatsapp-leads-inbox";
-import { listCustomers, listLeads, updateLeadStatus, promoteLeadToCustomer } from "@/services/crm.functions";
+import { listCustomers, listLeads, updateLeadStatus, promoteLeadToCustomer, persistLeadMove } from "@/services/crm.functions";
+import { formatKanbanActionError } from "@/lib/niches/kanban-niche-taxonomy";
 import { toast } from "sonner";
 import { getDashboardData } from "@/services/dashboard.functions";
 import { getEntityUnifiedTimeline } from "@/services/domain-events.functions";
@@ -21,7 +22,8 @@ import { useNicheTaxonomy } from "@/hooks/use-niche-taxonomy";
 import { NicheId } from "@/lib/niche-manifest";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
+import { buildEntityTraceHash, CustomerIdentityTagPill } from "@/lib/entity-trace-hash";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/crm")({
@@ -31,18 +33,20 @@ export const Route = createFileRoute("/workspace/crm")({
   loader: async () => {
     try {
       const [customers, dashboardMetrics] = await Promise.all([
-        listCustomers({ data: { status: "all" } }).catch(() => []),
-        getDashboardData().catch(() => null),
+        listCustomers({ data: { status: "all" } }),
+        getDashboardData(),
       ]);
       return {
         initialCustomers: customers || [],
         dashboardMetrics,
+        loadError: null as string | null,
       };
-    } catch (err) {
-      console.error("[loader:workspace.crm] Loader fallback:", err);
+    } catch (err: any) {
+      console.error("[loader:workspace.crm] Loader error:", err);
       return {
         initialCustomers: [],
         dashboardMetrics: null,
+        loadError: err?.message || "Não foi possível carregar os contatos do CRM.",
       };
     }
   },
@@ -50,13 +54,17 @@ export const Route = createFileRoute("/workspace/crm")({
 });
 
 export default function WorkspaceCrmPage() {
-  const { initialCustomers, dashboardMetrics } = Route.useLoaderData();
+  const loaderData = (Route.useLoaderData() as any) || {};
+  const initialCustomers = loaderData.initialCustomers || [];
+  const dashboardMetrics = loaderData.dashboardMetrics || null;
+  const loadError = loaderData.loadError || null;
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [channelFilter, setChannelFilter] = useState<string>("all");
+  const [tagFilter, setTagFilter] = useState<string>("all");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showMetricsMobile, setShowMetricsMobile] = useState(false);
   const [activeTab, setActiveTab] = useState<"clientes" | "funil" | "personas" | "whatsapp">("clientes");
@@ -93,6 +101,7 @@ export default function WorkspaceCrmPage() {
       contactName: l.full_name,
       contactPhone: l.phone,
       tags: l.tags || [],
+      custom_fields: l.custom_fields || null,
     }));
   }, [leads]);
 
@@ -105,14 +114,32 @@ export default function WorkspaceCrmPage() {
     const prevLeads = queryClient.getQueryData<any[]>(["workspace-crm-leads"]) || [];
     queryClient.setQueryData<any[]>(["workspace-crm-leads"], (old) => {
       if (!Array.isArray(old)) return old;
-      return old.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l));
+      return old.map((l) =>
+        l.id === leadId
+          ? {
+              ...l,
+              status: nextStatus,
+              pipeline_stage: nextStatus,
+              custom_fields: {
+                ...(l.custom_fields && typeof l.custom_fields === "object" ? l.custom_fields : {}),
+                kanban_stage_key: nextStatus,
+              },
+            }
+          : l,
+      );
     });
 
     try {
-      await updateLeadStatus({ data: { leadId, status: nextStatus as any } });
+      await persistLeadMove({
+        data: {
+          leadId,
+          toStatus: nextStatus,
+          reorderedIds: [],
+        },
+      });
     } catch (err: any) {
       queryClient.setQueryData(["workspace-crm-leads"], prevLeads);
-      toast.error(err?.message || "Não foi possível mover o card no funil.");
+      toast.error(formatKanbanActionError(err, "Não foi possível mover o card no funil."));
     } finally {
       queryClient.invalidateQueries({ queryKey: ["workspace-crm-leads"] });
     }
@@ -123,6 +150,11 @@ export default function WorkspaceCrmPage() {
     if (channelFilter !== "all") {
       list = list.filter((c: any) => (c.channel || "").toLowerCase() === channelFilter.toLowerCase());
     }
+    if (tagFilter !== "all") {
+      list = list.filter((c: any) =>
+        Array.isArray(c.tags) && c.tags.some((tg: string) => tg.toLowerCase() === tagFilter.toLowerCase()),
+      );
+    }
     if (!search.trim()) return list;
     const q = search.toLowerCase();
     return list.filter(
@@ -131,9 +163,11 @@ export default function WorkspaceCrmPage() {
         c.email?.toLowerCase().includes(q) ||
         c.phone?.includes(q) ||
         c.document?.includes(q) ||
-        c.city?.toLowerCase().includes(q)
+        c.city?.toLowerCase().includes(q) ||
+        buildEntityTraceHash("customer", c.id || c.phone).toLowerCase().includes(q) ||
+        (Array.isArray(c.tags) && c.tags.some((tg: string) => tg.toLowerCase().includes(q)))
     );
-  }, [customers, search, channelFilter]);
+  }, [customers, search, channelFilter, tagFilter]);
 
   const metrics = useMemo(() => {
     const total = customers.length;
@@ -149,7 +183,22 @@ export default function WorkspaceCrmPage() {
     };
   }, [customers, dashboardMetrics]);
 
-  const activeFiltersCount = (statusFilter !== "all" ? 1 : 0) + (channelFilter !== "all" ? 1 : 0);
+  const activeFiltersCount =
+    (statusFilter !== "all" ? 1 : 0) +
+    (channelFilter !== "all" ? 1 : 0) +
+    (tagFilter !== "all" ? 1 : 0);
+
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar CRM"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -317,7 +366,7 @@ export default function WorkspaceCrmPage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-black text-foreground font-mono">{metrics.total}</p>
+            <p className="text-2xl font-semibold text-foreground font-mono">{metrics.total}</p>
             <p className="text-xs text-muted-foreground mt-1">Base ativa na loja</p>
           </div>
         </Card>
@@ -330,7 +379,7 @@ export default function WorkspaceCrmPage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-black text-foreground font-mono">{metrics.active}</p>
+            <p className="text-2xl font-semibold text-foreground font-mono">{metrics.active}</p>
             <p className="text-xs text-muted-foreground mt-1">Compras regulares</p>
           </div>
         </Card>
@@ -343,7 +392,7 @@ export default function WorkspaceCrmPage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-black text-foreground font-mono">{metrics.newCustomers30d}</p>
+            <p className="text-2xl font-semibold text-foreground font-mono">{metrics.newCustomers30d}</p>
             <p className="text-xs text-muted-foreground mt-1">Últimos 30 dias</p>
           </div>
         </Card>
@@ -356,7 +405,7 @@ export default function WorkspaceCrmPage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-black text-foreground font-mono">{formatMoney(metrics.avgTicketCents)}</p>
+            <p className="text-2xl font-semibold text-foreground font-mono">{formatMoney(metrics.avgTicketCents)}</p>
             <p className="text-xs text-muted-foreground mt-1">Histórico acumulado</p>
           </div>
         </Card>
@@ -551,19 +600,12 @@ export default function WorkspaceCrmPage() {
                           params={{ id: customer.id }}
                           className="flex items-center gap-3 group"
                         >
-                          <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                            {(customer.full_name || "C").charAt(0).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-bold text-foreground group-hover:text-primary transition-colors truncate">
-                              {customer.full_name || "Cliente sem nome"}
-                            </p>
-                            {customer.document && (
-                              <p className="text-xs text-muted-foreground font-mono">
-                                {customer.document}
-                              </p>
-                            )}
-                          </div>
+                          <CustomerIdentityTagPill
+                            name={customer.full_name || "Cliente sem nome"}
+                            avatarUrl={customer.avatar_url || null}
+                            traceHash={buildEntityTraceHash("customer", customer.id || customer.phone)}
+                            subtitle={customer.document || undefined}
+                          />
                         </Link>
                       </td>
 
@@ -678,7 +720,7 @@ export default function WorkspaceCrmPage() {
             <SheetDescription className="text-xs text-muted-foreground">
               {selectedEntity?.type === "lead"
                 ? "Ciclo comercial e conversão de oportunidade"
-                : "Histórico consolidado 360° e timeline"}
+                : "Histórico consolidado do cliente e timeline"}
             </SheetDescription>
           </SheetHeader>
 

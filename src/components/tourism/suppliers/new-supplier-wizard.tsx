@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Building2, X, ChevronRight, ChevronLeft, Check, Percent, Phone, Mail, MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { SUPPLIER_KIND_LABELS, type SupplierKind } from '@/types/travel-suppliers';
-import { createTravelSupplier } from '@/services/travel-suppliers.functions';
+import { SUPPLIER_KIND_LABELS, type SupplierKind, type TravelSupplierDTO } from '@/types/travel-suppliers';
+import { createTravelSupplier, updateTravelSupplier } from '@/services/travel-suppliers.functions';
 
 interface NewSupplierWizardProps {
  isOpen: boolean;
  onClose: () => void;
  onCreated?: () => void;
  storeId?: string;
+ initialSupplier?: TravelSupplierDTO | null;
 }
 
 const STEPS = ['Identidade B2B', 'Localização', 'Comercial & Markups', 'Contatos & SLA'];
 
-export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSupplierWizardProps) {
+export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initialSupplier }: NewSupplierWizardProps) {
+ const isEditing = Boolean(initialSupplier?.id);
  const [step, setStep] = useState(0);
  const [submitting, setSubmitting] = useState(false);
 
@@ -33,6 +35,36 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  const [notes, setNotes] = useState('');
  const [email, setEmail] = useState('');
  const [phone, setPhone] = useState('');
+
+ useEffect(() => {
+   if (!isOpen) return;
+   setStep(0);
+   if (initialSupplier) {
+     setName(initialSupplier.name || '');
+     setLegalName(initialSupplier.legal_name || '');
+     setKind(initialSupplier.kind || 'operator');
+     setDocument(initialSupplier.document || '');
+     setCity(initialSupplier.city || '');
+     setState(initialSupplier.state || '');
+     setCountry(initialSupplier.country || 'Brasil');
+     setCommissionRate(String(initialSupplier.commission_rate ?? 10));
+     setNotes(initialSupplier.notes || '');
+     setEmail(initialSupplier.email || '');
+     setPhone(initialSupplier.phone || '');
+   } else {
+     setName('');
+     setLegalName('');
+     setKind('operator');
+     setDocument('');
+     setCity('');
+     setState('');
+     setCountry('Brasil');
+     setCommissionRate('10');
+     setNotes('');
+     setEmail('');
+     setPhone('');
+   }
+ }, [isOpen, initialSupplier]);
 
  const handleNext = () => {
  if (step === 0 && !name.trim()) {
@@ -52,28 +84,41 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
 
  setSubmitting(true);
  try {
- await createTravelSupplier({
- data: {
- store_id: storeId,
- name: name.trim(),
- legal_name: legalName.trim() || null,
- kind,
- document: document.trim() || null,
- commission_rate: parseFloat(commissionRate) || 0,
- notes: notes.trim() || null,
- email: email.trim() || null,
- phone: phone.trim() || null,
- city: city.trim() || null,
- state: state.trim() || null,
- country: country.trim() || 'Brasil',
- },
- });
+ const payload = {
+   name: name.trim(),
+   legal_name: legalName.trim() || null,
+   kind,
+   document: document.trim() || null,
+   commission_rate: parseFloat(commissionRate) || 0,
+   notes: notes.trim() || null,
+   email: email.trim() || null,
+   phone: phone.trim() || null,
+   city: city.trim() || null,
+   state: state.trim() || null,
+   country: country.trim() || 'Brasil',
+ };
 
- toast.success('Fornecedor cadastrado com sucesso!');
+ if (isEditing && initialSupplier?.id) {
+   await updateTravelSupplier({
+     data: {
+       id: initialSupplier.id,
+       ...payload,
+     },
+   });
+   toast.success('Fornecedor atualizado com sucesso!');
+ } else {
+   await createTravelSupplier({
+     data: {
+       store_id: storeId,
+       ...payload,
+     },
+   });
+   toast.success('Fornecedor cadastrado com sucesso!');
+ }
  if (onCreated) onCreated();
  onClose();
  } catch (err: any) {
- toast.error(err?.message || 'Erro ao cadastrar fornecedor');
+ toast.error(err?.message || 'Erro ao salvar fornecedor');
  } finally {
  setSubmitting(false);
  }
@@ -89,7 +134,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  </div>
  <div>
  <DialogTitle className="text-sm font-bold text-foreground">
- Cadastrar Novo Fornecedor / Operadora
+ {isEditing ? 'Editar Fornecedor / Operadora' : 'Cadastrar Novo Fornecedor / Operadora'}
  </DialogTitle>
  <p className="text-2xs text-muted-foreground">
  Passo {step + 1} de {STEPS.length}: <strong className="text-foreground">{STEPS[step]}</strong>
@@ -280,7 +325,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  className="rounded-lg bg-primary text-primary-foreground font-bold text-xs gap-1  px-5"
  >
  <Check className="size-3.5" />
- {submitting ? 'Salvando...' : 'Concluir Cadastro'}
+ {submitting ? 'Salvando...' : isEditing ? 'Salvar Alterações' : 'Concluir Cadastro'}
  </Button>
  )}
  </DialogFooter>

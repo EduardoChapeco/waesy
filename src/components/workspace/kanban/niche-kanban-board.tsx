@@ -11,6 +11,7 @@
 import React from "react";
 import { FullViewportKanban, KanbanColumnDefinition } from "@/components/workspace/kanban/full-viewport-kanban";
 import { NicheId, NicheStageConfig, getNicheManifest } from "@/lib/niche-manifest";
+import { doesLeadBelongToStage } from "@/lib/niches/kanban-niche-taxonomy";
 import { StateMachineEntity, getAllowedTransitions, getStatusMeta } from "@/lib/state-machines";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Clock, User, Phone, DollarSign } from "lucide-react";
@@ -25,6 +26,7 @@ export interface NicheKanbanCardData {
   slaDeadlineMinutes?: number;
   createdAt?: string;
   tags?: string[];
+  custom_fields?: Record<string, any> | null;
   metadata?: Record<string, any>;
 }
 
@@ -47,10 +49,26 @@ export function NicheKanbanBoard({
 }: NicheKanbanBoardProps) {
   const manifest = getNicheManifest(nicheId);
   const stages: NicheStageConfig[] = manifest.defaultStages.crm;
+  const stageDescriptors = stages.map((s) => ({
+    stage_key: s.key,
+    title: s.label,
+    purpose: s.purpose,
+    synonyms: s.synonyms,
+  }));
 
-  // Monta as colunas a partir do manifesto do nicho
+  // Monta as colunas a partir do manifesto do nicho com correspondência semântica e sinônimos
   const columns: KanbanColumnDefinition<NicheKanbanCardData>[] = stages.map((stage: NicheStageConfig) => {
-    const stageItems = items.filter((item: NicheKanbanCardData) => item.status === stage.key);
+    const stageItems = items.filter((item: NicheKanbanCardData) =>
+      doesLeadBelongToStage(
+        {
+          status: item.status,
+          custom_fields: item.custom_fields || item.metadata || null,
+        },
+        stage.key,
+        stageDescriptors,
+        nicheId,
+      ),
+    );
 
     return {
       id: stage.key,
@@ -66,6 +84,12 @@ export function NicheKanbanBoard({
             key={item.id}
             role="button"
             tabIndex={0}
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.setData("text/waesy-kanban-id", item.id);
+              e.dataTransfer.setData("text/plain", item.id);
+              e.dataTransfer.effectAllowed = "move";
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
@@ -74,7 +98,7 @@ export function NicheKanbanBoard({
             }}
             onClick={() => onCardClick?.(item)}
             className={cn(
-              "group relative flex flex-col gap-2 p-4 rounded-2xl bg-card transition-colors duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "group relative flex flex-col gap-2 p-4 rounded-2xl bg-card transition-colors duration-150 cursor-grab active:cursor-grabbing select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               item.status === "lost" && "opacity-70"
             )}
           >
@@ -166,6 +190,7 @@ export function NicheKanbanBoard({
       columns={columns}
       className={className}
       columnWidthClass="w-72 sm:w-80"
+      onDropItem={(itemId, targetColumnId) => onTransitionStatus(itemId, targetColumnId)}
     />
   );
 }

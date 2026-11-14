@@ -560,7 +560,7 @@ export function HotelCombobox({
                     onChange("", undefined);
                   }
                 }}
-                className="size-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="min-h-11 size-11 -mr-1 rounded flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Limpar hotel selecionado"
               >
                 <X className="size-3.5" />
@@ -574,8 +574,7 @@ export function HotelCombobox({
         {!isMobile && isOpen && (
           <div
             ref={popoverRef}
-            className="absolute z-50 left-0 right-0 top-12 mt-1 rounded-lg border border-border/80 bg-popover text-popover-foreground shadow-xs animate-in fade-in-0 zoom-in-95"
-            style={{ minWidth: "340px" }}
+            className="absolute z-50 left-0 right-0 top-12 mt-1 min-w-85 rounded-lg border border-border/80 bg-popover text-popover-foreground shadow-xs animate-in fade-in-0 zoom-in-95"
           >
             <HotelPickerPanel
               searchQuery={searchQuery}

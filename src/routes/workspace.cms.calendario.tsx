@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Calendar as CalendarIcon, Plus, Clock, ImageIcon, Tag, Megaphone, Layers, ChevronLeft, ChevronRight, Loader2, Trash2 } from "lucide-react";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { ErrorState } from "@/components/state/states";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { listScheduledPosts, schedulePost, reschedulePost, type ScheduledPost } from "@/services/editorial.functions";
 import { formatDate } from "@/lib/datetime";
@@ -15,10 +16,14 @@ export const Route = createFileRoute("/workspace/cms/calendario")({
  head: () => ({ meta: [{ title: "Calendário Editorial | Waesy" }] }),
  loader: async () => {
    try {
- return await listScheduledPosts();
-   } catch (err) {
+     const posts = await listScheduledPosts();
+     return { posts: posts || [], loadError: null as string | null };
+   } catch (err: any) {
      console.error("[loader:workspace.cms.calendario] Unhandled loader error:", err);
-     return null as any;
+     return {
+       posts: [] as ScheduledPost[],
+       loadError: err?.message || "Não foi possível carregar o calendário editorial.",
+     };
     }
  },
  component: CalendarioEditorialPage,
@@ -55,7 +60,10 @@ const TYPE_CONFIG: Record<
 };
 
 function CalendarioEditorialPage() {
- const initialPosts = Route.useLoaderData();
+ const router = useRouter();
+ const loaderData = Route.useLoaderData() as any;
+ const initialPosts = Array.isArray(loaderData) ? loaderData : loaderData?.posts || [];
+ const loadError = !Array.isArray(loaderData) ? loaderData?.loadError : null;
  const [posts, setPosts] = useState<ScheduledPost[]>(Array.isArray(initialPosts) ? initialPosts : []);
  const [isOpen, setIsOpen] = useState(false);
  const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,6 +77,18 @@ function CalendarioEditorialPage() {
  return d.toISOString().split("T")[0];
  });
  const [timeStr, setTimeStr] = useState("18:00");
+
+ if (loadError) {
+   return (
+     <div className="p-6 max-w-4xl mx-auto">
+       <ErrorState
+         title="Erro ao carregar calendário editorial"
+         description={loadError}
+         onRetry={() => router.invalidate()}
+       />
+     </div>
+   );
+ }
 
  const handleSchedule = async (e: React.FormEvent) => {
  e.preventDefault();

@@ -866,17 +866,17 @@ function AdminConvitePage() {
           <AlertDialogFooter className="mt-4 gap-2">
             <AlertDialogCancel
               disabled={Boolean(drawingRaffleId)}
-              className="h-10 px-4 rounded-lg text-xs font-semibold"
+              className="min-h-11 h-11 px-4 rounded-lg text-xs font-semibold"
             >
               Cancelar
             </AlertDialogCancel>
-            <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
+            <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
                 confirmDrawRaffle();
               }}
               disabled={Boolean(drawingRaffleId)}
-              className="h-10 px-4 rounded-lg text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="min-h-11 h-11 px-4 rounded-lg text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {drawingRaffleId ? "Apurando..." : "Confirmar e Sortear"}
             </AlertDialogAction>

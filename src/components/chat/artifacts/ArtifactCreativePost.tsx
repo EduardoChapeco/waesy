@@ -1,4 +1,4 @@
-import React, { useId, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import {
   Copy,
   Check,
@@ -39,6 +39,10 @@ export type PostLayoutTemplate =
 
 export interface ArtifactCreativePostProps {
   title: string;
+  format?: "story" | "portrait" | "landscape" | "feed";
+  aspectRatio?: CreativeAspectRatio;
+  archetype?: CreativeArchetype;
+  themeId?: PostThemePalette;
   badge?: string;
   headline?: string;
   subheadline?: string;
@@ -53,6 +57,8 @@ export interface ArtifactCreativePostProps {
   hashtags?: string[];
   offerPrice?: string;
   offerBadge?: string;
+  installments?: string;
+  locationLabel?: string;
   className?: string;
 }
 
@@ -77,8 +83,37 @@ const RATIO_MAP: Record<PostAspectRatio, CreativeAspectRatio> = {
   landscape: "16:9",
 };
 
+function resolveAspectFromProps(
+  format?: string,
+  aspectRatioProp?: string,
+): PostAspectRatio {
+  if (aspectRatioProp === "9:16" || format === "story") return "story";
+  if (aspectRatioProp === "4:5" || format === "portrait") return "portrait";
+  if (aspectRatioProp === "16:9" || format === "landscape") return "landscape";
+  return "square";
+}
+
+function resolveTemplateFromArchetype(archetype?: string): PostLayoutTemplate {
+  if (archetype === "quote") return "quote_testimonial";
+  if (archetype === "bullet_checklist") return "bullet_checklist";
+  if (archetype === "promo_offer") return "promo_offer";
+  if (archetype === "travel") return "travel";
+  return "headline_lead";
+}
+
+function resolveThemeFromPalette(palette?: string): CreativeThemeId {
+  if (palette && palette in PALETTE_TO_THEME) {
+    return PALETTE_TO_THEME[palette as PostThemePalette];
+  }
+  return "emerald";
+}
+
 export function ArtifactCreativePost({
   title,
+  format,
+  aspectRatio: initialAspectRatio,
+  archetype: initialArchetype,
+  themeId: initialThemeId,
   badge = "Dica do Especialista",
   headline = "Como Escalar Suas Vendas com Campanhas Locais de Alta Conversão",
   subheadline = "Estratégia comprovada para estabelecimentos comerciais e prestadores de serviços",
@@ -97,11 +132,19 @@ export function ArtifactCreativePost({
   hashtags = ["#VendasLocais", "#NegociosLocais", "#Empreendedorismo", "#Marketing"],
   offerPrice,
   offerBadge = "Oferta Limitada",
+  installments,
+  locationLabel,
   className,
 }: ArtifactCreativePostProps) {
-  const [aspectRatio, setAspectRatio] = useState<PostAspectRatio>("square");
-  const [themeId, setThemeId] = useState<CreativeThemeId>("emerald");
-  const [template, setTemplate] = useState<PostLayoutTemplate>("headline_lead");
+  const [aspectRatio, setAspectRatio] = useState<PostAspectRatio>(() =>
+    resolveAspectFromProps(format, initialAspectRatio),
+  );
+  const [themeId, setThemeId] = useState<CreativeThemeId>(() =>
+    resolveThemeFromPalette(initialThemeId),
+  );
+  const [template, setTemplate] = useState<PostLayoutTemplate>(() =>
+    resolveTemplateFromArchetype(initialArchetype),
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [copiedCaption, setCopiedCaption] = useState(false);
@@ -115,6 +158,29 @@ export function ArtifactCreativePost({
   const [editImageUrl, setEditImageUrl] = useState(imageUrl || "");
   const [editLogoUrl, setEditLogoUrl] = useState(logoUrl || "");
   const [overlayPercent, setOverlayPercent] = useState(62);
+
+  useEffect(() => {
+    setAspectRatio(resolveAspectFromProps(format, initialAspectRatio));
+  }, [format, initialAspectRatio]);
+
+  useEffect(() => {
+    setThemeId(resolveThemeFromPalette(initialThemeId));
+  }, [initialThemeId]);
+
+  useEffect(() => {
+    setTemplate(resolveTemplateFromArchetype(initialArchetype));
+  }, [initialArchetype]);
+
+  useEffect(() => {
+    setEditHeadline(headline);
+    setEditSubheadline(subheadline);
+    setEditBadge(badge);
+    setEditOfferPrice(offerPrice || "");
+    setEditCtaText(ctaText);
+    setEditStoreName(storeName);
+    setEditImageUrl(imageUrl || "");
+    setEditLogoUrl(logoUrl || "");
+  }, [headline, subheadline, badge, offerPrice, ctaText, storeName, imageUrl, logoUrl]);
 
   const uid = useId();
   const stageId = `copilot-post-stage-${uid.replace(/[^a-zA-Z0-9_-]/g, "")}`;
@@ -454,9 +520,11 @@ export function ArtifactCreativePost({
           bullets={bullets}
           offerBadge={offerBadge}
           offerPrice={editOfferPrice || undefined}
+          installments={installments}
           ctaText={editCtaText}
           brandName={editStoreName}
           brandHandle={brandHandle}
+          locationLabel={locationLabel}
           logoUrl={editLogoUrl || undefined}
           imageUrl={editImageUrl || undefined}
           imageOverlayPercent={overlayPercent}

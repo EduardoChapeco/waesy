@@ -85,35 +85,73 @@ export const getPublicPixels = createServerFn({ method: "GET" }).handler(async (
         .maybeSingle();
 
       const results: Array<{
-        provider: "meta_pixel" | "google_analytics" | "google_ads" | "tiktok_pixel";
+        provider:
+          | "meta_pixel"
+          | "google_analytics"
+          | "google_ads"
+          | "tiktok_pixel"
+          | "gtm"
+          | "google_site_verification"
+          | "meta_domain_verification";
         pixelId?: string | null;
         measurementId?: string | null;
         conversionId?: string | null;
+        conversionLabel?: string | null;
+        verificationCode?: string | null;
       }> = [];
 
       if (pixelConfig) {
-        if (pixelConfig.meta_pixel_id) {
+        const cfg = pixelConfig as Record<string, any>;
+        if (cfg.meta_pixel_id) {
           results.push({
             provider: "meta_pixel",
-            pixelId: pixelConfig.meta_pixel_id,
+            pixelId: cfg.meta_pixel_id,
           });
         }
-        if (pixelConfig.google_analytics_id) {
+        const gaMeasurementId = cfg.ga4_measurement_id || cfg.google_analytics_id || null;
+        if (gaMeasurementId) {
           results.push({
             provider: "google_analytics",
-            measurementId: pixelConfig.google_analytics_id,
+            measurementId: gaMeasurementId,
           });
         }
-        if (pixelConfig.google_ads_id) {
-          results.push({
-            provider: "google_ads",
-            conversionId: pixelConfig.google_ads_id,
-          });
+        if (cfg.google_ads_id) {
+          let cleanConversionId = String(cfg.google_ads_id);
+          try {
+            if (cleanConversionId.startsWith("{")) {
+              cleanConversionId = JSON.parse(cleanConversionId).conversion_id || "";
+            }
+          } catch {}
+          if (cleanConversionId) {
+            results.push({
+              provider: "google_ads",
+              conversionId: cleanConversionId,
+              conversionLabel: cfg.google_ads_conversion_label || null,
+            });
+          }
         }
-        if (pixelConfig.tiktok_pixel_id) {
+        if (cfg.tiktok_pixel_id) {
           results.push({
             provider: "tiktok_pixel",
-            pixelId: pixelConfig.tiktok_pixel_id,
+            pixelId: cfg.tiktok_pixel_id,
+          });
+        }
+        if (cfg.gtm_id) {
+          results.push({
+            provider: "gtm",
+            pixelId: cfg.gtm_id,
+          });
+        }
+        if (cfg.google_site_verification) {
+          results.push({
+            provider: "google_site_verification",
+            verificationCode: cfg.google_site_verification,
+          });
+        }
+        if (cfg.meta_domain_verification) {
+          results.push({
+            provider: "meta_domain_verification",
+            verificationCode: cfg.meta_domain_verification,
           });
         }
 

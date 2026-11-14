@@ -276,7 +276,7 @@ export function DS4Showcase() {
     title="Nova Cotação Aérea"
     description="Inicie a parametrização de trechos nacionais ou internacionais com tarifas corporativas."
     icon={<Plane className="size-5" />}
-    onClick={() => {}}
+    onClick={() => setModalOpen(true)}
     className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
   />
           </div>
@@ -291,14 +291,14 @@ export function DS4Showcase() {
               location="Pernambuco, Brasil"
               badgeText="Mais Vendido"
               ctaText="Ver Pacote"
-              onCtaClick={() => {}}
+              onCtaClick={() => setSheetOpen(true)}
             />
             <MediaCard
               title="Vídeo Apresentação — Rota das Emoções"
               subtitle="Expedição pelos Lençóis Maranhenses e Parnaíba"
               duration="04:22"
               badge="Full HD"
-              onPlay={() => {}}
+              onPlay={() => setSideSheetOpen(true)}
             />
           </div>
 

@@ -412,7 +412,7 @@ function FocusGroupPage() {
                       className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <FileText className="size-3" />
-                      <span>Dossiê 360°</span>
+                      <span>Perfil da Persona</span>
                     </button>
                   </div>
                 </div>

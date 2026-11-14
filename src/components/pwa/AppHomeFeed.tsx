@@ -23,7 +23,7 @@ export interface AppHomeFeedProps {
 
 export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
   appName,
-  themeColor = "#0F172A",
+  themeColor = "var(--color-slate-900)",
   bannerTitle = "Novidades Exclusivas no App",
   bannerSubtitle = "Aproveite condições especiais e entregas rápidas na sua cidade.",
   products = [],
@@ -45,15 +45,14 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
           <div key={i} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer">
             <div
               style={{
-                borderColor: h.active ? themeColor : "transparent",
-                borderWidth: 2,
-              }}
-              className="size-13 rounded-full p-1 transition-transform active:scale-95 flex items-center justify-center bg-muted/60"
+                "--dyn-bdr": h.active ? themeColor : "transparent",
+              } as React.CSSProperties}
+              className="size-13 rounded-full p-1 border-2 waesy-dyn-bdr transition-transform active:scale-95 flex items-center justify-center bg-muted/60"
             >
               <div
-                style={{ backgroundColor: h.active ? themeColor : undefined }}
+                style={{ "--dyn-bg": h.active ? themeColor : undefined } as React.CSSProperties}
                 className={`size-full rounded-full flex items-center justify-center text-xs font-bold ${
-                  h.active ? "text-foreground" : "text-muted-foreground bg-muted"
+                  h.active ? "text-foreground waesy-dyn-bg" : "text-muted-foreground bg-muted"
                 }`}
               >
                 {h.label.slice(0, 2).toUpperCase()}
@@ -70,7 +69,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
       <div className="rounded-lg p-4 bg-card text-foreground space-y-2 relative overflow-hidden border border-border">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-muted border border-border text-foreground flex items-center gap-1">
-            <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: themeColor }} />
+            <span className="size-2 rounded-full shrink-0 waesy-dyn-bg" style={{ "--dyn-bg": themeColor } as React.CSSProperties} />
             <Star className="size-3 fill-current" />
             <span>Exclusivo App</span>
           </span>
@@ -162,8 +161,8 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
                     e.stopPropagation();
                     onAddToCart?.(prod.id);
                   }}
-                  style={{ backgroundColor: themeColor }}
-                  className="w-full h-8 rounded-lg text-foreground font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0"
+                  style={{ "--dyn-bg": themeColor } as React.CSSProperties}
+                  className="w-full h-8 rounded-lg text-foreground font-semibold text-xs flex items-center justify-center gap-1 active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 waesy-dyn-bg"
                 >
                   <ShoppingBag className="size-3" />
                   <span>Adicionar</span>

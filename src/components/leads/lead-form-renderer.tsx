@@ -234,6 +234,27 @@ export function LeadFormRenderer({
         );
       }
 
+      if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+        (window as any).gtag("event", "generate_lead", {
+          event_category: classifiedId ? "classified_form" : "lead_form",
+          event_label: form.title || form.slug,
+          transaction_id: (res as any)?.eventId || undefined,
+        });
+        const adsSendTo = (window as any).__WAESY_GOOGLE_ADS_SEND_TO__;
+        if (adsSendTo) {
+          (window as any).gtag("event", "conversion", {
+            send_to: adsSendTo,
+            transaction_id: (res as any)?.eventId || undefined,
+          });
+        }
+      }
+
+      if (typeof window !== "undefined" && typeof (window as any).ttq?.track === "function") {
+        (window as any).ttq.track("SubmitForm", {
+          content_name: form.title || form.slug,
+        });
+      }
+
       setSubmissionResult(res);
       toast.success("Solicitação enviada com sucesso!");
       onSuccess?.(res);

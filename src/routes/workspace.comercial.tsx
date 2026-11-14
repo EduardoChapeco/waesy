@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Kanban, Bus, MessageSquare, Pencil, Users, Plus, Search, DollarSign, Phone, Mail, UserCheck, CheckCircle2, Clock, MoreVertical, Plane, Edit3, Calendar, MapPin, Tag, CheckSquare, Square, AlertTriangle, ChevronRight, ChevronLeft, X, Trash2, Layers, Upload, Calculator, FileText, ExternalLink, BarChart3, Settings2, Brain, FileSignature, History, Copy, Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
@@ -40,6 +40,14 @@ import {
   getNicheContractBlueprint,
   buildStructuredCustomFieldsSummaryRows,
 } from "@/lib/niches/unified-field-bridge";
+import {
+  getNicheKanbanPreset,
+  getNicheKanbanStages,
+  getNicheKanbanTerminology,
+  doesLeadBelongToStage,
+  resolveKanbanStageSynonym,
+  formatKanbanActionError,
+} from "@/lib/niches/kanban-niche-taxonomy";
 
 export const Route = createFileRoute("/workspace/comercial")({
   validateSearch: (search: Record<string, unknown>): { dealId?: string; leadId?: string } => ({
@@ -79,7 +87,7 @@ export const Route = createFileRoute("/workspace/comercial")({
   component: WorkspaceComercialPage,
 });
 
-type LeadStage = "new" | "contacted" | "qualified" | "proposal" | "negotiation" | "won" | "lost";
+type LeadStage = string;
 
 interface StageColConfig {
   id: LeadStage;
@@ -87,6 +95,8 @@ interface StageColConfig {
   dotColor: string;
   badgeClass: string;
   description: string;
+  purpose?: string;
+  is_visible?: boolean;
 }
 
 const STAGES: StageColConfig[] = [
@@ -236,7 +246,7 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
     title: "Pipeline Visual de Oportunidades (Kanban)",
     description: "Acompanhe cada negociação desde o primeiro contato até o fechamento com estágios visuais e somatório financeiro em tempo real.",
     icon: Kanban,
-    highlightBadge: "Kanban 360°",
+    highlightBadge: "Kanban Visual",
     tip: "Arraste os cards entre as colunas para atualizar o estágio e disparar lembretes automáticos.",
   },
   {
@@ -258,9 +268,18 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
 function WorkspaceComercialPage() {
   const { leads: initialLeads = [], team = [], store = null, proposals: initialProposals = [], kanbanStages = [], loadError = null } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
+  const queryClient = useQueryClient();
   const routeSearch = Route.useSearch();
   const storeId = store?.id || "";
+
+  const { data: proposals = initialProposals } = useQuery({
+    queryKey: ["agency-proposals"],
+    queryFn: () => listAgencyTravelProposals(),
+    initialData: initialProposals,
+  });
   const nicheBlueprint = useMemo(() => getNicheContractBlueprint(store), [store]);
+  const nichePreset = useMemo(() => getNicheKanbanPreset(store), [store]);
+  const nicheTerminology = nichePreset.terminology;
 
   const [leads, setLeads] = useState<any[]>(initialLeads);
   useEffect(() => {
@@ -293,6 +312,7 @@ function WorkspaceComercialPage() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
   const [stages, setStages] = useState<any[]>(() => {
     if (kanbanStages && kanbanStages.length > 0) {
       return kanbanStages.map((s: any) => ({
@@ -301,10 +321,19 @@ function WorkspaceComercialPage() {
         dotColor: s.color || "var(--primary)",
         badgeClass: "bg-muted text-foreground",
         description: s.description || "",
+        purpose: s.purpose,
         is_visible: s.is_visible !== false,
       }));
     }
-    return STAGES;
+    return nichePreset.stages.map((s) => ({
+      id: s.stage_key,
+      title: s.title,
+      dotColor: s.color || "bg-primary",
+      badgeClass: "bg-muted text-foreground",
+      description: s.description || "",
+      purpose: s.purpose,
+      is_visible: s.is_visible !== false,
+    }));
   });
 
   const visibleStages = useMemo(() => {
@@ -317,10 +346,10 @@ function WorkspaceComercialPage() {
     setIsExportingLeadDossier(true);
     try {
       const cleanName = (selectedLead.full_name || "lead").replace(/\s+/g, "_");
-      await exportElementAsPdf("customer-360-lead-dossier", `Dossie_Lead_${cleanName}.pdf`);
-      toast.success("Dossiê 360° do Lead exportado com sucesso!");
+      await exportElementAsPdf("customer-360-lead-dossier", `Resumo_Lead_${cleanName}.pdf`);
+      toast.success("Resumo do Lead exportado com sucesso!");
     } catch (err: any) {
-      toast.error(err?.message || "Falha ao gerar Dossiê 360° do Lead.");
+      toast.error(err?.message || "Falha ao gerar Resumo do Lead.");
     } finally {
       setIsExportingLeadDossier(false);
     }
@@ -542,13 +571,16 @@ function WorkspaceComercialPage() {
       : leadObj?.custom_fields && typeof leadObj.custom_fields === "object"
       ? leadObj.custom_fields
       : {};
+    const resolvedCustomerId = leadObj.customerId || leadObj.customer_id || null;
     return {
       id: leadObj.id,
+      customerId: resolvedCustomerId,
+      customer_id: resolvedCustomerId,
       fullName: leadObj.fullName || leadObj.full_name || leadObj.name || "",
-      phone: leadObj.phone || "",
-      email: leadObj.email || "",
+      phone: leadObj.phone || cf.phone || cf.whatsapp || "",
+      email: leadObj.email || cf.email || "",
       clientDocument: String(
-        leadObj.clientDocument || leadObj.document || leadObj.cpf_cnpj || cf.document || "",
+        leadObj.clientDocument || leadObj.document || leadObj.cpf_cnpj || cf.document || cf.cpf || "",
       ),
       destination: leadObj.destination || cf.source_listing_title || "",
       estimated_value_cents: leadObj.estimated_value_cents || 0,
@@ -603,10 +635,36 @@ function WorkspaceComercialPage() {
 
   const handleMoveStage = async (leadId: string, newStage: LeadStage) => {
     const prevLeads = [...leads];
-    // Atualização otimista imediata na interface (0ms)
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: newStage } : l)));
+    // Atualização otimista imediata na interface (0ms) preservando o stage_key canônico
+    setLeads((prev) =>
+      prev.map((l) =>
+        l.id === leadId
+          ? {
+              ...l,
+              status: newStage,
+              pipeline_stage: newStage,
+              custom_fields: {
+                ...(l.custom_fields && typeof l.custom_fields === "object" ? l.custom_fields : {}),
+                kanban_stage_key: newStage,
+              },
+            }
+          : l,
+      ),
+    );
     if (selectedLead?.id === leadId) {
-      setSelectedLead((prev: any) => (prev ? { ...prev, status: newStage } : null));
+      setSelectedLead((prev: any) =>
+        prev
+          ? {
+              ...prev,
+              status: newStage,
+              pipeline_stage: newStage,
+              custom_fields: {
+                ...(prev.custom_fields && typeof prev.custom_fields === "object" ? prev.custom_fields : {}),
+                kanban_stage_key: newStage,
+              },
+            }
+          : null,
+      );
     }
 
     try {
@@ -617,7 +675,13 @@ function WorkspaceComercialPage() {
           reorderedIds: [],
         },
       });
-      toast.success("Oportunidade movida no funil com sucesso!");
+      const resolvedStage = resolveKanbanStageSynonym(
+        newStage,
+        stages.map((s: any) => ({ stage_key: s.id, title: s.title, purpose: s.purpose })),
+        store,
+      );
+      const stageTitle = stages.find((s: any) => s.id === newStage)?.title || resolvedStage.title || newStage;
+      toast.success(`Oportunidade movida para "${stageTitle}"!`);
       router.invalidate();
     } catch (err: any) {
       // Rollback defensivo
@@ -626,7 +690,7 @@ function WorkspaceComercialPage() {
         const original = prevLeads.find((l) => l.id === leadId);
         if (original) setSelectedLead(original);
       }
-      toast.error(err.message || "Erro ao mover lead.");
+      toast.error(formatKanbanActionError(err, "Erro ao mover oportunidade."));
     }
   };
 
@@ -728,7 +792,7 @@ function WorkspaceComercialPage() {
   const handlePromoteToCustomer = async (leadId: string) => {
     try {
       const res = await promoteLeadToCustomer({ data: { leadId } });
-      toast.success("Lead promovido com sucesso para a Carteira de Clientes 360°!");
+      toast.success("Lead promovido com sucesso para a Carteira de Clientes!");
       if (selectedLead?.id === leadId) {
         setSelectedLead((prev: any) => (prev ? { ...prev, customer_id: res.customerId } : null));
         try {
@@ -961,7 +1025,7 @@ function WorkspaceComercialPage() {
       <WorkspaceCanonicalToolbar
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="Buscar lead por nome, destino, período ou fone..."
+        searchPlaceholder={nicheTerminology.searchPlaceholder}
         onMetricsClick={() => setIsDashboardOpen(true)}
         metricsBadge={totalPipelineCents > 0 ? formatMoney(totalPipelineCents) : undefined}
         onColumnsClick={() => setIsCustomizerOpen(true)}
@@ -972,10 +1036,10 @@ function WorkspaceComercialPage() {
           variant: "outline",
         }}
         primaryAction={{
-          label: "Nova Oportunidade",
+          label: nicheTerminology.newLeadActionLabel,
           icon: Plus,
           onClick: () => {
-            setNewLeadTargetStage("new");
+            setNewLeadTargetStage(visibleStages[0]?.id || "new");
             setIsNewLeadOpen(true);
           },
         }}
@@ -984,10 +1048,13 @@ function WorkspaceComercialPage() {
       {/* ── SELETOR MOBILE RÁPIDO DE ETAPAS (TOUCH ERGONÔMICO) ── */}
       <div className="sm:hidden flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-1 snap-x snap-mandatory shrink-0">
         {visibleStages.map((s: any) => {
+          const stageDescriptors = visibleStages.map((vs: any) => ({
+            stage_key: vs.id,
+            title: vs.title,
+            purpose: vs.purpose,
+          }));
           const count = filteredLeads.filter((l: any) =>
-            s.id === "won"
-              ? l.status === "won" || l.status === "converted"
-              : l.status === s.id || (!l.status && s.id === "new")
+            doesLeadBelongToStage(l, s.id, stageDescriptors, store),
           ).length;
           return (
             <button
@@ -1010,10 +1077,14 @@ function WorkspaceComercialPage() {
       {/* ── KANBAN BOARD FULL VERTICAL & HORIZONTAL (COLUNAS ALTAS & CARDS SÓLIDOS) ── */}
       <div className="flex-1 min-h-144 flex gap-4 overflow-x-auto scroll-area-carousel no-scrollbar pb-4 pt-1 items-stretch snap-x snap-mandatory [scrollbar-width:thin]">
         {visibleStages.map((stage: any, stageIndex: number) => {
-          const stageLeads = filteredLeads.filter((l: any) => {
-            if (stage.id === "won") return l.status === "won" || l.status === "converted";
-            return l.status === stage.id || (!l.status && stage.id === "new");
-          });
+          const stageDescriptors = visibleStages.map((vs: any) => ({
+            stage_key: vs.id,
+            title: vs.title,
+            purpose: vs.purpose,
+          }));
+          const stageLeads = filteredLeads.filter((l: any) =>
+            doesLeadBelongToStage(l, stage.id, stageDescriptors, store),
+          );
 
           const stageTotalCents = stageLeads.reduce(
             (sum: number, l: any) => sum + (l.estimated_value_cents || 0),
@@ -1022,27 +1093,51 @@ function WorkspaceComercialPage() {
 
           const prevStage = stageIndex > 0 ? visibleStages[stageIndex - 1] : null;
           const nextStage = stageIndex < visibleStages.length - 1 ? visibleStages[stageIndex + 1] : null;
+          const isDragOver = dragOverStageId === stage.id;
 
           return (
             <div
               key={stage.id}
               id={`kanban-col-${stage.id}`}
-              className="flex flex-col rounded-2xl bg-muted/50 dark:bg-muted/30 w-full sm:w-80 min-w-full sm:min-w-80 shrink-0 min-h-144 h-full transition-colors duration-200 snap-center overflow-hidden"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOverStageId !== stage.id) setDragOverStageId(stage.id);
+              }}
+              onDragLeave={() => {
+                if (dragOverStageId === stage.id) setDragOverStageId(null);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverStageId(null);
+                const droppedLeadId =
+                  e.dataTransfer.getData("text/waesy-kanban-id") ||
+                  e.dataTransfer.getData("text/plain");
+                if (droppedLeadId) {
+                  void handleMoveStage(droppedLeadId, stage.id);
+                }
+              }}
+              className={cn(
+                "flex flex-col rounded-2xl bg-muted/50 dark:bg-muted/30 w-full sm:w-80 min-w-full sm:min-w-80 shrink-0 min-h-144 h-full transition-colors duration-200 snap-center overflow-hidden",
+                isDragOver && "ring-2 ring-primary/40 bg-primary/5"
+              )}
             >
-              {/* Header da Coluna com Somatório e Ação Rápida */}
-              <div className="px-4 py-3 bg-transparent space-y-1 shrink-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
+              {/* Header da Coluna com Somatório e Ação Rápida sem Corte */}
+              <div className="px-4 py-3 bg-transparent shrink-0">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span className={cn("size-2 rounded-full shrink-0", stage.dotColor)} />
-                    <h3 className="text-xs font-bold text-foreground truncate">{stage.title}</h3>
+                    <h3 className="text-xs font-bold text-foreground leading-tight break-words line-clamp-2" title={stage.title}>
+                      {stage.title}
+                    </h3>
                     <span className="text-2xs font-mono tabular-nums font-bold px-2 py-1 rounded-full bg-card text-foreground shrink-0">
                       {stageLeads.length}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     {stageTotalCents > 0 && (
-                      <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground">
+                      <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground px-2 py-1 rounded-md bg-card/70">
                         {formatMoney(stageTotalCents)}
                       </span>
                     )}
@@ -1055,7 +1150,7 @@ function WorkspaceComercialPage() {
                       }}
                       /* design-lint-ignore DL-14 reason:"Gatilho compacto de adicao rapida no header de coluna desktop" expiry:"2027-12-31" */
                       className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
-                      title={`Novo lead em ${stage.title}`}
+                      title={`Novo em ${stage.title}`}
                     >
                       <Plus className="size-4" />
                     </Button>
@@ -1066,19 +1161,19 @@ function WorkspaceComercialPage() {
               {/* Lista de Cards da Coluna (Altura Total sem corte max-h-96) */}
               <div className="px-3 pb-3 space-y-3 flex-1 min-h-0 overflow-y-auto no-scrollbar [scrollbar-width:thin]">
                 {stageLeads.length === 0 ? (
-                  <div className="h-full min-h-48 rounded-2xl bg-card flex flex-col items-center justify-center p-4 text-center text-muted-foreground gap-2">
-                    <span className="text-xs font-medium">Nenhum lead nesta etapa</span>
+                  <div className="min-h-28 rounded-xl border border-dashed border-border/50 bg-transparent flex flex-col items-center justify-center p-4 text-center text-muted-foreground/70 gap-2">
+                    <span className="text-2xs font-medium">Arraste um card ou adicione nesta etapa</span>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         setNewLeadTargetStage(stage.id);
                         setIsNewLeadOpen(true);
                       }}
-                      className="min-h-11 px-4 rounded-xl text-xs text-foreground font-bold gap-2 bg-card hover:bg-muted cursor-pointer mt-1"
+                      className="min-h-11 sm:min-h-9 px-3 rounded-lg text-xs text-muted-foreground hover:text-foreground font-semibold gap-1 hover:bg-card cursor-pointer"
                     >
                       <Plus className="size-3.5" />
-                      <span>Adicionar Lead</span>
+                      <span>Adicionar</span>
                     </Button>
                   </div>
                 ) : (
@@ -1101,51 +1196,61 @@ function WorkspaceComercialPage() {
                         nextStageId={nextStage?.id}
                       />
                     ) : (
-                      <UniversalKanbanCard
+                      <div
                         key={lead.id}
-                        id={lead.id}
-                        variant="standard"
-                        title={lead.full_name || "Cliente sem nome"}
-                        subtitle={
-                          lead.destination ||
-                          lead.custom_fields?.source_listing_title ||
-                          lead.source_detail ||
-                          lead.phone ||
-                          nicheBlueprint.specsSectionTitle
-                        }
-                        description={lead.notes || lead.message || undefined}
-                        valueCents={lead.estimated_value_cents || undefined}
-                        assigneeName={
-                          team.find((m: any) => (m.profile_id || m.id) === lead.assigned_to)?.full_name ||
-                          team.find((m: any) => (m.profile_id || m.id) === lead.assigned_to)?.name
-                        }
-                        checklistTotal={Array.isArray(lead.checklist) ? lead.checklist.length : 0}
-                        checklistDone={
-                          Array.isArray(lead.checklist)
-                            ? lead.checklist.filter((it: any) => it?.done).length
-                            : 0
-                        }
-                        tags={(() => {
-                          const dynamicTags = buildStructuredCustomFieldsSummaryRows(lead.custom_fields)
-                            .slice(0, 2)
-                            .map((row) => `${row.label}: ${row.value}`);
-                          const cf = (lead.custom_fields || {}) as Record<string, any>;
-                          const adLabel =
-                            cf.utm_campaign ||
-                            cf.campaign ||
-                            (cf.ctwa_clid ? "Anúncio CTWA" : cf.gclid ? "Google Ads" : cf.meta_ad_id || cf.ad_id ? `Anúncio #${cf.meta_ad_id || cf.ad_id}` : cf.fbclid ? "Meta Ads" : null);
-                          const attrTags = adLabel ? [`Origem: ${adLabel}`] : [];
-                          const baseTags = Array.isArray(lead.tags) ? lead.tags : [];
-                          return [...attrTags, ...baseTags, ...dynamicTags].slice(0, 4);
-                        })()}
-                        onSelect={() => openLeadDetails(lead)}
-                        onAdvance={
-                          nextStage
-                            ? () => handleMoveStage(lead.id, nextStage.id as any)
-                            : undefined
-                        }
-                        advanceLabel={nextStage ? `Mover: ${nextStage.title}` : undefined}
-                      />
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/waesy-kanban-id", String(lead.id));
+                          e.dataTransfer.setData("text/plain", String(lead.id));
+                          e.dataTransfer.effectAllowed = "move";
+                        }}
+                        className="cursor-grab active:cursor-grabbing"
+                      >
+                        <UniversalKanbanCard
+                          id={lead.id}
+                          variant={nichePreset.cardVariant || "standard"}
+                          title={lead.full_name || "Cliente sem nome"}
+                          subtitle={
+                            lead.destination ||
+                            lead.custom_fields?.source_listing_title ||
+                            lead.source_detail ||
+                            lead.phone ||
+                            nicheTerminology.interestFieldLabel
+                          }
+                          description={lead.notes || lead.message || undefined}
+                          valueCents={lead.estimated_value_cents || undefined}
+                          assigneeName={
+                            team.find((m: any) => (m.profile_id || m.id) === lead.assigned_to)?.full_name ||
+                            team.find((m: any) => (m.profile_id || m.id) === lead.assigned_to)?.name
+                          }
+                          checklistTotal={Array.isArray(lead.checklist) ? lead.checklist.length : 0}
+                          checklistDone={
+                            Array.isArray(lead.checklist)
+                              ? lead.checklist.filter((it: any) => it?.done).length
+                              : 0
+                          }
+                          tags={(() => {
+                            const dynamicTags = buildStructuredCustomFieldsSummaryRows(lead.custom_fields)
+                              .slice(0, 2)
+                              .map((row) => `${row.label}: ${row.value}`);
+                            const cf = (lead.custom_fields || {}) as Record<string, any>;
+                            const adLabel =
+                              cf.utm_campaign ||
+                              cf.campaign ||
+                              (cf.ctwa_clid ? "Anúncio CTWA" : cf.gclid || cf.gbraid || cf.wbraid ? "Google Ads" : cf.meta_ad_id || cf.ad_id ? `Anúncio #${cf.meta_ad_id || cf.ad_id}` : cf.fbclid ? "Meta Ads" : null);
+                            const attrTags = adLabel ? [`Origem: ${adLabel}`] : [];
+                            const baseTags = Array.isArray(lead.tags) ? lead.tags : [];
+                            return [...attrTags, ...baseTags, ...dynamicTags].slice(0, 4);
+                          })()}
+                          onSelect={() => openLeadDetails(lead)}
+                          onAdvance={
+                            nextStage
+                              ? () => handleMoveStage(lead.id, nextStage.id as any)
+                              : undefined
+                          }
+                          advanceLabel={nextStage ? `Mover: ${nextStage.title}` : undefined}
+                        />
+                      </div>
                     ),
                   )
                 )}
@@ -1466,7 +1571,7 @@ function WorkspaceComercialPage() {
               lead={selectedLead}
               stages={stages}
               team={team}
-              proposals={initialProposals || []}
+              proposals={proposals || []}
               onClose={() => setSelectedLead(null)}
               onMoveStage={(leadId, stageId) => handleMoveStage(leadId, stageId as any)}
               onSaveLead={handleSaveLeadFromDossier}

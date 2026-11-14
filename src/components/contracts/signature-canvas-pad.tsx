@@ -29,7 +29,7 @@ export function SignatureCanvasPad({ onSave, className }: SignatureCanvasPadProp
  ctx.lineCap = "round";
  ctx.lineJoin = "round";
  ctx.lineWidth = 2.5;
- ctx.strokeStyle = "#0f172a"; // cor padrão grafite
+ ctx.strokeStyle = getComputedStyle(canvas).getPropertyValue("--color-slate-900").trim() || "black";
  }, []);
 
  const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {

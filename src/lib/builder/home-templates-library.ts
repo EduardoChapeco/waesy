@@ -1,3 +1,4 @@
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import type { ExperienceNode } from "./builder-types";
 
 export interface HomeTemplatePreset {
@@ -39,7 +40,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  block_type: "section",
  parent_id: null,
  sort_order: 0,
- design_tokens: { backgroundColor: "#0f172a", textColor: "#ffffff" },
+ design_tokens: { backgroundColor: TOKEN_HEX.neutral900, textColor: TOKEN_HEX.white },
  },
  {
  id: c1,
@@ -230,7 +231,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  block_type: "section",
  parent_id: null,
  sort_order: 0,
- design_tokens: { backgroundColor: "#fdfbf7" },
+ design_tokens: { backgroundColor: TOKEN_HEX.neutral50 },
  },
  {
  id: c1,
@@ -437,7 +438,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  block_type: "section",
  parent_id: null,
  sort_order: 0,
- design_tokens: { backgroundColor: "#1e1b4b", textColor: "#ffffff" },
+ design_tokens: { backgroundColor: TOKEN_HEX.neutral900, textColor: TOKEN_HEX.white },
  },
  {
  id: c1,
@@ -462,8 +463,8 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  sort_order: 0,
  content: {
  text: " OFERTA LIMITADA: Até 40% OFF + Frete Grátis nas próximas horas!",
- bg_color: "#ef4444",
- text_color: "#ffffff",
+ bg_color: TOKEN_HEX.red500,
+ text_color: TOKEN_HEX.white,
  },
  },
  {
@@ -578,7 +579,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  block_type: "section",
  parent_id: null,
  sort_order: 0,
- design_tokens: { backgroundColor: "#000000", textColor: "#ffffff" },
+ design_tokens: { backgroundColor: TOKEN_HEX.neutral950, textColor: TOKEN_HEX.white },
  },
  {
  id: c1,
@@ -624,7 +625,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  block_type: "section",
  parent_id: null,
  sort_order: 1,
- design_tokens: { backgroundColor: "#09090b", textColor: "#ffffff" },
+ design_tokens: { backgroundColor: TOKEN_HEX.neutral950, textColor: TOKEN_HEX.white },
  },
  {
  id: c2,

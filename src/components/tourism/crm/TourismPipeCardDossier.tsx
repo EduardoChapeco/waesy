@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useRef } from "react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
   Calendar,
@@ -53,6 +55,7 @@ import {
   HeartPulse,
   BookOpen,
 } from "lucide-react";
+import { sanitizeLeadCustomFieldsForProposal } from "@/lib/tourism/proposal-custom-fields";
 import {
   type TravelerDossier,
   type ServiceTemplateType,
@@ -82,9 +85,27 @@ import {
   getLeadConsentBundle,
   bindPolicyTemplateToLead,
 } from "@/services/legal-telemetry.functions";
-import { exportElementAsPdf } from "@/lib/pdf-export";
+import { useAgency } from "@/lib/agency-context";
+import { getStoreSettings } from "@/services/store.functions";
+import { createTravelVoucher } from "@/services/travel-vouchers.functions";
+import {
+  resolveTenantDocumentIdentity,
+  type DocumentStudioArchetype,
+  type DocumentStudioFormState,
+} from "@/lib/documents/document-studio-catalog";
+import { UniversalDocumentStudio } from "@/components/documents/UniversalDocumentStudio";
 import { AgencyClausesEditorModal } from "@/components/tourism/contract/agency-clauses-editor-modal";
-import { issueLeadContract } from "@/services/crm.functions";
+import { issueLeadContract, createCustomerDocument } from "@/services/crm.functions";
+import { uploadStoreMedia } from "@/services/storage.functions";
+import { parseDateOnlyParts } from "@/lib/datetime";
+import {
+  deleteTravelProposal,
+  duplicateTravelProposal,
+  updateTravelProposal,
+} from "@/services/travel-proposal.functions";
+import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -118,11 +139,6 @@ import { Customer360PrintableDossier } from "@/components/dossier/customer-360-p
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import {
-  generateDynamicTravelPresentation,
-  type PreBoardingTripInput,
-  type GeneratedPreBoardingPresentation,
-} from "@/services/travel-pre-boarding-and-commissions.functions";
 
 export interface TourismStageConfig {
   id: string;
@@ -210,28 +226,159 @@ export function TourismPipeCardDossier({
   customer360Data,
   activeOnboardingForm,
 }: TourismPipeCardDossierProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [deletedProposalIds, setDeletedProposalIds] = useState<string[]>([]);
+  const [proposalStatusOverrides, setProposalStatusOverrides] = useState<Record<string, string>>({});
+  const [addedProposals, setAddedProposals] = useState<any[]>([]);
+  const [busyProposalId, setBusyProposalId] = useState<string | null>(null);
+
+  const syncProposalCaches = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["agency-proposals"] }),
+      queryClient.invalidateQueries({ queryKey: ["crm-leads"] }),
+      queryClient.invalidateQueries({ queryKey: ["lead-dossier", lead.id] }),
+      queryClient.invalidateQueries({ queryKey: ["customer-360"] }),
+      router.invalidate(),
+    ]);
+  };
+
+  const handlePublishProposal = async (proposalId: string) => {
+    try {
+      setBusyProposalId(proposalId);
+      await updateTravelProposal({ data: { id: proposalId, patch: { status: "sent" } } });
+      setProposalStatusOverrides((prev) => ({ ...prev, [proposalId]: "sent" }));
+      toast.success("Proposta publicada! O cliente já pode visualizar e aceitar online.");
+      await syncProposalCaches();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao publicar proposta.");
+    } finally {
+      setBusyProposalId(null);
+    }
+  };
+
+  const handleArchiveProposal = async (proposalId: string) => {
+    try {
+      setBusyProposalId(proposalId);
+      await updateTravelProposal({ data: { id: proposalId, patch: { status: "expired" } } });
+      setProposalStatusOverrides((prev) => ({ ...prev, [proposalId]: "expired" }));
+      toast.success("Proposta arquivada.");
+      await syncProposalCaches();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao arquivar proposta.");
+    } finally {
+      setBusyProposalId(null);
+    }
+  };
+
+  const handleCopyProposalLink = async (prop: any) => {
+    if (!prop?.public_token) return;
+    let copiedWithAutoPublish = false;
+    try {
+      setBusyProposalId(prop.id);
+      if (prop.status === "draft") {
+        await updateTravelProposal({ data: { id: prop.id, patch: { status: "sent" } } });
+        setProposalStatusOverrides((prev) => ({ ...prev, [prop.id]: "sent" }));
+        copiedWithAutoPublish = true;
+      }
+      const url = `${window.location.origin}/proposta/${prop.public_token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success(
+        copiedWithAutoPublish
+          ? "Proposta publicada e link público copiado!"
+          : "Link público da proposta copiado!",
+      );
+      if (copiedWithAutoPublish) {
+        await syncProposalCaches();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível copiar o link da proposta.");
+    } finally {
+      setBusyProposalId(null);
+    }
+  };
+
+  const handleDuplicateProposal = async (prop: any) => {
+    try {
+      setBusyProposalId(prop.id);
+      const res = await duplicateTravelProposal({ data: { id: prop.id } });
+      if (res?.id) {
+        setAddedProposals((prev) => [
+          {
+            ...prop,
+            id: res.id,
+            public_token: res.publicToken,
+            title: `${prop.title || "Proposta"} (Cópia)`,
+            status: "sent",
+            created_at: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+      }
+      toast.success("Proposta duplicada com sucesso!");
+      await syncProposalCaches();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao duplicar proposta.");
+    } finally {
+      setBusyProposalId(null);
+    }
+  };
+
+  const handleDeleteProposal = async (proposalId: string) => {
+    await deleteTravelProposal({ data: { id: proposalId } });
+    setDeletedProposalIds((prev) => [...prev, proposalId]);
+    toast.success("Proposta excluída com sucesso!");
+    await syncProposalCaches();
+  };
+
+  const handleConvertDossierProposalToTrip = async (proposalId: string) => {
+    try {
+      setBusyProposalId(proposalId);
+      const res = await convertProposalToTrip({ data: { proposalId } });
+      toast.success(`Viagem gerada com sucesso! Código: ${res.tripNumber}`);
+      await queryClient.invalidateQueries({ queryKey: ["tourism-trips"] });
+      await syncProposalCaches();
+      onClose();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao converter proposta em viagem.");
+    } finally {
+      setBusyProposalId(null);
+    }
+  };
+
   const effectiveProposals = useMemo(() => {
     const matchedFromProp = Array.isArray(proposals)
       ? proposals.filter(
           (p: any) =>
             p.lead_id === lead.id ||
             p.quote_id === lead.id ||
+            (lead.customer_id && p.customer_id === lead.customer_id) ||
             (lead.full_name &&
               (p.client_name || p.customer_name) &&
               String(p.client_name || p.customer_name).toLowerCase() === String(lead.full_name).toLowerCase())
         )
       : [];
     const from360 = Array.isArray(customer360Data?.proposals) ? customer360Data.proposals : [];
-    const combined = [...matchedFromProp];
-    const seenIds = new Set(combined.map((p: any) => p.id));
-    for (const p of from360) {
-      if (p?.id && !seenIds.has(p.id)) {
-        seenIds.add(p.id);
-        combined.push(p);
-      }
+    const merged = [...addedProposals, ...matchedFromProp, ...from360];
+    const combined: any[] = [];
+    const seenIds = new Set<string>();
+    for (const p of merged) {
+      if (!p?.id || deletedProposalIds.includes(p.id) || seenIds.has(p.id)) continue;
+      seenIds.add(p.id);
+      const overriddenStatus = proposalStatusOverrides[p.id];
+      combined.push(overriddenStatus ? { ...p, status: overriddenStatus } : p);
     }
     return combined;
-  }, [proposals, customer360Data?.proposals, lead.id, lead.full_name]);
+  }, [
+    proposals,
+    customer360Data?.proposals,
+    addedProposals,
+    deletedProposalIds,
+    proposalStatusOverrides,
+    lead.id,
+    lead.customer_id,
+    lead.full_name,
+  ]);
 
   // Inatividade (Staleness Quiz)
   const diffDays = useMemo(() => {
@@ -310,12 +457,25 @@ export function TourismPipeCardDossier({
   const buildProposalLeadPayload = (overrides: Record<string, any> = {}) => {
     const customFields =
       lead?.custom_fields && typeof lead.custom_fields === "object" ? lead.custom_fields : {};
+    const safeProposalCustomFields = sanitizeLeadCustomFieldsForProposal(customFields);
+    const crmCustomer = customer360Data?.customer || null;
+    const resolvedCustomerId = lead.customer_id || crmCustomer?.id || null;
     return {
       id: lead.id,
-      fullName: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      clientDocument: String(lead.document || lead.cpf_cnpj || customFields.document || ""),
+      customerId: resolvedCustomerId,
+      customer_id: resolvedCustomerId,
+      fullName: formData.name || lead.full_name || crmCustomer?.full_name || crmCustomer?.legal_name || "",
+      phone: formData.phone || lead.phone || crmCustomer?.phone || crmCustomer?.whatsapp || "",
+      email: formData.email || lead.email || crmCustomer?.email || "",
+      clientDocument: String(
+        lead.document ||
+          lead.cpf_cnpj ||
+          crmCustomer?.document ||
+          crmCustomer?.cpf ||
+          customFields.document ||
+          customFields.cpf ||
+          "",
+      ),
       destination: formData.destination,
       estimated_value_cents: formData.estimated_value_cents,
       passenger_count: (formData.pax_adults || 2) + (formData.pax_children || 0),
@@ -324,7 +484,7 @@ export function TourismPipeCardDossier({
       adultsCount: formData.pax_adults || 2,
       childrenCount: formData.pax_children || 0,
       notes: formData.notes || "",
-      customFields,
+      customFields: safeProposalCustomFields,
       sourceListingId: lead.source_listing_id || customFields.source_listing_id || "",
       sourceListingOrigin: lead.source_listing_origin || customFields.source_listing_origin || "",
       paxList: Array.isArray(lead.pax_list) ? lead.pax_list : undefined,
@@ -358,10 +518,31 @@ export function TourismPipeCardDossier({
   const [isCreatingChecklist, setIsCreatingChecklist] = useState(false);
   const [newItemTexts, setNewItemTexts] = useState<Record<string, string>>({});
 
-  // Presentation State
-  const [presentationModalOpen, setPresentationModalOpen] = useState(false);
-  const [generatedPresentation, setGeneratedPresentation] = useState<GeneratedPreBoardingPresentation | null>(null);
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  // Tenant Branding & Store Identity (Zero Hardcode)
+  const { agency, brandKit, companyProfile } = useAgency();
+  const { data: storeSettingsData, isLoading: isLoadingStoreSettings } = useQuery({
+    queryKey: ["store-settings-dossier"],
+    queryFn: () => getStoreSettings().catch(() => null),
+    staleTime: 300_000,
+  });
+
+  const tenantIdentity = useMemo(
+    () =>
+      resolveTenantDocumentIdentity({
+        agency,
+        brandKit,
+        companyProfile,
+        storeSettings: storeSettingsData,
+      }),
+    [agency, brandKit, companyProfile, storeSettingsData],
+  );
+
+  // Unified Document & Builder Studio State
+  const [docStudioOpen, setDocStudioOpen] = useState(false);
+  const [docStudioArchetype, setDocStudioArchetype] =
+    useState<DocumentStudioArchetype>("dossier_form_doc");
+  const [docStudioTemplateId, setDocStudioTemplateId] = useState<string>("anamnese_embarque");
+  const [docStudioEditingAttachment, setDocStudioEditingAttachment] = useState<any | null>(null);
 
   // Quick Meeting State
   const [meetingTitle, setMeetingTitle] = useState("");
@@ -376,29 +557,10 @@ export function TourismPipeCardDossier({
     return Array.isArray(lead.custom_fields?.comments) ? lead.custom_fields.comments : [];
   });
 
-  // Attachments State (Pipefy & Trello Benchmark)
+  // Attachments State
   const [cardAttachments, setCardAttachments] = useState<any[]>(() => {
     return Array.isArray(lead.attachments) ? lead.attachments : [];
   });
-
-  // PDF Templates & Dynamic Merge Tags State (Pipefy Benchmark)
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-  const [selectedPdfTemplateKey, setSelectedPdfTemplateKey] = useState<string>("proposta_a4");
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const [isExportingDirectPdf, setIsExportingDirectPdf] = useState(false);
-  const [activePdfTab, setActivePdfTab] = useState<"templates" | "fields" | "preview">("templates");
-  const [isEditingTemplateText, setIsEditingTemplateText] = useState(false);
-  const [customDocTexts, setCustomDocTexts] = useState<Record<string, {
-    title?: string;
-    subtitle?: string;
-    bodyText?: string;
-    clauses?: string;
-    notes?: string;
-  }>>({});
-  const [viewingDocument, setViewingDocument] = useState<any | null>(null);
-  const [isViewingDocEditing, setIsViewingDocEditing] = useState(false);
-  const [isSavingDocChanges, setIsSavingDocChanges] = useState(false);
-  const [isClausesModalOpen, setIsClausesModalOpen] = useState(false);
 
   // ─── GOVERNANÇA DE TERMOS & LGPD COM TELEMETRIA MILITAR (PROBATÓRIO) ───────
   const [consentRecords, setConsentRecords] = useState<ConsentRecordItem[]>(() => {
@@ -905,7 +1067,7 @@ export function TourismPipeCardDossier({
   const handlePromoteTravelerToCustomerClick = async (travelerId: string) => {
     const traveler = travelerDossiers.find((t) => t.id === travelerId);
     if (!traveler || !traveler.full_name) {
-      toast.error("Preencha o nome completo do passageiro antes de vincular ao Cliente 360°.");
+      toast.error("Preencha o nome completo do passageiro antes de vincular ao Cadastro de Clientes.");
       return;
     }
 
@@ -924,7 +1086,7 @@ export function TourismPipeCardDossier({
               : t
           )
         );
-        toast.success(`Viajante ${traveler.full_name} vinculado ao Cadastro de Clientes 360°!`);
+        toast.success(`Viajante ${traveler.full_name} vinculado ao Cadastro de Clientes!`);
       }
     } catch (err: any) {
       toast.error(err?.message || "Falha ao vincular viajante a cliente.");
@@ -993,7 +1155,8 @@ export function TourismPipeCardDossier({
   };
 
   const handleSendTravelerWhatsApp = (traveler: TravelerDossier) => {
-    const url = `${window.location.origin}/m/lead/${lead.id}?pax=${traveler.id}`;
+    const portalToken = lead.magic_token || lead.id;
+    const url = `${window.location.origin}/m/lead/${portalToken}?pax=${traveler.id}`;
     const msg = `Olá, ${traveler.full_name || "passageiro"}! Aqui é da agência de viagens. Para prepararmos seu check-in aéreo, passaporte e emissão segura, preencha sua pasta cadastral com documentos neste link:\n${url}`;
     const phoneClean = (traveler.phone || formData.phone || "").replace(/\D/g, "");
     if (!phoneClean) {
@@ -1006,7 +1169,8 @@ export function TourismPipeCardDossier({
   };
 
   const handleCopyTravelerFormLink = async (traveler: TravelerDossier) => {
-    const url = `${window.location.origin}/m/lead/${lead.id}?pax=${traveler.id}`;
+    const portalToken = lead.magic_token || lead.id;
+    const url = `${window.location.origin}/m/lead/${portalToken}?pax=${traveler.id}`;
     await navigator.clipboard.writeText(url);
     toast.success(`Link da pasta de ${traveler.full_name || "passageiro"} copiado!`);
   };
@@ -1036,37 +1200,6 @@ export function TourismPipeCardDossier({
     { tag: "{{consultor_responsavel}}", label: "Consultor Responsável", value: team.find((m) => (m.profile_id || m.id) === formData.assigned_to)?.full_name || "Consultor Waesy" },
     { tag: "{{data_emissao}}", label: "Data de Emissão", value: new Date().toLocaleDateString("pt-BR") },
   ], [formData, currentStage, team]);
-
-  const PDF_TEMPLATES = [
-    {
-      key: "proposta_a4",
-      title: "Proposta Comercial Executiva A4",
-      description: "Documento oficial de cotação com aéreo, hotel, transfers e condições de pagamento parcelado.",
-      category: "Comercial",
-      estimatedPages: "2 Páginas A4",
-    },
-    {
-      key: "contrato_turismo",
-      title: "Contrato de Intermediação Turística",
-      description: "Minuta jurídica canônica com cláusulas de responsabilidade, cancelamento, no-show e aceite digital.",
-      category: "Jurídico",
-      estimatedPages: "4 Páginas A4",
-    },
-    {
-      key: "anamnese_embarque",
-      title: "Ficha de Embarque e Acessibilidade",
-      description: "Ficha médica confidencial com acessibilidade, alergias, contatos de emergência e documentos oficiais.",
-      category: "Operacional",
-      estimatedPages: "1 Página A4",
-    },
-    {
-      key: "voucher_resumo",
-      title: "Voucher e Roteiro",
-      description: "Itinerário dia a dia para envio no WhatsApp do viajante com códigos de reserva e telefones úteis.",
-      category: "Pós-Venda",
-      estimatedPages: "2 Páginas A4",
-    },
-  ];
 
   // Phone & WhatsApp formatting
   const cleanPhone = (formData.phone || "").replace(/\D/g, "");
@@ -1195,283 +1328,297 @@ export function TourismPipeCardDossier({
     toast.success("Link de pagamento copiado com sucesso!");
   };
 
-  const generateInitialDocumentContent = (templateKey: string) => {
-    const clientName = formData.name || "Cliente / Viajante";
-    const clientPhone = formData.phone || "Não informado";
-    const clientEmail = formData.email || "Não informado";
-    const clientDoc = (formData as any).document || lead.document || lead.cpf || "Não informado";
-    const destination = formData.destination || "Destino Turístico";
-    const travelStart = formData.travel_start || "Data a definir";
-    const travelEnd = formData.travel_end || "Data a definir";
-    const totalVal = formatMoney(formData.estimated_value_cents || 0);
-    const totalPax = (formData.pax_adults || 2) + (formData.pax_children || 0);
-    const pcdText = formData.pcd ? "Sim (Necessidades especiais / PCD)" : "Não relatado";
-    const mobText = formData.reduced_mobility ? "Sim (Cadeira de rodas / mobilidade reduzida)" : "Não relatado";
-    const autismText = formData.autism_spectrum ? "Sim (Espectro autista / neurodivergência)" : "Não relatado";
-    const healthNotes = formData.health_notes || formData.notes || "Nenhuma restrição médica ou alergia grave relatada pelo passageiro.";
+  const openUnifiedDocumentStudio = (
+    nextArchetype: DocumentStudioArchetype = "dossier_form_doc",
+    templateId?: string,
+    existingAttachment?: any | null,
+  ) => {
+    const resolvedArchetype: DocumentStudioArchetype = existingAttachment?.archetype ||
+      (existingAttachment?.templateKey === "proposta_a4"
+        ? "proposal_quote"
+        : existingAttachment?.templateKey === "contrato_turismo"
+          ? "contract_legal"
+          : existingAttachment?.templateKey === "voucher_resumo"
+            ? "voucher_boarding"
+            : nextArchetype);
 
-    if (templateKey === "anamnese_embarque") {
-      return [
-        `### FICHA CONFIDENCIAL DE ANAMNESE E ACESSIBILIDADE DE EMBARQUE`,
-        ``,
-        `**PASSAGEIRO TITULAR:** ${clientName}`,
-        `**DOCUMENTO / CPF:** ${clientDoc} | **TELEFONE:** ${clientPhone} | **E-MAIL:** ${clientEmail}`,
-        `**DESTINO DA VIAGEM:** ${destination} | **PERÍODO PREVISTO:** ${travelStart} a ${travelEnd}`,
-        ``,
-        `---`,
-        ``,
-        `#### 1. CONDIÇÕES DE SAÚDE E ACESSIBILIDADE PCD`,
-        `* **Necessidades Especiais (PCD):** ${pcdText}`,
-        `* **Mobilidade Reduzida / Cadeira de Rodas:** ${mobText}`,
-        `* **Espectro Autista / Neurodivergência:** ${autismText}`,
-        `* **Histórico Clínico e Observações Médicas:** ${healthNotes}`,
-        ``,
-        `#### 2. RESTRIÇÕES ALIMENTARES E ALERGIAS`,
-        `* **Restrições de Dieta:** Sem restrições alimentares declaradas.`,
-        `* **Alergias a Medicamentos:** Nenhuma alergia medicamentosa impeditiva relatada.`,
-        ``,
-        `#### 3. CONTATO DE EMERGÊNCIA NO BRASIL`,
-        `* **Nome do Contato:** A confirmar com o passageiro titular`,
-        `* **Telefone de Emergência:** ${clientPhone}`,
-        `* **Grau de Parentesco:** Familiar de primeiro grau`,
-        ``,
-        `#### 4. TERMO DE APTIDÃO FÍSICA E RESPONSABILIDADE MÉDICA`,
-        `Declaro estar ciente de que as informações acima são estritamente confidenciais e destinadas exclusivamente a garantir a segurança, acessibilidade e pronto-atendimento durante todos os trechos e hospedagens da viagem contratada.`
-      ].join("\n");
-    }
+    const resolvedTemplateId =
+      templateId ||
+      (existingAttachment?.templateKey === "proposta_a4"
+        ? "proposta_editorial_agency"
+        : existingAttachment?.templateKey === "contrato_turismo"
+          ? "contract_intermediacao_turistica_completa"
+          : existingAttachment?.templateKey === "voucher_resumo"
+            ? "voucher_embarque_a4"
+            : existingAttachment?.templateKey) ||
+      (resolvedArchetype === "proposal_quote"
+        ? "proposta_editorial_agency"
+        : resolvedArchetype === "contract_legal"
+          ? "contract_intermediacao_turistica_completa"
+          : resolvedArchetype === "voucher_boarding"
+            ? "voucher_embarque_a4"
+            : resolvedArchetype === "presentation_deck"
+              ? "apresentacao_comercial_169"
+              : "anamnese_embarque");
 
-    if (templateKey === "proposta_a4") {
-      return [
-        `### PROPOSTA COMERCIAL EXECUTIVA DE VIAGEM`,
-        ``,
-        `**CLIENTE:** ${clientName} | **TELEFONE:** ${clientPhone} | **E-MAIL:** ${clientEmail}`,
-        `**DESTINO:** ${destination} | **PERÍODO PREVISTO:** ${travelStart} a ${travelEnd}`,
-        `**PASSAGEIROS:** ${totalPax} viajante(s) | **VALOR TOTAL COTADO:** ${totalVal}`,
-        ``,
-        `---`,
-        ``,
-        `#### 1. DISCRIMINAÇÃO DOS SERVIÇOS INCLUSOS`,
-        `* **Passagens Aéreas:** Voos de ida e retorno com despacho de bagagem de mão padrão.`,
-        `* **Hospedagem Selecionada:** Hotelaria categoria superior em localização central ou resort.`,
-        `* **Traslados & Transfers:** Aeroporto / Hotel / Aeroporto em transporte privativo credenciado.`,
-        `* **Seguro Viagem Completo:** Cobertura de assistência médica, hospitalar e atraso de voos.`,
-        ``,
-        `#### 2. PLANO E CONDIÇÕES DE PAGAMENTO`,
-        `* **Condição À Vista:** Pagamento via PIX ou TED com desconto exclusivo da operadora.`,
-        `* **Parcelamento em Cartão:** Entrada negociada + saldo em até 10x sem juros.`,
-        `* **Validade da Proposta:** Sujeita a disponibilidade de assentos aéreos e tarifas no ato do fechamento.`
-      ].join("\n");
-    }
-
-    if (templateKey === "contrato_turismo") {
-      return [
-        `### CONTRATO DE INTERMEDIAÇÃO E PRESTAÇÃO DE SERVIÇOS TURÍSTICOS`,
-        ``,
-        `**CONTRATADA (AGÊNCIA):** Waesy Agência de Viagens e Operações Turísticas Ltda. (Cadastur Ativo)`,
-        `**CONTRATANTE / VIAJANTE:** ${clientName}, portador(a) do telefone ${clientPhone}, e-mail ${clientEmail}.`,
-        ``,
-        `---`,
-        ``,
-        `#### CLÁUSULA 1ª — DO DESTINO E PERÍODO CONTRATADO`,
-        `O presente instrumento tem como objeto a prestação de serviços turísticos para o destino ${destination}, no período compreendido entre ${travelStart} e ${travelEnd}, totalizando ${totalPax} passageiro(s).`,
-        ``,
-        `#### CLÁUSULA 2ª — DO VALOR TOTAL E CONDIÇÕES COMERCIAIS`,
-        `Pela prestação dos serviços contratados, o CONTRATANTE pagará à CONTRATADA a quantia líquida de ${totalVal}, distribuída conforme plano financeiro acordado.`,
-        ``,
-        `#### CLÁUSULA 3ª — DAS REGRAS DE CANCELAMENTO, NO-SHOW E MULTAS`,
-        `Em havendo desistência ou cancelamento por parte do CONTRATANTE, aplicar-se-ão as penalidades e multas tarifárias das cias aéreas e redes hoteleiras parceiras, preservado o prazo legal de arrependimento do CDC (Art. 49).`,
-        ``,
-        `#### CLÁUSULA 4ª — DO ACEITE ELETRÔNICO E TELEMETRIA FORENSE`,
-        `As partes validam a formalização deste contrato mediante meio eletrônico seguro, com telemetria forense de IP, data/hora e hash criptográfico SHA-256.`
-      ].join("\n");
-    }
-
-    return [
-      `### VOUCHER OFICIAL DE EMBARQUE & ROTEIRO DE VIAGEM`,
-      ``,
-      `**PASSAGEIRO TITULAR:** ${clientName}`,
-      `**DESTINO:** ${destination} | **PERÍODO:** ${travelStart} a ${travelEnd}`,
-      `**LOCALIZADOR / VOUCHER:** WZ-${lead.id.slice(0, 8).toUpperCase()}`,
-      ``,
-      `---`,
-      ``,
-      `#### INFORMAÇÕES DE EMBARQUE AÉREO`,
-      `* **Apresentação:** Comparecer ao balcão da cia aérea com 2 horas de antecedência para trechos domésticos.`,
-      `* **Documentos:** Apresentar documento de identificação original oficial com foto (RG, CNH ou Passaporte).`,
-      ``,
-      `#### HOSPEDAGEM E DIÁRIAS`,
-      `* **Horários:** Check-in a partir das 14:00h | Check-out até 11:00h.`,
-      `* **Inclusões:** Café da manhã incluso conforme voucher emitido pela operadora.`,
-      ``,
-      `#### CANAL DE PLANTÃO E SUPORTE 24 HORAS`,
-      `Em caso de qualquer eventualidade, perda de conexão ou dúvida durante a viagem:`,
-      `* **Plantão Telefônico / WhatsApp:** (49) 99917-1623 | **E-mail:** atendimento@waesy.com.br`
-    ].join("\n");
+    setDocStudioArchetype(resolvedArchetype);
+    setDocStudioTemplateId(resolvedTemplateId);
+    setDocStudioEditingAttachment(existingAttachment || null);
+    setDocStudioOpen(true);
   };
 
-  const handleGenerateAndAttachPdf = async (templateKey: string) => {
-    setIsGeneratingPdf(true);
-    try {
-      const template = PDF_TEMPLATES.find((t) => t.key === templateKey) || PDF_TEMPLATES[0];
-      const customOverride = customDocTexts[templateKey] || {};
-      const initialBody = customOverride.bodyText || generateInitialDocumentContent(templateKey);
-      const newAttachment = {
-        id: `pdf-${Date.now()}`,
-        name: `${customOverride.title || template.title} - ${formData.destination || "Roteiro"}.pdf`,
-        url: "",
-        size: template.estimatedPages,
-        type: "application/pdf",
-        created_at: new Date().toISOString(),
-        templateKey,
-        isGeneratedDoc: true,
-        docTitle: customOverride.title || template.title,
-        docSubtitle: customOverride.subtitle || template.description,
-        customContent: initialBody,
-        clausesContent: customOverride.clauses || "",
-        notesContent: customOverride.notes || formData.notes || "",
-        destination: formData.destination,
-        clientName: formData.name,
-        clientPhone: formData.phone,
-        clientEmail: formData.email,
-        totalCents: formData.estimated_value_cents,
-        travelStart: formData.travel_start,
-        travelEnd: formData.travel_end,
-      };
+  const handleSaveDocumentFromStudio = async (payload: {
+    id?: string;
+    title: string;
+    templateId: string;
+    archetype: DocumentStudioArchetype;
+    content: string;
+    formState: DocumentStudioFormState;
+  }) => {
+    const targetId = payload.id || `doc-${Date.now()}`;
+    const docEntry = {
+      id: targetId,
+      name: `${payload.title} - ${payload.formState.destination || formData.destination || "Atendimento"}.pdf`,
+      url: "",
+      size: "Studio CMS",
+      type: "application/pdf",
+      created_at: docStudioEditingAttachment?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      templateKey: payload.templateId,
+      archetype: payload.archetype,
+      isGeneratedDoc: true,
+      docTitle: payload.title,
+      docSubtitle: payload.formState.subtitle,
+      customContent: payload.content,
+      notesContent: payload.content,
+      destination: payload.formState.destination,
+      clientName: payload.formState.clientName,
+      clientPhone: payload.formState.clientPhone,
+      clientEmail: payload.formState.clientEmail,
+      totalCents: payload.formState.totalCents,
+      travelStart: payload.formState.startDate,
+      travelEnd: payload.formState.endDate,
+    };
 
-      const updatedAttachments = [newAttachment, ...cardAttachments];
-      setCardAttachments(updatedAttachments);
+    const exists = cardAttachments.some((att: any) => att.id === targetId);
+    const updatedAttachments = exists
+      ? cardAttachments.map((att: any) => (att.id === targetId ? docEntry : att))
+      : [docEntry, ...cardAttachments];
 
-      // Histórico
-      const newTimelineComment = {
-        id: `comm-${Date.now()}`,
-        author: "Sistema de Documentos",
-        text: `Documento PDF gerado e vinculado ao Card: ${newAttachment.name}`,
-        date: new Date().toLocaleString("pt-BR"),
-      };
-      const updatedComments = [newTimelineComment, ...internalComments];
-      setInternalComments(updatedComments);
+    setCardAttachments(updatedAttachments);
 
-      const mergedCustomFields = {
-        ...(lead.custom_fields || {}),
-        pcd: formData.pcd,
-        reduced_mobility: formData.reduced_mobility,
-        autism_spectrum: formData.autism_spectrum,
-        health_notes: formData.health_notes,
-        pax_infants: Number(formData.pax_infants) || 0,
-        source: formData.source,
-        lead_source_detail: formData.lead_source_detail,
-        checklist_groups: checklistGroups,
-        comments: updatedComments,
-        attachments: updatedAttachments,
-      };
+    const newTimelineComment = {
+      id: `comm-${Date.now()}`,
+      author: "Studio de Documentos",
+      text: `${exists ? "Documento atualizado" : "Documento criado"} no atendimento: ${docEntry.docTitle}`,
+      date: new Date().toLocaleString("pt-BR"),
+    };
+    const updatedComments = [newTimelineComment, ...internalComments];
+    setInternalComments(updatedComments);
 
-      await onSaveLead({
-        ...formData,
-        attachments: updatedAttachments,
-        custom_fields: mergedCustomFields,
-      });
+    const mergedCustomFields = {
+      ...(lead.custom_fields || {}),
+      pcd: formData.pcd,
+      reduced_mobility: formData.reduced_mobility,
+      autism_spectrum: formData.autism_spectrum,
+      health_notes: formData.health_notes,
+      pax_infants: Number(formData.pax_infants) || 0,
+      source: formData.source,
+      lead_source_detail: formData.lead_source_detail,
+      checklist_groups: checklistGroups,
+      comments: updatedComments,
+      attachments: updatedAttachments,
+    };
 
-      toast.success(`${template.title} gerado! Abrindo visualizador e editor...`);
-      setIsPdfModalOpen(false);
-      setViewingDocument(newAttachment);
-      setIsViewingDocEditing(true);
-    } catch (err: any) {
-      toast.error(err?.message || "Erro ao gerar PDF.");
-    } finally {
-      setIsGeneratingPdf(false);
-    }
+    await onSaveLead({
+      ...formData,
+      attachments: updatedAttachments,
+      custom_fields: mergedCustomFields,
+    });
+    setDocStudioEditingAttachment(docEntry);
+    toast.success("Documento salvo e vinculado ao dossiê do atendimento!");
   };
 
-  const handleSaveViewingDocument = async () => {
-    if (!viewingDocument) return;
-    setIsSavingDocChanges(true);
-    try {
-      const updatedAttachments = cardAttachments.map((att: any) =>
-        att.id === viewingDocument.id
-          ? {
-              ...att,
-              docTitle: viewingDocument.docTitle,
-              docSubtitle: viewingDocument.docSubtitle,
-              customContent: viewingDocument.customContent,
-              notesContent: viewingDocument.notesContent,
-              name: `${viewingDocument.docTitle || att.name}.pdf`,
-            }
-          : att
-      );
-      setCardAttachments(updatedAttachments);
+  const handlePromoteStudioToProposal = async () => {
+    onGenerateProposal(buildProposalLeadPayload());
+    setDocStudioOpen(false);
+  };
 
-      if (viewingDocument.templateKey) {
-        setCustomDocTexts((prev: any) => ({
-          ...prev,
-          [viewingDocument.templateKey]: {
-            ...prev[viewingDocument.templateKey],
-            title: viewingDocument.docTitle,
-            subtitle: viewingDocument.docSubtitle,
-            bodyText: viewingDocument.customContent,
-            notes: viewingDocument.notesContent,
+  const handleIssueStudioContract = async (payload: {
+    templateId: string;
+    title: string;
+    summary: string;
+    totalCents: number;
+    paymentConditions: string;
+    customVariables: Record<string, string>;
+  }) => {
+    try {
+      if (onIssueContract) {
+        await onIssueContract({
+          leadId: lead.id,
+          contractTitle: payload.title,
+          packageSummary: payload.summary,
+          totalValueCents: payload.totalCents || lead.estimated_value_cents || 0,
+          paymentConditions: payload.paymentConditions,
+        });
+      } else {
+        const res = await issueLeadContract({
+          data: {
+            leadId: lead.id,
+            contractTitle: payload.title,
+            packageSummary: payload.summary,
+            totalValueCents: payload.totalCents || lead.estimated_value_cents || 0,
+            paymentConditions: payload.paymentConditions,
+            templateId: payload.templateId,
+            customVariables: payload.customVariables,
           },
-        }));
+        });
+        toast.success(`Contrato oficial emitido! Token: ${res.publicToken}`);
+        if (res.contract?.id) {
+          setDocStudioOpen(false);
+          router.navigate({
+            to: "/workspace/contratos/$id/editor",
+            params: { id: res.contract.id },
+          });
+        }
       }
-
-      const mergedCustomFields = {
-        ...(lead.custom_fields || {}),
-        pcd: formData.pcd,
-        reduced_mobility: formData.reduced_mobility,
-        autism_spectrum: formData.autism_spectrum,
-        health_notes: formData.health_notes,
-        pax_infants: Number(formData.pax_infants) || 0,
-        source: formData.source,
-        lead_source_detail: formData.lead_source_detail,
-        checklist_groups: checklistGroups,
-        comments: internalComments,
-        attachments: updatedAttachments,
-      };
-
-      await onSaveLead({
-        ...formData,
-        attachments: updatedAttachments,
-        custom_fields: mergedCustomFields,
-      });
-
-      toast.success("Documento atualizado e salvo no card com sucesso!");
-      setViewingDocument(null);
+      await syncProposalCaches();
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao salvar alterações no documento.");
-    } finally {
-      setIsSavingDocChanges(false);
+      toast.error(err?.message || "Erro ao emitir contrato para assinatura.");
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIssueStudioVoucher = async (payload: { formState: DocumentStudioFormState }) => {
+    try {
+      const f = payload.formState;
+      const passengerName = f.clientName.trim().length >= 2 ? f.clientName.trim() : "Viajante Titular";
+      const created = await createTravelVoucher({
+        data: {
+          store_id: lead.store_id || undefined,
+          voucher_type: "package",
+          title: f.title || `Voucher — ${f.destination || "Viagem"}`,
+          passenger_name: passengerName,
+          passenger_document: f.clientDocument || null,
+          flight_data: {
+            destination: f.destination || "",
+            airline: f.flightSummary || "",
+            departureTime: f.startDate || "",
+          },
+          hotel_data: {
+            hotelName: f.hotelSummary || "",
+            checkInDate: f.startDate || "",
+            checkOutDate: f.endDate || "",
+          },
+          transfer_data: {
+            dropoffLocation: f.destination || "",
+          },
+        },
+      });
+      toast.success(`Voucher oficial ${created.voucher_number} emitido!`);
+      await queryClient.invalidateQueries({ queryKey: ["travel-vouchers"] });
+      setDocStudioOpen(false);
+      router.navigate({ to: "/workspace/turismo/vouchers" });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar voucher oficial.");
+    }
+  };
+
+  const handleSendStudioWhatsapp = (contentText: string, docTitle: string) => {
+    if (!cleanPhone) {
+      toast.error("Lead sem telefone cadastrado para envio no WhatsApp.");
+      return;
+    }
+    const firstName = (formData.name || "Cliente").split(" ")[0];
+    const summaryExcerpt = contentText.slice(0, 650);
+    const msg = encodeURIComponent(
+      `Olá, ${firstName}! Segue o documento "${docTitle}" emitido por ${tenantIdentity.companyName}:\n\n${summaryExcerpt}`,
+    );
+    window.open(`https://wa.me/55${cleanPhone}?text=${msg}`, "_blank");
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const newItems: any[] = [];
-    Array.from(files).forEach((file) => {
-      const sizeStr = file.size > 1024 * 1024
-        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-        : `${Math.round(file.size / 1024)} KB`;
+    const uploadedItems: any[] = [];
+    for (const file of Array.from(files)) {
+      if (file.size > 15 * 1024 * 1024) {
+        toast.error(`Arquivo "${file.name}" excede 15 MB.`);
+        continue;
+      }
+      try {
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const raw = String(reader.result || "");
+            resolve(raw.includes(",") ? (raw.split(",")[1] || "") : raw);
+          };
+          reader.onerror = () => reject(new Error("Falha ao ler arquivo local."));
+          reader.readAsDataURL(file);
+        });
 
-      newItems.push({
-        id: `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        name: file.name,
-        size: sizeStr,
-        type: file.type,
-        url: URL.createObjectURL(file),
-        createdAt: new Date().toISOString(),
-      });
-    });
+        const uploaded = await uploadStoreMedia({
+          data: {
+            fileName: file.name,
+            fileType: file.type || "application/octet-stream",
+            base64Data,
+            bucket: "identity-vault",
+          },
+        });
 
-    const updated = [...newItems, ...cardAttachments];
+        let linkedDocId: string | undefined;
+        if (lead.customer_id) {
+          try {
+            const docRecord = await createCustomerDocument({
+              data: {
+                customerId: lead.customer_id,
+                leadId: lead.id,
+                docType: "other",
+                title: file.name,
+                fileUrl: uploaded.url,
+                storageBucket: "identity-vault",
+                storagePath: uploaded.path,
+              },
+            });
+            linkedDocId = docRecord?.id;
+          } catch {
+            // Segue preservando anexo no card mesmo se falha secundária em customer_documents
+          }
+        }
+
+        const sizeStr = file.size > 1024 * 1024
+          ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+          : `${Math.max(1, Math.round(file.size / 1024))} KB`;
+
+        uploadedItems.push({
+          id: linkedDocId || `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          document_id: linkedDocId,
+          name: file.name,
+          size: sizeStr,
+          type: file.type,
+          url: uploaded.url,
+          storage_bucket: "identity-vault",
+          storage_path: uploaded.path,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (err: any) {
+        toast.error(err?.message || `Erro ao enviar "${file.name}".`);
+      }
+    }
+
+    e.target.value = "";
+    if (uploadedItems.length === 0) return;
+
+    const updated = [...uploadedItems, ...cardAttachments];
     setCardAttachments(updated);
-    toast.success(`${newItems.length} arquivo(s) adicionado(s) ao card!`);
+    toast.success(`${uploadedItems.length} arquivo(s) enviado(s) com segurança!`);
 
     const mergedCustomFields = {
       ...(lead.custom_fields || {}),
       checklist_groups: checklistGroups,
       comments: internalComments,
     };
-    onSaveLead({
+    await onSaveLead({
       ...lead,
       attachments: updated,
       custom_fields: mergedCustomFields,
@@ -1540,34 +1687,9 @@ export function TourismPipeCardDossier({
     setChecklistGroups((prev) => prev.filter((g) => g.id !== groupId));
   };
 
-  // Generate AI Presentation
+  // Open Unified Studio in Presentation 16:9 Context
   const handleGeneratePresentation = () => {
-    const input: PreBoardingTripInput = {
-      presentationType: "commercial_quote",
-      agencyName: "Excelência Tour",
-      agencyEmergencyPhone: "5549999171623",
-      tripTitle: formData.destination || "Roteiro Exclusivo",
-      conceptSubtitle: `Viagem sob medida para ${formData.name || "Cliente"}`,
-      travelerProfileType: formData.pax_children > 0 ? "familia_criancas" : "casal",
-      passengersNames: [formData.name || "Passageiro Principal"],
-      adultsCount: formData.pax_adults || 2,
-      childrenCount: formData.pax_children || 0,
-      startDate: formData.travel_start || "A definir",
-      endDate: formData.travel_end || "A definir",
-      originCity: "São Paulo / Guarulhos",
-      destinations: [formData.destination || "Destino dos Sonhos"],
-      countries: ["Brasil"],
-      flights: [],
-      hotels: [],
-      hasReceptiveTransfer: false,
-      commercialPriceTotalCents: formData.estimated_value_cents || 0,
-      commercialPaymentConditions: "Condições sob consulta e parcelamento facilitado",
-    };
-
-    const pres = generateDynamicTravelPresentation(input);
-    setGeneratedPresentation(pres);
-    setActiveSlideIndex(0);
-    setPresentationModalOpen(true);
+    openUnifiedDocumentStudio("presentation_deck", "apresentacao_comercial_169");
   };
 
   // Schedule Meeting
@@ -1632,60 +1754,77 @@ export function TourismPipeCardDossier({
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden text-foreground">
       {/* ── HEADER SOBERANO DO CARD (PIPEFY STYLE) ── */}
-      <SheetHeader className="px-6 py-4 pr-20 sm:pr-24 border-b border-border/50 shrink-0 space-y-3 bg-background">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <SheetHeader className="px-4 sm:px-6 py-3 pr-14 sm:pr-16 border-b border-border/50 shrink-0 space-y-2 bg-background">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Identificação Principal & Título Editável */}
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="size-11 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0 font-bold text-foreground text-sm uppercase select-none">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="size-11 sm:size-9 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0 font-semibold text-foreground text-xs uppercase select-none">
               {(formData.name || "LE").slice(0, 2)}
             </div>
             <div className="min-w-0 space-y-1">
-              <SheetTitle className="text-base sm:text-lg font-bold tracking-tight text-foreground line-clamp-2 text-anti-truncate">
+              <SheetTitle className="text-base font-semibold tracking-tight text-foreground line-clamp-1 text-anti-truncate">
                 {formData.name || "Oportunidade Comercial"}
               </SheetTitle>
               <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                <span className="font-medium">Fase:</span>
-                <Select
-                  value={formData.status}
-                  onValueChange={(val) => {
-                    setFormData((prev) => ({ ...prev, status: val }));
-                    onMoveStage(lead.id, val);
-                  }}
-                >
-                  <SelectTrigger className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 border border-border/60 bg-muted/30 hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stages.map((st) => (
-                      <SelectItem key={st.id} value={st.id}>
-                        <div className="flex items-center gap-2">
-                          <span className={cn("size-2 rounded-full shrink-0", st.dotColor)} />
-                          <span>{st.title}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="inline-flex items-center gap-1">
+                  <span className="text-2xs font-medium text-muted-foreground">Fase:</span>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(val) => {
+                      setFormData((prev) => ({ ...prev, status: val }));
+                      onMoveStage(lead.id, val);
+                    }}
+                  >
+                    <SelectTrigger className="w-auto max-w-full min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium gap-1 border border-border/60 bg-muted/30 hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stages.map((st) => (
+                        <SelectItem key={st.id} value={st.id}>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("size-2 rounded-full shrink-0", st.dotColor)} />
+                            <span>{st.title}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                <span className="font-medium ml-2 text-2xs text-muted-foreground">Serviço:</span>
-                <Select
-                  value={serviceTemplate}
-                  onValueChange={(val: ServiceTemplateType) => {
-                    setServiceTemplate(val);
-                    toast.success(`Template do Card: ${SERVICE_TEMPLATE_LABELS[val]?.label}`);
-                  }}
-                >
-                  <SelectTrigger className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 border border-border/60 bg-muted/30 hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(SERVICE_TEMPLATE_LABELS) as ServiceTemplateType[]).map((st) => (
-                      <SelectItem key={st} value={st}>
-                        <span>{SERVICE_TEMPLATE_LABELS[st].label}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="inline-flex items-center gap-1">
+                  <span className="text-2xs font-medium text-muted-foreground">Serviço:</span>
+                  <Select
+                    value={serviceTemplate}
+                    onValueChange={async (val: ServiceTemplateType) => {
+                      const prevVal = serviceTemplate;
+                      setServiceTemplate(val);
+                      try {
+                        await onSaveLead({
+                          ...formData,
+                          custom_fields: {
+                            ...(lead.custom_fields || {}),
+                            service_template: val,
+                          },
+                        });
+                        toast.success(`Serviço atualizado: ${SERVICE_TEMPLATE_LABELS[val]?.label}`);
+                      } catch {
+                        setServiceTemplate(prevVal);
+                        toast.error("Não foi possível salvar o tipo de serviço.");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-auto max-w-full min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium gap-1 border border-border/60 bg-muted/30 hover:bg-muted/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(SERVICE_TEMPLATE_LABELS) as ServiceTemplateType[]).map((st) => (
+                        <SelectItem key={st} value={st}>
+                          <span>{SERVICE_TEMPLATE_LABELS[st].label}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {formData.travel_start && (
                   <span className="inline-flex items-center gap-1 font-mono text-2xs">
@@ -1697,7 +1836,7 @@ export function TourismPipeCardDossier({
             </div>
           </div>
 
-          {/* Cluster de Ações Primárias */}
+          {/* Cluster de Ações Primárias (Squircles Compactos) */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
             {/* WhatsApp Dropdown */}
             <DropdownMenu>
@@ -1706,7 +1845,7 @@ export function TourismPipeCardDossier({
                   type="button"
                   variant="outline"
                   disabled={!cleanPhone}
-                  className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium gap-1 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <MessageSquare className="size-3.5 text-emerald-600" />
                   <span>WhatsApp</span>
@@ -1744,8 +1883,8 @@ export function TourismPipeCardDossier({
               type="button"
               variant="outline"
               onClick={() => onPromoteToCustomer(lead.id)}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-              title="Promover a Cliente 360°"
+              className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium gap-1 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              title="Promover a Cliente"
             >
               <UserCheck className="size-3.5 text-primary" />
               <span>Converter em Cliente</span>
@@ -1758,9 +1897,9 @@ export function TourismPipeCardDossier({
                 onClose();
                 onGenerateProposal(buildProposalLeadPayload());
               }}
-              className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+              className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-semibold gap-1 bg-primary text-primary-foreground shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Plus className="size-4" />
+              <Plus className="size-3.5" />
               <span>Nova Cotação</span>
             </Button>
           </div>
@@ -1788,7 +1927,7 @@ export function TourismPipeCardDossier({
             { id: "anamnese", label: "Anamnese", icon: HeartPulse },
             {
               id: "customer360",
-              label: customer360Data?.customer ? "Ficha do Cliente (Ativo)" : "Ficha do Cliente",
+              label: customer360Data?.customer ? "Perfil do Cliente (Ativo)" : "Info. do Cliente",
               icon: UserCheck,
             },
             { id: "lgpd", label: `Termos & LGPD (${consentRecords.length})`, icon: ShieldCheck },
@@ -1815,9 +1954,9 @@ export function TourismPipeCardDossier({
                   }
                 }}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-lg text-xs font-medium flex items-center gap-2 shrink-0 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
+                  "min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1 shrink-0 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary",
                   isActive
-                    ? "bg-muted text-foreground font-bold"
+                    ? "bg-muted text-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 )}
               >
@@ -1856,17 +1995,29 @@ export function TourismPipeCardDossier({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
+                      onClick={async () => {
                         const newComment = {
                           id: `comment-${Date.now()}`,
                           author: "Consultor de Atendimento",
                           text: `[Parecer de Inatividade - ${diffDays}d]: ${opt.reason}`,
                           date: new Date().toISOString(),
                         };
-                        setInternalComments((prev) => [newComment, ...prev]);
-                        toast.success(`Parecer registrado: ${opt.label}`);
+                        const nextComments = [newComment, ...internalComments];
+                        setInternalComments(nextComments);
+                        try {
+                          await onSaveLead({
+                            ...formData,
+                            custom_fields: {
+                              ...(lead.custom_fields || {}),
+                              comments: nextComments,
+                            },
+                          });
+                          toast.success(`Parecer registrado: ${opt.label}`);
+                        } catch {
+                          toast.error("Parecer adicionado localmente, mas falhou ao sincronizar.");
+                        }
                       }}
-                      className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-warning/40 hover:bg-warning/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-11 sm:min-h-8 sm:h-8 px-3 rounded-lg text-xs font-medium border-warning/40 hover:bg-warning/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {opt.label}
                     </Button>
@@ -2283,7 +2434,7 @@ export function TourismPipeCardDossier({
                           {isTitular ? "Titular" : `Pax ${idx + 1}`}: {t.full_name ? t.full_name.split(" ")[0] : "Sem nome"}
                         </span>
                         {t.customer_linked && (
-                          <span className="size-2 rounded-full bg-emerald-400" title="Vinculado ao Cliente 360°" />
+                          <span className="size-2 rounded-full bg-emerald-400" title="Vinculado ao Cadastro de Clientes" />
                         )}
                       </button>
                     );
@@ -2321,11 +2472,11 @@ export function TourismPipeCardDossier({
                             type="button"
                             variant="outline"
                             onClick={() => handlePromoteTravelerToCustomerClick(activeTraveler.id)}
-                            className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                             title="Transformar este passageiro em um cliente cadastrado no CRM"
                           >
                             <UserPlus className="size-3.5 text-primary" />
-                            <span>Promover a Cliente 360°</span>
+                            <span>Promover a Cliente</span>
                           </Button>
                         )}
 
@@ -2472,12 +2623,15 @@ export function TourismPipeCardDossier({
                           </div>
                         </div>
 
-                        {/* Alerta de Validade < 6 Meses */}
+                        {/* Alerta de Validade < 6 Meses (comparação civil date-only sem shift UTC) */}
                         {(() => {
                           if (!activeTraveler.passport_expiry_date) return null;
-                          const depDate = formData.travel_start ? new Date(formData.travel_start) : new Date();
-                          const expDate = new Date(activeTraveler.passport_expiry_date);
-                          const diffMonths = (expDate.getTime() - depDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+                          const expParts = parseDateOnlyParts(activeTraveler.passport_expiry_date);
+                          const depParts = parseDateOnlyParts(formData.travel_start || new Date());
+                          if (!expParts || !depParts) return null;
+                          const expMidday = Date.UTC(expParts.year, expParts.month - 1, expParts.day, 15, 0, 0);
+                          const depMidday = Date.UTC(depParts.year, depParts.month - 1, depParts.day, 15, 0, 0);
+                          const diffMonths = (expMidday - depMidday) / (1000 * 60 * 60 * 24 * 30);
                           if (diffMonths < 6) {
                             return (
                               <div className="p-3 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-600 flex items-center gap-2 text-xs font-semibold">
@@ -2806,48 +2960,131 @@ export function TourismPipeCardDossier({
 
                 {effectiveProposals.length > 0 ? (
                   <div className="space-y-3">
-                    {effectiveProposals.map((prop: any) => (
-                      <div
-                        key={prop.id}
-                        className="p-4 rounded-xl border border-border/60 bg-card space-y-2 text-xs"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <span className="font-bold text-foreground text-sm block">
-                              {prop.title || prop.destination_city || "Proposta de Viagem"}
-                            </span>
-                            <span className="text-2xs text-muted-foreground font-mono">
-                              {formatMoney(prop.pricing?.total_price_cents || prop.pricing?.total_cents || prop.total_value_cents || 0)} · {prop.status || "Ativa"}
-                            </span>
-                          </div>
-                          {prop.public_token && (
-                            <div className="flex items-center gap-2">
-                              <a
-                                href={`/p/${prop.public_token}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border border-border/60 hover:bg-muted text-foreground flex items-center gap-2 no-underline cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                              >
-                                <ExternalLink className="size-3 text-primary" />
-                                <span>Ver</span>
-                              </a>
+                    {effectiveProposals.map((prop: any) => {
+                      const statusLabel =
+                        prop.status === "approved"
+                          ? "Aprovada"
+                          : prop.status === "sent"
+                            ? "Publicada"
+                            : prop.status === "expired"
+                              ? "Arquivada"
+                              : "Rascunho";
+                      const totalCents =
+                        prop.pricing?.total_price_cents ||
+                        prop.pricing?.total_cents ||
+                        prop.total_value_cents ||
+                        0;
+                      const isBusy = busyProposalId === prop.id;
+
+                      return (
+                        <div
+                          key={prop.id}
+                          className="p-4 rounded-xl border border-border bg-card space-y-3 text-xs"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="min-w-0 space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-foreground text-sm truncate">
+                                  {prop.title || prop.destination_city || "Proposta de Viagem"}
+                                </span>
+                                <Badge variant={prop.status === "sent" || prop.status === "approved" ? "secondary" : "outline"} className="text-3xs font-semibold">
+                                  {statusLabel}
+                                </Badge>
+                              </div>
+                              <span className="text-2xs text-muted-foreground font-mono block">
+                                {formatMoney(totalCents)}
+                                {prop.destination_city ? ` · ${prop.destination_city}` : ""}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                              {prop.public_token && (
+                                <>
+                                  <a
+                                    href={`/proposta/${prop.public_token}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border border-border hover:bg-muted text-foreground inline-flex items-center gap-2 no-underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  >
+                                    <ExternalLink className="size-3.5 text-primary" />
+                                    <span>Ver Web</span>
+                                  </a>
+
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isBusy}
+                                    onClick={() => handleCopyProposalLink(prop)}
+                                    title={prop.status === "draft" ? "Publicar e copiar link para o cliente" : "Copiar link da proposta"}
+                                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-border hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                  >
+                                    <Copy className="size-3.5 mr-2" />
+                                    <span>{prop.status === "draft" ? "Publicar e Copiar" : "Copiar"}</span>
+                                  </Button>
+                                </>
+                              )}
+
                               <Button
+                                asChild
                                 type="button"
                                 variant="outline"
-                                onClick={() => {
-                                  const url = `${window.location.origin}/p/${prop.public_token}`;
-                                  navigator.clipboard.writeText(url);
-                                  toast.success("Link da proposta copiado!");
-                                }}
-                                className="h-11 min-h-11 px-3 rounded-lg text-xs border-border/60 hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                                className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border-border hover:bg-muted cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                               >
-                                <Copy className="size-3.5" />
+                                <Link
+                                  to="/workspace/turismo/propostas/$id"
+                                  params={{ id: prop.id }}
+                                  onClick={onClose}
+                                >
+                                  <Edit3 className="size-3.5 mr-2" />
+                                  <span>Studio</span>
+                                </Link>
                               </Button>
+
+                              <CrudActionsMenu
+                                entityName="Proposta"
+                                editUrl={`/workspace/turismo/propostas/${prop.id}`}
+                                viewUrl={prop.public_token ? `/proposta/${prop.public_token}` : undefined}
+                                viewLabel="Abrir Página Web"
+                                onDuplicate={() => handleDuplicateProposal(prop)}
+                                onToggleStatus={
+                                  prop.status === "draft" || prop.status === "expired"
+                                    ? () => handlePublishProposal(prop.id)
+                                    : prop.status === "sent"
+                                      ? () => handleArchiveProposal(prop.id)
+                                      : undefined
+                                }
+                                statusLabel={
+                                  prop.status === "draft"
+                                    ? "Publicar para Cliente"
+                                    : prop.status === "expired"
+                                      ? "Reativar Proposta"
+                                      : prop.status === "sent"
+                                        ? "Arquivar Proposta"
+                                        : undefined
+                                }
+                                onDelete={async () => {
+                                  await handleDeleteProposal(prop.id);
+                                }}
+                                deleteConfirmTitle={`Excluir proposta "${prop.title || "Proposta"}"?`}
+                                deleteConfirmDescription="Esta ação removerá permanentemente a proposta e sua cotação vinculada."
+                                customActions={
+                                  prop.status !== "approved"
+                                    ? [
+                                        {
+                                          id: "convert-proposal-trip",
+                                          label: "Gerar Viagem Operacional",
+                                          icon: Plane,
+                                          onClick: () => handleConvertDossierProposalToTrip(prop.id),
+                                        },
+                                      ]
+                                    : []
+                                }
+                              />
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-2xs text-center text-muted-foreground py-4">
@@ -3301,14 +3538,14 @@ export function TourismPipeCardDossier({
               </div>
             )}
 
-            {/* 8. DOSSIÊ CLIENTE 360° */}
+            {/* 8. PERFIL DO CLIENTE */}
             {(activeSection === "all" || activeSection === "customer360") && (
               <div id="section-customer360" className="space-y-6">
                 <div className="flex items-center justify-between pb-2 border-b border-border/40">
                   <div className="flex items-center gap-2">
                     <UserCheck className="size-4 text-primary" />
                     <h3 className="font-bold text-xs uppercase tracking-wide text-foreground">
-                      Cliente da Carteira 360°
+                      Perfil do Cliente
                     </h3>
                   </div>
                   <Badge variant="outline" className="text-2xs font-mono">
@@ -3949,18 +4186,19 @@ export function TourismPipeCardDossier({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => setIsPdfModalOpen(true)}
+                      onClick={() => openUnifiedDocumentStudio("dossier_form_doc", "anamnese_embarque")}
                       className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
                     >
                       <Plus className="size-3.5" />
-                      <span>Criar Documento A4</span>
+                      <span>Criar no Studio</span>
                     </Button>
                   </div>
                 </div>
 
-                <div
+                <button
+                  type="button"
                   onClick={() => document.getElementById("card-pipefy-file-upload")?.click()}
-                  className="border border-dashed border-border/60 rounded-xl p-6 text-center space-y-2 bg-card hover:bg-muted/20 transition-colors cursor-pointer"
+                  className="w-full min-h-11 border border-dashed border-border/60 rounded-xl p-6 text-center space-y-2 bg-card hover:bg-muted/20 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Upload className="size-6 text-muted-foreground mx-auto" />
                   <p className="text-xs font-medium text-foreground">
@@ -3969,7 +4207,7 @@ export function TourismPipeCardDossier({
                   <p className="text-2xs text-muted-foreground">
                     Suporta PDFs de passagens, contratos, vouchers, reservas de hotéis e imagens
                   </p>
-                </div>
+                </button>
 
                 {Array.isArray(cardAttachments) && cardAttachments.length > 0 ? (
                   <div className="space-y-2">
@@ -3989,14 +4227,17 @@ export function TourismPipeCardDossier({
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                setViewingDocument(att);
-                                setIsViewingDocEditing(false);
-                              }}
+                              onClick={() =>
+                                openUnifiedDocumentStudio(
+                                  att.archetype || "dossier_form_doc",
+                                  att.templateKey,
+                                  att,
+                                )
+                              }
                               className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
                             >
                               <Eye className="size-3.5 text-primary" />
-                              <span>Abrir Editor A4</span>
+                              <span>Abrir no Studio</span>
                             </Button>
                           ) : att.url ? (
                             <a
@@ -4291,354 +4532,130 @@ export function TourismPipeCardDossier({
               </div>
             </div>
 
-            {/* APRESENTAÇÃO COMERCIAL (SLIDE 16:9) */}
+            {/* APRESENTAÇÃO COMERCIAL & STUDIO DE SLIDES 16:9 */}
             <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
-              <div className="flex items-center gap-2 pb-1 border-b border-border/40">
-                <FileText className="size-4 text-primary" />
-                <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">
-                  Apresentação Comercial
-                </h4>
+              <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/40">
+                <div className="flex items-center gap-2">
+                  <FileText className="size-4 text-primary" />
+                  <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">
+                    Studio de Apresentações & Lâminas
+                  </h4>
+                </div>
+                <Badge variant="outline" className="text-2xs">
+                  Brand Kit + PDF
+                </Badge>
               </div>
               <p className="text-2xs text-muted-foreground leading-relaxed">
-                Gera uma apresentação executiva com clima, câmbio, atrações, visto e valores para o cliente.
+                Escolha o template visual (Deck 16:9, Luxury Dark, Bento Grid ou Pré-Embarque), aplique a logo e cores da empresa, edite cada slide e baixe em PDF.
               </p>
+              <div className="grid grid-cols-2 gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    handleOpenUniversalDocStudio("presentation_deck", "apresentacao_comercial_169")
+                  }
+                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                >
+                  <FileText className="size-3.5 text-primary shrink-0" />
+                  <span className="truncate">Deck Executivo 16:9</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    handleOpenUniversalDocStudio("presentation_deck", "apresentacao_bento_169")
+                  }
+                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                >
+                  <FileText className="size-3.5 text-primary shrink-0" />
+                  <span className="truncate">Lâmina Bento Grid</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    handleOpenUniversalDocStudio("presentation_deck", "apresentacao_luxo_dark_169")
+                  }
+                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                >
+                  <FileText className="size-3.5 text-primary shrink-0" />
+                  <span className="truncate">Deck Luxury Dark</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    handleOpenUniversalDocStudio("presentation_deck", "guia_pre_embarque_169")
+                  }
+                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                >
+                  <FileText className="size-3.5 text-primary shrink-0" />
+                  <span className="truncate">Guia Pré-Embarque</span>
+                </Button>
+              </div>
               <Button
                 type="button"
                 onClick={handleGeneratePresentation}
-                className="w-full h-11 min-h-11 text-xs font-bold rounded-lg border border-border/60 hover:bg-muted text-foreground cursor-pointer flex items-center justify-center gap-2"
-                variant="outline"
+                className="w-full h-11 min-h-11 text-xs font-bold rounded-lg cursor-pointer flex items-center justify-center gap-2"
+                variant="default"
               >
-                <FileText className="size-3.5 text-primary" />
-                <span>Visualizar Apresentação</span>
+                <FileText className="size-3.5" />
+                <span>Abrir Builder de Apresentação & PDF</span>
               </Button>
             </div>
 
-            {/* GERADOR DE DOCUMENTOS A4 TIMBRADOS */}
+            {/* STUDIO DE DOCUMENTOS, PROPOSTAS, CONTRATOS & VOUCHERS */}
             <div className="p-4 rounded-xl border border-border/60 bg-card space-y-3">
               <div className="flex items-center gap-2 pb-1 border-b border-border/40">
                 <FileCode className="size-4 text-primary" />
                 <h4 className="font-bold text-xs uppercase tracking-wide text-foreground">
-                  Documentos & Modelos A4
+                  Studio Unificado de Documentos
                 </h4>
               </div>
               <p className="text-2xs text-muted-foreground leading-relaxed">
-                Gere propostas timbradas, fichas médicas de embarque, minutas contratuais e vouchers oficiais com preenchimento dinâmico.
+                Abra o editor visual em tempo real com campos avançados, painel CMS e exportação em PDF, Word, HTML, PNG e Markdown.
               </p>
+              {isLoadingStoreSettings && !agency ? (
+                <Skeleton className="h-5 w-40 rounded-md" />
+              ) : (
+                <p className="text-xs font-medium text-muted-foreground">
+                  Emissor ativo: {tenantIdentity.companyName}
+                </p>
+              )}
               <Button
                 type="button"
-                onClick={() => setIsPdfModalOpen(true)}
+                onClick={() => openUnifiedDocumentStudio("dossier_form_doc", "anamnese_embarque")}
                 className="w-full h-11 min-h-11 text-xs font-bold rounded-lg border border-border/60 hover:bg-muted text-foreground cursor-pointer flex items-center justify-center gap-2"
                 variant="outline"
               >
-                <FileText className="size-3.5 text-primary" />
-                <span>Gerar Documento / Modelo A4</span>
+                <FileText className="size-4 text-primary" />
+                <span>Abrir Editor & Studio Visual</span>
               </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => openUnifiedDocumentStudio("proposal_quote", "proposta_editorial_agency")}
+                  className="h-11 min-h-11 text-xs font-semibold border border-border/50"
+                >
+                  Proposta A4
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() =>
+                    openUnifiedDocumentStudio("contract_legal", "contract_intermediacao_turistica_completa")
+                  }
+                  className="h-11 min-h-11 text-xs font-semibold border border-border/50"
+                >
+                  Contrato
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* ── DIALOG 1: VISUALIZADOR & EDITOR A4 TIMBRADO (ESTILO WORD) ── */}
-      {viewingDocument && (
-        <Dialog open={Boolean(viewingDocument)} onOpenChange={() => setViewingDocument(null)}>
-          <DialogContent className="max-w-4xl max-h-screen overflow-y-auto p-6 bg-background border-border/60">
-            <DialogHeader className="pb-3 border-b border-border/40">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <DialogTitle className="text-base font-bold text-foreground">
-                    {viewingDocument.docTitle || viewingDocument.name}
-                  </DialogTitle>
-                  <DialogDescription className="text-2xs text-muted-foreground">
-                    Visualizador e Editor Timbrado A4 com preenchimento em tempo real
-                  </DialogDescription>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsViewingDocEditing((prev) => !prev)}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
-                  >
-                    <Edit3 className="size-3.5" />
-                    <span>{isViewingDocEditing ? "Modo Visualização" : "Editar In-line"}</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.print()}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
-                  >
-                    <Printer className="size-3.5" />
-                    <span>Imprimir</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (!cleanPhone) {
-                        toast.error("Lead sem telefone cadastrado.");
-                        return;
-                      }
-                      const msg = encodeURIComponent(
-                        `Olá, ${formData.name.split(" ")[0]}! Segue a minuta/documento da sua viagem (${viewingDocument.name}):\n\n${viewingDocument.docTitle || ""}\nDestino: ${formData.destination || ""}\nValor: ${formatMoney(formData.estimated_value_cents || 0)}`
-                      );
-                      window.open(`https://wa.me/55${cleanPhone}?text=${msg}`, "_blank");
-                    }}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
-                  >
-                    <Send className="size-3.5 text-emerald-600" />
-                    <span>WhatsApp</span>
-                  </Button>
-                </div>
-              </div>
-            </DialogHeader>
-
-            {/* Folha A4 Timbrada */}
-            <div className="my-4 max-w-3xl min-h-96 bg-card border border-border/60 rounded-xl p-8 sm:p-12 mx-auto space-y-6 text-foreground">
-              {/* Cabeçalho Timbrado da Agência */}
-              <div className="flex items-center justify-between border-b-2 border-primary/20 pb-4">
-                <div>
-                  <h2 className="text-lg font-bold tracking-tight text-foreground uppercase">
-                    Waesy Travel Suite
-                  </h2>
-                  <p className="text-2xs text-muted-foreground">
-                    Operações Turísticas, Cotações & Gestão de Passageiros
-                  </p>
-                </div>
-                <div className="text-right text-2xs text-muted-foreground font-mono">
-                  <span>Data: {new Date().toLocaleDateString("pt-BR")}</span>
-                  <span className="block">Dossiê: {lead.id.slice(0, 8)}</span>
-                </div>
-              </div>
-
-              {/* Título e Subtítulo */}
-              <div className="space-y-1">
-                {isViewingDocEditing ? (
-                  <Input
-                    value={viewingDocument.docTitle || ""}
-                    onChange={(e) =>
-                      setViewingDocument((prev: any) => ({ ...prev, docTitle: e.target.value }))
-                    }
-                    className="text-base font-bold h-10"
-                    placeholder="Título do documento..."
-                  />
-                ) : (
-                  <h3 className="text-base font-bold text-foreground">
-                    {viewingDocument.docTitle || viewingDocument.name}
-                  </h3>
-                )}
-                {isViewingDocEditing ? (
-                  <Input
-                    value={viewingDocument.docSubtitle || ""}
-                    onChange={(e) =>
-                      setViewingDocument((prev: any) => ({ ...prev, docSubtitle: e.target.value }))
-                    }
-                    className="text-xs text-muted-foreground h-9"
-                    placeholder="Subtítulo ou resumo..."
-                  />
-                ) : (
-                  viewingDocument.docSubtitle && (
-                    <p className="text-xs text-muted-foreground">{viewingDocument.docSubtitle}</p>
-                  )
-                )}
-              </div>
-
-              {/* Tabela de Dados da Viagem */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-lg bg-muted/20 border border-border/40 text-xs font-mono">
-                <div>
-                  <span className="text-3xs text-muted-foreground uppercase block">Passageiro Titular</span>
-                  <strong className="text-foreground">{formData.name || "Cliente"}</strong>
-                </div>
-                <div>
-                  <span className="text-3xs text-muted-foreground uppercase block">Destino</span>
-                  <strong className="text-foreground">{formData.destination || "A definir"}</strong>
-                </div>
-                <div>
-                  <span className="text-3xs text-muted-foreground uppercase block">Datas</span>
-                  <strong className="text-foreground">{formData.travel_start || "Ida"} - {formData.travel_end || "Volta"}</strong>
-                </div>
-                <div>
-                  <span className="text-3xs text-muted-foreground uppercase block">Valor Total</span>
-                  <strong className="text-foreground">{formatMoney(formData.estimated_value_cents || 0)}</strong>
-                </div>
-              </div>
-
-              {/* Corpo de Texto / Cláusulas / Anamnese */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                    Termos & Discriminação de Serviços
-                  </span>
-                  {viewingDocument.templateKey === "contrato_turismo" && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => window.open("/workspace/contratos/novo", "_blank")}
-                      className="h-11 min-h-11 px-3 text-xs text-primary font-bold gap-2 hover:bg-muted/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Abrir no criador avançado de contratos"
-                    >
-                      <ExternalLink className="size-4" />
-                      <span>Editor Avançado</span>
-                    </Button>
-                  )}
-                </div>
-
-                {isViewingDocEditing && (
-                  <div className="space-y-2 p-3 rounded-lg border border-border/40 bg-muted/20">
-                    <span className="text-3xs uppercase font-bold text-muted-foreground block">
-                      Inserir Marcadores Dinâmicos (Merge Tags)
-                    </span>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {[
-                        { tag: formData.name || "Nome do Cliente", label: "+ Nome" },
-                        { tag: formData.destination || "Destino", label: "+ Destino" },
-                        { tag: `${formData.travel_start || "Ida"} a ${formData.travel_end || "Volta"}`, label: "+ Período" },
-                        { tag: formatMoney(formData.estimated_value_cents || 0), label: "+ Valor" },
-                        { tag: formData.phone || "Telefone", label: "+ Telefone" },
-                        { tag: formData.health_notes || "Observações de Saúde", label: "+ Saúde/PCD" },
-                      ].map((mt) => (
-                        <button
-                          key={mt.label}
-                          type="button"
-                          onClick={() => {
-                            setViewingDocument((prev: any) => ({
-                              ...prev,
-                              customContent: `${prev.customContent || ""}\n${mt.tag}`.trim(),
-                            }));
-                            toast.success(`Marcador inserido!`);
-                          }}
-                          className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold border border-border/60 bg-background hover:bg-muted cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                          {mt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {isViewingDocEditing ? (
-                  <Textarea
-                    rows={12}
-                    value={viewingDocument.customContent || viewingDocument.notesContent || ""}
-                    onChange={(e) =>
-                      setViewingDocument((prev: any) => ({
-                        ...prev,
-                        customContent: e.target.value,
-                        notesContent: e.target.value,
-                      }))
-                    }
-                    className="text-xs font-mono leading-relaxed min-h-72 p-3 rounded-lg border border-border/60 bg-background focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Conteúdo do documento em formato texto/markdown..."
-                  />
-                ) : (
-                  <div className="p-4 rounded-lg bg-muted/10 border border-border/30 text-xs text-foreground leading-relaxed whitespace-pre-line font-sans">
-                    {viewingDocument.customContent ||
-                      viewingDocument.notesContent ||
-                      "Serviços turísticos discriminados e confirmados perante as operadoras e prestadores envolvidos. Este documento comprova as condições contratuais acordadas com a agência."}
-                  </div>
-                )}
-              </div>
-
-              {/* Linhas de Assinatura */}
-              <div className="pt-8 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-8 text-center text-xs text-muted-foreground">
-                <div className="space-y-1">
-                  <div className="border-b border-border/60 pb-1 mx-8" />
-                  <strong className="text-foreground block">{formData.name || "Contratante"}</strong>
-                  <span className="text-2xs">Passageiro Titular</span>
-                </div>
-                <div className="space-y-1">
-                  <div className="border-b border-border/60 pb-1 mx-8" />
-                  <strong className="text-foreground block">Waesy Agência de Viagens</strong>
-                  <span className="text-2xs">Agência Contratada</span>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="flex justify-between sm:justify-between items-center pt-3 border-t border-border/40">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setViewingDocument(null)}
-                className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Fechar
-              </Button>
-              <Button
-                type="button"
-                disabled={isSavingDocChanges}
-                onClick={handleSaveViewingDocument}
-                className="h-11 min-h-11 px-5 text-xs font-bold bg-primary text-primary-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {isSavingDocChanges ? "Salvando..." : "Salvar Alterações"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* ── DIALOG 2: SELETOR DE MODELOS DE DOCUMENTOS A4 ── */}
-      {isPdfModalOpen && (
-        <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
-          <DialogContent className="max-w-2xl p-6 bg-background border-border/60">
-            <DialogHeader className="pb-3 border-b border-border/40">
-              <DialogTitle className="text-base font-bold text-foreground">
-                Gerador de Documentos e Modelos A4
-              </DialogTitle>
-              <DialogDescription className="text-2xs text-muted-foreground">
-                Selecione o modelo desejado para compor o documento oficial com os dados deste atendimento:
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid grid-cols-1 gap-3 my-4">
-              {PDF_TEMPLATES.map((tmpl) => {
-                const isSelected = selectedPdfTemplateKey === tmpl.key;
-                return (
-                  <div
-                    key={tmpl.key}
-                    onClick={() => setSelectedPdfTemplateKey(tmpl.key)}
-                    className={cn(
-                      "p-4 rounded-xl border text-xs cursor-pointer transition-colors space-y-2",
-                      isSelected
-                        ? "border-primary bg-primary/5 text-foreground ring-2 ring-primary"
-                        : "border-border/60 bg-card hover:bg-muted/30"
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-foreground text-sm">{tmpl.title}</span>
-                      <Badge variant="outline" className="text-3xs font-mono">
-                        {tmpl.estimatedPages}
-                      </Badge>
-                    </div>
-                    <p className="text-2xs text-muted-foreground">{tmpl.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <DialogFooter className="flex justify-between sm:justify-between items-center pt-3 border-t border-border/40">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsPdfModalOpen(false)}
-                className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                disabled={isGeneratingPdf}
-                onClick={() => handleGenerateAndAttachPdf(selectedPdfTemplateKey)}
-                className="h-11 min-h-11 px-5 text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
-              >
-                {isGeneratingPdf ? "Gerando..." : "Gerar Documento"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
 
       {/* ── DIALOG 3: CERTIDÃO FORENSE DE ASSINATURA & TELEMETRIA MILITAR LGPD ── */}
       {isCertModalOpen && selectedCertificate && (
@@ -4895,115 +4912,90 @@ export function TourismPipeCardDossier({
         </Dialog>
       )}
 
-      {/* ── MODAL DE VISUALIZAÇÃO DE APRESENTAÇÃO IA (SLIDES 16:9) ── */}
-      {presentationModalOpen && generatedPresentation && (
-        <div className="fixed inset-0 z-50 bg-foreground/80 flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl bg-card rounded-2xl border border-border/60 shadow-overlay overflow-hidden flex flex-col max-h-screen">
-            {/* Header da Apresentação */}
-            <div className="p-4 border-b border-border/50 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2">
-                <FileText className="size-4 text-primary" />
-                <span className="font-bold text-sm text-foreground">
-                  Apresentação Comercial · Slide {activeSlideIndex + 1} de {generatedPresentation.pages.length}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPresentationModalOpen(false)}
-                className="size-11 min-h-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            {/* Slide Viewer (16:9 Aspect Ratio) */}
-            <div className="flex-1 p-6 overflow-y-auto flex items-center justify-center bg-muted/10">
-              {(() => {
-                const page = generatedPresentation.pages[activeSlideIndex];
-                if (!page) return null;
-                return (
-                  <div className="w-full max-w-3xl aspect-video rounded-2xl border border-border/60 bg-card p-8 flex flex-col justify-between shadow-2xs">
-                    <div className="space-y-2">
-                      <span className="text-xs uppercase font-bold tracking-wider text-primary font-mono block">
-                        {page.eyebrow}
-                      </span>
-                      <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-                        {page.title}
-                      </h2>
-                      {page.subtitle && (
-                        <p className="text-xs sm:text-sm text-muted-foreground">{page.subtitle}</p>
-                      )}
-                    </div>
-
-                    <div className="my-auto py-4">
-                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                        {page.humanNarrative}
-                      </p>
-
-                      {page.cards && page.cards.length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                          {page.cards.map((c, i) => (
-                            <div key={i} className="p-3 rounded-lg border border-border/50 bg-muted/20 text-xs">
-                              <span className="font-bold text-foreground block">{c.label}</span>
-                              <span className="text-2xs text-muted-foreground">{c.practicalExplanation}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="pt-4 border-t border-border/30 flex items-center justify-between text-2xs text-muted-foreground">
-                      <span>Curadoria de Viagem</span>
-                      <span className="font-mono">Página {page.pageNumber}</span>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Navegador de Slides */}
-            <div className="p-4 border-t border-border/50 flex items-center justify-between shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={activeSlideIndex === 0}
-                onClick={() => setActiveSlideIndex((prev) => Math.max(0, prev - 1))}
-                className="h-11 min-h-11 px-4 text-xs font-semibold gap-2"
-              >
-                <ChevronLeft className="size-4" />
-                <span>Anterior</span>
-              </Button>
-
-              <div className="flex items-center gap-2">
-                {generatedPresentation.pages.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setActiveSlideIndex(i)}
-                    className={cn(
-                      "h-11 min-h-11 px-2 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      "size-2.5 rounded-full transition-colors",
-                      i === activeSlideIndex ? "bg-primary w-6" : "bg-muted-foreground/30 hover:bg-muted-foreground/60"
-                    )}
-                  />
-                ))}
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={activeSlideIndex === generatedPresentation.pages.length - 1}
-                onClick={() => setActiveSlideIndex((prev) => Math.min(generatedPresentation.pages.length - 1, prev + 1))}
-                className="h-11 min-h-11 px-4 text-xs font-semibold gap-2"
-              >
-                <span>Próximo</span>
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
+      {/* ── STUDIO UNIFICADO DE DOCUMENTOS, PROPOSTAS, CONTRATOS, VOUCHERS & SLIDES 16:9 ── */}
+      {docStudioOpen && (
+        <UniversalDocumentStudio
+          open={docStudioOpen}
+          onClose={() => {
+            setDocStudioOpen(false);
+            setDocStudioEditingAttachment(null);
+          }}
+          initialArchetype={docStudioArchetype}
+          initialTemplateId={docStudioTemplateId}
+          initialDocumentTitle={docStudioEditingAttachment?.docTitle}
+          initialMarkdownBody={
+            docStudioEditingAttachment?.customContent ||
+            docStudioEditingAttachment?.notesContent
+          }
+          editingAttachmentId={docStudioEditingAttachment?.id || null}
+          tenant={tenantIdentity}
+          initialFormState={{
+            title: docStudioEditingAttachment?.docTitle || undefined,
+            subtitle: docStudioEditingAttachment?.docSubtitle || undefined,
+            protocolCode: lead.id.slice(0, 8).toUpperCase(),
+            clientName: formData.name || "",
+            clientDocument:
+              (formData as any).document ||
+              lead.document ||
+              lead.cpf ||
+              travelerDossiers[0]?.document_cpf ||
+              "",
+            clientPhone: formData.phone || "",
+            clientEmail: formData.email || "",
+            destination: formData.destination || "",
+            startDate: formData.travel_start || "",
+            endDate: formData.travel_end || "",
+            adultsCount: Number(formData.pax_adults) || 2,
+            childrenCount: Number(formData.pax_children) || 0,
+            totalCents: Number(formData.estimated_value_cents) || computedTariffTotalCents || 0,
+            paymentMethod: paymentPlan.method || "credit_card",
+            paymentConditions: paymentPlan.notes || contractFormPaymentConditions || "",
+            healthAllergies: "",
+            healthMedications: "",
+            accessibilityNeeds: [
+              formData.pcd ? "PCD" : "",
+              formData.reduced_mobility ? "Mobilidade reduzida" : "",
+              formData.autism_spectrum ? "Espectro autista" : "",
+              formData.health_notes || "",
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            emergencyContactPhone: formData.phone || "",
+            passengers: travelerDossiers.map((t) => ({
+              name: t.full_name || "",
+              document: t.document_cpf || t.passport_number || "",
+              birthDate: t.birth_date || "",
+              role: t.relationship || "Passageiro",
+            })),
+            checklists: checklistGroups.map((grp) => ({
+              title: grp.title,
+              completedCount: grp.items.filter((it) => it.done).length,
+              totalCount: grp.items.length,
+            })),
+            financialRows:
+              computedTariffTotalCents > 0
+                ? [
+                    paymentPlan.flight_cents > 0
+                      ? { label: "Malha Aérea / Transporte", amountCents: paymentPlan.flight_cents }
+                      : null,
+                    paymentPlan.hotel_cents > 0
+                      ? { label: "Hospedagem / Serviços Terrestres", amountCents: paymentPlan.hotel_cents }
+                      : null,
+                    paymentPlan.insurance_cents > 0
+                      ? { label: "Seguro Viagem", amountCents: paymentPlan.insurance_cents }
+                      : null,
+                    paymentPlan.boarding_tax_cents > 0
+                      ? { label: "Taxas de Embarque", amountCents: paymentPlan.boarding_tax_cents }
+                      : null,
+                  ].filter((row): row is { label: string; amountCents: number } => Boolean(row))
+                : [],
+          }}
+          onSaveDocument={handleSaveDocumentFromStudio}
+          onPromoteToProposalStudio={handlePromoteStudioToProposal}
+          onIssueOfficialContract={handleIssueStudioContract}
+          onIssueOfficialVoucher={handleIssueStudioVoucher}
+          onSendWhatsapp={handleSendStudioWhatsapp}
+        />
       )}
     </div>
   );

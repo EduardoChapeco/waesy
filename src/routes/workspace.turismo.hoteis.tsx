@@ -1727,7 +1727,7 @@ function WorkspaceHotelsPage() {
  <button
  type="button"
  onClick={() => handleRemovePhoto(idx)}
- className="absolute top-1.5 right-1.5 size-11 min-h-11 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="absolute top-1 right-1 size-11 min-h-11 sm:size-7 sm:min-h-7 rounded-lg bg-foreground/75 text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
  >
  <X className="size-3.5" />
  </button>

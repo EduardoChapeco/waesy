@@ -2289,7 +2289,8 @@ export const promoteTravelerToCustomer = createServerFn({ method: "POST" })
         .from("customers_crm")
         .select("id")
         .eq("store_id", identity.store_id)
-        .eq("document_number", cleanCpf)
+        .eq("document", cleanCpf)
+        .is("deleted_at", null)
         .maybeSingle();
       if (existingCust) existingCustomerId = existingCust.id;
     }
@@ -2300,8 +2301,12 @@ export const promoteTravelerToCustomer = createServerFn({ method: "POST" })
         .from("customers_crm")
         .update({
           full_name: traveler.full_name,
+          name: traveler.full_name,
           phone: traveler.phone || undefined,
           email: traveler.email || undefined,
+          rg: traveler.rg || undefined,
+          birth_date: traveler.birth_date || undefined,
+          address: traveler.address || undefined,
           updated_at: new Date().toISOString(),
           custom_fields: {
             passport_number: traveler.passport_number,
@@ -2318,8 +2323,14 @@ export const promoteTravelerToCustomer = createServerFn({ method: "POST" })
         .from("customers_crm")
         .insert({
           store_id: identity.store_id,
+          kind: "individual",
+          status: "active",
           full_name: traveler.full_name,
-          document_number: cleanCpf || null,
+          name: traveler.full_name,
+          document: cleanCpf || null,
+          rg: traveler.rg || null,
+          birth_date: traveler.birth_date || null,
+          address: traveler.address || null,
           phone: traveler.phone || null,
           email: traveler.email || null,
           tags: ["Viajante CRM", traveler.is_primary ? "Titular" : "Acompanhante"],

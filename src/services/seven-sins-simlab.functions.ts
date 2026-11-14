@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { SevenSinHookDTO } from "../types/squads-and-onboarding";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import type { SimLabProvenance } from "../types/simlab";
 import { getStoreBrandDna } from "./market-radar.functions";
 import { getServerClient } from "@/lib/supabase";
@@ -14,37 +15,37 @@ export const SEVEN_SINS_DEFINITIONS = {
   orgulho: {
     label: "Orgulho e Exclusividade",
     subconscious: "Necessidade de status, validação, ser visto como especial ou superior à média.",
-    color: "#EAB308", // Amber
+    color: TOKEN_HEX.amber500, // Amber
   },
   ganancia: {
     label: "Ganância e Retorno",
     subconscious: "Sensação de estar lucrando, economizando dinheiro real ou levando vantagem justa.",
-    color: "#16A34A", // Emerald
+    color: TOKEN_HEX.green600, // Emerald
   },
   luxuria: {
     label: "Luxúria e Desejo Sensorial",
     subconscious: "Ativação de prazer imediato, apetite visual incontrolável e indulgência sensorial.",
-    color: "#E11D48", // Rose
+    color: TOKEN_HEX.red600, // Rose
   },
   inveja: {
     label: "Inveja e Destaque Social",
     subconscious: "Desejo de possuir o que os outros cobiçam e ser o modelo seguido pelo grupo.",
-    color: "#8B5CF6", // Violet
+    color: TOKEN_HEX.blue600, // Violet
   },
   gula: {
     label: "Gula e Abundância",
     subconscious: "Fartura, saciedade máxima, porções generosas sem sensação de escassez.",
-    color: "#EA580C", // Orange
+    color: TOKEN_HEX.amber600, // Orange
   },
   ira: {
     label: "Ira e Inconformismo",
     subconscious: "Revolta contra abusos de mercado, indignação com produtos ruins ou promessas falsas.",
-    color: "#DC2626", // Red
+    color: TOKEN_HEX.red600, // Red
   },
   preguica: {
     label: "Preguiça e Zero Esforço",
     subconscious: "Conveniência máxima, fricção eliminada, entrega pronta sem burocracia ou perda de tempo.",
-    color: "#0A84FF", // Blue
+    color: TOKEN_HEX.accentDefault, // Blue
   },
 };
 

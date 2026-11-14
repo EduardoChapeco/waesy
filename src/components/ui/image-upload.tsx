@@ -31,6 +31,7 @@ export interface ImageUploadProps {
  variant?: "default" | "minimal" | "avatar" | "banner";
  aspect?: number;
  aspectPreset?: AspectRatioPreset;
+ label?: string;
  helperText?: string;
  showExternalUrlOption?: boolean;
 }
@@ -44,6 +45,7 @@ export function ImageUpload({
  variant = "default",
  aspect,
  aspectPreset = "square",
+ label,
  helperText,
  showExternalUrlOption = true,
 }: ImageUploadProps) {
@@ -360,7 +362,7 @@ export function ImageUpload({
  </div>
  <div className="text-center">
  <p className="text-xs font-bold text-foreground">
- Carregar Capa / Banner
+ {label || "Carregar Capa / Banner"}
  </p>
  <p className="text-xs text-muted-foreground mt-1">
  Proporção {getPresetLabel()} — clique ou cole com Ctrl+V.
@@ -450,7 +452,7 @@ export function ImageUpload({
  <Upload className="size-5 text-foreground" />
  </div>
  <p className="text-xs font-bold text-foreground">
- {isUploading ? "Processando Imagem..." : "Adicionar Imagem"}
+ {isUploading ? "Processando Imagem..." : label || "Adicionar Imagem"}
  </p>
  <p className="text-xs text-muted-foreground mt-1 max-w-60">
  {helperText ? `${helperText} • Cole com Ctrl+V` : `Enquadramento ${getPresetLabel()} • Cole com Ctrl+V`}

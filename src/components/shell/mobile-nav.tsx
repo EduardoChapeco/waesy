@@ -482,7 +482,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                           <ResolvedIcon className="size-5" strokeWidth={isItemActive ? 2.5 : 1.75} />
                         )}
                         {Boolean(badgeVal && String(badgeVal) !== "0") && (
-                          <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
+                          <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-semibold flex items-center justify-center">
                             {badgeVal}
                           </span>
                         )}
@@ -503,7 +503,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     className={cn(
                       "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isChatActive
-                        ? "text-foreground font-bold"
+                        ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -518,7 +518,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     className={cn(
                       "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isFeedActive
-                        ? "text-foreground font-bold"
+                        ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -533,7 +533,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     className={cn(
                       "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isExploreActive
-                        ? "text-foreground font-bold"
+                        ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -548,14 +548,14 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     className={cn(
                       "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isPurchasesActive
-                        ? "text-foreground font-bold"
+                        ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <div className="relative">
                       <ShoppingBag className="size-5" strokeWidth={isPurchasesActive ? 2.5 : 1.75} />
                       {purchasesBadgeCount > 0 && (
-                        <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-black flex items-center justify-center">
+                        <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-3xs font-semibold flex items-center justify-center">
                           {purchasesBadgeCount}
                         </span>
                       )}
@@ -571,7 +571,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     className={cn(
                       "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       isProfileActive
-                        ? "text-foreground font-bold"
+                        ? "text-foreground font-semibold"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >

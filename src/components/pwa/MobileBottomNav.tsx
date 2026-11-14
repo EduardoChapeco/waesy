@@ -12,7 +12,7 @@ export interface MobileBottomNavProps {
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeTab = "home",
   onTabChange,
-  accentColor = "#0F172A",
+  accentColor = "var(--color-slate-900)",
   cartCount = 2,
   showLabels = true,
 }) => {
@@ -42,13 +42,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           >
             <div className="relative flex items-center justify-center">
               <Icon
-                className="size-5 transition-transform duration-200 group-hover:scale-105"
-                style={{ color: isActive ? accentColor : "currentColor" }}
+                className="size-5 transition-transform duration-200 group-hover:scale-105 waesy-dyn-fg"
+                style={{ "--dyn-fg": isActive ? accentColor : "currentColor" } as React.CSSProperties}
               />
               {Boolean(tab.badge && tab.badge > 0) && (
                 <span
-                  style={{ backgroundColor: accentColor }}
-                  className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full text-xs font-bold text-foreground flex items-center justify-center leading-none"
+                  style={{ "--dyn-bg": accentColor } as React.CSSProperties}
+                  className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 rounded-full text-xs font-bold text-foreground flex items-center justify-center leading-none waesy-dyn-bg"
                 >
                   {tab.badge}
                 </span>
@@ -57,11 +57,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
             {showLabels && (
               <span
-                className="text-xs font-medium tracking-tight mt-1 truncate max-w-14"
+                className={`text-xs tracking-tight mt-1 truncate max-w-14 ${isActive ? "font-semibold waesy-dyn-fg" : "font-medium"}`}
                 style={{
-                  color: isActive ? accentColor : undefined,
-                  fontWeight: isActive ? 600 : 500,
-                }}
+                  "--dyn-fg": isActive ? accentColor : undefined,
+                } as React.CSSProperties}
               >
                 {tab.label}
               </span>

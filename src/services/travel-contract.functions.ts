@@ -563,6 +563,140 @@ export const deleteTravelContract = createServerFn({ method: "POST" })
   return { success: true };
 });
 
+export const duplicateTravelContract = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data }): Promise<{ success: boolean; id: string; publicToken: string }> => {
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+    if (!identity.id || !identity.store_id) throw new Error("Sessão staff sem loja ativa.");
+
+    const { data: contract, error: findErr } = await supabase
+      .from("contracts")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+
+    if (findErr || !contract) throw new Error("Contrato original não encontrado.");
+    const meta = (contract.metadata as Record<string, any>) || {};
+    if (
+      (contract.store_id || meta.store_id) &&
+      (contract.store_id || meta.store_id) !== identity.store_id &&
+      identity.role !== "platform_admin"
+    ) {
+      throw new Error("Acesso não autorizado a este contrato.");
+    }
+
+    const { data: version } = await supabase
+      .from("contract_versions")
+      .select("*")
+      .eq("contract_id", data.id)
+      .eq("version_number", contract.current_version)
+      .maybeSingle();
+
+    const clonedTitle = `${version?.title || contract.title || "Contrato de Viagem"} (Cópia)`;
+    const { data: result, error: rpcErr } = await supabase.rpc("create_staff_travel_contract", {
+      p_contract_data: {
+        proposalId: meta.proposal_id || undefined,
+        leadId: meta.lead_id || undefined,
+        contractTitle: clonedTitle,
+        clientName: meta.client_name || "Cliente a definir",
+        clientDocument: meta.client_document || "00000000000",
+        clientEmail: meta.client_email || undefined,
+        clientPhone: meta.client_phone || "0000000000",
+        clientAddress: meta.client_address || undefined,
+        destination: meta.destination || "Destino a definir",
+        travelStartDate: meta.travel_start_date || undefined,
+        travelEndDate: meta.travel_end_date || undefined,
+        packageSummary: meta.package_summary || clonedTitle,
+        totalValueCents: Number(meta.total_value_cents) || 0,
+        paymentConditions: meta.payment_conditions || "A combinar com a agência",
+        passengers: Array.isArray(meta.passengers) ? meta.passengers : [],
+        customClauses: Array.isArray(version?.clauses) ? version.clauses : undefined,
+      },
+      p_store_id: identity.store_id,
+      p_actor_profile_id: identity.id,
+    });
+
+    if (rpcErr) throw new Error("Falha ao duplicar contrato: " + rpcErr.message);
+    if (!result?.success || !result.contract_id || !result.public_token) {
+      throw new Error("A duplicação do contrato não foi confirmada pelo servidor.");
+    }
+    return { success: true, id: result.contract_id, publicToken: result.public_token };
+  });
+
+export const updateTravelContractDraft = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      contractTitle: z.string().min(3).max(200).optional(),
+      clientName: z.string().min(2).max(160).optional(),
+      destination: z.string().min(2).max(160).optional(),
+      packageSummary: z.string().min(3).max(2000).optional(),
+      totalValueCents: z.number().int().min(0).optional(),
+      paymentConditions: z.string().min(3).max(1000).optional(),
+      travelStartDate: z.string().nullable().optional(),
+      travelEndDate: z.string().nullable().optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const supabase = getServerClient();
+    const identity = await requireStaff();
+    if (!identity.id || !identity.store_id) throw new Error("Sessão staff sem loja ativa.");
+
+    const { data: contract, error: findErr } = await supabase
+      .from("contracts")
+      .select("id, status, title, metadata, current_version, store_id")
+      .eq("id", data.id)
+      .single();
+
+    if (findErr || !contract) throw new Error("Contrato não encontrado.");
+    if (contract.status === "signed") {
+      throw new Error("Contratos já assinados digitalmente não podem ter termos modificados.");
+    }
+
+    const meta = (contract.metadata as Record<string, any>) || {};
+    if (
+      (contract.store_id || meta.store_id) &&
+      (contract.store_id || meta.store_id) !== identity.store_id &&
+      identity.role !== "platform_admin"
+    ) {
+      throw new Error("Acesso não autorizado a este contrato.");
+    }
+
+    const nextMeta = {
+      ...meta,
+      ...(data.clientName !== undefined ? { client_name: data.clientName.trim() } : {}),
+      ...(data.destination !== undefined ? { destination: data.destination.trim() } : {}),
+      ...(data.packageSummary !== undefined ? { package_summary: data.packageSummary.trim() } : {}),
+      ...(data.totalValueCents !== undefined ? { total_value_cents: data.totalValueCents } : {}),
+      ...(data.paymentConditions !== undefined ? { payment_conditions: data.paymentConditions.trim() } : {}),
+      ...(data.travelStartDate !== undefined ? { travel_start_date: data.travelStartDate } : {}),
+      ...(data.travelEndDate !== undefined ? { travel_end_date: data.travelEndDate } : {}),
+    };
+
+    const nextTitle = data.contractTitle !== undefined ? data.contractTitle.trim() : contract.title;
+    const { error: updErr } = await supabase
+      .from("contracts")
+      .update({
+        title: nextTitle,
+        metadata: nextMeta,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.id);
+
+    if (updErr) throw new Error("Erro ao atualizar minuta do contrato: " + updErr.message);
+
+    if (data.contractTitle !== undefined) {
+      await supabase
+        .from("contract_versions")
+        .update({ title: nextTitle })
+        .eq("contract_id", data.id)
+        .eq("version_number", contract.current_version);
+    }
+
+    return { success: true };
+  });
+
 export const createContractAddendum = createServerFn({ method: "POST" })
   .validator(
     z.object({

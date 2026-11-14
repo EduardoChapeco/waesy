@@ -74,53 +74,53 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
   };
 
   return (
-    <div className="p-5 rounded-lg border border-border bg-card space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+    <div className="p-5 rounded-2xl border border-border bg-card space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
             <Zap className="size-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground line-clamp-1">Onboarding por IA</h3>
+            <h3 className="text-sm font-semibold text-foreground line-clamp-1">Importar por URL</h3>
             <p className="text-xs text-muted-foreground">
-              Mapeamento de marca, DNA, SWOT e catálogo via URL.
+              Preencha marca e catálogo automaticamente a partir do seu site ou Instagram.
             </p>
           </div>
         </div>
 
-        <Badge variant="outline" className="text-xs font-mono border-border">
-          {formatPlatformTokens(ONBOARDING_AI_COST)} Tokens
-        </Badge>
+        <span className="text-xs font-mono text-muted-foreground shrink-0">
+          {formatPlatformTokens(ONBOARDING_AI_COST)} tokens
+        </span>
       </div>
 
       {!completedResult ? (
         <form onSubmit={handleStartMagic} className="space-y-3 pt-1">
           <div className="flex flex-col sm:flex-row items-center gap-2">
             <div className="relative flex-1 w-full">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 placeholder="instagram.com/empresa ou meusite.com.br"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={isProcessing}
-                className="pl-9 h-10 text-xs bg-background"
+                className="pl-10 h-11 rounded-xl text-xs bg-background"
               />
             </div>
 
             <Button
               type="submit"
               disabled={isProcessing}
-              className="w-full sm:w-auto h-10 px-4 text-xs font-semibold gap-2 shrink-0 min-h-11 sm:min-h-0"
+              className="w-full sm:w-auto h-11 min-h-11 px-4 rounded-xl text-xs font-semibold gap-2 shrink-0"
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+                  <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
                   <span>Processando...</span>
                 </>
               ) : (
                 <>
-                  <span>Iniciar</span>
-                  <ArrowRight className="size-3.5" />
+                  <span>Importar</span>
+                  <ArrowRight className="size-4" />
                 </>
               )}
             </Button>
@@ -128,9 +128,9 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Estado de Processamento Silencioso */}
           {isProcessing && (
-            <div className="p-4 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+            <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
               <div className="flex items-center gap-2 text-xs text-foreground font-medium">
-                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none text-primary shrink-0" />
+                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary shrink-0" />
                 <span>{currentStageText}</span>
               </div>
               <div className="h-1 bg-border/60 rounded-full overflow-hidden">
@@ -141,7 +141,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Erro em Linha Única */}
           {errorMessage && !isProcessing && (
-            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-between gap-2 text-xs text-destructive">
+            <div role="alert" className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-between gap-2 text-xs text-destructive">
               <div className="flex items-center gap-2 min-w-0">
                 <AlertCircle className="size-4 shrink-0" />
                 <span className="truncate">{errorMessage}</span>
@@ -149,7 +149,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
               <button
                 type="button"
                 onClick={handleStartMagic}
-                className="font-medium underline shrink-0 hover:opacity-80 flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-11 px-3 rounded-lg font-medium underline shrink-0 hover:opacity-80 inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
                 <RefreshCw className="size-3" />
                 Tentar de novo
@@ -159,14 +159,14 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
         </form>
       ) : (
         /* Resultado Silencioso e Pronto para Edição */
-        <div className="p-4 rounded-lg bg-background border border-border space-y-3">
+        <div className="p-4 rounded-xl bg-background border border-border space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="size-4" />
-              <span>Configuração concluída</span>
+              <span>Importação concluída</span>
             </div>
-            <Badge variant="secondary" className="text-xs">
-              {completedResult.brand_dna?.archetype || "DNA Ativo"}
+            <Badge variant="secondary" className="text-xs rounded-xl">
+              {completedResult.brand_dna?.archetype || "Perfil ativo"}
             </Badge>
           </div>
 
@@ -194,8 +194,8 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
                   {Object.values(completedResult.theme_colors).filter(Boolean).map((hex, i) => (
                     <div
                       key={i}
-                      className="size-4 rounded-full border border-black/10 shadow-xs"
-                      style={{ backgroundColor: hex }}
+                      className="size-4 rounded-full border border-border waesy-dyn-bg"
+                      style={{ "--dyn-bg": hex } as React.CSSProperties}
                       title={hex}
                     />
                   ))}
@@ -206,27 +206,27 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
 
           {/* Atalhos Rápidos para os Módulos Criados */}
           <div className="pt-3 border-t border-border/60 grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 rounded-xl text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/brand-kit">
-                <Palette className="size-3.5 text-primary" />
+                <Palette className="size-4 text-primary" />
                 <span>Brand Kit</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 rounded-xl text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/canvas-bmc">
-                <LayoutGrid className="size-3.5 text-primary" />
+                <LayoutGrid className="size-4 text-primary" />
                 <span>Modelo BMC</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 rounded-xl text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/swot">
-                <Compass className="size-3.5 text-primary" />
+                <Compass className="size-4 text-primary" />
                 <span>Matriz SWOT</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-medium gap-2 justify-start min-h-11 sm:min-h-0">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 rounded-xl text-xs font-medium gap-2 justify-start">
               <Link to="/workspace/marketing/canvas-pecados">
-                <Flame className="size-3.5 text-primary" />
+                <Flame className="size-4 text-primary" />
                 <span>7 Pecados</span>
               </Link>
             </Button>

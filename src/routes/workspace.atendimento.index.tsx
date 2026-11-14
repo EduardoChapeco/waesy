@@ -1,7 +1,8 @@
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AtendimentoOverviewView } from "@/components/atendimento/AtendimentoOverviewView";
+import { ErrorState } from "@/components/state/states";
 import { Button } from "@/components/ui/button";
 import { getStoreSettings } from "@/services/store.functions";
 import { listMarketplaceExternalOrders } from "@/services/marketplace-hub.functions";
@@ -93,7 +94,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
   }),
   loader: async ({ deps }) => {
     try {
-      const store = await getStoreSettings({ data: { store_id: deps?.storeId } }).catch(() => null);
+      const store = await getStoreSettings({ data: { store_id: deps?.storeId } });
       const storeId = store?.id || deps?.storeId || undefined;
       const bi = await getAttendanceBusinessIntelligence({
         data: {
@@ -103,25 +104,43 @@ export const Route = createFileRoute("/workspace/atendimento/")({
           departmentSlug: deps?.departmentSlug,
           agentProfileId: deps?.agentProfileId,
         },
-      }).catch(() => ({ ...EMPTY_BI, storeId: storeId || "" }));
+      });
 
-      return { store, bi };
-    } catch (e) {
-      console.warn("[workspace.atendimento] Fallback no loader BI:", e);
-      return { store: null, bi: EMPTY_BI };
+      return { store, bi: bi || { ...EMPTY_BI, storeId: storeId || "" }, loadError: null as string | null };
+    } catch (e: any) {
+      console.warn("[workspace.atendimento] Erro no loader BI:", e);
+      return {
+        store: null,
+        bi: EMPTY_BI,
+        loadError: e?.message || "Não foi possível carregar o painel de BI do Atendimento.",
+      };
     }
   },
   component: WorkspaceAtendimentoOverviewPage,
 });
 
 function WorkspaceAtendimentoOverviewPage() {
-  const { store, bi } = (Route.useLoaderData?.() as {
+  const { store, bi, loadError } = (Route.useLoaderData?.() as {
     store: { id?: string; name?: string | null } | null;
     bi: AttendanceBusinessIntelligenceDTO;
-  }) || { store: null, bi: EMPTY_BI };
+    loadError?: string | null;
+  }) || { store: null, bi: EMPTY_BI, loadError: null };
   const search = Route.useSearch();
   const navigate = useNavigate();
+  const router = useRouter();
   const [isReconcilingIfood, setIsReconcilingIfood] = useState(false);
+
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar visão geral de atendimento"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   const handleFiltersChange = (next: {
     rangeDays?: 7 | 14 | 30 | 90;

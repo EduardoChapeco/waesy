@@ -32,8 +32,21 @@ import { CepField } from "@/components/ui/cep-field";
 import { PhoneField } from "@/components/ui/phone-field";
 import { CreditCardNumberInput, CardExpiryInput, CardCvvInput } from "@/components/ui/credit-card-field";
 import { Surface } from "@/components/ui/surface";
+import { ErrorState } from "@/components/state/states";
 import { DeliverySelector } from "@/components/checkout/delivery-selector";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+
+const EMPTY_CART_FALLBACK = {
+  id: "",
+  items: [],
+  totalCents: 0,
+  subtotalCents: 0,
+  discountCents: 0,
+  shippingCents: 0,
+  shippingMethod: "",
+  couponCode: null,
+  itemCount: 0,
+};
 
 export const Route = createFileRoute("/_store/checkout")({
   head: () => ({ meta: [{ title: "Checkout | Waesy" }] }),
@@ -45,45 +58,37 @@ export const Route = createFileRoute("/_store/checkout")({
   loaderDeps: ({ search: { store } }) => ({ store }),
   loader: async ({ deps: { store } }) => {
     try {
-      const [
-        cart,
-        globalCarts,
-        profileRes,
-        paymentMethodsRes,
-        gatewayStatus,
-        userProfile,
-        userAddresses,
-        checkoutConfigRes,
-      ] = await Promise.all([
-        getCart(store ? { data: { storeId: store } } : undefined).catch((e) => {
-          console.warn("[checkout] getCart fallback:", e);
-          return null;
-        }),
-        getGlobalCarts().catch(() => []),
-        getPublicStoreProfile(store ? { data: { storeId: store } } : undefined).catch(() => null),
-        getPublicPaymentMethods(store ? { data: { storeId: store } } : undefined).catch(() => []),
-        getGatewayStatus(store ? { data: { storeId: store } } : undefined).catch(() => false),
-        getProfile().catch(() => null),
-        getUserAddresses().catch(() => []),
-        getStoreCheckoutConfig({ data: { storeId: store || undefined } }).catch(() => null),
+      const [cart, globalCarts, userProfile, userAddresses] = await Promise.all([
+        getCart(store ? { data: { storeId: store } } : undefined),
+        getGlobalCarts(),
+        getProfile(),
+        getUserAddresses(),
       ]);
 
       const matchingCart = store
-        ? (globalCarts.find((c: any) => c.storeId === store) || cart)
-        : (cart || (globalCarts.length > 0 ? globalCarts[0] : null));
+        ? globalCarts.find((c: any) => c.storeId === store) || cart
+        : cart || (globalCarts.length > 0 ? globalCarts[0] : null);
+
+      const resolvedStoreId =
+        store || (matchingCart as any)?.storeId || undefined;
+
+      const [profileRes, paymentMethodsRes, gatewayStatus, checkoutConfigRes] =
+        resolvedStoreId
+          ? await Promise.all([
+              getPublicStoreProfile({ data: { storeId: resolvedStoreId } }),
+              getPublicPaymentMethods({ data: { storeId: resolvedStoreId } }),
+              getGatewayStatus({ data: { storeId: resolvedStoreId } }),
+              getStoreCheckoutConfig({
+                data: {
+                  storeId: resolvedStoreId,
+                  cartId: (matchingCart as any)?.id || undefined,
+                },
+              }),
+            ])
+          : [null, [], false, null];
 
       return {
-        initialCart: matchingCart || {
-          id: "",
-          items: [],
-          totalCents: 0,
-          subtotalCents: 0,
-          discountCents: 0,
-          shippingCents: 0,
-          shippingMethod: "",
-          couponCode: null,
-          itemCount: 0,
-        },
+        initialCart: matchingCart || EMPTY_CART_FALLBACK,
         globalCarts,
         storeProfile: profileRes || null,
         paymentMethods: paymentMethodsRes || [],
@@ -91,18 +96,12 @@ export const Route = createFileRoute("/_store/checkout")({
         userProfile: userProfile || null,
         userAddresses: userAddresses || [],
         checkoutConfig: (checkoutConfigRes as CheckoutDynamicConfig | null) || null,
+        loadError: null as string | null,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error("[loader:_store.checkout] Unhandled loader error:", err);
       return {
-        initialCart: {
-          id: "",
-          items: [],
-          totalCents: 0,
-          subtotalCents: 0,
-          discountCents: 0,
-          shippingCents: 0,
-        },
+        initialCart: EMPTY_CART_FALLBACK,
         globalCarts: [],
         storeProfile: null,
         paymentMethods: [],
@@ -110,6 +109,8 @@ export const Route = createFileRoute("/_store/checkout")({
         userProfile: null,
         userAddresses: [],
         checkoutConfig: null,
+        loadError:
+          err?.message || "Não foi possível carregar o checkout. Tente novamente.",
       } as any;
     }
   },
@@ -125,6 +126,25 @@ interface ManualPaymentOption {
 }
 
 export function CheckoutPage() {
+  const loaderData = ((Route.useLoaderData?.() as any) || {});
+  const router = useRouter();
+
+  if (loaderData.loadError) {
+    return (
+      <div className="w-full max-w-5xl mx-auto py-12 px-4">
+        <ErrorState
+          title="Erro ao carregar checkout"
+          description={loaderData.loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
+
+  return <CheckoutPageContent loaderData={loaderData} />;
+}
+
+function CheckoutPageContent({ loaderData }: { loaderData: any }) {
   const {
     initialCart,
     globalCarts,
@@ -134,7 +154,7 @@ export function CheckoutPage() {
     userAddresses,
     isGatewayConfigured,
     checkoutConfig,
-  } = ((Route.useLoaderData?.() as any) || {});
+  } = loaderData;
   const navigate = useNavigate();
   const router = useRouter();
   const { refreshCart } = useCartContext();
@@ -1457,7 +1477,7 @@ export function CheckoutPage() {
               </div>
               <div className="sm:text-right">
                 <span className="text-xs font-mono text-muted-foreground block">Total do Pacote</span>
-                <span className="text-base font-black font-mono text-foreground">{formatMoney(cart.subtotalCents)}</span>
+                <span className="text-base font-semibold font-mono text-foreground">{formatMoney(cart.subtotalCents)}</span>
               </div>
             </div>
 
@@ -2967,9 +2987,9 @@ export function CheckoutPage() {
                 </div>
               )}
 
-              <div className="pt-2 flex justify-between items-baseline text-base font-bold text-foreground">
+              <div className="pt-2 flex justify-between items-baseline text-base font-semibold text-foreground">
                 <span>Total</span>
-                <span className="font-mono text-lg font-black">{formatMoney(checkoutTotalCents)}</span>
+                <span className="font-mono text-lg font-semibold">{formatMoney(checkoutTotalCents)}</span>
               </div>
             </div>
           </Surface>
@@ -2979,7 +2999,7 @@ export function CheckoutPage() {
  {/* ── BARRA FIXA MOBILE NA THUMB ZONE (ETAPA 4) ── */}
  {activeStep === 4 && (
  <div
-   className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/60 z-40 sm:hidden p-4 pb-6"
+   className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/60 z-30 sm:hidden p-4 pb-6"
    
  >
    <div
@@ -2987,13 +3007,13 @@ export function CheckoutPage() {
      
    >
    <div className="flex flex-col">
-   <span className="text-xs text-muted-foreground/75 text-muted-foreground uppercase font-bold tracking-wider">Total</span>
-   <span className="text-base font-black font-mono text-foreground leading-tight">{formatMoney(checkoutTotalCents)}</span>
+   <span className="text-xs text-muted-foreground/75 text-muted-foreground uppercase font-semibold tracking-wider">Total</span>
+   <span className="text-base font-semibold font-mono text-foreground leading-tight">{formatMoney(checkoutTotalCents)}</span>
    </div>
    <Button
    onClick={handleSubmitOrder}
    disabled={isSubmitting}
-   className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 flex items-center justify-center gap-2"
+   className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-98 flex items-center justify-center gap-2"
    >
    {isSubmitting ? (
    <>

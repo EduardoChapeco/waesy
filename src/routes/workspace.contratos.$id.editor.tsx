@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getContractById, updateContractDraft, sealAndIssueContract, type SignatureFieldDTO, type ObserverDTO, type DispatchSettingsDTO } from "@/services/contracts.functions";
 import { SignaturePositionerCanvas, type SignerVisualInfo } from "@/components/contracts/signature-positioner-canvas";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
 import { autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
@@ -32,7 +33,13 @@ export const Route = createFileRoute("/workspace/contratos/$id/editor")({
   component: ContractEditorPage,
 });
 
-const SIGNER_COLORS = ["#2563eb", "#9333ea", "#059669", "#ea580c", "#dc2626"];
+const SIGNER_COLORS = [
+  TOKEN_HEX.blue600,
+  TOKEN_HEX.accentDefault,
+  TOKEN_HEX.green600,
+  TOKEN_HEX.amber600,
+  TOKEN_HEX.red600,
+];
 
 function ContractEditorPage() {
   const contract = Route.useLoaderData();

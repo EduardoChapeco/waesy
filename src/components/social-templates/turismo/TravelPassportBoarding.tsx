@@ -27,13 +27,13 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-[#0A0E1A] text-foreground overflow-hidden font-sans select-none flex flex-col justify-between p-12 ${className}`}
+      className={`relative bg-slate-950 text-foreground overflow-hidden font-sans select-none flex flex-col justify-between p-12 ${className}`}
     >
       {/* Background Decorativo com Trajetória Aérea Sutil */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="540" cy="960" r="480" fill="none" stroke="#38BDF8" strokeWidth="2" strokeDasharray="8 8" />
-          <circle cx="540" cy="960" r="700" fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="12 12" />
+          <circle cx="540" cy="960" r="480" fill="none" className="stroke-sky-400" strokeWidth="2" strokeDasharray="8 8" />
+          <circle cx="540" cy="960" r="700" fill="none" className="stroke-sky-400" strokeWidth="1" strokeDasharray="12 12" />
         </svg>
       </div>
 
@@ -92,10 +92,10 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
         </div>
 
         {/* Linha Perfurada de Destaque com Chanfros Circulares */}
-        <div className="relative flex items-center my-[-16px] z-20">
-          <div className="w-8 h-8 rounded-full bg-[#0A0E1A] -ml-4" />
+        <div className="relative flex items-center -my-4 z-20">
+          <div className="w-8 h-8 rounded-full bg-slate-950 -ml-4" />
           <div className="flex-1 border-t-2 border-dashed border-slate-300 mx-2" />
-          <div className="w-8 h-8 rounded-full bg-[#0A0E1A] -mr-4" />
+          <div className="w-8 h-8 rounded-full bg-slate-950 -mr-4" />
         </div>
 
         {/* Bloco Inferior do Ticket: Informações de Voo e Pacote */}

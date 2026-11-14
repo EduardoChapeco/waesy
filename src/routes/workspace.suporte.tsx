@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { LifeBuoy, Plus, MessageSquare, Clock, CheckCircle2, Send, Link as LinkIcon, Paperclip, ChevronRight, ShieldCheck, Headphones, Kanban, Table2, ListTodo, ArrowRight } from "lucide-react";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { FileAttachmentUpload } from "@/components/ui/file-attachment-upload";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 import { getStoreSettings } from "@/services/store.functions";
@@ -41,20 +41,26 @@ export const Route = createFileRoute("/workspace/suporte")({
   head: () => ({ meta: [{ title: "Suporte, SAC & Customer Success | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const store = await getStoreSettings().catch(() => null);
+      const store = await getStoreSettings();
       const storeId = store?.id || "";
       const [tickets, sheetRows] = await Promise.all([
-        storeId ? listSupportTickets({ data: { store_id: storeId } }).catch(() => []) : [],
-        storeId ? listCustomerSuccessOnboardingSheet({ data: { store_id: storeId } }).catch(() => []) : [],
+        storeId ? listSupportTickets({ data: { store_id: storeId } }) : [],
+        storeId ? listCustomerSuccessOnboardingSheet({ data: { store_id: storeId } }) : [],
       ]);
       return {
         store,
-        initialTickets: tickets as SupportTicketItem[],
-        initialSheetRows: sheetRows as CustomerSuccessSheetRowDTO[],
+        initialTickets: (tickets || []) as SupportTicketItem[],
+        initialSheetRows: (sheetRows || []) as CustomerSuccessSheetRowDTO[],
+        loadError: null as string | null,
       };
-    } catch (err) {
+    } catch (err: any) {
       console.error("[loader:workspace.suporte] Unhandled loader error:", err);
-      return { store: null, initialTickets: null, initialSheetRows: [] };
+      return {
+        store: null,
+        initialTickets: [] as SupportTicketItem[],
+        initialSheetRows: [] as CustomerSuccessSheetRowDTO[],
+        loadError: err?.message || "Não foi possível carregar os chamados de Suporte e Customer Success.",
+      };
     }
   },
   component: WorkspaceSupportPage,
@@ -77,7 +83,8 @@ const STATUS_LABELS: Record<TicketStatus, { label: string; className: string }> 
 };
 
 function WorkspaceSupportPage() {
-  const { store, initialTickets, initialSheetRows } = (Route.useLoaderData as any)();
+  const { store, initialTickets, initialSheetRows, loadError } = (Route.useLoaderData as any)() || {};
+  const router = useRouter();
   const storeId = store?.id || "";
 
   const [tickets, setTickets] = useState<SupportTicketItem[]>(initialTickets || []);
@@ -275,6 +282,18 @@ function WorkspaceSupportPage() {
       return true;
     });
   }, [tickets, activeTab, categoryFilter, roleFilter, searchQuery]);
+
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar suporte e SAC"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 min-h-96 w-full px-0 sm:px-4 md:px-0 w-full">

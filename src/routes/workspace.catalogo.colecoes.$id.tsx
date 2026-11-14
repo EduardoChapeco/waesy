@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -6,6 +6,7 @@ import { Layers, Check, Tag } from "lucide-react";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { ErrorState } from "@/components/state/states";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,9 +22,12 @@ export const Route = createFileRoute("/workspace/catalogo/colecoes/$id")({
   loader: async ({ params }): Promise<any> => {
     try {
       const res = await getCollectionById({ data: { id: params.id } });
-      return { collection: res || null };
-    } catch {
-      return { collection: null };
+      return { collection: res || null, loadError: null as string | null };
+    } catch (err: any) {
+      return {
+        collection: null,
+        loadError: err?.message || "Não foi possível carregar os dados da coleção.",
+      };
     }
   },
   component: EditCollectionPage,
@@ -31,7 +35,9 @@ export const Route = createFileRoute("/workspace/catalogo/colecoes/$id")({
 
 function EditCollectionPage() {
   const loaderData = (Route.useLoaderData() as any) || {};
+  const router = useRouter();
   const collection = loaderData.collection || (loaderData.id ? loaderData : null);
+  const loadError = loaderData.loadError || null;
  const navigate = useNavigate();
  const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,11 +71,23 @@ function EditCollectionPage() {
     },
   });
 
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <ErrorState
+          title="Erro ao carregar coleção"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
+
   if (!collection) {
     return (
       <div className="p-8 text-center space-y-3">
-        <h2 className="text-base font-bold text-foreground">Coleção não encontrada</h2>
-        <Button asChild variant="outline" size="sm">
+        <h2 className="text-base font-semibold text-foreground">Coleção não encontrada</h2>
+        <Button asChild variant="outline" size="sm" className="h-11 min-h-11 rounded-xl">
           <Link to="/workspace/catalogo/colecoes">Voltar para Coleções</Link>
         </Button>
       </div>
@@ -126,9 +144,9 @@ function EditCollectionPage() {
  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  <div className="md:col-span-2 space-y-6">
- <div className="bg-card rounded-lg border border-border/60 p-6 space-y-4">
+ <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-4">
  <div className="pb-3 border-b border-border/40">
- <h3 className="text-sm font-bold text-foreground">Dados Básicos da Coleção</h3>
+ <h3 className="text-sm font-semibold text-foreground">Dados Básicos da Coleção</h3>
  <p className="text-xs text-muted-foreground mt-1">
  Defina o nome, identificador na URL e descrição.
  </p>
@@ -136,10 +154,10 @@ function EditCollectionPage() {
 
  <div className="space-y-4">
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Nome da Coleção *</Label>
+ <Label className="text-xs font-semibold text-foreground">Nome da Coleção *</Label>
  <Input
  {...register("name", { required: "Nome é obrigatório" })}
- className="h-10 text-xs rounded-lg"
+ className="h-11 min-h-11 text-xs rounded-xl"
  />
  {errors.name && (
  <span className="text-xs text-destructive font-medium block">
@@ -150,23 +168,23 @@ function EditCollectionPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Slug da URL *</Label>
+ <Label className="text-xs font-semibold text-foreground">Slug da URL *</Label>
  <Input
  {...register("slug", { required: "Slug é obrigatório" })}
- className="h-10 text-xs rounded-lg font-mono"
+ className="h-11 min-h-11 text-xs rounded-xl font-mono"
  />
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Status de Exibição</Label>
+ <Label className="text-xs font-semibold text-foreground">Status de Exibição</Label>
  <Select
  defaultValue={collection.status || "active"}
  onValueChange={(val) => setValue("status", val)}
  >
- <SelectTrigger className="h-10 text-xs rounded-lg">
+ <SelectTrigger className="h-11 min-h-11 text-xs rounded-xl">
  <SelectValue placeholder="Selecione o status" />
  </SelectTrigger>
- <SelectContent className="rounded-lg">
+ <SelectContent className="rounded-xl">
  <SelectItem value="active">● Ativa na Vitrine</SelectItem>
  <SelectItem value="inactive">● Inativa / Oculta</SelectItem>
  </SelectContent>
@@ -175,12 +193,12 @@ function EditCollectionPage() {
  </div>
 
  <div className="space-y-2">
- <Label className="text-xs font-bold text-foreground">Selo / Badge Promocional</Label>
+ <Label className="text-xs font-semibold text-foreground">Selo / Badge Promocional</Label>
  <Input
  placeholder="Ex: 20% OFF, LIMITADO, EXCLUSIVO"
  value={badgeText}
  onChange={(e) => setBadgeText(e.target.value.toUpperCase())}
- className="h-10 text-xs rounded-lg font-mono uppercase"
+ className="h-11 min-h-11 text-xs rounded-xl font-mono uppercase"
  />
  <p className="text-xs text-muted-foreground">
  Selo tátil exibido em cima dos cards na vitrine pública.

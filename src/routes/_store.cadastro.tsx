@@ -38,7 +38,7 @@ function RegisterPage() {
  const [termsSlug, setTermsSlug] = useState("termos");
 
  // Integração Google Login desativada por padrão
- const isGoogleAuthEnabled = false;
+ const isGoogleAuthEnabled = true;
 
  useEffect(() => {
  if (errorParam === "auth-callback-failed") {
@@ -115,7 +115,7 @@ function RegisterPage() {
       <div className="relative hidden lg:flex lg:w-9/20 bg-muted border-r border-border text-foreground flex-col justify-between p-12 overflow-hidden">
         <div className="relative z-10 flex flex-col h-full justify-between">
           <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tight">
-            <span className="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-sm font-black">Waesy</span>
+            <span className="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-sm font-semibold">Waesy</span>
           </Link>
           <div className="max-w-md">
             <h2 className="text-3xl font-bold tracking-tight leading-tight">
@@ -153,13 +153,13 @@ function RegisterPage() {
 
  {/* Header Title */}
  <div className="space-y-1">
- <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+ <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
  Crie seu perfil
  </h1>
  </div>
 
  {/* Form */}
- <Form {...form}>
+ {isGoogleAuthEnabled && (<Button type="button" variant="outline" onClick={() => handleOAuth("google")} className="w-full h-11 min-h-11 rounded-lg font-semibold gap-2 text-sm"><GoogleLogo className="size-4" weight="bold" />Continuar com Google</Button>)} <Form {...form}>
  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
  <FormField
  control={form.control}
@@ -218,13 +218,13 @@ function RegisterPage() {
  type={showPassword ? "text" : "password"}
  placeholder="••••••••"
  autoComplete="new-password"
- className="h-11 rounded-lg border-border bg-card/50 text-sm pr-10 focus-visible:ring-primary/20"
+ className="h-11 rounded-lg border-border bg-card/50 text-base md:text-sm pr-12 focus-visible:ring-primary/20"
  {...field}
  />
  <button
  type="button"
  onClick={() => setShowPassword(!showPassword)}
- className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+ className="absolute right-0 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
  >
  {showPassword ? (

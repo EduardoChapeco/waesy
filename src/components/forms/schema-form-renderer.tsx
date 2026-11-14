@@ -148,7 +148,7 @@ export function SchemaFormRenderer({
                   id={field.id}
                   value={formData[field.id] || ""}
                   onChange={(e) => handleChange(field.id, e.target.value)}
-                  className={`flex h-12 w-full rounded-lg border bg-input px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`flex h-11 min-h-11 w-full rounded-lg border bg-background px-3 py-2 text-base md:text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     fieldError ? "border-destructive focus-visible:ring-destructive" : "border-border"
                   }`}
                 >

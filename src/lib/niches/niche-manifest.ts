@@ -9,6 +9,7 @@
  */
 
 import { tryResolveUnifiedNicheId, UNIFIED_NICHE_SPECS } from "./niche-ssot";
+import { getNicheKanbanStages } from "./kanban-niche-taxonomy";
 
 export type NicheId =
   | "generic"
@@ -47,6 +48,8 @@ export interface NicheStageConfig {
   key: string;
   label: string;
   color: string;
+  purpose?: string;
+  synonyms?: string[];
   isInitial?: boolean;
   isTerminalWon?: boolean;
   isTerminalLost?: boolean;
@@ -796,6 +799,22 @@ export function getNicheNomenclature(nicheId?: string | null): NicheEntityNomenc
  * Retorna os estágios canônicos de CRM ou Pedidos de acordo com o nicho.
  */
 export function getNicheStages(type: "crm" | "orders" | "reservations", nicheId?: string | null): NicheStageConfig[] {
+  if (type === "crm") {
+    const taxonomyStages = getNicheKanbanStages(nicheId);
+    if (taxonomyStages.length > 0) {
+      return taxonomyStages.map((s) => ({
+        key: s.stage_key,
+        label: s.title,
+        color: s.color,
+        purpose: s.purpose,
+        synonyms: s.synonyms,
+        isInitial: s.purpose === "inbox",
+        isTerminalWon: s.purpose === "won",
+        isTerminalLost: s.purpose === "lost",
+        slaMinutes: s.sla_minutes,
+      }));
+    }
+  }
   const manifest = getNicheManifest(nicheId);
   if (type === "reservations") {
     return manifest.defaultStages.reservations || manifest.defaultStages.orders;

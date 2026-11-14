@@ -78,6 +78,7 @@ const GROUP_MASTER_INBOX: NavGroup = {
     { path: "/workspace/atendimento", label: "Visão Geral", icon: BarChart3 },
     { path: "/workspace/atendimento/chat", label: "Chat Ao Vivo", icon: MessageSquare },
     { path: "/workspace/atendimento/whatsapp", label: "Canais WhatsApp", icon: Smartphone },
+    { path: "/workspace/atendimento/grupos", label: "Grupos", icon: Users },
     { path: "/workspace/atendimento/filas", label: "Filas", icon: Layers },
     { path: "/workspace/atendimento/atendentes", label: "Atendentes", icon: Users },
     { path: "/workspace/atendimento/horarios", label: "Horários", icon: Clock },

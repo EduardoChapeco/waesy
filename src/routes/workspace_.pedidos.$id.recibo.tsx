@@ -233,20 +233,28 @@ function ReceiptPrintPage() {
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-200">
-          {order.order_items?.map((item: any) => (
-            <tr key={item.id}>
-              <td className="py-2">{item.qty}x</td>
-              <td className="py-2">
-                <div className="font-semibold">{item.product_title}</div>
-                {item.notes && <div className="text-xs text-warning-strong font-sans italic">Obs: {item.notes}</div>}
-                {item.variant_sku && <div className="text-xs text-neutral-500">SKU: {item.variant_sku}</div>}
-              </td>
-              <td className="text-right py-2">{formatMoney(item.unit_price_cents)}</td>
-              <td className="text-right py-2">
-                {formatMoney(item.total_cents ?? (item.unit_price_cents || 0) * (item.qty || 1))}
+          {!order.order_items || order.order_items.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="py-4 text-center text-neutral-500">
+                Nenhum item registrado no pedido.
               </td>
             </tr>
-          ))}
+          ) : (
+            order.order_items.map((item: any) => (
+              <tr key={item.id}>
+                <td className="py-2">{item.qty}x</td>
+                <td className="py-2">
+                  <div className="font-semibold">{item.product_title}</div>
+                  {item.notes && <div className="text-xs text-warning-strong font-sans italic">Obs: {item.notes}</div>}
+                  {item.variant_sku && <div className="text-xs text-neutral-500">SKU: {item.variant_sku}</div>}
+                </td>
+                <td className="text-right py-2">{formatMoney(item.unit_price_cents)}</td>
+                <td className="text-right py-2">
+                  {formatMoney(item.total_cents ?? (item.unit_price_cents || 0) * (item.qty || 1))}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 

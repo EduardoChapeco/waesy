@@ -13,12 +13,16 @@ interface ProposalShareWhatsappModalProps {
  isOpen: boolean;
  onClose: () => void;
  proposal: TravelProposalDTO;
+ onExportPdf?: () => Promise<void> | void;
+ onExportPng?: () => Promise<void> | void;
 }
 
 export function ProposalShareWhatsappModal({
  isOpen,
  onClose,
  proposal,
+ onExportPdf,
+ onExportPng,
 }: ProposalShareWhatsappModalProps) {
  const cleanPhone = (proposal.client_whatsapp || '').replace(/\D/g, '');
  const [recipientPhone, setRecipientPhone] = useState(cleanPhone);
@@ -64,8 +68,12 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  const handleExportPdf = async () => {
  try {
  setIsExportingPdf(true);
- await exportElementAsPdf('proposal-canvas', `Proposta_${proposal.title.replace(/\s+/g, '_')}.pdf`);
- toast.success('PDF da proposta exportado com sucesso!');
+ if (onExportPdf) {
+   await onExportPdf();
+ } else {
+   await exportElementAsPdf('proposal-canvas', `Proposta_${proposal.title.replace(/\s+/g, '_')}.pdf`);
+   toast.success('PDF da proposta exportado com sucesso!');
+ }
  } catch (err: any) {
  toast.error('Erro ao exportar PDF: ' + err?.message);
  } finally {
@@ -76,8 +84,12 @@ Ficamos à disposição para tirar dúvidas e confirmar disponibilidade e próxi
  const handleExportPng = async () => {
  try {
  setIsExportingPng(true);
- await exportElementAsImage('proposal-canvas', `Lâmina_${proposal.title.replace(/\s+/g, '_')}.png`);
- toast.success('Lâmina em imagem PNG exportada com sucesso!');
+ if (onExportPng) {
+   await onExportPng();
+ } else {
+   await exportElementAsImage('proposal-canvas', `Lâmina_${proposal.title.replace(/\s+/g, '_')}.png`);
+   toast.success('Lâmina em imagem PNG exportada com sucesso!');
+ }
  } catch (err: any) {
  toast.error('Erro ao exportar imagem: ' + err?.message);
  } finally {

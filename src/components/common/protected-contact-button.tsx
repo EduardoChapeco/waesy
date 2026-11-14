@@ -49,13 +49,13 @@ export function ProtectedContactButton({
   const [isLoading, setIsLoading] = useState(false);
 
   // Consulta de sessão em cache via TanStack Query
-  const { data: session } = useQuery({
+  const { data: session, isError: isSessionError } = useQuery({
     queryKey: ["user-session"],
     queryFn: () => getUserSession(),
     staleTime: 1000 * 60 * 5, // 5 min
   });
 
-  const isAuthenticated = Boolean(session?.id);
+  const isAuthenticated = !isSessionError && Boolean(session?.id);
 
   const cleanPhone = phone ? sanitizeWhatsAppPhone(phone) : "";
   const maskedPhone = cleanPhone

@@ -81,6 +81,8 @@ function QuotesListPage() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isBudgetPadOpen, setIsBudgetPadOpen] = useState(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [draggingQuoteId, setDraggingQuoteId] = useState<string | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
 
   const [stages, setStages] = useState<any[]>(() => {
     if (kanbanStages && kanbanStages.length > 0) {
@@ -214,7 +216,7 @@ function QuotesListPage() {
               Crie propostas e orçamentos para enviar a clientes e negociar pedidos.
             </p>
           </div>
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-bold h-9 min-h-11 sm:min-h-0">
+          <Button asChild size="sm" variant="outline" className="rounded-lg border-border/70 text-xs font-medium h-11 min-h-11 sm:h-9 sm:min-h-9 px-3">
             <Link to="/workspace/orcamentos/novo">
               <Plus className="size-3.5 mr-1" />
               Criar Primeiro Orçamento
@@ -236,21 +238,47 @@ function QuotesListPage() {
           {visibleStages.map((col: any) => {
             const colQuotes = quotes.filter((q: QuoteSummaryDTO) => col.statuses.includes(q.status));
             const colTotalCents = colQuotes.reduce((acc: number, q: QuoteSummaryDTO) => acc + q.total_cents, 0);
+            const isDragOver = dragOverColumnId === col.id;
 
             return (
               <div
                 key={col.id}
-                className="bg-muted/50 dark:bg-muted/30 rounded-2xl p-3 flex flex-col w-78 min-w-78 sm:w-83 sm:min-w-83 shrink-0 min-h-144 h-full overflow-hidden"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverColumnId !== col.id) setDragOverColumnId(col.id);
+                }}
+                onDragLeave={() => {
+                  if (dragOverColumnId === col.id) setDragOverColumnId(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOverColumnId(null);
+                  const droppedId = e.dataTransfer.getData("text/plain") || draggingQuoteId;
+                  setDraggingQuoteId(null);
+                  if (!droppedId) return;
+                  const targetQuote = quotes.find((q: QuoteSummaryDTO) => q.id === droppedId);
+                  if (!targetQuote || col.statuses.includes(targetQuote.status)) return;
+                  if (col.id === "sent" || col.id === "negotiating" || col.id === "rejected") {
+                    updateStatusMutation.mutate({ quote_id: droppedId, status: col.id });
+                  } else {
+                    toast.info("Aprovação ou reabertura é realizada nos detalhes do orçamento.");
+                  }
+                }}
+                className={cn(
+                  "bg-muted/50 dark:bg-muted/30 rounded-2xl p-3 flex flex-col w-78 min-w-78 sm:w-83 sm:min-w-83 shrink-0 min-h-144 h-full overflow-hidden transition-colors",
+                  isDragOver && "ring-2 ring-primary/40 bg-primary/5"
+                )}
               >
                 {/* Header da Coluna */}
                 <div className="flex items-center justify-between px-1 pb-3 shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">{col.title}</span>
-                    <Badge variant="secondary" className="text-xs font-mono px-2 py-0 h-5 bg-card">
+                    <Badge variant="secondary" className="text-2xs font-mono px-2 py-0 h-5 rounded-md border border-border/60 bg-card tabular-nums">
                       {colQuotes.length}
                     </Badge>
                   </div>
-                  <span className="text-xs font-mono font-bold text-muted-foreground">
+                  <span className="text-xs font-mono font-bold text-muted-foreground tabular-nums">
                     {formatMoney(colTotalCents)}
                   </span>
                 </div>
@@ -258,14 +286,27 @@ function QuotesListPage() {
                 {/* Cards com scroll interno */}
                 <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-3 pt-1">
                   {colQuotes.length === 0 ? (
-                    <div className="h-28 flex items-center justify-center text-xs text-muted-foreground bg-card rounded-xl">
-                      Nenhum orçamento
+                    <div className="min-h-28 flex items-center justify-center text-2xs font-medium text-muted-foreground/70 rounded-xl border border-dashed border-border/50 bg-transparent">
+                      Arraste um orçamento para esta etapa
                     </div>
                   ) : (
                     colQuotes.map((q: QuoteSummaryDTO) => (
                       <div
                         key={q.id}
-                        className="bg-card rounded-2xl p-4 space-y-2 transition-colors group"
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", q.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          setDraggingQuoteId(q.id);
+                        }}
+                        onDragEnd={() => {
+                          setDraggingQuoteId(null);
+                          setDragOverColumnId(null);
+                        }}
+                        className={cn(
+                          "bg-card rounded-2xl p-4 space-y-2 transition-colors group cursor-grab active:cursor-grabbing",
+                          draggingQuoteId === q.id && "opacity-50 ring-2 ring-primary/40"
+                        )}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <Link
@@ -283,7 +324,7 @@ function QuotesListPage() {
                         </p>
 
                         <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
-                          <span className="font-bold text-foreground font-mono">
+                          <span className="font-bold text-foreground font-mono tabular-nums">
                             {formatMoney(q.total_cents)}
                           </span>
                           <span className="text-muted-foreground text-xs">
@@ -295,26 +336,26 @@ function QuotesListPage() {
                         <div className="flex items-center justify-end gap-2 pt-1">
                           {q.status === "draft" && (
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "sent" })}
-                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10 min-h-11 sm:min-h-0"
+                              className="h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 text-xs font-medium rounded-lg border-primary/30 gap-1 text-primary hover:text-primary hover:bg-primary/10"
                             >
                               <span>Enviar</span>
-                              <ArrowRight className="size-2.5" />
+                              <ArrowRight className="size-3" />
                             </Button>
                           )}
                           {q.status === "sent" && (
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               disabled={updateStatusMutation.isPending}
                               onClick={() => updateStatusMutation.mutate({ quote_id: q.id, status: "negotiating" })}
-                              className="h-6 px-2 text-xs font-bold rounded-lg gap-1 text-warning-strong hover:text-warning-strong hover:bg-warning/10 min-h-11 sm:min-h-0"
+                              className="h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 text-xs font-medium rounded-lg border-warning/30 gap-1 text-warning-strong hover:text-warning-strong hover:bg-warning/10"
                             >
                               <span>Negociar</span>
-                              <ArrowRight className="size-2.5" />
+                              <ArrowRight className="size-3" />
                             </Button>
                           )}
                         </div>

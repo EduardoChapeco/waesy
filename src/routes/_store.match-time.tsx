@@ -128,7 +128,7 @@ function MatchTimePage() {
  <div className="relative w-full max-w-sm aspect-3/4 mx-auto px-0 sm:px-4 perspective-1000">
  {currentOffer && (
  <div
- className={`absolute inset-0 px-4 transition-colors duration-200 duration-300 ease-out transform ${direction === "left" ? "-translate-x-full rotate-[-20deg] opacity-0" : direction === "right" ? "translate-x-full rotate-[20deg] opacity-0" : "translate-x-0 opacity-100"}`}
+ className={`absolute inset-0 px-4 transition-colors duration-200 duration-300 ease-out transform ${direction === "left" ? "-translate-x-full -rotate-12 opacity-0" : direction === "right" ? "translate-x-full rotate-12 opacity-0" : "translate-x-0 opacity-100"}`}
  >
  <div className="w-full h-full bg-card border overflow-hidden relative group">
  {/* Image */}
@@ -166,14 +166,14 @@ function MatchTimePage() {
  <div
  className={`absolute inset-0 bg-destructive/20 transition-opacity flex items-center justify-center ${direction === "left" ? "opacity-100" : "opacity-0"}`}
  >
- <div className="border border-destructive rounded text-destructive font-bold text-4xl p-4 rotate-[-20deg] uppercase">
+ <div className="border border-destructive rounded text-destructive font-bold text-4xl p-4 -rotate-12 uppercase">
  Nope
  </div>
  </div>
  <div
  className={`absolute inset-0 bg-success/20 transition-opacity flex items-center justify-center ${direction === "right" ? "opacity-100" : "opacity-0"}`}
  >
- <div className="border border-success rounded text-success font-bold text-4xl p-4 rotate-[20deg] uppercase">
+ <div className="border border-success rounded text-success font-bold text-4xl p-4 rotate-12 uppercase">
  Match!
  </div>
  </div>

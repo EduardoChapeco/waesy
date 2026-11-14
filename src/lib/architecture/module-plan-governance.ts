@@ -73,14 +73,14 @@ export const COMMERCIAL_MODULE_CATALOG: Record<CommercialModuleId, CommercialMod
   module_ai_copilot_voice: {
     id: "module_ai_copilot_voice",
     name: "Copilot IA & Estúdio de Voz PTT",
-    tagline: "Respostas inteligentes com contexto 360 do cliente e áudios nativos",
+    tagline: "Respostas inteligentes com contexto do cliente e áudios nativos",
     description: "Acelere as vendas com IA que lê o histórico de compras, cotações pendentes e regras de negócio, gerando respostas diretas e notas de voz ouvidas antes do envio.",
     category: "ai",
     monthlyPriceCents: 14900, // R$ 149,00/mês
     applicableVerticals: "all",
     includedInTiers: ["professional", "enterprise"],
     features: [
-      "Escrever com IA lendo o perfil 360 do cliente e cotações",
+      "Escrever com IA lendo o perfil do cliente e cotações",
       "Gerador de Nota de Voz IA com prévia antes do despacho no WhatsApp",
       "Detecção automática de promessas esquecidas (Anti-esquecimento)",
       "Transcrição sob demanda de áudios recebidos (Whisper)",

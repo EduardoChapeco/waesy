@@ -231,11 +231,18 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  }
 
  // Get current settings to merge
- const { data: currentStore } = await db
+ const { data: currentStore, error: currentStoreErr } = await db
  .from("stores")
  .select("settings")
  .eq("id", identity.store_id)
  .single();
+
+ if (currentStoreErr || !currentStore) {
+   throw new Error(
+     "Erro ao ler configurações atuais da loja: " +
+       (currentStoreErr?.message || "loja não encontrada"),
+   );
+ }
 
  const resolvedDeliveryZones = delivery_zones !== undefined ? delivery_zones : deliveryZones;
  const resolvedDeliveryMatrix = delivery_matrix !== undefined ? delivery_matrix : deliveryMatrix;
@@ -339,7 +346,13 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
 
  const { error } = await db
  .from("stores")
- .update({ ...columns, ...(logoUrl !== undefined ? { logo_url: logoUrl || null } : {}), ...(bannerUrl !== undefined ? { banner_url: bannerUrl || null } : {}), ...(enabled_modules !== undefined ? { enabled_modules } : {}), settings })
+ .update({
+   ...columns,
+   ...(logoUrl !== undefined ? { logo_url: logoUrl || null } : {}),
+   ...(bannerUrl !== undefined ? { banner_url: bannerUrl || null } : {}),
+   ...(canMutateNicheAndModules && enabled_modules !== undefined ? { enabled_modules } : {}),
+   settings,
+ })
  .eq("id", identity.store_id);
 
  if (error) {
@@ -796,11 +809,15 @@ export const getWorkingHours = createServerFn({ method: "GET" }).handler(async (
  assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
  const db = getServerClient();
- const { data: store } = await db
+ const { data: store, error } = await db
  .from("stores")
  .select("settings")
  .eq("id", identity.store_id)
  .single();
+
+ if (error) {
+   throw new Error("Erro ao carregar horários: " + error.message);
+ }
 
  const raw = (store?.settings as any)?.working_hours;
  if (!raw) return DEFAULT_WORKING_HOURS;

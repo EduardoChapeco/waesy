@@ -95,7 +95,7 @@ export function StudioFrame({
   return (
     <div
       ref={containerRef}
-      className="flex-1 w-full h-full overflow-y-auto no-scrollbar overflow-x-hidden bg-muted/60 p-4 sm:p-8 flex flex-col items-center justify-start relative select-none"
+      className="flex-1 min-h-0 w-full h-full overflow-auto scrollbar-waesy bg-muted/60 p-4 sm:p-8 flex flex-col items-center justify-start relative select-none"
     >
       <div className="mb-3 flex items-center gap-2 rounded-full border border-border/60 bg-background/90 px-3 py-1 text-xs font-medium text-muted-foreground">
         <span className="font-semibold text-foreground">{dims.label}</span>

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { createHash } from "node:crypto";
 
@@ -108,7 +109,7 @@ export const listPersonalFinanceCategories = createServerFn({ method: "GET" })
           profileId: c.profile_id,
           name: c.name.trim(),
           icon: c.icon || "Receipt",
-          color: c.color || "#6366f1",
+          color: c.color || TOKEN_HEX.blue600,
           type: c.type,
           isSystem: c.profile_id === null,
         });
@@ -184,7 +185,7 @@ export const getPersonalFinanceSummary = createServerFn({ method: "GET" })
       const catKey = cat?.id || "outros";
       const catName = cat?.name || (isIncome ? "Outras Receitas" : "Outras Despesas");
       const catIcon = cat?.icon || "Receipt";
-      const catColor = cat?.color || (isIncome ? "#22c55e" : "#64748b");
+      const catColor = cat?.color || (isIncome ? TOKEN_HEX.green500 : TOKEN_HEX.neutral500);
 
       const existingCat = categoryMap.get(catKey) || {
         categoryId: cat?.id || null,
@@ -330,7 +331,7 @@ export const listPersonalFinanceEntries = createServerFn({ method: "GET" })
               profileId: e.personal_financial_categories.profile_id,
               name: e.personal_financial_categories.name,
               icon: e.personal_financial_categories.icon || "Receipt",
-              color: e.personal_financial_categories.color || "#6366f1",
+              color: e.personal_financial_categories.color || TOKEN_HEX.blue600,
               type: e.personal_financial_categories.type,
               isSystem: e.personal_financial_categories.profile_id === null,
             }
@@ -510,7 +511,7 @@ export const createPersonalFinanceCategory = createServerFn({ method: "POST" })
     z.object({
       name: z.string().min(2, "Nome da categoria deve ter no mínimo 2 caracteres."),
       icon: z.string().default("Receipt"),
-      color: z.string().default("#6366f1"),
+      color: z.string().default(TOKEN_HEX.blue600),
       type: z.enum(["income", "expense", "both"]).default("expense"),
     })
   )

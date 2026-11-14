@@ -361,7 +361,7 @@ export const getThemeSettings = createServerFn({ method: "GET" }).handler(async 
             background_color: "#FFFFFF",
             // design-lint-ignore DL-01 reason:"Valores de fallback do schema de branding para loja virgem" expiry:"2027-12-31"
             text_color: "#09090B",
-            font_heading: "Plus Jakarta Sans",
+            font_heading: "Inter",
             font_body: "Inter",
             border_radius: "0.75rem",
             logo_url: null,

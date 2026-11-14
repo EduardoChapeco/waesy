@@ -104,7 +104,7 @@ export function ProUpgradePaywallModal({
           <Button
             asChild
             size="sm"
-            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-foreground shadow-xs cursor-pointer"
+            className="w-full sm:w-auto rounded-lg text-xs h-11 min-h-11 font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
           >
             <Link
               to="/workspace/financeiro/faturas"

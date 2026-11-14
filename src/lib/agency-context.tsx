@@ -143,11 +143,11 @@ export function AgencyProvider({
 
       if (cached) {
         const bk = JSON.parse(cached);
-        const primaryColor = bk.primary_color || bk.brand_color || color || "#1E3A5F";
-        const secondaryColor = bk.secondary_color || "#D4AF37";
-        const accentColor = bk.accent_color || "#E63946";
-        const bgColor = bk.background_color || "#FFFFFF";
-        const textColor = bk.text_color || "#111827";
+        const primaryColor = bk.primary_color || bk.brand_color || color || "var(--color-slate-900)";
+        const secondaryColor = bk.secondary_color || "var(--warning)";
+        const accentColor = bk.accent_color || "var(--color-red-600)";
+        const bgColor = bk.background_color || "var(--color-neutral-50)";
+        const textColor = bk.text_color || "var(--color-neutral-900)";
         const fontHeading = bk.font_heading || "Inter";
         const fontBody = bk.font_body || "Inter";
 
@@ -240,11 +240,11 @@ export function AgencyProvider({
       if (fg) el.style.setProperty("--agency-brand-fg", fg);
 
       if (bk) {
-        const primaryColor = bk.primary_color || bk.brand_color || color || "#1E3A5F";
-        const secondaryColor = bk.secondary_color || "#D4AF37";
-        const accentColor = bk.accent_color || "#E63946";
-        const bgColor = bk.background_color || "#FFFFFF";
-        const textColor = bk.text_color || "#111827";
+        const primaryColor = bk.primary_color || bk.brand_color || color || "var(--color-slate-900)";
+        const secondaryColor = bk.secondary_color || "var(--warning)";
+        const accentColor = bk.accent_color || "var(--color-red-600)";
+        const bgColor = bk.background_color || "var(--color-neutral-50)";
+        const textColor = bk.text_color || "var(--color-neutral-900)";
         const fontHeading = bk.font_heading || "Inter";
         const fontBody = bk.font_body || "Inter";
 
@@ -270,12 +270,12 @@ export function AgencyProvider({
         const fontUrl = `https://fonts.googleapis.com/css2?family=${headingFormatted}:wght@400;600;700;800&family=${bodyFormatted}:wght@400;500;700&display=swap`;
         if (linkEl.href !== fontUrl) linkEl.href = fontUrl;
       } else {
-        const fallbackColor = color || "#1E3A5F";
+        const fallbackColor = color || "var(--color-slate-900)";
         el.style.setProperty("--brand-primary", fallbackColor);
-        el.style.setProperty("--brand-secondary", "#D4AF37");
-        el.style.setProperty("--brand-accent", "#E63946");
-        el.style.setProperty("--brand-bg", "#FFFFFF");
-        el.style.setProperty("--brand-text", "#111827");
+        el.style.setProperty("--brand-secondary", "var(--warning)");
+        el.style.setProperty("--brand-accent", "var(--color-red-600)");
+        el.style.setProperty("--brand-bg", "var(--color-neutral-50)");
+        el.style.setProperty("--brand-text", "var(--color-neutral-900)");
         el.style.setProperty("--brand-heading-font", `"Inter", sans-serif`);
         el.style.setProperty("--brand-body-font", `"Inter", sans-serif`);
       }

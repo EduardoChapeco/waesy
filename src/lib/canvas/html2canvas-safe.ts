@@ -393,6 +393,11 @@ export function sanitizeCloneStylesForHtml2Canvas(
     normalizeContainer(clonedDoc.body, liveElement?.ownerDocument?.body);
   }
 
+  // Garante visibilidade do elemento clonado mesmo se oculto em modo editorial offscreen
+  if (clonedElement.style.opacity === "0" || cloneView?.getComputedStyle(clonedElement).opacity === "0") {
+    clonedElement.style.opacity = "1";
+  }
+
   for (let idx = 0; idx < cloneNodes.length; idx++) {
     const cloneNode = cloneNodes[idx];
     const matchingLiveNode =

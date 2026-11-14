@@ -244,7 +244,7 @@ export function ChatListItem({
                       <CheckCheck className="size-3.5 text-gray-400 stroke-regular" />
                     )}
                     {readState === "read" && (
-                      <CheckCheck className="size-3.5 text-sky-500 stroke-[2.4]" />
+                      <CheckCheck className="size-3.5 text-sky-500" strokeWidth={2.5} />
                     )}
                   </span>
                 )}

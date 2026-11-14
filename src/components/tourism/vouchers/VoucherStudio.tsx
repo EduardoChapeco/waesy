@@ -29,6 +29,7 @@ import { type Voucher, type VoucherFlight, type VoucherAccommodation, type Vouch
 import { StudioFrame, type CanvasFormat } from "@/components/studio/StudioFrame";
 import TemplateVoucherEmbarqueA4 from "./templates/TemplateVoucherEmbarqueA4";
 import TemplateVoucherStory from "./templates/TemplateVoucherStory";
+import { DocumentExportMenu } from "@/components/documents/DocumentExportMenu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAgency } from "@/lib/agency-context";
 import { FormInput as Input } from "@/components/ui/input";
@@ -96,7 +97,7 @@ function AccordionSection({
         variant="ghost"
         type="button"
         onClick={() => setOpenId(open ? null : id)}
-        className="flex w-full items-center gap-2 px-3 py-3 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none"
+        className="flex w-full min-h-11 items-center gap-2 px-3 py-3 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {open ? (
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -253,7 +254,7 @@ export function VoucherStudio({
         setOpenId={setOpenSection}
       >
         {flights.map((f: any, i: number) => (
-          <div key={i} className="space-y-2 rounded-full border border-border p-2">
+          <div key={i} className="space-y-2 rounded-xl border border-border p-2">
             <div className="flex flex-col gap-2">
               <div className="col-span-1">
                 <Lbl label="Buscar Cia Aérea no Catálogo">
@@ -416,7 +417,7 @@ export function VoucherStudio({
         setOpenId={setOpenSection}
       >
         {accommodation.map((a: any, i: number) => (
-          <div key={i} className="space-y-2 rounded-full border border-border p-2">
+          <div key={i} className="space-y-2 rounded-xl border border-border p-2">
             <div className="flex flex-col gap-2">
               <div className="col-span-1">
                 <Lbl label="Buscar Hotel no Catálogo da Agência">
@@ -557,7 +558,7 @@ export function VoucherStudio({
         setOpenId={setOpenSection}
       >
         {transfers.map((t: any, i: number) => (
-          <div key={i} className="space-y-2 rounded-full border border-border p-2">
+          <div key={i} className="space-y-2 rounded-xl border border-border p-2">
             <div className="flex flex-col gap-2">
               <div className="col-span-1">
                 <Lbl label="Buscar Operadora de Transfer">
@@ -746,7 +747,7 @@ export function VoucherStudio({
       >
         <Textarea
           rows={4}
-          className="w-full rounded-full border-border/50 bg-surface-alt/50 px-3 focus:border-border-strong resize-none"
+          className="w-full rounded-lg border-border/60 bg-surface-alt/50 px-3 focus:border-border-strong resize-none"
           value={draft.observations ?? ""}
           onChange={(e) => upd("observations", e.target.value)}
           placeholder="Informações adicionais para o passageiro…"
@@ -892,8 +893,11 @@ export function VoucherStudio({
         <div className="flex items-center gap-3">
           <Button
             type="button"
+            variant="outline"
+            size="iconSm"
             onClick={onCancel}
-            className="rounded-full p-2 text-muted-foreground hover:bg-surface-alt transition-colors"
+            className="size-11 min-h-11 sm:size-9 sm:min-h-9 rounded-lg border-border/70 p-0 text-muted-foreground hover:text-foreground hover:bg-surface-alt transition-colors"
+            aria-label="Voltar"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -910,39 +914,47 @@ export function VoucherStudio({
           {/* Mobile/Tablet config panel toggle */}
           <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setSidebarOpen(true)}
-            className="xl:hidden flex h-11 min-h-11 items-center gap-2 rounded-full border border-border px-3 text-xs font-semibold hover:bg-surface-alt transition-colors"
+            className="xl:hidden flex h-11 min-h-11 sm:h-9 sm:min-h-9 items-center gap-2 rounded-lg border border-border/70 px-3 text-xs font-medium hover:bg-surface-alt transition-colors"
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
             <span>Campos</span>
           </Button>
           {/* Format toggle */}
-          <div className="flex rounded-full border border-border overflow-hidden">
+          <div className="flex rounded-lg border border-border/70 overflow-hidden bg-muted/20 p-1 gap-1">
             <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setMode("a4-portrait")}
-              className={`px-3 py-2 text-xs font-medium transition-colors ${mode === "a4-portrait" ? "bg-primary text-primary-foreground" : "hover:bg-surface-alt"}`}
+              className={`h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${mode === "a4-portrait" ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "hover:bg-surface-alt"}`}
             >
               A4
             </Button>
             <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setMode("story-916")}
-              className={`px-3 py-2 text-xs font-medium transition-colors ${mode === "story-916" ? "bg-primary text-primary-foreground" : "hover:bg-surface-alt"}`}
+              className={`h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${mode === "story-916" ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "hover:bg-surface-alt"}`}
             >
               Story 9:16
             </Button>
             <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setMode("whatsapp")}
-              className={`px-3 py-2 text-xs font-medium transition-colors ${mode === "whatsapp" ? "bg-primary text-primary-foreground" : "hover:bg-surface-alt"}`}
+              className={`h-11 min-h-11 sm:h-8 sm:min-h-8 px-3 rounded-lg text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${mode === "whatsapp" ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "hover:bg-surface-alt"}`}
             >
               WhatsApp
             </Button>
           </div>
 
           {/* Upload PDF */}
-          <label className="flex h-11 min-h-11 cursor-pointer items-center gap-2 rounded-full border border-dashed border-brand/50 bg-brand/5 px-3 text-xs font-bold text-brand hover:bg-brand/10 transition-colors">
+          <label className="flex h-11 min-h-11 sm:h-9 sm:min-h-9 cursor-pointer items-center gap-2 rounded-lg border border-dashed border-brand/50 bg-brand/5 px-3 text-xs font-semibold text-brand hover:bg-brand/10 transition-colors">
             <Upload className="h-3.5 w-3.5" />
             OCR IA
             <Input
@@ -957,9 +969,11 @@ export function VoucherStudio({
           {mode === "a4-portrait" && (
             <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={exportA4Pdf}
               disabled={exporting}
-              className="flex h-11 min-h-11 items-center gap-2 rounded-full border border-border px-3 text-xs font-medium hover:bg-surface-alt transition-colors disabled:opacity-60"
+              className="flex h-11 min-h-11 sm:h-9 sm:min-h-9 items-center gap-2 rounded-lg border border-border/70 px-3 text-xs font-medium hover:bg-surface-alt transition-colors disabled:opacity-60"
             >
               <Download className="h-3.5 w-3.5" />
               {exporting ? "Exportando…" : "PDF A4"}
@@ -968,19 +982,36 @@ export function VoucherStudio({
           {mode === "story-916" && (
             <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setStorySheetOpen(true)}
-              className="flex h-11 min-h-11 items-center gap-2 rounded-full border border-border px-3 text-xs font-medium hover:bg-surface-alt transition-colors"
+              className="flex h-11 min-h-11 sm:h-9 sm:min-h-9 items-center gap-2 rounded-lg border border-border/70 px-3 text-xs font-medium hover:bg-surface-alt transition-colors"
             >
               <Instagram className="h-3.5 w-3.5" />
               Story
             </Button>
           )}
 
+          {mode !== "whatsapp" && (
+            <DocumentExportMenu
+              filenameBase={`voucher-${draft.destination || draft.general_locator || "viagem"}`}
+              title={draft.destination ? `Voucher — ${draft.destination}` : "Voucher de Embarque"}
+              subtitle={draft.general_locator ? `Localizador: ${draft.general_locator}` : undefined}
+              agencyName={agency.name}
+              agencyLogoUrl={brandKit?.logo_url || agency.logo_url}
+              elementId={mode === "story-916" ? "story-preview-canvas" : "voucher-canvas"}
+              markdownContent={generateWhatsAppText()}
+              pageFormat={mode === "story-916" ? "story-916" : "a4-portrait"}
+              compact
+            />
+          )}
+
           <Button
             type="button"
+            size="sm"
             onClick={onSave}
             disabled={saving}
-            className="flex h-11 min-h-11 items-center gap-2 rounded-full bg-primary px-3 text-xs font-semibold text-primary-foreground disabled:opacity-60 whitespace-nowrap"
+            className="flex h-11 min-h-11 sm:h-9 sm:min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground disabled:opacity-60 whitespace-nowrap"
           >
             <Save className="h-3.5 w-3.5" />
             {saving ? "Salvando…" : isEdit ? "Salvar" : "Criar Voucher"}
@@ -1001,7 +1032,7 @@ export function VoucherStudio({
             <div className="w-full max-w-sm bg-muted/50 rounded-card border border-border/80 overflow-hidden flex flex-col h-144 font-sans">
               {/* WhatsApp Header */}
               <div className="bg-emerald-700 text-neutral-100 px-4 py-3 flex items-center gap-3 shrink-0">
-                <div className="w-9 h-11 min-h-11 rounded-full glass-dark overflow-hidden flex items-center justify-center shrink-0">
+                <div className="size-11 rounded-xl glass-dark overflow-hidden flex items-center justify-center shrink-0">
                   {agency.logo_url ? (
                     <img src={agency.logo_url} alt="Logo" className="w-full h-full object-cover" />
                   ) : (
@@ -1025,21 +1056,24 @@ export function VoucherStudio({
               <div className="bg-card p-3 border-t border-border/80 flex gap-2 justify-end shrink-0">
                 <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => {
                     navigator.clipboard.writeText(generateWhatsAppText());
                     toast.success("Mensagem copiada!");
                   }}
-                  className="h-11 min-h-11 rounded-full bg-surface border border-border px-3 text-xs font-semibold hover:bg-surface-alt flex items-center gap-2 transition-colors"
+                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg bg-surface border border-border/70 px-3 text-xs font-medium hover:bg-surface-alt flex items-center gap-2 transition-colors"
                 >
                   Copiar Mensagem
                 </Button>
                 <Button
                   type="button"
+                  size="sm"
                   onClick={() => {
                     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(generateWhatsAppText())}`;
                     window.open(url, "_blank");
                   }}
-                  className="h-11 min-h-11 rounded-full bg-emerald-600 text-neutral-100 px-4 text-xs font-semibold hover:bg-emerald-700 flex items-center gap-2 transition-colors"
+                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg bg-emerald-600 text-neutral-100 px-4 text-xs font-semibold hover:bg-emerald-700 flex items-center gap-2 transition-colors"
                 >
                   Enviar
                 </Button>
@@ -1094,8 +1128,9 @@ export function VoucherStudio({
             <div className="flex gap-3 w-full">
               <Button
                 type="button"
+                variant="outline"
                 onClick={() => setStorySheetOpen(false)}
-                className="flex-1 h-11 min-h-11 rounded-full border border-border text-xs font-medium hover:bg-surface-alt transition-colors"
+                className="flex-1 h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg border border-border/70 text-xs font-medium hover:bg-surface-alt transition-colors"
               >
                 Fechar
               </Button>
@@ -1103,7 +1138,7 @@ export function VoucherStudio({
                 type="button"
                 onClick={exportStoryPng}
                 disabled={exporting}
-                className="flex-1 h-11 min-h-11 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-60 flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                className="flex-1 h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-60 flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
               >
                 <Download className="h-3.5 w-3.5" />
                 {exporting ? "Gerando…" : "Baixar 9:16 PNG"}

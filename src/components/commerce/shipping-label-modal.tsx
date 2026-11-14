@@ -195,8 +195,7 @@ export function ShippingLabelModal({
                 <div
                   ref={printableRef}
                   id="print-shipping-label"
-                  className="w-[100mm] min-h-[150mm] max-w-full bg-card text-foreground p-4 border-2 border-black rounded-sm shadow-overlay font-sans text-xs flex flex-col justify-between"
-                  style={{ boxSizing: "border-box" }}
+                  className="thermal-label-sheet max-w-full box-border bg-card text-foreground p-4 border-2 border-black rounded-sm shadow-overlay font-sans text-xs flex flex-col justify-between"
                 >
                   {/* Topo / Chancelas */}
                   <div className="border-b-2 border-black pb-2 flex items-center justify-between">

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
+import { ErrorState } from "@/components/state/states";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +17,15 @@ export const Route = createFileRoute("/workspace/catalogo/colecoes/")({
   loader: async () => {
     try {
       const res = await listCollections();
-      return res || [];
-    } catch {
-      return [];
+      return {
+        collections: res || [],
+        loadError: null as string | null,
+      };
+    } catch (err: any) {
+      return {
+        collections: [],
+        loadError: err?.message || "Não foi possível carregar as coleções.",
+      };
     }
   },
   component: AdminCollectionsPage,
@@ -103,43 +110,25 @@ function CollectionsMobileView({ filteredCollections, onUpdateStatus }: Collecti
                   <MoreHorizontal className="size-5 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 p-2 rounded-lg">
-                {col.status !== "archived" ? (
-                  <>
-                    {col.status === "active" ? (
-                      <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                        onClick={() => onUpdateStatus(col.id, "inactive")}
-                        className="h-11 min-h-11 rounded-lg text-sm font-medium cursor-pointer"
-                      >
-                        <EyeOff className="mr-2 size-4 text-muted-foreground" />
-                        Desativar Coleção
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                        onClick={() => onUpdateStatus(col.id, "active")}
-                        className="h-11 min-h-11 rounded-lg text-sm font-medium cursor-pointer"
-                      >
-                        <Check className="mr-2 size-4 text-success" />
-                        Ativar Coleção
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                      className="h-11 min-h-11 rounded-lg text-sm font-medium text-destructive focus:text-destructive cursor-pointer"
-                      onClick={() => onUpdateStatus(col.id, "archived")}
-                    >
-                      <Archive className="mr-2 size-4" />
-                      Arquivar
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                    onClick={() => onUpdateStatus(col.id, "active")}
-                    className="h-11 min-h-11 rounded-lg text-sm font-medium cursor-pointer"
-                  >
-                    <RotateCcw className="mr-2 size-4" />
-                    Restaurar Coleção
-                  </DropdownMenuItem>
-                )}
+              <DropdownMenuContent align="end" className="w-52 p-2 rounded-xl">
+                <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
+                  onClick={() =>
+                    onUpdateStatus(col.id, col.status === "active" ? "inactive" : "active")
+                  }
+                  className="h-11 min-h-11 rounded-lg text-sm font-medium cursor-pointer"
+                >
+                  {col.status === "active" ? (
+                    <>
+                      <Archive className="mr-2 size-4 text-muted-foreground" />
+                      Arquivar / Desativar
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="mr-2 size-4 text-success" />
+                      Restaurar Coleção
+                    </>
+                  )}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -229,49 +218,31 @@ function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: Collect
                         <MoreHorizontal className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 p-2 rounded-lg">
-                      {col.status !== "archived" ? (
-                        <>
-                          <DropdownMenuItem asChild className="h-9 rounded-lg text-sm cursor-pointer">
-                            <Link to={`/workspace/catalogo/colecoes/${col.id}` as any}>
-                              <Edit className="mr-2 size-4" />
-                              Editar Coleção
-                            </Link>
-                          </DropdownMenuItem>
-                          {col.status === "active" ? (
-                            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                              onClick={() => onUpdateStatus(col.id, "inactive")}
-                              className="h-9 rounded-lg text-sm cursor-pointer"
-                            >
-                              <EyeOff className="mr-2 size-4 text-muted-foreground" />
-                              Desativar
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                              onClick={() => onUpdateStatus(col.id, "active")}
-                              className="h-9 rounded-lg text-sm cursor-pointer"
-                            >
-                              <Check className="mr-2 size-4 text-success" />
-                              Ativar
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                            className="h-9 rounded-lg text-sm text-destructive focus:text-destructive cursor-pointer"
-                            onClick={() => onUpdateStatus(col.id, "archived")}
-                          >
-                            <Archive className="mr-2 size-4" />
-                            Arquivar
-                          </DropdownMenuItem>
-                        </>
-                      ) : (
-                        <DropdownMenuItem /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
-                          onClick={() => onUpdateStatus(col.id, "active")}
-                          className="h-9 rounded-lg text-sm cursor-pointer"
-                        >
-                          <RotateCcw className="mr-2 size-4" />
-                          Restaurar
-                        </DropdownMenuItem>
-                      )}
+                    <DropdownMenuContent align="end" className="w-52 p-2 rounded-xl">
+                      <DropdownMenuItem asChild className="min-h-11 h-11 rounded-lg text-sm cursor-pointer">
+                        <Link to={`/workspace/catalogo/colecoes/${col.id}` as any}>
+                          <Edit className="mr-2 size-4" />
+                          Editar Coleção
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          onUpdateStatus(col.id, col.status === "active" ? "inactive" : "active")
+                        }
+                        className="min-h-11 h-11 rounded-lg text-sm cursor-pointer"
+                      >
+                        {col.status === "active" ? (
+                          <>
+                            <Archive className="mr-2 size-4 text-muted-foreground" />
+                            Arquivar / Desativar
+                          </>
+                        ) : (
+                          <>
+                            <RotateCcw className="mr-2 size-4 text-success" />
+                            Restaurar Coleção
+                          </>
+                        )}
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -285,14 +256,20 @@ function CollectionsDesktopView({ filteredCollections, onUpdateStatus }: Collect
 }
 
 function AdminCollectionsPage() {
-  const collections = Route.useLoaderData();
+  const loaderData = ((Route.useLoaderData?.() as any) || {});
+  const collections = Array.isArray(loaderData)
+    ? loaderData
+    : Array.isArray(loaderData?.collections)
+      ? loaderData.collections
+      : [];
+  const loadError = Array.isArray(loaderData) ? null : loaderData?.loadError || null;
   const router = useRouter();
   const { isCompact: isMobile } = useWindowSizeClass();
-  const [statusFilter, setStatusFilter] = useState<"active" | "archived">("active");
+  const [statusFilter, setStatusFilter] = useState<"active" | "inactive">("active");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const activeCollectionsCount = collections.filter((c: any) => c.status !== "archived").length;
-  const archivedCollectionsCount = collections.filter((c: any) => c.status === "archived").length;
+  const activeCollectionsCount = collections.filter((c: any) => c.status === "active").length;
+  const inactiveCollectionsCount = collections.filter((c: any) => c.status !== "active").length;
 
   const filteredCollections = useMemo(() => {
     return collections.filter((c: any) => {
@@ -301,20 +278,32 @@ function AdminCollectionsPage() {
         c.slug.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus =
-        statusFilter === "active" ? c.status !== "archived" : c.status === "archived";
+        statusFilter === "active" ? c.status === "active" : c.status !== "active";
 
       return matchesSearch && matchesStatus;
     });
   }, [collections, searchQuery, statusFilter]);
+
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <ErrorState
+          title="Erro ao carregar coleções"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   const handleUpdateStatus = async (id: string, newStatus: "active" | "inactive" | "archived") => {
     try {
       const res = await updateCollection({ data: { id, status: newStatus } });
       if (res) {
         toast.success(
-          newStatus === "archived"
-            ? "Coleção arquivada com sucesso!"
-            : "Coleção reativada/atualizada!",
+          newStatus === "active"
+            ? "Coleção ativada com sucesso!"
+            : "Coleção arquivada/desativada com sucesso!",
         );
         router.invalidate();
       } else {
@@ -330,10 +319,10 @@ function AdminCollectionsPage() {
       <WorkspaceCanonicalToolbar
         tabs={[
           { id: "active", label: "Ativas", count: activeCollectionsCount },
-          { id: "archived", label: "Arquivo Morto", count: archivedCollectionsCount },
+          { id: "inactive", label: "Inativas / Arquivo", count: inactiveCollectionsCount },
         ]}
         activeTab={statusFilter}
-        onTabChange={(val) => setStatusFilter(val as "active" | "archived")}
+        onTabChange={(val) => setStatusFilter(val as "active" | "inactive")}
         searchPlaceholder="Buscar coleção por nome ou slug..."
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}

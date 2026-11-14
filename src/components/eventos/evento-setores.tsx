@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, MapPin, Users, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { listEventSectors, upsertEventSector, deleteEventSector } from "@/services/events.functions";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 interface EventoSetoresProps {
   eventId: string;
@@ -22,7 +23,7 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [nome, setNome] = useState("");
   const [capacidade, setCapacidade] = useState("");
-  const [corHex, setCorHex] = useState("#6366f1");
+  const [corHex, setCorHex] = useState<string>(TOKEN_HEX.blue600);
   const [descricao, setDescricao] = useState("");
 
   const loadSectors = async () => {
@@ -200,8 +201,8 @@ export function EventoSetores({ eventId }: EventoSetoresProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <span
-                      className="size-3.5 rounded-full ring-2 ring-border/50"
-                      style={{ backgroundColor: s.cor_hex || "#6366f1" }}
+                      className="size-3.5 rounded-full ring-2 ring-border/50 waesy-dyn-bg"
+                      style={{ "--dyn-bg": s.cor_hex || "var(--color-indigo-500)" } as React.CSSProperties}
                     />
                     <h4 className="text-xs font-bold text-foreground">{s.nome}</h4>
                   </div>

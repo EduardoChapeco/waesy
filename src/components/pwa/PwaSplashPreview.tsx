@@ -21,8 +21,8 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
 }) => {
   return (
     <div
-      style={{ backgroundColor }}
-      className="size-full flex flex-col items-center justify-between p-6 select-none transition-colors duration-300"
+      style={{ "--dyn-bg": backgroundColor } as React.CSSProperties}
+      className="size-full flex flex-col items-center justify-between p-6 select-none transition-colors duration-300 waesy-dyn-bg"
     >
       <div className="h-6" /> {/* Top spacing */}
 
@@ -40,8 +40,8 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
           </div>
         ) : (
           <div
-            style={{ backgroundColor: themeColor }}
-            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-neutral-50 border border-border"
+            style={{ "--dyn-bg": themeColor } as React.CSSProperties}
+            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-neutral-50 border border-border waesy-dyn-bg"
           >
             {shortName.slice(0, 2).toUpperCase()}
           </div>
@@ -55,8 +55,8 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
         {/* Indicador de carregamento animado */}
         <div className="flex items-center justify-center gap-2 pt-3">
           <div
-            style={{ backgroundColor: themeColor }}
-            className={`size-2 rounded-full ${
+            style={{ "--dyn-bg": themeColor } as React.CSSProperties}
+            className={`size-2 rounded-full waesy-dyn-bg ${
               animationType === "bounce"
                 ? "animate-bounce motion-reduce:animate-none"
                 : animationType === "pulse"
@@ -65,8 +65,8 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
             }`}
           />
           <div
-            style={{ backgroundColor: themeColor }}
-            className={`size-2 rounded-full ${
+            style={{ "--dyn-bg": themeColor } as React.CSSProperties}
+            className={`size-2 rounded-full waesy-dyn-bg ${
               animationType === "bounce"
                 ? "animate-bounce motion-reduce:animate-none [animation-delay:0.2s]"
                 : animationType === "pulse"
@@ -75,8 +75,8 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
             }`}
           />
           <div
-            style={{ backgroundColor: themeColor }}
-            className={`size-2 rounded-full ${
+            style={{ "--dyn-bg": themeColor } as React.CSSProperties}
+            className={`size-2 rounded-full waesy-dyn-bg ${
               animationType === "bounce"
                 ? "animate-bounce motion-reduce:animate-none [animation-delay:0.4s]"
                 : animationType === "pulse"

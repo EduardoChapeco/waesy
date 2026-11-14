@@ -20,7 +20,7 @@ import { LoginSchema, RegisterSchema, ResetPasswordSchema } from "@/lib/contract
 import { Provider } from "@supabase/supabase-js";
 import { getEnvVar } from "@/lib/env";
 import { readCookieFromRequest, serializeCookieHeader } from "@/lib/http-cookies";
-import { normalizeInternalReturnPath } from "@/lib/return-path";
+import { normalizeInternalReturnPath, resolveCanonicalOAuthOrigin } from "@/lib/return-path";
 import { checkRateLimit, recordFailedAttempt, resetAttempts, formatRetryAfter } from "@/lib/rate-limiter";
 import { recordAuthAuditEvent } from "@/lib/session-audit.server";
 import { getRealClientIP, captureRequestTelemetry } from "@/lib/network-telemetry.server";
@@ -88,10 +88,22 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
       effectiveEmail?.split("@")[0] ||
       "membro";
 
+    const resolvedRole = profile?.role || identity.role || "customer";
+    const resolvedIsPlatformAdmin = Boolean(
+      (identity as any).isPlatformAdmin ||
+        resolvedRole === "platform_admin" ||
+        resolvedRole === "master" ||
+        resolvedRole === "admin_master" ||
+        resolvedRole === "superadmin" ||
+        user?.app_metadata?.is_master,
+    );
+
     return {
       id: effectiveUserId,
       avatar_url: effectiveAvatar,
       avatarUrl: effectiveAvatar,
+      isPlatformAdmin: resolvedIsPlatformAdmin,
+      isMaster: resolvedIsPlatformAdmin,
       profile: profile || {
         id: effectiveUserId,
         full_name: effectiveFullName,
@@ -102,6 +114,7 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
         id: effectiveUserId,
         email: effectiveEmail,
         avatar_url: effectiveAvatar,
+        app_metadata: user?.app_metadata || {},
         user_metadata: {
           ...userMeta,
           full_name: effectiveFullName,
@@ -110,7 +123,7 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
         },
       },
       email: effectiveEmail,
-      role: profile?.role || identity.role || "customer",
+      role: resolvedIsPlatformAdmin ? "platform_admin" : resolvedRole,
       store_id: identity.store_id,
       memberships: identity.memberships,
     };
@@ -421,19 +434,15 @@ export const signInWithPassword = createServerFn({ method: "POST" })
       console.warn("[auth:signInWithPassword] Erro ao sanitizar cookies:", cookieErr);
     }
 
-    const MASTER_EMAILS = [
-      "contato@usewaesy.com",
-      "admin@usewaesy.com",
-      "meuwaesy@gmail.com",
-      "meuwider@gmail.com",
-      "excelenciatour.smo@gmail.com",
-      "admin@jah.com",
-    ];
-    const userEmail = (data.user?.email || "").toLowerCase();
+    const { isBootstrapPlatformAdminEmail } = await import("@/lib/identity.server");
+    const appRole = String(data.user?.app_metadata?.role || "").toLowerCase();
     const isMaster = Boolean(
-      data.user?.user_metadata?.is_admin_master ||
-      data.user?.user_metadata?.is_superadmin ||
-      MASTER_EMAILS.includes(userEmail)
+      data.user?.app_metadata?.is_master ||
+      appRole === "platform_admin" ||
+      appRole === "master" ||
+      appRole === "admin_master" ||
+      appRole === "superadmin" ||
+      isBootstrapPlatformAdminEmail(data.user?.email)
     );
     const defaultDestination = targetStoreId ? "/workspace" : isMaster ? "/admin-master" : "/";
 
@@ -470,12 +479,31 @@ export const signInWithOAuth = createServerFn({ method: "POST" })
  z.object({
  provider: z.enum(["google", "github", "apple", "azure"]),
  redirectTo: z.string().optional(),
+ origin: z.string().optional(),
  }),
  )
- .handler(async ({ data: { provider, redirectTo } }) => {
+ .handler(async ({ data: { provider, redirectTo, origin } }) => {
  try {
+ let requestOrigin: string | null = null;
+ let forwardedHost: string | null = null;
+ let forwardedProto: string | null = null;
+ try {
+   const req = getRequest();
+   if (req) {
+     requestOrigin = req.headers.get("origin");
+     forwardedHost = req.headers.get("x-forwarded-host") || req.headers.get("host");
+     forwardedProto = req.headers.get("x-forwarded-proto") || new URL(req.url).protocol.replace(":", "");
+   }
+ } catch {}
+
  const supabase = await getSSRClient();
- const siteUrl = getEnvVar("VITE_SITE_URL") || "https://waesy.pages.dev";
+ const siteUrl = resolveCanonicalOAuthOrigin({
+   clientOrigin: origin,
+   requestOrigin,
+   forwardedHost,
+   forwardedProto,
+   envSiteUrl: getEnvVar("VITE_SITE_URL"),
+ });
  const safeNext = normalizeInternalReturnPath(redirectTo, "/");
  const safeRedirectTo = `${siteUrl}/api/auth/callback?next=${encodeURIComponent(safeNext)}`;
 

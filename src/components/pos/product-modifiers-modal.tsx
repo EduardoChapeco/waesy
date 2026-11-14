@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { Utensils, Check, Plus, Loader2, AlertCircle, Compass, Layers, ShoppingBag } from 'lucide-react';
 import { formatMoney } from "@/lib/money";
 import { getModifiersByProduct } from "@/services/modifiers.functions";
@@ -66,7 +67,7 @@ export function ProductModifiersModal({
 
  const productId = product?.id;
 
- const { data: modifierGroups, isLoading } = useQuery({
+ const { data: modifierGroups, isLoading, isError, refetch } = useQuery({
  queryKey: ["product-modifiers", productId],
  queryFn: () => getModifiersByProduct({ data: productId }),
  enabled: !!productId && open,
@@ -159,6 +160,13 @@ export function ProductModifiersModal({
  <Loader2 className="size-6 animate-spin motion-reduce:animate-none text-primary" />
  <p className="text-xs">Carregando complementos...</p>
  </div>
+ ) : isError ? (
+ <ErrorState
+ minimal
+ title="Falha ao carregar complementos"
+ description="Não foi possível carregar as opções deste item."
+ onRetry={() => refetch()}
+ />
  ) : (
  <div className="overflow-y-auto no-scrollbar space-y-5 py-3 pr-1 my-2 flex-1">
  {modifierGroups && modifierGroups.length > 0 ? (
@@ -232,9 +240,11 @@ export function ProductModifiersModal({
  );
  })
  ) : (
- <p className="text-sm text-muted-foreground text-center py-6">
- {semantics.modifierEmptyText}
- </p>
+ <EmptyState
+ minimal
+ title="Sem complementos disponíveis"
+ description={semantics.modifierEmptyText}
+ />
  )}
 
  {/* Observações Contextualizadas */}
@@ -253,10 +263,10 @@ export function ProductModifiersModal({
 
  <div className="p-4 sm:p-5 border-t border-border/80 bg-card flex items-center justify-between gap-3 shrink-0">
  <div className="space-y-1">
- <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
+ <span className="text-2xs text-muted-foreground uppercase font-semibold tracking-wider block">
  Total Unitário
  </span>
- <span className="text-lg font-black text-foreground font-mono">
+ <span className="text-lg font-semibold text-foreground font-mono">
  {formatMoney(finalUnitPriceCents)}
  </span>
  </div>

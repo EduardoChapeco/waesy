@@ -21,7 +21,7 @@ export function SignaturePad({ onSave, onClear }: SignaturePadProps) {
  ctx.lineWidth = 2.5;
  ctx.lineCap = "round";
  ctx.lineJoin = "round";
- ctx.strokeStyle = "#0f172a"; // Slate 900
+ ctx.strokeStyle = getComputedStyle(canvas).getPropertyValue("--color-slate-900").trim() || "black";
  }, []);
 
  const getCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {

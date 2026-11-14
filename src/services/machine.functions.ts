@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { saveStudioProject } from "./studio.functions";
 
 export interface CarouselSlide {
@@ -56,11 +57,11 @@ export const generateViralCarouselContent = createServerFn({ method: "POST" })
  subheadline: 'Arraste para o lado e veja como evitar prejuízo imediato.',
  bodyText: '',
  visualPrompt: `Fundo escuro minimalista com tipografia impactante em destaque para ${data.niche}`,
- suggestedColors: { background: '#0F172A', text: '#FFFFFF', accent: '#F59E0B' },
+ suggestedColors: { background: TOKEN_HEX.neutral900, text: TOKEN_HEX.white, accent: TOKEN_HEX.amber500 },
  layers: [
- { id: 'bg-1', type: 'background', content: '#0F172A', zIndex: 1, style: { width: '100%', height: '100%' } },
- { id: 'txt-1', type: 'text', content: `O Maior Erro em ${data.topic}`, zIndex: 2, style: { fontSize: 36, fontWeight: 'bold', color: '#FFFFFF' } },
- { id: 'badge-1', type: 'badge', content: 'DESLIZE ️', zIndex: 3, style: { background: '#F59E0B', color: '#000000' } },
+ { id: 'bg-1', type: 'background', content: TOKEN_HEX.neutral900, zIndex: 1, style: { width: '100%', height: '100%' } },
+ { id: 'txt-1', type: 'text', content: `O Maior Erro em ${data.topic}`, zIndex: 2, style: { fontSize: 36, fontWeight: 'bold', color: TOKEN_HEX.white } },
+ { id: 'badge-1', type: 'badge', content: 'DESLIZE', zIndex: 3, style: { background: TOKEN_HEX.amber500, color: TOKEN_HEX.neutral950 } },
  ],
  });
 
@@ -73,10 +74,10 @@ export const generateViralCarouselContent = createServerFn({ method: "POST" })
  subheadline: `Dica prática de execução rápida para ${data.niche}.`,
  bodyText: `Ao invés de repetir fórmulas genéricas, aplique a técnica do ecossistema Waesy focada em alta conversão e consistência.`,
  visualPrompt: `Card limpo estilo Apple HIG com contraste refinado`,
- suggestedColors: { background: '#1E293B', text: '#F8FAFC', accent: '#3B82F6' },
+ suggestedColors: { background: TOKEN_HEX.neutral800, text: TOKEN_HEX.neutral50, accent: TOKEN_HEX.blue500 },
  layers: [
- { id: `bg-${i}`, type: 'background', content: '#1E293B', zIndex: 1, style: { width: '100%', height: '100%' } },
- { id: `txt-${i}`, type: 'text', content: `Insight Prático #${i - 1}`, zIndex: 2, style: { fontSize: 24, fontWeight: '600', color: '#3B82F6' } },
+ { id: `bg-${i}`, type: 'background', content: TOKEN_HEX.neutral800, zIndex: 1, style: { width: '100%', height: '100%' } },
+ { id: `txt-${i}`, type: 'text', content: `Insight Prático #${i - 1}`, zIndex: 2, style: { fontSize: 24, fontWeight: '600', color: TOKEN_HEX.blue500 } },
  ],
  });
  }
@@ -89,10 +90,10 @@ export const generateViralCarouselContent = createServerFn({ method: "POST" })
  subheadline: 'Salve para consultar depois e compartilhe com sua equipe.',
  bodyText: 'Clique no link da nossa bio para acessar a ferramenta completa.',
  visualPrompt: 'Visual elegante de encerramento com ícones de salvar e compartilhar',
- suggestedColors: { background: '#0F172A', text: '#FFFFFF', accent: '#10B981' },
+ suggestedColors: { background: TOKEN_HEX.neutral900, text: TOKEN_HEX.white, accent: TOKEN_HEX.green500 },
  layers: [
- { id: 'bg-cta', type: 'background', content: '#0F172A', zIndex: 1, style: { width: '100%', height: '100%' } },
- { id: 'txt-cta', type: 'text', content: 'Salve este post!', zIndex: 2, style: { fontSize: 32, fontWeight: 'bold', color: '#10B981' } },
+ { id: 'bg-cta', type: 'background', content: TOKEN_HEX.neutral900, zIndex: 1, style: { width: '100%', height: '100%' } },
+ { id: 'txt-cta', type: 'text', content: 'Salve este post!', zIndex: 2, style: { fontSize: 32, fontWeight: 'bold', color: TOKEN_HEX.green500 } },
  ],
  });
 
@@ -131,7 +132,7 @@ export const exportCarouselToStudio = createServerFn({ method: "POST" })
  canvas: {
  width: 1080,
  height: 1350, // Formato 4:5 Instagram Portrait
- backgroundColor: '#0F172A',
+ backgroundColor: TOKEN_HEX.neutral900,
  },
  slides: data.slides,
  };

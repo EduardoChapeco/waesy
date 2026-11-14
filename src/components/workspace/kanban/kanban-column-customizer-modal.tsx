@@ -10,6 +10,10 @@ import {
   resetKanbanStages,
   KANBAN_PRESETS_CATALOG,
 } from "@/services/kanban-config.functions";
+import {
+  formatKanbanActionError,
+  listAllNicheKanbanPresets,
+} from "@/lib/niches/kanban-niche-taxonomy";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -145,7 +149,7 @@ export function KanbanColumnCustomizerModal({
       onOpenChange(false);
       toast.success("Colunas do Kanban atualizadas com sucesso!");
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao salvar colunas");
+      toast.error(formatKanbanActionError(err, "Erro ao salvar colunas"));
     } finally {
       setIsSaving(false);
     }
@@ -165,7 +169,7 @@ export function KanbanColumnCustomizerModal({
       onStagesUpdated(res.defaults);
       toast.success("Colunas restauradas para o padrão!");
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao restaurar colunas");
+      toast.error(formatKanbanActionError(err, "Erro ao restaurar colunas"));
     } finally {
       setIsSaving(false);
     }
@@ -190,24 +194,44 @@ export function KanbanColumnCustomizerModal({
               <strong className="text-foreground">Modelos do Setor:</strong> Carregue um preset pré-configurado
             </span>
           </div>
-          <select
-            onChange={(e) => {
-              const selectedKey = e.target.value;
-              if (selectedKey && KANBAN_PRESETS_CATALOG[selectedKey]) {
-                setStages(KANBAN_PRESETS_CATALOG[selectedKey].stages);
-                toast.success(`Preset "${KANBAN_PRESETS_CATALOG[selectedKey].title}" carregado!`);
-              }
-            }}
-            defaultValue=""
-            className="h-9 px-3 rounded-lg text-xs font-semibold bg-background border border-border/60 text-foreground focus:outline-none cursor-pointer"
-          >
-            <option value="" disabled>Carregar modelo...</option>
-            {Object.values(KANBAN_PRESETS_CATALOG).map((p) => (
-              <option key={p.presetKey} value={p.presetKey}>
-                {p.title}
-              </option>
-            ))}
-          </select>
+          {(() => {
+            const allNichePresets = listAllNicheKanbanPresets();
+            return (
+              <select
+                onChange={(e) => {
+                  const selectedKey = e.target.value;
+                  const nichePreset = allNichePresets.find((p) => p.niche === selectedKey);
+                  if (nichePreset) {
+                    setStages(
+                      nichePreset.stages.map((st, idx) => ({
+                        stage_key: st.id,
+                        title: st.title,
+                        purpose: st.purpose,
+                        color: st.colorToken,
+                        sort_order: idx,
+                        is_visible: true,
+                      }))
+                    );
+                    toast.success(`Preset "${nichePreset.nicheLabel}" carregado!`);
+                    return;
+                  }
+                  if (selectedKey && KANBAN_PRESETS_CATALOG[selectedKey]) {
+                    setStages(KANBAN_PRESETS_CATALOG[selectedKey].stages);
+                    toast.success(`Preset "${KANBAN_PRESETS_CATALOG[selectedKey].title}" carregado!`);
+                  }
+                }}
+                defaultValue=""
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium bg-background border border-border/70 text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              >
+                <option value="" disabled>Carregar modelo...</option>
+                {allNichePresets.map((p) => (
+                  <option key={p.niche} value={p.niche}>
+                    {p.nicheLabel} ({p.stages.length} etapas)
+                  </option>
+                ))}
+              </select>
+            );
+          })()}
         </div>
 
         <div className="p-5 max-h-96 sm:max-h-128 overflow-y-auto no-scrollbar space-y-3">
@@ -216,7 +240,7 @@ export function KanbanColumnCustomizerModal({
               key={stage.stage_key}
               className={cn(
                 "p-3 rounded-lg border border-border/70 bg-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-colors duration-200",
-                !stage.is_visible && "opacity-50 bg-muted/40"
+                stage.is_visible === false && "opacity-50 bg-muted/40"
               )}
             >
               {/* Lado Esquerdo: Indicador de Cor & Título */}
@@ -224,8 +248,8 @@ export function KanbanColumnCustomizerModal({
                 {/* Seletor Rápido de Cor */}
                 <div className="flex items-center gap-1 shrink-0">
                   <span
-                    className="size-3.5 rounded-full border border-black/10 shrink-0"
-                    style={{ backgroundColor: stage.color }}
+                    className="size-3.5 rounded-full border border-black/10 shrink-0 waesy-dyn-bg"
+                    style={{ "--dyn-bg": stage.color } as React.CSSProperties}
                   />
                   <select
                     value={stage.color}
@@ -284,10 +308,10 @@ export function KanbanColumnCustomizerModal({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
+                    size="iconSm"
                     disabled={idx === 0}
                     onClick={() => handleMove(idx, "up")}
-                    className="size-7 rounded-md text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                    className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-transparent hover:border-border/70 text-muted-foreground hover:text-foreground cursor-pointer"
                     title="Mover para a esquerda"
                   >
                     <ArrowUp className="size-3.5" />
@@ -295,10 +319,10 @@ export function KanbanColumnCustomizerModal({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
+                    size="iconSm"
                     disabled={idx === stages.length - 1}
                     onClick={() => handleMove(idx, "down")}
-                    className="size-7 rounded-md text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                    className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-transparent hover:border-border/70 text-muted-foreground hover:text-foreground cursor-pointer"
                     title="Mover para a direita"
                   >
                     <ArrowDown className="size-3.5" />
@@ -309,10 +333,10 @@ export function KanbanColumnCustomizerModal({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon"
+                  size="iconSm"
                   onClick={() => handleToggleVisible(idx)}
                   className={cn(
-                    "size-7 rounded-md cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0",
+                    "size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-transparent hover:border-border/70 cursor-pointer",
                     stage.is_visible
                       ? "text-muted-foreground hover:text-foreground"
                       : "text-rose-500 hover:text-rose-600"
@@ -326,9 +350,9 @@ export function KanbanColumnCustomizerModal({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon"
+                  size="iconSm"
                   onClick={() => handleRemoveStage(idx)}
-                  className="size-7 rounded-md cursor-pointer text-muted-foreground hover:text-destructive min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                  className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-transparent hover:border-border/70 cursor-pointer text-muted-foreground hover:text-destructive"
                   title="Excluir coluna"
                 >
                   <Trash2 className="size-3.5" />

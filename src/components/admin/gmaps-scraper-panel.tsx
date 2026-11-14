@@ -255,10 +255,10 @@ export function GmapsScraperPanel() {
 
       <div className="p-6 rounded-lg border border-border/70 space-y-4">
         <h3 className="text-base font-bold text-foreground">Coleta manual</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1fr] gap-3">
-          <Input className="h-11" aria-label="Categoria" placeholder="Categoria (ex.: pizzarias)" value={query} onChange={(e) => setQuery(e.target.value)} />
-          <Input className="h-11" aria-label="Cidade" placeholder="Cidade" value={city} onChange={(e) => setCity(e.target.value)} />
-          <Input className="h-11" aria-label="UF" placeholder="UF" maxLength={2} value={uf} onChange={(e) => setUf(e.target.value)} />
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+          <Input className="h-11 sm:col-span-2" aria-label="Categoria" placeholder="Categoria (ex.: pizzarias)" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Input className="h-11 sm:col-span-2" aria-label="Cidade" placeholder="Cidade" value={city} onChange={(e) => setCity(e.target.value)} />
+          <Input className="h-11 sm:col-span-1" aria-label="UF" placeholder="UF" maxLength={2} value={uf} onChange={(e) => setUf(e.target.value)} />
         </div>
         <Button type="button" variant="outline" onClick={handleRun} disabled={!isActive || run.phase === "running"}>
           {run.phase === "running" ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : <Play />} Coletar

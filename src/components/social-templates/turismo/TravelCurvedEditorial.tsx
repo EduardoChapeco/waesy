@@ -27,10 +27,10 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
         transform: `scale(${scale})`,
         transformOrigin: "top left",
       }}
-      className={`relative bg-[#FAF9F5] text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
+      className={`relative bg-stone-50 text-slate-900 overflow-hidden font-sans select-none flex flex-col justify-between ${className}`}
     >
       {/* Bloco Superior: Imagem com Curvatura Orgânica (62% da Altura) */}
-      <div className="relative w-full h-31/50 rounded-b-[72px] overflow-hidden  bg-slate-900">
+      <div className="relative w-full h-31/50 rounded-b-3xl overflow-hidden  bg-slate-900">
         <img
           src={data.backgroundImageUrl}
           alt={data.title}
@@ -91,7 +91,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
           )}
 
           {/* Título Principal Editorial */}
-          <h1 className="text-4xl lg:text-[46px] font-black text-slate-950 leading-none tracking-tight line-clamp-2 mb-4">
+          <h1 className="text-4xl lg:text-5xl font-black text-slate-950 leading-none tracking-tight line-clamp-2 mb-4">
             {data.title}
           </h1>
 

@@ -21,7 +21,7 @@ export interface EventTopHeroCoverProps {
 export function EventTopHeroCover({
   activeCity = "São Miguel do Oeste",
   coverImageUrl,
-  themeColor = "#0284c7",
+  themeColor = "var(--color-sky-600)",
   calloutTitle = "Aqui tem desconto pra quem é Clube!",
   partnerLogoUrl,
   showBackButton = true,
@@ -55,7 +55,7 @@ export function EventTopHeroCover({
         style={{
           background: coverImageUrl
             ? undefined
-            : `linear-gradient(135deg, ${themeColor} 0%, #1e3a8a 100%)`,
+            : `linear-gradient(135deg, ${themeColor} 0%, var(--color-blue-900) 100%)`,
         }}
       >
         {coverImageUrl ? (

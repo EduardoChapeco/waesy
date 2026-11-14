@@ -1,12 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, STAFF_ROLES, MANAGER_ROLES } from "@/lib/server-access";
 import { encryptSecret, decryptSecret } from "@/lib/crypto-vault.server";
 import { assertStoreWhatsAppInstanceAvailable } from "@/lib/architecture/module-plan-governance";
 
 const ProviderSchema = z.enum(["meta_cloud_api", "evolution_api", "wasender_api", "render_bridge", "custom_webhook"]);
 const ModeSchema = z.enum(["official", "unofficial"]);
+
+export type WhatsAppInstanceEffectivePermissions = {
+  can_view: boolean;
+  can_reply: boolean;
+  can_manage_qr: boolean;
+  can_manage_groups: boolean;
+  can_sync_history: boolean;
+  only_assigned_or_sector: boolean;
+  can_transfer: boolean;
+  can_close: boolean;
+};
 
 export type WhatsAppChannelInstanceDTO = {
   id: string;
@@ -18,6 +29,7 @@ export type WhatsAppChannelInstanceDTO = {
   status: string;
   is_active: boolean;
   is_default: boolean;
+  sync_mode?: "new_only" | "manual_full" | "recent_window";
   phone_number_id: string | null;
   business_account_id: string | null;
   display_phone_number: string | null;
@@ -31,9 +43,10 @@ export type WhatsAppChannelInstanceDTO = {
   last_error_message: string | null;
   created_at: string;
   updated_at: string;
+  effective_permissions?: WhatsAppInstanceEffectivePermissions;
 };
 
-const PublicFields = "id, store_id, display_name, provider, connection_mode, instance_key, status, is_active, is_default, phone_number_id, business_account_id, display_phone_number, external_instance_id, webhook_url, public_config, capabilities, health_status, last_health_check_at, last_error_code, last_error_message, created_at, updated_at";
+const PublicFields = "id, store_id, display_name, provider, connection_mode, instance_key, status, is_active, is_default, sync_mode, phone_number_id, business_account_id, display_phone_number, external_instance_id, webhook_url, public_config, capabilities, health_status, last_health_check_at, last_error_code, last_error_message, created_at, updated_at";
 
 async function requireMaster() {
   const identity = await getServerIdentity();
@@ -50,11 +63,69 @@ export const listWorkspaceWhatsAppInstances = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     const targetStoreId = data?.store_id || data?.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
-    if (!targetStoreId) return [] as WhatsAppChannelInstanceDTO[];
-    assertStoreAccess(identity, ["owner", "admin", "manager"], targetStoreId);
-    const { data: list, error } = await getServerClient().from("whatsapp_channel_instances").select(PublicFields).eq("store_id", targetStoreId).order("created_at", { ascending: false });
+    if (!targetStoreId || !identity.id) return [] as WhatsAppChannelInstanceDTO[];
+    assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
+
+    const db = getServerClient();
+    const membership = (identity.memberships || []).find((m) => m.store_id === targetStoreId);
+    const effectiveRole = membership?.role || identity.role;
+    const isSupervisor =
+      [...MANAGER_ROLES].includes(effectiveRole as any) ||
+      identity.role === "platform_admin" ||
+      identity.role === "master";
+
+    const [{ data: list, error }, { data: memberPermRows }] = await Promise.all([
+      db.from("whatsapp_channel_instances").select(PublicFields).eq("store_id", targetStoreId).order("created_at", { ascending: false }),
+      isSupervisor
+        ? Promise.resolve({ data: [] as any[] })
+        : db
+            .from("whatsapp_instance_member_permissions")
+            .select("instance_id, can_view, can_reply, can_manage_qr, can_manage_groups, can_sync_history, only_assigned_or_sector, can_transfer, can_close")
+            .eq("store_id", targetStoreId)
+            .eq("profile_id", identity.id),
+    ]);
     if (error) throw new Error(`Falha ao listar instâncias WhatsApp: ${error.message}`);
-    return (list || []) as WhatsAppChannelInstanceDTO[];
+
+    const permMap = new Map<string, any>();
+    for (const row of memberPermRows || []) {
+      if ((row as any).instance_id) permMap.set(String((row as any).instance_id), row);
+    }
+
+    const enriched: WhatsAppChannelInstanceDTO[] = [];
+    for (const raw of (list || []) as WhatsAppChannelInstanceDTO[]) {
+      if (isSupervisor) {
+        enriched.push({
+          ...raw,
+          effective_permissions: {
+            can_view: true,
+            can_reply: true,
+            can_manage_qr: true,
+            can_manage_groups: true,
+            can_sync_history: true,
+            only_assigned_or_sector: false,
+            can_transfer: true,
+            can_close: true,
+          },
+        });
+        continue;
+      }
+      const p = permMap.get(raw.id);
+      if (p && p.can_view === false) continue;
+      enriched.push({
+        ...raw,
+        effective_permissions: {
+          can_view: p ? Boolean(p.can_view) : true,
+          can_reply: p ? Boolean(p.can_reply) : true,
+          can_manage_qr: p ? Boolean(p.can_manage_qr) : false,
+          can_manage_groups: p ? Boolean(p.can_manage_groups) : false,
+          can_sync_history: p ? Boolean(p.can_sync_history) : false,
+          only_assigned_or_sector: p ? Boolean(p.only_assigned_or_sector) : false,
+          can_transfer: p ? Boolean(p.can_transfer) : true,
+          can_close: p ? Boolean(p.can_close) : true,
+        },
+      });
+    }
+    return enriched;
   });
 
 export const listMasterWhatsAppInstances = createServerFn({ method: "GET" }).handler(async () => {
@@ -201,7 +272,46 @@ export const listWhatsAppChannelAudit = createServerFn({ method: "GET" }).valida
 
 // ─── Integração Direta Evolution API server-side e QR Code ao vivo ───
 
-const DEFAULT_WEBHOOK_ORIGIN = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
+const rawWebhookOrigin = process.env.VITE_APP_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
+const DEFAULT_WEBHOOK_ORIGIN =
+  rawWebhookOrigin.includes("pages.dev") || rawWebhookOrigin.includes("usewaesy.com")
+    ? "https://waesy.com.br"
+    : rawWebhookOrigin;
+
+const EVOLUTION_WEBHOOK_EVENTS = [
+  "QRCODE_UPDATED",
+  "CONNECTION_UPDATE",
+  "MESSAGES_SET",
+  "MESSAGES_UPSERT",
+  "MESSAGES_UPDATE",
+  "MESSAGES_DELETE",
+  "SEND_MESSAGE",
+];
+
+async function ensureEvolutionWebhookRegistered(
+  baseUrl: string,
+  apiKey: string,
+  externalName: string,
+  webhookUrl: string,
+): Promise<boolean> {
+  if (!baseUrl || !apiKey || !externalName) return false;
+  const cleanBase = baseUrl.replace(/\/$/, "");
+  const webhookConfig = {
+    enabled: true,
+    url: webhookUrl,
+    byEvents: false,
+    base64: true,
+    headers: { apikey: apiKey, "x-api-key": apiKey },
+    events: EVOLUTION_WEBHOOK_EVENTS,
+  };
+  const res = await fetch(`${cleanBase}/webhook/set/${encodeURIComponent(externalName)}`, {
+    method: "POST",
+    headers: { apikey: apiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ webhook: webhookConfig, ...webhookConfig }),
+    signal: AbortSignal.timeout(5000),
+  }).catch(() => null);
+  return Boolean(res && res.ok);
+}
 
 async function resolveEvolutionGatewayConfig(
   db: ReturnType<typeof getServerClient>,
@@ -496,15 +606,31 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
   if (isGlobalMaster && !isMaster) {
     throw new Error("Apenas o Admin Master pode configurar o Número Global da plataforma.");
   }
-  if (!isMaster) {
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
-  }
-
   const storeId = inputStoreId || identity.store_id;
   if (!storeId) throw new Error("Contexto de loja obrigatório para criar instância WhatsApp.");
-
   const db = getServerClient();
   const mode: "create" | "reconnect" = inputMode || (instanceId ? "reconnect" : "create");
+  if (!isMaster) {
+    const targetMembership = (identity.memberships || []).find((m) => m.store_id === storeId);
+    const effectiveRole = targetMembership?.role || identity.role;
+    const isManager = [...MANAGER_ROLES].includes(effectiveRole as any) || effectiveRole === "master";
+    if (!isManager) {
+      assertStoreAccess(identity, STAFF_ROLES, storeId);
+      if (mode !== "reconnect" || !instanceId) {
+        throw new Error("Apenas gerentes ou atendentes autorizados neste canal podem gerenciar pareamento QR.");
+      }
+      const { data: qrPerm } = await db
+        .from("whatsapp_instance_member_permissions")
+        .select("can_manage_qr")
+        .eq("store_id", storeId)
+        .eq("instance_id", instanceId)
+        .eq("profile_id", identity.id)
+        .maybeSingle();
+      if (!qrPerm?.can_manage_qr) {
+        throw new Error("Você não possui permissão para parear o QR Code deste canal WhatsApp.");
+      }
+    }
+  }
 
   let existing: WhatsAppChannelInstanceDTO | null = null;
   if (mode === "reconnect" && instanceId) {
@@ -819,6 +945,7 @@ export async function _connectWhatsAppQrCodeInstance(data: z.infer<typeof Connec
     status: mappedDbStatus,
     is_active: mappedDbStatus !== "error",
     is_default: shouldBeDefault,
+    sync_mode: autoImportHistory ? "manual_full" : ((existing as any)?.sync_mode || "new_only"),
     display_phone_number: detectedPhone,
     public_config: updatedPublicConfig,
     secret_payload_encrypted: secretEncrypted,
@@ -983,6 +1110,8 @@ export async function _syncWhatsAppInstanceStatus(data: z.infer<typeof SyncWhats
     if (liveState === "open") {
       qrCodeBase64 = null;
       pairingCode = null;
+      const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(instance.instance_key)}`;
+      await ensureEvolutionWebhookRegistered(baseUrl, apiKey, externalName, webhookUrl);
     } else if (stateRes.ok) {
       // Busca QR Code atualizado enquanto aguarda leitura
       const connectRes = await fetch(`${baseUrl}/instance/connect/${encodeURIComponent(externalName)}`, {
@@ -1797,6 +1926,10 @@ export const WhatsAppGovernanceConfigSchema = z.object({
         canTransfer: z.boolean().default(true),
         canCloseTicket: z.boolean().default(true),
         canManageQr: z.boolean().default(false),
+        canView: z.boolean().default(true),
+        canReply: z.boolean().default(true),
+        canManageGroups: z.boolean().default(false),
+        canSyncHistory: z.boolean().default(false),
       }),
     )
     .optional(),
@@ -1862,7 +1995,7 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
       );
     }
 
-    // Sincroniza vínculos individuais de agentes em workspace_members quando informados
+    // Sincroniza vínculos individuais de agentes em workspace_members e whatsapp_instance_member_permissions
     for (const perm of data.agentPermissions || []) {
       if (!z.string().uuid().safeParse(perm.agentId).success) continue;
       const validWa =
@@ -1880,6 +2013,35 @@ export const saveWhatsAppGovernanceConfig = createServerFn({ method: "POST" })
         })
         .eq("store_id", storeId)
         .eq("profile_id", perm.agentId);
+
+      const targetPermInstanceId = data.instanceId || validWa;
+      if (targetPermInstanceId) {
+        const allowView = perm.canView ?? true;
+        try {
+          await db
+            .from("whatsapp_instance_member_permissions")
+            .upsert(
+              {
+                store_id: storeId,
+                instance_id: targetPermInstanceId,
+                profile_id: perm.agentId,
+                can_view: allowView,
+                can_reply: allowView ? (perm.canReply ?? true) : false,
+                can_manage_qr: perm.canManageQr,
+                can_manage_groups: perm.canManageGroups ?? false,
+                can_sync_history: perm.canSyncHistory ?? false,
+                only_assigned_or_sector: perm.onlyAssignedOrSector,
+                can_transfer: perm.canTransfer,
+                can_close: perm.canCloseTicket,
+                updated_by: identity.id,
+                updated_at: nowIso,
+              },
+              { onConflict: "instance_id,profile_id" },
+            );
+        } catch {
+          // Schema fallback: tabela opcional em bases legadas
+        }
+      }
     }
 
     const { data: storeRow } = await db.from("stores").select("settings").eq("id", storeId).maybeSingle();
@@ -1958,7 +2120,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
     const db = getServerClient();
     let query = db
       .from("whatsapp_channel_instances")
-      .select("id, store_id, provider, instance_key, external_instance_id, public_config, display_phone_number")
+      .select("id, store_id, provider, instance_key, external_instance_id, public_config, display_phone_number, sync_mode")
       .eq("store_id", storeId)
       .eq("provider", "evolution_api")
       .eq("is_active", true);
@@ -1972,31 +2134,58 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
     const { data: instance, error } = await query.maybeSingle();
     if (error || !instance) throw new Error("Nenhuma instância ativa do WhatsApp encontrada.");
 
-    // Se a instância não tem permissão para importar histórico e não foi forçado pelo usuário
-    const shouldImportHistory = Boolean(data?.forceImport || (instance.public_config as any)?.auto_import_history);
-    if (!shouldImportHistory) {
-      return { importedCount: 0, totalFound: 0, skipped: true, message: "Importação de histórico desativada para esta instância." };
+    const syncMembership = (identity.memberships || []).find((m) => m.store_id === storeId);
+    const syncRole = syncMembership?.role || identity.role;
+    const isSyncSupervisor =
+      [...MANAGER_ROLES].includes(syncRole as any) ||
+      identity.role === "platform_admin" ||
+      identity.role === "master";
+
+    if (!isSyncSupervisor && data?.forceImport) {
+      const { data: syncPerm } = await db
+        .from("whatsapp_instance_member_permissions")
+        .select("can_sync_history")
+        .eq("store_id", storeId)
+        .eq("instance_id", instance.id)
+        .eq("profile_id", identity.id)
+        .maybeSingle();
+      if (!syncPerm?.can_sync_history) {
+        throw new Error("Sem permissão para sincronizar histórico retroativo neste canal WhatsApp.");
+      }
     }
 
     const externalName = instance.external_instance_id || instance.instance_key;
     const { baseUrl, apiKey } = await resolveEvolutionGatewayConfig(db, storeId, instance as any);
 
-    // 1. Garantir webhook ativo na Evolution API
+    // 1. Garantir webhook ativo na Evolution API em todos os modos (incluindo new_only)
     const webhookUrl = `${DEFAULT_WEBHOOK_ORIGIN.replace(/\/$/, "")}/api/webhooks/whatsapp/evolution/${encodeURIComponent(instance.instance_key)}`;
-    await fetch(`${baseUrl}/webhook/set/${encodeURIComponent(externalName)}`, {
-      method: "POST",
-      headers: { apikey: apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        webhook: {
-          enabled: true,
-          url: webhookUrl,
-          byEvents: false,
-          base64: true,
-          events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"],
-        },
-      }),
-      signal: AbortSignal.timeout(6000),
-    }).catch(() => null);
+    await ensureEvolutionWebhookRegistered(baseUrl, apiKey, externalName, webhookUrl);
+
+    // Por padrao canais em new_only sincronizam a janela recente ativa (15 conversas) e em manual_full ate 50
+    const shouldImportHistory = Boolean(
+      data?.forceImport ||
+        (instance.public_config as any)?.auto_import_history ||
+        (instance as any).sync_mode === "manual_full",
+    );
+    const maxChatsToSync = shouldImportHistory ? 50 : 15;
+
+    let syncJobRow: { id: string } | null = null;
+    try {
+      const { data: sj } = await db
+        .from("whatsapp_history_sync_jobs")
+        .insert({
+          store_id: storeId,
+          instance_id: instance.id,
+          requested_by: identity.id,
+          sync_mode: data?.forceImport ? "manual_full" : ((instance as any).sync_mode || "new_only"),
+          status: "running",
+        })
+        .select("id")
+        .single();
+      syncJobRow = sj;
+    } catch {
+      syncJobRow = null;
+    }
 
     // 2. Buscar conversas recentes e contatos com foto na Evolution API em paralelo
     const [chatsRes, contactsRes] = await Promise.all([
@@ -2048,7 +2237,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         const jid = String(c.remoteJid || "");
         return jid && !jid.startsWith("0@") && !jid.includes("@broadcast");
       })
-      .slice(0, 50);
+      .slice(0, maxChatsToSync);
 
     for (const chat of validChats) {
       try {
@@ -2057,7 +2246,10 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
         const rawPhoneSource = (remoteJid.endsWith("@lid") && remoteJidAlt) ? remoteJidAlt : remoteJid;
         const digits = rawPhoneSource.replace(/@.*$/, "").replace(/\D/g, "");
         if (digits.length < 8) continue;
-        const phone = `+${digits}`;
+        const isPureLid =
+          (remoteJid.endsWith("@lid") && !remoteJidAlt) ||
+          (!remoteJid.includes("@g.us") && !remoteJid.includes("@newsletter") && digits.length >= 14);
+        const phone = isPureLid ? "" : `+${digits}`;
 
         const contactInfo = contactMap.get(remoteJid) || contactMap.get(digits) || (remoteJidAlt ? contactMap.get(remoteJidAlt) : null) || null;
         const isGroup = remoteJid.includes("@g.us") || Boolean(contactInfo?.isGroup);
@@ -2070,6 +2262,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
             if (!trimmed) continue;
             const lower = trimmed.toLowerCase();
             if (lower === "você" || lower === "voce" || lower === "you" || lower === "eu") continue;
+            if (/^\+?\d{14,}$/.test(trimmed) || lower.endsWith("@lid")) continue;
             return trimmed;
           }
           return null;
@@ -2084,7 +2277,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
             chat.contact?.pushName,
             chat.contact?.name,
             isLastFromMe ? null : chat.lastMessage?.pushName,
-          ) || (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : phone);
+          ) || (isGroup ? `Grupo WhatsApp ${digits.slice(-4)}` : isChannel ? "Canal WhatsApp" : isPureLid ? `Contato Meta #${digits.slice(-4)}` : phone);
         let groupParticipants: Array<{ phone: string | null; name: string; jid: string | null }> = [];
         if (isGroup && (cleanName.startsWith("Grupo WhatsApp") || /^\+?\d+$/.test(cleanName))) {
           try {
@@ -2121,36 +2314,61 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           null;
 
         const lastMsgObj = chat.lastMessage?.message || {};
+        const lastMsgType = lastMsgObj.stickerMessage
+          ? "sticker"
+          : lastMsgObj.imageMessage
+            ? "image"
+            : lastMsgObj.videoMessage
+              ? "video"
+              : lastMsgObj.audioMessage
+                ? "audio"
+                : lastMsgObj.documentMessage
+                  ? "document"
+                  : "text";
         const text = String(
           lastMsgObj.conversation ||
           lastMsgObj.extendedTextMessage?.text ||
           lastMsgObj.imageMessage?.caption ||
           lastMsgObj.videoMessage?.caption ||
           lastMsgObj.documentMessage?.caption ||
-          (lastMsgObj.imageMessage ? "[Imagem]" : lastMsgObj.audioMessage ? "[Áudio]" : lastMsgObj.documentMessage ? "[Documento]" : "[Mensagem WhatsApp]")
+          lastMsgObj.documentMessage?.fileName ||
+          (lastMsgObj.stickerMessage
+            ? "[Figurinha]"
+            : lastMsgObj.imageMessage
+              ? "[Imagem]"
+              : lastMsgObj.videoMessage
+                ? "[Vídeo]"
+                : lastMsgObj.audioMessage
+                  ? "[Áudio]"
+                  : lastMsgObj.documentMessage
+                    ? "[Documento]"
+                    : "[Mensagem WhatsApp]")
         ).trim();
 
         const timestampSeconds = Number(chat.lastMessage?.messageTimestamp || Date.now() / 1000);
         const occurredAt = new Date(timestampSeconds < 2_000_000_000 ? timestampSeconds * 1000 : timestampSeconds).toISOString();
 
         const { resolveWhatsAppIdentity } = await import("./whatsapp-automation-runtime.server");
-        const identityRecord = await resolveWhatsAppIdentity({
-          storeId,
-          instanceId: instance.id,
-          provider: "evolution_api",
-          externalUserId: remoteJid,
-          phone,
-          displayName: cleanName !== phone ? cleanName : null,
-        });
-
-        if (!identityRecord?.id) continue;
+        const identityRecord =
+          phone && !isGroup && !isChannel
+            ? await resolveWhatsAppIdentity({
+                storeId,
+                instanceId: instance.id,
+                provider: "evolution_api",
+                externalUserId: remoteJid,
+                phone,
+                displayName: cleanName !== phone ? cleanName : null,
+              })
+            : null;
 
         let thread = null;
+        const lookupFilters = [`entity_id.eq.${remoteJid}`, `entity_id.eq.${digits}`];
+        if (phone) lookupFilters.unshift(`entity_id.eq.${phone}`);
         const { data: foundThread } = await db
           .from("chat_threads")
           .select("id, metadata, guest_name")
           .eq("store_id", storeId)
-          .or(`entity_id.eq.${phone},entity_id.eq.${digits}`)
+          .or(lookupFilters.join(","))
           .limit(1)
           .maybeSingle();
 
@@ -2179,6 +2397,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           ...existingMeta,
           is_group: isGroup,
           is_channel: isChannel,
+          is_lid: isPureLid,
           avatar_url: avatarUrl || existingMeta.avatar_url || null,
           whatsapp_jid: remoteJid,
           ...(remoteJidAlt ? { whatsapp_jid_alt: remoteJidAlt } : {}),
@@ -2188,13 +2407,13 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
 
         if (foundThread) {
           thread = foundThread;
-          const preservedName = safeCandidate(cleanName !== phone ? cleanName : null, foundThread.guest_name) || phone;
+          const preservedName = safeCandidate(cleanName !== phone ? cleanName : null, foundThread.guest_name) || cleanName;
           await db
             .from("chat_threads")
             .update({
               guest_name: preservedName,
               ...(isGroup ? { group_subject: preservedName } : {}),
-              ...(!isGroup && !isChannel ? { primary_phone_e164: phone } : {}),
+              ...(!isGroup && !isChannel && phone ? { primary_phone_e164: phone } : {}),
               thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
               metadata: enrichedMeta,
               last_message_text: text.slice(0, 200),
@@ -2209,15 +2428,15 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
             .insert({
               store_id: storeId,
               channel_instance_id: instance.id,
-              channel_identity_id: identityRecord.id,
+              channel_identity_id: identityRecord?.id ?? null,
               guest_name: cleanName,
               guest_email: syntheticEmail,
               group_subject: isGroup ? cleanName : null,
-              primary_phone_e164: isGroup || isChannel ? null : phone,
+              primary_phone_e164: isGroup || isChannel || !phone ? null : phone,
               status: "open",
-              subject: isGroup ? `Grupo: ${cleanName}` : isChannel ? `Canal: ${cleanName}` : `WhatsApp ${phone}`,
+              subject: isGroup ? `Grupo: ${cleanName}` : isChannel ? `Canal: ${cleanName}` : isPureLid ? `Contato Meta ${cleanName}` : `WhatsApp ${phone}`,
               context_type: "whatsapp",
-              entity_id: isGroup || isChannel ? remoteJid : phone,
+              entity_id: isGroup || isChannel || !phone ? remoteJid : phone,
               department: "geral",
               priority: "normal",
               thread_type: isGroup ? "group" : isChannel ? "channel" : "store",
@@ -2248,10 +2467,10 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
           if (!existingMsg) {
             await db.from("chat_messages").insert({
               thread_id: thread.id,
-              channel_identity_id: identityRecord.id,
+              channel_identity_id: identityRecord?.id ?? null,
               channel: "whatsapp",
               message: text,
-              message_type: "text",
+              message_type: lastMsgType,
               is_staff_reply: fromMe,
               provider: "evolution_api",
               external_message_id: externalId,
@@ -2261,6 +2480,7 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
               payload: {
                 from_me: fromMe,
                 origin: fromMe ? "whatsapp_device_sync" : "whatsapp_customer_sync",
+                ...(lastMsgType !== "text" ? { media: { type: lastMsgType } } : {}),
               },
               created_at: occurredAt,
             });
@@ -2273,9 +2493,147 @@ export const syncWhatsAppChatsFromEvolution = createServerFn({ method: "POST" })
       }
     }
 
+    if (syncJobRow?.id) {
+      await db
+        .from("whatsapp_history_sync_jobs")
+        .update({
+          status: "completed",
+          imported_chats: importedCount,
+          total_found: rawChats.length,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", syncJobRow.id);
+    }
+
+    await db
+      .from("whatsapp_channel_instances")
+      .update({
+        ...(data?.forceImport ? { sync_mode: "manual_full" } : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", instance.id);
+
     return {
       importedCount,
       totalFound: rawChats.length,
       connectedPhone: instance.display_phone_number,
+      jobId: syncJobRow?.id || null,
     };
+  });
+
+export type InstanceMemberPermissionDTO = {
+  id?: string;
+  store_id: string;
+  instance_id: string;
+  profile_id: string;
+  can_view: boolean;
+  can_reply: boolean;
+  can_manage_qr: boolean;
+  can_manage_groups: boolean;
+  can_sync_history: boolean;
+  only_assigned_or_sector: boolean;
+  can_transfer: boolean;
+  can_close: boolean;
+};
+
+export const listInstanceMemberPermissions = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional(), instanceId: z.string().uuid().optional(), profileId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!storeId || !identity.id) return [] as InstanceMemberPermissionDTO[];
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+
+    const db = getServerClient();
+    let query = db
+      .from("whatsapp_instance_member_permissions")
+      .select("*")
+      .eq("store_id", storeId);
+
+    if (data?.instanceId) query = query.eq("instance_id", data.instanceId);
+    if (data?.profileId) query = query.eq("profile_id", data.profileId);
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(`Falha ao consultar permissões de canais: ${error.message}`);
+    return (rows || []) as InstanceMemberPermissionDTO[];
+  });
+
+export const upsertInstanceMemberPermissions = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      instanceId: z.string().uuid(),
+      profileId: z.string().uuid(),
+      canView: z.boolean().default(true),
+      canReply: z.boolean().default(true),
+      canManageQr: z.boolean().default(false),
+      canManageGroups: z.boolean().default(false),
+      canSyncHistory: z.boolean().default(false),
+      onlyAssignedOrSector: z.boolean().default(false),
+      canTransfer: z.boolean().default(true),
+      canClose: z.boolean().default(true),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.id) throw new Error("Autenticação obrigatória.");
+    const storeId = data.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!storeId) throw new Error("Loja obrigatória.");
+    if (identity.role !== "platform_admin") {
+      assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
+    }
+
+    const db = getServerClient();
+    const nowIso = new Date().toISOString();
+    const payload = {
+      store_id: storeId,
+      instance_id: data.instanceId,
+      profile_id: data.profileId,
+      can_view: data.canView,
+      can_reply: data.canView ? data.canReply : false,
+      can_manage_qr: data.canManageQr,
+      can_manage_groups: data.canManageGroups,
+      can_sync_history: data.canSyncHistory,
+      only_assigned_or_sector: data.onlyAssignedOrSector,
+      can_transfer: data.canTransfer,
+      can_close: data.canClose,
+      updated_by: identity.id,
+      updated_at: nowIso,
+    };
+
+    const { data: saved, error } = await db
+      .from("whatsapp_instance_member_permissions")
+      .upsert(payload, { onConflict: "instance_id,profile_id" })
+      .select("*")
+      .single();
+
+    if (error) throw new Error(`Falha ao salvar permissão do canal: ${error.message}`);
+    await audit(data.instanceId, storeId, identity.id, "instance.member_permission_updated", "info", {
+      profile_id: data.profileId,
+      can_view: payload.can_view,
+      can_reply: payload.can_reply,
+    });
+    return saved as InstanceMemberPermissionDTO;
+  });
+
+export const listWhatsAppHistorySyncJobs = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional(), instanceId: z.string().uuid().optional() }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!storeId || !identity.id) return [];
+    assertStoreAccess(identity, STAFF_ROLES, storeId);
+
+    const db = getServerClient();
+    let query = db
+      .from("whatsapp_history_sync_jobs")
+      .select("*")
+      .eq("store_id", storeId)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (data?.instanceId) query = query.eq("instance_id", data.instanceId);
+    const { data: rows, error } = await query;
+    if (error) throw new Error(`Falha ao listar histórico de sincronizações: ${error.message}`);
+    return rows || [];
   });

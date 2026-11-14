@@ -22,10 +22,10 @@ import {
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import {
   executeCopilotDrawerMessage,
-  dispatchAiChatAction,
   uploadCopilotMultimodalAttachment,
   type AiExecutionResult,
 } from "@/services/ai-conversations.functions";
+import { dispatchCopilotClientAction } from "@/lib/copilot-action-dispatcher";
 import { CopilotMessageRenderer } from "@/components/chat/copilot-message-renderer";
 import { AIActivityTrail, type AIActivityStep } from "@/components/chat/ai-activity-trail";
 import { ChatArtifactCard, type ChatArtifactData } from "@/components/chat/chat-artifact-card";
@@ -184,50 +184,17 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
   };
 
   const handleDrawerAction = async (action: AIChatAction) => {
-    if (["add_to_cart", "submit_legal_demand", "publish_ad"].includes(action.action_type)) {
-      try {
-        const result = await dispatchAiChatAction({
-          data: {
-            action_type: action.action_type as "add_to_cart" | "request_travel_quote" | "submit_legal_demand" | "publish_ad",
-            payload: action.payload || {},
-          },
-        });
-        if (action.action_type === "add_to_cart") {
-          await refreshCart();
-          setIsGlobalCartOpen(true);
-        }
-        if ((result as { status?: string } | null)?.status === "needs_approval") {
-          toast.info("Solicitação registrada e aguardando aprovação humana.");
-          return result;
-        }
-        toast.success(action.action_type === "publish_ad" ? "Anúncio publicado com sucesso!" : "Ação concluída com sucesso.");
-        return result;
-      } catch (error: any) {
-        toast.error(error?.message || "Não foi possível executar a ação.");
-        return;
-      }
-    }
-
-    switch (action.action_type) {
-      case "open_place":
+    return dispatchCopilotClientAction(action, {
+      refreshCart,
+      setCartOpen: setIsGlobalCartOpen,
+      navigate: (to) => {
         setIsOpen(false);
-        navigate({ to: `/places/${action.payload.slug || action.payload.placeId}` as any });
-        break;
-      case "call_ride":
-        setIsOpen(false);
-        navigate({ to: "/mobilidade" as any });
-        break;
-      case "open_checkout":
-        setIsOpen(false);
-        navigate({ to: "/checkout" as any });
-        break;
-      default:
-        if (typeof action.payload?.href === "string" && action.payload.href.startsWith("/")) {
-          setIsOpen(false);
-          navigate({ to: action.payload.href as any });
-        }
-        break;
-    }
+        navigate({ to: to as any });
+      },
+      notifySuccess: (msg) => toast.success(msg),
+      notifyInfo: (msg) => toast.info(msg),
+      notifyError: (msg) => toast.error(msg),
+    });
   };
 
   const handleExpandToFullScreen = () => {
@@ -256,7 +223,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
       <button /* focus-visible:ring-2 */
         type="button"
         onClick={() => /* focus-visible:ring-2 */ setIsOpen(true)}
-        className={`fixed z-30 flex items-center gap-2 h-11 px-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-transform font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
+        className={`fixed z-30 flex items-center gap-2 h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer ${
           isCompact ? "bottom-20 right-4" : "bottom-6 right-6"
         }`}
         title="Abrir Assessor Local Waesy"
@@ -274,9 +241,9 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
           }`}
         >
           {/* Cabecalho */}
-          <SheetHeader className="p-4 border-b border-border bg-muted/30 flex flex-row items-center justify-between space-y-0">
+          <SheetHeader className="p-4 border-b border-border bg-card flex flex-row items-center justify-between space-y-0">
             <div className="flex items-center gap-3">
-              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shrink-0">
+              <div className="size-9 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center border border-border shrink-0">
                 <ChatCircleDots className="size-4" weight="fill" />
               </div>
               <div className="flex flex-col text-left">
@@ -284,7 +251,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                   Assessor Local
                 </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
-                  Assessor Executivo da Região
+                  Assistente Executivo
                 </SheetDescription>
               </div>
             </div>
@@ -294,8 +261,8 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => /* focus-visible:ring-2 */ handleExpandToFullScreen()}
-                className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+                onClick={() => handleExpandToFullScreen()}
+                className="h-11 min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground flex items-center gap-2 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
                 title="Expandir para tela cheia"
               >
                 <ArrowSquareOut className="size-4" />
@@ -319,17 +286,17 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                 }`}
               >
                 {m.role === "assistant" && (
-                  <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-border shrink-0 mt-1">
-                    <ChatCircleDots className="size-3.5" weight="fill" />
+                  <div className="size-8 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center border border-border shrink-0 mt-1">
+                    <ChatCircleDots className="size-4" weight="fill" />
                   </div>
                 )}
 
                 <div className="max-w-md w-full space-y-2">
                   <div
-                    className={`rounded-lg px-4 py-3 text-xs leading-relaxed ${
+                    className={`rounded-2xl px-4 py-3 text-xs leading-relaxed ${
                       m.role === "user"
-                        ? "bg-primary text-primary-foreground font-medium"
-                        : "bg-muted text-foreground border border-border/60"
+                        ? "bg-surface-raised text-foreground border border-border font-medium"
+                        : "text-foreground"
                     }`}
                   >
                     <CopilotMessageRenderer content={m.text} isUser={m.role === "user"} />
@@ -340,7 +307,7 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                     <div className="w-full my-2">
                       <StructuredMessageView
                         payload={m.structuredPayload as any}
-                        onActionClick={handleDrawerAction} /* focus-visible:ring-2 */
+                        onActionClick={handleDrawerAction}
                       />
                     </div>
                   )}
@@ -366,8 +333,8 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
                 </div>
 
                 {m.role === "user" && (
-                  <div className="size-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center border border-border shrink-0 mt-1">
-                    <User className="size-3.5" />
+                  <div className="size-8 rounded-xl bg-surface-subtle text-muted-foreground flex items-center justify-center border border-border shrink-0 mt-1">
+                    <User className="size-4" />
                   </div>
                 )}
               </div>
@@ -375,11 +342,11 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
 
             {isSending && (
               <div className="flex gap-3 justify-start">
-                <div className="size-7 rounded-full bg-primary/10 text-primary flex items-center justify-center border border-border shrink-0 mt-1">
-                  <CircleNotch className="size-3.5 animate-spin motion-reduce:animate-none" />
+                <div className="size-8 rounded-xl bg-surface-subtle text-foreground flex items-center justify-center border border-border shrink-0 mt-1">
+                  <CircleNotch className="size-4 animate-spin motion-reduce:animate-none" />
                 </div>
-                <div className="bg-muted text-muted-foreground border border-border/60 rounded-lg px-4 py-2 text-xs flex items-center gap-2">
-                  <span>Consultando os dados para você...</span>
+                <div className="bg-surface-subtle text-muted-foreground border border-border rounded-2xl px-4 py-3 text-xs flex items-center gap-2">
+                  <span>Consultando dados...</span>
                 </div>
               </div>
             )}
@@ -387,13 +354,13 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
 
           {/* Sugestoes Rapidas */}
           {messages.length <= 2 && (
-            <div className="px-4 py-2 border-t border-border flex flex-wrap gap-2 bg-background">
+            <div className="px-4 py-2 border-t border-border flex flex-wrap gap-2 bg-card">
               {quickPrompts.map((p) => (
-                <button /* focus-visible:ring-2 */
+                <button
                   key={p}
                   type="button"
-                  onClick={() => /* focus-visible:ring-2 */ handleSendMessage(p)}
-                  className="px-3 py-1 rounded-md text-xs bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
+                  onClick={() => handleSendMessage(p)}
+                  className="min-h-11 px-3 py-1 rounded-xl text-xs bg-surface-subtle hover:bg-surface-hover text-muted-foreground hover:text-foreground border border-border transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none cursor-pointer"
                 >
                   {p}
                 </button>

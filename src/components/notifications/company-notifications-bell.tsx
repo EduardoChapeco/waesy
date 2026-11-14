@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 export function CompanyNotificationsBell() {
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["company-notifications"],
     queryFn: () => listCompanyNotifications({ data: { limit: 10 } }),
     refetchInterval: 15000, // Atualiza a cada 15s para refletir novos leads
@@ -56,7 +56,15 @@ export function CompanyNotificationsBell() {
         </div>
 
         <div className="max-h-80 overflow-y-auto py-1 space-y-1 divide-y divide-border/30">
-          {notifications.length === 0 ? (
+          {isLoading ? (
+            <div className="p-6 text-center text-xs text-muted-foreground">
+              Carregando notificações...
+            </div>
+          ) : isError ? (
+            <div className="p-6 text-center text-xs text-destructive">
+              Não foi possível carregar os alertas.
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="p-6 text-center text-xs text-muted-foreground">
               Nenhuma notificação recente
             </div>

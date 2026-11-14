@@ -14,8 +14,8 @@ import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operat
 import { VoucherStudio } from "@/components/tourism/vouchers/VoucherStudio";
 import { toast } from "sonner";
 import { getStoreSettings } from "@/services/store.functions";
-import { listTravelVouchers, createTravelVoucher, deleteTravelVoucher } from "@/services/travel-vouchers.functions";
-import { VOUCHER_TYPE_LABELS, type VoucherType } from "@/types/travel-vouchers";
+import { listTravelVouchers, createTravelVoucher, duplicateTravelVoucher, deleteTravelVoucher } from "@/services/travel-vouchers.functions";
+import { VOUCHER_TYPE_LABELS, type TravelVoucherDTO, type VoucherType } from "@/types/travel-vouchers";
 import { TemplateVoucherA4 } from "@/components/tourism/vouchers/templates/template-voucher-a4";
 import { TemplateVoucherStory } from "@/components/tourism/vouchers/templates/template-voucher-story";
 import { exportElementAsPdf } from "@/lib/pdf-export";
@@ -46,6 +46,7 @@ export default function WorkspaceVouchersPage() {
   const [selectedType, setSelectedType] = useState("all");
   const [isMetricsOpen, setIsMetricsOpen] = useState(false);
   const [isCreationSheetOpen, setIsCreationSheetOpen] = useState(false);
+  const [editingVoucher, setEditingVoucher] = useState<TravelVoucherDTO | null>(null);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
   const [isUniversalOcrOpen, setIsUniversalOcrOpen] = useState(false);
   const [creationType, setCreationType] = useState<VoucherType>("flight");
@@ -112,6 +113,16 @@ export default function WorkspaceVouchersPage() {
       refetch();
     } catch (err: any) {
       toast.error("Erro ao remover voucher: " + err?.message);
+    }
+  };
+
+  const handleDuplicate = async (id: string) => {
+    try {
+      const cloned = await duplicateTravelVoucher({ data: { id } });
+      toast.success(`Voucher ${cloned.voucher_number} duplicado com sucesso!`);
+      refetch();
+    } catch (err: any) {
+      toast.error("Erro ao duplicar voucher: " + err?.message);
     }
   };
 
@@ -253,6 +264,7 @@ export default function WorkspaceVouchersPage() {
             label: "Emitir Manual",
             icon: Plus,
             onClick: () => {
+              setEditingVoucher(null);
               setCreationType("flight");
               setIsCreationSheetOpen(true);
             },
@@ -382,6 +394,11 @@ export default function WorkspaceVouchersPage() {
 
                 <CrudActionsMenu
                   entityName="Voucher"
+                  onEdit={() => {
+                    setEditingVoucher(v);
+                    setIsCreationSheetOpen(true);
+                  }}
+                  onDuplicate={() => handleDuplicate(v.id)}
                   onDelete={() => handleDelete(v.id, v.voucher_number)}
                   deleteConfirmTitle={`Excluir voucher ${v.voucher_number}?`}
                   deleteConfirmDescription="Esta ação removerá permanentemente o voucher operacional emitido."
@@ -409,8 +426,12 @@ export default function WorkspaceVouchersPage() {
       {/* ── 3. SHEET DE EMISSÃO COMPLETA DE VOUCHER ── */}
       <VoucherCreationSheet
         open={isCreationSheetOpen}
-        onOpenChange={setIsCreationSheetOpen}
+        onOpenChange={(open) => {
+          setIsCreationSheetOpen(open);
+          if (!open) setEditingVoucher(null);
+        }}
         defaultType={creationType}
+        initialVoucher={editingVoucher}
         storeId={storeId}
         onSuccess={refetch}
       />

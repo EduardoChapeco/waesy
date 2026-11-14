@@ -10,7 +10,7 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { toast } from "sonner";
-import { listAgencyGroupTours, deleteGroupTour, type GroupTourDTO } from "@/services/group-tours.functions";
+import { listAgencyGroupTours, duplicateGroupTour, deleteGroupTour, type GroupTourDTO } from "@/services/group-tours.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listVehicleLayouts } from "@/services/vehicle-layouts.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -58,6 +58,15 @@ export default function WorkspaceGroupToursIndexPage() {
         },
       }),
     initialData: initialTours,
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: (id: string) => duplicateGroupTour({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Excursão duplicada com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["agency-group-tours"] });
+    },
+    onError: (err: any) => toast.error(err?.message || "Erro ao duplicar excursão."),
   });
 
   const deleteMutation = useMutation({
@@ -325,6 +334,9 @@ export default function WorkspaceGroupToursIndexPage() {
                       <CrudActionsMenu
                         entityName="Excursão"
                         editUrl={`/workspace/turismo/grupos/${t.id}`}
+                        onDuplicate={async () => {
+                          await duplicateMutation.mutateAsync(t.id);
+                        }}
                         onDelete={async () => {
                           await deleteMutation.mutateAsync(t.id);
                         }}

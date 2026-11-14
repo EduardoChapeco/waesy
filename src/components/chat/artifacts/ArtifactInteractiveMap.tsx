@@ -6,7 +6,6 @@ import {
   MessageCircle,
   ExternalLink,
   Search,
-  Building,
   CheckCircle2,
   Copy,
   Check,
@@ -14,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplibre-canvas";
 import { cn } from "@/lib/utils";
 
 export interface MapPlaceItem {
@@ -108,10 +108,36 @@ export function ArtifactInteractiveMap({
     return `https://wa.me/${formatted}`;
   };
 
+  const mapMarkers: MapMarkerItem[] = useMemo(() => {
+    return filteredPlaces
+      .filter((p) => typeof p.lat === "number" && typeof p.lng === "number" && Number.isFinite(p.lat) && Number.isFinite(p.lng))
+      .map((p) => ({
+        id: p.id,
+        lat: Number(p.lat),
+        lng: Number(p.lng),
+        title: p.name,
+        kind: p.category,
+        category: p.category,
+      }));
+  }, [filteredPlaces]);
+
+  const mapCenter = useMemo(() => {
+    if (activePlace && typeof activePlace.lat === "number" && typeof activePlace.lng === "number") {
+      return { lat: activePlace.lat, lng: activePlace.lng };
+    }
+    if (mapMarkers.length > 0) {
+      return { lat: mapMarkers[0].lat, lng: mapMarkers[0].lng };
+    }
+    if (typeof userLat === "number" && typeof userLng === "number") {
+      return { lat: userLat, lng: userLng };
+    }
+    return undefined;
+  }, [activePlace, mapMarkers, userLat, userLng]);
+
   return (
     <div className={cn("space-y-4", className)}>
       {/* Cabeçalho do Mapa */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
         <div>
           <div className="flex items-center gap-2">
             <MapPin className="size-4 text-primary shrink-0" />
@@ -127,9 +153,20 @@ export function ArtifactInteractiveMap({
             {city} / {state}
           </Badge>
           <Badge variant="secondary" className="text-2xs">
-            OpenStreetMap Verificado
+            OpenStreetMap
           </Badge>
         </div>
+      </div>
+
+      {/* Canvas Interativo Real (MapLibre + OSM) */}
+      <div className="h-64 w-full rounded-2xl overflow-hidden border border-border bg-muted">
+        <MapLibreCanvas
+          markers={mapMarkers}
+          selectedMarkerId={activePlace?.id || null}
+          onMarkerClick={(marker) => setSelectedPlaceId(marker.id)}
+          center={mapCenter}
+          zoom={mapMarkers.length > 1 ? 13 : 14}
+        />
       </div>
 
       {/* Controles de Busca e Filtro */}
@@ -140,7 +177,7 @@ export function ArtifactInteractiveMap({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nome, bairro ou endereço..."
-            className="pl-9 h-11 text-xs"
+            className="pl-9 h-11 rounded-xl text-xs"
           />
         </div>
 
@@ -150,9 +187,9 @@ export function ArtifactInteractiveMap({
               type="button"
               onClick={() => setSelectedCategory("all")}
               className={cn(
-                "px-3 py-1 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-4 rounded-xl text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 selectedCategory === "all"
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-foreground text-background"
                   : "bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
@@ -164,9 +201,9 @@ export function ArtifactInteractiveMap({
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
                 className={cn(
-                  "px-3 py-1 rounded-full text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "h-11 min-h-11 px-4 rounded-xl text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   selectedCategory === cat
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-foreground text-background"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -177,23 +214,23 @@ export function ArtifactInteractiveMap({
         )}
       </div>
 
-      {/* Visualização de Destaque / Painel do Local Selecionado */}
+      {/* Cartão Squircle de Destaque do Local Selecionado */}
       {activePlace && (
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
           <div className="flex items-start justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-foreground">
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-foreground truncate">
                   {activePlace.name}
                 </h3>
                 {activePlace.verified && (
-                  <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-2xs">
-                    <CheckCircle2 className="size-3 mr-1" />
+                  <Badge variant="secondary" className="text-2xs gap-1">
+                    <CheckCircle2 className="size-3 text-success" />
                     Verificado
                   </Badge>
                 )}
               </div>
-              <Badge variant="secondary" className="text-2xs">
+              <Badge variant="outline" className="text-2xs">
                 {activePlace.category}
               </Badge>
             </div>
@@ -203,12 +240,13 @@ export function ArtifactInteractiveMap({
               variant="outline"
               size="sm"
               asChild
-              className="h-11 min-h-11 px-3 text-xs gap-2 focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-11 min-h-11 px-3 rounded-xl text-xs gap-2 focus-visible:ring-2 focus-visible:ring-ring shrink-0"
             >
               <a
                 href={getMapUrl(activePlace)}
                 target="_blank"
                 rel="noreferrer noopener"
+                className="min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Navigation className="size-4" />
                 <span>Traçar Rota</span>
@@ -233,19 +271,20 @@ export function ArtifactInteractiveMap({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-1 border-t border-border/40">
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
             {activePlace.whatsapp && (
               <Button
                 type="button"
                 variant="default"
                 size="sm"
                 asChild
-                className="h-11 min-h-11 px-3 text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="h-11 min-h-11 px-4 rounded-xl text-xs gap-2 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <a
                   href={getWhatsappUrl(activePlace.whatsapp)}
                   target="_blank"
                   rel="noreferrer noopener"
+                  className="min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <MessageCircle className="size-4" />
                   <span>Chamar no WhatsApp</span>
@@ -264,10 +303,10 @@ export function ArtifactInteractiveMap({
                     activePlace.phone || activePlace.whatsapp || ""
                   )
                 }
-                className="h-11 min-h-11 px-3 text-xs gap-2"
+                className="h-11 min-h-11 px-4 rounded-xl text-xs gap-2 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {copiedId === activePlace.id ? (
-                  <Check className="size-4 text-emerald-600" />
+                  <Check className="size-4 text-success" />
                 ) : (
                   <Copy className="size-4" />
                 )}
@@ -287,27 +326,27 @@ export function ArtifactInteractiveMap({
         </h4>
 
         {filteredPlaces.length === 0 ? (
-          <div className="text-center py-8 text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl">
+          <div className="text-center py-8 text-xs text-muted-foreground border border-dashed border-border rounded-2xl">
             Nenhum estabelecimento corresponde aos filtros informados.
           </div>
         ) : (
-          <div className="divide-y divide-border/40 rounded-xl border border-border/60 bg-card overflow-hidden">
+          <div className="divide-y divide-border rounded-2xl border border-border bg-card overflow-hidden">
             {filteredPlaces.map((place) => {
               const isSelected = place.id === selectedPlaceId;
 
               return (
-                <button
-                  type="button"
+                <div
                   key={place.id}
-                  onClick={() => setSelectedPlaceId(place.id)}
                   className={cn(
-                    "w-full text-left p-3 text-xs transition-colors cursor-pointer flex items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    isSelected
-                      ? "bg-primary/10 border-l-4 border-l-primary"
-                      : "hover:bg-muted/40"
+                    "w-full p-3 text-xs transition-colors flex items-center justify-between gap-3",
+                    isSelected ? "bg-surface-active" : "hover:bg-surface-hover"
                   )}
                 >
-                  <div className="space-y-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlaceId(place.id)}
+                    className="flex-1 text-left min-w-0 min-h-11 flex flex-col justify-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+                  >
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-foreground truncate">
                         {place.name}
@@ -320,27 +359,26 @@ export function ArtifactInteractiveMap({
                       {place.address}
                       {place.neighborhood ? ` · ${place.neighborhood}` : ""}
                     </p>
-                  </div>
+                  </button>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                      className="size-11 p-0 text-muted-foreground hover:text-foreground"
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="size-11 min-w-11 min-h-11 p-0 text-muted-foreground hover:text-foreground shrink-0 rounded-xl"
+                  >
+                    <a
+                      href={getMapUrl(place)}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      title="Abrir rota externa"
+                      className="min-h-11 min-w-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <a
-                        href={getMapUrl(place)}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        title="Ver no mapa"
-                      >
-                        <ExternalLink className="size-4" />
-                      </a>
-                    </Button>
-                  </div>
-                </button>
+                      <ExternalLink className="size-4" />
+                    </a>
+                  </Button>
+                </div>
               );
             })}
           </div>

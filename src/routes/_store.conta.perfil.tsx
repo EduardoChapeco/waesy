@@ -1418,13 +1418,13 @@ function ProfileCivilPage() {
                     </div>
 
                     <AlertDialogFooter className="gap-2">
-                      <AlertDialogCancel className="rounded-lg text-xs font-semibold h-10">
+                      <AlertDialogCancel className="rounded-lg text-xs font-semibold min-h-11 h-11">
                         Cancelar
                       </AlertDialogCancel>
-                      <AlertDialogAction /* design-lint-ignore DL-15 reason:"Primitivo Radix com foco por teclado nativo e indicador visual focus:bg-accent no componente base" expiry:"2027-12-31" */
+                      <AlertDialogAction
                         onClick={handleDeleteAccount}
                         disabled={deleteConfirm !== "EXCLUIR" || isDeleting}
-                        className="rounded-lg text-xs font-bold h-10 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        className="rounded-lg text-xs font-bold min-h-11 h-11 bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         {isDeleting ? "Excluindo..." : "Confirmar Exclusão Definitiva"}
                       </AlertDialogAction>

@@ -2,6 +2,7 @@
  * @fileoverview Canônico do domínio niches (Waesy BigTech Architecture S07).
  */
 export * from "./catalog-niche-context";
+export * from "./kanban-niche-taxonomy";
 export * from "./niche-dictionary";
 export * from "./niche-helpers";
 export * from "./niche-manifest";

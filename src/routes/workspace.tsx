@@ -19,27 +19,15 @@ import { setClientContextCookies, getClientActiveTenant } from "@/lib/context-au
 
 function isPlatformAdminUser(session: any): boolean {
   if (!session) return false;
-  const email = (session.email || session.user?.email || "").toLowerCase();
-  const MASTER_EMAILS = [
-    "contato@usewaesy.com",
-    "admin@usewaesy.com",
-    "meuwaesy@gmail.com",
-    "meuwider@gmail.com",
-    "excelenciatour.smo@gmail.com",
-    "admin@jah.com",
-  ];
+  const role = String(session.role || session.user?.app_metadata?.role || "").toLowerCase();
   return Boolean(
-    session.role === "superadmin" ||
-    session.role === "platform_admin" ||
-    session.role === "master" ||
-    session.role === "admin_master" ||
-    session.user?.role === "platform_admin" ||
-    session.user?.app_metadata?.role === "platform_admin" ||
-    session.user?.app_metadata?.is_master ||
-    session.user?.user_metadata?.is_admin_master ||
-    session.user?.user_metadata?.is_superadmin ||
-    email.endsWith("@usewaesy.com") ||
-    MASTER_EMAILS.includes(email),
+    session.isMaster ||
+      session.isPlatformAdmin ||
+      role === "superadmin" ||
+      role === "platform_admin" ||
+      role === "master" ||
+      role === "admin_master" ||
+      session.user?.app_metadata?.is_master,
   );
 }
 
@@ -65,23 +53,6 @@ export const Route = createFileRoute("/workspace")({
             browserSession = refreshRes.data.session;
           }
         }
-        if (!browserSession?.user) {
-          try {
-            const rawBackup = localStorage.getItem("waesy_auth_backup");
-            if (rawBackup) {
-              const backup = JSON.parse(rawBackup);
-              if (backup?.access_token && backup?.refresh_token) {
-                const restoreRes = await client.auth.setSession({
-                  access_token: backup.access_token,
-                  refresh_token: backup.refresh_token,
-                }).catch(() => null);
-                if (restoreRes?.data?.session) {
-                  browserSession = restoreRes.data.session;
-                }
-              }
-            }
-          } catch {}
-        }
         if (browserSession?.user) {
           if (browserSession.access_token && browserSession.refresh_token) {
             await syncSessionToCookies({
@@ -101,7 +72,7 @@ export const Route = createFileRoute("/workspace")({
               id: browserSession.user.id,
               user: browserSession.user,
               email: browserSession.user.email,
-              role: (userMeta.role as any) || "owner",
+              role: "owner",
               store_id: storeId,
               memberships: storeId ? [{ store_id: storeId, role: "owner", name: "Minha Empresa" }] : [],
             };
@@ -117,7 +88,6 @@ export const Route = createFileRoute("/workspace")({
         let hasClientAuth = false;
         try {
           hasClientAuth =
-            Boolean(localStorage.getItem("waesy_auth_backup")) ||
             document.cookie.includes("waesy-auth-token") ||
             document.cookie.includes("-auth-token");
         } catch {}
@@ -187,23 +157,6 @@ export const Route = createFileRoute("/workspace")({
               browserSession = refreshRes.data.session;
             }
           }
-          if (!browserSession?.user) {
-            try {
-              const rawBackup = localStorage.getItem("waesy_auth_backup");
-              if (rawBackup) {
-                const backup = JSON.parse(rawBackup);
-                if (backup?.access_token && backup?.refresh_token) {
-                  const restoreRes = await client.auth.setSession({
-                    access_token: backup.access_token,
-                    refresh_token: backup.refresh_token,
-                  }).catch(() => null);
-                  if (restoreRes?.data?.session) {
-                    browserSession = restoreRes.data.session;
-                  }
-                }
-              }
-            } catch {}
-          }
           if (browserSession?.user) {
             if (browserSession.access_token && browserSession.refresh_token) {
               await syncSessionToCookies({
@@ -223,7 +176,7 @@ export const Route = createFileRoute("/workspace")({
                 id: browserSession.user.id,
                 user: browserSession.user,
                 email: browserSession.user.email,
-                role: (userMeta.role as any) || "owner",
+                role: "owner",
                 store_id: storeId,
                 memberships: storeId ? [{ store_id: storeId, role: "owner", name: "Minha Empresa" }] : [],
               };
@@ -239,7 +192,6 @@ export const Route = createFileRoute("/workspace")({
           let hasClientAuth = false;
           try {
             hasClientAuth =
-              Boolean(localStorage.getItem("waesy_auth_backup")) ||
               document.cookie.includes("waesy-auth-token") ||
               document.cookie.includes("-auth-token");
           } catch {}
@@ -387,24 +339,6 @@ function WorkspaceLayout() {
           if (refreshRes?.data?.session) {
             browserSession = refreshRes.data.session;
           }
-        }
-
-        if (!browserSession?.user && typeof window !== "undefined") {
-          try {
-            const rawBackup = localStorage.getItem("waesy_auth_backup");
-            if (rawBackup) {
-              const backup = JSON.parse(rawBackup);
-              if (backup?.access_token && backup?.refresh_token) {
-                const restoreRes = await client.auth.setSession({
-                  access_token: backup.access_token,
-                  refresh_token: backup.refresh_token,
-                }).catch(() => null);
-                if (restoreRes?.data?.session) {
-                  browserSession = restoreRes.data.session;
-                }
-              }
-            }
-          } catch {}
         }
 
         if (browserSession?.user) {

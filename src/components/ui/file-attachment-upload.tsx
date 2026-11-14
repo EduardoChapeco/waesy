@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
-export type StoreMediaBucket = "cms-media" | "store-assets" | "product-media" | "covers" | "avatars" | "banners";
+export type StoreMediaBucket = "cms-media" | "store-assets" | "product-media" | "covers" | "avatars" | "banners" | "identity-vault";
 
 export interface FileAttachmentUploadProps {
  value?: string | null;

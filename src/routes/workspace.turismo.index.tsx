@@ -89,7 +89,14 @@ import {
 } from "@/services/crm.functions";
 import { listStoreTrips, convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { listAgencyTravelProposals, bundleTravelProposalsIntoSingleLink } from "@/services/travel-proposal.functions";
+import {
+  listAgencyTravelProposals,
+  bundleTravelProposalsIntoSingleLink,
+  duplicateTravelProposal,
+  deleteTravelProposal,
+  updateTravelProposal,
+} from "@/services/travel-proposal.functions";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { listDepartureCards, resolveAirlineCheckinUrl } from "@/services/travel-departures.functions";
 import { listTravelSaleFinancialSheets } from "@/services/travel-financials.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
@@ -104,9 +111,17 @@ import { LeadImportModal } from "@/components/commercial/lead-import-modal";
 import { LeadCommissionCalculatorSheet } from "@/components/commercial/lead-commission-calculator-sheet";
 import { LeadFlightGridSheet } from "@/components/commercial/lead-flight-grid-sheet";
 import { KanbanColumnCustomizerModal } from "@/components/workspace/kanban/kanban-column-customizer-modal";
+import { TourismProposalsManager } from "@/components/tourism/proposals/TourismProposalsManager";
 import { Customer360PrintableDossier } from "@/components/dossier/customer-360-printable-dossier";
 import { EmptyState } from "@/components/state/states";
 import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
+import {
+  getNicheKanbanStages,
+  getNicheKanbanTerminology,
+  doesLeadBelongToStage,
+  resolveKanbanStageSynonym,
+  formatKanbanActionError,
+} from "@/lib/niches/kanban-niche-taxonomy";
 
 export const Route = createFileRoute("/workspace/turismo/")({
   head: () => ({
@@ -154,68 +169,44 @@ export const Route = createFileRoute("/workspace/turismo/")({
   component: WorkspaceTurismoCockpitPage,
 });
 
-type TourismLeadStage = "new" | "qualified" | "proposal" | "negotiation" | "won";
+type TourismLeadStage = string;
 
 interface TourismStageConfig {
   id: TourismLeadStage;
   title: string;
   dotColor: string;
   description: string;
+  purpose?: string;
+  is_visible?: boolean;
 }
 
-const TOURISM_STAGES: TourismStageConfig[] = [
-  {
-    id: "new",
-    title: "Novos Contatos",
-    dotColor: "bg-blue-500",
-    description: "Leads recém-chegados por WhatsApp, indicação ou vitrine",
-  },
-  {
-    id: "qualified",
-    title: "Cotação em Andamento",
-    dotColor: "bg-warning",
-    description: "Destino, passageiros e datas alinhados",
-  },
-  {
-    id: "proposal",
-    title: "Proposta Enviada",
-    dotColor: "bg-indigo-500",
-    description: "Proposta interativa ou PDF apresentada ao passageiro",
-  },
-  {
-    id: "negotiation",
-    title: "Em Negociação",
-    dotColor: "bg-orange-500",
-    description: "Ajuste de quartos, condições de pagamento e reservas de voos",
-  },
-  {
-    id: "won",
-    title: "Viagem Confirmada",
-    dotColor: "bg-emerald-500",
-    description: "Venda aprovada, convertida em viagem e pronta para embarque",
-  },
-];
+const TOURISM_TAXONOMY_TERMINOLOGY = getNicheKanbanTerminology("tourism");
 
-export const INTEREST_TYPES = [
-  { value: "package_flight", label: "Pacote Aéreo Completo" },
-  { value: "hotel", label: "Somente Hospedagem / Resort" },
-  { value: "package_ground", label: "Excursão Rodoviária / Terrestre" },
-  { value: "flights", label: "Passagens Aéreas" },
-  { value: "cruise", label: "Cruzeiro Marítimo" },
-  { value: "visa", label: "Visto e Passaporte" },
-  { value: "corporate", label: "Corporativo / Negócios" },
-  { value: "other", label: "Outros Serviços" },
-] as const;
+const TOURISM_STAGES: TourismStageConfig[] = getNicheKanbanStages("tourism")
+  .filter((s) => s.stage_key !== "lost")
+  .map((s) => ({
+    id: s.stage_key,
+    title: s.title,
+    dotColor:
+      s.stage_key === "new"
+        ? "bg-blue-500"
+        : s.stage_key === "contact"
+          ? "bg-sky-500"
+          : s.stage_key === "qualified"
+            ? "bg-warning"
+            : s.stage_key === "proposal"
+              ? "bg-indigo-500"
+              : s.stage_key === "negotiation"
+                ? "bg-orange-500"
+                : "bg-emerald-500",
+    description: s.description,
+    purpose: s.purpose,
+    is_visible: s.is_visible,
+  }));
 
-export const LEAD_SOURCES = [
-  { value: "whatsapp", label: "WhatsApp" },
-  { value: "balcao", label: "Balcão / Loja Física" },
-  { value: "instagram", label: "Instagram" },
-  { value: "google_ads", label: "Google Ads" },
-  { value: "indicacao", label: "Indicação" },
-  { value: "site", label: "Site / Biolink" },
-  { value: "outros", label: "Outros" },
-] as const;
+export const INTEREST_TYPES = TOURISM_TAXONOMY_TERMINOLOGY.interestTypes;
+
+export const LEAD_SOURCES = TOURISM_TAXONOMY_TERMINOLOGY.leadSources;
 
 export const POPULAR_TAGS = [
   { name: "Família", tone: "info" },
@@ -227,13 +218,7 @@ export const POPULAR_TAGS = [
   { name: "Grupo", tone: "secondary" },
 ];
 
-export const DEFAULT_CHECKLIST_TEMPLATE = [
-  { id: "item-1", text: "Primeiro contato via WhatsApp realizado", done: false },
-  { id: "item-2", text: "Orçamento e preferências alinhadas", done: false },
-  { id: "item-3", text: "Cotação / Proposta montada e enviada", done: false },
-  { id: "item-4", text: "Follow-up de negociação realizado", done: false },
-  { id: "item-5", text: "Documentos coletados para emissão do contrato", done: false },
-];
+export const DEFAULT_CHECKLIST_TEMPLATE = TOURISM_TAXONOMY_TERMINOLOGY.defaultChecklist;
 
 const initialNewLeadState = {
   clientId: "",
@@ -275,12 +260,13 @@ export default function WorkspaceTurismoCockpitPage() {
   const storeId = store?.id || "";
 
   const [stages, setStages] = useState<any[]>(() => {
-    if (kanbanStages && kanbanStages.length > 0 && !kanbanStages.some((s: any) => s.stage_key === "todo")) {
+    if (kanbanStages && kanbanStages.length > 0 && kanbanStages.some((s: any) => s.stage_key === "todo") === false) {
       return kanbanStages.map((s: any) => ({
         id: s.stage_key,
         title: s.title,
         dotColor: s.color || "bg-primary",
         description: s.description || "",
+        purpose: s.purpose,
         is_visible: s.is_visible !== false,
       }));
     }
@@ -290,6 +276,8 @@ export default function WorkspaceTurismoCockpitPage() {
   const visibleStages = useMemo(() => {
     return stages.filter((s: any) => s.is_visible !== false);
   }, [stages]);
+
+  const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("all");
@@ -413,7 +401,7 @@ export default function WorkspaceTurismoCockpitPage() {
   });
   const [isIssuingContract, setIsIssuingContract] = useState(false);
 
-  // Perfil Cliente 360°
+  // Perfil do Cliente & Dossiê
   const [customer360Data, setCustomer360Data] = useState<{
     customer: any;
     otherLeads: any[];
@@ -481,6 +469,16 @@ export default function WorkspaceTurismoCockpitPage() {
     initialData: initialCustomers,
   });
 
+  const syncProposalCaches = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["agency-proposals"] }),
+      queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] }),
+      queryClient.invalidateQueries({ queryKey: ["crm-leads"] }),
+      queryClient.invalidateQueries({ queryKey: ["customer-360-profile"] }),
+      router.invalidate(),
+    ]);
+  };
+
   // Conversão Direta de Proposta em Viagem Confirmada (Dossiê + Embarque + Financeiro)
   const handleConvertProposalToTrip = async (proposalId: string) => {
     try {
@@ -489,30 +487,131 @@ export default function WorkspaceTurismoCockpitPage() {
       queryClient.invalidateQueries({ queryKey: ["tourism-trips-list"] });
       queryClient.invalidateQueries({ queryKey: ["tourism-departures-list"] });
       queryClient.invalidateQueries({ queryKey: ["tourism-financial-sheets"] });
-      queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
-      queryClient.invalidateQueries({ queryKey: ["customer-360-profile"] });
+      await syncProposalCaches();
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível converter a proposta em viagem.");
     }
   };
 
-  // Movimentação de Estágio no Funil
+  const handlePublishProposal = async (proposalId: string) => {
+    try {
+      await updateTravelProposal({ data: { id: proposalId, patch: { status: "sent" } } });
+      toast.success("Proposta publicada! O cliente já pode visualizar e aceitar online.");
+      await syncProposalCaches();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao publicar proposta.");
+    }
+  };
+
+  const handleArchiveProposal = async (proposalId: string) => {
+    try {
+      await updateTravelProposal({ data: { id: proposalId, patch: { status: "expired" } } });
+      toast.success("Proposta arquivada.");
+      await syncProposalCaches();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao arquivar proposta.");
+    }
+  };
+
+  const handleCopyProposalLink = async (prop: any) => {
+    if (!prop?.public_token) return;
+    let publishedNow = false;
+    try {
+      if (prop.status === "draft") {
+        await updateTravelProposal({ data: { id: prop.id, patch: { status: "sent" } } });
+        publishedNow = true;
+      }
+      const url = `${window.location.origin}/proposta/${prop.public_token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success(
+        publishedNow
+          ? "Proposta publicada e link público copiado!"
+          : "Link público da proposta copiado!",
+      );
+      if (publishedNow) {
+        await syncProposalCaches();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível copiar o link da proposta.");
+    }
+  };
+
+  const handleDuplicateProposal = async (proposalId: string) => {
+    try {
+      await duplicateTravelProposal({ data: { id: proposalId } });
+      toast.success("Proposta duplicada com sucesso!");
+      await syncProposalCaches();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao duplicar proposta.");
+    }
+  };
+
+  const handleDeleteProposal = async (proposalId: string) => {
+    await deleteTravelProposal({ data: { id: proposalId } });
+    setCustomer360Data((prev) =>
+      prev
+        ? {
+            ...prev,
+            proposals: (prev.proposals || []).filter((p: any) => p.id !== proposalId),
+          }
+        : prev,
+    );
+    toast.success("Proposta excluída com sucesso!");
+    await syncProposalCaches();
+  };
+
+  // Movimentação de Estágio no Funil (com suporte a Sondagem e Briefing, sinônimos de nicho e colunas customizadas)
   const handleMoveStage = async (leadId: string, nextStatus: string) => {
     const prevLeads = queryClient.getQueryData<any[]>(["tourism-cockpit-leads"]) || leads;
     queryClient.setQueryData<any[]>(["tourism-cockpit-leads"], (old) => {
       if (!Array.isArray(old)) return old;
-      return old.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l));
+      return old.map((l) =>
+        l.id === leadId
+          ? {
+              ...l,
+              status: nextStatus,
+              pipeline_stage: nextStatus,
+              custom_fields: {
+                ...(l.custom_fields && typeof l.custom_fields === "object" ? l.custom_fields : {}),
+                kanban_stage_key: nextStatus,
+              },
+            }
+          : l,
+      );
     });
     if (selectedLead?.id === leadId) {
-      setSelectedLead((prev: any) => (prev ? { ...prev, status: nextStatus } : null));
+      setSelectedLead((prev: any) =>
+        prev
+          ? {
+              ...prev,
+              status: nextStatus,
+              pipeline_stage: nextStatus,
+              custom_fields: {
+                ...(prev.custom_fields && typeof prev.custom_fields === "object" ? prev.custom_fields : {}),
+                kanban_stage_key: nextStatus,
+              },
+            }
+          : null,
+      );
     }
 
     try {
-      await updateLeadStatus({ data: { leadId, status: nextStatus as any } });
-      const stageName = TOURISM_STAGES.find((s) => s.id === nextStatus)?.title || nextStatus;
-      toast.success(`Lead movido para "${stageName}"`);
+      await persistLeadMove({
+        data: {
+          leadId,
+          toStatus: nextStatus,
+          reorderedIds: [],
+        },
+      });
+      const resolvedStage = resolveKanbanStageSynonym(
+        nextStatus,
+        stages.map((s: any) => ({ stage_key: s.id, title: s.title, purpose: s.purpose })),
+        "tourism",
+      );
+      const stageName = stages.find((s: any) => s.id === nextStatus)?.title || resolvedStage.title || nextStatus;
+      toast.success(`Oportunidade movida para "${stageName}"`);
 
-      if (nextStatus === "won") {
+      if (nextStatus === "won" || resolvedStage.purpose === "won") {
         const linkedProposal = proposals.find(
           (p: any) =>
             p.lead_id === leadId ||
@@ -531,7 +630,7 @@ export default function WorkspaceTurismoCockpitPage() {
       queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
     } catch (err: any) {
       queryClient.setQueryData(["tourism-cockpit-leads"], prevLeads);
-      toast.error(err?.message || "Erro ao atualizar status do lead.");
+      toast.error(formatKanbanActionError(err, "Não foi possível mover a oportunidade para esta etapa."));
     }
   };
 
@@ -553,7 +652,7 @@ export default function WorkspaceTurismoCockpitPage() {
   const handlePromoteToCustomer = async (leadId: string) => {
     try {
       const res = await promoteLeadToCustomer({ data: { leadId } });
-      toast.success("Lead promovido com sucesso para a Carteira de Clientes 360°!");
+      toast.success("Lead promovido com sucesso para a Carteira de Clientes!");
       await refetchLeads();
       queryClient.invalidateQueries({ queryKey: ["tourism-cockpit-leads"] });
       queryClient.invalidateQueries({ queryKey: ["crm-customers-list"] });
@@ -715,11 +814,11 @@ export default function WorkspaceTurismoCockpitPage() {
     setIsLoading360(true);
     getCustomer360Profile({ data: { leadId: lead.id } })
       .then((res) => setCustomer360Data(res))
-      .catch((err) => console.warn("Erro ao buscar perfil 360:", err))
+      .catch((err) => console.warn("Erro ao buscar perfil do cliente:", err))
       .finally(() => setIsLoading360(false));
   };
 
-  // Salvar Alterações da Ficha 360° do Lead
+  // Salvar Alterações do Perfil do Cliente no Lead
   const handleSaveLeadFromDossier = async (updatedData: any) => {
     if (!selectedLead) return;
     try {
@@ -974,9 +1073,14 @@ export default function WorkspaceTurismoCockpitPage() {
     });
   }, [leads, search, ownerFilter, sourceFilter, temperatureFilter]);
 
-  // Agrupamento por Estágio
+  // Agrupamento por Estágio com suporte a Sinônimos de Nicho, Sondagem e Briefing e Colunas Customizadas
   const leadsByStage = useMemo(() => {
     const map: Record<string, any[]> = {};
+    const stageDescriptors = visibleStages.map((s: any) => ({
+      stage_key: s.id,
+      title: s.title,
+      purpose: s.purpose,
+    }));
     visibleStages.forEach((s: any) => {
       map[s.id] = [];
     });
@@ -984,25 +1088,25 @@ export default function WorkspaceTurismoCockpitPage() {
     if (!map["won"]) map["won"] = [];
 
     filteredLeads.forEach((l: any) => {
-      let stageKey = l.status || "new";
-      if (stageKey === "todo") stageKey = "new";
-      else if (stageKey === "in_progress") stageKey = "qualified";
-      else if (stageKey === "review") stageKey = "negotiation";
-      else if (stageKey === "done" || l.status === "completed" || l.status === "converted") stageKey = "won";
-      else if (l.status === "quoted") stageKey = "proposal";
-      else if (l.status === "contacted") stageKey = "qualified";
-
-      if (!visibleStages.some((s: any) => s.id === stageKey)) {
-        const fallbackStage = visibleStages[0]?.id || "new";
-        if (!map[fallbackStage]) map[fallbackStage] = [];
-        map[fallbackStage].push(l);
+      const matchedStage = visibleStages.find((s: any) =>
+        doesLeadBelongToStage(l, s.id, stageDescriptors, "tourism"),
+      );
+      if (matchedStage) {
+        map[matchedStage.id].push(l);
         return;
       }
-
-      if (!map[stageKey]) {
-        map[stageKey] = [];
+      if (l.status === "won" || l.status === "converted" || l.status === "done") {
+        map["won"].push(l);
+        return;
       }
-      map[stageKey].push(l);
+      if (l.status === "lost") {
+        if (!map["lost"]) map["lost"] = [];
+        map["lost"].push(l);
+        return;
+      }
+      const fallbackStage = visibleStages[0]?.id || "new";
+      if (!map[fallbackStage]) map[fallbackStage] = [];
+      map[fallbackStage].push(l);
     });
 
     return map;
@@ -1151,7 +1255,7 @@ export default function WorkspaceTurismoCockpitPage() {
         onTabChange={(tabId) => setActiveViewTab(tabId as any)}
         searchValue={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Procurar cards no funil de turismo..."
+        searchPlaceholder={TOURISM_TAXONOMY_TERMINOLOGY.searchPlaceholder}
         filters={[
           {
             id: "temperature",
@@ -1577,42 +1681,62 @@ export default function WorkspaceTurismoCockpitPage() {
               const prevStage = stageIndex > 0 ? visibleStages[stageIndex - 1] : null;
               const nextStage = stageIndex < visibleStages.length - 1 ? visibleStages[stageIndex + 1] : null;
               const isMobileHidden = mobileActiveStage !== stage.id;
+              const isDragOver = dragOverStageId === stage.id;
 
               return (
                 <div
                   key={stage.id}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverStageId !== stage.id) setDragOverStageId(stage.id);
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverStageId === stage.id) setDragOverStageId(null);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOverStageId(null);
+                    const droppedLeadId =
+                      e.dataTransfer.getData("text/waesy-kanban-id") ||
+                      e.dataTransfer.getData("text/plain");
+                    if (droppedLeadId) {
+                      void handleMoveStage(droppedLeadId, stage.id);
+                    }
+                  }}
                   className={cn(
                     "flex-none w-full sm:w-80 snap-start rounded-2xl bg-muted/50 dark:bg-muted/30 transition-colors flex flex-col min-h-144 sm:h-full overflow-hidden",
+                    isDragOver && "ring-2 ring-primary/40 bg-primary/5",
                     isMobileHidden && "hidden sm:flex"
                   )}
                 >
-                  {/* Cabeçalho da Coluna com Indicador Discreto, Somatório Tabular e Ação Rápida */}
+                  {/* Cabeçalho da Coluna com Indicador Discreto, Título sem Corte, Somatório Tabular e Ação Rápida */}
                   <div className="px-4 py-3 bg-transparent flex items-center justify-between shrink-0 gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span className={cn("size-2 rounded-full shrink-0", stage.dotColor)} />
-                      <span className="text-xs font-bold tracking-tight text-foreground truncate" title={stage.title}>
+                      <span className="text-xs font-bold tracking-tight text-foreground leading-tight break-words line-clamp-2" title={stage.title}>
                         {stage.title}
                       </span>
-                      <span className="text-2xs font-mono tabular-nums font-bold px-2 py-1 rounded-full bg-card text-foreground shrink-0">
+                      <span className="text-2xs font-mono tabular-nums font-bold px-2 py-0 h-5 inline-flex items-center rounded-md border border-border/60 bg-card text-foreground shrink-0">
                         {stageLeads.length}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       {stageTotalCents > 0 && (
-                        <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground">
+                        <span className="text-2xs font-mono tabular-nums font-semibold text-muted-foreground px-2 py-0 h-5 inline-flex items-center rounded-md bg-card/70">
                           {formatMoney(stageTotalCents)}
                         </span>
                       )}
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="iconSm"
                         onClick={() => {
                           setNewLeadTargetStage(stage.id);
                           setIsNewLeadOpen(true);
                         }}
                         /* design-lint-ignore DL-14 reason:"Gatilho compacto de adicao rapida no header de coluna desktop" expiry:"2027-12-31" */
-                        className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
+                        className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg border border-transparent hover:border-border/70 text-muted-foreground hover:text-foreground hover:bg-card cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                         title={`Novo lead em ${stage.title}`}
                       >
                         <Plus className="size-4" />
@@ -1623,8 +1747,8 @@ export default function WorkspaceTurismoCockpitPage() {
                   {/* Área de Rolagem Isolada dos Cards (Colunas Altas) */}
                   <div className="px-3 pb-3 space-y-3 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin]">
                     {stageLeads.length === 0 ? (
-                      <div className="h-full min-h-48 py-8 px-4 flex flex-col items-center justify-center text-center text-xs text-muted-foreground rounded-2xl bg-card space-y-1 select-none">
-                        <p className="font-medium text-2xs">Nenhum contato nesta etapa</p>
+                      <div className="min-h-28 py-6 px-4 flex flex-col items-center justify-center text-center text-xs text-muted-foreground/70 rounded-xl border border-dashed border-border/50 bg-transparent select-none">
+                        <p className="font-medium text-2xs">Arraste um card ou clique em +</p>
                       </div>
                     ) : (
                       stageLeads.map((lead: any) => (
@@ -1722,78 +1846,22 @@ export default function WorkspaceTurismoCockpitPage() {
         </div>
       )}
 
-      {/* 3. PROPOSTAS EMITIDAS */}
+      {/* 3. PROPOSTAS EMITIDAS (Sheet & Grid Canônicos Propagados) */}
       {activeViewTab === "propostas" && (
-        <div className="space-y-3">
-          {proposals.length === 0 ? (
-            <EmptyState
-              title="Nenhuma proposta emitida até o momento"
-              description="Monte e envie propostas completas pelo funil ou pelo botão Nova Proposta."
-              actionLabel="Criar Primeira Proposta"
-              onAction={() =>
-                setProposalLead({
-                  id: "",
-                  fullName: "",
-                  destination: "",
-                  passenger_count: 2,
-                })
-              }
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {proposals.map((prop: any) => (
-                <div
-                  key={prop.id}
-                  className="p-4 rounded-2xl border border-border/60 bg-card space-y-3 text-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground truncate block">
-                      {prop.title || prop.destination_city}
-                    </span>
-                    <Badge variant="outline" className="font-mono text-xs capitalize">
-                      {prop.status}
-                    </Badge>
-                  </div>
-
-                  <p className="text-muted-foreground text-xs">
-                    Passageiro: <strong className="text-foreground">{prop.customer_name}</strong>
-                  </p>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-border/30 gap-2 flex-wrap">
-                    <span className="font-mono tabular-nums font-bold text-foreground">
-                      {formatMoney(prop.pricing?.total_price_cents || 0)}
-                    </span>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleConvertProposalToTrip(prop.id)}
-                        className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold gap-2 text-emerald-600 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <CheckCircle2 className="size-3.5" />
-                        <span>Gerar Viagem</span>
-                      </Button>
-
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="h-11 min-h-11 px-3 rounded-xl text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
-                          <Eye className="size-3" />
-                          <span>Abrir Studio</span>
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <TourismProposalsManager
+          embedded
+          initialProposals={proposals}
+          store={store}
+          onOpenCreateModal={() =>
+            setProposalLead({
+              id: "",
+              fullName: "",
+              destination: "",
+              passenger_count: 2,
+            })
+          }
+          onConvertToTrip={handleConvertProposalToTrip}
+        />
       )}
 
       {/* ── FICHA COMPLETA DO LEAD (PIPEFY-STYLE CARD WORKSPACE 2-COLUNAS) ── */}
@@ -2167,7 +2235,7 @@ export default function WorkspaceTurismoCockpitPage() {
           mode="kanban_lead_quote"
           onCreated={() => {
             refetchLeads();
-            queryClient.invalidateQueries({ queryKey: ["agency-proposals"] });
+            void syncProposalCaches();
           }}
         />
       )}

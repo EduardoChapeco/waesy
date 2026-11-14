@@ -41,7 +41,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
     <div className={`relative w-full h-full overflow-hidden bg-slate-950 text-foreground select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
       {/* ── 1. Header Noturno com Identidade de Luxo ── */}
       <div className="pt-2 text-center space-y-2 shrink-0">
-        <div className="inline-flex items-center gap-2 text-2xs font-mono uppercase tracking-[0.25em] text-warning-strong font-bold">
+        <div className="inline-flex items-center gap-2 text-2xs font-mono uppercase tracking-widest text-warning-strong font-bold">
           <Star className="size-3.5 text-warning-strong" />
           <span>{storeName || "Private Properties"}</span>
           <Star className="size-3.5 text-warning-strong" />
@@ -50,7 +50,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
       </div>
 
       {/* ── 2. Fotografia Central em Moldura Squircle Iluminada (62% da área) ── */}
-      <div className="relative w-full h-29/50 my-3 rounded-lg overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-warning/20 bg-neutral-900 shrink-0">
+      <div className="relative w-full h-29/50 my-3 rounded-lg overflow-hidden shadow-overlay border border-warning/20 bg-neutral-900 shrink-0">
         <img
           src={backgroundImageUrl}
           alt={title}
@@ -58,7 +58,7 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
           className="w-full h-full object-cover object-center transform scale-103"
         />
         {/* Overlay com vinheta profunda */}
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-neutral-950/60" />
 
         {/* Selo Dourado de Oportunidade */}
         <div className="absolute top-4 left-4">

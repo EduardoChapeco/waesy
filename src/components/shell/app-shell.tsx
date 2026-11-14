@@ -67,7 +67,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
   if (isStandalonePage) {
     return (
-      <div className="min-h-dvh w-full bg-background text-foreground flex flex-col overflow-x-hidden">
+      <div className="min-h-dvh w-full bg-background text-foreground flex flex-col overflow-x-clip">
         {children}
       </div>
     );
@@ -208,7 +208,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       <div
         id="app-push-canvas"
         className={cn(
-          "size-full flex flex-col relative canvas-push-transition",
+          "size-full min-h-0 flex flex-col relative overflow-hidden canvas-push-transition",
           isSuperAppOpen &&
             "max-md:canvas-pushed max-md:rounded-l-2xl max-md:overflow-hidden max-md:pointer-events-none max-md:border-l max-md:border-border"
         )}
@@ -234,7 +234,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       <ActiveContextBanner session={session} />
 
       {/* ── Corpo Principal com Scrolls Independentes (Sidebar fixa + Main independente) ── */}
-      <div className="flex-1 flex min-w-0 w-full max-w-full relative overflow-hidden">
+      <div className="flex-1 min-h-0 flex min-w-0 w-full max-w-full relative overflow-hidden">
         {/* Coluna Contextual Fixa com Scroll Próprio (Desktop apenas) */}
         {contextConfig.showContextSidebar !== false && (
           <ContextSidebar config={contextConfig} session={session} />
@@ -243,18 +243,18 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         {/* Viewport Central com Container Canônico Único + Container Query Anti-Jank */}
         <main
           ref={mainRef}
-          className={`main-container-query flex-1 flex flex-col min-w-0 h-full w-full max-w-full ${
+          className={`main-container-query flex-1 flex flex-col min-w-0 min-h-0 h-full w-full max-w-full ${
             isCopilotPage
-              ? "p-0 m-0 overflow-hidden min-h-0"
+              ? "p-0 m-0 overflow-hidden"
               : isCleanMobileAppPage
-              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-0 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              ? "overflow-y-auto scrollbar-waesy overflow-x-hidden px-0 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFeedPage
-              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              ? "overflow-y-auto scrollbar-waesy overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
               : isFormPage
-              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
+              ? "overflow-y-auto scrollbar-waesy overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-4 pb-20 md:pb-8"
               : isDetailPage
-              ? "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
-              : "overflow-y-auto no-scrollbar overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
+              ? "overflow-y-auto scrollbar-waesy overflow-x-hidden px-2 sm:px-6 md:px-8 py-0 md:py-3 pb-20 md:pb-8"
+              : "overflow-y-auto scrollbar-waesy overflow-x-hidden px-2 sm:px-6 md:px-8 pt-0 md:pt-3 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${

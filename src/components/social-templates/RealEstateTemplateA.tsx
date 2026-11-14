@@ -54,7 +54,7 @@ export function RealEstateTemplateA({ data, className = "" }: SocialTemplateProp
           className="w-full h-full object-cover object-center transform scale-102"
         />
         {/* Gradiente cinemático de estúdio imobiliário */}
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-neutral-950/60" />
       </div>
 
       {/* 2. Conteúdo Sobreposto */}

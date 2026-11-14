@@ -42,12 +42,12 @@ export function PostThemeSelector({ selectedThemeId, onSelectTheme }: PostThemeS
  <div className="flex items-center justify-between w-full mb-2">
  <div className="flex items-center gap-2">
  <div
- className="size-3 rounded-full border border-black/10"
- style={{ backgroundColor: theme.colors.primary }}
+ className="size-3 rounded-full border border-black/10 waesy-dyn-bg"
+ style={{ "--dyn-bg": theme.colors.primary } as React.CSSProperties}
  />
  <div
- className="size-3 rounded-full border border-black/10"
- style={{ backgroundColor: theme.colors.accent }}
+ className="size-3 rounded-full border border-black/10 waesy-dyn-bg"
+ style={{ "--dyn-bg": theme.colors.accent } as React.CSSProperties}
  />
  </div>
  {isSelected && (

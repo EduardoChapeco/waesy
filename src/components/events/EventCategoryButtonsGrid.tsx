@@ -154,7 +154,7 @@ export function EventCategoryButtonsGrid({
           const content = (
             <div
               className={cn(
-                "w-full aspect-[1/1.05] min-h-18 sm:min-h-20 rounded-2xl border transition-colors duration-200 select-none",
+                "w-full aspect-square min-h-18 sm:min-h-20 rounded-2xl border transition-colors duration-200 select-none",
                 "flex flex-col items-center justify-center p-2 text-center cursor-pointer relative",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-95",
                 isSelected

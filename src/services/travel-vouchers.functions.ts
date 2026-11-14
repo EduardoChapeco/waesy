@@ -123,6 +123,104 @@ export const createTravelVoucher = createServerFn({ method: 'POST' })
     return row as TravelVoucherDTO;
   });
 
+export const UpdateTravelVoucherSchema = z.object({
+  id: z.string().uuid(),
+  trip_id: z.string().uuid().nullable().optional(),
+  voucher_type: voucherTypeEnum.optional(),
+  title: z.string().min(2).optional(),
+  passenger_name: z.string().min(2).optional(),
+  passenger_document: z.string().nullable().optional(),
+  flight_data: z.record(z.any()).optional(),
+  hotel_data: z.record(z.any()).optional(),
+  transfer_data: z.record(z.any()).optional(),
+});
+
+export const updateTravelVoucher = createServerFn({ method: 'POST' })
+  .validator(UpdateTravelVoucherSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = identity.store_id;
+    if (!storeId) throw new Error("Loja não selecionada.");
+    assertStoreAccess(identity);
+
+    const db = getServerClient();
+    const updatePayload: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (data.trip_id !== undefined) updatePayload.trip_id = data.trip_id;
+    if (data.voucher_type !== undefined) updatePayload.voucher_type = data.voucher_type;
+    if (data.title !== undefined) updatePayload.title = data.title.trim();
+    if (data.passenger_name !== undefined) updatePayload.passenger_name = data.passenger_name.trim();
+    if (data.passenger_document !== undefined) updatePayload.passenger_document = data.passenger_document || null;
+    if (data.flight_data !== undefined) updatePayload.flight_data = data.flight_data;
+    if (data.hotel_data !== undefined) updatePayload.hotel_data = data.hotel_data;
+    if (data.transfer_data !== undefined) updatePayload.transfer_data = data.transfer_data;
+
+    const { data: updated, error } = await db
+      .from('travel_vouchers')
+      .update(updatePayload)
+      .eq('id', data.id)
+      .eq('store_id', storeId)
+      .select('*')
+      .single();
+
+    if (error || !updated) {
+      throw new Error('Erro ao atualizar voucher: ' + (error?.message || 'não encontrado'));
+    }
+    return updated as TravelVoucherDTO;
+  });
+
+export const duplicateTravelVoucher = createServerFn({ method: 'POST' })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data: { id } }) => {
+    const identity = await getServerIdentity();
+    const storeId = identity.store_id;
+    if (!storeId) throw new Error("Loja não selecionada.");
+    assertStoreAccess(identity);
+
+    const db = getServerClient();
+    const { data: src, error: fetchErr } = await db
+      .from('travel_vouchers')
+      .select('*')
+      .eq('id', id)
+      .eq('store_id', storeId)
+      .single();
+
+    if (fetchErr || !src) {
+      throw new Error("Voucher original não encontrado nesta loja.");
+    }
+
+    const randomSuffix = randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
+    const voucherNumber = `VCH-${randomSuffix}-${Date.now().toString().slice(-4)}`;
+    const qrHash = createHash('sha256')
+      .update(`${storeId}_${voucherNumber}_${Date.now()}`)
+      .digest('hex');
+
+    const { data: cloned, error: insErr } = await db
+      .from('travel_vouchers')
+      .insert({
+        store_id: storeId,
+        trip_id: src.trip_id || null,
+        voucher_number: voucherNumber,
+        voucher_type: src.voucher_type || 'flight',
+        title: `${src.title} (Cópia)`,
+        passenger_name: src.passenger_name,
+        passenger_document: src.passenger_document || null,
+        qr_code_hash: qrHash,
+        flight_data: src.flight_data || {},
+        hotel_data: src.hotel_data || {},
+        transfer_data: src.transfer_data || {},
+        status: 'issued',
+      })
+      .select('*')
+      .single();
+
+    if (insErr || !cloned) {
+      throw new Error('Erro ao duplicar voucher: ' + (insErr?.message || 'desconhecido'));
+    }
+    return cloned as TravelVoucherDTO;
+  });
+
 export const deleteTravelVoucher = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data: { id } }) => {

@@ -32,7 +32,9 @@ import {
   Percent,
   ExternalLink,
   Route as RouteIcon,
+  Image as ImageIcon,
 } from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -577,6 +579,43 @@ export function TravelPackageForm({
   const updateItineraryDay = (index: number, field: string, val: any) => {
     const next = [...itinerary];
     next[index] = { ...next[index], [field]: val };
+    onChange({ ...value, itinerary_days: next });
+  };
+
+  const addItineraryDayPhoto = (index: number, url: string) => {
+    if (!url.trim()) return;
+    const next = [...itinerary];
+    const current = next[index];
+    if (!current) return;
+    const existing = Array.isArray(current.images)
+      ? current.images.filter(Boolean)
+      : current.imageUrl
+        ? [current.imageUrl]
+        : [];
+    const nextImages = Array.from(new Set([...existing, url.trim()]));
+    next[index] = {
+      ...current,
+      imageUrl: nextImages[0] || "",
+      images: nextImages,
+    };
+    onChange({ ...value, itinerary_days: next });
+  };
+
+  const removeItineraryDayPhoto = (index: number, imgIdx: number) => {
+    const next = [...itinerary];
+    const current = next[index];
+    if (!current) return;
+    const existing = Array.isArray(current.images)
+      ? current.images.filter(Boolean)
+      : current.imageUrl
+        ? [current.imageUrl]
+        : [];
+    const nextImages = existing.filter((_, i) => i !== imgIdx);
+    next[index] = {
+      ...current,
+      imageUrl: nextImages[0] || "",
+      images: nextImages,
+    };
     onChange({ ...value, itinerary_days: next });
   };
 
@@ -1302,6 +1341,50 @@ export function TravelPackageForm({
                         className="text-xs bg-background min-h-20 rounded-lg"
                       />
                     </div>
+
+                    {(() => {
+                      const dayPhotos = Array.isArray(dayItem.images)
+                        ? dayItem.images.filter(Boolean)
+                        : dayItem.imageUrl
+                          ? [dayItem.imageUrl]
+                          : [];
+                      return (
+                        <div className="pt-2 border-t border-border/50 space-y-2">
+                          <span className="text-2xs font-semibold text-foreground flex items-center gap-2">
+                            <ImageIcon className="size-3.5 text-primary" />
+                            <span>Fotos do Dia ({dayPhotos.length})</span>
+                          </span>
+                          <ImageUpload
+                            value=""
+                            onChange={(url) => addItineraryDayPhoto(idx, url)}
+                            aspectPreset="widescreen"
+                            bucket="cms-media"
+                            label="Adicionar Foto do Dia"
+                          />
+                          {dayPhotos.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {dayPhotos.map((imgUrl, imgIdx) => (
+                                <div key={imgIdx} className="relative h-20 rounded-lg overflow-hidden border border-border">
+                                  <img
+                                    src={imgUrl}
+                                    alt={`${dayItem.title || `Dia ${dayItem.day}`} ${imgIdx + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeItineraryDayPhoto(idx, imgIdx)}
+                                    className="absolute top-1 right-1 min-h-11 min-w-11 sm:min-h-6 sm:min-w-6 rounded-full bg-background/90 text-destructive flex items-center justify-center shadow-xs cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    title="Remover foto"
+                                  >
+                                    <X className="size-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
@@ -2342,7 +2425,7 @@ export function TravelPackageForm({
               </div>
 
               {/* Boleto Bancário Faturado */}
-              <div className="space-y-3 p-3.5 rounded-lg bg-muted/20 border border-border/50 sm:col-span-2">
+              <div className="space-y-3 p-4 rounded-lg bg-muted/20 border border-border/50 sm:col-span-2">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
@@ -2395,7 +2478,7 @@ export function TravelPackageForm({
                           <select
                             value={boletoDownpaymentType}
                             onChange={(e) => updatePaymentConditions("boleto_downpayment_type", e.target.value as any)}
-                            className="h-10 rounded-lg bg-background border border-border px-1.5 text-2xs text-foreground cursor-pointer"
+                            className="h-10 rounded-lg bg-background border border-border px-2 text-2xs text-foreground cursor-pointer"
                           >
                             <option value="percentage">%</option>
                             <option value="fixed_cents">R$</option>
@@ -2453,7 +2536,7 @@ export function TravelPackageForm({
               </div>
 
               {/* Texto das Condições Comerciais ao Cliente */}
-              <div className="space-y-1.5 pt-1 sm:col-span-2">
+              <div className="space-y-2 pt-1 sm:col-span-2">
                 <Label className="text-xs font-semibold text-foreground">
                   Texto Comercial das Condições de Pagamento
                 </Label>

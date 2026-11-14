@@ -54,7 +54,7 @@ export function EventFeatureMiniBannersRail({
               style={{
                 background: item.imageUrl
                   ? undefined
-                  : `linear-gradient(145deg, ${item.bgColor || "#0284c7"} 0%, #0f172a 120%)`,
+                  : `linear-gradient(145deg, ${item.bgColor || "var(--color-sky-600)"} 0%, var(--color-slate-900) 120%)`,
               }}
             >
               {item.imageUrl && (

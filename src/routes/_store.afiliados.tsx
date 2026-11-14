@@ -396,12 +396,12 @@ function AfiliadosPage() {
               {/* ─── TAB 1: VISÃO GERAL (MÉTRICAS & SEMÂNTICA COMERCIAL DIRETA) ── */}
               <TabsContent value="dashboard" className="space-y-3 sm:space-y-5 mt-0">
                 {/* 4 Cards de Métricas Comerciais */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                   <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Cliques no Link
                     </span>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-semibold text-foreground">
                       {(partner.total_clicks || 0).toLocaleString("pt-BR")}
                     </p>
                     <span className="text-xs text-muted-foreground">Acessos à sua vitrine</span>
@@ -411,10 +411,10 @@ function AfiliadosPage() {
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Vendas Realizadas
                     </span>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-semibold text-foreground">
                       {partner.total_orders || 0}
                     </p>
-                    <span className="text-xs text-emerald-600 font-medium">Pedidos convertidos</span>
+                    <span className="text-xs text-success font-medium">Pedidos convertidos</span>
                   </div>
 
                   <div className="p-4 sm:p-4 rounded-lg border border-border/60 bg-card space-y-1">
@@ -590,10 +590,10 @@ function AfiliadosPage() {
               {/* ─── TAB: EXTRATO MÉLIUZ (COMISSÕES RASTREADAS & ESCROW) ──────── */}
               <TabsContent value="ledger" className="space-y-4 sm:space-y-6 mt-0">
                 {/* 4 Cards de Saldos do Escrow Méliuz */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
                     <span className="text-xs text-muted-foreground block">Em Rastreamento</span>
-                    <p className="text-lg sm:text-xl font-bold text-foreground">
+                    <p className="text-lg sm:text-xl font-semibold text-foreground">
                       {formatMoney(ledgerData?.summary?.pendingTrackingCents || 0)}
                     </p>
                     <span className="text-xs text-muted-foreground block">Aguardando entrega</span>
@@ -601,7 +601,7 @@ function AfiliadosPage() {
 
                   <div className="p-4 rounded-lg bg-card border border-border/60 space-y-1">
                     <span className="text-xs text-muted-foreground block">Em Garantia</span>
-                    <p className="text-lg sm:text-xl font-bold text-foreground">
+                    <p className="text-lg sm:text-xl font-semibold text-foreground">
                       {formatMoney(ledgerData?.summary?.awaitingEscrowCents || 0)}
                     </p>
                     <span className="text-xs text-muted-foreground block">Liberação em 15 dias</span>

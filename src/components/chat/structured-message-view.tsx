@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { MetricWidget, type MetricWidgetProps } from "@/components/widgets/MetricWidget";
 import { TaskCard, type TaskCardProps } from "@/components/widgets/TaskCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { exportElementAsImage } from "@/lib/pdf-export";
+import {
+  CREATIVE_THEMES,
+  CreativeArtboardRenderer,
+  type CreativeArchetype,
+  type CreativeAspectRatio,
+  type CreativeThemeId,
+} from "@/components/studio/creative-artboard-renderer";
 import {
   Package,
   CheckCircle2,
@@ -42,6 +51,9 @@ import {
   Lock,
   EyeOff,
   Shield,
+  Download,
+  Palette,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -179,7 +191,7 @@ function OrderTrackerBlock({ data }: { data: Record<string, any> }) {
             </p>
             {data.total_cents && (
               <p className="text-xs font-mono font-semibold text-primary">
-                {formatMoney(data.total_cents / 100)}
+                {formatMoney(data.total_cents)}
               </p>
             )}
           </div>
@@ -353,7 +365,7 @@ function ProductCardBlock({
           <div className="flex items-baseline gap-2 pt-1">
             <span className="text-sm font-bold font-mono text-primary">
               {typeof data.price_cents === "number"
-                ? formatMoney(data.price_cents / 100)
+                ? formatMoney(data.price_cents)
                 : typeof data.price === "number"
                 ? formatMoney(data.price)
                 : "Consulte"}
@@ -438,7 +450,7 @@ function ProposalCardBlock({
           <span className="text-muted-foreground">Valor Total:</span>
           <span className="font-bold font-mono text-primary text-sm">
             {typeof data.total_cents === "number"
-              ? formatMoney(data.total_cents / 100)
+              ? formatMoney(data.total_cents)
               : data.total || "—"}
           </span>
         </div>
@@ -643,7 +655,7 @@ function CardCarouselBlock({
             )}
             {item.price_cents && (
               <p className="text-xs font-mono font-bold text-primary">
-                {formatMoney(item.price_cents / 100)}
+                {formatMoney(item.price_cents)}
               </p>
             )}
             {item.source_table && (
@@ -1038,7 +1050,7 @@ function FinancialEntryBlock({
       <div className="flex items-baseline justify-between text-xs">
         <span className="text-muted-foreground">Valor:</span>
         <span className="text-sm font-bold font-mono text-primary">
-          {typeof data.amount_cents === "number" ? formatMoney(data.amount_cents / 100) : data.amount || "—"}
+          {typeof data.amount_cents === "number" ? formatMoney(data.amount_cents) : data.amount || "—"}
         </span>
       </div>
       <Button
@@ -1310,7 +1322,7 @@ function MobilityQuoteBlock({
               </div>
 
               <span className="font-mono font-bold text-sm text-primary shrink-0 ml-2">
-                {typeof q.estimated_price_cents === "number" ? formatMoney(q.estimated_price_cents / 100) : "Sob consulta"}
+                {typeof q.estimated_price_cents === "number" ? formatMoney(q.estimated_price_cents) : "Sob consulta"}
               </span>
             </button>
           );
@@ -1376,7 +1388,7 @@ function TravelItineraryBlock({
           <div className="text-right">
             <span className="text-2xs text-muted-foreground block">Orcamento Est.</span>
             <span className="text-xs font-mono font-bold text-primary">
-              {formatMoney(estimatedBudgetCents / 100)}
+              {formatMoney(estimatedBudgetCents)}
             </span>
           </div>
         )}
@@ -1602,7 +1614,7 @@ function FoodModifierSelectorBlock({
         <div className="min-w-0 flex-1">
           <h4 className="text-xs font-bold text-foreground truncate">{item.title || "Item do Cardapio"}</h4>
           {item.description && <p className="text-2xs text-muted-foreground line-clamp-1">{item.description}</p>}
-          <span className="text-xs font-mono font-bold text-primary">{formatMoney(basePriceCents / 100)}</span>
+          <span className="text-xs font-mono font-bold text-primary">{formatMoney(basePriceCents)}</span>
         </div>
       </div>
 
@@ -1631,7 +1643,7 @@ function FoodModifierSelectorBlock({
                     )}
                   >
                     <span>{opt.name}</span>
-                    <span className="font-mono">{opt.price_cents > 0 ? `+${formatMoney(opt.price_cents / 100)}` : "Gratis"}</span>
+                    <span className="font-mono">{opt.price_cents > 0 ? `+${formatMoney(opt.price_cents)}` : "Gratis"}</span>
                   </button>
                 );
               })}
@@ -1660,7 +1672,7 @@ function FoodModifierSelectorBlock({
           })
         }
       >
-        <span>Adicionar • {formatMoney(totalPriceCents / 100)}</span>
+        <span>Adicionar • {formatMoney(totalPriceCents)}</span>
       </Button>
     </div>
   );
@@ -1673,56 +1685,222 @@ function CreativeAdPreviewBlock({
   data: Record<string, any>;
   onAction?: (action: AIChatAction) => void;
 }) {
-  const headline = data.headline || "Oferta Especial";
-  const bodyText = data.body_text || data.copy || "Confira as novidades imperdiveis da nossa loja.";
-  const ctaLabel = data.cta_label || "Aproveitar Agora";
-  const format = data.format || "feed";
+  const uid = useId();
+  const stageId = `chat-creative-stage-${uid.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const initialRatioRaw = String(data.aspect_ratio || data.aspectRatio || "").trim();
+  const formatRaw = String(data.format || "feed").toLowerCase();
+  const initialAspectRatio: CreativeAspectRatio =
+    initialRatioRaw === "9:16" || formatRaw === "story"
+      ? "9:16"
+      : initialRatioRaw === "4:5" || formatRaw === "portrait"
+        ? "4:5"
+        : initialRatioRaw === "16:9" || formatRaw === "landscape"
+          ? "16:9"
+          : "1:1";
+
+  const rawTheme = String(data.theme_id || data.themeId || data.theme || "emerald") as CreativeThemeId;
+  const initialThemeId: CreativeThemeId =
+    rawTheme in CREATIVE_THEMES ? rawTheme : "emerald";
+  const initialArchetype = (String(data.archetype || "promo_offer") as CreativeArchetype);
+
+  const [aspectRatio, setAspectRatio] = useState<CreativeAspectRatio>(initialAspectRatio);
+  const [themeId, setThemeId] = useState<CreativeThemeId>(initialThemeId);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const headline = data.headline || data.title || "Oferta Especial";
+  const subheadline =
+    data.subheadline ||
+    data.body_text ||
+    data.copy ||
+    "Confira os detalhes completos e garanta condições exclusivas.";
+  const ctaLabel = data.cta_label || data.ctaText || "Aproveitar Agora";
+  const badge = data.badge || "Em Destaque";
+  const offerBadge = data.offer_badge || data.offerBadge;
+  const offerPrice = data.offer_price || data.offerPrice;
+  const installments = data.installments;
+  const storeName = data.store_name || data.storeName || "Waesy Studio";
+  const locationLabel = data.location_label || data.locationLabel;
+  const bullets = Array.isArray(data.bullets) ? data.bullets : undefined;
+  const activeFormat =
+    aspectRatio === "9:16"
+      ? "story"
+      : aspectRatio === "4:5"
+        ? "portrait"
+        : aspectRatio === "16:9"
+          ? "landscape"
+          : "feed";
+
+  const handleDownloadPng = async () => {
+    try {
+      setIsExporting(true);
+      await exportElementAsImage(stageId, {
+        filename: `arte-waesy-${aspectRatio.replace(":", "x")}.png`,
+        scale: 2,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card p-4 shadow-2xs max-w-sm w-full space-y-3">
-      <div className="flex items-center justify-between border-b border-border/60 pb-2">
-        <span className="text-2xs uppercase tracking-wider font-semibold text-primary flex items-center gap-2">
-          <Layers className="size-3.5" />
-          <span>Arte & Anuncio Gerado</span>
+    <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 max-w-md w-full space-y-3">
+      <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2">
+        <span className="text-2xs uppercase tracking-wider font-semibold text-primary flex items-center gap-2 min-w-0">
+          <Sparkles className="size-3.5 shrink-0" />
+          <span className="truncate">Estúdio Canva • Tempo Real</span>
         </span>
-        <Badge variant="outline" className="text-2xs font-mono">
-          {format === "story" ? "Story (9:16)" : "Feed (1:1)"}
+        <Badge variant="outline" className="text-2xs font-mono shrink-0">
+          {aspectRatio === "9:16"
+            ? "Story (9:16)"
+            : aspectRatio === "4:5"
+              ? "Retrato (4:5)"
+              : aspectRatio === "16:9"
+                ? "Slide (16:9)"
+                : "Feed (1:1)"}
         </Badge>
       </div>
 
-      {/* Canvas Mock do Anuncio */}
-      <div className="rounded-md border border-border/60 bg-muted/40 p-4 space-y-3 text-center">
-        <h4 className="text-sm font-bold text-foreground tracking-tight">{headline}</h4>
-        <p className="text-xs text-muted-foreground leading-relaxed">{bodyText}</p>
-        <div className="pt-2">
-          <span className="inline-block px-4 py-2 rounded-full bg-primary text-primary-foreground font-bold text-xs select-none">
-            {ctaLabel}
-          </span>
+      {/* Controles Rápidos de Formato e Tema em Tempo Real */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="inline-flex rounded-xl bg-muted p-1 gap-1">
+          {(["1:1", "4:5", "9:16", "16:9"] as const).map((ratio) => (
+            <button
+              key={ratio}
+              type="button"
+              onClick={() => setAspectRatio(ratio)}
+              className={cn(
+                "min-h-11 sm:min-h-8 px-3 rounded-lg text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                aspectRatio === ratio
+                  ? "bg-background text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {ratio}
+            </button>
+          ))}
+        </div>
+
+        <div className="inline-flex items-center gap-1 rounded-xl bg-muted p-1">
+          <Palette className="size-3.5 text-muted-foreground ml-1 shrink-0" />
+          {(["emerald", "gold", "cobalt", "obsidian"] as const).map((tId) => (
+            <button
+              key={tId}
+              type="button"
+              onClick={() => setThemeId(tId)}
+              className={cn(
+                "min-h-11 sm:min-h-8 px-2 rounded-lg text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                themeId === tId
+                  ? "bg-background text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {CREATIVE_THEMES[tId].label.split(" ")[0]}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Acao de Publicar */}
-      <Button
-        type="button"
-        size="sm"
-        className="w-full h-11 rounded-md text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-        onClick={() => /* focus-visible:ring-2 */
-          onAction?.({
-            id: `publish-ad-${Date.now()}`,
-            label: "Publicar no Mural",
-            action_type: "publish_ad",
-            payload: {
-              headline,
-              body_text: bodyText,
-              cta_label: ctaLabel,
-              format,
-            },
-          })
-        }
-      >
-        <span>Publicar Anuncio no Mural</span>
-        <ArrowRight className="size-4 ml-2" />
-      </Button>
+      {/* Canvas HTML/CSS Real Renderizado (Pronto para Captura html2canvas PNG) */}
+      <ScrollArea className="w-full rounded-xl bg-muted/30 border border-border/50">
+        <div className="flex justify-center p-3">
+          <CreativeArtboardRenderer
+            id={stageId}
+            archetype={initialArchetype}
+            themeId={themeId}
+            aspectRatio={aspectRatio}
+            badge={badge}
+            headline={headline}
+            subheadline={subheadline}
+            bullets={bullets}
+            offerBadge={offerBadge}
+            offerPrice={offerPrice}
+            installments={installments}
+            ctaText={ctaLabel}
+            brandName={storeName}
+            locationLabel={locationLabel}
+            imageUrl={data.image_url || data.imageUrl}
+            logoUrl={data.logo_url || data.logoUrl}
+            className="max-w-full"
+          />
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      {/* Ações Táteis: Baixar PNG, Abrir no Estúdio e Publicar */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isExporting}
+          onClick={handleDownloadPng}
+          className="h-11 min-h-11 rounded-xl text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        >
+          <Download className="size-3.5 shrink-0" />
+          <span>{isExporting ? "Gerando..." : "PNG"}</span>
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() =>
+            onAction?.({
+              id: `open-studio-${Date.now()}`,
+              label: "Abrir no Estúdio",
+              action_type: "open_artifact",
+              payload: {
+                artifact_id: data.artifact_id,
+                type: "creative_post",
+                title: headline,
+                data: {
+                  ...data,
+                  format: activeFormat,
+                  aspectRatio,
+                  themeId,
+                  archetype: initialArchetype,
+                  headline,
+                  subheadline,
+                  badge,
+                  offerBadge,
+                  offerPrice,
+                  installments,
+                  bullets,
+                  ctaText: ctaLabel,
+                  storeName,
+                  locationLabel,
+                },
+              },
+            })
+          }
+          className="flex-1 h-11 min-h-11 rounded-xl text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+        >
+          <Layers className="size-3.5 shrink-0" />
+          <span>Abrir no Estúdio</span>
+        </Button>
+
+        <Button
+          type="button"
+          size="sm"
+          className="flex-1 h-11 min-h-11 rounded-xl text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          onClick={() =>
+            onAction?.({
+              id: `publish-ad-${Date.now()}`,
+              label: "Publicar no Mural",
+              action_type: "publish_ad",
+              payload: {
+                headline,
+                body_text: subheadline,
+                cta_label: ctaLabel,
+                format: activeFormat,
+              },
+            })
+          }
+        >
+          <span>Publicar</span>
+          <ArrowRight className="size-3.5 ml-2 shrink-0" />
+        </Button>
+      </div>
     </div>
   );
 }

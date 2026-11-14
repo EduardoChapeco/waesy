@@ -6,6 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { WAESY_CANONICAL_ORIGIN } from "@/lib/seo/universal-seo-head";
 import { getServerIdentity, assertStoreAccess, requirePlatformAdmin } from "@/lib/server-access";
 import { encryptSecret, decryptSecret, maskSecret, cleanApiKey } from "@/lib/crypto-vault.server";
 import {
@@ -1067,6 +1068,7 @@ export interface UnifiedAiCallOptions {
   preferredProvider?: ApiProvider;
   preferProvider?: ApiProvider;
   modelOverride?: string;
+  enableWebSearch?: boolean;
   images?: Array<{ mimeType: string; base64: string }>;
   overrideApiKey?: string;
   ownerId?: string;
@@ -1080,6 +1082,7 @@ export interface UnifiedAiResult {
   model: string;
   modelUsed?: string;
   parsedJson?: any;
+  groundingSources?: Array<{ title: string; url: string }>;
 }
 
 /**
@@ -1326,7 +1329,7 @@ export async function executeUnifiedAiCall(
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${keyInfo.rawKey}`,
-                "HTTP-Referer": "https://waesy.pages.dev",
+                "HTTP-Referer": WAESY_CANONICAL_ORIGIN,
                 "X-Title": "Waesy Platform",
               },
               body: JSON.stringify(bodyPayload),
@@ -1558,14 +1561,27 @@ export async function executeUnifiedAiCall(
 
           if (isJson) {
             payload.generationConfig.responseMimeType = "application/json";
+          } else if (options.enableWebSearch) {
+            payload.tools = [{ google_search: {} }];
           }
 
-          const res = await fetch(url, {
+          let res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
             signal: AbortSignal.timeout(30000),
           });
+
+          if (!res.ok && res.status === 400 && payload.tools) {
+            const fallbackPayload = { ...payload };
+            delete fallbackPayload.tools;
+            res = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(fallbackPayload),
+              signal: AbortSignal.timeout(30000),
+            });
+          }
 
           if (!res.ok) {
             const errText = await res.text().catch(() => "");
@@ -1579,11 +1595,28 @@ export async function executeUnifiedAiCall(
           }
 
           const data = await res.json();
-          const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          const candidateParts = Array.isArray(data?.candidates?.[0]?.content?.parts)
+            ? data.candidates[0].content.parts
+            : [];
+          const content = candidateParts
+            .map((part: any) => (typeof part?.text === "string" ? part.text : ""))
+            .filter(Boolean)
+            .join("")
+            .trim();
           if (!content) {
             errors.push("Gemini retornou resposta vazia");
             continue;
           }
+
+          const groundingChunks = Array.isArray(data?.candidates?.[0]?.groundingMetadata?.groundingChunks)
+            ? data.candidates[0].groundingMetadata.groundingChunks
+            : [];
+          const groundingSources = groundingChunks
+            .map((chunk: any) => ({
+              title: typeof chunk?.web?.title === "string" ? chunk.web.title : "",
+              url: typeof chunk?.web?.uri === "string" ? chunk.web.uri : "",
+            }))
+            .filter((item: { title: string; url: string }) => Boolean(item.url));
 
           let parsedJson: any = undefined;
           if (isJson || content.trim().startsWith("{") || content.trim().startsWith("[")) {
@@ -1602,7 +1635,8 @@ export async function executeUnifiedAiCall(
             }
           }
 
-          return await finalizeSuccess(content, model, parsedJson);
+          const finalized = await finalizeSuccess(content, model, parsedJson);
+          return groundingSources.length > 0 ? { ...finalized, groundingSources } : finalized;
         }
 
         if (provider === "openai") {

@@ -36,11 +36,12 @@ export function StudioMapWidget({
   const [capturing, setCapturing] = useState(false);
   const [searching, setSearching] = useState(false);
 
-  const { data: mapConfig } = useQuery({
+  const { data: mapConfig, isLoading: isMapConfigLoading } = useQuery({
     queryKey: ["public-map-config"],
     queryFn: () => getPublicMapConfig(),
     staleTime: 5 * 60 * 1000,
   });
+  void isMapConfigLoading;
 
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);

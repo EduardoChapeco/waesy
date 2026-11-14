@@ -666,7 +666,7 @@ export interface InfotravelIntegrationStatusDTO {
   }>;
 }
 
-async function resolveStoreInfotravelCredentials(
+export async function resolveStoreInfotravelCredentials(
   storeId: string,
   operatorSlug: InfoTravelOperatorSlug,
 ): Promise<{
@@ -676,7 +676,46 @@ async function resolveStoreInfotravelCredentials(
 } | null> {
   const { getActiveIntegrationPayload } = await import("@/services/integrations.functions");
   const specific = await getActiveIntegrationPayload(storeId, `infotravel_${operatorSlug}`);
-  const generic = specific || (await getActiveIntegrationPayload(storeId, "infotravel"));
+  let generic = specific || (await getActiveIntegrationPayload(storeId, "infotravel"));
+
+  if (!generic) {
+    const supabase = getServerClient();
+    const { decryptSecret } = await import("@/lib/crypto-vault.server");
+    const candidateCodes = Array.from(
+      new Set([operatorSlug, `infotravel_${operatorSlug}`, "infotravel", "infotravel_default"]),
+    );
+    const { data: opRows } = await (supabase.from("travel_operator_integrations") as any)
+      .select("provider_code, operator_slug, engine_type, base_url, username, vault_secret_id, config_payload, is_active")
+      .eq("store_id", storeId)
+      .eq("is_active", true)
+      .in("provider_code", candidateCodes);
+
+    const matchedRow = Array.isArray(opRows)
+      ? opRows.find((r: any) => r.provider_code === operatorSlug || r.operator_slug === operatorSlug) || opRows[0]
+      : null;
+
+    if (matchedRow) {
+      let secretObj: Record<string, string> = {};
+      if (typeof matchedRow.vault_secret_id === "string" && matchedRow.vault_secret_id.trim()) {
+        try {
+          secretObj = JSON.parse(decryptSecret(matchedRow.vault_secret_id));
+        } catch {
+          secretObj = {};
+        }
+      }
+      const cfg =
+        matchedRow.config_payload && typeof matchedRow.config_payload === "object"
+          ? (matchedRow.config_payload as Record<string, string>)
+          : {};
+      generic = {
+        ...cfg,
+        ...secretObj,
+        ...(matchedRow.base_url ? { base_url: String(matchedRow.base_url) } : {}),
+        ...(matchedRow.username ? { username: String(matchedRow.username) } : {}),
+      };
+    }
+  }
+
   if (!generic) return null;
 
   const baseUrl = (generic.base_url || generic.apiUrl || "").trim().replace(/\/+$/, "");
@@ -740,17 +779,55 @@ export const getInfotravelIntegrationStatusFn = createServerFn({ method: "GET" }
         .eq("store_id", identity.store_id)
         .eq("is_active", true);
 
+      const { data: opRows } = await (supabase.from("travel_operator_integrations") as any)
+        .select("provider_code, operator_slug, engine_type, is_active")
+        .eq("store_id", identity.store_id)
+        .eq("is_active", true);
+
       const configuredOperators: InfoTravelOperatorSlug[] = [];
+      const allOperatorSlugs: InfoTravelOperatorSlug[] = [
+        "infotravel_default",
+        "orinter",
+        "frt",
+        "incomum",
+        "cativa",
+        "befly",
+        "confianca",
+      ];
       const activeList = Array.isArray(creds) ? creds : [];
 
       for (const row of activeList) {
         const p = String(row.provider || "").toLowerCase();
         if (p === "infotravel") {
-          configuredOperators.push("infotravel_default", "orinter", "frt", "incomum", "cativa", "befly", "confianca");
+          configuredOperators.push(...allOperatorSlugs);
         } else if (p.startsWith("infotravel_")) {
           const slug = p.replace("infotravel_", "") as InfoTravelOperatorSlug;
           if (!configuredOperators.includes(slug)) {
             configuredOperators.push(slug);
+          }
+        }
+      }
+
+      const activeOps = Array.isArray(opRows) ? opRows : [];
+      for (const row of activeOps) {
+        const code = String(row.provider_code || "").toLowerCase();
+        const opSlug = String(row.operator_slug || "").toLowerCase();
+        if (code === "infotravel" || row.engine_type === "infotravel_v1") {
+          if (opSlug && allOperatorSlugs.includes(opSlug as InfoTravelOperatorSlug)) {
+            if (!configuredOperators.includes(opSlug as InfoTravelOperatorSlug)) {
+              configuredOperators.push(opSlug as InfoTravelOperatorSlug);
+            }
+          } else {
+            configuredOperators.push(...allOperatorSlugs);
+          }
+        } else if (allOperatorSlugs.includes(code as InfoTravelOperatorSlug)) {
+          if (!configuredOperators.includes(code as InfoTravelOperatorSlug)) {
+            configuredOperators.push(code as InfoTravelOperatorSlug);
+          }
+        } else if (code.startsWith("infotravel_")) {
+          const stripped = code.replace("infotravel_", "") as InfoTravelOperatorSlug;
+          if (allOperatorSlugs.includes(stripped) && !configuredOperators.includes(stripped)) {
+            configuredOperators.push(stripped);
           }
         }
       }
@@ -1588,11 +1665,13 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
             );
 
             for (const pkg of livePackages.slice(0, 8)) {
+              const title = String(pkg.name || pkg.hotel?.name || "").trim();
               const priceCents = Math.round(Number(pkg.price?.amount || 0) * 100);
+              if (!title || priceCents <= 0) continue;
               results.push({
                 id: String(pkg.id || crypto.randomUUID()),
                 category: data.service,
-                title: String(pkg.name || pkg.hotel?.name || `Roteiro ${safeDest}`),
+                title,
                 subtitle: String(pkg.hotel?.name || pkg.board?.name || safeDest),
                 destination: safeDest,
                 departureDate: data.departureDate,
@@ -1600,10 +1679,10 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
                 priceCents,
                 badge: "Disponibilidade Tempo Real",
                 includes: [
-                  pkg.includesFlight !== false ? "Aéreo Ida e Volta" : null,
-                  pkg.includesHotel !== false ? "Hospedagem Confirmada" : null,
-                  pkg.board?.name ? String(pkg.board.name) : "Café da Manhã",
-                  pkg.includesTransfer !== false ? "Transfer Regular" : null,
+                  pkg.includesFlight === true ? "Aéreo Ida e Volta" : null,
+                  pkg.includesHotel === true || Boolean(pkg.hotel?.name) ? "Hospedagem Confirmada" : null,
+                  pkg.board?.name ? String(pkg.board.name) : null,
+                  pkg.includesTransfer === true ? "Transfer Regular" : null,
                 ].filter(Boolean) as string[],
                 imageUrl: null,
                 source: "infotravel_live",
@@ -1616,7 +1695,7 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
       }
     }
 
-    // 1.b Busca de Locação de Carros B2C via InfoTravel (com fallback determinístico local)
+    // 1.b Busca de Locação de Carros B2C via InfoTravel (100% real, sem frota estática)
     if (data.service === "cars") {
       const pickupDate = data.departureDate || new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       const dropoffDate = data.returnDate || new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10);
@@ -1631,105 +1710,39 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
         if (Array.isArray(liveCars) && liveCars.length > 0) {
           infotravelLiveActive = true;
           for (const car of liveCars) {
-            const dailyRateBrl = Math.max(1, Number(car.dailyRateBrl || 129));
-            const totalThreeDaysBrl = dailyRateBrl * 3;
+            const dailyRateBrl = Number(car.dailyRateBrl);
+            const rentalCompany = String(car.rentalCompany || "").trim();
+            const vehicleCategory = String(car.vehicleCategory || "").trim();
+            if (!Number.isFinite(dailyRateBrl) || dailyRateBrl <= 0 || !rentalCompany || !vehicleCategory) {
+              continue;
+            }
+            const totalThreeDaysBrl = Number(car.totalRateBrl) > 0 ? Number(car.totalRateBrl) : dailyRateBrl * 3;
             results.push({
               id: String(car.id),
               category: "cars",
-              title: String(car.vehicleCategory || "Carros Pequenos"),
-              subtitle: String(car.vehicleModelExample || "Chevrolet Onix ou similar"),
+              title: vehicleCategory,
+              subtitle: String(car.vehicleModelExample || vehicleCategory),
               destination: safeDest,
               departureDate: pickupDate,
               returnDate: dropoffDate,
               priceCents: Math.round(totalThreeDaysBrl * 100),
-              badge: String(car.rentalCompany || "Localiza"),
+              badge: rentalCompany,
               includes: [
-                "Cancelamento grátis",
-                "Pague ao retirar",
-                car.includesUnlimitedMileage ? "Quilometragem livre" : "Franquia de KM",
-                car.includesFullProtection ? "Proteção inclusa" : "Proteção básica",
-              ],
+                car.includesUnlimitedMileage === true ? "Quilometragem livre" : null,
+                car.includesFullProtection === true ? "Proteção inclusa" : null,
+              ].filter(Boolean) as string[],
               imageUrl: null,
               source: "infotravel_live",
               dailyRateBrl,
               totalThreeDaysBrl,
-              freeCancellation: true,
-              paymentTiming: "pay_at_pickup",
               pickupLocation: String(car.pickupLocation || safeDest),
-              rentalCompany: String(car.rentalCompany || "Localiza"),
+              rentalCompany,
               transmission: car.transmission === "Manual" ? "Manual" : "Automático",
             });
           }
         }
       } catch {
-        // Quando credenciais externas não estão configuradas em dev local, popula itens determinísticos B2C
-      }
-
-      if (results.length === 0) {
-        const defaultFleet = [
-          {
-            id: "b2c-car-small",
-            rentalCompany: "Localiza",
-            vehicleCategory: "Carros Pequenos",
-            vehicleModelExample: "Chevrolet Onix, HB20 ou similar",
-            transmission: "Manual" as const,
-            dailyRateBrl: 129,
-          },
-          {
-            id: "b2c-car-sedan",
-            rentalCompany: "Movida",
-            vehicleCategory: "Sedã Executivo",
-            vehicleModelExample: "Toyota Corolla, Virtus ou similar",
-            transmission: "Automático" as const,
-            dailyRateBrl: 189,
-          },
-          {
-            id: "b2c-car-suv",
-            rentalCompany: "Unidas",
-            vehicleCategory: "SUVs e Caminhonetes",
-            vehicleModelExample: "Jeep Compass, T-Cross ou similar",
-            transmission: "Automático" as const,
-            dailyRateBrl: 239,
-          },
-          {
-            id: "b2c-car-utility",
-            rentalCompany: "InfoTravel GDS",
-            vehicleCategory: "Utilitários",
-            vehicleModelExample: "Fiat Toro, Oroch ou similar",
-            transmission: "Automático" as const,
-            dailyRateBrl: 269,
-          },
-        ];
-
-        for (const item of defaultFleet) {
-          const totalThreeDaysBrl = item.dailyRateBrl * 3;
-          results.push({
-            id: `${item.id}-${safeDest.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) || "loc"}`,
-            category: "cars",
-            title: item.vehicleCategory,
-            subtitle: item.vehicleModelExample,
-            destination: safeDest,
-            departureDate: pickupDate,
-            returnDate: dropoffDate,
-            priceCents: totalThreeDaysBrl * 100,
-            badge: item.rentalCompany,
-            includes: [
-              "Cancelamento grátis",
-              "Pague ao retirar",
-              "Quilometragem livre",
-              "Proteção inclusa",
-            ],
-            imageUrl: null,
-            source: "agency_catalog",
-            dailyRateBrl: item.dailyRateBrl,
-            totalThreeDaysBrl,
-            freeCancellation: true,
-            paymentTiming: "pay_at_pickup",
-            pickupLocation: safeDest,
-            rentalCompany: item.rentalCompany,
-            transmission: item.transmission,
-          });
-        }
+        // Sem credenciais InfoTravel ou API indisponível: retorna vazio honesto ou itens reais de catálogo
       }
     }
 
@@ -1754,10 +1767,7 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
               destination: String(h.city || safeDest),
               priceCents: 0,
               badge: h.stars ? `${h.stars} Estrelas` : "Hospedagem Verificada",
-              includes: [
-                "Café da Manhã",
-                ...amenities.slice(0, 3).map(String),
-              ],
+              includes: amenities.slice(0, 4).map(String),
               imageUrl: null,
               source: "agency_catalog",
             });
@@ -1796,7 +1806,9 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
             badge: "Pacote da Agência",
             includes: Array.isArray(meta.includes) && meta.includes.length > 0
               ? meta.includes.slice(0, 4).map(String)
-              : [safeOrigin ? `Saída: ${safeOrigin}` : "Roteiro Completo", "Assessoria Especializada"],
+              : safeOrigin
+              ? [`Saída: ${safeOrigin}`]
+              : [],
             imageUrl: sortedMedia[0]?.url ? String(sortedMedia[0].url) : null,
             slug: p.slug ? String(p.slug) : null,
             source: "agency_catalog",

@@ -31,7 +31,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
         <div className="flex flex-col items-center gap-2">
           <Link
             to="/"
-            className="size-11 min-w-11 min-h-11 rounded-xl bg-foreground text-background flex items-center justify-center font-display font-black text-lg tracking-tighter transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="size-11 min-w-11 min-h-11 rounded-xl bg-foreground text-background flex items-center justify-center font-display font-semibold text-lg tracking-tighter transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Waesy — Início"
           >
             <House size={20} weight={location.pathname === "/" ? "fill" : "regular"} />

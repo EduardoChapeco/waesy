@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { NativeBackButton } from "@/components/ui/native-back-button";
+import { ErrorState } from "@/components/state/states";
 import {
   Eye,
   Star,
@@ -49,12 +50,12 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
   loader: async ({ params }) => {
     try {
       const [product, catsRes, typesRes, groupsRes, storeRes, brandsRes] = await Promise.all([
-        getProductById({ data: { id: params.id } }).catch(() => null),
-        listCategories().catch(() => []),
-        listProductTypes().catch(() => []),
-        listOptionGroups().catch(() => []),
-        getStoreSettings().catch(() => null),
-        listStoreBrands().catch(() => []),
+        getProductById({ data: { id: params.id } }),
+        listCategories(),
+        listProductTypes(),
+        listOptionGroups(),
+        getStoreSettings(),
+        listStoreBrands(),
       ]);
       return {
         product: product || null,
@@ -63,8 +64,9 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
         optionGroupsList: groupsRes || [],
         store: storeRes,
         brands: brandsRes || [],
+        loadError: null as string | null,
       };
-    } catch {
+    } catch (err: any) {
       return {
         product: null,
         categories: [],
@@ -72,6 +74,7 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
         optionGroupsList: [],
         store: null,
         brands: [],
+        loadError: err?.message || "Não foi possível carregar os dados do produto.",
       };
     }
   },
@@ -79,11 +82,24 @@ export const Route = createFileRoute("/workspace/catalogo/produtos/$id")({
 });
 
 function EditProductPage() {
-  const { product, categories, productTypes, optionGroupsList, store, brands = [] } = ((Route.useLoaderData?.() as any) || {});
+  const { product, categories, productTypes, optionGroupsList, store, brands = [], loadError } = ((Route.useLoaderData?.() as any) || {});
+  const router = useRouter();
   const semantics = getNicheSemantics(store);
   const nicheCtx = getNicheCatalogContext(store);
 
   const edit = useProductEdit(product, store, nicheCtx, semantics, optionGroupsList);
+
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <ErrorState
+          title="Erro ao carregar produto"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -91,12 +107,12 @@ function EditProductPage() {
         <div className="flex items-center gap-3">
           <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
         </div>
-        <div className="p-12 text-center rounded-lg bg-card border border-border">
-          <h2 className="text-base font-bold text-foreground">{nicheCtx.entityName} não encontrado</h2>
+        <div className="p-12 text-center rounded-2xl bg-card border border-border">
+          <h2 className="text-base font-semibold text-foreground">{nicheCtx.entityName} não encontrado</h2>
           <p className="text-xs text-muted-foreground mt-1">
             O {nicheCtx.entityName.toLowerCase()} solicitado não existe ou foi removido do catálogo.
           </p>
-          <Button asChild className="mt-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground h-11 focus-visible:ring-2 focus-visible:ring-ring" size="sm">
+          <Button asChild className="mt-4 rounded-xl text-xs font-semibold bg-primary text-primary-foreground h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring" size="sm">
             <Link to="/workspace/catalogo/produtos">Ir para Lista de {nicheCtx.entityNamePlural}</Link>
           </Button>
         </div>
@@ -111,13 +127,13 @@ function EditProductPage() {
           eyebrow={`Catálogo / ${nicheCtx.entityName}`}
           title={edit.liveTitle || `Editar ${nicheCtx.entityName}`}
           actions={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="submit"
                 form="product-edit-general-form"
                 disabled={edit.isSaving}
                 size="sm"
-                className="h-11 px-4 rounded-lg text-xs font-bold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold bg-primary text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
                 {edit.isSaving ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none mr-2" /> : null}
                 Salvar Alterações
@@ -127,13 +143,13 @@ function EditProductPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => edit.setIsMasterCatalogOpen(true)} /* focus-visible: */
-                className="rounded-lg text-xs font-bold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer h-11 focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-xl text-xs font-semibold gap-2 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Star className="size-3.5" />
+                <Star className="size-4" />
                 <span>Sincronizar Catálogo Central</span>
               </Button>
               <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
-              <Button variant="outline" asChild size="sm" className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
+              <Button variant="outline" asChild size="sm" className="h-11 min-h-11 rounded-xl focus-visible:ring-2 focus-visible:ring-ring">
                 <Link to={`/produto/${product.slug}` as never} target="_blank">
                   <Eye className="mr-2 size-4" />
                   Ver na Vitrine

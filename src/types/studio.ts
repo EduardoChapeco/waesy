@@ -123,7 +123,7 @@ export const DEFAULT_TEXT_PROPERTIES: TextProperties = {
  fontFamily: "Inter",
  fontSize: 42,
  fontWeight: 800,
- color: "#FFFFFF",
+ color: "var(--color-neutral-50)",
  textAlign: "center",
  lineHeight: 1.2,
  letterSpacing: 0,
@@ -131,7 +131,7 @@ export const DEFAULT_TEXT_PROPERTIES: TextProperties = {
 
 export const DEFAULT_SHAPE_PROPERTIES: ShapeProperties = {
  shapeType: "rectangle",
- fill: "#FACC15",
+ fill: "var(--warning)",
  borderRadius: 16,
 };
 

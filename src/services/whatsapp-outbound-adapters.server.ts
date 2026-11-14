@@ -1,4 +1,5 @@
 import { decryptSecret } from "@/lib/crypto-vault.server";
+import { stripDataUriPrefixForGateway } from "@/lib/whatsapp-media-utils";
 
 export type OutboundProvider = "meta_cloud_api" | "evolution_api" | "wasender_api" | "render_bridge" | "custom_webhook";
 export type OutboundInstance = {
@@ -61,6 +62,12 @@ function mimeType(payload: Record<string, unknown>): string | undefined { return
 function fileName(payload: Record<string, unknown>): string | undefined { return stringValue(payload.file_name, payload.fileName, payload.filename) || undefined; }
 function quoted(payload: Record<string, unknown>): unknown { return payload.quoted && typeof payload.quoted === "object" ? payload.quoted : undefined; }
 
+function normalizeEvolutionRecipient(raw: string): string {
+  const trimmed = String(raw || "").trim();
+  if (trimmed.endsWith("@g.us") || trimmed.endsWith("@lid")) return trimmed;
+  return trimmed.replace(/@s\.whatsapp\.net$/i, "").replace(/\D/g, "");
+}
+
 async function sendMeta(instance: OutboundInstance, message: OutboundMessage): Promise<AdapterResult> {
   const secret = secrets(instance);
   const phoneNumberId = stringValue(instance.phone_number_id, secret.phone_number_id);
@@ -69,14 +76,32 @@ async function sendMeta(instance: OutboundInstance, message: OutboundMessage): P
   const text = typeof message.payload.text === "string" ? message.payload.text.trim() : null;
   const template = message.payload.template && typeof message.payload.template === "object" ? message.payload.template : null;
   const interactive = message.payload.interactive && typeof message.payload.interactive === "object" ? message.payload.interactive : null;
-  if ((!text && !template && !interactive) || (template && typeof (template as Record<string, unknown>).name !== "string")) {
-    throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", "Payload Meta exige texto, template ou objeto interativo válido", false);
+  const isMedia = MEDIA_TYPES.has(message.messageType);
+
+  let body: Record<string, unknown>;
+  if (isMedia) {
+    const kind = mediaType(message);
+    const link = mediaSource(message.payload);
+    const mediaCaption = caption(message.payload);
+    const mediaFilename = fileName(message.payload);
+    const mediaObject: Record<string, unknown> = { link };
+    if (mediaCaption && (kind === "image" || kind === "video" || kind === "document")) {
+      mediaObject.caption = mediaCaption;
+    }
+    if (mediaFilename && kind === "document") {
+      mediaObject.filename = mediaFilename;
+    }
+    body = { messaging_product: "whatsapp", to: message.recipientPhone, type: kind, [kind]: mediaObject };
+  } else {
+    if ((!text && !template && !interactive) || (template && typeof (template as Record<string, unknown>).name !== "string")) {
+      throw new OutboundAdapterError("UNSUPPORTED_MESSAGE", "Payload Meta exige texto, mídia, template ou objeto interativo válido", false);
+    }
+    body = interactive
+      ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "interactive", interactive }
+      : text
+        ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "text", text: { body: text } }
+        : { messaging_product: "whatsapp", to: message.recipientPhone, type: "template", template };
   }
-  const body = interactive
-    ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "interactive", interactive }
-    : text
-      ? { messaging_product: "whatsapp", to: message.recipientPhone, type: "text", text: { body: text } }
-      : { messaging_product: "whatsapp", to: message.recipientPhone, type: "template", template };
   const response = await fetch(`https://graph.facebook.com/v20.0/${encodeURIComponent(phoneNumberId)}/messages`, { method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
   const json = await readJson(response);
   if (!response.ok) throw providerError("Meta Cloud API", response, json);
@@ -87,11 +112,11 @@ async function sendMeta(instance: OutboundInstance, message: OutboundMessage): P
 
 async function sendEvolution(instance: OutboundInstance, message: OutboundMessage): Promise<AdapterResult> {
   const secret = secrets(instance);
-  const apiKey = stringValue(secret.api_key, secret.access_token, secret.token);
+  const apiKey = stringValue(secret.api_key, secret.access_token, secret.token, process.env.EVOLUTION_API_KEY);
   if (!apiKey) throw new OutboundAdapterError("MISSING_CREDENTIALS", "Evolution API exige api_key", false);
   const instanceName = stringValue(instance.external_instance_id, instance.instance_key);
   const root = baseUrl(instance, secret, null);
-  const number = message.recipientPhone.replace(/\D/g, "");
+  const number = normalizeEvolutionRecipient(message.recipientPhone);
   if (!number) throw new OutboundAdapterError("INVALID_RECIPIENT", "Destinatário WhatsApp inválido", false);
 
   let url: string;
@@ -134,16 +159,25 @@ async function sendEvolution(instance: OutboundInstance, message: OutboundMessag
     body = { number, text };
   } else if (type === "sticker") {
     url = `${root}/message/sendSticker/${encodeURIComponent(instanceName || "")}`;
-    body = { number, sticker: mediaSource(message.payload) };
+    body = { number, sticker: stripDataUriPrefixForGateway(mediaSource(message.payload)) };
     const q = quoted(message.payload); if (q) body.quoted = q;
   } else if (type === "audio" && message.payload.voice_note === true) {
     url = `${root}/message/sendWhatsAppAudio/${encodeURIComponent(instanceName || "")}`;
-    body = { number, audio: mediaSource(message.payload), ...(message.payload.encoding === true ? { encoding: true } : {}) };
+    body = { number, audio: stripDataUriPrefixForGateway(mediaSource(message.payload)), ...(message.payload.encoding === true ? { encoding: true } : {}) };
     const q = quoted(message.payload); if (q) body.quoted = q;
   } else {
     const kind = mediaType(message);
+    const resolvedMime = mimeType(message.payload);
     url = `${root}/message/sendMedia/${encodeURIComponent(instanceName || "")}`;
-    body = { number, mediatype: kind, media: mediaSource(message.payload), ...(caption(message.payload) ? { caption: caption(message.payload) } : {}), ...(mimeType(message.payload) ? { mimetype: mimeType(message.payload) } : {}), ...(fileName(message.payload) ? { fileName: fileName(message.payload) } : {}) };
+    body = {
+      number,
+      mediatype: kind,
+      media: stripDataUriPrefixForGateway(mediaSource(message.payload)),
+      ...(caption(message.payload) ? { caption: caption(message.payload) } : {}),
+      ...(resolvedMime ? { mimetype: resolvedMime } : {}),
+      ...(fileName(message.payload) ? { fileName: fileName(message.payload) } : {}),
+      ...(resolvedMime === "image/gif" ? { gifPlayback: true } : {}),
+    };
     const q = quoted(message.payload); if (q) body.quoted = q;
   }
   let response: Response;

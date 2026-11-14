@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { getServerClient } from "@/lib/supabase";
 import { requireStaff } from "@/lib/server-access";
 import { enforceRateLimit } from "@/lib/rate-limiter";
@@ -317,7 +318,7 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
                 .string()
                 .trim()
                 .regex(/^#[0-9a-fA-F]{6}$/)
-                .default("#2563eb"),
+                .default(TOKEN_HEX.blue600),
               requireFacialBiometrics: z.boolean().default(false),
               requireCpfConfirmation: z.boolean().default(false),
               profileId: z.string().uuid().optional(),
@@ -821,7 +822,7 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
                   status: meta.signed_at ? "signed" : "pending",
                   signed_at: meta.signed_at || null,
                   auth_level: "advanced",
-                  color_code: "#2563eb",
+                  color_code: TOKEN_HEX.blue600,
                 },
               ],
             },

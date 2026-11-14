@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { listTransactionCertificates } from "@/services/security.functions";
+import { ErrorState } from "@/components/state/states";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,13 +14,24 @@ export const Route = createFileRoute("/admin-master/seguranca/certificados")({
  loader: async () => {
  try {
  const rows = await listTransactionCertificates({ data: { autoFlaggedOnly: false, page: 0, limit: 50 } });
- return { certificates: rows };
- } catch {
- return { certificates: [] };
+ return { certificates: rows || [], loadError: null as string | null };
+ } catch (err: any) {
+ return {
+ certificates: [],
+ loadError: err?.message || "Não foi possível carregar os certificados de transação.",
+ };
  }
  },
- component: TransactionCertificatesPage,
+ component: TransactionCertificatesRouteSwitch,
 });
+
+function TransactionCertificatesRouteSwitch() {
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) {
+    return <Outlet />;
+  }
+  return <TransactionCertificatesPage />;
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -54,12 +67,28 @@ function truncateHash(hash: string, chars = 12) {
 // ─── Page Component ───────────────────────────────────────────────────────────
 
 function TransactionCertificatesPage() {
- const { certificates: initial } = Route.useLoaderData() as { certificates: any[] };
+ const router = useRouter();
+ const { certificates: initial, loadError } = (Route.useLoaderData() as {
+ certificates: any[];
+ loadError?: string | null;
+ }) || { certificates: [], loadError: null };
  const [certs, setCerts] = useState(initial || []);
  const [search, setSearch] = useState("");
  const [filter, setFilter] = useState("all");
  const [flaggedOnly, setFlaggedOnly] = useState(false);
  const [loading, setLoading] = useState(false);
+
+ if (loadError) {
+ return (
+ <div className="max-w-7xl mx-auto px-6 py-8">
+ <ErrorState
+ title="Erro ao carregar certificados de transação"
+ description={loadError}
+ onRetry={() => router.invalidate()}
+ />
+ </div>
+ );
+ }
 
  const handleRefresh = async () => {
  setLoading(true);
@@ -70,6 +99,7 @@ function TransactionCertificatesPage() {
  setCerts(fresh);
  } catch (e: any) {
  console.error(e);
+ toast.error(e?.message || "Não foi possível atualizar os certificados.");
  } finally {
  setLoading(false);
  }
@@ -152,7 +182,7 @@ function TransactionCertificatesPage() {
  placeholder="Buscar por IP, usuário, hash, loja…"
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="pl-9 text-sm h-8"
+ className="pl-9 text-base md:text-sm h-11 sm:h-9"
  id="cert-search"
  />
  </div>
@@ -160,7 +190,7 @@ function TransactionCertificatesPage() {
  <select
  value={filter}
  onChange={(e) => setFilter(e.target.value)}
- className="h-8 px-3 text-xs rounded-lg border border-border bg-card text-foreground"
+ className="h-11 sm:h-9 px-3 text-base md:text-xs rounded-lg border border-border bg-card text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  id="cert-type-filter"
  >
  <option value="all">Todos os tipos</option>
@@ -172,7 +202,7 @@ function TransactionCertificatesPage() {
  <Button
  variant={flaggedOnly ? "default" : "outline"}
  size="sm"
- className="text-xs gap-2 h-8 min-h-11 sm:min-h-0"
+ className="text-xs gap-2 h-11 sm:h-9 min-h-11 sm:min-h-9"
  onClick={() => setFlaggedOnly(!flaggedOnly)}
  id="cert-flagged-filter"
  >
@@ -221,7 +251,7 @@ function TransactionCertificatesPage() {
  >
  <td className="px-4 py-3">
  <div className="flex items-center gap-2">
- <div className="size-7 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
  <IconComp className={cn("size-3.5", meta.color)} />
  </div>
  <span className="text-xs font-medium">{meta.label}</span>
@@ -284,7 +314,7 @@ function TransactionCertificatesPage() {
  <Link
  to="/admin-master/seguranca/certificados/$id"
  params={{ id: cert.id }}
- className="size-7 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="size-11 sm:size-8 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors min-h-11 sm:min-h-8 min-w-11 sm:min-w-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  id={`view-cert-${cert.id}`}
  >
  <ExternalLink className="size-3.5 text-muted-foreground" />

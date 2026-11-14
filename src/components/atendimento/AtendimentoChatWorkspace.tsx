@@ -129,7 +129,17 @@ import { Link } from "@tanstack/react-router";
 import { TransferTicketDialog } from "@/components/chat/TransferTicketDialog";
 import { QuickRepliesMenu, type QuickReplyItem } from "@/components/chat/QuickRepliesMenu";
 import { ThreadTagsPicker, resolveTagPillClass } from "@/components/chat/ThreadTagsPicker";
-import { listChatQuickReplies, listStoreTagCatalog } from "@/services/chat.functions";
+import { listChatQuickReplies, listStoreTagCatalog, updateThreadAiHandoffMode } from "@/services/chat.functions";
+import { uploadMediaUniversal } from "@/services/storage.functions";
+import { directUploadMedia } from "@/lib/upload-helper";
+import {
+  classifyChatFile,
+  extractFilesFromClipboardData,
+  formatAttachmentBytes,
+  hasExternalFilesInDragEvent,
+  isSyntheticMetaLid,
+  type ClassifiedChatFile,
+} from "@/lib/chat-media-attachment";
 import {
   Tag,
   Hash,
@@ -144,7 +154,21 @@ import {
   ChevronRight,
   Circle,
   AlertCircle,
+  Paperclip,
+  UploadCloud,
+  X,
 } from "lucide-react";
+
+type ChatAttachmentDraft = {
+  id: string;
+  file: File;
+  classification: ClassifiedChatFile;
+  previewUrl: string | null;
+  uploadedUrl: string | null;
+  uploadedMimeType: string;
+  status: "uploading" | "ready" | "error";
+  errorMessage?: string;
+};
 
 function MessageDeliveryStatusIcon({
   status,
@@ -276,7 +300,7 @@ export function AtendimentoChatWorkspace({
   const [showLiveTimeline, setShowLiveTimeline] = useState(false);
   const [liveComposerTrayOpen, setLiveComposerTrayOpen] = useState(false);
   const [liveModalOverride, setLiveModalOverride] = useState<
-    "form" | "event" | "sticker" | "spreadsheet" | "image_card" | null
+    "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null
   >(null);
 
   // Estados da Intranet Corporativa (Canais estilo Slack + Linha do Tempo + Planilhas)
@@ -386,7 +410,10 @@ export function AtendimentoChatWorkspace({
   const handleSyncWhatsApp = async () => {
     setIsSyncingWhatsApp(true);
     try {
-      const res = await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id } });
+      const res = await syncWhatsAppChatsFromEvolution({ data: { storeId: store?.id, forceImport: true } });
+      if (activeThreadIdRef.current) {
+        reloadActiveMessages(activeThreadIdRef.current);
+      }
       const threadsRes = await listChatThreads({
         data: {
           store_id: store?.id,
@@ -977,6 +1004,20 @@ export function AtendimentoChatWorkspace({
     const rt = getRealtimeChannel(`store-chat-${effectiveStoreId}`);
     if (!rt.channel) return;
 
+    try {
+      const supabase = getBrowserClient();
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          if (data?.session?.access_token) {
+            supabase.realtime.setAuth(data.session.access_token);
+          }
+        })
+        .catch(() => {});
+    } catch {
+      // noop
+    }
+
     let hadDisconnection = false;
     const runCatchUp = () => {
       reloadThreads();
@@ -1222,81 +1263,463 @@ export function AtendimentoChatWorkspace({
     };
   }, [reloadThreads, reloadActiveMessages]);
 
-  // Polling Leve de Segurança a Cada 15s (Tolerância a Wi-Fi Instável)
+  // Polling Delta de Alta Reatividade (5s para conversa ativa + 10s para lista de conversas)
   useEffect(() => {
     if (!store?.id) return;
+    let tick = 0;
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
-        reloadThreads();
+        tick += 1;
         if (activeThreadIdRef.current) {
           reloadActiveMessages(activeThreadIdRef.current);
         }
+        if (tick % 2 === 0) {
+          reloadThreads();
+        }
       }
-    }, 15000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [store?.id, reloadThreads, reloadActiveMessages]);
 
-  // Enviar Mensagem
+  // Anexos Universais (Ctrl+V, Drag & Drop e Hover-to-Open em Conversas)
+  const [pendingAttachments, setPendingAttachments] = useState<ChatAttachmentDraft[]>([]);
+  const [isDraggingOverChat, setIsDraggingOverChat] = useState(false);
+  const [dragHoverThreadId, setDragHoverThreadId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const chatDragDepthRef = useRef(0);
+  const dragHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dragHoverTargetRef = useRef<string | null>(null);
+  const pendingAttachmentsRef = useRef<ChatAttachmentDraft[]>([]);
+
+  useEffect(() => {
+    pendingAttachmentsRef.current = pendingAttachments;
+  }, [pendingAttachments]);
+
+  const clearThreadDragHover = useCallback(() => {
+    if (dragHoverTimerRef.current) {
+      clearTimeout(dragHoverTimerRef.current);
+      dragHoverTimerRef.current = null;
+    }
+    dragHoverTargetRef.current = null;
+    setDragHoverThreadId(null);
+  }, []);
+
+  useEffect(() => {
+    const resetAllDragStates = () => {
+      chatDragDepthRef.current = 0;
+      setIsDraggingOverChat(false);
+      clearThreadDragHover();
+    };
+    window.addEventListener("dragend", resetAllDragStates);
+    window.addEventListener("drop", resetAllDragStates);
+    return () => {
+      window.removeEventListener("dragend", resetAllDragStates);
+      window.removeEventListener("drop", resetAllDragStates);
+      clearThreadDragHover();
+      for (const draft of pendingAttachmentsRef.current) {
+        if (draft.previewUrl) URL.revokeObjectURL(draft.previewUrl);
+      }
+    };
+  }, [clearThreadDragHover]);
+
+  const readFileAsDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") resolve(reader.result);
+        else reject(new Error("Falha ao ler conteúdo do arquivo."));
+      };
+      reader.onerror = () => reject(new Error("Não foi possível ler o arquivo selecionado."));
+      reader.readAsDataURL(file);
+    });
+
+  const uploadSingleDraft = useCallback(async (draftId: string, file: File, classification: ClassifiedChatFile) => {
+    try {
+      let uploadedUrl = "";
+      let uploadedMimeType = classification.mimeType;
+
+      if (file.size <= 12 * 1024 * 1024) {
+        const base64Data = await readFileAsDataUrl(file);
+        const res = await uploadMediaUniversal({
+          data: {
+            fileName: file.name || `arquivo.${classification.extension}`,
+            fileType: classification.mimeType,
+            base64Data,
+            bucket: "post-media",
+            folder: "atendimento-chat",
+          },
+        });
+        uploadedUrl = res.url;
+        uploadedMimeType = res.mimeType || classification.mimeType;
+      } else {
+        const res = await directUploadMedia({
+          file,
+          fileName: file.name || `arquivo.${classification.extension}`,
+          bucket: "post-media",
+        });
+        uploadedUrl = res.url;
+        uploadedMimeType = res.mimeType || classification.mimeType;
+      }
+
+      setPendingAttachments((prev) =>
+        prev.map((item) =>
+          item.id === draftId
+            ? { ...item, uploadedUrl, uploadedMimeType, status: "ready", errorMessage: undefined }
+            : item,
+        ),
+      );
+    } catch (err: any) {
+      const msg = String(err?.message || "Falha no upload do arquivo.");
+      setPendingAttachments((prev) =>
+        prev.map((item) =>
+          item.id === draftId ? { ...item, status: "error", errorMessage: msg } : item,
+        ),
+      );
+      toast.error(`Erro ao enviar ${file.name}: ${msg}`);
+    }
+  }, []);
+
+  const queueChatFiles = useCallback(
+    async (rawFiles: File[], targetThreadIdOverride?: string | null) => {
+      const targetId = targetThreadIdOverride ?? activeThreadId;
+      if (!targetId) {
+        toast.info("Selecione uma conversa antes de anexar arquivos.");
+        return;
+      }
+      const validFiles = rawFiles.filter((f) => f && f.size > 0);
+      if (validFiles.length === 0) return;
+
+      const MAX_CHAT_FILE_BYTES = 100 * 1024 * 1024;
+      const accepted: ChatAttachmentDraft[] = [];
+
+      for (const file of validFiles.slice(0, 10)) {
+        if (file.size > MAX_CHAT_FILE_BYTES) {
+          toast.error(`${file.name} excede o limite de 100 MB.`);
+          continue;
+        }
+        const classification = classifyChatFile({ name: file.name, type: file.type });
+        const previewUrl =
+          classification.kind === "image" || classification.kind === "gif" || classification.kind === "video"
+            ? URL.createObjectURL(file)
+            : null;
+        const id = `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        accepted.push({
+          id,
+          file,
+          classification,
+          previewUrl,
+          uploadedUrl: null,
+          uploadedMimeType: classification.mimeType,
+          status: "uploading",
+        });
+      }
+
+      if (accepted.length === 0) return;
+
+      setPendingAttachments((prev) => [...prev, ...accepted]);
+      await Promise.allSettled(
+        accepted.map((draft) => uploadSingleDraft(draft.id, draft.file, draft.classification)),
+      );
+    },
+    [activeThreadId, uploadSingleDraft],
+  );
+
+  const removePendingAttachment = useCallback((id: string) => {
+    setPendingAttachments((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((item) => item.id !== id);
+    });
+  }, []);
+
+  const retryPendingAttachment = useCallback(
+    (draft: ChatAttachmentDraft) => {
+      setPendingAttachments((prev) =>
+        prev.map((item) =>
+          item.id === draft.id ? { ...item, status: "uploading", errorMessage: undefined } : item,
+        ),
+      );
+      void uploadSingleDraft(draft.id, draft.file, draft.classification);
+    },
+    [uploadSingleDraft],
+  );
+
+  const handleComposerPaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      const pastedFiles = extractFilesFromClipboardData(e.clipboardData);
+      if (pastedFiles.length > 0) {
+        e.preventDefault();
+        void queueChatFiles(pastedFiles);
+      }
+    },
+    [queueChatFiles],
+  );
+
+  const handleChatDragEnter = useCallback((e: React.DragEvent) => {
+    if (!hasExternalFilesInDragEvent(e.dataTransfer)) return;
+    e.preventDefault();
+    chatDragDepthRef.current += 1;
+    setIsDraggingOverChat(true);
+  }, []);
+
+  const handleChatDragOver = useCallback((e: React.DragEvent) => {
+    if (!hasExternalFilesInDragEvent(e.dataTransfer)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+  }, []);
+
+  const handleChatDragLeave = useCallback((e: React.DragEvent) => {
+    if (!hasExternalFilesInDragEvent(e.dataTransfer)) return;
+    e.preventDefault();
+    chatDragDepthRef.current = Math.max(0, chatDragDepthRef.current - 1);
+    if (chatDragDepthRef.current === 0) {
+      setIsDraggingOverChat(false);
+    }
+  }, []);
+
+  const handleChatDrop = useCallback(
+    (e: React.DragEvent) => {
+      if (!hasExternalFilesInDragEvent(e.dataTransfer)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      chatDragDepthRef.current = 0;
+      setIsDraggingOverChat(false);
+      clearThreadDragHover();
+      const files = Array.from(e.dataTransfer?.files || []);
+      if (files.length > 0) {
+        void queueChatFiles(files);
+      }
+    },
+    [clearThreadDragHover, queueChatFiles],
+  );
+
+  const handleThreadDragEnter = useCallback(
+    (threadId: string, e: React.DragEvent) => {
+      if (!hasExternalFilesInDragEvent(e.dataTransfer)) return;
+      e.preventDefault();
+      if (dragHoverTargetRef.current === threadId) return;
+      clearThreadDragHover();
+      dragHoverTargetRef.current = threadId;
+      setDragHoverThreadId(threadId);
+      if (threadId !== activeThreadId) {
+        dragHoverTimerRef.current = setTimeout(() => {
+          setActiveThreadId(threadId);
+          setDragHoverThreadId(null);
+          dragHoverTimerRef.current = null;
+        }, 380);
+      }
+    },
+    [activeThreadId, clearThreadDragHover],
+  );
+
+  const handleThreadDragOver = useCallback((e: React.DragEvent) => {
+    if (!hasExternalFilesInDragEvent(e.dataTransfer)) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+  }, []);
+
+  const handleThreadDragLeave = useCallback(
+    (threadId: string, e: React.DragEvent<HTMLButtonElement>) => {
+      if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget as Node)) {
+        return;
+      }
+      if (dragHoverTargetRef.current === threadId) {
+        clearThreadDragHover();
+      }
+    },
+    [clearThreadDragHover],
+  );
+
+  const handleThreadDrop = useCallback(
+    (threadId: string, e: React.DragEvent) => {
+      if (!hasExternalFilesInDragEvent(e.dataTransfer)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      clearThreadDragHover();
+      chatDragDepthRef.current = 0;
+      setIsDraggingOverChat(false);
+      setActiveThreadId(threadId);
+      const files = Array.from(e.dataTransfer?.files || []);
+      if (files.length > 0) {
+        void queueChatFiles(files, threadId);
+      }
+    },
+    [clearThreadDragHover, queueChatFiles],
+  );
+
+  // Enviar Mensagem (Texto e/ou Múltiplos Anexos Universais)
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!text.trim() || !activeThreadId || isSending) return;
+    if (!activeThreadId || isSending) return;
+
+    const hasUploading = pendingAttachments.some((d) => d.status === "uploading");
+    if (hasUploading) {
+      toast.info("Aguarde o upload do arquivo terminar antes de enviar.");
+      return;
+    }
+
+    const readyDrafts = pendingAttachments.filter((d) => d.status === "ready" && d.uploadedUrl);
+    const trimmedText = text.trim();
+    if (!trimmedText && readyDrafts.length === 0) return;
 
     try {
       setIsSending(true);
-      const payload: Record<string, any> = {};
-      let messageType: any = "text";
+      const dispatchedMessages: any[] = [];
 
-      if (isWhisperMode) {
-        messageType = "system_event";
-        payload.is_whisper = true;
+      if (readyDrafts.length > 0) {
+        for (let idx = 0; idx < readyDrafts.length; idx += 1) {
+          const draft = readyDrafts[idx];
+          const captionForItem = idx === 0 ? trimmedText : "";
+          const resolvedMime = draft.uploadedMimeType || draft.classification.mimeType;
+          const payload: Record<string, any> = {
+            ...(isWhisperMode ? { is_whisper: true } : {}),
+            file_name: draft.file.name,
+            mimetype: resolvedMime,
+            mime_type: resolvedMime,
+            media: {
+              url: draft.uploadedUrl,
+              mimetype: resolvedMime,
+              fileName: draft.file.name,
+              isGif: draft.classification.kind === "gif",
+              byteSize: draft.file.size,
+              caption: captionForItem || undefined,
+            },
+          };
+
+          const sent = await sendChatMessage({
+            data: {
+              threadId: activeThreadId,
+              message: captionForItem,
+              message_type: draft.classification.outboundMessageType as any,
+              payload,
+              attachments: [draft.uploadedUrl!],
+              is_internal: isWhisperMode,
+            },
+          });
+          dispatchedMessages.push(sent);
+        }
+
+        for (const draft of readyDrafts) {
+          if (draft.previewUrl) URL.revokeObjectURL(draft.previewUrl);
+        }
+        setPendingAttachments((prev) => prev.filter((d) => !readyDrafts.some((sentItem) => sentItem.id === d.id)));
+      } else {
+        const payload: Record<string, any> = {};
+        let messageType: any = "text";
+
+        if (isWhisperMode) {
+          messageType = "system_event";
+          payload.is_whisper = true;
+        }
+
+        const sent = await sendChatMessage({
+          data: {
+            threadId: activeThreadId,
+            message: trimmedText,
+            message_type: messageType,
+            payload,
+            attachments: [],
+            is_internal: isWhisperMode,
+          },
+        });
+        dispatchedMessages.push(sent);
       }
 
-      const sent = await sendChatMessage({
-        data: {
-          threadId: activeThreadId,
-          message: text.trim(),
-          message_type: messageType,
-          payload,
-          attachments: [],
-          is_internal: isWhisperMode,
-        },
-      });
-
       setMessages((prev) => {
-        if (prev.some((m) => m.id === sent.id)) {
-          return prev.map((m) => (m.id === sent.id ? { ...m, ...sent } : m));
+        let next = [...prev];
+        for (const sent of dispatchedMessages) {
+          if (next.some((m) => m.id === sent.id)) {
+            next = next.map((m) => (m.id === sent.id ? { ...m, ...sent } : m));
+          } else {
+            next.push(sent);
+          }
         }
-        return [...prev, sent];
+        return next;
       });
       setText("");
       setIsWhisperMode(false);
 
-      if ((sent as any)?.delivery_status === "failed") {
+      const failedItem = dispatchedMessages.find((m: any) => m?.delivery_status === "failed");
+      if (failedItem) {
         toast.error(
-          (sent as any)?.error_message ||
+          failedItem?.error_message ||
             "Mensagem salva no histórico, mas o envio pelo WhatsApp falhou. Verifique a conexão da instância.",
         );
       }
+
+      const lastSentPreview =
+        trimmedText ||
+        (readyDrafts[readyDrafts.length - 1]?.file?.name
+          ? `[${readyDrafts[readyDrafts.length - 1].classification.label}] ${readyDrafts[readyDrafts.length - 1].file.name}`
+          : "[Arquivo]");
 
       setThreads((prev) => {
         const target = prev.find((t) => t.id === activeThreadId);
         if (!target) return prev;
         const updatedTarget = {
           ...target,
-          ...(isWhisperMode ? {} : {
-            last_message: text.trim(),
-            is_last_reply_staff: true,
-          }),
+          ...(isWhisperMode
+            ? {}
+            : {
+                last_message: lastSentPreview,
+                is_last_reply_staff: true,
+              }),
           updated_at: new Date().toISOString(),
         };
         return [updatedTarget, ...prev.filter((t) => t.id !== activeThreadId)];
       });
+      setTimeout(() => {
+        if (activeThreadIdRef.current === activeThreadId) {
+          reloadActiveMessages(activeThreadId);
+        }
+        reloadThreads();
+      }, 1500);
     } catch (err: any) {
       toast.error(err.message || "Erro ao despachar mensagem.");
     } finally {
       setIsSending(false);
     }
   };
+
+  const handleToggleThreadAiAutoReply = useCallback(
+    async (checked: boolean) => {
+      const targetThreadId = activeThread?.id;
+      if (!targetThreadId) return;
+      setAiAutoReplyPerThread((prev) => ({ ...prev, [targetThreadId]: checked }));
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === targetThreadId
+            ? { ...t, metadata: { ...(t.metadata || {}), ai_auto_reply_enabled: checked } }
+            : t,
+        ),
+      );
+      try {
+        await updateThreadAiHandoffMode({
+          data: {
+            threadId: targetThreadId,
+            handoffMode: checked ? "ai_triage" : "human_active",
+            aiAutoReplyEnabled: checked,
+          },
+        });
+        toast.success(
+          checked
+            ? "IA Copilot Auto-Reply ativado para este contato."
+            : "IA Copilot pausado. Atendimento assumido manualmente.",
+        );
+      } catch (err: any) {
+        setAiAutoReplyPerThread((prev) => ({ ...prev, [targetThreadId]: !checked }));
+        setThreads((prev) =>
+          prev.map((t) =>
+            t.id === targetThreadId
+              ? { ...t, metadata: { ...(t.metadata || {}), ai_auto_reply_enabled: !checked } }
+              : t,
+          ),
+        );
+        toast.error(err?.message || "Erro ao atualizar modo de IA da conversa.");
+      }
+    },
+    [activeThread?.id],
+  );
 
   // Arquivar / Desarquivar conversa (Soft Delete Seguro)
   const handleArchiveThread = async (threadId: string, archive = true) => {
@@ -1515,10 +1938,10 @@ export function AtendimentoChatWorkspace({
                   "px-2 py-1 rounded-lg text-2xs font-semibold inline-flex items-center gap-1 border border-border/60 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
                   showCustomer360 ? "bg-foreground text-background" : "bg-muted/40 text-muted-foreground hover:text-foreground",
                 )}
-                title="Alternar Ficha 360º do Cliente"
+                title="Alternar Perfil do Cliente"
               >
                 <UserCheck className="size-3.5" />
-                <span className="hidden lg:inline">Ficha 360º</span>
+                <span className="hidden lg:inline">Perfil do Cliente</span>
               </button>
             )}
           </div>
@@ -1749,6 +2172,7 @@ export function AtendimentoChatWorkspace({
               ) : (
                 filteredThreads.map((t) => {
                   const isActive = t.id === activeThreadId;
+                  const isDragHovered = dragHoverThreadId === t.id;
                   const isWhatsApp = t.channel === "whatsapp" || t.context_type === "whatsapp";
                   const isGrp = Boolean(t.is_group || t.thread_type === "group");
                   const isChan = Boolean(t.is_channel || t.thread_type === "channel");
@@ -1757,12 +2181,19 @@ export function AtendimentoChatWorkspace({
                   return (
                     <button
                       key={t.id}
+                      type="button"
                       onClick={() => setActiveThreadId(t.id)}
+                      onDragEnter={(e) => handleThreadDragEnter(t.id, e)}
+                      onDragOver={handleThreadDragOver}
+                      onDragLeave={(e) => handleThreadDragLeave(t.id, e)}
+                      onDrop={(e) => handleThreadDrop(t.id, e)}
                       className={cn(
-                        "w-full p-4 text-left flex items-start gap-3 transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                        isActive
-                          ? "bg-muted"
-                          : "hover:bg-muted/40",
+                        "w-full p-4 text-left flex items-start gap-3 transition-colors duration-150 motion-reduce:transition-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none relative",
+                        isDragHovered
+                          ? "bg-primary/10 ring-2 ring-inset ring-primary"
+                          : isActive
+                            ? "bg-muted"
+                            : "hover:bg-muted/40",
                       )}
                     >
                       {/* Avatar com foto real do WhatsApp ou ícone de grupo/iniciais */}
@@ -1890,11 +2321,35 @@ export function AtendimentoChatWorkspace({
           {/* COLUNA 2: Mensagens & Composer (Área Central de Chat) */}
           {activeThread ? (
             <div
+              onDragEnter={handleChatDragEnter}
+              onDragOver={handleChatDragOver}
+              onDragLeave={handleChatDragLeave}
+              onDrop={handleChatDrop}
+              onPaste={handleComposerPaste}
               className={cn(
-                "flex-1 flex flex-col bg-muted/10 w-full min-w-0",
+                "flex-1 flex flex-col bg-muted/10 w-full min-w-0 relative",
                 !activeThreadId ? "hidden md:flex" : "flex",
               )}
             >
+              {/* Overlay Estilo WhatsApp ao Arrastar Qualquer Arquivo Externo */}
+              {isDraggingOverChat && (
+                <div
+                  aria-live="polite"
+                  className="absolute inset-0 z-40 m-2 rounded-2xl border-2 border-dashed border-primary bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 pointer-events-none"
+                >
+                  <div className="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                    <UploadCloud className="size-8" />
+                  </div>
+                  <div className="text-center space-y-1 px-4">
+                    <p className="text-sm font-bold text-foreground">
+                      Solte o arquivo para enviar na conversa
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Imagens, GIFs, PDFs, vídeos, áudios, planilhas ou documentos de qualquer formato
+                    </p>
+                  </div>
+                </div>
+              )}
               {/* Header da Conversa Ativa */}
               <div className="p-3 sm:p-4 bg-card border-b border-border/80 flex items-center justify-between gap-3 shrink-0">
                 <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3">
@@ -1977,7 +2432,13 @@ export function AtendimentoChatWorkspace({
                         ? (activeThread.participants_count > 0
                             ? `${activeThread.participants_count} participantes • Grupo WhatsApp`
                             : "Grupo WhatsApp")
-                        : activeThread.customer?.phone || activeThread.customer?.email || "Atendimento Direto"}
+                        : activeThread.customer?.phone &&
+                            !isSyntheticMetaLid(activeThread.entity_id, activeThread.customer.phone, activeThread.metadata)
+                          ? activeThread.customer.phone
+                          : activeThread.is_lid ||
+                              isSyntheticMetaLid(activeThread.entity_id, activeThread.customer?.phone, activeThread.metadata)
+                            ? "Contato Meta (Identificador Privado)"
+                            : activeThread.customer?.email || "Atendimento Direto"}
                     </p>
                     {/* Tags Semânticas Coloridas (Whaticket / CRM Parity) */}
                     <div className="pt-1">
@@ -2022,7 +2483,7 @@ export function AtendimentoChatWorkspace({
                     )}
                   </button>
 
-                  {/* Toggle Ficha do Cliente (Perfil 360 — Squircle Compacto) */}
+                  {/* Toggle Perfil do Cliente (Squircle Compacto) */}
                   <button
                     type="button"
                     onClick={() => {
@@ -2865,10 +3326,10 @@ export function AtendimentoChatWorkspace({
                     <div className="flex items-center gap-2 min-w-0">
                       <Button
                         type="button"
-                        size="icon"
+                        size="iconSm"
                         variant="outline"
                         onClick={togglePlaySmartAudio}
-                        className="size-11 min-h-11 rounded-full shrink-0 border-primary/50 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                        className="size-11 min-h-11 sm:size-9 sm:min-h-9 rounded-lg shrink-0 border-primary/50 text-primary hover:bg-primary/10 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                         title={isPlayingSmartAudio ? "Pausar áudio" : "Ouvir áudio antes de enviar"}
                       >
                         {isPlayingSmartAudio ? <Pause className="size-4" /> : <Play className="size-4" />}
@@ -2913,6 +3374,99 @@ export function AtendimentoChatWorkspace({
                 )}
 
                 <form onSubmit={handleSend} className="space-y-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="*/*"
+                    className="sr-only"
+                    onChange={(e) => {
+                      const list = e.target.files;
+                      if (list && list.length > 0) {
+                        void queueChatFiles(Array.from(list));
+                      }
+                      e.target.value = "";
+                    }}
+                  />
+
+                  {/* Fila de Anexos Universais (Ctrl+V, Drag & Drop ou Seletor) */}
+                  {pendingAttachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-2 rounded-lg bg-muted/40 border border-border/70">
+                      {pendingAttachments.map((draft) => (
+                        <div
+                          key={draft.id}
+                          className={cn(
+                            "flex items-center gap-2 p-2 rounded-lg border max-w-xs min-w-0",
+                            draft.status === "error"
+                              ? "border-destructive/50 bg-destructive/10"
+                              : "border-border/80 bg-background",
+                          )}
+                        >
+                          {draft.previewUrl && (draft.classification.kind === "image" || draft.classification.kind === "gif") ? (
+                            <img
+                              src={draft.previewUrl}
+                              alt={draft.file.name}
+                              className="size-11 rounded-md object-cover shrink-0 border border-border/60"
+                            />
+                          ) : (
+                            <div className="size-11 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                              {draft.classification.kind === "video" ? (
+                                <Film className="size-5" />
+                              ) : draft.classification.kind === "audio" ? (
+                                <Volume2 className="size-5" />
+                              ) : (
+                                <FileText className="size-5" />
+                              )}
+                            </div>
+                          )}
+
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <p className="text-xs font-semibold text-foreground truncate" title={draft.file.name}>
+                              {draft.file.name}
+                            </p>
+                            <div className="flex items-center gap-2 text-2xs text-muted-foreground">
+                              <span className="px-2 py-1 rounded bg-muted text-foreground font-mono font-semibold leading-none">
+                                {draft.classification.label}
+                              </span>
+                              <span>{formatAttachmentBytes(draft.file.size)}</span>
+                              {draft.status === "uploading" && (
+                                <span className="inline-flex items-center gap-1 text-primary font-semibold">
+                                  <Loader2 className="size-3 animate-spin" />
+                                  <span>Subindo</span>
+                                </span>
+                              )}
+                              {draft.status === "ready" && (
+                                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                  <Check className="size-3" />
+                                  <span>Pronto</span>
+                                </span>
+                              )}
+                              {draft.status === "error" && (
+                                <button
+                                  type="button"
+                                  onClick={() => retryPendingAttachment(draft)}
+                                  className="h-11 sm:h-7 px-2 rounded text-2xs font-bold text-destructive hover:bg-destructive/15 cursor-pointer focus-visible:ring-2 focus-visible:ring-destructive focus-visible:outline-none"
+                                >
+                                  Tentar
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => removePendingAttachment(draft.id)}
+                            className="size-11 min-h-11 min-w-11 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none shrink-0"
+                            title="Remover anexo"
+                            aria-label={`Remover ${draft.file.name}`}
+                          >
+                            <X className="size-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="flex items-end gap-2">
                     {/* Botão + Multifuncional (Formulários, Eventos, Planilhas, Stickers) */}
                     <Button
@@ -2925,6 +3479,19 @@ export function AtendimentoChatWorkspace({
                       aria-label="Abrir ferramentas rápidas"
                     >
                       <Plus className="size-4" />
+                    </Button>
+
+                    {/* Botão Anexar Qualquer Arquivo (PDF, Imagem, GIF, Vídeo, Planilha, Áudio) */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="size-11 rounded-lg shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                      title="Anexar qualquer arquivo do computador (ou Ctrl+V / arraste na conversa)"
+                      aria-label="Anexar arquivo"
+                    >
+                      <Paperclip className="size-4" />
                     </Button>
 
                     {/* Botão Estúdio de Voz IA (Personas, Sotaques e Ambientes Acústicos) */}
@@ -2944,6 +3511,7 @@ export function AtendimentoChatWorkspace({
                       <Textarea
                         value={text}
                         onChange={(e) => setText(e.target.value)}
+                        onPaste={handleComposerPaste}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
@@ -2953,7 +3521,9 @@ export function AtendimentoChatWorkspace({
                         placeholder={
                           isWhisperMode
                             ? "Escreva uma nota interna (visível apenas para sua equipe)..."
-                            : "Digite sua mensagem ou use / para atalhos rápidos (Enter para enviar)..."
+                            : pendingAttachments.length > 0
+                              ? "Adicione uma legenda opcional para os anexos e pressione Enter..."
+                              : "Digite sua mensagem, cole mídia com Ctrl+V ou use / para atalhos..."
                         }
                         className={cn(
                           "min-h-11 max-h-32 text-xs rounded-lg resize-none p-3",
@@ -2968,7 +3538,11 @@ export function AtendimentoChatWorkspace({
                     {/* Botão Enviar Responsivo */}
                     <Button
                       type="submit"
-                      disabled={isSending || !text.trim()}
+                      disabled={
+                        isSending ||
+                        pendingAttachments.some((d) => d.status === "uploading") ||
+                        (!text.trim() && !pendingAttachments.some((d) => d.status === "ready" && d.uploadedUrl))
+                      }
                       className="size-11 sm:w-auto sm:px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary flex items-center justify-center"
                       title="Enviar mensagem"
                       aria-label="Enviar mensagem"
@@ -3007,7 +3581,7 @@ export function AtendimentoChatWorkspace({
                     ? "Dossiê do Grupo WhatsApp"
                     : activeThread?.is_channel || activeThread?.thread_type === "channel"
                     ? "Dossiê do Canal"
-                    : "Perfil 360º do Cliente"}
+                    : "Perfil do Cliente"}
                 </span>
                 <button
                   type="button"
@@ -3036,18 +3610,12 @@ export function AtendimentoChatWorkspace({
                 }
                 teamMembers={teamMembers}
                 departmentLabels={departmentLabels}
-                aiAutoReply={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
-                onToggleAiAutoReply={(checked) => {
-                  setAiAutoReplyPerThread((prev) => ({
-                    ...prev,
-                    ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
-                  }));
-                  toast.success(
-                    checked
-                      ? "IA Copilot Auto-Reply ativado para este contato."
-                      : "IA Copilot pausado. Atendimento assumido manualmente.",
-                  );
-                }}
+                aiAutoReply={
+                  activeThread?.id
+                    ? aiAutoReplyPerThread[activeThread.id] ?? (activeThread?.metadata?.ai_auto_reply_enabled !== false)
+                    : true
+                }
+                onToggleAiAutoReply={handleToggleThreadAiAutoReply}
                 onDepartmentChange={handleDepartmentChange}
                 onAssignedAgentChange={(val) => {
                   setAssignedAgentPerThread((prev) => ({
@@ -3062,9 +3630,7 @@ export function AtendimentoChatWorkspace({
                 onQuickSendMessage={(msgText) => setText(msgText)}
                 onOpenTransfer={() => setTransferModalOpen(true)}
                 onOpenSchedule={() => setScheduleModalOpen(true)}
-                onOpenQuickComposerModal={(modal) =>
-                  setLiveModalOverride(modal === "image_card" ? "image_card" : "form")
-                }
+                onOpenQuickComposerModal={(modal) => setLiveModalOverride(modal)}
                 onProfileSynced={({ avatarUrl: nextAvatar, fullName: nextName, phone: nextPhone, isGroup: nextIsGroup, attribution: nextAttribution }) => {
                   const targetId = activeThread?.id;
                   if (!targetId) return;
@@ -3091,7 +3657,7 @@ export function AtendimentoChatWorkspace({
             </div>
           )}
 
-          {/* Drawer Sheet Mobile/Tablet do Perfil 360 */}
+          {/* Drawer Sheet Mobile/Tablet do Perfil do Cliente */}
           <Sheet open={Boolean(activeThread && mobileCustomer360Open)} onOpenChange={setMobileCustomer360Open}>
             <SheetContent side="right" className="lg:hidden w-full sm:max-w-md p-0 overflow-y-auto">
               <SheetHeader className="p-3 border-b border-border/60">
@@ -3100,7 +3666,7 @@ export function AtendimentoChatWorkspace({
                     ? "Dossiê do Grupo WhatsApp"
                     : activeThread?.is_channel || activeThread?.thread_type === "channel"
                     ? "Dossiê do Canal"
-                    : "Perfil 360º do Cliente"}
+                    : "Perfil do Cliente"}
                 </SheetTitle>
               </SheetHeader>
               {activeThread?.id && (
@@ -3124,18 +3690,12 @@ export function AtendimentoChatWorkspace({
                     }
                     teamMembers={teamMembers}
                     departmentLabels={departmentLabels}
-                    aiAutoReply={activeThread?.id ? aiAutoReplyPerThread[activeThread.id] ?? true : true}
-                    onToggleAiAutoReply={(checked) => {
-                      setAiAutoReplyPerThread((prev) => ({
-                        ...prev,
-                        ...(activeThread?.id ? { [activeThread.id]: checked } : {}),
-                      }));
-                      toast.success(
-                        checked
-                          ? "IA Copilot Auto-Reply ativado para este contato."
-                          : "IA Copilot pausado. Atendimento assumido manualmente.",
-                      );
-                    }}
+                    aiAutoReply={
+                      activeThread?.id
+                        ? aiAutoReplyPerThread[activeThread.id] ?? (activeThread?.metadata?.ai_auto_reply_enabled !== false)
+                        : true
+                    }
+                    onToggleAiAutoReply={handleToggleThreadAiAutoReply}
                     onDepartmentChange={handleDepartmentChange}
                     onAssignedAgentChange={(val) => {
                       setAssignedAgentPerThread((prev) => ({
@@ -3161,7 +3721,7 @@ export function AtendimentoChatWorkspace({
                     }}
                     onOpenQuickComposerModal={(modal) => {
                       setMobileCustomer360Open(false);
-                      setLiveModalOverride(modal === "image_card" ? "image_card" : "form");
+                      setLiveModalOverride(modal);
                     }}
                     onProfileSynced={({ avatarUrl: nextAvatar, fullName: nextName, phone: nextPhone, isGroup: nextIsGroup, attribution: nextAttribution }) => {
                       const targetId = activeThread?.id;
@@ -4099,10 +4659,18 @@ export function AtendimentoChatWorkspace({
         onTrayOpenChange={setLiveComposerTrayOpen}
         activeModalOverride={liveModalOverride}
         onClearModalOverride={() => setLiveModalOverride(null)}
+        storeId={store?.id}
         storeName={store?.name || "Loja"}
         storeSlug={store?.slug}
+        threadId={activeThread?.id}
+        customerId={activeThread?.customer?.id}
+        customerName={activeThread?.customer?.full_name}
+        customerPhone={activeThread?.customer?.phone}
+        customerEmail={activeThread?.customer?.email}
         onDispatchMessage={async (data: StructuredDispatchPayload) => {
-          if (!activeThreadId) return;
+          if (!activeThreadId) {
+            throw new Error("Nenhuma conversa selecionada.");
+          }
           try {
             const sent = await sendChatMessage({
               data: {
@@ -4113,20 +4681,14 @@ export function AtendimentoChatWorkspace({
                 attachments: data.attachments || [],
               },
             });
-            setMessages((prev) => [...prev, sent]);
-          } catch {
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: `local-${Date.now()}`,
-                message: data.message,
-                message_type: data.message_type,
-                payload: data.payload,
-                attachments: data.attachments || [],
-                is_staff_reply: true,
-                created_at: new Date().toISOString(),
-              },
-            ]);
+            setMessages((prev) =>
+              prev.some((m) => m.id === sent.id)
+                ? prev.map((m) => (m.id === sent.id ? { ...m, ...sent } : m))
+                : [...prev, sent],
+            );
+          } catch (err: any) {
+            toast.error(err?.message || "Não foi possível enviar o item na conversa.");
+            throw err;
           }
         }}
       />

@@ -231,8 +231,8 @@ export function printThermalReceipt(
             font-family: 'Courier New', Courier, monospace;
             font-size: ${paperWidth === "80mm" ? "12px" : "10px"};
             line-height: 1.25;
-            color: #000;
-            background: #fff;
+            color: black;
+            background: white;
             width: ${mmWidth};
             max-width: ${mmWidth};
           }

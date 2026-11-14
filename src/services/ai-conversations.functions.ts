@@ -9,6 +9,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { inspectPromptSecurity, buildSandboxedPromptPayload } from "@/lib/ai/prompt-shield";
 import { formatMoney } from "@/lib/money";
+import { extractCreativePostSpecFromPrompt } from "@/lib/builder/canva-post-templates";
 import { executeAiCoreGateway } from "./ai-core-gateway.functions";
 import {
   executeAutonomousCopilotTask,
@@ -37,6 +38,8 @@ import type {
   AIActivityStepType,
   ChatArtifactData,
   ChatArtifactType,
+  ChatSourceItem,
+  CopilotQuickToolMode,
 } from "@/types/chat";
 import {
   assembleLongTermContext,
@@ -80,6 +83,9 @@ export const sendAiMessageSchema = z.object({
     .max(2000, "Limite de 2.000 caracteres por mensagem atingido"),
   replyToId: z.string().uuid().optional(),
   attachments: z.array(z.string().url()).default([]),
+  quickToolMode: z
+    .enum(["default", "website_builder", "interactive_map", "document", "creative_post"])
+    .optional(),
   userLat: z.number().optional(),
   userLng: z.number().optional(),
   city: z.string().max(120).optional(),
@@ -170,6 +176,7 @@ function mapPersistedAiMessage(row: any, threadId: string) {
     activitySteps: payload.activitySteps || [],
     artifact: payload.artifact || null,
     structuredPayload: payload.structuredBlocks || null,
+    sources: payload.sources || [],
     createdAt: row.created_at,
     status: row.status || "delivered",
     fsmPhase: payload.fsmPhase,
@@ -214,6 +221,7 @@ export interface AiExecutionResult {
   toolCalls?: AiToolExecutionRecord[];
   artifact?: ChatArtifactData;
   structuredPayload?: Record<string, any>;
+  sources?: ChatSourceItem[];
   updatedMemory: Record<string, any>;
   fsmPhase?: CopilotFsmPhase;
   fsmState?: CopilotFsmExecutionState;
@@ -558,6 +566,7 @@ export interface AiCopilotContext {
   folderId?: string | null;
   projectId?: string | null;
   projectKnowledgeContext?: string;
+  quickToolMode?: CopilotQuickToolMode;
   userLat?: number;
   userLng?: number;
   city?: string;
@@ -834,125 +843,171 @@ Seu papel é acolher, orientar e resolver demandas locais com extrema cordialida
   };
 }
 
-function detectIntent(text: string): string {
+export function isExplicitCreationOrBuilderPrompt(
+  text: string,
+  workingMemory?: Record<string, any>,
+): boolean {
+  const lower = text.toLowerCase();
   if (
-    text.includes("dashboard") ||
-    text.includes("métrica") ||
-    text.includes("metrica") ||
-    text.includes("kpi") ||
-    text.includes("indicador")
+    /\b(post|carrossel|story|stories|reels|instagram|social\s*media|an[úu]ncio|arte|banner|propaganda|criativo|flyer|cartaz|foramto|formato\s+(?:story|feed|retrato|1:1|9:16|4:5|16:9))\b/i.test(
+      lower,
+    )
+  ) {
+    return true;
+  }
+  if (
+    /\b(apresenta[çc][ãa]o|slide|slides|pitch|deck|landing\s*page|criar\s+site|fazer\s+site|montar\s+site|p[áa]gina\s+web|planilha|proposta\s+comercial)\b/i.test(
+      lower,
+    )
+  ) {
+    return true;
+  }
+  const prevIntent = String(workingMemory?.last_intent || "").toLowerCase();
+  if (
+    (prevIntent === "creative_post" || prevIntent === "create_ad") &&
+    (/\b(oferta|desconto|confira|garanta|aproveit|menos\s+de|por\s+pessoa|all\s*inclusive|story|feed|legenda|t[íi]tulo|cta)\b/i.test(
+      lower,
+    ) ||
+      text.includes('"'))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function detectIntent(text: string, workingMemory?: Record<string, any>): string {
+  const lower = text.toLowerCase();
+  if (
+    lower.includes("dashboard") ||
+    lower.includes("métrica") ||
+    lower.includes("metrica") ||
+    lower.includes("kpi") ||
+    lower.includes("indicador")
   ) {
     return "generate_dashboard";
   }
   if (
-    text.includes("post") ||
-    text.includes("carrossel") ||
-    text.includes("story") ||
-    text.includes("stories") ||
-    text.includes("reels") ||
-    text.includes("instagram") ||
-    text.includes("social media")
+    lower.includes("post") ||
+    lower.includes("carrossel") ||
+    lower.includes("story") ||
+    lower.includes("stories") ||
+    lower.includes("reels") ||
+    lower.includes("instagram") ||
+    lower.includes("social media") ||
+    lower.includes("foramto") ||
+    /\bformato\s+(?:story|stories|feed|retrato|quadrado|1:1|9:16|4:5)\b/i.test(lower) ||
+    ((workingMemory?.last_intent === "creative_post" || workingMemory?.last_intent === "create_ad") &&
+      (/\b(oferta|desconto|confira|garanta|aproveit|menos\s+de|por\s+pessoa|all\s*inclusive|legenda|t[íi]tulo|cta)\b/i.test(
+        lower,
+      ) ||
+        text.includes('"')))
   ) {
     return "creative_post";
   }
   if (
-    text.includes("onde fica") ||
-    text.includes("onde tem") ||
-    text.includes("cafeteria") ||
-    text.includes("restaurante") ||
-    text.includes("perto de mim") ||
-    text.includes("empresa") ||
-    text.includes("loja") ||
-    text.includes("hotel") ||
-    text.includes("hotéis") ||
-    text.includes("hoteis") ||
-    text.includes("pousada") ||
-    text.includes("pousadas") ||
-    text.includes("resort") ||
-    text.includes("resorts") ||
-    text.includes("hospedagem") ||
-    text.includes("padaria") ||
-    text.includes("mercado") ||
-    text.includes("mapa")
-  ) {
-    return "search_places";
-  }
-  if (
-    text.includes("corrida") ||
-    text.includes("motorista") ||
-    text.includes("uber") ||
-    text.includes("moto passageiro") ||
-    text.includes("carro") ||
-    text.includes("frete")
-  ) {
-    return "estimate_mobility";
-  }
-  if (
-    text.includes("viagem") ||
-    text.includes("turismo") ||
-    text.includes("roteiro") ||
-    text.includes("pacote") ||
-    text.includes("oktober") ||
-    text.includes("passeio")
-  ) {
-    return "travel_itinerary";
-  }
-  if (
-    text.includes("advogad") ||
-    text.includes("processo") ||
-    text.includes("demitid") ||
-    text.includes("jurídic") ||
-    text.includes("indenização")
-  ) {
-    return "legal_triage";
-  }
-  if (
-    text.includes("anúncio") ||
-    text.includes("anuncio") ||
-    text.includes("arte") ||
-    text.includes("banner") ||
-    text.includes("propaganda") ||
-    text.includes("campanha") ||
-    text.includes("tráfego") ||
-    text.includes("trafego")
+    lower.includes("anúncio") ||
+    lower.includes("anuncio") ||
+    lower.includes("arte") ||
+    lower.includes("banner") ||
+    lower.includes("propaganda") ||
+    lower.includes("campanha") ||
+    lower.includes("tráfego") ||
+    lower.includes("trafego")
   ) {
     return "create_ad";
   }
   if (
-    text.includes("pizza") ||
-    text.includes("cardápio") ||
-    text.includes("lanche") ||
-    text.includes("comprar")
-  ) {
-    return "search_catalog";
-  }
-  if (text.includes("proposta") || text.includes("orçamento")) {
-    return "commercial_proposal";
-  }
-  if (
-    text.includes("apresentação") ||
-    text.includes("apresentacao") ||
-    text.includes("slide") ||
-    text.includes("pitch") ||
-    text.includes("deck")
+    lower.includes("apresentação") ||
+    lower.includes("apresentacao") ||
+    lower.includes("slide") ||
+    lower.includes("pitch") ||
+    lower.includes("deck")
   ) {
     return "presentation_deck";
   }
   if (
-    text.includes("landing page") ||
-    text.includes("criar site") ||
-    text.includes("montar site") ||
-    text.includes("meu site")
+    lower.includes("landing page") ||
+    lower.includes("criar site") ||
+    lower.includes("fazer site") ||
+    lower.includes("montar site") ||
+    lower.includes("meu site") ||
+    lower.includes("página web") ||
+    lower.includes("pagina web") ||
+    /\bsite\b/i.test(lower)
   ) {
     return "website_builder";
   }
   if (
-    text.includes("planilha") ||
-    text.includes("tabela") ||
-    text.includes("métricas") ||
-    text.includes("caixa")
+    lower.includes("planilha") ||
+    lower.includes("tabela") ||
+    lower.includes("métricas") ||
+    lower.includes("caixa")
   ) {
     return "financial_report";
+  }
+  if (lower.includes("proposta") || lower.includes("orçamento")) {
+    return "commercial_proposal";
+  }
+  if (
+    lower.includes("onde fica") ||
+    lower.includes("onde tem") ||
+    lower.includes("cafeteria") ||
+    lower.includes("restaurante") ||
+    lower.includes("perto de mim") ||
+    lower.includes("empresa") ||
+    lower.includes("loja") ||
+    lower.includes("hotel") ||
+    lower.includes("hotéis") ||
+    lower.includes("hoteis") ||
+    lower.includes("pousada") ||
+    lower.includes("pousadas") ||
+    lower.includes("resort") ||
+    lower.includes("resorts") ||
+    lower.includes("hospedagem") ||
+    lower.includes("padaria") ||
+    lower.includes("mercado")
+  ) {
+    return "search_places";
+  }
+  if (lower.includes("mapa") || lower.includes("mapas")) {
+    return "interactive_map";
+  }
+  if (
+    lower.includes("corrida") ||
+    lower.includes("motorista") ||
+    lower.includes("uber") ||
+    lower.includes("moto passageiro") ||
+    lower.includes("carro") ||
+    lower.includes("frete")
+  ) {
+    return "estimate_mobility";
+  }
+  if (
+    lower.includes("viagem") ||
+    lower.includes("turismo") ||
+    lower.includes("roteiro") ||
+    lower.includes("pacote") ||
+    lower.includes("oktober") ||
+    lower.includes("passeio")
+  ) {
+    return "travel_itinerary";
+  }
+  if (
+    lower.includes("advogad") ||
+    lower.includes("processo") ||
+    lower.includes("demitid") ||
+    lower.includes("jurídic") ||
+    lower.includes("indenização")
+  ) {
+    return "legal_triage";
+  }
+  if (
+    lower.includes("pizza") ||
+    lower.includes("cardápio") ||
+    lower.includes("lanche") ||
+    lower.includes("comprar")
+  ) {
+    return "search_catalog";
   }
   return "general_chat";
 }
@@ -963,7 +1018,12 @@ function extractSearchTerm(text: string): string {
       /(onde\s+fica|onde\s+tem|tem\s+alguma|tem\s+algum|procuro|gostaria\s+de|quais\s+os\s+melhores|quais\s+os|qual\s+o\s+melhor|melhores|perto\s+de\s+mim|na\s+minha\s+cidade|em\s+[a-zà-ÿ\s-]+$)/gi,
       "",
     )
+    .replace(/\b(mostrar|abrir|ver|exibir|gerar)?\s*(no\s+)?mapas?\b\s*(de|da|do|dos|das)?/gi, "")
+    .replace(/^[\s,:-]+|[\s,:-]+$/g, "")
     .trim();
+  if (!clean && /\bmapas?\b/i.test(text)) {
+    return "";
+  }
   return clean.slice(0, 40) || text.trim();
 }
 
@@ -1099,9 +1159,9 @@ export async function executeAiCopilotPipeline(
     const db = getServerClient();
 
     // A plataforma é a primeira fonte de verdade. Só escalamos para IA/mineração
-    // quando a busca persistida não resolve a intenção do usuário.
+    // quando a busca persistida não resolve a intenção do usuário ou não for fluxo direto de criação.
     let platformSearch: InternalSearchResult | null = null;
-    if (shouldSearchPlatform(userPrompt)) {
+    if (!isExplicitCreationOrBuilderPrompt(userPrompt, workingMemory) && shouldSearchPlatform(userPrompt)) {
       const searchStart = Date.now();
       fsm.transition("RUNNING", "Executando a busca soberana da plataforma");
       fsm.transition("WAITING_TOOL", "Consultando o catálogo soberano da plataforma");
@@ -1240,10 +1300,11 @@ Ferramentas disponíveis:
 7. 'legal_triage': faz triagem jurídica com área do direito e documentos recomendados
 8. 'commercial_proposal': cria proposta comercial formal ou documento executivo
 9. 'financial_report': gera planilha de fechamento de caixa e indicadores de receita
+10. 'website_builder': projeta e gera página web ou landing page com editor visual
 
 Responda SEMPRE em formato JSON com os campos:
 {
-  "intent": "search_places" | "interactive_map" | "generate_dashboard" | "creative_post" | "create_ad" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "commercial_proposal" | "financial_report" | "general_chat",
+  "intent": "search_places" | "interactive_map" | "website_builder" | "generate_dashboard" | "creative_post" | "create_ad" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "commercial_proposal" | "financial_report" | "general_chat",
   "tool_name": "opcional: nome exato de tool WebMCP ou mcp_ext:<servidor>:<tool>",
   "tool_args": { ... },
   "message": "Mensagem acolhedora, consultiva, didática e humana para o usuário seguindo os 4 blocos",
@@ -1320,11 +1381,11 @@ Responda SEMPRE em formato JSON com os campos:
             try {
               gatewayResponse = JSON.parse(jsonMatch[0]);
             } catch {
-              gatewayResponse = { intent: detectIntent(promptLower), message: cleanText };
+              gatewayResponse = { intent: detectIntent(promptLower, workingMemory), message: cleanText };
             }
           } else if (cleanText.length > 10) {
             // Preserva a resposta analítica da IA mesmo quando retornada em texto livre
-            gatewayResponse = { intent: detectIntent(promptLower), message: cleanText };
+            gatewayResponse = { intent: detectIntent(promptLower, workingMemory), message: cleanText };
           }
         }
       }
@@ -1335,16 +1396,53 @@ Responda SEMPRE em formato JSON com os campos:
       );
     }
 
-    const intent = gatewayResponse?.intent || detectIntent(promptLower);
+    const forcedQuickIntent =
+      context.quickToolMode === "website_builder"
+        ? "website_builder"
+        : context.quickToolMode === "interactive_map"
+          ? "interactive_map"
+          : context.quickToolMode === "creative_post"
+            ? "creative_post"
+            : undefined;
+    const deterministicIntent = detectIntent(promptLower, workingMemory);
+    const creationOverride = isExplicitCreationOrBuilderPrompt(userPrompt, workingMemory);
+    const gatewayIntent = gatewayResponse?.intent;
+    const isGatewayNonCreation =
+      gatewayIntent &&
+      [
+        "search_places",
+        "interactive_map",
+        "estimate_mobility",
+        "travel_itinerary",
+        "legal_triage",
+        "search_catalog",
+        "general_chat",
+      ].includes(gatewayIntent);
+    const intent =
+      forcedQuickIntent ||
+      (creationOverride && (!gatewayIntent || isGatewayNonCreation)
+        ? deterministicIntent
+        : gatewayIntent || deterministicIntent);
     const toolArgs = gatewayResponse?.tool_args || {};
+    const isCreationOrBuilderIntent = [
+      "creative_post",
+      "create_ad",
+      "ads_campaign",
+      "presentation_deck",
+      "website_builder",
+      "financial_report",
+      "commercial_proposal",
+      "generate_dashboard",
+    ].includes(intent);
 
     // ── 0. Orquestrador autônomo de mineração e copilot (planilhas, leads, CNPJ, processos CNJ, builder) ──
     const isAutonomousOrMiningRequest =
-      /\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|exportar leads|extrair leads|prospec[çc][ãa]o|prospectar|sdr|bdr|ficha t[eé]cnica|criar landing page|montar landing page|criar biolink|montar biolink)\b/i.test(
+      !["creative_post", "create_ad", "ads_campaign", "presentation_deck", "website_builder", "interactive_map"].includes(intent) &&
+      (/\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|exportar leads|extrair leads|prospec[çc][ãa]o|prospectar|sdr|bdr|ficha t[eé]cnica|criar biolink|montar biolink)\b/i.test(
         userPrompt,
       ) ||
-      /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/.test(userPrompt) ||
-      /\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/.test(userPrompt);
+        /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/.test(userPrompt) ||
+        /\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/.test(userPrompt));
 
     if (
       isAutonomousOrMiningRequest &&
@@ -1357,6 +1455,7 @@ Responda SEMPRE em formato JSON com os campos:
         responseMessage:
           'Informe a cidade para a busca (ex.: "em Chapecó") ou ative sua localização.',
         activitySteps: steps,
+        sources: [],
         updatedMemory,
         fsmPhase: fsm.currentPhase,
         fsmState: fsm.snapshot,
@@ -1369,6 +1468,7 @@ Responda SEMPRE em formato JSON com os campos:
     let artifact: ChatArtifactData | undefined;
     let executionId: string | undefined;
     const toolCalls: AiToolExecutionRecord[] = [];
+    const sources: ChatSourceItem[] = [];
     let responseMessage = gatewayResponse?.message || "";
 
     if (isAutonomousOrMiningRequest) {
@@ -1674,37 +1774,43 @@ Responda SEMPRE em formato JSON com os campos:
         toolCalls,
         artifact,
         structuredPayload,
+        sources,
         updatedMemory,
         fsmPhase: fsm.currentPhase,
         fsmState: fsm.snapshot,
       };
     }
 
-    // ── 1. Estabelecimentos & Places ──
+    // ── 1. Estabelecimentos & Places / Mapas Interativos ──
     if (
       intent === "search_places" ||
-      promptLower.includes("onde fica") ||
-      promptLower.includes("onde tem") ||
-      promptLower.includes("perto") ||
-      promptLower.includes("cafeteria") ||
-      promptLower.includes("restaurante") ||
-      promptLower.includes("empresa") ||
-      promptLower.includes("loja") ||
-      promptLower.includes("hotel") ||
-      promptLower.includes("hotéis") ||
-      promptLower.includes("hoteis") ||
-      promptLower.includes("pousada") ||
-      promptLower.includes("pousadas") ||
-      promptLower.includes("hospedagem")
+      intent === "interactive_map" ||
+      (!isCreationOrBuilderIntent &&
+        (promptLower.includes("onde fica") ||
+          promptLower.includes("onde tem") ||
+          promptLower.includes("perto") ||
+          promptLower.includes("mapa") ||
+          promptLower.includes("cafeteria") ||
+          promptLower.includes("restaurante") ||
+          promptLower.includes("empresa") ||
+          promptLower.includes("loja") ||
+          promptLower.includes("hotel") ||
+          promptLower.includes("hotéis") ||
+          promptLower.includes("hoteis") ||
+          promptLower.includes("pousada") ||
+          promptLower.includes("pousadas") ||
+          promptLower.includes("hospedagem")))
     ) {
       const stepStart = Date.now();
       steps.push({
         id: `step-places-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || "Busca de Estabelecimentos",
+        label:
+          gatewayResponse?.step_label ||
+          (intent === "interactive_map" ? "Mapa Geográfico Local" : "Busca de Estabelecimentos"),
         detail:
           gatewayResponse?.step_detail ||
-          "Buscando estabelecimentos ativos e calculando distância geográfica",
+          "Buscando estabelecimentos ativos e preservando coordenadas geográficas",
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 160).toISOString(),
@@ -1712,7 +1818,8 @@ Responda SEMPRE em formato JSON com os campos:
         tokensUsed: 120,
       });
 
-      const term = toolArgs.query || extractSearchTerm(promptLower);
+      const rawTerm = toolArgs.query || extractSearchTerm(promptLower);
+      const term = rawTerm && !/^mapas?$/i.test(rawTerm) ? rawTerm : "";
       let query = db
         .from("directory_listings")
         .select(
@@ -1771,6 +1878,8 @@ Responda SEMPRE em formato JSON com os campos:
           contact_whatsapp: l.contact_whatsapp,
           contact_phone: l.contact_phone,
           avatar_url: l.avatar_url || l.banner_url,
+          latitude: typeof l.latitude === "number" ? l.latitude : null,
+          longitude: typeof l.longitude === "number" ? l.longitude : null,
         };
       });
 
@@ -1811,13 +1920,23 @@ Responda SEMPRE em formato JSON com os campos:
               state: mapState,
               phone: p.contact_phone || undefined,
               whatsapp: p.contact_whatsapp || undefined,
-              lat: p.distance_km ? context.userLat || -27.1004 : -27.1004,
-              lng: p.distance_km ? context.userLng || -52.6152 : -52.6152,
+              lat: typeof p.latitude === "number" ? p.latitude : (context.userLat ?? -27.1004),
+              lng: typeof p.longitude === "number" ? p.longitude : (context.userLng ?? -52.6152),
               verified: true,
               source: "Diretório Oficial Waesy",
             })),
           },
         };
+
+        places.slice(0, 6).forEach((p: any) => {
+          sources.push({
+            id: `place-${p.id}`,
+            title: p.name,
+            kind: "place",
+            detail: [p.category, p.address].filter(Boolean).join(" · "),
+            url: p.store_id ? `/empresa/${p.store_id}` : "/places",
+          });
+        });
       }
 
       if (!responseMessage) {
@@ -1832,12 +1951,13 @@ Responda SEMPRE em formato JSON com os campos:
     // ── 2. Mobilidade & Corridas / Entregas ──
     else if (
       intent === "estimate_mobility" ||
-      promptLower.includes("corrida") ||
-      promptLower.includes("motorista") ||
-      promptLower.includes("uber") ||
-      promptLower.includes("moto passageiro") ||
-      promptLower.includes("chamar carro") ||
-      promptLower.includes("frete")
+      (!isCreationOrBuilderIntent &&
+        (promptLower.includes("corrida") ||
+          promptLower.includes("motorista") ||
+          promptLower.includes("uber") ||
+          promptLower.includes("moto passageiro") ||
+          promptLower.includes("chamar carro") ||
+          promptLower.includes("frete")))
     ) {
       const stepStart = Date.now();
       steps.push({
@@ -1906,11 +2026,12 @@ Responda SEMPRE em formato JSON com os campos:
     // ── 3. Pacotes de Viagem & Turismo ──
     else if (
       intent === "travel_itinerary" ||
-      promptLower.includes("viagem") ||
-      promptLower.includes("turismo") ||
-      promptLower.includes("roteiro") ||
-      promptLower.includes("pacote") ||
-      promptLower.includes("oktober")
+      (!isCreationOrBuilderIntent &&
+        (promptLower.includes("viagem") ||
+          promptLower.includes("turismo") ||
+          promptLower.includes("roteiro") ||
+          promptLower.includes("pacote") ||
+          promptLower.includes("oktober")))
     ) {
       const stepStart = Date.now();
       steps.push({
@@ -2083,12 +2204,13 @@ Responda SEMPRE em formato JSON com os campos:
     // ── 4. Assessoria & Triagem Jurídica ──
     else if (
       intent === "legal_triage" ||
-      promptLower.includes("advogado") ||
-      promptLower.includes("processo") ||
-      promptLower.includes("demitido") ||
-      promptLower.includes("jurídic") ||
-      promptLower.includes("direito") ||
-      promptLower.includes("indenização")
+      (!isCreationOrBuilderIntent &&
+        (promptLower.includes("advogado") ||
+          promptLower.includes("processo") ||
+          promptLower.includes("demitido") ||
+          promptLower.includes("jurídic") ||
+          promptLower.includes("direito") ||
+          promptLower.includes("indenização")))
     ) {
       const stepStart = Date.now();
       steps.push({
@@ -2164,13 +2286,26 @@ Responda SEMPRE em formato JSON com os campos:
       promptLower.includes("propaganda")
     ) {
       const stepStart = Date.now();
+      const postSpec = extractCreativePostSpecFromPrompt(userPrompt, toolArgs, workingMemory, {
+        city: context.city,
+      });
+      const formatLabel =
+        postSpec.format === "story"
+          ? "Story (9:16)"
+          : postSpec.format === "portrait"
+            ? "Retrato (4:5)"
+            : postSpec.format === "landscape"
+              ? "Slide (16:9)"
+              : "Feed (1:1)";
+      const generatedCaption = `${postSpec.headline}\n\n${postSpec.subheadline}\n\n${postSpec.bullets.map((b) => `• ${b}`).join("\n")}\n\n${postSpec.ctaText}\n\n${postSpec.hashtags.join(" ")}`;
+
       steps.push({
         id: `step-creative-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || "Criação de Peça Publicitária",
+        label: gatewayResponse?.step_label || "Estúdio Canva & Peça Criativa",
         detail:
           gatewayResponse?.step_detail ||
-          "Elaborando texto atrativo e chamada para ação para divulgação",
+          `Estruturando arte ${formatLabel} (${postSpec.aspectRatio}) com copy e chamada para ação`,
         status: "completed",
         startedAt: new Date(stepStart).toISOString(),
         completedAt: new Date(stepStart + 240).toISOString(),
@@ -2178,60 +2313,93 @@ Responda SEMPRE em formato JSON com os campos:
         tokensUsed: 215,
       });
 
-      const headline = toolArgs.headline || "Super Oferta da Semana no Waesy!";
-      const copy =
-        toolArgs.copy ||
-        "Aproveite descontos especiais em produtos e serviços locais. Compre de quem produz na sua cidade com entrega rápida.";
-      const cta = toolArgs.cta_label || "Conferir Ofertas";
-
       const socialBuilderResult = await createBuilderArtifactFromCopilot({
         userPrompt,
         docType: "social_post",
-        title: headline,
+        title: postSpec.headline,
         storeId: context.storeId,
         authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
         sessionId: context.threadId,
       }).catch(() => null);
 
       if (socialBuilderResult) {
-        artifact = socialBuilderResult.chatArtifact;
+        const existingData = (socialBuilderResult.chatArtifact.data || {}) as Record<string, any>;
+        artifact = {
+          ...socialBuilderResult.chatArtifact,
+          data: {
+            ...postSpec,
+            ...existingData,
+            format: existingData.format || postSpec.format,
+            aspectRatio: existingData.aspectRatio || postSpec.aspectRatio,
+            archetype: existingData.archetype || postSpec.archetype,
+            themeId: existingData.themeId || postSpec.themeId,
+            offerPrice: existingData.offerPrice || postSpec.offerPrice,
+            installments: existingData.installments || postSpec.installments,
+            storeName: existingData.storeName || postSpec.brandName,
+            locationLabel: existingData.locationLabel || postSpec.locationLabel,
+            caption: existingData.caption || generatedCaption,
+          },
+        };
       } else {
         artifact = {
           id: crypto.randomUUID(),
           type: "creative_post",
-          title: headline,
+          title: postSpec.headline,
           version: 1,
           totalVersions: 1,
           authorName: persona.name,
           authorRole: persona.role,
-          previewSummary: `Peça publicitária persuasiva gerada para ${context.city || "sua região"}.`,
+          previewSummary: `Peça ${formatLabel} (${postSpec.aspectRatio}) gerada em tempo real no Estúdio Canva Waesy.`,
           data: {
-            badge: "Destaque da Semana",
-            headline,
-            subheadline: copy.length > 90 ? copy.slice(0, 90) + "..." : copy,
-            bullets: [
-              "Atendimento consultivo e suporte local",
-              "Qualidade comprovada e procedência garantida",
-              "Condições especiais com entrega rápida",
-            ],
-            ctaText: cta,
-            storeName: context.city ? `Waesy ${context.city}` : "Comércio e Negócios Locais",
-            caption: `${headline}\n\n${copy}\n\nToque no botão abaixo para conferir os detalhes e aproveitar!`,
-            hashtags: ["#comerciolocal", "#ofertas", "#waesy", "#destaque"],
-            offerBadge: "Especial",
+            format: postSpec.format,
+            aspectRatio: postSpec.aspectRatio,
+            archetype: postSpec.archetype,
+            themeId: postSpec.themeId,
+            badge: postSpec.badge,
+            headline: postSpec.headline,
+            subheadline: postSpec.subheadline,
+            offerBadge: postSpec.offerBadge,
+            offerPrice: postSpec.offerPrice,
+            installments: postSpec.installments,
+            bullets: postSpec.bullets,
+            ctaText: postSpec.ctaText,
+            storeName: postSpec.brandName,
+            locationLabel: postSpec.locationLabel,
+            caption: generatedCaption,
+            copyFeed: generatedCaption,
+            copyStory: generatedCaption,
+            hashtags: postSpec.hashtags,
           },
         };
       }
 
+      const artifactData = (artifact.data || {}) as Record<string, any>;
       structuredPayload = {
         blocks: [
           {
             type: "creative_ad_preview",
             data: {
-              headline,
-              body_text: copy,
-              cta_label: cta,
-              format: "feed",
+              artifact_id: artifact.id,
+              title: artifact.title || postSpec.headline,
+              headline: artifactData.headline || postSpec.headline,
+              subheadline: artifactData.subheadline || postSpec.subheadline,
+              body_text: artifactData.subheadline || postSpec.subheadline,
+              badge: artifactData.badge || postSpec.badge,
+              offer_badge: artifactData.offerBadge || postSpec.offerBadge,
+              offer_price: artifactData.offerPrice || postSpec.offerPrice,
+              installments: artifactData.installments || postSpec.installments,
+              bullets: Array.isArray(artifactData.bullets) ? artifactData.bullets : postSpec.bullets,
+              cta_label: artifactData.ctaText || postSpec.ctaText,
+              store_name: artifactData.storeName || postSpec.brandName,
+              location_label: artifactData.locationLabel || postSpec.locationLabel,
+              format: artifactData.format || postSpec.format,
+              aspect_ratio: artifactData.aspectRatio || postSpec.aspectRatio,
+              archetype: artifactData.archetype || postSpec.archetype,
+              theme_id: artifactData.themeId || postSpec.themeId,
+              caption: artifactData.caption || generatedCaption,
+              hashtags: Array.isArray(artifactData.hashtags)
+                ? artifactData.hashtags
+                : postSpec.hashtags,
             },
           },
         ],
@@ -2239,19 +2407,22 @@ Responda SEMPRE em formato JSON com os campos:
 
       if (!responseMessage) {
         responseMessage =
-          `Criei o post e story "${headline}" com copy persuasiva e chamada para ação pronta para publicação no Instagram. A peça está aberta no painel lateral para você visualizar e ajustar:`;
+          `Criei a arte no formato ${formatLabel} (${postSpec.aspectRatio}) "${artifact.title || postSpec.headline}" em tempo real no Estúdio Canva. A peça já está renderizada abaixo e aberta no painel lateral para personalizar cores, textos e exportar em PNG, PDF ou HTML.`;
       }
 
-      updatedMemory.last_creative_topic = headline;
+      updatedMemory.last_creative_topic = artifact.title || postSpec.headline;
+      updatedMemory.last_creative_format = postSpec.format;
+      updatedMemory.last_intent = "creative_post";
     }
     // ── 6. Compras, Produtos & Delivery ──
     else if (
       intent === "search_catalog" ||
-      promptLower.includes("comprar") ||
-      promptLower.includes("pizza") ||
-      promptLower.includes("cardápio") ||
-      promptLower.includes("pedido") ||
-      promptLower.includes("lanche")
+      (!isCreationOrBuilderIntent &&
+        (promptLower.includes("comprar") ||
+          promptLower.includes("pizza") ||
+          promptLower.includes("cardápio") ||
+          promptLower.includes("pedido") ||
+          promptLower.includes("lanche")))
     ) {
       const stepStart = Date.now();
       steps.push({
@@ -2399,7 +2570,7 @@ Responda SEMPRE em formato JSON com os campos:
           totalVersions: 1,
           authorName: "Assessor Comercial Local",
           authorRole: "Consultoria Executiva",
-          previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents / 100)}.`,
+          previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents)}.`,
           data: {
             total_cents: totalCents,
             currency: "BRL",
@@ -2427,7 +2598,7 @@ Responda SEMPRE em formato JSON com os campos:
       };
 
       if (!responseMessage) {
-        responseMessage = `Elaborei a proposta comercial "${extractedTitle}" com valor total de ${formatMoney(totalCents / 100)}. O documento está anexado ao lado, pronto para você visualizar e exportar.`;
+        responseMessage = `Elaborei a proposta comercial "${extractedTitle}" com valor total de ${formatMoney(totalCents)}. O documento está anexado ao lado, pronto para você visualizar e exportar.`;
       }
 
       updatedMemory.last_proposal_created = new Date().toISOString();
@@ -2477,7 +2648,12 @@ Responda SEMPRE em formato JSON com os campos:
       intent === "website_builder" ||
       promptLower.includes("landing page") ||
       promptLower.includes("criar site") ||
-      promptLower.includes("montar site")
+      promptLower.includes("fazer site") ||
+      promptLower.includes("montar site") ||
+      promptLower.includes("meu site") ||
+      promptLower.includes("página web") ||
+      promptLower.includes("pagina web") ||
+      /\bsite\b/i.test(promptLower)
     ) {
       const stepStart = Date.now();
       steps.push({
@@ -2504,6 +2680,15 @@ Responda SEMPRE em formato JSON com os campos:
 
       if (siteBuilderResult) {
         artifact = siteBuilderResult.chatArtifact;
+        sources.push({
+          id: `builder-${siteBuilderResult.documentId || siteBuilderResult.chatArtifact.id}`,
+          title: siteBuilderResult.chatArtifact.title || siteTitle,
+          kind: "builder",
+          detail: "Site editável no Builder Waesy",
+          url: siteBuilderResult.documentId
+            ? `/workspace/builder?doc=${siteBuilderResult.documentId}`
+            : "/workspace/builder",
+        });
       }
 
       if (!responseMessage) {
@@ -2562,13 +2747,13 @@ Responda SEMPRE em formato JSON com os campos:
               [
                 "Pedidos Faturados",
                 String(ordersCount),
-                formatMoney(totalRevenueCents / 100),
+                formatMoney(totalRevenueCents),
                 "Concluído",
               ],
               [
                 "Ticket Médio",
                 String(ordersCount),
-                formatMoney(totalRevenueCents / (ordersCount || 1) / 100),
+                formatMoney(Math.round(totalRevenueCents / (ordersCount || 1))),
                 "Calculado",
               ],
             ]
@@ -2593,13 +2778,13 @@ Responda SEMPRE em formato JSON com os campos:
           totalVersions: 1,
           authorName: persona.name,
           authorRole: persona.role,
-          previewSummary: `Visão consolidada: ${formatMoney(totalRevenueCents / 100)} faturados em ${ordersCount} pedido(s) processado(s).`,
+          previewSummary: `Visão consolidada: ${formatMoney(totalRevenueCents)} faturados em ${ordersCount} pedido(s) processado(s).`,
           data: {
             kpis: [
               {
                 id: "kpi-revenue",
                 label: "Receita Confirmada",
-                value: formatMoney(totalRevenueCents / 100),
+                value: formatMoney(totalRevenueCents),
                 changePercent: ordersCount > 0 ? 14.8 : 0,
                 periodLabel: "vs. mês anterior",
                 trend: ordersCount > 0 ? "up" : "neutral",
@@ -2617,7 +2802,7 @@ Responda SEMPRE em formato JSON com os campos:
               {
                 id: "kpi-ticket",
                 label: "Ticket Médio",
-                value: formatMoney(ordersCount > 0 ? totalRevenueCents / ordersCount / 100 : 0),
+                value: formatMoney(ordersCount > 0 ? Math.round(totalRevenueCents / ordersCount) : 0),
                 changePercent: ordersCount > 0 ? 4.1 : 0,
                 periodLabel: "por transação",
                 trend: ordersCount > 0 ? "up" : "neutral",
@@ -2656,7 +2841,7 @@ Responda SEMPRE em formato JSON com os campos:
                 description: "Fechamento consolidado de vendas do período",
                 timestamp: "Hoje, 18:30",
                 status: "liquidado",
-                amount: formatMoney(totalRevenueCents / 100),
+                amount: formatMoney(totalRevenueCents),
               },
               {
                 id: "act-2",
@@ -2761,7 +2946,7 @@ Responda SEMPRE em formato JSON com os campos:
       updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
     }
 
-    if (platformSearch && platformSearch.cards.length > 0) {
+    if (!isCreationOrBuilderIntent && platformSearch && platformSearch.cards.length > 0) {
       const carouselBlock = {
         type: "card_carousel",
         data: {
@@ -2802,13 +2987,15 @@ Responda SEMPRE em formato JSON com os campos:
           intent,
           city: context.city || "Chapecó",
           state: context.state || "SC",
-          platformCards: (platformSearch?.cards || []).slice(0, 6).map((c) => ({
-            kind: c.kind,
-            title: c.title,
-            subtitle: c.subtitle,
-            location: c.location,
-            price_cents: c.price_cents,
-          })),
+          platformCards: isCreationOrBuilderIntent
+            ? []
+            : (platformSearch?.cards || []).slice(0, 6).map((c) => ({
+                kind: c.kind,
+                title: c.title,
+                subtitle: c.subtitle,
+                location: c.location,
+                price_cents: c.price_cents,
+              })),
           toolBlocks: (structuredPayload?.blocks || []).slice(0, 3),
           artifactTitle: artifact?.title,
         }).slice(0, 4000);
@@ -2827,6 +3014,7 @@ Responda SEMPRE em formato JSON com os campos:
             "Analise o pedido do usuário e os registros reais recuperados do banco de dados da plataforma.",
             "Redija uma resposta analítica, calorosa, consultiva e inteligente em português do Brasil (2 a 4 parágrafos curtos ou tópicos objetivos).",
             "Mencione os nomes reais, valores, endereços ou destaques encontrados e oriente o próximo passo prático.",
+            "Se a intenção for criação de peça criativa, apresentação, documento, planilha ou site (creative_post, create_ad, presentation_deck, commercial_proposal, website_builder), apresente fielmente o formato solicitado (ex: Story 9:16 ou Feed 1:1), título, oferta e legenda gerada, orientando ajustes em tempo real no painel lateral e exportação.",
             "REGRA ESTRITA: Baseie-se exclusivamente nos dados fornecidos, nunca invente registros inexistentes e nunca utilize emojis ou jargões técnicos.",
           ].join("\n"),
           userPrompt: `Pedido do usuário: "${userPrompt}"\nDados reais recuperados pela plataforma:\n${retrievedSummary}${attachmentContext ? `\n\nAnexos enviados pelo usuário:\n${attachmentContext}` : ""}`,
@@ -2869,12 +3057,41 @@ Responda SEMPRE em formato JSON com os campos:
       }
     }
 
+    if (platformSearch?.cards && platformSearch.cards.length > 0) {
+      const seenIds = new Set(sources.map((s) => s.id));
+      platformSearch.cards.slice(0, 6).forEach((card) => {
+        const sourceId = `platform-${card.source_table}-${card.source_id || card.id}`;
+        if (seenIds.has(sourceId)) return;
+        seenIds.add(sourceId);
+        sources.push({
+          id: sourceId,
+          title: card.title,
+          kind: "platform",
+          detail: [card.kind, card.subtitle, card.location].filter(Boolean).join(" · "),
+          url: typeof card.action?.payload?.href === "string" ? card.action.payload.href : undefined,
+        });
+      });
+    }
+
+    if (context.attachments && context.attachments.length > 0) {
+      context.attachments.forEach((attUrl, idx) => {
+        sources.push({
+          id: `attachment-${idx}-${attUrl.slice(-16)}`,
+          title: decodeURIComponent(attUrl.split("/").pop()?.split("?")[0] || `Anexo ${idx + 1}`),
+          kind: "attachment",
+          detail: "Arquivo enviado na conversa",
+          url: attUrl,
+        });
+      });
+    }
+
     return {
       responseMessage,
       activitySteps: steps,
       executionId,
       artifact,
       structuredPayload,
+      sources,
       updatedMemory,
       fsmPhase: fsm.currentPhase,
       fsmState: fsm.snapshot,
@@ -3191,6 +3408,7 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
           toolCalls: m.tool_calls || m.structured_payload?.toolCalls || [],
           artifact: m.structured_payload?.artifact || null,
           structuredPayload: m.structured_payload?.structuredBlocks || null,
+          sources: m.structured_payload?.sources || [],
           fsmPhase: m.fsm_phase || m.structured_payload?.fsmPhase,
           fsmState: m.fsm_state || m.structured_payload?.fsmState,
           attachments: m.attachments || [],
@@ -3251,6 +3469,7 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
         toolCalls: m.payload?.toolCalls || [],
         artifact: m.payload?.artifact || null,
         structuredPayload: m.payload?.structuredBlocks || null,
+        sources: m.payload?.sources || [],
         fsmPhase: m.payload?.fsmPhase,
         fsmState: m.payload?.fsmState,
         attachments: m.attachments || [],
@@ -3561,6 +3780,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
           storeId: resolvedStoreId || undefined,
           folderId: resolvedFolderId,
           projectId: resolvedProjectId,
+          quickToolMode: data.quickToolMode,
           userLat: data.userLat,
           userLng: data.userLng,
           city: normalizeActiveCity(data.city) ?? resolveActiveCity(),
@@ -3614,6 +3834,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
       toolCalls: execution.toolCalls || [],
       artifact: execution.artifact,
       structuredBlocks: execution.structuredPayload,
+      sources: execution.sources || [],
       clientMessageId: data.clientMessageId || null,
       userMessageId: userMsg.id,
       replyToId: data.replyToId || null,
@@ -3685,6 +3906,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
         executionId: execution.executionId,
         artifact: execution.artifact,
         structuredPayload: execution.structuredPayload,
+        sources: execution.sources || [],
         createdAt: persistedAiCreatedAt || new Date().toISOString(),
         status:
           execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL"
@@ -3964,11 +4186,79 @@ export const deleteAiConversationThread = createServerFn({ method: "POST" })
   });
 
 // ============================================================
+// 7.1 Renomear Thread do Copilot
+// ============================================================
+
+export const renameAiThreadSchema = z.object({
+  threadId: z.string().uuid(),
+  title: z.string().trim().min(2, "Título muito curto").max(120, "Limite de 120 caracteres"),
+});
+
+export const renameAiConversationThread = createServerFn({ method: "POST" })
+  .validator(renameAiThreadSchema)
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+
+    if (!identity?.id) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    const { data: aiThread } = await db
+      .from("ai_threads")
+      .select("id, user_id, workspace_id")
+      .eq("id", data.threadId)
+      .maybeSingle();
+
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+        } else {
+          throw new Error("Sem permissão para renomear esta conversa");
+        }
+      }
+      const { error } = await db
+        .from("ai_threads")
+        .update({ title: data.title, updated_at: new Date().toISOString() })
+        .eq("id", data.threadId);
+      if (error) throw new Error("Falha ao renomear conversa");
+      return { success: true, title: data.title };
+    }
+
+    const { data: thread } = await db
+      .from("chat_threads")
+      .select("id, customer_id, recipient_profile_id, store_id, assigned_to_profile_id")
+      .eq("id", data.threadId)
+      .single();
+
+    if (!thread) {
+      throw new Error("Thread não encontrada");
+    }
+
+    assertAiThreadAccess(thread, identity);
+
+    const { error } = await db
+      .from("chat_threads")
+      .update({ subject: data.title, updated_at: new Date().toISOString() })
+      .eq("id", data.threadId);
+
+    if (error) {
+      throw new Error("Falha ao renomear conversa");
+    }
+
+    return { success: true, title: data.title };
+  });
+
+// ============================================================
 // 8. Mensagem de Convidado / Guest para o Copilot
 // ============================================================
 
 export const executeGuestCopilotMessageSchema = z.object({
   message: z.string().min(1, "Mensagem não pode ser vazia").max(2000),
+  quickToolMode: z
+    .enum(["default", "website_builder", "interactive_map", "document", "creative_post"])
+    .optional(),
   userLat: z.number().optional(),
   userLng: z.number().optional(),
   city: z.string().max(120).optional(),
@@ -3989,6 +4279,7 @@ export const executeGuestCopilotMessage = createServerFn({ method: "POST" })
         data.message,
         {},
         {
+          quickToolMode: data.quickToolMode,
           userLat: data.userLat,
           userLng: data.userLng,
           city: data.city,

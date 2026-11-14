@@ -191,12 +191,6 @@ export async function exportElementAsPdf(
 
       for (let i = 0; i < explicitPages.length; i++) {
         const pageEl = explicitPages[i];
-        const isLandscape =
-          pageEl.classList.contains("a4-landscape-page") ||
-          pageEl.classList.contains("presentation-page") ||
-          pageEl.offsetWidth > pageEl.offsetHeight;
-
-        const orientation = isLandscape ? "l" : "p";
         const pageBg = resolveCanvasExportBg(pageEl, resolveCanvasExportBg(element));
         const pageCanvas = await renderElementToCanvasSafe(pageEl, {
           scale: 2,
@@ -204,11 +198,24 @@ export async function exportElementAsPdf(
         });
 
         const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
+        const pxToMm = 25.4 / 96;
+        const rawW = Math.max(80, (pageCanvas.width / 2) * pxToMm);
+        const rawH = Math.max(80, (pageCanvas.height / 2) * pxToMm);
+        const isLandscape = rawW > rawH;
+        const orientation = isLandscape ? "l" : "p";
+
+        // Preserva A4 padrão apenas quando o elemento é A4 e sua razão de aspecto não diverge > 10%
+        const ratio = Math.max(rawW, rawH) / Math.max(1, Math.min(rawW, rawH));
+        const isExplicitA4 =
+          pageEl.classList.contains("a4-page") ||
+          pageEl.classList.contains("a4-landscape-page");
+        const matchesA4Aspect = isExplicitA4 && Math.abs(ratio - 1.4142) <= 0.14;
+        const pageFormat: "a4" | [number, number] = matchesA4Aspect ? "a4" : [rawW, rawH];
 
         if (i === 0) {
-          pdf = new jsPDF(orientation, "mm", "a4");
+          pdf = new jsPDF({ orientation, unit: "mm", format: pageFormat });
         } else {
-          pdf.addPage("a4", orientation);
+          pdf.addPage(pageFormat, orientation);
         }
 
         const pageWidth = pdf.internal.pageSize.getWidth();

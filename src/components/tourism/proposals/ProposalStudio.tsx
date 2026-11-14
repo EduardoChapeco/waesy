@@ -111,6 +111,8 @@ export function ProposalStudio({ draft, save, agency }: ProposalStudioProps) {
 
               {historyQ.isLoading ? (
                 <div className="ds-meta text-muted-foreground">Carregando histórico...</div>
+              ) : historyQ.isError ? (
+                <div className="ds-meta text-destructive">Erro ao carregar histórico.</div>
               ) : !historyQ.data || historyQ.data.length === 0 ? (
                 <div className="ds-meta text-muted-foreground italic">
                   Nenhuma atividade registrada ainda.

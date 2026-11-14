@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   getStorePixelConfig,
   saveStorePixelConfig,
-  dispatchMetaCapiEvent,
+  testStorePixelPipeline,
   getStoreAttributionOverview,
   type StorePixelConfigDTO,
 } from "@/services/pixels.functions";
@@ -48,12 +48,19 @@ export default function WorkspaceMarketingPixelsPage() {
   const [metaPixelId, setMetaPixelId] = useState(config?.meta_pixel_id || "");
   const [metaCapiToken, setMetaCapiToken] = useState(config?.meta_capi_token || "");
   const [testEventCode, setTestEventCode] = useState("");
+  const [metaDomainVerification, setMetaDomainVerification] = useState(config?.meta_domain_verification || "");
   const [googleAdsId, setGoogleAdsId] = useState(config?.google_ads_id || "");
+  const [googleAdsConversionLabel, setGoogleAdsConversionLabel] = useState(config?.google_ads_conversion_label || "");
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState(config?.google_analytics_id || "");
   const [ga4ApiSecret, setGa4ApiSecret] = useState(() => {
-    // O API Secret é armazenado como JSON dentro do campo google_ads_id para retrocompat
-    try { return JSON.parse(config?.google_ads_id || "{}").api_secret || ""; } catch { return ""; }
+    try {
+      return JSON.parse(config?.google_ads_id || "{}").api_secret || "";
+    } catch {
+      return "";
+    }
   });
+  const [googleSiteVerification, setGoogleSiteVerification] = useState(config?.google_site_verification || "");
+  const [gtmId, setGtmId] = useState(config?.gtm_id || "");
   const [tiktokPixelId, setTiktokPixelId] = useState(config?.tiktok_pixel_id || "");
 
   const [trackPageView, setTrackPageView] = useState(config?.track_page_view ?? true);
@@ -65,6 +72,7 @@ export default function WorkspaceMarketingPixelsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingCapi, setIsTestingCapi] = useState(false);
+  const [isTestingGoogle, setIsTestingGoogle] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,11 +84,13 @@ export default function WorkspaceMarketingPixelsPage() {
           meta_pixel_id: metaPixelId.trim() || null,
           meta_capi_token: metaCapiToken.trim() || null,
           meta_test_event_code: testEventCode.trim() || null,
-          // Armazena o AW-XXXX e o api_secret juntos como JSON para retrocompat
-          google_ads_id: ga4ApiSecret.trim()
-            ? JSON.stringify({ conversion_id: googleAdsId.trim(), api_secret: ga4ApiSecret.trim() })
-            : (googleAdsId.trim() || null),
+          meta_domain_verification: metaDomainVerification.trim() || null,
+          google_ads_id: googleAdsId.trim() || null,
+          google_ads_conversion_label: googleAdsConversionLabel.trim() || null,
           google_analytics_id: googleAnalyticsId.trim() || null,
+          ga4_api_secret: ga4ApiSecret.trim() || null,
+          google_site_verification: googleSiteVerification.trim() || null,
+          gtm_id: gtmId.trim() || null,
           tiktok_pixel_id: tiktokPixelId.trim() || null,
           track_page_view: trackPageView,
           track_view_content: trackViewContent,
@@ -90,7 +100,7 @@ export default function WorkspaceMarketingPixelsPage() {
           track_whatsapp_click: trackWhatsappClick,
         },
       });
-      toast.success("Configuração de telemetria salva com sucesso!");
+      toast.success("Configuração de pixels e metatags salva com sucesso!");
       router.invalidate();
     } catch (err: any) {
       toast.error(err?.message || "Erro ao salvar pixels.");
@@ -104,34 +114,27 @@ export default function WorkspaceMarketingPixelsPage() {
       toast.error("Identificador de loja não encontrado.");
       return;
     }
-    if (!metaPixelId.trim() || !metaCapiToken.trim()) {
+    const hasTokenConfigured = Boolean(metaCapiToken.trim() || config?.meta_capi_configured);
+    if (metaPixelId.trim().length === 0 || hasTokenConfigured === false) {
       toast.error("Preencha e salve o ID do Meta Pixel e o Token CAPI antes de testar.");
       return;
     }
 
     setIsTestingCapi(true);
     try {
-      const res = await dispatchMetaCapiEvent({
+      const res = await testStorePixelPipeline({
         data: {
           storeId: config.store_id,
-          eventName: "Lead",
-          eventId: `test_capi_${config.store_id}_${Date.now()}`,
-          eventSourceUrl: window.location.href,
+          channel: "meta_capi",
           testEventCode: testEventCode.trim() || undefined,
-          customData: {
-            test_event: true,
-            source: "Workspace Waesy Telemetry Diagnostic",
-          },
-          userData: {
-            clientUserAgent: navigator.userAgent,
-          },
         },
       });
 
-      if (res.sent) {
+      if (res.meta?.sent) {
         toast.success("Evento de teste enviado com sucesso para a Meta Conversions API!");
       } else {
-        toast.error(`Falha no envio do teste: ${res.reason || JSON.stringify(res.error)}`);
+        const reason = res.meta?.reason || "Falha no disparo CAPI";
+        toast.error(`Falha no envio do teste Meta CAPI: ${reason}`);
       }
     } catch (err: any) {
       toast.error(err?.message || "Erro ao testar envio CAPI.");
@@ -140,10 +143,44 @@ export default function WorkspaceMarketingPixelsPage() {
     }
   };
 
+  const handleTestGoogle = async () => {
+    if (!config?.store_id) {
+      toast.error("Identificador de loja não encontrado.");
+      return;
+    }
+    const hasGaConfig = Boolean(googleAnalyticsId.trim() || googleAdsId.trim());
+    const hasSecret = Boolean(ga4ApiSecret.trim() || config?.ga4_api_secret_configured);
+    if (hasGaConfig === false || hasSecret === false) {
+      toast.error("Informe e salve o ID do GA4/Google Ads e o API Secret antes de testar.");
+      return;
+    }
+
+    setIsTestingGoogle(true);
+    try {
+      const res = await testStorePixelPipeline({
+        data: {
+          storeId: config.store_id,
+          channel: "google_ads",
+        },
+      });
+
+      if (res.google?.sent) {
+        toast.success("Ping server-side enviado com sucesso para GA4 / Google Ads!");
+      } else {
+        const reason = res.google?.reason || "Falha no envio server-side";
+        toast.error(`Falha no teste Google / GA4: ${reason}`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao testar envio Google / GA4.");
+    } finally {
+      setIsTestingGoogle(false);
+    }
+  };
+
   return (
     <div className="w-full px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Top Bar ── */}
-      <div className="flex items-center justify-between gap-4 pb-4 border-b border-border/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
         <div className="flex items-center gap-3">
           <Button
             asChild
@@ -157,20 +194,20 @@ export default function WorkspaceMarketingPixelsPage() {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Pixels
+              Pixels e Metatags
             </h1>
             <p className="text-xs text-muted-foreground">
-              Acompanhamento de conversões no Meta Ads, Google Ads e TikTok com suporte a CAPI server-side.
+              Meta CAPI, Google Ads, GA4, Tag Manager, TikTok e verificação de domínio conectados ao CRM.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
           >
             <Link to="/workspace/marketing/studio">
               <Star className="size-3.5 text-warning-strong" />
@@ -181,9 +218,20 @@ export default function WorkspaceMarketingPixelsPage() {
             type="button"
             variant="outline"
             size="sm"
+            onClick={handleTestGoogle}
+            disabled={isTestingGoogle}
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
+          >
+            <Radio className={cn("size-3.5", isTestingGoogle && "animate-pulse motion-reduce:animate-none text-primary")} />
+            <span>{isTestingGoogle ? "Testando Google..." : "Testar Google / GA4"}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={handleTestCapi}
             disabled={isTestingCapi}
-            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer min-h-11 sm:min-h-0"
           >
             <Radio className={cn("size-3.5", isTestingCapi && "animate-pulse motion-reduce:animate-none text-primary")} />
             <span>{isTestingCapi ? "Testando CAPI..." : "Testar CAPI"}</span>
@@ -194,7 +242,7 @@ export default function WorkspaceMarketingPixelsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* ── Bloco 1: Meta Ads (Facebook & Instagram) ── */}
         <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-border/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border/40">
             <div className="flex items-center gap-3">
               <div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
                 <MetaLogo size={20} weight="bold" />
@@ -202,15 +250,22 @@ export default function WorkspaceMarketingPixelsPage() {
               <div>
                 <h2 className="text-sm font-bold text-foreground">Meta Ads (Facebook e Instagram)</h2>
                 <p className="text-xs text-muted-foreground">
-                  Rastreamento via Pixel no navegador e Conversions API (CAPI) pelo servidor.
+                  Pixel de navegador, Conversions API (CAPI) pelo servidor e verificação de domínio.
                 </p>
               </div>
             </div>
-            {metaPixelId && (
-              <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
-                Ativo
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {config?.meta_capi_configured && (
+                <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30">
+                  CAPI protegida no cofre
+                </Badge>
+              )}
+              {metaPixelId && (
+                <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
+                  Ativo
+                </Badge>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -233,24 +288,37 @@ export default function WorkspaceMarketingPixelsPage() {
                 type="password"
                 value={metaCapiToken}
                 onChange={(e) => setMetaCapiToken(e.target.value)}
-                placeholder="EAAB..."
+                placeholder={config?.meta_capi_configured ? "Token salvo no cofre (deixe vazio para manter)" : "EAAB..."}
                 className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
-                Garante o disparo de conversões pelo servidor, imune a bloqueadores de anúncios.
+                Armazenado criptografado no cofre. Garante envio pelo servidor sem bloqueadores.
               </span>
             </div>
 
-            <div className="space-y-2 sm:col-span-2">
+            <div className="space-y-2">
               <Label className="text-xs font-bold">Código de Teste do Gerenciador de Eventos (Opcional)</Label>
               <Input
                 value={testEventCode}
                 onChange={(e) => setTestEventCode(e.target.value)}
-                placeholder="Ex: TEST12345"
+                placeholder={config?.meta_test_event_code_configured ? "Código salvo (digite novo para substituir)" : "Ex: TEST12345"}
                 className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
-                Preencha para validar disparos em tempo real na aba &quot;Testar Eventos&quot; da Meta sem misturar dados reais.
+                Valida disparos na aba &quot;Testar Eventos&quot; da Meta sem misturar produção.
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">Meta-Tag Verificação de Domínio (facebook-domain-verification)</Label>
+              <Input
+                value={metaDomainVerification}
+                onChange={(e) => setMetaDomainVerification(e.target.value)}
+                placeholder="Ex: abcd1234efgh5678ijkl9012"
+                className="h-9 rounded-lg text-xs font-mono"
+              />
+              <span className="text-xs text-muted-foreground block">
+                Injeta &lt;meta name=&quot;facebook-domain-verification&quot;&gt; automaticamente na vitrine SSR.
               </span>
             </div>
           </div>
@@ -261,25 +329,25 @@ export default function WorkspaceMarketingPixelsPage() {
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-foreground">Event Match Quality (EMQ Scoring)</span>
                 <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
-                  Nota 8.8 / 10 • Excelente
+                  Paridade Server + Client
                 </Badge>
               </div>
               <span className="text-xs text-muted-foreground">
-                Paridade algorítmica alta: leilão otimizado dentro da janela de 28 dias
+                Email/Telefone SHA-256, fbp/fbc, ctwa_clid e estágios qualificados do CRM
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
                 <span className="text-muted-foreground">E-mail (SHA-256)</span>
-                <span className="text-emerald-600 font-bold">100%</span>
+                <span className="text-emerald-600 font-bold">Ativo</span>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
                 <span className="text-muted-foreground">Telefone (E.164)</span>
-                <span className="text-emerald-600 font-bold">100%</span>
+                <span className="text-emerald-600 font-bold">Ativo</span>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
-                <span className="text-muted-foreground">Client IP & UA</span>
+                <span className="text-muted-foreground">Click IDs (gclid/fbclid)</span>
                 <span className="text-emerald-600 font-bold">Ativo</span>
               </div>
               <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center justify-between">
@@ -290,19 +358,31 @@ export default function WorkspaceMarketingPixelsPage() {
           </div>
         </div>
 
-        {/* ── Bloco 2: Google Ads & Google Analytics ── */}
+        {/* ── Bloco 2: Google Ads, GA4, Tag Manager & Site Verification ── */}
         <div className="p-5 sm:p-6 rounded-lg bg-card border border-border/60 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-border/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border/40">
             <div className="flex items-center gap-3">
               <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <GoogleLogo size={20} weight="bold" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-foreground">Google Ads e GA4</h2>
+                <h2 className="text-sm font-bold text-foreground">Google Ads, GA4 e Tag Manager</h2>
                 <p className="text-xs text-muted-foreground">
-                  Acompanhamento de tráfego, buscas e tags de conversão do Google.
+                  Global site tag unificada (gtag.js), labels de conversão, GTM, MP API e verificação Search Console.
                 </p>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {config?.ga4_api_secret_configured && (
+                <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30">
+                  API Secret protegida
+                </Badge>
+              )}
+              {(googleAdsId || googleAnalyticsId || gtmId) && (
+                <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
+                  Ativo
+                </Badge>
+              )}
             </div>
           </div>
 
@@ -321,6 +401,19 @@ export default function WorkspaceMarketingPixelsPage() {
             </div>
 
             <div className="space-y-2">
+              <Label className="text-xs font-bold">Label da Ação de Conversão (Google Ads)</Label>
+              <Input
+                value={googleAdsConversionLabel}
+                onChange={(e) => setGoogleAdsConversionLabel(e.target.value)}
+                placeholder="Ex: AbCdEfGhIjKlMnOpQr"
+                className="h-9 rounded-lg text-xs font-mono"
+              />
+              <span className="text-xs text-muted-foreground block">
+                Forma send_to AW-ID/LABEL em leads, cotações e compras.
+              </span>
+            </div>
+
+            <div className="space-y-2">
               <Label className="text-xs font-bold">ID de Medição do Google Analytics 4</Label>
               <Input
                 value={googleAnalyticsId}
@@ -333,18 +426,43 @@ export default function WorkspaceMarketingPixelsPage() {
               </span>
             </div>
 
-            <div className="space-y-2 sm:col-span-2">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">Google Tag Manager ID (Opcional)</Label>
+              <Input
+                value={gtmId}
+                onChange={(e) => setGtmId(e.target.value)}
+                placeholder="Ex: GTM-XXXXXXX"
+                className="h-9 rounded-lg text-xs font-mono"
+              />
+              <span className="text-xs text-muted-foreground block">
+                Carrega o contêiner GTM diretamente na vitrine pública.
+              </span>
+            </div>
+
+            <div className="space-y-2">
               <Label className="text-xs font-bold">API Secret do GA4 (Measurement Protocol)</Label>
               <Input
                 type="password"
                 value={ga4ApiSecret}
                 onChange={(e) => setGa4ApiSecret(e.target.value)}
-                placeholder="Chave secreta do stream GA4 para Enhanced Conversions server-side"
+                placeholder={config?.ga4_api_secret_configured ? "Secret salvo no cofre (deixe vazio para manter)" : "Chave secreta do stream GA4"}
                 className="h-9 rounded-lg text-xs font-mono"
               />
               <span className="text-xs text-muted-foreground block">
-                GA4 → Administração → Fluxos de dados → Measurement Protocol API secrets.
-                Necessário para disparar conversões pelo servidor (Google Ads Enhanced Conversions).
+                Dispara generate_lead e qualificação do CRM pelo servidor.
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold">Meta-Tag Google Site Verification</Label>
+              <Input
+                value={googleSiteVerification}
+                onChange={(e) => setGoogleSiteVerification(e.target.value)}
+                placeholder="Token do google-site-verification"
+                className="h-9 rounded-lg text-xs font-mono"
+              />
+              <span className="text-xs text-muted-foreground block">
+                Injeta &lt;meta name=&quot;google-site-verification&quot;&gt; no SSR para Google Ads e Search Console.
               </span>
             </div>
           </div>
@@ -364,6 +482,11 @@ export default function WorkspaceMarketingPixelsPage() {
                 </p>
               </div>
             </div>
+            {tiktokPixelId && (
+              <Badge variant="outline" className="text-xs font-mono text-emerald-600 border-emerald-500/30">
+                Ativo
+              </Badge>
+            )}
           </div>
 
           <div className="space-y-2 max-w-md">
@@ -760,7 +883,7 @@ export default function WorkspaceMarketingPixelsPage() {
                   <td className="py-3 px-3 font-semibold text-foreground">Venda Concluída / Ganho</td>
                   <td className="py-3 px-3 font-mono text-emerald-600 font-bold">Purchase</td>
                   <td className="py-3 px-3 font-mono text-emerald-600 font-bold">purchase</td>
-                  <td className="py-3 px-3 text-muted-foreground">Receita Real (BRL), Transação, Cliente 360</td>
+                  <td className="py-3 px-3 text-muted-foreground">Receita Real (BRL), Transação, Dados do Cliente</td>
                   <td className="py-3 px-3 text-right">
                     <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
                       <Check className="size-3" /> Fechamento Ganho

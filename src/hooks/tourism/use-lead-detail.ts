@@ -78,7 +78,7 @@ export function useLeadDetail(leadId: string | null, onClose: () => void) {
     useLeadTags(leadId || undefined, qc);
 
   const { confirmConvertOpen, setConfirmConvertOpen, clientPayload, setClientPayload, handleConvert } =
-    useLeadConvert(lead, "#3b82f6", qc, setEditing);
+    useLeadConvert(lead, "var(--color-blue-500)", qc, setEditing);
 
   // Atualização rápida de inatividade (Botões do Alerta)
   async function handleUpdateStaleness(status: "active" | "disappeared" | "gave_up" | "no_credit" | "postponed", label: string) {

@@ -19,6 +19,8 @@ type SearchableSelectProps = {
   options?: SearchableOption[];
   /** Async search function: receives query string, returns options */
   onSearch?: (query: string) => Promise<SearchableOption[]>;
+  /** Fallback option label/metadata when async results don't currently contain the selected value */
+  selectedOptionFallback?: SearchableOption | null;
   loading?: boolean;
   disabled?: boolean;
   error?: string;
@@ -33,6 +35,7 @@ export function SearchableSelect({
   searchPlaceholder = "Buscar...",
   options,
   onSearch,
+  selectedOptionFallback,
   loading = false,
   disabled = false,
   className,
@@ -46,7 +49,11 @@ export function SearchableSelect({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const allOptions = options ?? asyncOptions;
-  const selectedOption = allOptions.find((o) => o.value === value);
+  const selectedOption =
+    allOptions.find((o) => o.value === value) ||
+    (selectedOptionFallback && selectedOptionFallback.value === value
+      ? selectedOptionFallback
+      : undefined);
 
   // Focus input when opened
   useEffect(() => {
@@ -191,8 +198,8 @@ export function SearchableSelect({
             <Button
               type="button"
               variant="ghost"
-              size="icon"
-              className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground"
+              size="iconSm"
+              className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 rounded-lg text-muted-foreground hover:text-foreground"
               onClick={() => setQuery("")}
             >
               <X className="h-3.5 w-3.5" />

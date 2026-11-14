@@ -11,7 +11,7 @@ interface TemplateVoucherA4Props {
 
 export function TemplateVoucherA4({
   voucher,
-  agencyName = 'Agência Waesy Turismo',
+  agencyName = 'Agência Emissora',
 }: TemplateVoucherA4Props) {
   const isFlight = voucher.voucher_type === 'flight';
   const isHotel = voucher.voucher_type === 'hotel';

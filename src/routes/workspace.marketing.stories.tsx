@@ -11,6 +11,7 @@ import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { SimLabQuickTestSheet } from "@/components/simlab/SimLabQuickTestSheet";
 import { MediaUploader } from "@/components/ui/media-uploader";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -220,21 +221,19 @@ export default function WorkspaceMarketingStoriesPage() {
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Importar Produto do Catálogo
               </Label>
-              <select
-                aria-label="Selecionar produto do catálogo"
-                className="w-full h-11 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                onChange={(e) => handleSelectProduct(e.target.value)}
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Selecione um produto para preenchimento automático...
-                </option>
-                {products.map((p: any) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title} — {(p.price_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </option>
-                ))}
-              </select>
+              <SearchableSelect
+                value=""
+                onChange={(val) => {
+                  if (val) handleSelectProduct(val);
+                }}
+                placeholder="Selecione um produto para preenchimento automático..."
+                searchPlaceholder="Buscar produto por nome..."
+                clearable={false}
+                options={products.map((p: any) => ({
+                  value: p.id,
+                  label: `${p.title} — ${(p.price_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`,
+                }))}
+              />
             </div>
           )}
 

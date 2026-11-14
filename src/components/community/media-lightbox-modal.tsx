@@ -61,11 +61,12 @@ export function MediaLightboxModal({
 
  // Query para estatísticas exclusivas das fotos
  const statsQueryKey = ["post-media-stats", post.id];
- const { data: mediaStats = {} } = useQuery({
+ const { data: mediaStats = {}, isLoading: isStatsLoading } = useQuery({
  queryKey: statsQueryKey,
  queryFn: () => getPostMediaStats({ data: { postId: post.id } }),
  enabled: isOpen,
  });
+ void isStatsLoading;
 
  const currentStat = mediaStats[currentMediaUrl] || {
  likes_count: 0,
@@ -106,7 +107,7 @@ export function MediaLightboxModal({
  },
  });
 
- if (!isOpen || !currentMediaUrl) return null;
+ if (!isOpen || post.media_urls.length === 0 || !currentMediaUrl) return null;
 
  return (
  <div className="fixed inset-0 z-50 bg-neutral-950 flex flex-col justify-between animate-in fade-in duration-200 select-none">

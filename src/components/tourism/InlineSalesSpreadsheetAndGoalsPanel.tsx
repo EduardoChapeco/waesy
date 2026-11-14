@@ -444,7 +444,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
               {operatorConfigs.map((op, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-lg border border-border bg-card space-y-2.5 text-xs"
+                  className="p-3 rounded-lg border border-border bg-card space-y-3 text-xs"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <Input
@@ -645,7 +645,7 @@ export function InlineSalesSpreadsheetAndGoalsPanel() {
                       <p className="text-xs text-muted-foreground">
                         Adicione uma venda abaixo para calcular faturamento bruto, taxas não comissionáveis, comissão da agência, over e repasse do vendedor.
                       </p>
-                      <Button size="sm" onClick={handleAddInlineRow} className="h-11 min-h-11 px-4 text-xs font-bold gap-1.5 cursor-pointer">
+                      <Button size="sm" onClick={handleAddInlineRow} className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer">
                         <Plus className="size-4" />
                         <span>Lançar Primeira Venda</span>
                       </Button>

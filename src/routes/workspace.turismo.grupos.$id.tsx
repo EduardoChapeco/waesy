@@ -1,5 +1,5 @@
 import { BusFleetSelectorModal } from "@/components/tourism/groups/bus-fleet-selector-modal";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Bus, Users, Building, FileText, Download, Check, Loader2, Calendar, MapPin, Phone, ShieldCheck, DollarSign, Link2, UserCheck, Wallet } from "lucide-react";
@@ -18,19 +18,8 @@ import { GroupTourCashLedger } from "@/components/tourism/groups/group-tour-cash
 import { GenerateMagicLinkModal } from "@/components/tourism/groups/generate-magic-link-modal";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 
-export const Route = createFileRoute("/workspace/turismo/grupos/$id")({
- head: () => ({ meta: [{ title: "GestÃ£o da ExcursÃ£o e Ã”nibus | Workspace" }] }),
- loader: async ({ params }) => {
-   try {
- const tour = await getGroupTourById({ data: { id: params.id } });
- return { tour };
-   } catch (err) {
-     console.error("[loader:workspace.turismo.grupos.$id] Unhandled loader error:", err);
-     return { tour: null };
-   }
- },
- component: WorkspaceGroupTourDetailPage,
-});
+export const Route = createFileRoute("/workspace/turismo/grupos/$id")({ head: () => ({ meta: [{ title: "Gestão da Excursão e Ônibus | Workspace" }] }),
+ loader: async ({ params }) => { try { const tour = await getGroupTourById({ data: { id: params.id } }); return { tour }; } catch (err) { console.error("[loader:workspace.turismo.grupos.$id] Unhandled loader error:", err); return { tour: null }; } }, component: GrupoTourIdRouteSwitch, }); function GrupoTourIdRouteSwitch() { const childMatches = useChildMatches(); if (childMatches.length > 0) { return <Outlet />; } return <WorkspaceGroupTourDetailPage />; }
 
 function WorkspaceGroupTourDetailPage() {
  const { tour: initialTour } = ((Route.useLoaderData?.() as any) || {});
@@ -40,7 +29,7 @@ function WorkspaceGroupTourDetailPage() {
  const [magicLinkModalOpen, setMagicLinkModalOpen] = useState(false);
  const [fleetModalOpen, setFleetModalOpen] = useState(false);
 
- // Operacional do Ã”nibus
+ // Operacional do Ônibus
  const [busCompany, setBusCompany] = useState(tour?.bus_company_name || "");
  const [busPlate, setBusPlate] = useState(tour?.bus_plate || "");
  const [driverName, setDriverName] = useState(tour?.driver_name || "");
@@ -56,7 +45,7 @@ function WorkspaceGroupTourDetailPage() {
  }),
  onMutate: () => setIsSaving(true),
  onSettled: () => setIsSaving(false),
- onError: (err: any) => toast.error(err?.message || "Erro ao salvar alteraÃ§Ãµes."),
+ onError: (err: any) => toast.error(err?.message || "Erro ao salvar alterações."),
  });
 
  const handleSeatsChange = useCallback(
@@ -99,7 +88,7 @@ function WorkspaceGroupTourDetailPage() {
  driverPhone: data.driverPhone,
  seats: data.newSeats,
  });
- toast.success('Ã”nibus vinculado da Frota 2D e mapa de poltronas atualizado!');
+ toast.success('Ônibus vinculado da Frota 2D e mapa de poltronas atualizado!');
  };
  
  const handleSaveOperational = () => {
@@ -115,7 +104,7 @@ function WorkspaceGroupTourDetailPage() {
  if (!tour) {
  return (
  <div className="py-20 text-center space-y-4">
- <h2 className="text-sm font-bold text-foreground">ExcursÃ£o nÃ£o encontrada</h2>
+ <h2 className="text-sm font-semibold text-foreground">Excursão não encontrada</h2>
  <Button asChild  variant="outline" className="rounded-lg h-11 min-h-11 px-3 text-xs">
  <Link to="/workspace/turismo/grupos">Voltar para Grupos</Link>
  </Button>
@@ -142,7 +131,7 @@ function WorkspaceGroupTourDetailPage() {
 
  return (
  <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">
- {/* â”€â”€ 1. TOP HEADER DA VIAGEM â”€â”€ */}
+ {/* ── 1. TOP HEADER DA VIAGEM ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/80">
  <div className="flex items-center gap-3">
  <NativeBackButton fallbackHref="/workspace/turismo/grupos" />
@@ -166,7 +155,7 @@ function WorkspaceGroupTourDetailPage() {
  )}
  </div>
  <p className="text-xs text-muted-foreground">
- SaÃ­da: {tour.departure_date} Ã s {tour.departure_time} de {tour.departure_city} â€¢ Retorno: {tour.return_date}
+ Saída: {tour.departure_date} às {tour.departure_time} de {tour.departure_city} • Retorno: {tour.return_date}
  </p>
  </div>
  </div>
@@ -193,7 +182,7 @@ function WorkspaceGroupTourDetailPage() {
  className="rounded-lg text-xs font-bold gap-2 h-11 sm:h-11 px-4 sm:px-3 cursor-pointer"
  >
  <Link2 className="size-4 sm:size-3.5" />
- <span>Link MÃ¡gico</span>
+ <span>Link Mágico</span>
  </Button>
 
  <Button
@@ -209,12 +198,12 @@ function WorkspaceGroupTourDetailPage() {
  </div>
  </div>
 
- {/* â”€â”€ 2. ABAS DE GESTÃƒO DA VIAGEM â”€â”€ */}
+ {/* ── 2. ABAS DE GESTÃO DA VIAGEM ── */}
  <Tabs defaultValue="onibus" className="space-y-4">
  <TabsList className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar p-1 rounded-lg min-h-12 h-auto sm:h-11">
  <TabsTrigger value="onibus" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <Bus className="size-3.5" />
- <span>Mapa do Ã”nibus</span>
+ <span>Mapa do Ônibus</span>
  </TabsTrigger>
  <TabsTrigger value="hoteis" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <Building className="size-3.5" />
@@ -222,7 +211,7 @@ function WorkspaceGroupTourDetailPage() {
  </TabsTrigger>
  <TabsTrigger value="orcamento" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <DollarSign className="size-3.5" />
- <span>OrÃ§amento</span>
+ <span>Orçamento</span>
  </TabsTrigger>
  <TabsTrigger value="caixa" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <Wallet className="size-3.5" />
@@ -230,16 +219,16 @@ function WorkspaceGroupTourDetailPage() {
  </TabsTrigger>
  <TabsTrigger value="transporte" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
  <ShieldCheck className="size-3.5" />
- <span>VeÃ­culo / ANTT</span>
+ <span>Veículo / ANTT</span>
  </TabsTrigger>
  </TabsList>
 
- {/* ABA 1: MAPA DO Ã”NIBUS */}
+ {/* ABA 1: MAPA DO ÔNIBUS */}
  <TabsContent value="onibus" className="space-y-4">
  <BusSeatMap seats={tour.seats} onSeatsChange={handleSeatsChange} />
  </TabsContent>
 
- {/* ABA 2: ROOMING LIST DE HOTÃ‰IS */}
+ {/* ABA 2: ROOMING LIST DE HOTÉIS */}
  <TabsContent value="hoteis" className="space-y-4">
  <RoomingListManager rooms={tour.rooms} onRoomsChange={handleRoomsChange} tourTitle={tour.title} />
  </TabsContent>
@@ -254,7 +243,7 @@ function WorkspaceGroupTourDetailPage() {
  />
  </TabsContent>
 
- {/* ABA 4: CAIXA EM TRÃ‚NSITO DA VIAGEM */}
+ {/* ABA 4: CAIXA EM TRÂNSITO DA VIAGEM */}
  <TabsContent value="caixa" className="space-y-4">
  <GroupTourCashLedger tourId={tour.id} storeId={tour.store_id || ""} />
  </TabsContent>
@@ -263,14 +252,14 @@ function WorkspaceGroupTourDetailPage() {
  <TabsContent value="transporte" className="space-y-4">
  <div className="p-6 rounded-lg bg-card border border-border/80 space-y-4 max-w-xl">
  <h3 className="text-sm font-bold text-foreground">
- IdentificaÃ§Ã£o do Transporte RodoviÃ¡rio
+ Identificação do Transporte Rodoviário
  </h3>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
  <div className="space-y-1">
  <Label className="text-xs font-bold">Empresa de Fretamento</Label>
  <Input
- placeholder="Ex: ViaÃ§Ã£o Catarinense"
+ placeholder="Ex: Viação Catarinense"
  value={busCompany}
  onChange={(e) => setBusCompany(e.target.value)}
  className="h-10 text-xs rounded-lg"
@@ -278,7 +267,7 @@ function WorkspaceGroupTourDetailPage() {
  </div>
 
  <div className="space-y-1">
- <Label className="text-xs font-bold">Placa do Ã”nibus</Label>
+ <Label className="text-xs font-bold">Placa do Ônibus</Label>
  <Input
  placeholder="ABC-1D23"
  value={busPlate}
@@ -319,25 +308,25 @@ function WorkspaceGroupTourDetailPage() {
  </TabsContent>
  </Tabs>
 
- {/* â”€â”€ 3. VISUALIZADOR OCULTO PARA EXPORTAÃ‡ÃƒO DO MANIFESTO ANTT â”€â”€ */}
+ {/* ── 3. VISUALIZADOR OCULTO PARA EXPORTAÇÃO DO MANIFESTO ANTT ── */}
  <div className="hidden">
  <div id="manifesto-antt-view" className="p-10 bg-card text-slate-900 font-sans space-y-6">
  <div className="text-center pb-4 border-b-2 border-slate-900 space-y-1">
  <span className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500">
- AgÃªncia Nacional de Transportes Terrestres (ANTT) / DER
+ Agência Nacional de Transportes Terrestres (ANTT) / DER
  </span>
- <h1 className="text-xl font-black uppercase text-slate-900">
+ <h1 className="text-xl font-semibold uppercase text-slate-900">
  Manifesto de Passageiros
  </h1>
  <p className="text-xs font-mono text-slate-600">
- Viagem: {tour.title} â€¢ Origem: {tour.departure_city} âž” Destino: {tour.destination}
+ Viagem: {tour.title} • Origem: {tour.departure_city} → Destino: {tour.destination}
  </p>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
  <div>
- <span className="text-slate-500 block text-xs">Data e Hora SaÃ­da:</span>
- <strong>{tour.departure_date} Ã s {tour.departure_time}</strong>
+ <span className="text-slate-500 block text-xs">Data e Hora Saída:</span>
+ <strong>{tour.departure_date} às {tour.departure_time}</strong>
  </div>
  <div>
  <span className="text-slate-500 block text-xs">Empresa / Placa:</span>
@@ -379,7 +368,7 @@ function WorkspaceGroupTourDetailPage() {
  </div>
  </div>
 
- {/* â”€â”€ 4. MODAL DE GERAR LINK MÃGICO â”€â”€ */}
+ {/* ── 4. MODAL DE GERAR LINK MÁGICO ── */}
  <GenerateMagicLinkModal
  open={magicLinkModalOpen}
  onOpenChange={setMagicLinkModalOpen}

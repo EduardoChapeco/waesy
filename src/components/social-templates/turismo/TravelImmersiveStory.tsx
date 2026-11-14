@@ -93,7 +93,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
           </div>
 
           {/* Título Principal */}
-          <h1 className="text-4xl lg:text-[44px] font-black text-foreground leading-tight tracking-tight mb-4 ">
+          <h1 className="text-4xl lg:text-5xl font-black text-foreground leading-tight tracking-tight mb-4 ">
             {data.title}
           </h1>
 

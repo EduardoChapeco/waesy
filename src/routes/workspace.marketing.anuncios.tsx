@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Megaphone, Plus, Trash2, TrendingUp, Eye, DollarSign, Play, Pause, MapPin, Percent, Zap, ExternalLink, MessageCircle, ShoppingBag, Target, Image as ImageIcon, Loader2, Sliders, Globe, Share2, Copy, Check, Table, LayoutGrid } from "lucide-react";
@@ -39,8 +39,16 @@ export const Route = createFileRoute("/workspace/marketing/anuncios")({
     return { campaigns, storeTargets, channelsSettings, tierStatus, roiMetrics };
   },
   errorComponent: WorkspaceAnunciosErrorComponent,
-  component: AnunciosWorkspacePage,
+  component: AnunciosRouteSwitch,
 });
+
+function AnunciosRouteSwitch() {
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) {
+    return <Outlet />;
+  }
+  return <AnunciosWorkspacePage />;
+}
 
 function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
   return (

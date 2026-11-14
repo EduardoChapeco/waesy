@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plane, Building2, Car, Ticket, Shield, Calendar, Clock, User, MapPin, CheckCircle2, Loader2, Luggage } from "lucide-react";
 import { toast } from "sonner";
-import { createTravelVoucher } from "@/services/travel-vouchers.functions";
-import type { VoucherType } from "@/types/travel-vouchers";
+import { createTravelVoucher, updateTravelVoucher } from "@/services/travel-vouchers.functions";
+import type { TravelVoucherDTO, VoucherType } from "@/types/travel-vouchers";
 import { cn } from "@/lib/utils";
 
 export interface VoucherCreationSheetProps {
@@ -19,6 +19,7 @@ export interface VoucherCreationSheetProps {
   onSuccess?: () => void;
   storeId?: string;
   defaultType?: VoucherType;
+  initialVoucher?: TravelVoucherDTO | null;
 }
 
 export function VoucherCreationSheet({
@@ -27,7 +28,9 @@ export function VoucherCreationSheet({
   onSuccess,
   storeId,
   defaultType = "flight",
+  initialVoucher,
 }: VoucherCreationSheetProps) {
+  const isEditing = Boolean(initialVoucher?.id);
   const [voucherType, setVoucherType] = useState<VoucherType>(defaultType);
   const [title, setTitle] = useState("");
   const [passengerName, setPassengerName] = useState("");
@@ -63,15 +66,70 @@ export function VoucherCreationSheet({
   const [notes, setNotes] = useState("");
 
   const resetForm = () => {
+    setVoucherType(defaultType);
     setTitle("");
     setPassengerName("");
     setPassengerDocument("");
+    setAirline("");
     setFlightNumber("");
+    setOriginAirport("");
+    setDestinationAirport("");
+    setDepartureDate("");
+    setDepartureTime("");
     setSeat("");
+    setCabinClass("Econômica");
+    setBaggage("");
     setHotelName("");
+    setCheckInDate("");
+    setCheckOutDate("");
+    setRoomType("");
+    setBoardBasis("");
     setHotelConfirmation("");
+    setTransferVehicle("Van Executiva");
+    setPickupLocation("Aeroporto");
+    setDropoffLocation("Hotel");
+    setPickupTime("");
+    setDriverContact("");
     setNotes("");
   };
+
+  useEffect(() => {
+    if (!open) return;
+    if (initialVoucher) {
+      setVoucherType((initialVoucher.voucher_type as VoucherType) || defaultType);
+      setTitle(initialVoucher.title || "");
+      setPassengerName(initialVoucher.passenger_name || "");
+      setPassengerDocument(initialVoucher.passenger_document || "");
+      const fd = (initialVoucher.flight_data || {}) as Record<string, any>;
+      setAirline(fd.airline || "");
+      setFlightNumber(fd.flightNumber || "");
+      setOriginAirport(fd.origin || "");
+      setDestinationAirport(fd.destination || "");
+      setDepartureDate(fd.departureDate || "");
+      setDepartureTime(fd.departureTime || "");
+      setSeat(fd.seat || "");
+      setCabinClass(fd.cabinClass || "Econômica");
+      setBaggage(fd.baggage || "");
+
+      const hd = (initialVoucher.hotel_data || {}) as Record<string, any>;
+      setHotelName(hd.hotelName || "");
+      setCheckInDate(hd.checkIn || "");
+      setCheckOutDate(hd.checkOut || "");
+      setRoomType(hd.roomType || "");
+      setBoardBasis(hd.boardBasis || "");
+      setHotelConfirmation(hd.confirmationCode || "");
+
+      const td = (initialVoucher.transfer_data || {}) as Record<string, any>;
+      setTransferVehicle(td.vehicleType || "Van Executiva");
+      setPickupLocation(td.pickupLocation || "Aeroporto");
+      setDropoffLocation(td.dropoffLocation || "Hotel");
+      setPickupTime(td.pickupTime || "");
+      setDriverContact(td.driverContact || "");
+      setNotes(fd.notes || hd.notes || td.notes || "");
+    } else {
+      resetForm();
+    }
+  }, [open, initialVoucher, defaultType]);
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -79,9 +137,9 @@ export function VoucherCreationSheet({
 
       let defaultTitle = title.trim();
       if (!defaultTitle) {
-        if (voucherType === "flight") defaultTitle = `Cartão de Embarque: ${airline} (${originAirport}  ${destinationAirport})`;
+        if (voucherType === "flight") defaultTitle = `Cartão de Embarque: ${airline} (${originAirport} -> ${destinationAirport})`;
         else if (voucherType === "hotel") defaultTitle = `Voucher de Hospedagem: ${hotelName || "Hotel & Resort"}`;
-        else if (voucherType === "transfer") defaultTitle = `Voucher de Transfer: ${pickupLocation}  ${dropoffLocation}`;
+        else if (voucherType === "transfer") defaultTitle = `Voucher de Transfer: ${pickupLocation} -> ${dropoffLocation}`;
         else defaultTitle = `Voucher Oficial de Serviço`;
       }
 
@@ -117,6 +175,21 @@ export function VoucherCreationSheet({
         notes,
       } : undefined;
 
+      if (isEditing && initialVoucher?.id) {
+        return updateTravelVoucher({
+          data: {
+            id: initialVoucher.id,
+            voucher_type: voucherType,
+            title: defaultTitle,
+            passenger_name: passengerName.trim(),
+            passenger_document: passengerDocument.trim() || null,
+            flight_data: flight_data || {},
+            hotel_data: hotel_data || {},
+            transfer_data: transfer_data || {},
+          },
+        });
+      }
+
       return createTravelVoucher({
         data: {
           store_id: storeId,
@@ -131,13 +204,13 @@ export function VoucherCreationSheet({
       });
     },
     onSuccess: () => {
-      toast.success("Voucher oficial emitido com sucesso!");
+      toast.success(isEditing ? "Voucher atualizado com sucesso!" : "Voucher oficial emitido com sucesso!");
       resetForm();
       onOpenChange(false);
       onSuccess?.();
     },
     onError: (err: any) => {
-      toast.error(err?.message || "Erro ao emitir voucher.");
+      toast.error(err?.message || "Erro ao salvar voucher.");
     },
   });
 
@@ -156,7 +229,7 @@ export function VoucherCreationSheet({
           </div>
           <SheetTitle className="text-lg font-black tracking-tight text-foreground flex items-center gap-2">
             <Ticket className="size-5 text-primary" />
-            <span>Emitir Voucher Oficial</span>
+            <span>{isEditing ? `Editar Voucher ${initialVoucher?.voucher_number || ""}` : "Emitir Voucher Oficial"}</span>
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
             Gere um voucher personalizado com QR Code de validação, dados de reserva e cartão de embarque.
@@ -516,12 +589,12 @@ export function VoucherCreationSheet({
             {createMutation.isPending ? (
               <>
                 <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
-                <span>Emitindo Voucher...</span>
+                <span>{isEditing ? "Salvando..." : "Emitindo Voucher..."}</span>
               </>
             ) : (
               <>
                 <CheckCircle2 className="size-3.5" />
-                <span>Emitir Voucher Oficial</span>
+                <span>{isEditing ? "Salvar Alterações" : "Emitir Voucher Oficial"}</span>
               </>
             )}
           </Button>

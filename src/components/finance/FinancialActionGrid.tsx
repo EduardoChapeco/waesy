@@ -143,7 +143,7 @@ export function FinancialActionGrid({
                   item.id === "pix" && "ring-1 ring-warning bg-warning/10 hover:bg-warning/20"
                 )}
               >
-                <Icon className="size-6 text-zinc-900 stroke-[1.8]" />
+                <Icon className="size-6 text-zinc-900 stroke-regular" />
 
                 {item.badge && (
                   <span className="absolute -top-1.5 px-2 py-1 rounded-full bg-warning text-zinc-950 font-black text-3xs uppercase tracking-tighter leading-none shadow-xs border border-warning/30">

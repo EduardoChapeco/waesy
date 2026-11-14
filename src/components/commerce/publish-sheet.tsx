@@ -13,12 +13,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getIdentity } from "@/services/identity.functions";
 
 export function PublishSheet() {
-  const { data: identity } = useQuery({
+  const { data: identity, isLoading, isError } = useQuery({
     queryKey: ["identity"],
     queryFn: () => getIdentity(),
   });
 
-  const hasBusiness = identity && identity.memberships && identity.memberships.length > 0;
+  const hasBusiness = !isLoading && !isError && Boolean(identity && identity.memberships && identity.memberships.length > 0);
 
   return (
     <DropdownMenu>

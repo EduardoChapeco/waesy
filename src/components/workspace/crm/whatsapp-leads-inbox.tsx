@@ -149,7 +149,7 @@ export function WhatsAppLeadsInbox() {
                   <span>Qualificar</span>
                 </Button>
 
-                <Button asChild variant="outline" size="sm" className="min-h-11 px-3 rounded-md text-xs font-semibold gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden" title="Abrir Central de Leads e CRM 360°">
+                <Button asChild variant="outline" size="sm" className="min-h-11 sm:min-h-9 sm:h-9 px-3 rounded-lg text-xs font-medium gap-2 flex-1 sm:flex-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden" title="Abrir Central de Leads e CRM">
                   <Link to="/workspace/crm" search={{ search: lead.phone || lead.name || undefined }}>
                     <Kanban className="size-3.5 text-muted-foreground" />
                     <span className="hidden md:inline">CRM</span>

@@ -81,8 +81,7 @@ export function StudioFrame({ format, children, zoomMode = "auto" }: StudioFrame
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-auto bg-slate-200 flex flex-col items-center justify-start relative pb-20"
-      style={{ padding: "32px 16px" }}
+      className="flex-1 overflow-auto bg-slate-200 flex flex-col items-center justify-start relative py-8 px-4 pb-20"
     >
       <div
         style={{

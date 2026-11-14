@@ -8,6 +8,17 @@ import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
 import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
 import {
+  getTourMetaLine,
+  getTransferBadgeLabel,
+  getTransferMetaLine,
+  ProposalAdaptiveImage,
+  ProposalAgencyLogo,
+  ProposalDestinationGallerySection,
+  ProposalItineraryMediaGrid,
+  ProposalMultiNicheSpecsBlock,
+  ProposalPricingBreakdownBlock,
+} from "./blocks/UI";
+import {
   Plane,
   Hotel,
   Compass,
@@ -32,6 +43,10 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
     { ...raw, template: raw.template || "editorial-flat" },
     vm.agency,
   );
+  const nc = theme.nicheCopy;
+  const destinationGallery: string[] = Array.isArray(raw.destination_gallery)
+    ? raw.destination_gallery.filter(Boolean)
+    : [];
   const customEntries: Array<{ key: string; label: string; value: string }> = Array.isArray(
     raw.custom_field_entries,
   )
@@ -53,39 +68,32 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
       <div className="w-full min-h-108 grid grid-cols-1 sm:grid-cols-2 break-inside-avoid border-b p-border-main">
         {/* Esquerda: Sólido com Cor Primária e Contraste Automático */}
         <div className="flex flex-col justify-between px-10 sm:px-12 py-12 p-surface-brand">
-          {vm.agency.logo_url ? (
-            <img
-              src={vm.agency.logo_url}
-              alt={vm.agency.name}
-              crossOrigin="anonymous"
-              className="h-11 w-auto max-w-44 object-contain mb-8"
-            />
-          ) : (
-            <div className="text-xl font-bold tracking-tight mb-8">{vm.agency.name}</div>
-          )}
+          <ProposalAgencyLogo agency={vm.agency} theme={theme} variant="hero" className="mb-8" />
 
           <div className="space-y-4">
             <div className="inline-flex items-center rounded-full px-4 py-1 text-xs font-bold uppercase tracking-widest border border-current/25">
-              Proposta #{p.number}
+              {nc.heroKicker} #{p.number}
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold leading-tight p-heading-font">
-              {p.title || "Proposta Exclusiva de Viagem"}
+            <h1 className="text-4xl sm:text-5xl font-bold leading-tight p-heading-font break-words">
+              {p.title || "Proposta Exclusiva"}
             </h1>
-            <p className="text-sm opacity-90 max-w-md leading-relaxed">
+            <p className="text-sm opacity-90 max-w-md leading-relaxed whitespace-pre-line break-words">
               {p.notes ||
-                `Um roteiro desenhado sob medida para você aproveitar o melhor de ${p.destination || "seu destino"}.`}
+                `Proposta desenhada sob medida para ${p.destination || vm.client.name || "você"}.`}
             </p>
           </div>
         </div>
 
         {/* Direita: Imagem de capa */}
-        <div className="relative min-h-72 sm:min-h-full p-surface-subtle">
+        <div className="relative min-h-72 sm:min-h-full p-surface-subtle overflow-hidden">
           {p.cover_image_url ? (
-            <img
+            <ProposalAdaptiveImage
               src={p.cover_image_url}
               alt={p.destination || "Destino"}
-              crossOrigin="anonymous"
-              className="absolute inset-0 w-full h-full object-cover"
+              objectPosition={theme.coverCrop.objectPosition}
+              scale={theme.coverCrop.scale}
+              fit={theme.coverCrop.fit}
+              className="absolute inset-0 w-full h-full"
             />
           ) : (
             <div className="absolute inset-0 w-full h-full p-surface-subtle flex items-center justify-center p-8 text-center">
@@ -128,21 +136,21 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
             <div className="p-surface-subtle border p-border-main p-6 rounded-xl grid grid-cols-2 gap-4">
               <div>
                 <div className="text-xs uppercase p-text-faint font-bold tracking-widest mb-1">
-                  Destino
+                  {nc.destinationLabel}
                 </div>
                 <div className="font-bold p-text-ink text-sm">{p.destination || "—"}</div>
               </div>
               <div>
                 <div className="text-xs uppercase font-bold tracking-widest p-text-faint mb-1">
-                  Viajantes
+                  {nc.paxLabel}
                 </div>
                 <div className="text-sm font-bold p-text-ink">
-                  {vm.totalPax ? `${vm.totalPax} pax` : "—"}
+                  {vm.totalPax ? `${vm.totalPax} ${theme.nicheId === "tourism" ? "pax" : "unid."}` : "—"}
                 </div>
               </div>
               <div>
                 <div className="text-xs uppercase p-text-faint font-bold tracking-widest mb-1">
-                  Saída
+                  {nc.startDateLabel}
                 </div>
                 <div className="font-semibold p-text-ink text-sm">
                   {p.travel_start ? formatDate(p.travel_start) : "—"}
@@ -150,7 +158,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
               </div>
               <div>
                 <div className="text-xs uppercase p-text-faint font-bold tracking-widest mb-1">
-                  Retorno
+                  {nc.endDateLabel}
                 </div>
                 <div className="font-semibold p-text-ink text-sm">
                   {p.travel_end ? formatDate(p.travel_end) : "—"}
@@ -160,11 +168,15 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
           </div>
         )}
 
+        {/* FICHA TÉCNICA MULTI-NICHO & GALERIA */}
+        <ProposalMultiNicheSpecsBlock theme={theme} />
+        <ProposalDestinationGallerySection images={destinationGallery} theme={theme} />
+
         {/* VOOS */}
         {theme.isSectionVisible("flights") && vm.hasFlights && (
           <section className="break-inside-avoid space-y-5">
             <h2 className="text-2xl font-bold p-text-ink pb-3 border-b p-border-main p-heading-font">
-              Malha Aérea
+              {nc.flightsTitle}
             </h2>
             <div className="grid grid-cols-1 gap-4">
               {p.flights!.map((f, i) => (
@@ -227,7 +239,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
         {theme.isSectionVisible("hotels") && vm.hasHotels && (
           <section className="break-inside-avoid space-y-5">
             <h2 className="text-2xl font-bold p-text-ink pb-3 border-b p-border-main p-heading-font">
-              Hospedagem & Alojamento
+              {nc.hotelsTitle}
             </h2>
             <div className="grid grid-cols-1 gap-5">
               {p.hotels!.map((h, i) => (
@@ -239,7 +251,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                     <div className="flex items-center gap-2">
                       <Hotel className="size-4 p-text-brand" />
                       <span className="text-xs font-bold uppercase tracking-widest p-text-brand">
-                        Hospedagem Selecionada
+                        {nc.hotelBadgeLabel}
                       </span>
                     </div>
                     <span className="p-surface-card px-3 py-1 rounded-full text-xs font-semibold p-text-ink border p-border-main">
@@ -254,7 +266,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-surface-subtle p-4 rounded-lg border p-border-subtle">
                       <div>
                         <div className="text-xs uppercase p-text-faint font-bold mb-1">
-                          Check-in
+                          {nc.startDateLabel}
                         </div>
                         <div className="font-semibold p-text-ink text-sm">
                           {h.checkin ? formatDate(h.checkin) : "—"}
@@ -262,7 +274,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       </div>
                       <div>
                         <div className="text-xs uppercase p-text-faint font-bold mb-1">
-                          Check-out
+                          {nc.endDateLabel}
                         </div>
                         <div className="font-semibold p-text-ink text-sm">
                           {h.checkout ? formatDate(h.checkout) : "—"}
@@ -270,7 +282,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       </div>
                       <div>
                         <div className="text-xs uppercase p-text-faint font-bold mb-1">
-                          Quartos
+                          Categoria
                         </div>
                         <div className="font-semibold p-text-ink text-sm">
                           {h.rooms?.[0]
@@ -280,17 +292,26 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       </div>
                     </div>
                     {h.images?.[0] && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-44">
-                        {h.images.slice(0, 2).map((imgUrl: string, imgIdx: number) => (
+                      <div
+                        className={`grid gap-4 ${
+                          h.images.length === 1
+                            ? "grid-cols-1 h-56"
+                            : h.images.length === 2
+                              ? "grid-cols-1 sm:grid-cols-2 h-48"
+                              : "grid-cols-1 sm:grid-cols-3 h-52"
+                        }`}
+                      >
+                        {h.images.slice(0, 3).map((imgUrl: string, imgIdx: number) => (
                           <div
                             key={imgIdx}
-                            className="rounded-lg overflow-hidden border p-border-subtle"
+                            className="rounded-lg overflow-hidden border p-border-subtle h-full"
                           >
-                            <img
+                            <ProposalAdaptiveImage
                               src={imgUrl}
                               alt={h.name}
-                              crossOrigin="anonymous"
-                              className="w-full h-full object-cover"
+                              objectPosition={(h as any).object_position}
+                              scale={(h as any).image_scale}
+                              className="w-full h-full"
                             />
                           </div>
                         ))}
@@ -307,7 +328,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
         {theme.isSectionVisible("itinerary") && vm.hasItinerary && (
           <section className="break-inside-avoid space-y-6">
             <h2 className="text-2xl font-bold p-text-ink pb-3 border-b p-border-main p-heading-font">
-              Roteiro Dia a Dia
+              {nc.itineraryTitle}
             </h2>
             <div className="space-y-4">
               {p.itinerary!.map((d, i) => (
@@ -317,7 +338,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 >
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand">
-                      {d.day || `Dia ${i + 1}`}
+                      {d.day || `${nc.itineraryStepPrefix} ${i + 1}`}
                     </span>
                     <h4 className="text-lg font-bold p-text-ink">{d.title}</h4>
                   </div>
@@ -354,6 +375,12 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                       {d.description}
                     </p>
                   )}
+                  <ProposalItineraryMediaGrid
+                    images={d.images}
+                    title={d.title}
+                    objectPosition={(d as any).object_position}
+                    scale={(d as any).image_scale}
+                  />
                 </div>
               ))}
             </div>
@@ -364,34 +391,32 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
         {theme.isSectionVisible("transfers") && vm.hasTransfers && (
           <section className="break-inside-avoid space-y-5">
             <h2 className="text-2xl font-bold p-text-ink pb-3 border-b p-border-main p-heading-font">
-              Traslados & Receptivo
+              {nc.transfersTitle}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {p.transfers!.map((t, i) => (
-                <div
-                  key={i}
-                  className="p-5 rounded-xl border p-border-main p-surface-subtle space-y-2"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                      <Car className="size-4 p-text-brand shrink-0" />
-                      <span>{t.description || "Transfer In/Out"}</span>
-                    </div>
-                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-card border p-border-main p-text-muted">
-                      {t.type === "shared" ? "Regular" : "Privativo"}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs p-text-muted">
-                    {t.vehicle && (
-                      <span>
-                        Veículo: <strong className="p-text-ink">{t.vehicle}</strong>
+              {p.transfers!.map((t, i) => {
+                const transferMeta = getTransferMetaLine(t as Record<string, any>, formatDate);
+                return (
+                  <div
+                    key={i}
+                    className="p-5 rounded-xl border p-border-main p-surface-subtle space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
+                        <Car className="size-4 p-text-brand shrink-0" />
+                        <span>{t.description || (t as any).route || "Transfer In/Out"}</span>
+                      </div>
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-card border p-border-main p-text-muted">
+                        {getTransferBadgeLabel(t.type)}
                       </span>
+                    </div>
+                    {transferMeta && (
+                      <div className="text-xs p-text-muted leading-relaxed">{transferMeta}</div>
                     )}
-                    {t.date && <span>Data: {formatDate(t.date)}</span>}
+                    {t.notes && <p className="text-xs p-text-faint leading-relaxed">{t.notes}</p>}
                   </div>
-                  {t.notes && <p className="text-xs p-text-faint leading-relaxed">{t.notes}</p>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -400,28 +425,45 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
         {theme.isSectionVisible("tours") && vm.hasTours && (
           <section className="break-inside-avoid space-y-5">
             <h2 className="text-2xl font-bold p-text-ink pb-3 border-b p-border-main p-heading-font">
-              Passeios & Experiências
+              {nc.toursTitle}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {p.tours!.map((tour, i) => (
-                <div
-                  key={i}
-                  className="p-5 rounded-xl border p-border-main p-surface-subtle space-y-2"
-                >
-                  <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
-                    <Compass className="size-4 p-text-brand shrink-0" />
-                    <span>{tour.description || (tour as any).title || "Passeio Turístico"}</span>
+              {p.tours!.map((tour, i) => {
+                const tourMeta = getTourMetaLine(tour as Record<string, any>);
+                const tourImg =
+                  (tour as any).image_url ||
+                  (Array.isArray((tour as any).images) ? (tour as any).images[0] : "");
+                return (
+                  <div
+                    key={i}
+                    className="rounded-xl border p-border-main p-surface-subtle overflow-hidden flex flex-col justify-between"
+                  >
+                    {tourImg && (
+                      <div className="h-40 w-full border-b p-border-subtle">
+                        <ProposalAdaptiveImage
+                          src={tourImg}
+                          alt={tour.description || "Passeio"}
+                          objectPosition={(tour as any).object_position}
+                          scale={(tour as any).image_scale}
+                          className="w-full h-full"
+                        />
+                      </div>
+                    )}
+                    <div className="p-5 space-y-2">
+                      <div className="flex items-center gap-2 font-bold p-text-ink text-sm">
+                        <Compass className="size-4 p-text-brand shrink-0" />
+                        <span>{tour.description || (tour as any).title || "Passeio Turístico"}</span>
+                      </div>
+                      {tourMeta && <div className="text-xs p-text-muted">{tourMeta}</div>}
+                      {tour.notes && (
+                        <p className="text-xs p-text-muted leading-relaxed whitespace-pre-wrap">
+                          {tour.notes}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  {tour.date && (
-                    <div className="text-xs p-text-muted">Programação / Duração: {tour.date}</div>
-                  )}
-                  {tour.notes && (
-                    <p className="text-xs p-text-muted leading-relaxed whitespace-pre-wrap">
-                      {tour.notes}
-                    </p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -531,7 +573,7 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
         {theme.isSectionVisible("financial") && (
           <section className="pt-6 border-t p-border-main break-inside-avoid">
             <h2 className="text-2xl sm:text-3xl font-bold p-text-ink mb-6 text-center p-heading-font">
-              Investimento
+              {nc.financialTitle}
             </h2>
             <div className="flex flex-col sm:flex-row gap-8 items-center justify-between p-8 sm:p-10 p-surface-subtle rounded-2xl border p-border-main">
               <div className="space-y-2 text-center sm:text-left">
@@ -560,6 +602,12 @@ export default function TemplateEditorialFlat({ proposal: p, agency }: TemplateP
                 </div>
               </div>
             </div>
+            <ProposalPricingBreakdownBlock
+              totals={vm.totals}
+              theme={theme}
+              formatCurrency={formatCurrency}
+              currency={p.currency}
+            />
           </section>
         )}
       </div>

@@ -10,22 +10,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import {
+  getNicheKanbanPreset,
+  getNicheKanbanStages,
+  listAllNicheKanbanPresets,
+  resolveKanbanNicheId,
+  type KanbanCardVariant,
+  type KanbanPurpose,
+} from "@/lib/niches/kanban-niche-taxonomy";
 
-export type KanbanPurpose = "inbox" | "in_progress" | "review" | "won" | "lost" | "archived";
-
-export type KanbanCardVariant =
-  | "standard"
-  | "commercial"
-  | "kds"
-  | "picking"
-  | "service_order"
-  | "hr_talent"
-  | "hr_onboarding"
-  | "purchasing";
+export type { KanbanCardVariant, KanbanPurpose };
 
 export type KanbanDepartment = "rh" | "compras" | "operacoes" | "comercial" | "projetos" | "geral";
 
-export type KanbanNiche = "gastronomia" | "oficina" | "imobiliaria" | "supermercado" | "turismo" | "servicos" | "geral";
+export type KanbanNiche = string;
 
 export interface KanbanStageDTO {
   id?: string;
@@ -40,6 +38,7 @@ export interface KanbanStageDTO {
   card_variant?: KanbanCardVariant;
   department?: KanbanDepartment;
   niche?: KanbanNiche;
+  synonyms?: string[];
 }
 
 export interface KanbanPresetDefinition {
@@ -58,23 +57,34 @@ export const KANBAN_DEFAULTS: Record<string, KanbanStageDTO[]> = {
     { stage_key: "review", title: "Em Revisão", purpose: "review", color: "var(--warning)", sort_order: 2, is_visible: true },
     { stage_key: "done", title: "Concluído", purpose: "won", color: "var(--success)", sort_order: 3, is_visible: true },
   ],
-  turismo: [
-    { stage_key: "new", title: "Novos Contatos", purpose: "inbox", color: "var(--primary)", sort_order: 0, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
-    { stage_key: "contact", title: "Sondagem e Briefing", purpose: "in_progress", color: "var(--warning)", sort_order: 1, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
-    { stage_key: "qualified", title: "Cotação em Andamento", purpose: "in_progress", color: "var(--accent-foreground)", sort_order: 2, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
-    { stage_key: "proposal", title: "Proposta Enviada", purpose: "review", color: "var(--primary)", sort_order: 3, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
-    { stage_key: "negotiation", title: "Em Negociação", purpose: "review", color: "var(--warning-strong)", sort_order: 4, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
-    { stage_key: "won", title: "Viagem Confirmada", purpose: "won", color: "var(--success)", sort_order: 5, is_visible: true, card_variant: "commercial", department: "comercial", niche: "turismo" },
-  ],
-  commercial_crm: [
-    { stage_key: "new", title: "Novos Leads", purpose: "inbox", color: "var(--primary)", sort_order: 0, is_visible: true },
-    { stage_key: "contact", title: "Primeiro Contato", purpose: "in_progress", color: "var(--warning)", sort_order: 1, is_visible: true },
-    { stage_key: "qualified", title: "Qualificação", purpose: "in_progress", color: "var(--accent-foreground)", sort_order: 2, is_visible: true },
-    { stage_key: "proposal", title: "Proposta Enviada", purpose: "review", color: "var(--primary)", sort_order: 3, is_visible: true },
-    { stage_key: "negotiation", title: "Em Negociação", purpose: "review", color: "var(--warning-strong)", sort_order: 4, is_visible: true },
-    { stage_key: "won", title: "Ganhos / Convertidos", purpose: "won", color: "var(--success)", sort_order: 5, is_visible: true },
-    { stage_key: "lost", title: "Perdidos", purpose: "lost", color: "var(--destructive)", sort_order: 6, is_visible: true },
-  ],
+  turismo: getNicheKanbanStages("tourism").map((s) => ({
+    stage_key: s.stage_key,
+    title: s.title,
+    purpose: s.purpose,
+    color: s.color,
+    sort_order: s.sort_order,
+    is_visible: s.is_visible,
+    sla_minutes: s.sla_minutes,
+    description: s.description,
+    card_variant: s.card_variant || "commercial",
+    department: "comercial" as const,
+    niche: "turismo",
+    synonyms: s.synonyms,
+  })),
+  commercial_crm: getNicheKanbanStages("generic").map((s) => ({
+    stage_key: s.stage_key,
+    title: s.title,
+    purpose: s.purpose,
+    color: s.color,
+    sort_order: s.sort_order,
+    is_visible: s.is_visible,
+    sla_minutes: s.sla_minutes,
+    description: s.description,
+    card_variant: s.card_variant || "commercial",
+    department: "comercial" as const,
+    niche: "geral",
+    synonyms: s.synonyms,
+  })),
   quotes: [
     { stage_key: "draft", title: "Rascunhos", purpose: "inbox", color: "var(--muted-foreground)", sort_order: 0, is_visible: true },
     { stage_key: "sent", title: "Enviados", purpose: "in_progress", color: "var(--primary)", sort_order: 1, is_visible: true },
@@ -272,7 +282,49 @@ export const KANBAN_PRESETS_CATALOG: Record<string, KanbanPresetDefinition> = {
   },
 };
 
-// Adicionar presets no KANBAN_DEFAULTS
+// Adicionar presets de operacoes e todos os presets multi-nicho no catalogo e KANBAN_DEFAULTS
+listAllNicheKanbanPresets().forEach((nichePreset) => {
+  const mappedStages: KanbanStageDTO[] = nichePreset.stages.map((s) => ({
+    stage_key: s.stage_key,
+    title: s.title,
+    purpose: s.purpose,
+    color: s.color,
+    sort_order: s.sort_order,
+    is_visible: s.is_visible,
+    sla_minutes: s.sla_minutes,
+    description: s.description,
+    card_variant: s.card_variant || nichePreset.cardVariant,
+    department: "comercial",
+    niche: nichePreset.nicheId,
+    synonyms: s.synonyms,
+  }));
+  const catalogKey = `${nichePreset.nicheId}_crm`;
+  if (!KANBAN_PRESETS_CATALOG[catalogKey]) {
+    KANBAN_PRESETS_CATALOG[catalogKey] = {
+      presetKey: catalogKey,
+      title: `CRM ${nichePreset.label}`,
+      department: "comercial",
+      niche: nichePreset.nicheId,
+      cardVariant: nichePreset.cardVariant,
+      stages: mappedStages,
+    };
+  }
+  if (!KANBAN_PRESETS_CATALOG[nichePreset.nicheId]) {
+    KANBAN_PRESETS_CATALOG[nichePreset.nicheId] = {
+      presetKey: nichePreset.nicheId,
+      title: `CRM ${nichePreset.label}`,
+      department: "comercial",
+      niche: nichePreset.nicheId,
+      cardVariant: nichePreset.cardVariant,
+      stages: mappedStages,
+    };
+  }
+  KANBAN_DEFAULTS[`crm_${nichePreset.nicheId}`] = mappedStages;
+  if (!KANBAN_DEFAULTS[nichePreset.nicheId]) {
+    KANBAN_DEFAULTS[nichePreset.nicheId] = mappedStages;
+  }
+});
+
 Object.entries(KANBAN_PRESETS_CATALOG).forEach(([key, preset]) => {
   KANBAN_DEFAULTS[key] = preset.stages;
 });
@@ -282,8 +334,32 @@ export function resolveKanbanDefaults(
   department?: string,
   niche?: string
 ): KanbanStageDTO[] {
-  if (module === "tourism" || module === "turismo" || niche === "turismo" || niche === "tourism") {
+  const effectiveNiche =
+    niche ||
+    (department && !["comercial", "operacoes", "rh", "financeiro", "projetos", "suporte", "marketing"].includes(department)
+      ? department
+      : undefined);
+
+  if (module === "tourism" || module === "turismo" || effectiveNiche === "turismo" || effectiveNiche === "tourism") {
     return KANBAN_DEFAULTS.turismo;
+  }
+
+  if (effectiveNiche && (module === "commercial_crm" || module === "crm" || !module || !KANBAN_DEFAULTS[module])) {
+    const preset = getNicheKanbanPreset(effectiveNiche);
+    return preset.stages.map((s) => ({
+      stage_key: s.stage_key,
+      title: s.title,
+      purpose: s.purpose,
+      color: s.color,
+      sort_order: s.sort_order,
+      is_visible: s.is_visible,
+      sla_minutes: s.sla_minutes,
+      description: s.description,
+      card_variant: s.card_variant || preset.cardVariant,
+      department: "comercial",
+      niche: preset.nicheId,
+      synonyms: s.synonyms,
+    }));
   }
 
   if (module && KANBAN_DEFAULTS[module]) {
@@ -298,7 +374,9 @@ export function resolveKanbanDefaults(
   }
 
   if (niche) {
-    const match = Object.values(KANBAN_PRESETS_CATALOG).find((p) => p.niche === niche);
+    const resolvedNiche = resolveKanbanNicheId(niche);
+    const match =
+      Object.values(KANBAN_PRESETS_CATALOG).find((p) => p.niche === niche || p.niche === resolvedNiche);
     if (match) return match.stages;
   }
 
@@ -317,7 +395,8 @@ const StageSchema = z.object({
   sla_minutes: z.number().int().positive().optional(),
   card_variant: z.enum(["standard", "commercial", "kds", "picking", "service_order", "hr_talent", "hr_onboarding", "purchasing"]).optional(),
   department: z.enum(["rh", "compras", "operacoes", "comercial", "projetos", "geral"]).optional(),
-  niche: z.enum(["gastronomia", "oficina", "imobiliaria", "supermercado", "turismo", "servicos", "geral"]).optional(),
+  niche: z.string().min(1).max(64).optional(),
+  synonyms: z.array(z.string()).optional(),
 });
 
 /**
@@ -329,12 +408,29 @@ export const listKanbanStages = createServerFn({ method: "GET" })
       storeId: z.string().uuid(),
       module: z.string().min(1),
       department: z.enum(["rh", "compras", "operacoes", "comercial", "projetos", "geral"]).optional(),
-      niche: z.enum(["gastronomia", "oficina", "imobiliaria", "supermercado", "turismo", "servicos", "geral"]).optional(),
+      niche: z.string().min(1).max(64).optional(),
     })
   )
   .handler(async ({ data: { storeId, module, department, niche } }): Promise<KanbanStageDTO[]> => {
     const db = getServerClient();
-    const defaults = resolveKanbanDefaults(module, department, niche);
+    let effectiveNiche = niche;
+
+    if (!effectiveNiche && (module === "commercial_crm" || module === "crm" || module === "turismo" || module === "tourism")) {
+      try {
+        const { data: storeInfo } = await db
+          .from("stores")
+          .select("store_type, category, settings")
+          .eq("id", storeId)
+          .maybeSingle();
+        if (storeInfo) {
+          effectiveNiche = resolveKanbanNicheId(storeInfo as any);
+        }
+      } catch {
+        // Fallback silencioso para resolver defaults pelo parametro de entrada
+      }
+    }
+
+    const defaults = resolveKanbanDefaults(module, department, effectiveNiche);
 
     try {
       const { data: rows, error } = await db
@@ -353,25 +449,29 @@ export const listKanbanStages = createServerFn({ method: "GET" })
         return defaults;
       }
 
-      if ((module === "turismo" || module === "tourism" || niche === "turismo" || String(niche) === "tourism") && rows.some((r: any) => r.stage_key === "todo")) {
+      if ((module === "turismo" || module === "tourism" || effectiveNiche === "turismo" || effectiveNiche === "tourism") && rows.some((r: any) => r.stage_key === "todo")) {
         console.warn(`[kanban-config] Estágios legados com 'todo' detectados para turismo. Usando defaults canônicos.`);
         return defaults;
       }
 
-      return rows.map((r: any) => ({
-        id: r.id,
-        stage_key: r.stage_key,
-        title: r.title,
-        purpose: r.purpose as KanbanPurpose,
-        color: r.color,
-        sort_order: r.sort_order,
-        is_visible: r.is_visible,
-        sla_minutes: r.sla_minutes ?? undefined,
-        card_variant: r.card_variant ?? undefined,
-        department: r.department ?? undefined,
-        niche: r.niche ?? undefined,
-        description: r.description ?? undefined,
-      }));
+      return rows.map((r: any) => {
+        const defaultMatch = defaults.find((d) => d.stage_key === r.stage_key);
+        return {
+          id: r.id,
+          stage_key: r.stage_key,
+          title: r.title,
+          purpose: r.purpose as KanbanPurpose,
+          color: r.color,
+          sort_order: r.sort_order,
+          is_visible: r.is_visible,
+          sla_minutes: r.sla_minutes ?? defaultMatch?.sla_minutes,
+          card_variant: r.card_variant ?? defaultMatch?.card_variant,
+          department: r.department ?? defaultMatch?.department,
+          niche: r.niche ?? defaultMatch?.niche,
+          description: r.description ?? defaultMatch?.description,
+          synonyms: defaultMatch?.synonyms,
+        };
+      });
     } catch (err: any) {
       console.error(`[kanban-config] Erro no listKanbanStages para ${module}:`, err?.message);
       return defaults;
@@ -453,5 +553,5 @@ export const resetKanbanStages = createServerFn({ method: "POST" })
       throw new Error(`Erro ao restaurar colunas padrão: ${error.message}`);
     }
 
-    return { status: "ok" as const, defaults: KANBAN_DEFAULTS[module] || KANBAN_DEFAULTS.tasks };
+    return { status: "ok" as const, defaults: resolveKanbanDefaults(module) };
   });

@@ -388,7 +388,6 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Dados da loja, horários, equipe, vagas e integrações",
     tools: [
       { title: "Preferências", path: "/workspace/configuracoes", icon: Settings },
-      { title: "Planos", path: "/workspace/configuracoes/planos", icon: Layers },
       { title: "Empresa", path: "/workspace/configuracoes/loja", icon: Building2 },
       { title: "Ativação", path: "/workspace/onboarding", icon: Layers },
       { title: "Revisão", path: "/workspace/onboarding/revisao", icon: Layers },

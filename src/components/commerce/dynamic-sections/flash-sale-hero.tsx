@@ -154,18 +154,25 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
           <div className="space-y-6 lg:col-span-7">
             {badge && (
               <div
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1 text-xs font-bold text-warning-strong"
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1 text-xs font-bold",
+                  accentColor ? "waesy-dyn-bdr waesy-dyn-bg text-neutral-50" : "text-warning-strong",
+                )}
                 style={
                   accentColor
-                    ? {
-                        borderColor: accentColor,
-                        backgroundColor: accentColor,
-                        color: "#ffffff",
-                      }
+                    ? ({
+                        "--dyn-bdr": accentColor,
+                        "--dyn-bg": accentColor,
+                      } as React.CSSProperties)
                     : undefined
                 }
               >
-                <Flame className="size-3.5 animate-pulse motion-reduce:animate-none text-warning-strong" style={accentColor ? { color: "#ffffff" } : undefined} />
+                <Flame
+                  className={cn(
+                    "size-3.5 animate-pulse motion-reduce:animate-none",
+                    accentColor ? "text-neutral-50" : "text-warning-strong",
+                  )}
+                />
                 <span>{badge}</span>
               </div>
             )}
@@ -175,8 +182,15 @@ export const FlashSaleHero: React.FC<FlashSaleHeroProps> = (props) => {
                 {title}{" "}
                 {discountPercentage && (
                   <span
-                    className="underline decoration-2 text-warning-strong decoration-warning/60"
-                    style={accentColor ? { color: accentColor, textDecorationColor: accentColor } : undefined}
+                    className={cn(
+                      "underline decoration-2 text-warning-strong decoration-warning/60",
+                      accentColor && "waesy-dyn-fg",
+                    )}
+                    style={
+                      accentColor
+                        ? ({ "--dyn-fg": accentColor, textDecorationColor: accentColor } as React.CSSProperties)
+                        : undefined
+                    }
                   >
                     {discountPercentage}
                   </span>

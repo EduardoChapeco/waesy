@@ -57,8 +57,8 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
   ({ className, windowVariant = "auto", ...props }, ref) => {
     const variantTypography = {
       compact: "text-base font-semibold leading-tight tracking-tight break-words text-wrap whitespace-normal",
-      expanded: "text-2xl font-bold leading-none tracking-tight break-words text-wrap whitespace-normal",
-      auto: "text-base sm:text-xl lg:text-2xl font-bold leading-tight sm:leading-none tracking-tight break-words text-wrap whitespace-normal",
+      expanded: "text-2xl font-semibold leading-tight tracking-tight break-words text-wrap whitespace-normal",
+      auto: "text-base sm:text-xl lg:text-2xl font-semibold leading-tight tracking-tight break-words text-wrap whitespace-normal",
     }[windowVariant];
 
     return (

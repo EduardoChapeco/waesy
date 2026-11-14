@@ -692,13 +692,13 @@ export function NewClientWizard({
  </div>
  )}
 
- <div className="flex flex-wrap gap-1 pt-1">
+ <div className="flex flex-wrap gap-2 pt-1">
  {SUGGESTED_TAGS.filter((t) => !tags.includes(t)).map((st) => (
  <button
  key={st}
  type="button"
  onClick={() => handleAddTag(st)}
- className="text-xs px-2 py-1 rounded-full bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+ className="text-xs px-3 py-1 min-h-11 sm:min-h-8 rounded-lg border border-border/60 bg-muted/40 text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  >
  + {st}
  </button>

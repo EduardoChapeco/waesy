@@ -9,7 +9,7 @@ import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-cano
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
-import { listAgencyTravelContracts, deleteTravelContract, type TravelContractDTO } from "@/services/travel-contract.functions";
+import { listAgencyTravelContracts, deleteTravelContract, duplicateTravelContract, type TravelContractDTO } from "@/services/travel-contract.functions";
 import { AgencyClausesEditorModal } from "@/components/tourism/contract/agency-clauses-editor-modal";
 import { NewTravelContractSheet } from "@/components/tourism/contract/new-travel-contract-sheet";
 import { getStoreSettings } from "@/services/store.functions";
@@ -64,6 +64,15 @@ export default function WorkspaceContractsIndexPage() {
       queryClient.invalidateQueries({ queryKey: ["agency-contracts"] });
     },
     onError: (err: any) => toast.error(err?.message || "Erro ao excluir contrato."),
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: (id: string) => duplicateTravelContract({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Contrato duplicado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["agency-contracts"] });
+    },
+    onError: (err: any) => toast.error(err?.message || "Erro ao duplicar contrato."),
   });
 
   const handleCopyLink = (publicToken: string) => {
@@ -251,6 +260,8 @@ export default function WorkspaceContractsIndexPage() {
                     </Button>
 
                     <CrudActionsMenu
+                      entityName="Contrato"
+                      onDuplicate={() => duplicateMutation.mutate(c.id)}
                       onDelete={() => deleteMutation.mutate(c.id)}
                       deleteTitle="Excluir este contrato?"
                       deleteDescription="O documento de viagem será cancelado e removido do sistema."

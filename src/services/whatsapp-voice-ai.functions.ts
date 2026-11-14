@@ -10,7 +10,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
+import {
+  isBrokenOrMissingMediaUri,
+  parseMediaDataUri,
+  resolveWhisperExtensionAndMime,
+} from "@/lib/whatsapp-media-utils";
 import { getAllActiveKeysForProvider } from "@/services/api-orchestrator.functions";
 
 async function resolveVoiceProviderKey(
@@ -57,16 +62,16 @@ export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
     const db = getServerClient();
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, store_id")
+      .select("id, store_id, channel_instance_id, entity_id, metadata")
       .eq("id", threadId)
       .maybeSingle();
 
     if (!thread) throw new Error("Conversa não encontrada");
-    assertStoreAccess(identity, ["owner", "admin", "manager", "operator", "staff"], thread.store_id);
+    assertStoreAccess(identity, STAFF_ROLES, thread.store_id);
 
     const { data: msg } = await db
       .from("chat_messages")
-      .select("id, message, message_type, attachments, payload, external_message_id")
+      .select("id, message, message_type, attachments, payload, external_message_id, is_staff_reply")
       .eq("id", messageId)
       .eq("thread_id", threadId)
       .maybeSingle();
@@ -84,7 +89,36 @@ export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
         : curPayload.media?.url || null;
 
     let transcriptText = "";
-    const effectiveAudioUri = data.audioUrl || rawAudioUri;
+    let effectiveAudioUri: string | null = data.audioUrl || rawAudioUri;
+    let resolvedHydratedMime: string | null = null;
+
+    if (isBrokenOrMissingMediaUri(effectiveAudioUri, "audio") && msg.external_message_id) {
+      const { hydrateMediaFromEvolution } = await import("./whatsapp-media.server");
+      const threadMeta = (thread.metadata && typeof thread.metadata === "object" ? thread.metadata : {}) as Record<string, any>;
+      const remoteJid =
+        typeof threadMeta.whatsapp_jid === "string" && threadMeta.whatsapp_jid.trim()
+          ? threadMeta.whatsapp_jid.trim()
+          : typeof thread.entity_id === "string" && thread.entity_id.trim()
+            ? thread.entity_id.trim()
+            : null;
+      const hydrated = await hydrateMediaFromEvolution({
+        db,
+        storeId: thread.store_id,
+        channelInstanceId: thread.channel_instance_id,
+        threadId: thread.id,
+        messageId: msg.id,
+        externalMessageId: String(msg.external_message_id),
+        remoteJid,
+        fromMe: Boolean(msg.is_staff_reply),
+        messageType: "audio",
+        preferredMime: typeof curPayload.media?.mimetype === "string" ? curPayload.media.mimetype : "audio/ogg",
+        persistToMessage: true,
+      }).catch(() => null);
+      if (hydrated?.dataUri) {
+        effectiveAudioUri = hydrated.dataUri;
+        resolvedHydratedMime = hydrated.mimetype;
+      }
+    }
 
     // Resolve chaves via Cofre BYOK / api_key_pools do Admin Master + fallback ENV
     const [groqKey, openaiKey] = await Promise.all([
@@ -95,12 +129,13 @@ export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
     if ((groqKey || openaiKey) && effectiveAudioUri) {
       try {
         let audioBuffer: Buffer | null = null;
-        let mimeType = "audio/ogg";
+        let mimeType = resolvedHydratedMime || "audio/ogg";
         if (effectiveAudioUri.startsWith("data:")) {
-          const mimeMatch = /^data:([^;]+);base64,/.exec(effectiveAudioUri);
-          if (mimeMatch?.[1]) mimeType = mimeMatch[1];
-          const base64Data = effectiveAudioUri.replace(/^data:[^;]+;base64,/, "");
-          audioBuffer = Buffer.from(base64Data, "base64");
+          const parsedUri = parseMediaDataUri(effectiveAudioUri, mimeType);
+          if (parsedUri) {
+            mimeType = parsedUri.mimeType;
+            audioBuffer = Buffer.from(parsedUri.base64Data, "base64");
+          }
         } else if (/^https?:\/\//i.test(effectiveAudioUri)) {
           const mediaRes = await fetch(effectiveAudioUri, { signal: AbortSignal.timeout(15000) });
           if (mediaRes.ok) {
@@ -111,14 +146,8 @@ export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
         }
 
         if (audioBuffer && audioBuffer.byteLength > 32) {
-          const ext = mimeType.includes("mp4") || mimeType.includes("m4a")
-            ? "m4a"
-            : mimeType.includes("mpeg") || mimeType.includes("mp3")
-              ? "mp3"
-              : mimeType.includes("wav")
-                ? "wav"
-                : "ogg";
-          const blob = new Blob([new Uint8Array(audioBuffer)], { type: mimeType });
+          const { ext, normalizedMime } = resolveWhisperExtensionAndMime(mimeType);
+          const blob = new Blob([new Uint8Array(audioBuffer)], { type: normalizedMime });
 
           const formData = new FormData();
           formData.append("file", blob, `audio.${ext}`);
@@ -162,19 +191,36 @@ export const transcribeWhatsAppAudioMessage = createServerFn({ method: "POST" })
       }
     }
 
-    // Salva a transcrição no banco de dados para evitar reprocessamento
+    // Salva a transcrição no banco de dados para evitar reprocessamento (preservando media hidratada se ocorreu)
     const updatedPayload = {
       ...curPayload,
+      ...(resolvedHydratedMime && effectiveAudioUri
+        ? {
+            media: {
+              ...(curPayload.media || {}),
+              type: "audio",
+              url: effectiveAudioUri,
+              mimetype: resolvedHydratedMime,
+            },
+          }
+        : {}),
       transcript: transcriptText,
       transcribed_at: new Date().toISOString(),
     };
 
     await db
       .from("chat_messages")
-      .update({ payload: updatedPayload })
+      .update({
+        ...(resolvedHydratedMime && effectiveAudioUri ? { attachments: [effectiveAudioUri] } : {}),
+        payload: updatedPayload,
+      })
       .eq("id", messageId);
 
-    return { transcript: transcriptText, cached: false };
+    return {
+      transcript: transcriptText,
+      cached: false,
+      ...(resolvedHydratedMime && effectiveAudioUri ? { audioDataUri: effectiveAudioUri } : {}),
+    };
   });
 
 export const generateAiVoiceAudioSchema = z.object({
@@ -295,16 +341,22 @@ export const sendAiVoiceNoteToWhatsApp = createServerFn({ method: "POST" })
     const db = getServerClient();
     const { data: thread } = await db
       .from("chat_threads")
-      .select("id, store_id, channel_instance_id, entity_id, metadata")
+      .select("id, store_id, channel_instance_id, entity_id, primary_phone_e164, metadata")
       .eq("id", threadId)
       .eq("store_id", storeId)
       .single();
 
     if (!thread) throw new Error("Conversa não encontrada.");
 
+    const threadMeta = ((thread.metadata as any) || {}) as Record<string, any>;
+    const waAlt = typeof threadMeta.whatsapp_jid_alt === "string" ? threadMeta.whatsapp_jid_alt.trim() : "";
+    const waJid = typeof threadMeta.whatsapp_jid === "string" ? threadMeta.whatsapp_jid.trim() : "";
     const recipientPhone =
-      (thread.metadata as any)?.customer_phone ||
-      (thread.metadata as any)?.phone ||
+      (waAlt && !waAlt.endsWith("@lid") ? waAlt.replace(/@.*$/, "") : null) ||
+      threadMeta.customer_phone ||
+      threadMeta.phone ||
+      (waJid.endsWith("@lid") || waJid.endsWith("@g.us") ? waJid : null) ||
+      (thread as any).primary_phone_e164 ||
       thread.entity_id ||
       null;
 
@@ -395,7 +447,14 @@ export const sendAiVoiceNoteToWhatsApp = createServerFn({ method: "POST" })
     });
     if (outboxErr) throw new Error(`Falha ao enfileirar nota de voz: ${outboxErr.message}`);
 
-    // 3. Atualiza timestamps na thread
+    // 3. Disparo imediato da outbox e atualização dos timestamps da thread
+    try {
+      const { runWhatsAppOutboxWorker } = await import("./whatsapp-outbox.worker");
+      await runWhatsAppOutboxWorker({ batchSize: 3 });
+    } catch (workerErr) {
+      console.warn("[whatsapp-voice-ai] Falha ao executar worker imediato da outbox:", workerErr);
+    }
+
     await db
       .from("chat_threads")
       .update({

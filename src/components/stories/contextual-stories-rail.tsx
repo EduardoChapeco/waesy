@@ -26,13 +26,13 @@ export function ContextualStoriesRail({
 }: ContextualStoriesRailProps) {
  const [selectedGroupIndex, setSelectedGroupIndex] = useState<number | null>(null);
 
- const { data: storyGroups = [], isLoading } = useQuery({
+ const { data: storyGroups = [], isLoading, isError } = useQuery({
  queryKey: ["contextual-stories", niche, storeId],
  queryFn: () => getRankedStoriesFeed({ data: { niche, storeId } }),
  staleTime: 60_000,
  });
 
- if (!isLoading && storyGroups.length === 0 && !showCreateButton) {
+ if (isError || (!isLoading && storyGroups.length === 0 && !showCreateButton)) {
  return null; // Oculta se não houver stories no nicho para manter o silêncio visual
  }
 

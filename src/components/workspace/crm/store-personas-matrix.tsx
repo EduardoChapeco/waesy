@@ -75,7 +75,7 @@ export function StorePersonasMatrix() {
   >("all");
   const [activePersona, setActivePersona] = useState<any | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["store-personas-overview", selectedIntent],
     queryFn: () => listStorePersonasOverview({ data: { intent: selectedIntent, limit: 30 } }),
   });
@@ -187,6 +187,10 @@ export function StorePersonasMatrix() {
         {isLoading ? (
           <div className="p-8 text-center text-xs text-muted-foreground">
             Carregando inteligência de personas...
+          </div>
+        ) : isError ? (
+          <div className="p-8 text-center text-xs text-destructive">
+            Não foi possível carregar as personas no momento.
           </div>
         ) : personas.length === 0 ? (
           <div className="p-8 rounded-lg border border-dashed border-border/60 text-center space-y-1">

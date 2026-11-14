@@ -180,7 +180,7 @@ function WorkspaceNewMuralPostPage() {
                   <button
                     type="button"
                     onClick={() => handleRemoveMedia(idx)}
-                    className="absolute top-1 right-1 size-6 rounded-full bg-foreground/70 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                    className="absolute top-1 right-1 size-11 min-h-11 sm:size-7 sm:min-h-7 rounded-lg bg-foreground/75 text-background flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     ×
                   </button>

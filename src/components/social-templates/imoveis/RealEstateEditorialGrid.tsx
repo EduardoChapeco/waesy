@@ -45,7 +45,7 @@ export function RealEstateEditorialGrid({ data, className = "" }: SocialTemplate
     : defaultSpecs;
 
   return (
-    <div className={`relative w-full h-full overflow-hidden bg-[#f1f5f9] text-slate-900 select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden bg-slate-100 text-slate-900 select-none p-6 sm:p-8 flex flex-col justify-between ${className}`}>
       {/* ── 1. Janela Panorâmica Superior (58% de altura) ── */}
       <div className="relative w-full h-29/50 rounded-lg overflow-hidden  border border-slate-300/80 bg-slate-900 shrink-0">
         <img

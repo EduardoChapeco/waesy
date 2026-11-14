@@ -32,10 +32,10 @@ const targetSupabaseUrl = secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL || p
 const targetAnonKey = secrets.VITE_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
 const targetServiceRoleKey = secrets.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const targetVaultMasterKey = secrets.VAULT_MASTER_KEY || process.env.VAULT_MASTER_KEY || targetServiceRoleKey;
-const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://usewaesy.pages.dev";
-const targetEvolutionUrl = secrets.EVOLUTION_API_URL || process.env.EVOLUTION_API_URL || "https://feb-genre-kathy-indicator.trycloudflare.com";
-const targetEvolutionKey = secrets.EVOLUTION_API_KEY || process.env.EVOLUTION_API_KEY || "WaesyApiKey_Master_2026_WhatsApp";
-const targetWorkerToken = secrets.WHATSAPP_WORKER_TOKEN || process.env.WHATSAPP_WORKER_TOKEN || "WaesyWorkerToken_Master_2026";
+const targetSiteUrl = secrets.VITE_SITE_URL || process.env.VITE_SITE_URL || "https://waesy.com.br";
+const targetEvolutionUrl = secrets.EVOLUTION_API_URL || process.env.EVOLUTION_API_URL || "";
+const targetEvolutionKey = secrets.EVOLUTION_API_KEY || process.env.EVOLUTION_API_KEY || "";
+const targetWorkerToken = secrets.WHATSAPP_WORKER_TOKEN || process.env.WHATSAPP_WORKER_TOKEN || "";
 
 const fallbackEnv = {
   VITE_SUPABASE_URL: targetSupabaseUrl,

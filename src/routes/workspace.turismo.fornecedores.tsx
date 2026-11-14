@@ -10,8 +10,8 @@ import { WorkspaceDashboardSheet, type MetricCardItem } from '@/components/works
 import { toast } from 'sonner';
 import { CrudActionsMenu } from '@/components/ui/crud-actions-menu';
 import { getStoreSettings } from '@/services/store.functions';
-import { listTravelSuppliers, deleteTravelSupplier } from '@/services/travel-suppliers.functions';
-import { SUPPLIER_KIND_LABELS, type SupplierKind } from '@/types/travel-suppliers';
+import { listTravelSuppliers, createTravelSupplier, deleteTravelSupplier } from '@/services/travel-suppliers.functions';
+import { SUPPLIER_KIND_LABELS, type SupplierKind, type TravelSupplierDTO } from '@/types/travel-suppliers';
 import { NewSupplierWizard } from '@/components/tourism/suppliers/new-supplier-wizard';
 import { SupplierAutocomplete } from '@/components/tourism/suppliers/supplier-autocomplete';
 import { InfotravelIntegrationPanel } from '@/components/admin/infotravel-integration-panel';
@@ -37,6 +37,7 @@ function WorkspaceSuppliersPage() {
  const [search, setSearch] = useState('');
  const [selectedKind, setSelectedKind] = useState('all');
  const [wizardOpen, setWizardOpen] = useState(false);
+ const [editingSupplier, setEditingSupplier] = useState<TravelSupplierDTO | null>(null);
 
  const { data: suppliers = [], refetch, isLoading } = useQuery({
  queryKey: ['travel-suppliers', storeId, selectedKind],
@@ -49,6 +50,31 @@ function WorkspaceSuppliersPage() {
  (s.legal_name && s.legal_name.toLowerCase().includes(search.toLowerCase())) ||
  (s.city && s.city.toLowerCase().includes(search.toLowerCase()))
  );
+
+ const handleDuplicate = async (s: TravelSupplierDTO) => {
+ try {
+ await createTravelSupplier({
+   data: {
+     store_id: storeId,
+     name: `${s.name} (Cópia)`,
+     legal_name: s.legal_name || null,
+     kind: s.kind,
+     document: s.document || null,
+     commission_rate: s.commission_rate ?? 0,
+     notes: s.notes || null,
+     email: s.email || null,
+     phone: s.phone || null,
+     city: s.city || null,
+     state: s.state || null,
+     country: s.country || 'Brasil',
+   },
+ });
+ toast.success(`Fornecedor "${s.name}" duplicado!`);
+ refetch();
+ } catch (err: any) {
+ toast.error('Erro ao duplicar fornecedor: ' + err?.message);
+ }
+ };
 
  const handleDelete = async (id: string, name?: string) => {
  try {
@@ -116,7 +142,10 @@ function WorkspaceSuppliersPage() {
         primaryAction={{
           label: "Novo Fornecedor",
           icon: Plus,
-          onClick: () => setWizardOpen(true),
+          onClick: () => {
+            setEditingSupplier(null);
+            setWizardOpen(true);
+          },
         }}
       />
 
@@ -136,7 +165,7 @@ function WorkspaceSuppliersPage() {
  <Building2 className="size-8 text-muted-foreground mx-auto" />
  <p className="text-xs font-bold text-foreground">Nenhum fornecedor encontrado</p>
  <p className="text-xs text-muted-foreground">Cadastre operadoras e DMCs para vincular às propostas e cotações da agência.</p>
- <Button type="button" onClick={() => setWizardOpen(true)} className="rounded-lg h-11 min-h-11 px-4">
+ <Button type="button" onClick={() => { setEditingSupplier(null); setWizardOpen(true); }} className="rounded-lg h-11 min-h-11 px-4">
  Cadastrar Primeiro Fornecedor
  </Button>
  </div>
@@ -202,6 +231,11 @@ function WorkspaceSuppliersPage() {
 
  <CrudActionsMenu
  entityName="Fornecedor"
+ onEdit={() => {
+ setEditingSupplier(s);
+ setWizardOpen(true);
+ }}
+ onDuplicate={() => handleDuplicate(s)}
  onDelete={() => handleDelete(s.id, s.name)}
  deleteConfirmTitle={`Excluir fornecedor "${s.name}"?`}
  deleteConfirmDescription="Esta ação removerá permanentemente o fornecedor cadastrado e seus dados de comissionamento."
@@ -215,9 +249,13 @@ function WorkspaceSuppliersPage() {
  {wizardOpen && (
  <NewSupplierWizard
  isOpen={wizardOpen}
- onClose={() => setWizardOpen(false)}
+ onClose={() => {
+ setWizardOpen(false);
+ setEditingSupplier(null);
+ }}
  onCreated={refetch}
  storeId={storeId}
+ initialSupplier={editingSupplier}
  />
  )}
  </div>

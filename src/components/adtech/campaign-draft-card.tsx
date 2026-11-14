@@ -158,7 +158,7 @@ export function CampaignDraftCard({
             {/* Top Bar do Anúncio Instagram */}
             <div className="p-3 flex items-center justify-between border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="size-8 rounded-full border-2 border-primary p-0.5">
+                <div className="size-8 rounded-full border-2 border-primary p-1">
                   <div className="size-full rounded-full bg-background flex items-center justify-center overflow-hidden">
                     <span className="text-2xs font-bold text-foreground">
                       {(payload.creative.sponsorHandle || "W")[0].toUpperCase()}

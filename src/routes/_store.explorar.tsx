@@ -322,7 +322,7 @@ function CommunityHomePage() {
         showOverlay: match?.show_overlay === true,
         showShadow: match?.show_shadow === true,
         bgOverlayOpacity: typeof match?.bg_overlay_opacity === "number" ? match.bg_overlay_opacity : 30,
-        bgColor: match?.bg_color || "#000000",
+        bgColor: match?.bg_color || "var(--color-neutral-950)",
         showTitle: match?.show_title !== false,
         textColor: match?.text_color || null,
       };

@@ -19,6 +19,7 @@ import { VideoStudioEditor } from "@/components/studio/video-studio-editor";
 import { listStudioProjects, listStudioTemplates, saveStudioProject, getStudioProjectById, type StudioProjectDTO, type StudioTemplateDTO } from "@/services/studio.functions";
 import { getProductById } from "@/services/admin-catalog.functions";
 import { exportElementAsImage, exportElementAsPdf } from "@/lib/pdf-export";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 export const Route = createFileRoute("/workspace/estudio/")({
  head: () => ({ meta: [{ title: "Estúdio | Workspace Waesy" }] }),
@@ -65,7 +66,7 @@ function StudioWorkspacePage() {
  // Graphic Canvas State
  const [background, setBackground] = useState<SlideBackground>({
  type: "color",
- value: "#0F172A",
+ value: TOKEN_HEX.neutral900,
  });
  const [elements, setElements] = useState<StudioElement[]>([
  {
@@ -82,7 +83,7 @@ function StudioWorkspacePage() {
  properties: {
  ...DEFAULT_TEXT_PROPERTIES,
  content: "SUPER OFERTA DA SEMANA",
- color: "#FACC15",
+ color: TOKEN_HEX.amber500,
  },
  },
  ]);
@@ -186,7 +187,7 @@ function StudioWorkspacePage() {
  properties: {
  ...DEFAULT_SHAPE_PROPERTIES,
  shapeType,
- fill: shapeType === "badge" ? "#EF4444" : "#3B82F6",
+ fill: shapeType === "badge" ? TOKEN_HEX.red500 : TOKEN_HEX.blue500,
  borderRadius: shapeType === "circle" ? 999 : 16,
  },
  };
@@ -516,7 +517,12 @@ function StudioWorkspacePage() {
  </div>
 
  <div className="space-y-2 max-h-64 overflow-y-auto no-scrollbar pr-1">
- {filteredTemplates.map((tpl) => (
+ {filteredTemplates.length === 0 ? (
+ <div className="p-4 text-center text-xs text-muted-foreground">
+ Nenhum modelo encontrado para este nicho.
+ </div>
+ ) : (
+ filteredTemplates.map((tpl) => (
  <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
  key={tpl.id}
  onClick={() => handleApplyTemplate(tpl)}
@@ -532,7 +538,8 @@ function StudioWorkspacePage() {
  {tpl.category}
  </span>
  </div>
- ))}
+ ))
+ )}
  </div>
  </div>
  </div>
@@ -714,7 +721,7 @@ function StudioWorkspacePage() {
  <div className="flex items-center gap-2">
  <input
  type="color"
- value={(selectedElement.properties as any).color || "#FFFFFF"}
+ value={(selectedElement.properties as any).color || TOKEN_HEX.white}
  onChange={(e) => {
  const col = e.target.value;
  setElements((prev) =>
@@ -727,7 +734,7 @@ function StudioWorkspacePage() {
  }}
  className="size-8 rounded-lg border border-border cursor-pointer bg-transparent"
  />
- <span className="text-xs font-mono">{(selectedElement.properties as any).color || "#FFFFFF"}</span>
+ <span className="text-xs font-mono">{(selectedElement.properties as any).color || TOKEN_HEX.white}</span>
  </div>
  </div>
  </>
@@ -740,7 +747,7 @@ function StudioWorkspacePage() {
  <div className="flex items-center gap-2">
  <input
  type="color"
- value={(selectedElement.properties as any).fill || "#3B82F6"}
+ value={(selectedElement.properties as any).fill || TOKEN_HEX.blue500}
  onChange={(e) => {
  const col = e.target.value;
  setElements((prev) =>

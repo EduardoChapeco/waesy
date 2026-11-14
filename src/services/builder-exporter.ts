@@ -40,7 +40,7 @@ export function exportStaticHtml(
  heading: ['Outfit', 'sans-serif'],
  },
  colors: {
- brand: '#0284c7',
+ brand: 'var(--color-primary)',
  }
  }
  }

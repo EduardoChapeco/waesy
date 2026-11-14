@@ -30,8 +30,8 @@ export interface TemplateVoucherStoryProps {
 
 export function TemplateVoucherStory({
   voucher: v,
-  agencyName = "Agência Waesy Turismo",
-  agencySlug = "waesyturismo",
+  agencyName = "Agência Emissora",
+  agencySlug = "",
   agencyLogo,
 }: TemplateVoucherStoryProps) {
   // Normalização defensiva de voos
@@ -192,7 +192,11 @@ export function TemplateVoucherStory({
           </div>
 
           {/* Lista de Passageiros */}
-          {passengers.length > 0 ? (
+          {passengers.length === 0 ? (
+            <div className="mt-4 p-3 rounded-lg bg-slate-900/40 border border-slate-800 text-center text-xs text-slate-400">
+              Nenhum passageiro vinculado
+            </div>
+          ) : (
             <div className="mt-4 p-3 rounded-lg bg-slate-900/60 border border-slate-800 text-center">
               <span className="text-xs uppercase tracking-wider text-slate-400 block font-semibold">
                 Passageiro{passengers.length > 1 ? "s" : ""}
@@ -200,10 +204,6 @@ export function TemplateVoucherStory({
               <p className="text-xs font-bold text-neutral-100 mt-1 break-words">
                 {passengers.map((p) => p.name).join(" · ")}
               </p>
-            </div>
-          ) : (
-            <div className="mt-4 p-3 rounded-lg bg-slate-900/40 border border-slate-800 text-center text-xs text-slate-400">
-              Nenhum passageiro vinculado
             </div>
           )}
         </div>
@@ -214,7 +214,7 @@ export function TemplateVoucherStory({
             <span className="text-xs uppercase tracking-widest text-slate-400 block">
               Emissão Digital Autorizada
             </span>
-            <span className="text-xs font-bold text-neutral-200 block">Waesy Travel Suite</span>
+            <span className="text-xs font-bold text-neutral-200 block">{agencyName}</span>
           </div>
 
           <div className="size-12 rounded-lg bg-neutral-100 p-1 flex items-center justify-center shrink-0">

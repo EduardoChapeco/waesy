@@ -64,12 +64,13 @@ function FullscreenMapaPage() {
  }));
  const [mapZoom, setMapZoom] = useState(13.5);
 
- const { data: mapData, refetch } = useQuery({
+ const { data: mapData, isLoading: isMapLoading, refetch } = useQuery({
  queryKey: ["moments-map", activeVibe],
  queryFn: () => getMomentsMap({ data: {} }),
  initialData: initialMapData,
  staleTime: 15_000,
  });
+ void isMapLoading;
 
  const moments = mapData?.moments || [];
  const places = mapData?.places || [];

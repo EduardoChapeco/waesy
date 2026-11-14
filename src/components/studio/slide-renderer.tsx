@@ -40,30 +40,30 @@ export function SlideRenderer({
  : 'aspect-square';
 
  const isDark = slide.theme !== 'light';
- const bgColor = slide.backgroundColor || (isDark ? '#090d16' : '#ffffff');
- const accent = slide.accentColor || '#38bdf8';
+ const bgColor = slide.backgroundColor || (isDark ? 'var(--color-slate-950)' : 'var(--color-neutral-50)');
+ const accent = slide.accentColor || 'var(--color-sky-400)';
 
  return (
  <div
- style={{ backgroundColor: bgColor }}
- className={`w-full ${aspectClass} rounded-lg p-8 flex flex-col justify-between relative overflow-hidden  border border-white/10 ${
+ style={{ '--dyn-bg': bgColor } as React.CSSProperties}
+ className={`w-full ${aspectClass} rounded-lg p-8 flex flex-col justify-between relative overflow-hidden border border-white/10 waesy-dyn-bg ${
  isDark ? 'text-foreground' : 'text-slate-900'
  } ${className}`}
  >
  {/* Background ambient glow */}
  <div
  style={{
- background: `radial-gradient(circle at 80% 20%, ${accent}25 0%, transparent 60%)`,
- }}
- className="absolute inset-0 pointer-events-none"
+ '--dyn-bg': `radial-gradient(circle at 80% 20%, color-mix(in oklab, ${accent} 15%, transparent) 0%, transparent 60%)`,
+ } as React.CSSProperties}
+ className="absolute inset-0 pointer-events-none waesy-dyn-bg"
  />
 
  {/* Header: Brand & Slide Index */}
  <div className="relative z-10 flex items-center justify-between">
  <div className="flex items-center gap-2">
  <div
- style={{ backgroundColor: accent }}
- className="w-2.5 h-2.5 rounded-full"
+ style={{ '--dyn-bg': accent } as React.CSSProperties}
+ className="w-2.5 h-2.5 rounded-full waesy-dyn-bg"
  />
  <span className="text-xs font-bold uppercase tracking-wider opacity-80">
  {brandName}
@@ -72,8 +72,12 @@ export function SlideRenderer({
 
  {slide.badge && (
  <span
- style={{ borderColor: `${accent}40`, backgroundColor: `${accent}15`, color: accent }}
- className="px-3 py-1 rounded-full text-2xs font-bold tracking-wide uppercase border flex items-center gap-1"
+ style={{
+ '--dyn-bdr': `color-mix(in oklab, ${accent} 25%, transparent)`,
+ '--dyn-bg': `color-mix(in oklab, ${accent} 10%, transparent)`,
+ '--dyn-fg': accent,
+ } as React.CSSProperties}
+ className="px-3 py-1 rounded-full text-2xs font-bold tracking-wide uppercase border flex items-center gap-1 waesy-dyn-bdr waesy-dyn-bg waesy-dyn-fg"
  >
  <Layers className="w-3 h-3" />
  {slide.badge}
@@ -88,8 +92,8 @@ export function SlideRenderer({
  </h2>
  {slide.subtitle && (
  <p
- style={{ color: accent }}
- className="text-sm sm:text-base font-semibold"
+ style={{ '--dyn-fg': accent } as React.CSSProperties}
+ className="text-sm sm:text-base font-semibold waesy-dyn-fg"
  >
  {slide.subtitle}
  </p>
@@ -117,8 +121,8 @@ export function SlideRenderer({
  </span>
  {slide.ctaText ? (
  <div
- style={{ backgroundColor: accent }}
- className="px-4 py-2 rounded-lg text-slate-950 text-xs font-bold flex items-center gap-2 "
+ style={{ '--dyn-bg': accent } as React.CSSProperties}
+ className="px-4 py-2 rounded-lg text-slate-950 text-xs font-bold flex items-center gap-2 waesy-dyn-bg"
  >
  {slide.ctaText}
  <ArrowRight className="w-3.5 h-3.5" />

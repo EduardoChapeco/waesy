@@ -1,9 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plane, FileText, Plus, Calendar, Users, Compass, ArrowUpRight, CheckCircle2, Clock, Luggage, Building2, Banknote, Check, AlertTriangle, FileSpreadsheet, Table2, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ErrorState } from "@/components/state/states";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { NewTripSheet } from "@/components/tourism/trips/new-trip-sheet";
@@ -46,14 +47,18 @@ export const Route = createFileRoute("/workspace/turismo/viagens/")({
   }),
   loader: async () => {
     try {
-    const [trips, store] = await Promise.all([
-      listStoreTrips({ data: { status: "all" } }).catch(() => []),
-      getStoreSettings().catch(() => null),
-    ]);
-    return { trips: trips || [], store };
-    } catch (err) {
+      const [trips, store] = await Promise.all([
+        listStoreTrips({ data: { status: "all" } }),
+        getStoreSettings(),
+      ]);
+      return { trips: trips || [], store, loadError: null as string | null };
+    } catch (err: any) {
       console.error("[loader:workspace.turismo.viagens.index] Unhandled error:", err);
-      return { trips: [], store: null };
+      return {
+        trips: [] as TourismTripDTO[],
+        store: null,
+        loadError: err?.message || "Não foi possível carregar as viagens confirmadas.",
+      };
     }
   },
   component: WorkspaceTripsListPage,
@@ -62,9 +67,10 @@ export const Route = createFileRoute("/workspace/turismo/viagens/")({
 type TripStatus = "all" | "confirmed" | "in_progress" | "completed" | "cancelled";
 
 export default function WorkspaceTripsListPage() {
-  const { trips: initialTrips, store } = ((Route.useLoaderData?.() as any) || {});
+  const { trips: initialTrips, store, loadError } = ((Route.useLoaderData?.() as any) || {});
   const storeId = store?.id || "";
   const navigate = useNavigate();
+  const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeStatus, setActiveStatus] = useState<TripStatus>("all");
@@ -147,6 +153,18 @@ export default function WorkspaceTripsListPage() {
     { id: "completed", label: "Concluídas", icon: Check, count: metrics.completed },
     { id: "cancelled", label: "Canceladas", icon: AlertTriangle, count: metrics.cancelled },
   ];
+
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar viagens confirmadas"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full px-0 sm:px-4 space-y-6 pb-20 animate-in fade-in duration-200">

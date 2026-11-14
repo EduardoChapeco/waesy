@@ -88,7 +88,7 @@ export function KpiMetricCard({
       {/* ── Topo: Ícone Suave + Título + Tooltip ── */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="size-8 rounded-full bg-muted border border-border text-primary flex items-center justify-center shrink-0">
+          <div className="size-8 rounded-lg bg-muted/60 border border-border/70 text-primary flex items-center justify-center shrink-0">
             <Icon className="size-4" aria-hidden="true" />
           </div>
           <h3 className="text-xs sm:text-sm font-semibold text-foreground tracking-tight line-clamp-2 text-anti-truncate">
@@ -103,7 +103,7 @@ export function KpiMetricCard({
                 <button
                   type="button"
                   aria-label={`Informações sobre ${title}`}
-                  className="size-11 min-h-11 min-w-11 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-help"
+                  className="size-11 min-h-11 min-w-11 sm:size-8 sm:min-h-8 sm:min-w-8 -mr-2 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-help"
                 >
                   <Info className="size-3.5" aria-hidden="true" />
                 </button>

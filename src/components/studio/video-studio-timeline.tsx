@@ -33,9 +33,9 @@ export function VideoStudioTimeline({
  onZoomIn,
  onZoomOut,
  tracks = [
- { id: 't-1', name: 'Vídeo Principal (Promocional)', type: 'video', duration: 15, color: '#3b82f6' },
- { id: 't-2', name: 'Legendas Automáticas (IA)', type: 'subtitle', duration: 15, color: '#eab308' },
- { id: 't-3', name: 'Trilha Sonora de Fundo', type: 'audio', duration: 15, color: '#10b981' },
+ { id: 't-1', name: 'Vídeo Principal (Promocional)', type: 'video', duration: 15, color: 'var(--color-blue-500)' },
+ { id: 't-2', name: 'Legendas Automáticas (IA)', type: 'subtitle', duration: 15, color: 'var(--warning)' },
+ { id: 't-3', name: 'Trilha Sonora de Fundo', type: 'audio', duration: 15, color: 'var(--color-emerald-500)' },
  ],
  className = '',
 }: VideoStudioTimelineProps) {
@@ -119,8 +119,8 @@ export function VideoStudioTimeline({
 
  <div className="flex-1 h-9 rounded-lg bg-muted/40 relative overflow-hidden border border-border/60">
  <div
- style={{ backgroundColor: track.color }}
- className="h-full w-4/5 rounded-lg opacity-80 flex items-center px-3 text-2xs font-bold text-foreground "
+ style={{ '--dyn-bg': track.color } as React.CSSProperties}
+ className="h-full w-4/5 rounded-lg opacity-80 flex items-center px-3 text-2xs font-bold text-foreground waesy-dyn-bg"
  >
  Clip 01 ({track.duration}s)
  </div>

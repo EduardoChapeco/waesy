@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { enforceRateLimit } from "@/lib/rate-limiter";
+import { normalizeDateOnlyInput } from "@/lib/datetime";
+import { extensionForMime, resolveNormalizedMimeType } from "@/lib/chat-media-attachment";
 import { sendWhatsAppNotification } from "./integrations.functions";
 import { dispatchClosedLoopLeadQualification } from "./pixels.functions";
 import { compileContractDocument } from "@/lib/contracts/contract-compiler";
@@ -12,6 +15,45 @@ import {
   getNicheContractBlueprint,
   normalizeCustomFieldMap,
 } from "@/lib/niches/unified-field-bridge";
+import {
+  normalizeKanbanStageSlug,
+  resolveKanbanStageSynonym,
+} from "@/lib/niches/kanban-niche-taxonomy";
+
+async function resolveStoreStageContract(
+  supabase: ReturnType<typeof getServerClient>,
+  storeId: string | null | undefined,
+  rawStage: string,
+) {
+  let stages: Array<{ stage_key: string; purpose?: string; title?: string }> | undefined;
+  let storeHint: Record<string, any> | undefined;
+  if (storeId) {
+    try {
+      const [{ data: stageRows }, { data: storeRow }] = await Promise.all([
+        supabase
+          .from("kanban_stage_configs")
+          .select("stage_key, title, purpose, sort_order")
+          .eq("store_id", storeId)
+          .in("module", ["commercial_crm", "turismo", "crm"])
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("stores")
+          .select("store_type, category, settings")
+          .eq("id", storeId)
+          .maybeSingle(),
+      ]);
+      if (Array.isArray(stageRows) && stageRows.length > 0) {
+        stages = stageRows as Array<{ stage_key: string; purpose?: string; title?: string }>;
+      }
+      if (storeRow) {
+        storeHint = storeRow as Record<string, any>;
+      }
+    } catch {
+      // Ambientes enxutos usam fallback semantico puro
+    }
+  }
+  return resolveKanbanStageSynonym(rawStage, stages, storeHint);
+}
 
 // ─── CARTEIRA DE CLIENTES (BFF CANÔNICO) ──────────────────────────────────────
 
@@ -146,22 +188,28 @@ export const listCustomers = createServerFn({ method: "GET" })
  }
 
  // 3. Busca alertas de documentos dos clientes (passaporte/cnh vencendo)
- const docAlertsMap = new Map();
+ const docAlertsMap = new Map<string, { expired: number; soon: number }>();
  if (customerIds.length > 0) {
- const todayStr = new Date().toISOString().split("T")[0];
+ const todayStr = normalizeDateOnlyInput(new Date());
  const soonDate = new Date();
  soonDate.setDate(soonDate.getDate() + 90);
- const soonStr = soonDate.toISOString().split("T")[0];
+ const soonStr = normalizeDateOnlyInput(soonDate);
 
  const { data: docs } = await supabase
  .from("customer_documents")
- .select("customer_id, verified_at, created_at")
+ .select("customer_id, expires_at, verified_at, created_at")
  .in("customer_id", customerIds);
 
  if (docs) {
- // customer_documents não possui coluna expires_at; contagem permanece válida sem quebrar query
- void todayStr;
- void soonStr;
+ for (const doc of docs as Array<{ customer_id?: string | null; expires_at?: string | null }>) {
+ const cid = doc.customer_id;
+ const exp = normalizeDateOnlyInput(doc.expires_at);
+ if (!cid || !exp) continue;
+ const current = docAlertsMap.get(cid) || { expired: 0, soon: 0 };
+ if (exp < todayStr) current.expired += 1;
+ else if (exp <= soonStr) current.soon += 1;
+ docAlertsMap.set(cid, current);
+ }
  }
  }
 
@@ -249,26 +297,14 @@ export const getCustomer360 = createServerFn({ method: "GET" })
  .eq("customer_id", customerId)
  .order("created_at", { ascending: false });
 
- // 3. Busca Documentos anexos com cálculo de validade
+ // 3. Busca Documentos anexos com cálculo de validade e URL assinada do cofre privado
  const { data: documents } = await supabase
  .from("customer_documents")
  .select("*")
  .eq("customer_id", customerId)
  .order("created_at", { ascending: false });
 
- const todayStr = new Date().toISOString().split("T")[0];
- const soonDate = new Date();
- soonDate.setDate(soonDate.getDate() + 90);
- const soonStr = soonDate.toISOString().split("T")[0];
-
- const processedDocs = (documents || []).map((doc: any) => {
- let expiryStatus: "valid" | "soon" | "expired" = "valid";
- if (doc.expires_at) {
- if (doc.expires_at < todayStr) expiryStatus = "expired";
- else if (doc.expires_at <= soonStr) expiryStatus = "soon";
- }
- return { ...doc, expiryStatus };
- });
+ const processedDocs = await hydrateSignedCustomerDocuments(supabase, documents || []);
 
  // 4. Busca Oportunidades Comerciais (Leads) vinculadas a este cliente
  const { data: rawCommercialLeads } = await supabase
@@ -398,10 +434,11 @@ export const getCustomer360 = createServerFn({ method: "GET" })
     const cleanPhone = customer.phone ? customer.phone.replace(/\D/g, "").slice(-8) : "";
     let propQuery = supabase
       .from("travel_proposals")
-      .select("id, public_token, title, destination_city, client_name, client_whatsapp, client_email, status, pricing, created_at")
+      .select("id, lead_id, customer_id, public_token, title, destination_city, client_name, client_whatsapp, client_email, status, pricing, valid_until, created_at")
       .eq("store_id", identity.store_id);
 
     const propOr: string[] = [];
+    if (customerId) propOr.push(`customer_id.eq.${customerId}`);
     if (customer.email) propOr.push(`client_email.eq.${customer.email}`);
     if (cleanPhone) propOr.push(`client_whatsapp.ilike.%${cleanPhone}%`);
     if (customer.full_name && customer.full_name.length > 2) propOr.push(`client_name.ilike.%${customer.full_name}%`);
@@ -980,9 +1017,7 @@ export const restoreCustomer = createServerFn({ method: "POST" })
 
 // ─── GESTÃO DE DOCUMENTOS DO CLIENTE (PASSAPORTE, CNH, RG, VISTOS) ──────────
 
-export const createCustomerDocumentSchema = z.object({
- customerId: z.string().uuid(),
- docType: z.enum([
+export const CUSTOMER_DOCUMENT_TYPES = [
  "passport",
  "cnh",
  "rg",
@@ -992,11 +1027,259 @@ export const createCustomerDocumentSchema = z.object({
  "contract",
  "proof_of_residence",
  "other",
- ]),
+] as const;
+
+const CUSTOMER_DOC_TITLES: Record<string, string> = {
+ passport: "Passaporte",
+ cnh: "CNH",
+ rg: "RG",
+ cpf: "CPF",
+ visa: "Visto Consular",
+ vaccination_card: "Cartão de Vacina (CIVP)",
+ contract: "Contrato Assinado",
+ proof_of_residence: "Comprovante de Residência",
+ other: "Documento",
+};
+
+const PUBLIC_DOCUMENT_MIME_TYPES = new Set([
+ "image/jpeg",
+ "image/jpg",
+ "image/png",
+ "image/webp",
+ "image/heic",
+ "image/heif",
+ "application/pdf",
+]);
+
+const MAX_PUBLIC_DOC_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB
+
+function toCanonicalDocumentType(docType: string): string {
+ if (docType === "contract") return "contract";
+ if (docType === "proof_of_residence") return "proof_of_residence";
+ if (["passport", "cnh", "rg", "cpf", "visa", "vaccination_card"].includes(docType)) return "id";
+ return "other";
+}
+
+function computeDocumentExpiryStatus(expiresAt: string | null | undefined): "valid" | "soon" | "expired" {
+ const normalized = normalizeDateOnlyInput(expiresAt);
+ if (!normalized) return "valid";
+ const todayStr = normalizeDateOnlyInput(new Date());
+ const soonDate = new Date();
+ soonDate.setDate(soonDate.getDate() + 90);
+ const soonStr = normalizeDateOnlyInput(soonDate);
+ if (normalized < todayStr) return "expired";
+ if (normalized <= soonStr) return "soon";
+ return "valid";
+}
+
+async function hydrateSignedCustomerDocuments(
+ supabase: ReturnType<typeof getServerClient>,
+ docs: any[],
+) {
+ const list = Array.isArray(docs) ? docs : [];
+ return Promise.all(
+ list.map(async (doc: any) => {
+ const resolvedType = doc.doc_type || doc.document_type || "other";
+ let resolvedUrl = doc.file_url || null;
+ if (doc.storage_bucket && doc.storage_path) {
+ try {
+ const { data: signedData } = await supabase.storage
+ .from(doc.storage_bucket)
+ .createSignedUrl(doc.storage_path, 60 * 60 * 6);
+ if (signedData?.signedUrl) {
+ resolvedUrl = signedData.signedUrl;
+ }
+ } catch (signErr) {
+ console.warn("[crm] falha ao gerar signed URL de documento:", signErr);
+ }
+ }
+ return {
+ ...doc,
+ doc_type: resolvedType,
+ title: doc.title || CUSTOMER_DOC_TITLES[resolvedType] || "Documento",
+ file_url: resolvedUrl,
+ expiryStatus: computeDocumentExpiryStatus(doc.expires_at),
+ };
+ }),
+ );
+}
+
+async function resolvePublicLeadRecord(
+ supabase: ReturnType<typeof getServerClient>,
+ token: string,
+) {
+ const trimmed = (token || "").trim();
+ const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed);
+ if (!isUuid) return null;
+
+ const { data: byMagic } = await supabase
+ .from("leads_crm")
+ .select("*")
+ .eq("magic_token", trimmed)
+ .order("created_at", { ascending: false })
+ .limit(1)
+ .maybeSingle();
+ if (byMagic) return byMagic;
+
+ const { data: byId } = await supabase
+ .from("leads_crm")
+ .select("*")
+ .eq("id", trimmed)
+ .maybeSingle();
+ if (byId) return byId;
+
+ // Suporta links gerados a partir da Ficha 360° do cliente quando o cliente tem histórico de lead
+ const { data: byCustomer } = await supabase
+ .from("leads_crm")
+ .select("*")
+ .eq("customer_id", trimmed)
+ .order("created_at", { ascending: false })
+ .limit(1)
+ .maybeSingle();
+ return byCustomer || null;
+}
+
+async function syncLeadToCustomerRecord(
+ supabase: ReturnType<typeof getServerClient>,
+ leadRow: any,
+ overrides: {
+ fullName?: string | null;
+ document?: string | null;
+ rg?: string | null;
+ birthDate?: string | null;
+ phone?: string | null;
+ email?: string | null;
+ address?: string | null;
+ city?: string | null;
+ state?: string | null;
+ zipcode?: string | null;
+ lgpdAccepted?: boolean;
+ healthNotes?: string | null;
+ },
+): Promise<string | null> {
+ const storeId = leadRow?.store_id;
+ if (!storeId) return null;
+
+ const cleanDoc = (overrides.document ?? leadRow.document ?? "").replace(/\D/g, "");
+ const rawPhone = (overrides.phone ?? leadRow.phone ?? "").trim();
+ const rawEmail = (overrides.email ?? leadRow.email ?? "").trim();
+ const resolvedName = (overrides.fullName ?? leadRow.full_name ?? leadRow.title ?? "Cliente").trim();
+ const birthIso = normalizeDateOnlyInput(overrides.birthDate ?? leadRow.birth_date) || null;
+ const nowIso = new Date().toISOString();
+
+ let customerId: string | null = leadRow.customer_id || null;
+
+ if (!customerId && cleanDoc.length >= 11) {
+ const { data: foundDoc } = await supabase
+ .from("customers_crm")
+ .select("id")
+ .eq("store_id", storeId)
+ .eq("document", cleanDoc)
+ .is("deleted_at", null)
+ .limit(1)
+ .maybeSingle();
+ if (foundDoc?.id) customerId = foundDoc.id;
+ }
+
+ if (!customerId && rawPhone) {
+ const digitsPhone = rawPhone.replace(/\D/g, "");
+ const tail = digitsPhone.length >= 8 ? digitsPhone.slice(-8) : digitsPhone;
+ const { data: foundPhone } = await supabase
+ .from("customers_crm")
+ .select("id")
+ .eq("store_id", storeId)
+ .ilike("phone", `%${tail}%`)
+ .is("deleted_at", null)
+ .limit(1)
+ .maybeSingle();
+ if (foundPhone?.id) customerId = foundPhone.id;
+ }
+
+ if (!customerId && rawEmail) {
+ const { data: foundEmail } = await supabase
+ .from("customers_crm")
+ .select("id")
+ .eq("store_id", storeId)
+ .eq("email", rawEmail)
+ .is("deleted_at", null)
+ .limit(1)
+ .maybeSingle();
+ if (foundEmail?.id) customerId = foundEmail.id;
+ }
+
+ const customerPatch: Record<string, any> = {
+ full_name: resolvedName,
+ name: resolvedName,
+ updated_at: nowIso,
+ last_commercial_touch_at: nowIso,
+ };
+ if (cleanDoc) customerPatch.document = cleanDoc;
+ if (overrides.rg) customerPatch.rg = overrides.rg.trim();
+ if (birthIso) customerPatch.birth_date = birthIso;
+ if (rawPhone) customerPatch.phone = rawPhone;
+ if (rawEmail) customerPatch.email = rawEmail;
+ if (overrides.address) {
+ customerPatch.address = overrides.address.trim();
+ customerPatch.address_line = overrides.address.trim();
+ }
+ if (overrides.city) customerPatch.city = overrides.city.trim();
+ if (overrides.state) customerPatch.state = overrides.state.trim().toUpperCase();
+ if (overrides.zipcode) customerPatch.zipcode = overrides.zipcode.trim();
+ if (typeof overrides.lgpdAccepted === "boolean" && overrides.lgpdAccepted) {
+ customerPatch.lgpd_accepted = true;
+ }
+ if (overrides.healthNotes) customerPatch.health_notes = overrides.healthNotes.trim();
+
+ if (customerId) {
+ await supabase
+ .from("customers_crm")
+ .update(customerPatch)
+ .eq("id", customerId)
+ .eq("store_id", storeId);
+ } else {
+ const { data: inserted, error: insErr } = await supabase
+ .from("customers_crm")
+ .insert({
+ store_id: storeId,
+ kind: "individual",
+ status: "active",
+ channel: leadRow.source || "portal_passageiro",
+ tags: ["Viajante CRM", "Portal do Passageiro"],
+ created_at: nowIso,
+ ...customerPatch,
+ })
+ .select("id")
+ .maybeSingle();
+ if (insErr) {
+ console.warn("[crm] não foi possível criar cliente vinculado a partir do lead:", insErr.message);
+ } else if (inserted?.id) {
+ customerId = inserted.id;
+ }
+ }
+
+ if (customerId && customerId !== leadRow.customer_id) {
+ await supabase
+ .from("leads_crm")
+ .update({ customer_id: customerId, updated_at: nowIso })
+ .eq("id", leadRow.id);
+ }
+
+ return customerId;
+}
+
+export const createCustomerDocumentSchema = z.object({
+ customerId: z.string().uuid(),
+ leadId: z.string().uuid().optional().nullable(),
+ travelerId: z.string().optional().nullable(),
+ travelerName: z.string().optional().nullable(),
+ docType: z.enum(CUSTOMER_DOCUMENT_TYPES),
+ title: z.string().optional().nullable(),
  docNumber: z.string().optional().nullable(),
  issuedAt: z.string().optional().nullable(),
  expiresAt: z.string().optional().nullable(),
  fileUrl: z.string().optional().nullable(),
+ storageBucket: z.string().optional().nullable(),
+ storagePath: z.string().optional().nullable(),
  notes: z.string().optional().nullable(),
 });
 
@@ -1007,23 +1290,35 @@ export const createCustomerDocument = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
+ const cleanTitle =
+ input.title?.trim() ||
+ `${CUSTOMER_DOC_TITLES[input.docType] || "Documento"}${input.docNumber?.trim() ? ` — ${input.docNumber.trim()}` : ""}`;
+
  const { data, error } = await supabase
  .from("customer_documents")
  .insert({
  customer_id: input.customerId,
  store_id: identity.store_id,
+ lead_id: input.leadId || null,
+ traveler_id: input.travelerId || null,
+ traveler_name: input.travelerName || null,
+ document_type: toCanonicalDocumentType(input.docType),
  doc_type: input.docType,
- doc_number: input.docNumber || null,
- issued_at: input.issuedAt || null,
- expires_at: input.expiresAt || null,
- file_url: input.fileUrl || null,
- notes: input.notes || null,
+ title: cleanTitle,
+ doc_number: input.docNumber?.trim() || null,
+ issued_at: normalizeDateOnlyInput(input.issuedAt) || null,
+ expires_at: normalizeDateOnlyInput(input.expiresAt) || null,
+ file_url: input.fileUrl?.trim() || "",
+ storage_bucket: input.storageBucket || null,
+ storage_path: input.storagePath || null,
+ notes: input.notes?.trim() || null,
  })
  .select()
  .single();
 
  if (error) throw new Error("Erro ao anexar documento: " + error.message);
- return data;
+ const [hydrated] = await hydrateSignedCustomerDocuments(supabase, [data]);
+ return hydrated || data;
  });
 
 export const deleteCustomerDocument = createServerFn({ method: "POST" })
@@ -1305,7 +1600,7 @@ export const createLeadSchema = z.object({
  estimatedValueCents: z.number().int().min(0).default(0),
  source: z.string().default("whatsapp"),
  leadSourceDetail: z.string().optional().nullable(),
- status: z.enum(["new", "contacted", "qualified", "proposal", "negotiation", "won", "lost", "converted"]).default("new"),
+ status: z.string().min(1).max(80).default("new"),
  assignedTo: z.string().uuid().optional().nullable(),
  tags: z.array(z.string()).default([]),
  checklist: z.array(z.object({
@@ -1317,6 +1612,8 @@ export const createLeadSchema = z.object({
  fbp: z.string().optional().nullable(),
  fbc: z.string().optional().nullable(),
  gclid: z.string().optional().nullable(),
+ gbraid: z.string().optional().nullable(),
+ wbraid: z.string().optional().nullable(),
  deviceId: z.string().optional().nullable(),
  utmSource: z.string().optional().nullable(),
  utmCampaign: z.string().optional().nullable(),
@@ -1334,6 +1631,23 @@ export const createLead = createServerFn({ method: "POST" })
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
 
  const totalPax = (input.paxAdults || 1) + (input.paxChildren || 0) + (input.paxInfants || 0);
+ const resolvedStage = await resolveStoreStageContract(supabase, identity.store_id, input.status || "new");
+
+ const baseCustomFields = {
+   fbp: input.fbp || null,
+   fbc: input.fbc || null,
+   gclid: input.gclid || null,
+   gbraid: input.gbraid || null,
+   wbraid: input.wbraid || null,
+   device_id: input.deviceId || null,
+   utm_source: input.utmSource || null,
+   utm_campaign: input.utmCampaign || null,
+   utm_medium: input.utmMedium || null,
+   utm_term: input.utmTerm || null,
+   utm_content: input.utmContent || null,
+   kanban_stage_key: resolvedStage.matchedStageKey,
+   kanban_stage_purpose: resolvedStage.purpose,
+ };
 
  const payload = {
  store_id: identity.store_id,
@@ -1354,31 +1668,30 @@ export const createLead = createServerFn({ method: "POST" })
  estimated_value_cents: input.estimatedValueCents || 0,
  source: input.source || "whatsapp",
  lead_source_detail: input.leadSourceDetail || null,
- status: input.status,
+ status: resolvedStage.matchedStageKey,
  assigned_to: input.assignedTo || identity.id,
  tags: input.tags || [],
  checklist: input.checklist || [],
  notes: input.notes?.trim() || null,
- custom_fields: {
-   fbp: input.fbp || null,
-   fbc: input.fbc || null,
-   gclid: input.gclid || null,
-   device_id: input.deviceId || null,
-   utm_source: input.utmSource || null,
-   utm_campaign: input.utmCampaign || null,
-   utm_medium: input.utmMedium || null,
-   utm_term: input.utmTerm || null,
-   utm_content: input.utmContent || null,
- },
+ custom_fields: baseCustomFields,
  last_contacted_at: new Date().toISOString(),
  };
 
- const { data, error } = await supabase
+ let insertRes = await supabase
  .from("leads_crm")
  .insert(payload)
  .select()
  .single();
 
+ if (insertRes.error && /23514|leads_crm_status_check|pipeline_stage/i.test(`${insertRes.error.code || ""} ${insertRes.error.message || ""}`)) {
+   insertRes = await supabase
+     .from("leads_crm")
+     .insert({ ...payload, status: resolvedStage.canonicalBucket })
+     .select()
+     .single();
+ }
+
+ const { data, error } = insertRes;
  if (error) throw error;
 
  if (data?.id) {
@@ -1550,7 +1863,7 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
  .validator(
  z.object({
  leadId: z.string().uuid(),
- status: z.enum(["new", "contacted", "qualified", "proposal", "negotiation", "won", "lost", "converted"]),
+ status: z.string().min(1).max(80),
  }),
  )
  .handler(async ({ data: { leadId, status } }) => {
@@ -1559,51 +1872,95 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
- const updates: Record<string, any> = {
- status,
- updated_at: new Date().toISOString(),
- last_contacted_at: new Date().toISOString(),
+ const normalizedStage = normalizeKanbanStageSlug(status);
+ const resolved = await resolveStoreStageContract(supabase, identity.store_id, normalizedStage);
+ const now = new Date().toISOString();
+
+ const { data: existingLead } = await supabase
+ .from("leads_crm")
+ .select("id, email, phone, estimated_value_cents, custom_fields")
+ .eq("id", leadId)
+ .eq("store_id", identity.store_id)
+ .maybeSingle();
+
+ const existingCf = ((existingLead?.custom_fields as Record<string, any>) || {});
+ const mergedCf = {
+   ...existingCf,
+   kanban_stage_key: resolved.matchedStageKey,
+   kanban_stage_purpose: resolved.purpose,
+   kanban_stage_updated_at: now,
  };
 
- if (status === "won" || status === "lost" || status === "converted") {
- updates.closed_at = new Date().toISOString();
+ const updates: Record<string, any> = {
+ status: resolved.matchedStageKey,
+ pipeline_stage: resolved.matchedStageKey,
+ custom_fields: mergedCf,
+ updated_at: now,
+ last_contacted_at: now,
+ };
+
+ if (resolved.purpose === "won" || resolved.purpose === "lost" || ["won", "lost", "converted"].includes(resolved.canonicalBucket)) {
+ updates.closed_at = now;
  }
 
- const { error } = await supabase
+ let { error } = await supabase
  .from("leads_crm")
  .update(updates)
  .eq("id", leadId)
  .eq("store_id", identity.store_id);
 
- if (error) throw error;
-
- // Closed-Loop Meta CAPI e Google Ads: retroalimenta o Dataset quando o lead muda de status no CRM
- if (["contacted", "qualified", "proposal", "negotiation", "won", "converted"].includes(status.toLowerCase()) && identity.store_id) {
-   supabase
+ if (error && /pipeline_stage|column/i.test(error.message || "")) {
+   delete updates.pipeline_stage;
+   ({ error } = await supabase
      .from("leads_crm")
-     .select("id, email, phone, estimated_value_cents, custom_fields")
+     .update(updates)
      .eq("id", leadId)
-     .maybeSingle()
-     .then(({ data: leadRow }) => {
-       if (leadRow && identity.store_id) {
-         const cf = (leadRow.custom_fields as any) || {};
-         dispatchClosedLoopLeadQualification({
-           data: {
-             storeId: identity.store_id,
-             leadId: leadRow.id,
-             stage: status,
-             email: leadRow.email,
-             phone: leadRow.phone,
-             fbp: cf.fbp || null,
-             fbc: cf.fbc || null,
-             conversionValue: (leadRow.estimated_value_cents || 0) / 100,
-           },
-         }).catch(() => {});
-       }
-     }, () => {});
+     .eq("store_id", identity.store_id));
  }
 
- return { status: "success" as const };
+ if (error && /23514|leads_crm_status_check/i.test(`${error.code || ""} ${error.message || ""}`)) {
+   updates.status = resolved.canonicalBucket;
+   ({ error } = await supabase
+     .from("leads_crm")
+     .update(updates)
+     .eq("id", leadId)
+     .eq("store_id", identity.store_id));
+ }
+
+ if (error) throw error;
+
+ const shouldDispatchConversion =
+   ["in_progress", "review", "won"].includes(resolved.purpose) ||
+   ["contacted", "qualified", "proposal", "negotiation", "won", "converted"].includes(resolved.canonicalBucket);
+
+ // Closed-Loop Meta CAPI e Google Ads: retroalimenta o Dataset quando o lead muda de estagio no CRM
+ if (shouldDispatchConversion && identity.store_id && existingLead) {
+   dispatchClosedLoopLeadQualification({
+     data: {
+       storeId: identity.store_id,
+       leadId: existingLead.id,
+       stage: resolved.matchedStageKey,
+       stagePurpose: resolved.purpose,
+       email: existingLead.email,
+       phone: existingLead.phone,
+       fbp: mergedCf.fbp || null,
+       fbc: mergedCf.fbc || null,
+       gclid: mergedCf.gclid || null,
+       gbraid: mergedCf.gbraid || null,
+       wbraid: mergedCf.wbraid || null,
+       deviceId: mergedCf.device_id || null,
+       conversionValue: (existingLead.estimated_value_cents || 0) / 100,
+     },
+   }).catch(() => {});
+ }
+
+ return {
+   success: true,
+   status: "success" as const,
+   stageKey: resolved.matchedStageKey,
+   canonicalBucket: resolved.canonicalBucket,
+   purpose: resolved.purpose,
+ };
  } catch (e: unknown) {
  console.error("[crm] updateLeadStatus error:", e);
  throw new Error(e instanceof Error ? e.message : String(e));
@@ -1627,7 +1984,7 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  paxChildren: z.number().optional(),
  paxInfants: z.number().optional(),
  paxAges: z.array(z.number()).optional(),
- status: z.enum(["new", "contacted", "qualified", "proposal", "negotiation", "won", "lost", "converted"]).optional(),
+ status: z.string().min(1).max(80).optional(),
  notes: z.string().optional().nullable(),
  estimated_value_cents: z.number().int().min(0).optional().nullable(),
  source: z.string().optional().nullable(),
@@ -1671,8 +2028,16 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  if (updates.paxInfants !== undefined) dbUpdates.pax_infants = updates.paxInfants;
  if (updates.paxAges !== undefined) dbUpdates.pax_ages = updates.paxAges;
  if (updates.status !== undefined) {
- dbUpdates.status = updates.status;
- if (["won", "lost", "converted"].includes(updates.status)) {
+ const resolvedDetailStage = await resolveStoreStageContract(supabase, identity.store_id, updates.status);
+ dbUpdates.status = resolvedDetailStage.matchedStageKey;
+ const baseCf = (dbUpdates.custom_fields as Record<string, any>) || {};
+ dbUpdates.custom_fields = {
+   ...baseCf,
+   kanban_stage_key: resolvedDetailStage.matchedStageKey,
+   kanban_stage_purpose: resolvedDetailStage.purpose,
+   kanban_stage_updated_at: dbUpdates.updated_at,
+ };
+ if (resolvedDetailStage.purpose === "won" || resolvedDetailStage.purpose === "lost" || ["won", "lost", "converted"].includes(resolvedDetailStage.canonicalBucket)) {
  dbUpdates.closed_at = new Date().toISOString();
  }
  }
@@ -1685,14 +2050,29 @@ export const updateLeadDetails = createServerFn({ method: "POST" })
  if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
  if (updates.checklist !== undefined) dbUpdates.checklist = updates.checklist;
  if (updates.pax_list !== undefined) dbUpdates.pax_list = updates.pax_list;
- if (updates.custom_fields !== undefined) dbUpdates.custom_fields = updates.custom_fields;
+ if (updates.custom_fields !== undefined) {
+   dbUpdates.custom_fields = {
+     ...updates.custom_fields,
+     ...((dbUpdates.custom_fields as Record<string, any>) || {}),
+   };
+ }
  if (updates.lost_reason !== undefined) dbUpdates.lost_reason = updates.lost_reason;
 
- const { error } = await supabase
+ let { error } = await supabase
  .from("leads_crm")
  .update(dbUpdates)
  .eq("id", leadId)
  .eq("store_id", identity.store_id);
+
+ if (error && updates.status !== undefined && /23514|leads_crm_status_check/i.test(`${error.code || ""} ${error.message || ""}`)) {
+   const fallbackStage = await resolveStoreStageContract(supabase, identity.store_id, updates.status);
+   dbUpdates.status = fallbackStage.canonicalBucket;
+   ({ error } = await supabase
+     .from("leads_crm")
+     .update(dbUpdates)
+     .eq("id", leadId)
+     .eq("store_id", identity.store_id));
+ }
 
  if (error) throw error;
  return { status: "success" as const };
@@ -1889,10 +2269,15 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
         storeId: identity.store_id,
         leadId: lead.id,
         stage: "converted",
+        stagePurpose: "won",
         email: lead.email,
         phone: lead.phone,
         fbp: cf.fbp || null,
         fbc: cf.fbc || null,
+        gclid: cf.gclid || null,
+        gbraid: cf.gbraid || null,
+        wbraid: cf.wbraid || null,
+        deviceId: cf.device_id || null,
         conversionValue: (lead.estimated_value_cents || 0) / 100,
       },
     }).catch(() => {});
@@ -2268,22 +2653,10 @@ export const removeLeadPassenger = createServerFn({ method: "POST" })
   });
 
 export const getPublicLeadByToken = createServerFn({ method: "GET" })
-  .validator(z.object({ token: z.string() }))
+  .validator(z.object({ token: z.string().min(1) }))
   .handler(async ({ data: { token } }) => {
     const supabase = getServerClient();
-    const { data, error } = await (supabase.rpc as any)("get_public_lead_by_token", {
-      _token: token,
-    });
-    if (!error && data) return data;
-
-    // Fallback direto para quando o lead é acessado via magic_token ou id UUID
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
-    const { data: leadRow } = await supabase
-      .from("leads_crm")
-      .select("id, store_id, title, full_name, phone, email, destination, travel_start, travel_end, pax_count, pax_list, lgpd_accepted, health_notes, pcd, reduced_mobility, autism, custom_fields")
-      .or(isUuid ? `magic_token.eq.${token},id.eq.${token}` : `magic_token.eq.${token}`)
-      .maybeSingle();
-
+    const leadRow = await resolvePublicLeadRecord(supabase, token);
     if (!leadRow) throw new Error("Formulário de viagem não encontrado ou expirado.");
 
     const { data: storeRow } = await supabase
@@ -2292,139 +2665,627 @@ export const getPublicLeadByToken = createServerFn({ method: "GET" })
       .eq("id", leadRow.store_id)
       .maybeSingle();
 
+    let customerRow: any = null;
+    if (leadRow.customer_id) {
+      const { data: cData } = await supabase
+        .from("customers_crm")
+        .select("id, full_name, document, rg, birth_date, phone, email, address, address_line, city, state, zipcode")
+        .eq("id", leadRow.customer_id)
+        .eq("store_id", leadRow.store_id)
+        .maybeSingle();
+      customerRow = cData;
+    }
+
+    const docFilter = leadRow.customer_id
+      ? `lead_id.eq.${leadRow.id},customer_id.eq.${leadRow.customer_id}`
+      : `lead_id.eq.${leadRow.id}`;
+
+    const { data: rawDocs } = await supabase
+      .from("customer_documents")
+      .select("*")
+      .eq("store_id", leadRow.store_id)
+      .or(docFilter)
+      .order("created_at", { ascending: false });
+
+    const customerDocuments = await hydrateSignedCustomerDocuments(supabase, rawDocs || []);
+
     const cf = (leadRow.custom_fields as Record<string, any>) || {};
+    const primaryDossier = Array.isArray(cf.traveler_dossiers)
+      ? cf.traveler_dossiers.find((p: any) => p.is_primary) || cf.traveler_dossiers[0] || {}
+      : {};
     const storeSettings = (storeRow?.settings as Record<string, any>) || {};
+
     return {
-      ...leadRow,
+      id: leadRow.id,
+      store_id: leadRow.store_id,
+      customer_id: leadRow.customer_id || customerRow?.id || null,
+      title: leadRow.title,
+      full_name: leadRow.full_name || customerRow?.full_name || "",
+      document: leadRow.document || customerRow?.document || primaryDossier.document_cpf || primaryDossier.cpf || "",
+      rg: leadRow.rg || customerRow?.rg || primaryDossier.rg || "",
+      birth_date: normalizeDateOnlyInput(leadRow.birth_date || customerRow?.birth_date || primaryDossier.birth_date) || "",
+      phone: leadRow.phone || customerRow?.phone || "",
+      email: leadRow.email || customerRow?.email || "",
+      address: customerRow?.address || customerRow?.address_line || primaryDossier.address || "",
+      city: customerRow?.city || cf.city || "",
+      state: customerRow?.state || cf.state || "",
+      zipcode: customerRow?.zipcode || cf.zipcode || "",
+      destination: leadRow.destination || "",
+      departure_city: leadRow.departure_city || cf.departure_city || "",
+      interest_type: leadRow.interest_type || "package_flight",
+      interest_period: leadRow.interest_period || "",
+      travel_start: normalizeDateOnlyInput(leadRow.travel_start) || "",
+      travel_end: normalizeDateOnlyInput(leadRow.travel_end) || "",
+      accommodation_pref: leadRow.accommodation_pref || cf.accommodation_pref || "",
+      meal_plan: leadRow.meal_plan || cf.meal_plan || "",
+      emergency_contact_name: leadRow.emergency_contact_name || cf.emergency_contact_name || "",
+      emergency_contact_phone: leadRow.emergency_contact_phone || cf.emergency_contact_phone || "",
+      passport_number: primaryDossier.passport_number || cf.passport_number || "",
+      passport_expiry_date: normalizeDateOnlyInput(primaryDossier.passport_expiry_date || cf.passport_expiry_date) || "",
+      seat_preference: primaryDossier.seat_preference || cf.seat_preference || "Indiferente",
+      dietary_restrictions: primaryDossier.dietary_restrictions || cf.dietary_restrictions || "",
+      pax_count: leadRow.pax_count || 1,
+      pax_adults: leadRow.pax_adults || 1,
+      pax_children: leadRow.pax_children || 0,
+      pax_infants: leadRow.pax_infants || 0,
+      pax_list: Array.isArray(leadRow.pax_list) ? leadRow.pax_list : [],
+      lgpd_accepted: Boolean(leadRow.lgpd_accepted),
+      lgpd_accepted_at: leadRow.lgpd_accepted_at || null,
+      health_notes: leadRow.health_notes || cf.health_notes || "",
       pcd: Boolean(leadRow.pcd ?? cf.pcd),
       reduced_mobility: Boolean(leadRow.reduced_mobility ?? cf.reduced_mobility),
       autism: Boolean(leadRow.autism ?? cf.autism_spectrum),
+      custom_fields: cf,
+      customer: customerRow,
+      customer_documents: customerDocuments,
       store_name: storeRow?.name || "Agência de Turismo",
       store_logo: storeRow?.logo_url || null,
       store_whatsapp: storeSettings.whatsapp_phone || storeSettings.whatsapp || storeRow?.phone || null,
     };
   });
 
-export const submitPublicLeadForm = createServerFn({ method: "POST" })
-  .validator(
+export const submitPublicLeadFormSchema = z.object({
+  token: z.string().min(1),
+  fullName: z.string().min(2).max(160).optional(),
+  document: z.string().max(40).optional().nullable(),
+  rg: z.string().max(40).optional().nullable(),
+  birthDate: z.string().max(32).optional().nullable(),
+  phone: z.string().max(40).optional().nullable(),
+  email: z.string().max(160).optional().nullable(),
+  address: z.string().max(260).optional().nullable(),
+  city: z.string().max(120).optional().nullable(),
+  state: z.string().max(10).optional().nullable(),
+  zipcode: z.string().max(24).optional().nullable(),
+  destination: z.string().max(180).optional().nullable(),
+  departureCity: z.string().max(160).optional().nullable(),
+  travelStart: z.string().max(32).optional().nullable(),
+  travelEnd: z.string().max(32).optional().nullable(),
+  interestPeriod: z.string().max(120).optional().nullable(),
+  accommodationPref: z.string().max(120).optional().nullable(),
+  mealPlan: z.string().max(120).optional().nullable(),
+  emergencyContactName: z.string().max(140).optional().nullable(),
+  emergencyContactPhone: z.string().max(40).optional().nullable(),
+  passportNumber: z.string().max(64).optional().nullable(),
+  passportExpiryDate: z.string().max(32).optional().nullable(),
+  seatPreference: z.string().max(64).optional().nullable(),
+  dietaryRestrictions: z.string().max(280).optional().nullable(),
+  paxList: z.array(
     z.object({
-      token: z.string(),
-      paxList: z.array(
-        z.object({
-          full_name: z.string().min(2),
-          document: z.string().optional().nullable(),
-          birth_date: z.string().optional().nullable(),
-          relationship: z.string().default("other"),
-          phone: z.string().optional().nullable(),
-          email: z.string().optional().nullable(),
-        })
-      ),
-      lgpdAccepted: z.boolean(),
-      healthNotes: z.string().optional().nullable(),
-      pcd: z.boolean().optional(),
-      reducedMobility: z.boolean().optional(),
-      autism: z.boolean().optional(),
+      id: z.string().optional(),
+      full_name: z.string().min(2),
+      document: z.string().optional().nullable(),
+      rg: z.string().optional().nullable(),
+      birth_date: z.string().optional().nullable(),
+      relationship: z.string().default("other"),
+      phone: z.string().optional().nullable(),
+      email: z.string().optional().nullable(),
+      passport_number: z.string().optional().nullable(),
+      passport_expiry_date: z.string().optional().nullable(),
+      seat_preference: z.string().optional().nullable(),
+      dietary_restrictions: z.string().optional().nullable(),
     })
-  )
+  ),
+  lgpdAccepted: z.boolean(),
+  healthNotes: z.string().optional().nullable(),
+  pcd: z.boolean().optional(),
+  reducedMobility: z.boolean().optional(),
+  autism: z.boolean().optional(),
+});
+
+export const submitPublicLeadForm = createServerFn({ method: "POST" })
+  .validator(submitPublicLeadFormSchema)
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
-    const { data, error } = await (supabase.rpc as any)("submit_public_lead_passengers", {
-      _token: input.token,
-      _pax_list: input.paxList,
-      _lgpd_accepted: input.lgpdAccepted,
-      _health_notes: input.healthNotes || null,
-      _pcd: input.pcd ?? null,
-      _reduced_mobility: input.reducedMobility ?? null,
-      _autism: input.autism ?? null,
-    });
+    const {
+      token,
+      fullName,
+      document,
+      rg,
+      birthDate,
+      phone,
+      email,
+      address,
+      city,
+      state,
+      zipcode,
+      destination,
+      departureCity,
+      travelStart,
+      travelEnd,
+      interestPeriod,
+      accommodationPref,
+      mealPlan,
+      emergencyContactName,
+      emergencyContactPhone,
+      passportNumber,
+      passportExpiryDate,
+      seatPreference,
+      dietaryRestrictions,
+      paxList,
+      lgpdAccepted,
+      healthNotes,
+      pcd,
+      reducedMobility,
+      autism,
+    } = input;
 
-    // Sincroniza colunas de acessibilidade e custom_fields.traveler_dossiers + consent_records
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.token);
-    const { data: leadRow } = await supabase
-      .from("leads_crm")
-      .select("id, full_name, document, email, phone, custom_fields")
-      .or(isUuid ? `magic_token.eq.${input.token},id.eq.${input.token}` : `magic_token.eq.${input.token}`)
-      .maybeSingle();
-
-    if (leadRow) {
-      const cf = (leadRow.custom_fields as Record<string, any>) || {};
-      const existingDossiers = Array.isArray(cf.traveler_dossiers) ? cf.traveler_dossiers : [];
-      const primaryPax = existingDossiers.find((p: any) => p.is_primary) || {
-        id: "pax-primary",
-        name: leadRow.full_name || "Passageiro Titular",
-        cpf: leadRow.document || "",
-        rg: "",
-        birth_date: "",
-        email: leadRow.email || "",
-        phone: leadRow.phone || "",
-        seat_preference: "Indiferente",
-        dietary_restrictions: "",
-        emergency_contact: "",
-        is_primary: true,
-      };
-      const syncedDossiers = [
-        primaryPax,
-        ...input.paxList.map((pax, idx) => ({
-          id: `pax-public-${idx + 1}`,
-          name: pax.full_name,
-          cpf: pax.document || "",
-          rg: "",
-          birth_date: pax.birth_date || "",
-          email: pax.email || "",
-          phone: pax.phone || "",
-          seat_preference: "Indiferente",
-          dietary_restrictions: "",
-          emergency_contact: "",
-          is_primary: false,
-        })),
-      ];
-
-      const existingConsents = Array.isArray(cf.consent_records) ? cf.consent_records : [];
-      const nowIso = new Date().toISOString();
-      const updatedConsents = input.lgpdAccepted
-        ? [
-            ...existingConsents.filter((c: any) => c.policy_key !== "privacy" && c.id !== "consent-lgpd"),
-            {
-              id: "consent-lgpd",
-              title: "Termo de Consentimento LGPD & Tratamento de Dados",
-              version: "v2.4",
-              status: "accepted",
-              accepted_at: nowIso,
-              channel: "Formulário Digital de Passageiros (/m/lead)",
-              policy_key: "privacy",
-            },
-          ]
-        : existingConsents;
-
-      await supabase
-        .from("leads_crm")
-        .update({
-          pax_list: input.paxList,
-          pax_count: Math.max(1, input.paxList.length + 1),
-          lgpd_accepted: input.lgpdAccepted,
-          lgpd_accepted_at: input.lgpdAccepted ? nowIso : null,
-          health_notes: input.healthNotes || null,
-          ...(input.pcd !== undefined ? { pcd: input.pcd } : {}),
-          ...(input.reducedMobility !== undefined ? { reduced_mobility: input.reducedMobility } : {}),
-          ...(input.autism !== undefined ? { autism: input.autism } : {}),
-          custom_fields: {
-            ...cf,
-            ...(input.pcd !== undefined ? { pcd: input.pcd } : {}),
-            ...(input.reducedMobility !== undefined ? { reduced_mobility: input.reducedMobility } : {}),
-            ...(input.autism !== undefined ? { autism_spectrum: input.autism } : {}),
-            health_notes: input.healthNotes || cf.health_notes || "",
-            traveler_dossiers: syncedDossiers,
-            consent_records: updatedConsents,
-          },
-          updated_at: nowIso,
-        })
-        .eq("id", leadRow.id);
-
-      return data || { success: true };
+    if (!lgpdAccepted) {
+      throw new Error("É necessário aceitar os termos de privacidade (LGPD) para confirmar a ficha.");
     }
 
-    if (error) throw new Error(error.message || "Erro ao enviar acompanhantes.");
-    return data;
+    const leadRow = await resolvePublicLeadRecord(supabase, token);
+    if (!leadRow) {
+      throw new Error("Formulário de viagem não encontrado ou expirado.");
+    }
+
+    const normalizedStart = travelStart !== undefined ? normalizeDateOnlyInput(travelStart) || null : normalizeDateOnlyInput(leadRow.travel_start) || null;
+    const normalizedEnd = travelEnd !== undefined ? normalizeDateOnlyInput(travelEnd) || null : normalizeDateOnlyInput(leadRow.travel_end) || null;
+    if (normalizedStart && normalizedEnd && normalizedEnd < normalizedStart) {
+      throw new Error("A data de retorno não pode ser anterior à data de ida prevista.");
+    }
+
+    const normalizedBirth = normalizeDateOnlyInput(birthDate ?? leadRow.birth_date) || null;
+    const normalizedPassportExpiry = normalizeDateOnlyInput(passportExpiryDate) || "";
+    const cleanDoc = (document ?? leadRow.document ?? "").trim();
+    const cleanName = (fullName ?? leadRow.full_name ?? "Passageiro Titular").trim();
+    const cleanPhone = (phone ?? leadRow.phone ?? "").trim();
+    const cleanEmail = (email ?? leadRow.email ?? "").trim();
+
+    const sanitizedPaxList = paxList.map((pax, idx) => ({
+      id: pax.id || `pax-acc-${idx + 1}`,
+      full_name: pax.full_name.trim(),
+      document: pax.document?.trim() || null,
+      rg: pax.rg?.trim() || null,
+      birth_date: normalizeDateOnlyInput(pax.birth_date) || null,
+      relationship: pax.relationship || "other",
+      phone: pax.phone?.trim() || null,
+      email: pax.email?.trim() || null,
+      passport_number: pax.passport_number?.trim().toUpperCase() || null,
+      passport_expiry_date: normalizeDateOnlyInput(pax.passport_expiry_date) || null,
+      seat_preference: pax.seat_preference || "Indiferente",
+      dietary_restrictions: pax.dietary_restrictions?.trim() || null,
+    }));
+
+    const cf = (leadRow.custom_fields as Record<string, any>) || {};
+    const existingDossiers: any[] = Array.isArray(cf.traveler_dossiers) ? cf.traveler_dossiers : [];
+    const prevPrimary = existingDossiers.find((p: any) => p.is_primary) || {};
+    const primaryEmergencyStr = emergencyContactName
+      ? `${emergencyContactName.trim()}${emergencyContactPhone ? ` (${emergencyContactPhone.trim()})` : ""}`
+      : prevPrimary.emergency_contact || "";
+
+    const updatedPrimaryDossier = {
+      ...prevPrimary,
+      id: prevPrimary.id || "pax-primary",
+      is_primary: true,
+      relationship: "titular",
+      full_name: cleanName,
+      name: cleanName,
+      document_cpf: cleanDoc,
+      cpf: cleanDoc,
+      rg: (rg ?? prevPrimary.rg ?? leadRow.rg ?? "").trim(),
+      birth_date: normalizedBirth || prevPrimary.birth_date || "",
+      email: cleanEmail,
+      phone: cleanPhone,
+      address: (address ?? prevPrimary.address ?? "").trim(),
+      passport_number: (passportNumber ?? prevPrimary.passport_number ?? "").trim().toUpperCase(),
+      passport_expiry_date: normalizedPassportExpiry || prevPrimary.passport_expiry_date || "",
+      seat_preference: seatPreference || prevPrimary.seat_preference || "Indiferente",
+      dietary_restrictions: (dietaryRestrictions ?? prevPrimary.dietary_restrictions ?? "").trim(),
+      emergency_contact: primaryEmergencyStr,
+    };
+
+    const syncedCompanions = sanitizedPaxList.map((pax, idx) => {
+      const prevComp = existingDossiers.find(
+        (d: any) => !d.is_primary && (d.id === pax.id || (pax.document && (d.document_cpf === pax.document || d.cpf === pax.document)) || d.full_name === pax.full_name),
+      ) || {};
+      return {
+        ...prevComp,
+        id: pax.id || prevComp.id || `pax-acc-${idx + 1}`,
+        is_primary: false,
+        relationship: pax.relationship,
+        full_name: pax.full_name,
+        name: pax.full_name,
+        document_cpf: pax.document || "",
+        cpf: pax.document || "",
+        rg: pax.rg || prevComp.rg || "",
+        birth_date: pax.birth_date || "",
+        email: pax.email || "",
+        phone: pax.phone || "",
+        passport_number: pax.passport_number || prevComp.passport_number || "",
+        passport_expiry_date: pax.passport_expiry_date || prevComp.passport_expiry_date || "",
+        seat_preference: pax.seat_preference || prevComp.seat_preference || "Indiferente",
+        dietary_restrictions: pax.dietary_restrictions || prevComp.dietary_restrictions || "",
+      };
+    });
+
+    const syncedDossiers = [updatedPrimaryDossier, ...syncedCompanions];
+    const existingConsents = Array.isArray(cf.consent_records) ? cf.consent_records : [];
+    const nowIso = new Date().toISOString();
+    const updatedConsents = [
+      ...existingConsents.filter((c: any) => c.policy_key !== "privacy" && c.id !== "consent-lgpd"),
+      {
+        id: "consent-lgpd",
+        title: "Termo de Consentimento LGPD & Tratamento de Dados",
+        version: "v2.4",
+        status: "accepted",
+        accepted_at: nowIso,
+        channel: "Central do Passageiro (/m/lead)",
+        policy_key: "privacy",
+      },
+    ];
+
+    const mergedCustomFields = {
+      ...cf,
+      ...(pcd !== undefined ? { pcd } : {}),
+      ...(reducedMobility !== undefined ? { reduced_mobility: reducedMobility } : {}),
+      ...(autism !== undefined ? { autism_spectrum: autism } : {}),
+      ...(healthNotes !== undefined ? { health_notes: healthNotes || "" } : {}),
+      ...(city !== undefined ? { city: city || "" } : {}),
+      ...(state !== undefined ? { state: state || "" } : {}),
+      ...(zipcode !== undefined ? { zipcode: zipcode || "" } : {}),
+      ...(departureCity !== undefined ? { departure_city: departureCity || "" } : {}),
+      ...(accommodationPref !== undefined ? { accommodation_pref: accommodationPref || "" } : {}),
+      ...(mealPlan !== undefined ? { meal_plan: mealPlan || "" } : {}),
+      ...(emergencyContactName !== undefined ? { emergency_contact_name: emergencyContactName || "" } : {}),
+      ...(emergencyContactPhone !== undefined ? { emergency_contact_phone: emergencyContactPhone || "" } : {}),
+      passport_number: updatedPrimaryDossier.passport_number,
+      passport_expiry_date: updatedPrimaryDossier.passport_expiry_date,
+      seat_preference: updatedPrimaryDossier.seat_preference,
+      dietary_restrictions: updatedPrimaryDossier.dietary_restrictions,
+      traveler_dossiers: syncedDossiers,
+      consent_records: updatedConsents,
+    };
+
+    const linkedCustomerId = await syncLeadToCustomerRecord(supabase, leadRow, {
+      fullName: cleanName,
+      document: cleanDoc,
+      rg: rg ?? null,
+      birthDate: normalizedBirth,
+      phone: cleanPhone,
+      email: cleanEmail,
+      address: address ?? null,
+      city: city ?? null,
+      state: state ?? null,
+      zipcode: zipcode ?? null,
+      lgpdAccepted,
+      healthNotes: healthNotes ?? null,
+    });
+
+    const { error: updateErr } = await supabase
+      .from("leads_crm")
+      .update({
+        ...(linkedCustomerId ? { customer_id: linkedCustomerId } : {}),
+        full_name: cleanName,
+        document: cleanDoc || null,
+        rg: rg !== undefined ? (rg?.trim() || null) : leadRow.rg,
+        birth_date: normalizedBirth,
+        phone: cleanPhone || null,
+        email: cleanEmail || null,
+        ...(destination !== undefined ? { destination: destination?.trim() || null } : {}),
+        ...(departureCity !== undefined ? { departure_city: departureCity?.trim() || null } : {}),
+        travel_start: normalizedStart,
+        travel_end: normalizedEnd,
+        ...(interestPeriod !== undefined ? { interest_period: interestPeriod?.trim() || null } : {}),
+        ...(accommodationPref !== undefined ? { accommodation_pref: accommodationPref?.trim() || null } : {}),
+        ...(mealPlan !== undefined ? { meal_plan: mealPlan?.trim() || null } : {}),
+        ...(emergencyContactName !== undefined ? { emergency_contact_name: emergencyContactName?.trim() || null } : {}),
+        ...(emergencyContactPhone !== undefined ? { emergency_contact_phone: emergencyContactPhone?.trim() || null } : {}),
+        pax_list: sanitizedPaxList,
+        pax_count: Math.max(1, sanitizedPaxList.length + 1),
+        lgpd_accepted: true,
+        lgpd_accepted_at: nowIso,
+        health_notes: healthNotes !== undefined ? (healthNotes?.trim() || null) : leadRow.health_notes,
+        ...(pcd !== undefined ? { pcd } : {}),
+        ...(reducedMobility !== undefined ? { reduced_mobility: reducedMobility } : {}),
+        ...(autism !== undefined ? { autism } : {}),
+        custom_fields: mergedCustomFields,
+        updated_at: nowIso,
+        last_contacted_at: nowIso,
+      })
+      .eq("id", leadRow.id);
+
+    if (updateErr) {
+      throw new Error("Não foi possível salvar a ficha: " + updateErr.message);
+    }
+
+    await supabase.from("lead_activities").insert({
+      lead_id: leadRow.id,
+      store_id: leadRow.store_id,
+      type: "public_form_submitted",
+      content: `Ficha de passageiros e viagem atualizada pelo titular ${cleanName} (${sanitizedPaxList.length + 1} viajante(s)).`,
+      metadata: {
+        travel_start: normalizedStart,
+        travel_end: normalizedEnd,
+        companions_count: sanitizedPaxList.length,
+        customer_id: linkedCustomerId,
+        lgpd_accepted: true,
+      },
+    });
+
+    return {
+      success: true,
+      lead_id: leadRow.id,
+      customer_id: linkedCustomerId,
+      travel_start: normalizedStart,
+      travel_end: normalizedEnd,
+      pax_count: Math.max(1, sanitizedPaxList.length + 1),
+    };
+  });
+
+export const uploadPublicLeadDocumentSchema = z.object({
+  token: z.string().min(1),
+  fileName: z.string().min(1).max(200),
+  fileType: z.string().min(1).max(120),
+  base64Data: z.string().min(1),
+  docType: z.enum(CUSTOMER_DOCUMENT_TYPES),
+  docNumber: z.string().max(80).optional().nullable(),
+  issuedAt: z.string().max(32).optional().nullable(),
+  expiresAt: z.string().max(32).optional().nullable(),
+  notes: z.string().max(300).optional().nullable(),
+  travelerId: z.string().max(80).optional().nullable(),
+  travelerName: z.string().max(160).optional().nullable(),
+});
+
+export const uploadPublicLeadDocument = createServerFn({ method: "POST" })
+  .validator(uploadPublicLeadDocumentSchema)
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const {
+      token,
+      fileName,
+      fileType,
+      base64Data,
+      docType,
+      docNumber,
+      issuedAt,
+      expiresAt,
+      notes,
+      travelerId,
+      travelerName,
+    } = input;
+
+    const leadRow = await resolvePublicLeadRecord(supabase, token);
+    if (!leadRow) {
+      throw new Error("Formulário de viagem não encontrado ou expirado.");
+    }
+
+    enforceRateLimit(`public_lead:${leadRow.id}`, "media_upload");
+
+    const normalizedType = resolveNormalizedMimeType(fileType, fileName);
+    if (!PUBLIC_DOCUMENT_MIME_TYPES.has(normalizedType)) {
+      throw new Error("Formato de arquivo não permitido. Envie PDF ou imagem (JPG, PNG, WEBP).");
+    }
+
+    const rawBase64 = base64Data.includes(",") ? (base64Data.split(",")[1] || "") : base64Data;
+    const normalizedBase64 = rawBase64.replace(/\s/g, "");
+    const estimatedBytes =
+      Math.floor((normalizedBase64.length * 3) / 4) -
+      (normalizedBase64.endsWith("==") ? 2 : normalizedBase64.endsWith("=") ? 1 : 0);
+    if (estimatedBytes <= 0 || estimatedBytes > MAX_PUBLIC_DOC_UPLOAD_BYTES) {
+      throw new Error("O arquivo deve ter no máximo 15 MB.");
+    }
+
+    const buffer = Buffer.from(normalizedBase64, "base64");
+    const ext = extensionForMime(normalizedType, fileName);
+    const safeTraveler = (travelerId || "titular").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 48) || "titular";
+    const safeBase = fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 72);
+    const storagePath = `${leadRow.store_id}/leads/${leadRow.id}/${safeTraveler}/${Date.now()}_${safeBase}`;
+
+    let { error: uploadErr } = await supabase.storage
+      .from("identity-vault")
+      .upload(storagePath, buffer, {
+        contentType: normalizedType,
+        upsert: false,
+      });
+
+    if (uploadErr && /bucket not found/i.test(uploadErr.message || "")) {
+      await supabase.storage.createBucket("identity-vault", { public: false }).catch(() => null);
+      ({ error: uploadErr } = await supabase.storage
+        .from("identity-vault")
+        .upload(storagePath, buffer, {
+          contentType: normalizedType,
+          upsert: false,
+        }));
+    }
+
+    if (uploadErr) {
+      throw new Error("Erro ao armazenar documento: " + uploadErr.message);
+    }
+
+    const { data: signed } = await supabase.storage
+      .from("identity-vault")
+      .createSignedUrl(storagePath, 60 * 60 * 6);
+
+    const customerId = await syncLeadToCustomerRecord(supabase, leadRow, {});
+    const resolvedTitle = `${CUSTOMER_DOC_TITLES[docType] || "Documento"}${travelerName ? ` — ${travelerName.trim()}` : ""}${docNumber?.trim() ? ` (${docNumber.trim()})` : ""}`;
+    const issuedIso = normalizeDateOnlyInput(issuedAt) || null;
+    const expiresIso = normalizeDateOnlyInput(expiresAt) || null;
+
+    const { data: docRow, error: insertErr } = await supabase
+      .from("customer_documents")
+      .insert({
+        store_id: leadRow.store_id,
+        customer_id: customerId,
+        lead_id: leadRow.id,
+        traveler_id: travelerId || "pax-primary",
+        traveler_name: travelerName?.trim() || leadRow.full_name || "Passageiro Titular",
+        document_type: toCanonicalDocumentType(docType),
+        doc_type: docType,
+        title: resolvedTitle,
+        doc_number: docNumber?.trim() || null,
+        issued_at: issuedIso,
+        expires_at: expiresIso,
+        notes: notes?.trim() || null,
+        file_url: signed?.signedUrl || storagePath,
+        storage_bucket: "identity-vault",
+        storage_path: storagePath,
+        file_size_bytes: buffer.byteLength,
+        file_extension: ext,
+      })
+      .select("*")
+      .single();
+
+    if (insertErr) {
+      throw new Error("Erro ao vincular documento ao cadastro: " + insertErr.message);
+    }
+
+    const existingAttachments = Array.isArray(leadRow.attachments) ? leadRow.attachments : [];
+    const attachmentEntry = {
+      id: docRow.id,
+      document_id: docRow.id,
+      name: `${CUSTOMER_DOC_TITLES[docType] || docType} (${fileName})`,
+      size: buffer.byteLength > 1024 * 1024
+        ? `${(buffer.byteLength / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.max(1, Math.round(buffer.byteLength / 1024))} KB`,
+      type: normalizedType,
+      url: signed?.signedUrl || storagePath,
+      storage_bucket: "identity-vault",
+      storage_path: storagePath,
+      traveler_id: travelerId || "pax-primary",
+      traveler_name: travelerName?.trim() || leadRow.full_name || "Passageiro Titular",
+      createdAt: new Date().toISOString(),
+    };
+
+    const cf = (leadRow.custom_fields as Record<string, any>) || {};
+    const dossiers = Array.isArray(cf.traveler_dossiers) ? [...cf.traveler_dossiers] : [];
+    const targetIdx = dossiers.findIndex(
+      (d: any) => d.id === (travelerId || "pax-primary") || (travelerId === "pax-primary" && d.is_primary),
+    );
+    if (targetIdx >= 0) {
+      const prevDocs = Array.isArray(dossiers[targetIdx].documents) ? dossiers[targetIdx].documents : [];
+      dossiers[targetIdx] = {
+        ...dossiers[targetIdx],
+        documents: [
+          {
+            id: docRow.id,
+            title: resolvedTitle,
+            type: docType,
+            url: signed?.signedUrl || storagePath,
+            storage_bucket: "identity-vault",
+            storage_path: storagePath,
+            expires_at: expiresIso,
+            uploaded_at: new Date().toISOString(),
+          },
+          ...prevDocs,
+        ],
+      };
+    }
+
+    await supabase
+      .from("leads_crm")
+      .update({
+        attachments: [attachmentEntry, ...existingAttachments],
+        custom_fields: { ...cf, traveler_dossiers: dossiers },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadRow.id);
+
+    await supabase.from("lead_activities").insert({
+      lead_id: leadRow.id,
+      store_id: leadRow.store_id,
+      type: "document_uploaded",
+      content: `Documento anexado no portal do passageiro: ${resolvedTitle}.`,
+      metadata: {
+        document_id: docRow.id,
+        customer_id: customerId,
+        doc_type: docType,
+        traveler_id: travelerId || "pax-primary",
+      },
+    });
+
+    const [hydrated] = await hydrateSignedCustomerDocuments(supabase, [docRow]);
+    return {
+      success: true,
+      customerId,
+      document: hydrated || docRow,
+    };
+  });
+
+export const deletePublicLeadDocument = createServerFn({ method: "POST" })
+  .validator(z.object({ token: z.string().min(1), documentId: z.string().uuid() }))
+  .handler(async ({ data: { token, documentId } }) => {
+    const supabase = getServerClient();
+    const leadRow = await resolvePublicLeadRecord(supabase, token);
+    if (!leadRow) {
+      throw new Error("Formulário de viagem não encontrado ou expirado.");
+    }
+
+    const { data: docRow } = await supabase
+      .from("customer_documents")
+      .select("*")
+      .eq("id", documentId)
+      .eq("store_id", leadRow.store_id)
+      .maybeSingle();
+
+    if (!docRow) {
+      throw new Error("Documento não encontrado.");
+    }
+
+    const belongsToLead =
+      docRow.lead_id === leadRow.id ||
+      (leadRow.customer_id && docRow.customer_id === leadRow.customer_id);
+    if (!belongsToLead) {
+      throw new Error("Sem permissão para remover este documento.");
+    }
+
+    if (docRow.storage_bucket && docRow.storage_path) {
+      await supabase.storage.from(docRow.storage_bucket).remove([docRow.storage_path]).catch(() => null);
+    }
+
+    const { error: delErr } = await supabase
+      .from("customer_documents")
+      .delete()
+      .eq("id", documentId)
+      .eq("store_id", leadRow.store_id);
+
+    if (delErr) {
+      throw new Error("Erro ao excluir documento: " + delErr.message);
+    }
+
+    const existingAttachments = Array.isArray(leadRow.attachments) ? leadRow.attachments : [];
+    const nextAttachments = existingAttachments.filter(
+      (a: any) => a.id !== documentId && a.document_id !== documentId,
+    );
+    const cf = (leadRow.custom_fields as Record<string, any>) || {};
+    const nextDossiers = Array.isArray(cf.traveler_dossiers)
+      ? cf.traveler_dossiers.map((d: any) => ({
+          ...d,
+          documents: Array.isArray(d.documents)
+            ? d.documents.filter((docItem: any) => docItem.id !== documentId)
+            : [],
+        }))
+      : cf.traveler_dossiers;
+
+    await supabase
+      .from("leads_crm")
+      .update({
+        attachments: nextAttachments,
+        custom_fields: { ...cf, traveler_dossiers: nextDossiers },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadRow.id);
+
+    return { success: true };
   });
 
 // ─── ASSIMILAÇÃO ENTERPRISE: PERSISTÊNCIA ATÔMICA & PERFIL 360° DO LEAD ────────
@@ -2433,7 +3294,7 @@ export const persistLeadMove = createServerFn({ method: "POST" })
   .validator(
     z.object({
       leadId: z.string().uuid(),
-      toStatus: z.string(),
+      toStatus: z.string().min(1).max(80),
       reorderedIds: z.array(z.string().uuid()).default([]),
     })
   )
@@ -2442,54 +3303,107 @@ export const persistLeadMove = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
+    const normalizedStage = normalizeKanbanStageSlug(toStatus);
+    const resolved = await resolveStoreStageContract(supabase, identity.store_id, normalizedStage);
+    const now = new Date().toISOString();
+
+    const { data: leadRow } = await supabase
+      .from("leads_crm")
+      .select("id, email, phone, estimated_value_cents, custom_fields")
+      .eq("id", leadId)
+      .eq("store_id", identity.store_id)
+      .maybeSingle();
+
+    const existingCf = ((leadRow?.custom_fields as Record<string, any>) || {});
+    const mergedCf = {
+      ...existingCf,
+      kanban_stage_key: resolved.matchedStageKey,
+      kanban_stage_purpose: resolved.purpose,
+      kanban_stage_updated_at: now,
+    };
+
     const { error } = await (supabase.rpc as any)("persist_lead_move", {
       _lead_id: leadId,
-      _to_status: toStatus,
+      _to_status: resolved.matchedStageKey,
       _reordered_ids: reorderedIds,
       _store_id: identity.store_id,
     });
 
     if (error) {
-      // Fallback defensivo
-      await supabase
+      const patch: Record<string, any> = {
+        status: resolved.matchedStageKey,
+        pipeline_stage: resolved.matchedStageKey,
+        custom_fields: mergedCf,
+        updated_at: now,
+        last_contacted_at: now,
+        closed_at:
+          resolved.purpose === "won" ||
+          resolved.purpose === "lost" ||
+          ["won", "lost", "converted"].includes(resolved.canonicalBucket)
+            ? now
+            : null,
+      };
+
+      let { error: fallbackErr } = await supabase
         .from("leads_crm")
-        .update({
-          status: toStatus,
-          updated_at: new Date().toISOString(),
-          last_contacted_at: new Date().toISOString(),
-          closed_at: ["won", "lost", "converted"].includes(toStatus) ? new Date().toISOString() : null,
-        })
+        .update(patch)
         .eq("id", leadId)
         .eq("store_id", identity.store_id);
+
+      if (fallbackErr && /pipeline_stage|column/i.test(fallbackErr.message || "")) {
+        delete patch.pipeline_stage;
+        ({ error: fallbackErr } = await supabase
+          .from("leads_crm")
+          .update(patch)
+          .eq("id", leadId)
+          .eq("store_id", identity.store_id));
+      }
+
+      if (fallbackErr && /23514|leads_crm_status_check/i.test(`${fallbackErr.code || ""} ${fallbackErr.message || ""}`)) {
+        patch.status = resolved.canonicalBucket;
+        ({ error: fallbackErr } = await supabase
+          .from("leads_crm")
+          .update(patch)
+          .eq("id", leadId)
+          .eq("store_id", identity.store_id));
+      }
+
+      if (fallbackErr) {
+        throw new Error(`Não foi possível mover o card para ${resolved.title}: ${fallbackErr.message}`);
+      }
     }
+
+    const shouldDispatchConversion =
+      ["in_progress", "review", "won"].includes(resolved.purpose) ||
+      ["contacted", "qualified", "proposal", "negotiation", "won", "converted"].includes(resolved.canonicalBucket);
 
     // Closed-Loop Meta CAPI e Google Ads: retroalimenta o Dataset quando o lead avança no funil
-    if (["contacted", "qualified", "proposal", "negotiation", "won", "converted"].includes(toStatus.toLowerCase()) && identity.store_id) {
-      supabase
-        .from("leads_crm")
-        .select("id, email, phone, estimated_value_cents, custom_fields")
-        .eq("id", leadId)
-        .maybeSingle()
-        .then(({ data: leadRow }) => {
-          if (leadRow && identity.store_id) {
-            const cf = (leadRow.custom_fields as any) || {};
-            dispatchClosedLoopLeadQualification({
-              data: {
-                storeId: identity.store_id,
-                leadId: leadRow.id,
-                stage: toStatus,
-                email: leadRow.email,
-                phone: leadRow.phone,
-                fbp: cf.fbp || null,
-                fbc: cf.fbc || null,
-                conversionValue: (leadRow.estimated_value_cents || 0) / 100,
-              },
-            }).catch(() => {});
-          }
-        }, () => {});
+    if (shouldDispatchConversion && identity.store_id && leadRow) {
+      await dispatchClosedLoopLeadQualification({
+        data: {
+          storeId: identity.store_id,
+          leadId: leadRow.id,
+          stage: resolved.matchedStageKey,
+          stagePurpose: resolved.purpose,
+          email: leadRow.email,
+          phone: leadRow.phone,
+          fbp: mergedCf.fbp || null,
+          fbc: mergedCf.fbc || null,
+          gclid: mergedCf.gclid || null,
+          gbraid: mergedCf.gbraid || null,
+          wbraid: mergedCf.wbraid || null,
+          deviceId: mergedCf.device_id || null,
+          conversionValue: (leadRow.estimated_value_cents || 0) / 100,
+        },
+      }).catch(() => {});
     }
 
-    return { success: true };
+    return {
+      success: true,
+      stageKey: resolved.matchedStageKey,
+      canonicalBucket: resolved.canonicalBucket,
+      purpose: resolved.purpose,
+    };
   });
 
 export const deduplicateAndLinkLead = createServerFn({ method: "POST" })
@@ -2681,9 +3595,12 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
     let infotravelCaptures: any[] = [];
     let radarMatches: any[] = [];
     try {
-      const propFilter = lead.customer_id
-        ? `customer_id.eq.${lead.customer_id},lead_id.eq.${lead.id}`
-        : `lead_id.eq.${lead.id}`;
+      const propOr = [`lead_id.eq.${lead.id}`];
+      if (lead.customer_id) propOr.push(`customer_id.eq.${lead.customer_id}`);
+      const cleanLeadPhone = lead.phone ? String(lead.phone).replace(/\D/g, "").slice(-8) : "";
+      if (cleanLeadPhone.length >= 6) propOr.push(`client_whatsapp.ilike.%${cleanLeadPhone}%`);
+      if (lead.email) propOr.push(`client_email.eq.${lead.email}`);
+      const propFilter = propOr.join(",");
       const [
         { data: propData },
         { data: agencyProps },
@@ -2700,7 +3617,7 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
           .from("travel_proposals")
           .select("id, lead_id, customer_id, public_token, title, destination_city, client_name, client_whatsapp, status, pricing, valid_until, created_at")
           .eq("store_id", identity.store_id)
-          .neq("lead_id", lead.id)
+          .or(`lead_id.is.null,lead_id.neq.${lead.id}`)
           .order("created_at", { ascending: false })
           .limit(20),
         supabase
@@ -2738,9 +3655,26 @@ export const getCustomer360Profile = createServerFn({ method: "GET" })
       // fallback gracioso
     }
 
+    let customerDocuments: any[] = [];
+    try {
+      const docFilter = lead.customer_id
+        ? `lead_id.eq.${lead.id},customer_id.eq.${lead.customer_id}`
+        : `lead_id.eq.${lead.id}`;
+      const { data: rawLeadDocs } = await supabase
+        .from("customer_documents")
+        .select("*")
+        .eq("store_id", identity.store_id)
+        .or(docFilter)
+        .order("created_at", { ascending: false });
+      customerDocuments = await hydrateSignedCustomerDocuments(supabase, rawLeadDocs || []);
+    } catch {
+      customerDocuments = [];
+    }
+
     return {
       lead,
       customer,
+      documents: customerDocuments,
       otherLeads,
       contracts,
       trips,

@@ -98,13 +98,13 @@ export default defineConfig({
   const stylesCss = `@import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --border: #27272a;
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --border: oklch(0.274 0.006 286.033);
 }
 
 body {

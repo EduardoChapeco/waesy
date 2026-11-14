@@ -167,6 +167,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  metaTags.push({ name: "keywords", content: seoKeywords });
  }
 
+ const loaderPixels = Array.isArray((loaderData as any)?.pixels) ? (loaderData as any).pixels : [];
+ const googleSiteVerification =
+   loaderPixels.find((p: any) => p.provider === "google_site_verification")?.verificationCode ||
+   store?.settings?.google_site_verification ||
+   null;
+ const metaDomainVerification =
+   loaderPixels.find((p: any) => p.provider === "meta_domain_verification")?.verificationCode ||
+   store?.settings?.meta_domain_verification ||
+   null;
+
+ if (googleSiteVerification) {
+   metaTags.push({ name: "google-site-verification", content: String(googleSiteVerification) });
+ }
+ if (metaDomainVerification) {
+   metaTags.push({ name: "facebook-domain-verification", content: String(metaDomainVerification) });
+ }
+
  const faviconUrl =
  brand?.favicon_url ||
  brand?.faviconUrl ||
@@ -203,7 +220,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  },
  {
  rel: "stylesheet",
- href: `https://fonts.googleapis.com/css2?family=${(theme?.font_body || "Inter").replace(/ /g, "+")}:wght@400;500;600;700&family=${(theme?.font_heading || "Oswald").replace(/ /g, "+")}:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap`,
+ href: (() => {
+  const bodyFont = (theme?.font_body || "Inter").trim().replace(/ /g, "+");
+  const headingFont = (theme?.font_heading || "Inter").trim().replace(/ /g, "+");
+  const families = [
+   `${bodyFont}:wght@400;500;600`,
+   ...(headingFont !== bodyFont ? [`${headingFont}:wght@400;500;600`] : []),
+   "JetBrains+Mono:wght@400;500;600",
+  ];
+  return `https://fonts.googleapis.com/css2?family=${families.join("&family=")}&display=swap`;
+ })(),
  },
  ],
  };
@@ -221,7 +247,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
   const metaPixel = pixels?.find((p: any) => p.provider === "meta_pixel")?.pixelId;
   const gaPixel = pixels?.find((p: any) => p.provider === "google_analytics")?.measurementId;
-  const googleAdsId = pixels?.find((p: any) => p.provider === "google_ads")?.conversionId;
+  const googleAdsEntry = pixels?.find((p: any) => p.provider === "google_ads");
+  const googleAdsId = googleAdsEntry?.conversionId;
+  const googleAdsLabel = googleAdsEntry?.conversionLabel;
+  const primaryGtagId = gaPixel || googleAdsId;
+  const gtmId = pixels?.find((p: any) => p.provider === "gtm")?.pixelId;
   const tiktokPixel = pixels?.find((p: any) => p.provider === "tiktok_pixel")?.pixelId;
 
   return (
@@ -241,34 +271,31 @@ function RootShell({ children }: { children: ReactNode }) {
 
         {/* Speculation Rules: prerender irrestrito desativado (SPEC-20261104) para evitar sobrecarga de SSR em background */}
 
-        {/* Inject Google Analytics if configured */}
-        {gaPixel && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaPixel}`}></script>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaPixel}');
-                `,
-              }}
-            />
-          </>
+        {/* Inject Google Tag Manager if configured */}
+        {gtmId && (
+          <script
+            id={`gtm-script-${gtmId}`}
+            dangerouslySetInnerHTML={{
+              __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`,
+            }}
+          />
         )}
 
-        {/* Inject Google Ads if configured */}
-        {googleAdsId && (
+        {/* Inject unified Google Analytics 4 + Google Ads Tag */}
+        {primaryGtagId && (
           <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${googleAdsId}`}></script>
+            <script id="waesy-gtag-js" async src={`https://www.googletagmanager.com/gtag/js?id=${primaryGtagId}`}></script>
             <script
+              id="waesy-gtag-config"
               dangerouslySetInnerHTML={{
                 __html: `
                 window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
+                function gtag(){window.dataLayer.push(arguments);}
+                window.gtag = window.gtag || gtag;
                 gtag('js', new Date());
-                gtag('config', '${googleAdsId}');
+                ${gaPixel ? `gtag('config', '${gaPixel}');` : ""}
+                ${googleAdsId ? `gtag('config', '${googleAdsId}');` : ""}
+                ${googleAdsId && googleAdsLabel ? `window.__WAESY_GOOGLE_ADS_SEND_TO__ = '${googleAdsId}/${googleAdsLabel}';` : ""}
                 `,
               }}
             />
@@ -278,6 +305,7 @@ function RootShell({ children }: { children: ReactNode }) {
         {/* Inject Meta Pixel if configured */}
         {metaPixel && (
           <script
+            id={`meta-pixel-${metaPixel}`}
             dangerouslySetInnerHTML={{
               __html: `
               !function(f,b,e,v,n,t,s)
@@ -298,6 +326,7 @@ function RootShell({ children }: { children: ReactNode }) {
         {/* Inject TikTok Pixel if configured */}
         {tiktokPixel && (
           <script
+            id={`tiktok-pixel-${tiktokPixel}`}
             dangerouslySetInnerHTML={{
               __html: `
               !function (w, d, t) {
@@ -334,7 +363,7 @@ function RootShell({ children }: { children: ReactNode }) {
           }}
         />
       </head>
- <body className="w-full max-w-full viewport-lock antialiased select-none font-sans">
+ <body className="w-full max-w-full min-h-dvh overflow-x-clip antialiased select-none font-sans">
         <a href="#main-content" className="skip-link">
           Pular para o conteúdo principal
         </a>

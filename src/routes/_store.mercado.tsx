@@ -467,10 +467,10 @@ function MercadoVerticalPage() {
       {cartItemCount > 0 ? (
         <aside
           aria-label="Resumo do Carrinho"
-          className="fixed bottom-16 sm:bottom-6 inset-x-4 max-w-md mx-auto z-30 flex items-center justify-between p-3 rounded-2xl bg-emerald-600 text-white shadow-overlay animate-in fade-in select-none"
+          className="fixed bottom-16 sm:bottom-6 inset-x-4 max-w-md mx-auto z-30 flex items-center justify-between p-3 rounded-2xl bg-emerald-700 text-neutral-50 shadow-overlay animate-in fade-in select-none"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-9 rounded-xl bg-white/20 flex items-center justify-center font-black text-xs shrink-0">
+            <div className="size-9 rounded-xl bg-neutral-50/20 flex items-center justify-center font-black text-xs shrink-0">
               {cartItemCount}
             </div>
             <div className="flex flex-col min-w-0 leading-tight">
@@ -482,7 +482,7 @@ function MercadoVerticalPage() {
           <button
             type="button"
             onClick={() => setIsSupermarketCartOpen(true)}
-            className="flex items-center gap-2 h-11 min-h-11 px-4 rounded-xl bg-white text-emerald-700 font-black text-xs hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white shrink-0"
+            className="flex items-center gap-2 h-11 min-h-11 px-4 rounded-xl bg-neutral-50 text-emerald-800 font-black text-xs hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-50 shrink-0"
           >
             <span>R$ {(cartSubtotalCents / 100).toFixed(2).replace(".", ",")}</span>
             <ArrowRight size={14} weight="bold" />

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { z } from "zod";
 
 export interface StoreLoyaltyProgram {
@@ -72,8 +73,8 @@ export const saveStoreLoyaltyProgram = createServerFn({ method: "POST" })
  reward_description: z.string().min(2, "Descrição da recompensa é obrigatória"),
  mechanic_type: z.enum(["per_order", "per_spent_amount"]).default("per_order"),
  min_spent_cents: z.number().int().min(0).default(0),
- card_bg_color: z.string().default("#18181B"),
- card_text_color: z.string().default("#FFFFFF"),
+ card_bg_color: z.string().default(TOKEN_HEX.neutral900),
+ card_text_color: z.string().default(TOKEN_HEX.white),
  stamp_icon: z.string().default("star"),
  banner_url: z.string().optional(),
  logo_url: z.string().optional(),

@@ -320,8 +320,8 @@ export function SmartTravelBookingModal({
                       <Button
                         type="button"
                         variant="outline"
-                        size="icon"
-                        className="size-11 min-h-11 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        size="iconSm"
+                        className="size-11 min-h-11 sm:size-9 sm:min-h-9 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         disabled={adultsCount <= 1}
                         onClick={() => setAdultsCount(Math.max(1, adultsCount - 1))}
                       >
@@ -331,8 +331,8 @@ export function SmartTravelBookingModal({
                       <Button
                         type="button"
                         variant="outline"
-                        size="icon"
-                        className="size-11 min-h-11 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        size="iconSm"
+                        className="size-11 min-h-11 sm:size-9 sm:min-h-9 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         disabled={adultsCount >= 10}
                         onClick={() => setAdultsCount(adultsCount + 1)}
                       >
@@ -351,8 +351,8 @@ export function SmartTravelBookingModal({
                       <Button
                         type="button"
                         variant="outline"
-                        size="icon"
-                        className="size-11 min-h-11 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        size="iconSm"
+                        className="size-11 min-h-11 sm:size-9 sm:min-h-9 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         disabled={childrenCount <= 0}
                         onClick={() => handleChildrenCountChange(-1)}
                       >
@@ -362,8 +362,8 @@ export function SmartTravelBookingModal({
                       <Button
                         type="button"
                         variant="outline"
-                        size="icon"
-                        className="size-11 min-h-11 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        size="iconSm"
+                        className="size-11 min-h-11 sm:size-9 sm:min-h-9 rounded-lg border-border/70 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         disabled={childrenCount >= 6}
                         onClick={() => handleChildrenCountChange(1)}
                       >

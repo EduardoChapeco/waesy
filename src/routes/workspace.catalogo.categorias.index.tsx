@@ -12,21 +12,27 @@ import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { ErrorState } from "@/components/state/states";
 
 export const Route = createFileRoute("/workspace/catalogo/categorias/")({
  head: () => ({ meta: [{ title: "Categorias | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const [catsRes, storeRes] = await Promise.all([
- listCategories().catch(() => []),
- getStoreSettings().catch(() => null),
+ listCategories(),
+ getStoreSettings(),
  ]);
  return {
  categories: catsRes || [],
  store: storeRes || null,
+ loadError: null as string | null,
  };
- } catch {
- return { categories: [], store: null };
+ } catch (err: any) {
+ return {
+ categories: [],
+ store: null,
+ loadError: err?.message || "Não foi possível carregar as categorias.",
+ };
  }
  },
  component: AdminCategoriesPage,
@@ -256,7 +262,7 @@ function CategoriesDesktopView({
 }
 
 function AdminCategoriesPage() {
-  const { categories, store } = ((Route.useLoaderData?.() as any) || {});
+  const { categories = [], store, loadError = null } = ((Route.useLoaderData?.() as any) || {});
   const semantics = getNicheSemantics(store);
   const router = useRouter();
   const { isCompact } = useWindowSizeClass();
@@ -317,7 +323,13 @@ function AdminCategoriesPage() {
         }}
       />
 
-      {filteredCategories.length === 0 ? (
+      {loadError ? (
+        <ErrorState
+          title="Erro ao carregar categorias"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      ) : filteredCategories.length === 0 ? (
         <div className="py-16 text-center rounded-lg border border-border/40 bg-card space-y-4 px-4">
           <div className="size-14 rounded-lg bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <Plus className="size-6" />

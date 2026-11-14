@@ -39,7 +39,7 @@ export function StudioToolbar({
           <Link
             to={backTo as any}
             params={backParams as any}
-            className="flex h-8 w-8 items-center justify-center rounded-full border glass text-foreground/70 hover:glass-dark transition-colors shrink-0 cursor-pointer min-h-11 sm:min-h-0"
+            className="flex size-11 min-h-11 sm:size-9 sm:min-h-9 items-center justify-center rounded-lg border border-border/70 glass text-foreground/70 hover:glass-dark hover:text-foreground transition-colors shrink-0 cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -52,7 +52,7 @@ export function StudioToolbar({
               )}
               {status && (
                 <span
-                  className={`rounded-full px-2 py-1 text-3xs font-bold uppercase tracking-wider ${statusBg} ${statusColor}`}
+                  className={`rounded-md px-2 py-1 text-3xs font-bold uppercase tracking-wider ${statusBg} ${statusColor}`}
                 >
                   {status}
                 </span>

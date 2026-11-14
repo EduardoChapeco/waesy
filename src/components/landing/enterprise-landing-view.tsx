@@ -27,11 +27,12 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
     companyDetails: CnpjCompanyDTO | null;
   } | null>(null);
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ["current-user-profile"],
     queryFn: () => getProfile().catch(() => null),
     staleTime: 60_000,
   });
+  void isProfileLoading;
 
   const currentUser = (profile as any)?.user || (profile as any);
   const userName =

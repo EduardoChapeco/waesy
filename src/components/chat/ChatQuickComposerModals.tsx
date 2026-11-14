@@ -47,10 +47,24 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ArtifactInteractiveTable } from "@/components/chat/artifacts/ArtifactInteractiveTable";
+import { createCommercialInvoice, getStoreCommercialPaymentConfig } from "@/services/commercial-invoices.functions";
+import { generatePixBrCode } from "@/lib/pix-payload";
 import { useCart } from "@/lib/cart-context";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+function parseBrlAmountToCents(raw: string): number {
+  const cleaned = String(raw || "").replace(/R\$\s*/gi, "").trim();
+  if (!cleaned) return 0;
+  // Formatos: "1.290,50" -> 1290.50 ou "290.50" -> 290.50
+  const normalized = cleaned.includes(",")
+    ? cleaned.replace(/\./g, "").replace(",", ".")
+    : cleaned;
+  const num = Number(normalized);
+  if (!Number.isFinite(num) || num <= 0) return 0;
+  return Math.round(num * 100);
+}
 
 export interface StructuredDispatchPayload {
   message: string;
@@ -67,6 +81,11 @@ export interface ChatQuickComposerModalsProps {
   storeId?: string;
   storeName?: string;
   storeSlug?: string;
+  threadId?: string | null;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
   activeModalOverride?: "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null;
   onClearModalOverride?: () => void;
 }
@@ -113,14 +132,20 @@ export function ChatQuickComposerModals({
   onTrayOpenChange,
   onDispatchMessage,
   onOpenRmaModal,
+  storeId,
   storeName = "Loja Parceira",
   storeSlug,
+  customerId,
+  customerName,
+  customerPhone,
+  customerEmail,
   activeModalOverride,
   onClearModalOverride,
 }: ChatQuickComposerModalsProps) {
   const [activeModal, setActiveModal] = useState<
     "form" | "event" | "sticker" | "spreadsheet" | "invoice" | "boleto" | "contract" | "quote" | "image_card" | null
   >(null);
+  const [isSubmittingTx, setIsSubmittingTx] = useState(false);
 
   const currentModal = activeModalOverride || activeModal;
   const closeAllModals = () => {
@@ -290,32 +315,123 @@ export function ChatQuickComposerModals({
   const [txNotes, setTxNotes] = useState("");
 
   const handleDispatchTransactional = async (kind: "invoice" | "boleto" | "contract" | "quote") => {
+    if (isSubmittingTx) return;
     const cleanTitle = txTitle.trim() || (kind === "invoice" ? "Fatura / Cobrança PIX" : kind === "boleto" ? "Boleto Bancário / 2ª Via" : kind === "contract" ? "Contrato para Assinatura Digital" : "Orçamento Comercial");
-    const cleanAmount = txAmount.trim() || "A confirmar";
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.app";
-    const generatedLink = txCodeOrLink.trim() || (kind === "contract" ? `${origin}/turismo` : `${origin}/checkout`);
-    const labelMap = { invoice: "COBRANÇA PIX / FATURA", boleto: "BOLETO / 2ª VIA", contract: "CONTRATO DIGITAL", quote: "ORÇAMENTO / PROPOSTA" };
-    await onDispatchMessage({
-      message: `[${labelMap[kind]}] ${cleanTitle} • Valor: R$ ${cleanAmount}${txDueDate ? ` • Vencimento: ${txDueDate}` : ""} • Acesse: ${generatedLink}${txNotes ? `\n${txNotes}` : ""}`,
-      message_type: "structured_blocks",
-      payload: {
-        text: `${cleanTitle} — Valor: R$ ${cleanAmount}`,
-        blocks: [
-          {
-            type: "summary_card",
-            data: {
-              title: cleanTitle,
-              subtitle: `Valor: R$ ${cleanAmount}${txDueDate ? ` • Venc.: ${txDueDate}` : ""} • Link: ${generatedLink}`,
-              badge: labelMap[kind],
-              action_url: generatedLink,
+    const amountCents = parseBrlAmountToCents(txAmount);
+    const cleanAmount = txAmount.trim() || (amountCents > 0 ? formatMoney(amountCents / 100).replace(/^R\$\s*/, "") : "A confirmar");
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+    let generatedLink = txCodeOrLink.trim();
+    let generatedInvoiceCode: string | null = null;
+    let generatedPixCode = "";
+
+    setIsSubmittingTx(true);
+    try {
+      if (!generatedLink && (kind === "invoice" || kind === "quote") && storeId && amountCents > 0) {
+        const createdRes = await createCommercialInvoice({
+          data: {
+            storeId,
+            customerId: customerId || null,
+            documentType: kind === "invoice" ? "invoice" : "budget",
+            customer: {
+              name: customerName && customerName.trim().length >= 2 ? customerName.trim() : "Cliente Atendimento",
+              phone: customerPhone || "",
+              email: customerEmail || "",
             },
+            items: [
+              {
+                title: cleanTitle,
+                quantity: 1,
+                unitPriceCents: amountCents,
+                totalPriceCents: amountCents,
+              },
+            ],
+            subtotalCents: amountCents,
+            discountCents: 0,
+            shippingCents: 0,
+            totalCents: amountCents,
+            paymentTerms: {
+              method: "pix",
+              methodLabel: kind === "invoice" ? "PIX Instantâneo" : "Proposta Comercial",
+              installmentsCount: 1,
+            },
+            notes: txNotes.trim() || "",
+            validUntil: txDueDate.trim() || null,
           },
-        ],
-      },
-    });
-    toast.success(`${cleanTitle} enviado na conversa!`);
-    setTxTitle(""); setTxAmount(""); setTxDueDate(""); setTxCodeOrLink(""); setTxNotes("");
-    closeAllModals();
+        });
+        if (createdRes?.invoice?.public_token) {
+          generatedLink = `${origin}/fatura/${createdRes.invoice.public_token}`;
+          generatedInvoiceCode = createdRes.invoice.invoice_code || null;
+        }
+        if (kind === "invoice") {
+          const payConfig = await getStoreCommercialPaymentConfig({ data: { storeId } }).catch(() => null);
+          const pixKey = String(payConfig?.pixKey || "").trim();
+          if (pixKey) {
+            generatedPixCode = generatePixBrCode({
+              pixKey,
+              amountCents,
+              merchantName: storeName,
+              merchantCity: "Brasil",
+              txId: (generatedInvoiceCode || "WAESY").replace(/[^A-Za-z0-9]/g, "").slice(0, 20),
+              description: cleanTitle,
+            });
+          }
+        }
+      }
+
+      if (!generatedLink) {
+        toast.error(
+          kind === "boleto" || kind === "contract"
+            ? "Cole a linha digitável ou o link oficial antes de enviar no chat."
+            : "Informe o valor (R$) ou cole uma chave PIX / link de pagamento válido.",
+        );
+        return;
+      }
+
+      const labelMap = { invoice: "COBRANÇA PIX / FATURA", boleto: "BOLETO / 2ª VIA", contract: "CONTRATO DIGITAL", quote: "ORÇAMENTO / PROPOSTA" };
+      const codePrefix = generatedInvoiceCode ? `${generatedInvoiceCode} • ` : "";
+      const blocks: Array<Record<string, any>> = [];
+      if (generatedPixCode) {
+        blocks.push({
+          type: "pix_payment",
+          data: {
+            pix_code: generatedPixCode,
+            amount_formatted: `R$ ${cleanAmount}`,
+            expires_in: txDueDate.trim() || "24 horas",
+            invoice_url: generatedLink,
+          },
+        });
+      }
+      blocks.push({
+        type: "summary_card",
+        data: {
+          title: `${codePrefix}${cleanTitle}`,
+          subtitle: `Valor: R$ ${cleanAmount}${txDueDate ? ` • Venc.: ${txDueDate}` : ""} • Link: ${generatedLink}`,
+          badge: labelMap[kind],
+          action_url: generatedLink,
+        },
+      });
+
+      await onDispatchMessage({
+        message: generatedPixCode
+          ? `[${labelMap[kind]}] ${codePrefix}${cleanTitle} • Valor: R$ ${cleanAmount}\nPIX Copia e Cola:\n${generatedPixCode}\nFatura: ${generatedLink}${txNotes ? `\n${txNotes}` : ""}`
+          : `[${labelMap[kind]}] ${codePrefix}${cleanTitle} • Valor: R$ ${cleanAmount}${txDueDate ? ` • Vencimento: ${txDueDate}` : ""} • Acesse: ${generatedLink}${txNotes ? `\n${txNotes}` : ""}`,
+        message_type: "structured_blocks",
+        payload: {
+          text: `${codePrefix}${cleanTitle} — Valor: R$ ${cleanAmount}`,
+          invoice_code: generatedInvoiceCode,
+          invoice_url: generatedLink,
+          pix_code: generatedPixCode || undefined,
+          blocks,
+        },
+      });
+      toast.success(`${cleanTitle} enviado na conversa!`);
+      setTxTitle(""); setTxAmount(""); setTxDueDate(""); setTxCodeOrLink(""); setTxNotes("");
+      closeAllModals();
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível gerar e enviar a cobrança.");
+    } finally {
+      setIsSubmittingTx(false);
+    }
   };
 
   const handleAddFormField = () => {
@@ -478,29 +594,49 @@ export function ChatQuickComposerModals({
 
   const handleDispatchLocation = async () => {
     onTrayOpenChange(false);
-    await onDispatchMessage({
-      message: "Localização compartilhada ao vivo (-26.7254, -53.5178)",
-      message_type: "structured_blocks",
-      payload: {
-        blocks: [
-          {
-            type: "order_tracker",
-            data: {
-              order_id: `LOC-${Date.now().toString().slice(-4)}`,
-              current_stage: "dispatched",
-              pickup_code: "4829",
-              delivery_address: "Av. Willy Barth, Centro — São Miguel do Oeste",
-              store_name: storeName,
-              store_slug: storeSlug,
-              current_lat: -26.7254,
-              current_lng: -53.5178,
-              estimated_arrival: "8 min",
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      toast.error("Geolocalização não disponível neste navegador. Envie o endereço por escrito ou utilize o mapa da entrega.");
+      return;
+    }
+
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 30000,
+        });
+      });
+
+      const currentLat = Number(pos.coords.latitude.toFixed(6));
+      const currentLng = Number(pos.coords.longitude.toFixed(6));
+      const mapsLink = `https://maps.google.com/?q=${currentLat},${currentLng}`;
+
+      await onDispatchMessage({
+        message: `Localização compartilhada (${currentLat}, ${currentLng}) • Mapa: ${mapsLink}`,
+        message_type: "structured_blocks",
+        payload: {
+          blocks: [
+            {
+              type: "order_tracker",
+              data: {
+                order_id: `LOC-${Date.now().toString().slice(-4)}`,
+                current_stage: "dispatched",
+                delivery_address: `${storeName} • Coordenadas verificadas (${currentLat}, ${currentLng})`,
+                store_name: storeName,
+                store_slug: storeSlug,
+                current_lat: currentLat,
+                current_lng: currentLng,
+                maps_url: mapsLink,
+              },
             },
-          },
-        ],
-      },
-    });
-    toast.success("Localização e rastreio enviados!");
+          ],
+        },
+      });
+      toast.success("Localização real enviada na conversa!");
+    } catch {
+      toast.error("Permita o acesso à localização no navegador para compartilhar coordenadas reais.");
+    }
   };
 
   return (
@@ -1017,9 +1153,9 @@ export function ChatQuickComposerModals({
           </div>
           <div className="p-4 border-t border-border/50 flex items-center justify-end gap-2 bg-muted/20">
             <Button type="button" variant="outline" onClick={closeAllModals} className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer">Cancelar</Button>
-            <Button type="button" onClick={() => currentModal && (currentModal === "invoice" || currentModal === "boleto" || currentModal === "contract" || currentModal === "quote") && handleDispatchTransactional(currentModal)} className="h-11 min-h-11 px-5 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer">
+            <Button type="button" disabled={isSubmittingTx} onClick={() => currentModal && (currentModal === "invoice" || currentModal === "boleto" || currentModal === "contract" || currentModal === "quote") && handleDispatchTransactional(currentModal)} className="h-11 min-h-11 px-5 text-xs font-bold gap-2 bg-primary text-primary-foreground cursor-pointer">
               <Send className="size-3.5" />
-              <span>Disparar no Chat</span>
+              <span>{isSubmittingTx ? "Gerando..." : "Disparar no Chat"}</span>
             </Button>
           </div>
         </DialogContent>
@@ -1226,17 +1362,26 @@ export function InChatStoreCartBanner({
   storeId,
   storeName = "Loja Parceira",
   storeSlug,
+  customerId,
+  customerName,
+  customerPhone,
+  customerEmail,
   onDispatchMessage,
 }: {
   storeId?: string;
   storeName?: string;
   storeSlug?: string;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
   onDispatchMessage: (data: StructuredDispatchPayload) => Promise<void> | void;
 }) {
   const { cart, globalCarts, updateQty } = useCart();
   const [expanded, setExpanded] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [payMethod, setPayMethod] = useState<"pix" | "card">("pix");
+  const [isConfirmingPay, setIsConfirmingPay] = useState(false);
 
   const activeStoreCart = useMemo(() => {
     if (storeId && globalCarts.length > 0) {
@@ -1311,44 +1456,113 @@ export function InChatStoreCartBanner({
   };
 
   const handleQuickPayConfirm = async () => {
-    const orderNumber = `WSY-${Date.now().toString().slice(-4)}`;
-    const pickupCode = String(Math.floor(1000 + Math.random() * 9000));
+    if (isConfirmingPay) return;
+    if (!storeId) {
+      toast.error("Vincule uma loja ativa antes de gerar o pagamento da sacola.");
+      return;
+    }
 
-    await onDispatchMessage({
-      message: `Pagamento ${payMethod === "pix" ? "PIX" : "Cartão"} confirmado — Pedido ${orderNumber} (Código: ${pickupCode})`,
-      message_type: "structured_blocks",
-      payload: {
-        text: `Pedido confirmado via Pagamento Rápido no Chat (${payMethod === "pix" ? "PIX Instantâneo" : "Cartão em 1 Clique"}). Apresente o código ao entregador ou balcão:`,
-        blocks: [
-          {
-            type: "commerce_order_tracking",
-            data: {
-              orderId: orderNumber,
-              orderNumber,
-              publicToken: orderNumber,
-              status: "in_transit",
-              totalCents: subtotalCents,
-              itemsCount: totalCount,
-              pickupCode,
-              storeName,
-              storeSlug,
-              deliveryAddress: "Entrega Expressa • Rastreio Ao Vivo no Chat",
-              estimatedArrival: "10-15 min",
-              currentLat: -26.7254,
-              currentLng: -53.5178,
-              courier: {
-                name: "Entregador Parceiro Waesy Go",
-                vehicle: "MotoLink Express",
-              },
-            },
+    setIsConfirmingPay(true);
+    try {
+      const origin = typeof window !== "undefined" ? window.location.origin : "https://waesy.com.br";
+      const createdRes = await createCommercialInvoice({
+        data: {
+          storeId,
+          customerId: customerId || null,
+          documentType: "invoice",
+          customer: {
+            name: customerName && customerName.trim().length >= 2 ? customerName.trim() : "Cliente Atendimento",
+            phone: customerPhone || "",
+            email: customerEmail || "",
           },
-        ],
-      },
-    });
+          items: effectiveItems.map((i) => ({
+            title: i.productTitle,
+            quantity: i.qty,
+            unitPriceCents: i.priceCents,
+            totalPriceCents: i.priceCents * i.qty,
+          })),
+          subtotalCents,
+          discountCents: 0,
+          shippingCents: 0,
+          totalCents: subtotalCents,
+          paymentTerms: {
+            method: payMethod === "pix" ? "pix" : "cartao",
+            methodLabel: payMethod === "pix" ? "PIX Instantâneo" : "Cartão / Link",
+            installmentsCount: 1,
+          },
+          notes: "Gerado via Sacola Rápida no Atendimento",
+        },
+      });
 
-    toast.success(`Pagamento aprovado! Código de entrega: ${pickupCode}`);
-    setPayModalOpen(false);
-    setExpanded(false);
+      const invoice = createdRes?.invoice;
+      if (!invoice?.public_token) {
+        throw new Error("Não foi possível gerar o token público da fatura.");
+      }
+
+      const invoiceUrl = `${origin}/fatura/${invoice.public_token}`;
+      const invoiceCode = invoice.invoice_code || "FATURA";
+      const formattedTotal = formatMoney(subtotalCents / 100);
+      let pixCode = "";
+
+      if (payMethod === "pix") {
+        const payConfig = await getStoreCommercialPaymentConfig({ data: { storeId } }).catch(() => null);
+        const pixKey = String(payConfig?.pixKey || "").trim();
+        if (pixKey) {
+          pixCode = generatePixBrCode({
+            pixKey,
+            amountCents: subtotalCents,
+            merchantName: storeName,
+            merchantCity: "Brasil",
+            txId: invoiceCode.replace(/[^A-Za-z0-9]/g, "").slice(0, 20),
+            description: `Sacola ${invoiceCode}`,
+          });
+        }
+      }
+
+      const blocks: Array<Record<string, any>> = [];
+      if (pixCode) {
+        blocks.push({
+          type: "pix_payment",
+          data: {
+            pix_code: pixCode,
+            amount_formatted: formattedTotal,
+            expires_in: "24 horas",
+            invoice_url: invoiceUrl,
+          },
+        });
+      }
+      blocks.push({
+        type: "summary_card",
+        data: {
+          title: `${invoiceCode} • Cobrança (${totalCount} ${totalCount === 1 ? "item" : "itens"})`,
+          subtitle: `Valor Total: ${formattedTotal} • Forma: ${payMethod === "pix" ? "PIX Instantâneo" : "Cartão / Link"} • Acesse: ${invoiceUrl}`,
+          badge: payMethod === "pix" ? "COBRANÇA PIX" : "FATURA COMERCIAL",
+          action_url: invoiceUrl,
+        },
+      });
+
+      await onDispatchMessage({
+        message: pixCode
+          ? `Fatura ${invoiceCode} gerada (${formattedTotal}).\nPIX Copia e Cola:\n${pixCode}\nLink de pagamento: ${invoiceUrl}`
+          : `Fatura ${invoiceCode} gerada (${formattedTotal}). Acesse para pagar: ${invoiceUrl}`,
+        message_type: "structured_blocks",
+        payload: {
+          text: `Cobrança ${invoiceCode} gerada no valor de ${formattedTotal}.`,
+          invoice_code: invoiceCode,
+          invoice_url: invoiceUrl,
+          pix_code: pixCode || undefined,
+          blocks,
+        },
+      });
+
+      toast.success(`Fatura ${invoiceCode} enviada na conversa!`);
+      setPayModalOpen(false);
+      setExpanded(false);
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível gerar a cobrança da sacola.");
+    } finally {
+      setIsConfirmingPay(false);
+    }
   };
 
   if (effectiveItems.length === 0) return null;
@@ -1497,10 +1711,11 @@ export function InChatStoreCartBanner({
             <Button
               type="button"
               onClick={handleQuickPayConfirm}
+              disabled={isConfirmingPay}
               className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
               <CheckCircle2 className="size-4" />
-              <span>Confirmar e Gerar Código de Entrega</span>
+              <span>{isConfirmingPay ? "Gerando Fatura..." : "Confirmar e Gerar Fatura Oficial"}</span>
             </Button>
           </div>
         </DialogContent>

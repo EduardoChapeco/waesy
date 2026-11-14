@@ -645,8 +645,8 @@ function BookingIndexPage() {
                 <form id="quick-booking-form" onSubmit={handleSubmitBooking} className="space-y-5">
                   {/* 1. Escolha do Dia */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-foreground">1. Escolha a Data</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 sm:grid-cols-7 gap-2">
+                    <Label className="text-xs font-semibold text-foreground">1. Escolha a Data</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                       {nextDays.map((day) => {
                         const isSelected = selectedDate === day.iso;
                         return (
@@ -658,14 +658,14 @@ function BookingIndexPage() {
                               setSelectedSlot(null);
                             }}
                             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                              "p-2 rounded-lg text-center border transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center",
+                              "min-h-11 p-2 rounded-lg text-center border transition-colors duration-200 cursor-pointer flex flex-col items-center justify-center",
                               isSelected
-                                ? "bg-foreground text-background border-foreground font-bold "
+                                ? "bg-foreground text-background border-foreground font-semibold"
                                 : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted"
                             )}
                           >
                             <span className="text-xs font-mono tracking-wider">{day.weekday}</span>
-                            <span className="text-sm font-bold mt-1">{day.dayNum}</span>
+                            <span className="text-sm font-semibold mt-1">{day.dayNum}</span>
                           </button>
                         );
                       })}
@@ -675,7 +675,7 @@ function BookingIndexPage() {
                   {/* 2. Horários Disponíveis */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs font-bold text-foreground">2. Horário Disponível</Label>
+                      <Label className="text-xs font-semibold text-foreground">2. Horário Disponível</Label>
                       <span className="text-xs text-muted-foreground font-mono">
                         {slots.length} horários
                       </span>
@@ -690,7 +690,7 @@ function BookingIndexPage() {
                         Nenhum horário disponível para esta data. Selecione outro dia.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
                         {slots.map((slotIso: string) => {
                           const timeStr = new Date(slotIso).toLocaleTimeString("pt-BR", {
                             hour: "2-digit",

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Calendar, Ticket, QrCode, Users, DollarSign, Plus, ArrowLeft, ExternalLink, Clock, MapPin, CheckCircle2, Utensils, Megaphone, Settings, Edit, Trash2, Gift, Search, Receipt, TrendingUp, Percent, Kanban, FileSpreadsheet, Layers, Mic2, ShieldCheck, FileText, ShoppingBag, ClipboardList, Store } from "lucide-react";
@@ -54,8 +54,16 @@ export const Route = createFileRoute("/workspace/eventos/$id")({
  return { event: null, lots: [], tickets: [], budgets: [], concessionRevenue: null };
  }
  },
- component: SubPainelEventoPage,
+ component: EventoIdRouteSwitch,
 });
+
+function EventoIdRouteSwitch() {
+  const childMatches = useChildMatches();
+  if (childMatches.length > 0) {
+    return <Outlet />;
+  }
+  return <SubPainelEventoPage />;
+}
 
 function SubPainelEventoPage() {
  const { event, lots: initialLots, tickets: initialTickets, budgets = [], concessionRevenue } = ((Route.useLoaderData?.() as any) || {});

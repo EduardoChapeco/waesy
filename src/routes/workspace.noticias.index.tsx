@@ -945,7 +945,7 @@ function WorkspaceNoticiasIndexPage() {
                 type="button"
                 aria-label="Fechar"
                 onClick={() => setIsScheduleModalOpen(false)}
-                className="size-11 min-h-11 rounded-full border border-border bg-muted hover:bg-accent flex items-center justify-center text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                className="size-11 min-h-11 sm:size-9 sm:min-h-9 rounded-lg border border-border/70 bg-muted/40 hover:bg-accent flex items-center justify-center text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
                 <X className="size-4" />
               </button>

@@ -85,7 +85,7 @@ export function VerifiedBadge({
         <path
           d="m9.5 12 1.75 1.75 3.5-3.5"
           fill="none"
-          stroke="#ffffff"
+          className="stroke-neutral-50"
           strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"

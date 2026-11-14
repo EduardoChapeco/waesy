@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { FileText, Trash2, Copy, Layers, Calendar, User, Hash, CheckSquare, PenTool, Upload, ArrowRight, RefreshCw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -65,7 +66,7 @@ export function SignaturePositionerCanvas({
     index: 0,
     name: "Signatário 1",
     email: "",
-    colorCode: "#2563eb",
+    colorCode: TOKEN_HEX.blue600,
   };
 
   // Adicionar campo ao clicar numa tag
@@ -209,8 +210,8 @@ export function SignaturePositionerCanvas({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className="size-3.5 rounded-full shrink-0"
-                        style={{ backgroundColor: s.colorCode || "#2563eb" }}
+                        className="size-3.5 rounded-full shrink-0 waesy-dyn-bg"
+                        style={{ "--dyn-bg": s.colorCode || "var(--color-blue-600)" } as React.CSSProperties}
                       />
                       <div className="truncate">
                         <p className="font-semibold text-foreground truncate">{s.name || `Signatário ${idx + 1}`}</p>
@@ -265,7 +266,7 @@ export function SignaturePositionerCanvas({
           {/* Folha A4 Representativa */}
           <div
             ref={containerRef}
-            className="relative w-full max-w-175 aspect-[1/1.414] bg-card text-card-foreground rounded-lg  border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
+            className="relative w-full max-w-175 aspect-a4-portrait bg-card text-card-foreground rounded-lg  border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
           >
             {/* Header Simulado da Página */}
             <div className="border-b border-border/40 pb-3 flex items-center justify-between text-2xs text-muted-foreground">
@@ -310,7 +311,7 @@ export function SignaturePositionerCanvas({
                     top: `${field.y}%`,
                     width: `${field.width}%`,
                     height: `${field.height}%`,
-                    borderColor: signer.colorCode || "#2563eb",
+                    borderColor: signer.colorCode || "var(--color-blue-600)",
                   }}
                   className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-colors duration-200 bg-card/95 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     isSelected ? "ring-2 ring-primary/40 " : "hover:border-primary"
@@ -318,8 +319,8 @@ export function SignaturePositionerCanvas({
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span
-                      className="size-2 rounded-full shrink-0"
-                      style={{ backgroundColor: signer.colorCode }}
+                      className="size-2 rounded-full shrink-0 waesy-dyn-bg"
+                      style={{ "--dyn-bg": signer.colorCode } as React.CSSProperties}
                     />
                     <span className="text-2xs font-bold truncate text-foreground">
                       {field.label || field.type}

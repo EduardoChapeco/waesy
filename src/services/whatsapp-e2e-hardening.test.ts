@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { crc16Ccitt } from "@/lib/pix-payload";
+import { isSyntheticMetaLid, isRawLidOrSyntheticName } from "@/lib/chat-media-attachment";
 import { buildOutboxDispatchSpecFromStaffMessage } from "@/services/chat.functions";
 import { buildStoreAgentPixPayload } from "@/services/whatsapp-ai-agent-tools.server";
 import { conditionMatches } from "@/services/whatsapp-automation-runtime.server";
@@ -197,6 +198,27 @@ describe("Microfase C — Hardening WhatsApp, Voz IA, Agente PIX e Automações"
       expect(voiceSource).not.toContain("mocked-transcript");
       expect(voiceSource).not.toContain("Olá! Recebemos seu áudio");
       expect(voiceSource).toContain("resolveVoiceProviderKey");
+    });
+
+    it("aceita body.apikey nativo da Evolution API v2 e sanitiza LIDs numéricos puros (>= 14 dígitos)", () => {
+      expect(
+        verifyUnofficialWebhookAuth({
+          provider: "evolution_api",
+          rawBody: JSON.stringify({ event: "messages.upsert", apikey: "master-evo-key" }),
+          headers: new Headers(),
+          secret: null,
+          masterApiKey: "master-evo-key",
+        }),
+      ).toBe(true);
+
+      expect(isSyntheticMetaLid("108250439667828", "+108250439667828")).toBe(true);
+      expect(isSyntheticMetaLid("187750586261558", "187750586261558")).toBe(true);
+      expect(isSyntheticMetaLid("82424734212173", "+82424734212173")).toBe(true);
+      expect(isSyntheticMetaLid("+5549991716233", "+5549991716233")).toBe(false);
+
+      expect(isRawLidOrSyntheticName("108250439667828", "108250439667828")).toBe(true);
+      expect(isRawLidOrSyntheticName("+108250439667828", "108250439667828")).toBe(true);
+      expect(isRawLidOrSyntheticName("Evellyn Grossi", "108250439667828")).toBe(false);
     });
   });
 });

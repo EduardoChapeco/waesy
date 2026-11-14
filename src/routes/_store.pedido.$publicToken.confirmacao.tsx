@@ -770,7 +770,7 @@ function ConfirmationPage() {
  <Button
  asChild
  size="lg"
- className="bg-[#25D366] hover:bg-[#20bd5a] text-foreground font-bold rounded-lg text-sm gap-2"
+ className="bg-emerald-700 hover:bg-emerald-800 text-neutral-50 font-bold rounded-lg text-sm gap-2"
  >
  <a
  href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(

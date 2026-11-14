@@ -427,13 +427,13 @@ function WorkspaceStoreHotpagesPage() {
                 <Input
                   value={textColor}
                   onChange={(e) => setTextColor(e.target.value)}
-                  placeholder="Ex: #FFFFFF ou #000000"
+                  placeholder="Ex: var(--foreground) ou oklch(0.98 0 0)"
                   className="rounded-lg text-sm h-11 bg-background font-mono"
                 />
                 {textColor && (
                   <div
-                    className="size-9 rounded-lg border border-border shrink-0 shadow-xs"
-                    style={{ backgroundColor: textColor }}
+                    className="size-9 rounded-lg border border-border shrink-0 shadow-xs waesy-dyn-bg"
+                    style={{ "--dyn-bg": textColor } as React.CSSProperties}
                   />
                 )}
               </div>

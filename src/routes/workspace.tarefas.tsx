@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Plus, Sun, ListTodo, Kanban, CheckCircle2, Calendar, AlertCircle, Clock, Flame, CheckCheck } from "lucide-react";
 
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 
 import { getStoreSettings } from "@/services/store.functions";
 import { listWorkspaceTasks, updateTaskStatus, toggleTaskMyDay, getDailyTaskDigest } from "@/services/tasks.functions";
@@ -25,29 +25,36 @@ export const Route = createFileRoute("/workspace/tarefas")({
   head: () => ({ meta: [{ title: "Tarefas | Workspace Waesy" }] }),
   loader: async () => {
     try {
-    const store = await getStoreSettings().catch(() => null);
-    const storeId = store?.id || "";
-    const [tasks, digest, stages] = await Promise.all([
-      storeId ? listWorkspaceTasks({ data: { store_id: storeId } }).catch(() => []) : [],
-      storeId ? getDailyTaskDigest({ data: { store_id: storeId } }).catch(() => null) : null,
-      storeId ? listKanbanStages({ data: { storeId, module: "tasks" } }).catch(() => []) : [],
-    ]);
-    return {
-      store,
-      initialTasks: (tasks || []) as WorkspaceTask[],
-      initialDigest: digest,
-      initialStages: (stages || []) as KanbanStageDTO[],
-    };
-    } catch (err) {
+      const store = await getStoreSettings();
+      const storeId = store?.id || "";
+      const [tasks, digest, stages] = await Promise.all([
+        storeId ? listWorkspaceTasks({ data: { store_id: storeId } }) : [],
+        storeId ? getDailyTaskDigest({ data: { store_id: storeId } }) : null,
+        storeId ? listKanbanStages({ data: { storeId, module: "tasks" } }) : [],
+      ]);
+      return {
+        store,
+        initialTasks: (tasks || []) as WorkspaceTask[],
+        initialDigest: digest,
+        initialStages: (stages || []) as KanbanStageDTO[],
+        loadError: null as string | null,
+      };
+    } catch (err: any) {
       console.error("[loader:workspace.tarefas] Unhandled loader error:", err);
-      return { store: null, initialTasks: null, initialDigest: null, initialStages: null };
+      return {
+        store: null,
+        initialTasks: [] as WorkspaceTask[],
+        initialDigest: null,
+        initialStages: [] as KanbanStageDTO[],
+        loadError: err?.message || "Não foi possível carregar as tarefas do Workspace.",
+      };
     }
   },
   component: WorkspaceTasksPage,
 });
 
 function WorkspaceTasksPage() {
-  const { store, initialTasks, initialDigest, initialStages } = (Route.useLoaderData as any)();
+  const { store, initialTasks, initialDigest, initialStages, loadError } = (Route.useLoaderData as any)() || {};
   const router = useRouter();
   const storeId = store?.id || "";
 
@@ -218,6 +225,18 @@ function WorkspaceTasksPage() {
       },
     ];
   }, [digest, tasks]);
+
+  if (loadError) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <ErrorState
+          title="Erro ao carregar tarefas"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">

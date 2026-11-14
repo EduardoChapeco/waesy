@@ -38,11 +38,13 @@ export const Route = createFileRoute("/_store/portal-completo")({
 function PortalCompletoPage() {
   const { content: initialContent, session } = Route.useLoaderData() as any;
 
-  const { data: pageData } = useQuery({
+  const { data: pageData, isLoading: isPageLoading, isError: isPageError } = useQuery({
     queryKey: ["portal-completo-content"],
     queryFn: () => getPortalCompletoContent(),
     initialData: initialContent,
   });
+  void isPageLoading;
+  void isPageError;
 
   const [companyName, setCompanyName] = useState("");
   const [contactEmail, setContactEmail] = useState(session?.user?.email || "");
@@ -193,6 +195,11 @@ function PortalCompletoPage() {
             </Badge>
           </div>
 
+          {modules.length === 0 ? (
+            <div className="p-8 rounded-lg border border-dashed border-border/60 text-center text-xs text-muted-foreground">
+              Nenhum módulo setorial disponível no momento.
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {modules.map((mod: any) => (
               <div
@@ -225,6 +232,7 @@ function PortalCompletoPage() {
               </div>
             ))}
           </div>
+          )}
         </section>
 
         {/* Informação de Sincronização Contida */}
