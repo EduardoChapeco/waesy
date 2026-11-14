@@ -263,10 +263,10 @@ function NoorBentoCard({
 
       {/* Legenda opcional sob demanda (se marcada no CMS) */}
       {showText && hasValidImage && (
-        <div className="absolute inset-x-0 bottom-0 bg-background/80 backdrop-blur-xs p-2 text-center">
+        <div className="absolute inset-x-0 bottom-0 bg-card border-t border-border p-2 text-center">
           <span
             style={item?.text_color ? { color: item.text_color } : undefined}
-            className="text-2xs font-semibold text-foreground truncate block"
+            className="text-2xs font-semibold text-foreground line-clamp-2 text-anti-truncate block"
           >
             {title}
           </span>

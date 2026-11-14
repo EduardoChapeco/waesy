@@ -11,7 +11,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
 import { harvestHotelsAndResorts } from "./mining/hospitality-harvester";
 import { harvestLocalPlaces } from "./mining/places-harvester";
 import { GLOBAL_MASTER_PRODUCTS_CATALOG, type MasterProductRecord } from "@/lib/data/master-products-catalog";
@@ -33,7 +33,7 @@ export const listMasterHotels = createServerFn({ method: "GET" })
       .optional()
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     let query = supabase
@@ -75,13 +75,13 @@ export const listMasterHotels = createServerFn({ method: "GET" })
 export const getMasterHotel = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const [hotelRes, amenitiesRes, mediaRes] = await Promise.all([
       supabase.from("hotels_bank").select("*").eq("id", data.id).single(),
-      supabase.from("hotel_amenities").select("amenity_key, label, is_featured").eq("hotel_id", data.id),
-      supabase.from("hotel_media").select("id, media_url, category, caption, sort_order").eq("hotel_id", data.id).order("sort_order", { ascending: true }),
+      supabase.from("hotel_amenities").select("amenity_key, name, is_highlight").eq("hotel_id", data.id),
+      supabase.from("hotel_media").select("id, url, category, caption, display_order").eq("hotel_id", data.id).order("display_order", { ascending: true }),
     ]);
 
     if (hotelRes.error || !hotelRes.data) {
@@ -90,8 +90,16 @@ export const getMasterHotel = createServerFn({ method: "GET" })
 
     return {
       hotel: hotelRes.data,
-      amenities: amenitiesRes.data || [],
-      media: mediaRes.data || [],
+      amenities: (amenitiesRes.data || []).map((a: any) => ({
+        ...a,
+        label: a.name,
+        is_featured: Boolean(a.is_highlight),
+      })),
+      media: (mediaRes.data || []).map((m: any) => ({
+        ...m,
+        media_url: m.url,
+        sort_order: m.display_order ?? 0,
+      })),
     };
   });
 
@@ -135,7 +143,7 @@ export const upsertMasterHotel = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     // Sanitização anti-Unsplash estrita (Invariante B.8 e B.33)
@@ -257,7 +265,7 @@ export const upsertMasterHotel = createServerFn({ method: "POST" })
 export const deleteMasterHotel = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     await supabase.from("hotel_amenities").delete().eq("hotel_id", data.id);
@@ -285,7 +293,7 @@ export const listMasterDirectoryListings = createServerFn({ method: "GET" })
       .optional()
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     let query = supabase
@@ -327,7 +335,7 @@ export const listMasterDirectoryListings = createServerFn({ method: "GET" })
 export const getMasterDirectoryListing = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { data: listing, error } = await supabase
@@ -371,7 +379,7 @@ export const upsertMasterDirectoryListing = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     // Sanitização anti-Unsplash
@@ -427,7 +435,7 @@ export const upsertMasterDirectoryListing = createServerFn({ method: "POST" })
 export const deleteMasterDirectoryListing = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { error } = await supabase.from("directory_listings").delete().eq("id", data.id);
@@ -446,7 +454,7 @@ export const triggerMasterMiningBatch = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
 
     let hospitalityResult = null;
     let placesResult = null;

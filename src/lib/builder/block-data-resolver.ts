@@ -5,6 +5,7 @@
  * Consumido de forma 100% simétrica por `OmniEditor` (preview) e `OmniPageRenderer` (produção).
  */
 
+import type React from "react";
 import type { OmniBlockInstance, OmniPageDocument } from "@/types/omni-builder";
 
 export interface BuilderRuntimeDatasets {
@@ -21,6 +22,10 @@ export interface BuilderRuntimeDatasets {
   hotpages?: any[];
   newsArticles?: any[];
   sponsors?: any[];
+  cmsCollections?: any[];
+  navigationMenus?: any[];
+  cmsItems?: any[];
+  activeCmsCollection?: any;
 }
 
 function normalizeToken(value: unknown): string {
@@ -90,12 +95,21 @@ export function isBlockVisibleForCity(
  */
 export function getBlockDeviceVisibilityClass(
   block: Pick<OmniBlockInstance, "config" | "styling">,
+  forcedViewport?: "desktop" | "tablet" | "mobile" | "native_app" | null,
 ): string {
   const deviceVisibility = block?.styling?.deviceVisibility;
   const hideOnMobile = Boolean(block?.config?.hideOnMobile) || deviceVisibility === "desktop_only";
   const hideOnDesktop = Boolean(block?.config?.hideOnDesktop) || deviceVisibility === "mobile_only";
 
   if (hideOnMobile && hideOnDesktop) return "hidden";
+  if (forcedViewport === "mobile" || forcedViewport === "native_app") {
+    if (hideOnMobile) return "hidden";
+    if (hideOnDesktop) return "block";
+  }
+  if (forcedViewport === "desktop" || forcedViewport === "tablet") {
+    if (hideOnDesktop) return "hidden";
+    if (hideOnMobile) return "block";
+  }
   if (hideOnMobile) return "hidden md:block";
   if (hideOnDesktop) return "md:hidden";
   return "";
@@ -115,11 +129,100 @@ export function shouldApplyCustomDocumentTheme(
   }
   const bg = (theme.backgroundColor || "").trim().toLowerCase();
   const fg = (theme.textColor || "").trim().toLowerCase();
+  const primary = (theme.primaryColor || "").trim().toLowerCase();
   // design-lint-ignore DL-01 reason:"Comparação de tokens para detecção de tema padrão" expiry:"2027-12-31"
-  const isDefaultBg = !bg || bg === "#ffffff" || bg === "#fff";
+  const isDefaultBg = !bg || bg === "#ffffff" || bg === "#fff" || bg === "var(--background)";
   // design-lint-ignore DL-01 reason:"Comparação de tokens para detecção de tema padrão" expiry:"2027-12-31"
-  const isDefaultFg = !fg || fg === "#09090b" || fg === "#000000";
-  return !isDefaultBg || !isDefaultFg;
+  const isDefaultFg = !fg || fg === "#09090b" || fg === "#000000" || fg === "var(--foreground)";
+  // design-lint-ignore DL-01 reason:"Comparação de tokens para detecção de tema padrão" expiry:"2027-12-31"
+  const isDefaultPrimary = !primary || primary === "#09090b" || primary === "#000000" || primary === "var(--primary)";
+  return !isDefaultBg || !isDefaultFg || !isDefaultPrimary;
+}
+
+/**
+ * Gera os estilos inline e as variáveis CSS escopadas (`--background`, `--color-background`,
+ * `--foreground`, `--color-foreground`, `--primary`, `--color-primary`, `--card`, `--muted-foreground`, etc.)
+ * para isolar completamente o canvas do editor e o site publicado do tema do sistema operacional/Waesy.
+ */
+export function getDocumentThemeCanvasStyle(
+  theme?: (OmniPageDocument["theme"] & {
+    customThemeEnabled?: boolean;
+    headingFont?: string;
+    bodyFont?: string;
+    surfaceStyle?: string;
+  }) | null,
+  options?: { forceIsolate?: boolean; settings?: Record<string, any> | null },
+): React.CSSProperties {
+  const applyCustom = Boolean(options?.forceIsolate) || shouldApplyCustomDocumentTheme(theme);
+  const fontFamily = theme?.bodyFont || theme?.fontFamily;
+  const buttonStyler = options?.settings?.buttonStyler as
+    | { shape?: string; uppercase?: boolean; borderWidthPx?: number }
+    | undefined;
+  const btnRadiusToken =
+    buttonStyler?.shape === "pill"
+      ? "9999px"
+      : buttonStyler?.shape === "sharp"
+        ? "0px"
+        : buttonStyler?.shape === "rounded" || theme?.borderRadius === "2xl"
+          ? "16px"
+          : "12px";
+  const stylerVars: Record<string, string> = {};
+  if (buttonStyler) {
+    stylerVars["--builder-btn-radius"] = btnRadiusToken;
+    stylerVars["--builder-btn-transform"] = buttonStyler.uppercase ? "uppercase" : "none";
+  }
+  if (theme?.headingFont) {
+    stylerVars["--builder-heading-font"] = theme.headingFont;
+  }
+
+  if (!applyCustom) {
+    if ((fontFamily && fontFamily !== "Inter, sans-serif") || Object.keys(stylerVars).length > 0) {
+      return {
+        ...(fontFamily ? { fontFamily } : {}),
+        ...stylerVars,
+      } as React.CSSProperties;
+    }
+    return {};
+  }
+
+  // design-lint-ignore DL-01 reason:"Isolamento de canvas do site editado contra o tema do sistema" expiry:"2027-12-31"
+  const bg = theme?.backgroundColor && theme.backgroundColor !== "var(--background)" ? theme.backgroundColor : "#ffffff";
+  // design-lint-ignore DL-01 reason:"Isolamento de canvas do site editado contra o tema do sistema" expiry:"2027-12-31"
+  const fg = theme?.textColor && theme.textColor !== "var(--foreground)" ? theme.textColor : "#09090b";
+  // design-lint-ignore DL-01 reason:"Isolamento de canvas do site editado contra o tema do sistema" expiry:"2027-12-31"
+  const primary = theme?.primaryColor && theme.primaryColor !== "var(--primary)" ? theme.primaryColor : "#09090b";
+
+  const cardSurface = `color-mix(in srgb, ${bg} 94%, ${fg} 6%)`;
+  const mutedSurface = `color-mix(in srgb, ${bg} 88%, ${fg} 12%)`;
+  const mutedFg = `color-mix(in srgb, ${fg} 68%, ${bg} 32%)`;
+  const borderToken = `color-mix(in srgb, ${fg} 16%, ${bg} 84%)`;
+
+  return {
+    backgroundColor: bg,
+    color: fg,
+    ...(fontFamily ? { fontFamily } : {}),
+    ...stylerVars,
+    "--background": bg,
+    "--color-background": bg,
+    "--canvas": bg,
+    "--color-canvas": bg,
+    "--foreground": fg,
+    "--color-foreground": fg,
+    "--text-primary": fg,
+    "--color-text-primary": fg,
+    "--card": cardSurface,
+    "--color-card": cardSurface,
+    "--card-foreground": fg,
+    "--color-card-foreground": fg,
+    "--primary": primary,
+    "--color-primary": primary,
+    "--muted": mutedSurface,
+    "--color-muted": mutedSurface,
+    "--muted-foreground": mutedFg,
+    "--color-muted-foreground": mutedFg,
+    "--border": borderToken,
+    "--color-border": borderToken,
+  } as React.CSSProperties;
 }
 
 function extractNumericPrice(item: Record<string, any>): number {
@@ -292,6 +395,8 @@ export function resolveBlockBoundData(
 
   const hasExplicitFilter = Boolean(
     binding?.entity ||
+      binding?.cmsCollectionSlug ||
+      block.type === "cms_collection_grid" ||
       binding?.categoryFilter ||
       binding?.nicheFilter ||
       binding?.cityFilter ||
@@ -299,6 +404,7 @@ export function resolveBlockBoundData(
       binding?.sort ||
       binding?.limit ||
       binding?.tenantScope ||
+      cfg.collectionSlug ||
       cfg.categoryFilter ||
       cfg.nicheFilter ||
       cfg.cityFilter ||
@@ -336,7 +442,28 @@ export function resolveBlockBoundData(
     }
   };
 
-  if (targetEntity === "products") {
+  if (targetEntity === "cms_collection" || block.type === "cms_collection_grid") {
+    const requestedSlug = binding?.cmsCollectionSlug || cfg.collectionSlug || cfg.cmsCollectionSlug || "";
+    const allCols = Array.isArray(datasets.cmsCollections) ? datasets.cmsCollections : [];
+    const matchedCol = requestedSlug
+      ? allCols.find((c: any) => c.slug === requestedSlug || c.id === requestedSlug)
+      : allCols[0];
+    if (matchedCol) {
+      next.activeCmsCollection = matchedCol;
+      const flatItems = (Array.isArray(matchedCol.items) ? matchedCol.items : [])
+        .filter((it: any) => !it?.status || it.status === "published")
+        .map((it: any) => ({
+          ...it,
+          ...(it.data && typeof it.data === "object" ? it.data : {}),
+          id: it.id,
+          title: it.title || it.data?.title || it.data?.titulo || "Item",
+          city: it.city_filter || it.data?.city || "",
+        }));
+      next.cmsItems = filterAndSortItems(flatItems, filterOpts);
+    } else {
+      next.cmsItems = [];
+    }
+  } else if (targetEntity === "products") {
     applyTo("products");
   } else if (targetEntity === "stores") {
     applyTo("stores");

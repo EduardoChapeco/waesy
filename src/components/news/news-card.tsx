@@ -91,12 +91,12 @@ export function NewsCard({
             </h4>
           </div>
 
-          <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
+          <div className="flex items-center justify-between text-xs pt-1 border-t border-border">
             <span className="font-semibold text-primary">Ler mais</span>
             {article.city && (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground truncate">
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground line-clamp-1">
                 <MapPin className="size-3 shrink-0" />
-                <span className="truncate">{article.city}</span>
+                <span className="line-clamp-1">{article.city}</span>
               </span>
             )}
           </div>
@@ -110,13 +110,13 @@ export function NewsCard({
     return (
       <article
         className={cn(
-          "group relative flex items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/60 hover:border-border transition-colors duration-200 content-auto-card w-full",
+          "group relative flex items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border hover:border-ring transition-colors duration-200 content-auto-card w-full",
           className
         )}
       >
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-            <div className="size-6 rounded-full overflow-hidden bg-primary/10 text-primary border border-border/50 flex items-center justify-center shrink-0 font-bold text-xs leading-none">
+            <div className="size-6 rounded-full overflow-hidden bg-muted text-foreground border border-border flex items-center justify-center shrink-0 font-bold text-xs leading-none">
               {article.store_avatar && !avatarError ? (
                 <img
                   src={article.store_avatar}

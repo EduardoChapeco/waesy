@@ -30,7 +30,7 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  return (
  <Link
  to={embed.target_url as any}
- className="group mt-3 block rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/40 transition-colors duration-200 overflow-hidden shadow-2xs select-none"
+ className="group mt-3 block rounded-lg border border-border bg-card hover:bg-muted transition-colors duration-200 overflow-hidden select-none"
  >
  <div className="flex flex-col sm:flex-row items-stretch gap-4 p-4">
  {/* Imagem do Embed */}
@@ -42,13 +42,13 @@ export function PostEmbedRenderer({ embed }: { embed?: PostEmbedData | null }) {
  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
  {embed.badge_text && (
- <div className="absolute top-1.5 left-1.5 px-2 py-1 rounded-md bg-foreground/70 backdrop-blur-md text-2xs font-bold text-foreground uppercase">
+ <div className="absolute top-1.5 left-1.5 px-2 py-1 rounded-md bg-neutral-950 border border-neutral-800 text-2xs font-bold text-neutral-50 uppercase">
  {embed.badge_text}
  </div>
  )}
  </div>
  ) : (
- <div className="size-24 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+ <div className="size-24 rounded-lg bg-muted border border-border flex items-center justify-center flex-shrink-0 text-foreground">
  {embed.type === "event" && <Calendar className="size-8" />}
  {embed.type === "product" && <Store className="size-8" />}
  {embed.type === "classified" && <Tag className="size-8" />}

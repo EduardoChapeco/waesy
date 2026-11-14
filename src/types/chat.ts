@@ -62,6 +62,21 @@ export type ChatArtifactType =
   | "map_view"
   | "creative_post";
 
+export type CopilotQuickToolMode =
+  | "default"
+  | "website_builder"
+  | "interactive_map"
+  | "document"
+  | "creative_post";
+
+export interface ChatSourceItem {
+  id: string;
+  title: string;
+  kind: "platform" | "place" | "project_file" | "attachment" | "builder" | "mcp" | "web";
+  detail?: string;
+  url?: string;
+}
+
 export interface ChatArtifactData {
   id: string;
   type: ChatArtifactType;

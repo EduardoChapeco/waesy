@@ -346,7 +346,7 @@ function ContractsDashboard() {
       <CommercialBudgetPadSheet open={budgetPadOpen} onOpenChange={setBudgetPadOpen} />
 
       {quickEditorOpen && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-lg w-full max-w-4xl max-h-screen overflow-y-auto p-6">
             <ContractEditorSheet
               onClose={() => setQuickEditorOpen(false)}

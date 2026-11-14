@@ -596,7 +596,7 @@ export const searchGlobalHotelsForPackage = createServerFn({ method: "GET" })
     let dbQuery = supabase
       .from("global_hotels")
       .select(
-        "id, name, slug, city, state, country, address, star_rating, cover_image_url, gallery_urls, amenities, description, hotel_score, reviews_count"
+        "id, name, canonical_slug, city, state, country, address, stars, amenities, hotel_score, reviews_count, hotel_media(url, is_featured, display_order)"
       )
       .order("hotel_score", { ascending: false })
       .limit(limit);
@@ -613,5 +613,26 @@ export const searchGlobalHotelsForPackage = createServerFn({ method: "GET" })
     if (error) {
       return [];
     }
-    return hotels || [];
+    return (hotels || []).map((h: any) => {
+      const media = Array.isArray(h.hotel_media)
+        ? [...h.hotel_media].sort((a: any, b: any) => Number(a.display_order || 0) - Number(b.display_order || 0))
+        : [];
+      const cover = media.find((m: any) => m.is_featured)?.url || media[0]?.url || null;
+      return {
+        id: h.id,
+        name: h.name,
+        slug: h.canonical_slug,
+        city: h.city,
+        state: h.state,
+        country: h.country,
+        address: h.address,
+        star_rating: h.stars,
+        cover_image_url: cover,
+        gallery_urls: media.map((m: any) => m.url).filter(Boolean),
+        amenities: h.amenities,
+        description: null,
+        hotel_score: h.hotel_score,
+        reviews_count: h.reviews_count,
+      };
+    });
   });

@@ -19,7 +19,7 @@ import {
   Ticket,
   Beer,
   Utensils,
-  Sparkles,
+  Award,
   Smartphone,
   RefreshCw,
   Power,
@@ -43,7 +43,7 @@ const TIPOS_SUBPAINEL = [
   { value: "restaurant", label: "Restaurante / Buffet", icon: Store, color: "text-emerald-500", desc: "Mesas, garçons, pesagem por quilo e consumo consolidado" },
   { value: "merchandise", label: "Loja Oficial / Merch", icon: Store, color: "text-purple-500", desc: "Venda de copos, camisetas e recordações" },
   { value: "ticketing_box", label: "Bilheteria / Portaria", icon: Ticket, color: "text-blue-500", desc: "Validação de ingressos e venda local" },
-  { value: "vip_lounge", label: "Camarote / Lounge VIP", icon: Sparkles, color: "text-warning-strong", desc: "Acesso e atendimento exclusivo" },
+  { value: "vip_lounge", label: "Camarote VIP", icon: Award, color: "text-warning-strong", desc: "Acesso e atendimento exclusivo" },
   { value: "security_checkpoint", label: "Posto de Segurança", icon: ShieldCheck, color: "text-rose-500", desc: "Controle de fluxo e ocorrências" },
   { value: "other", label: "Outro Ponto Especial", icon: Store, color: "text-muted-foreground", desc: "Terminal customizado" },
 ];

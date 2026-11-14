@@ -393,14 +393,15 @@ function DedicatedHotpageView() {
  fallbackHref="/explorar"
  transparent={true}
  bordered={false}
- className="relative z-10 max-w-7xl mx-auto pb-4 text-foreground"
+ className="relative z-10 max-w-7xl mx-auto pb-4 text-neutral-50"
  rightActions={
  <Button
  size="icon"
  variant="ghost"
  onClick={handleShare}
- className="size-9 sm:size-10 rounded-lg bg-foreground/30 hover:bg-foreground/50 text-foreground backdrop-blur-md border border-white/15 cursor-pointer"
+ className="size-11 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-50 border border-neutral-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
  title="Compartilhar"
+ aria-label="Compartilhar"
  >
  <ShareNetwork size={18} weight="bold" />
  </Button>
@@ -411,7 +412,7 @@ function DedicatedHotpageView() {
  <div className="relative z-10 max-w-7xl mx-auto space-y-3 sm:space-y-4">
  <div className="flex items-center gap-2">
  {customIcon && (
- <div className="size-8 rounded-lg bg-card/15 backdrop-blur-md border border-white/20 p-1 flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-lg bg-neutral-900 border border-neutral-700 p-1 flex items-center justify-center shrink-0">
  <img
  src={customIcon}
  alt="Ícone"
@@ -427,11 +428,11 @@ function DedicatedHotpageView() {
  </span>
  </div>
 
- <h1 className="text-3xl sm:text-5xl font-black tracking-tight drop-">
+ <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-neutral-50">
  {title}
  </h1>
 
- <p className="text-xs sm:text-sm text-foreground/90 font-medium max-w-xl leading-relaxed drop-">
+ <p className="text-xs sm:text-sm text-neutral-200 font-medium max-w-xl leading-relaxed">
  {description}
  </p>
 
@@ -440,7 +441,7 @@ function DedicatedHotpageView() {
  {theme.heroPills.map((pill, idx) => (
  <span
  key={idx}
- className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-foreground/35 text-foreground text-2xs sm:text-xs font-bold border border-white/15 drop-"
+ className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-neutral-900 text-neutral-50 text-2xs sm:text-xs font-bold border border-neutral-700"
  >
  {pill}
  </span>
@@ -450,7 +451,7 @@ function DedicatedHotpageView() {
  </section>
 
  {/* ── 2. CORPO SOBREPOSTO COM CANTOS ARREDONDADOS (FOLHA / CARD FLUTUANTE) ── */}
-      <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
+      <div className="relative z-20 -mt-8 rounded-t-3xl bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
         {/* ── 2.1. Sub-abas de Navegação por Nicho (Padrão Botão Grande) ── */}
         <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-area-carousel snap-x snap-mandatory sm:overflow-visible sm:flex-wrap no-scrollbar py-1">

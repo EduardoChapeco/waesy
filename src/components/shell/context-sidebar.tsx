@@ -1,5 +1,6 @@
 import React from "react";
 import { Tag, Newspaper, Gift, Target, Rss, Car, Plane, MapPin, Wallet, RefreshCw, FileText } from "lucide-react";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { listAllSurfaces } from "@/services/surface-cms.functions";
@@ -34,6 +35,7 @@ import {
   Hammer,
   Buildings,
 } from "@phosphor-icons/react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -139,241 +141,266 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
     return currentPath === item.to || (item.to !== "/" && currentPath.startsWith(item.to + "/"));
   };
 
+  const wrapWithRailTooltip = (label: string, node: React.ReactElement) => {
+    if (isExpanded) return node;
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{node}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          {label}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
+
   return (
-    <aside
-      className={cn(
-        "hidden md:flex flex-col shrink-0 h-full py-3 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40 transition duration-200 motion-reduce:transition-none",
-        isExpanded ? "w-56 px-3" : "w-16 px-2"
-      )}
-    >
-      <div className="space-y-4">
-        {/* ── 1. MÓDULOS PRINCIPAIS (Compact Navigation Rail no Medium, Expandido no Expanded) ── */}
-        <div className="space-y-1">
-          <span
-            className={cn(
-              "px-3 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
-              isExpanded ? "block" : "hidden"
-            )}
-          >
-            Explorar
-          </span>
-          <nav className="flex flex-col space-y-1 pt-1">
-            {MAIN_EXPLORER_ITEMS.map((item) => {
-              const Icon = item.icon as any;
-              const active = isCurrentActive(item);
-              const isPlacesBadge = (item as any).isPlacesBadge;
-              const isMarketplace = (item as any).isMarketplace;
-
-              if (isMarketplace) {
-                return (
-                  <div key={item.to} className="space-y-1">
-                    <div
-                      className={cn(
-                        "flex items-center h-11 min-h-11 rounded-lg text-xs transition-colors group",
-                        isExpanded ? "justify-between px-3" : "justify-center px-0",
-                        active || isInsideMarketplace
-                          ? "bg-primary/10 text-primary font-bold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
-                      )}
-                    >
-                      <Link
-                        to="/marketplace"
-                        title="Marketplace"
-                        aria-label="Marketplace"
-                        className={cn(
-                          "flex items-center gap-3 min-w-0 flex-1 h-full cursor-pointer",
-                          isExpanded ? "justify-start" : "justify-center"
-                        )}
-                      >
-                        <Storefront
-                          size={isExpanded ? 16 : 18}
-                          weight={active || isInsideMarketplace ? "fill" : "regular"}
-                          className={cn(
-                            "shrink-0 transition-colors",
-                            active || isInsideMarketplace
-                              ? "text-primary"
-                              : "text-muted-foreground group-hover:text-foreground"
-                          )}
-                        />
-                        <span className={cn("truncate", isExpanded ? "block" : "hidden")}>Marketplace</span>
-                      </Link>
-
-                      {isExpanded && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setIsMarketplacesOpen((prev) => !prev);
-                          }}
-                          title={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
-                          aria-label={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
-                          className="flex items-center gap-1 px-2 py-1 rounded-md text-2xs font-mono font-bold bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        >
-                          <span>{activeSurfaces.length}</span>
-                          {isMarketplacesOpen ? <CaretDown size={11} /> : <CaretRight size={11} />}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Sub-Marketplaces Colapsáveis em Lista Vertical (Sincronizados com Admin Master CMS) */}
-                    {isExpanded && isMarketplacesOpen && (
-                      <div className="flex flex-col space-y-1 p-1 rounded-lg bg-muted/40 border border-border/40 animate-in fade-in slide-in-from-top-1 duration-150 motion-reduce:animate-none">
-                        {activeSurfaces.map((sub) => {
-                          const SubIcon = sub.icon;
-                          const isSubActive = currentPath.startsWith(sub.to);
-
-                          return (
-                            <Link
-                              key={sub.to}
-                              to={sub.to as any}
-                              className={cn(
-                                "flex items-center gap-2 h-11 min-h-11 px-3 rounded-lg text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                                isSubActive
-                                  ? "bg-foreground text-background font-bold shadow-2xs"
-                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                              )}
-                            >
-                              <SubIcon size={16} weight={isSubActive ? "fill" : "regular"} className="shrink-0" />
-                              <span className="truncate">{sub.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to as any}
-                  title={item.label}
-                  aria-label={item.label}
-                  className={cn(
-                    "flex items-center h-11 min-h-11 rounded-lg text-xs transition-colors cursor-pointer group",
-                    isExpanded ? "justify-between px-3" : "justify-center px-0",
-                    active
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
-                  )}
-                >
-                  <div className={cn("flex items-center gap-3 min-w-0", isExpanded ? "justify-start" : "justify-center")}>
-                    {(item as any).isLucide ? (
-                      <Icon
-                        className={cn(
-                          "shrink-0 transition-colors",
-                          isExpanded ? "size-4" : "size-5",
-                          active
-                            ? "text-primary"
-                            : "text-muted-foreground group-hover:text-foreground"
-                        )}
-                      />
-                    ) : (
-                      <Icon
-                        size={isExpanded ? 16 : 18}
-                        weight={active ? "fill" : "regular"}
-                        className={cn(
-                          "shrink-0 transition-colors",
-                          active
-                            ? "text-primary"
-                            : "text-muted-foreground group-hover:text-foreground"
-                        )}
-                      />
-                    )}
-                    <div className={cn("truncate", isExpanded ? "block" : "hidden")}>
-                      {isPlacesBadge ? (
-                        <PlacesHighlightBadge subtle={!active} className="text-xs" />
-                      ) : (
-                        <span className="truncate">{item.label}</span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* ── 2. PAINEL PESSOAL & REDE SOCIAL ── */}
-        {isAuthenticated && (
-          <div className="space-y-1 pt-1 border-t border-border/40">
+    <TooltipProvider delayDuration={120}>
+      <aside
+        className={cn(
+          "waesy-rail-flex flex-col shrink-0 h-full py-3 justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-sidebar-border transition duration-200 motion-reduce:transition-none",
+          isExpanded ? "w-56 px-2 bg-sidebar" : "w-14 px-1 bg-rail"
+        )}
+      >
+        <div className="space-y-4">
+          {/* ── 1. MÓDULOS PRINCIPAIS ── */}
+          <div className="space-y-1">
             <span
               className={cn(
-                "px-3 text-xs font-mono font-bold tracking-wider uppercase text-muted-foreground/70",
+                "px-3 text-xs font-medium text-muted-foreground",
                 isExpanded ? "block" : "hidden"
               )}
             >
-              Pessoal
+              Explorar
             </span>
-
-            {hasStore && (
-              <div className="pt-1 pb-1">
-                <Link
-                  to="/workspace"
-                  title="Workspace"
-                  aria-label="Workspace"
-                  className={cn(
-                    "flex items-center h-11 min-h-11 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold text-xs transition-colors group cursor-pointer",
-                    isExpanded ? "justify-between px-3" : "justify-center px-0"
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <Storefront size={16} weight="fill" />
-                    <span className={isExpanded ? "inline" : "hidden"}>Workspace</span>
-                  </div>
-                  <ArrowSquareOut
-                    size={13}
-                    className={cn(
-                      "text-primary/70 group-hover:translate-x-0.5 transition-transform",
-                      isExpanded ? "block" : "hidden"
-                    )}
-                  />
-                </Link>
-              </div>
-            )}
-
             <nav className="flex flex-col space-y-1 pt-1">
-              {USER_NAV_ITEMS.map((item) => {
-                const Icon = item.icon;
+              {MAIN_EXPLORER_ITEMS.map((item) => {
+                const Icon = item.icon as any;
                 const active = isCurrentActive(item);
+                const isPlacesBadge = (item as any).isPlacesBadge;
+                const isMarketplace = (item as any).isMarketplace;
+
+                if (isMarketplace) {
+                  const marketActive = active || isInsideMarketplace;
+                  return (
+                    <div key={item.to} className="space-y-1">
+                      <div
+                        className={cn(
+                          "flex items-center h-11 min-h-11 rounded-xl text-xs transition-colors group",
+                          isExpanded ? "justify-between px-3" : "justify-center px-0",
+                          marketActive
+                            ? isExpanded
+                              ? "bg-sidebar-active text-foreground font-semibold"
+                              : "bg-rail-active text-foreground"
+                            : isExpanded
+                              ? "text-muted-foreground hover:text-foreground hover:bg-sidebar-active font-medium"
+                              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover font-medium"
+                        )}
+                      >
+                        {wrapWithRailTooltip(
+                          "Marketplace",
+                          <Link
+                            to="/marketplace"
+                            aria-label="Marketplace"
+                            className={cn(
+                              "flex items-center gap-3 min-w-0 flex-1 h-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl",
+                              isExpanded ? "justify-start" : "justify-center"
+                            )}
+                          >
+                            <Storefront
+                              size={isExpanded ? 18 : 20}
+                              weight={marketActive ? "fill" : "regular"}
+                              className={cn(
+                                "shrink-0 transition-colors",
+                                marketActive
+                                  ? "text-foreground"
+                                  : "text-muted-foreground group-hover:text-foreground"
+                              )}
+                            />
+                            <span className={cn("truncate", isExpanded ? "block" : "hidden")}>Marketplace</span>
+                          </Link>
+                        )}
+
+                        {isExpanded && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIsMarketplacesOpen((prev) => !prev);
+                            }}
+                            aria-label={isMarketplacesOpen ? "Recolher categorias" : "Expandir categorias"}
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg text-2xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <span>{activeSurfaces.length}</span>
+                            {isMarketplacesOpen ? <CaretDown size={11} /> : <CaretRight size={11} />}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Sub-Marketplaces Colapsáveis em Lista Vertical Limpa */}
+                      {isExpanded && isMarketplacesOpen && (
+                        <div className="flex flex-col space-y-1 pl-2">
+                          {activeSurfaces.map((sub) => {
+                            const SubIcon = sub.icon;
+                            const isSubActive = currentPath.startsWith(sub.to);
+
+                            return (
+                              <Link
+                                key={sub.to}
+                                to={sub.to as any}
+                                className={cn(
+                                  "flex items-center gap-3 h-11 min-h-11 px-3 rounded-xl text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                  isSubActive
+                                    ? "bg-sidebar-active text-foreground font-semibold"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-sidebar-active font-medium"
+                                )}
+                              >
+                                <SubIcon size={16} weight={isSubActive ? "fill" : "regular"} className="shrink-0" />
+                                <span className="truncate">{sub.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
 
                 return (
-                  <Link
-                    key={item.to}
-                    to={item.to as any}
-                    title={item.label}
-                    aria-label={item.label}
-                    className={cn(
-                      "flex items-center h-11 min-h-11 rounded-lg text-xs transition-colors cursor-pointer group",
-                      isExpanded ? "justify-start px-3 gap-3" : "justify-center px-0",
-                      active
-                        ? "bg-primary/10 text-primary font-bold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
+                  <React.Fragment key={item.to}>
+                    {wrapWithRailTooltip(
+                      item.label,
+                      <Link
+                        to={item.to as any}
+                        aria-label={item.label}
+                        className={cn(
+                          "flex items-center h-11 min-h-11 rounded-xl text-xs transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          isExpanded ? "justify-between px-3" : "justify-center px-0",
+                          active
+                            ? isExpanded
+                              ? "bg-sidebar-active text-foreground font-semibold"
+                              : "bg-rail-active text-foreground"
+                            : isExpanded
+                              ? "text-muted-foreground hover:text-foreground hover:bg-sidebar-active/60 font-medium"
+                              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover font-medium"
+                        )}
+                      >
+                        <div className={cn("flex items-center gap-3 min-w-0", isExpanded ? "justify-start" : "justify-center")}>
+                          <StatefulNavIcon
+                            icon={Icon}
+                            active={active}
+                            size={isExpanded ? 18 : 20}
+                            className={cn(
+                              "shrink-0 transition-colors",
+                              active
+                                ? "text-foreground"
+                                : "text-muted-foreground group-hover:text-foreground"
+                            )}
+                          />
+                          <div className={cn("truncate", isExpanded ? "block" : "hidden")}>
+                            {isPlacesBadge ? (
+                              <PlacesHighlightBadge subtle={!active} className="text-xs" />
+                            ) : (
+                              <span className="truncate">{item.label}</span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
                     )}
-                  >
-                    <Icon
-                      size={isExpanded ? 16 : 18}
-                      weight={active ? "fill" : "regular"}
-                      className={cn(
-                        "shrink-0 transition-colors",
-                        active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                      )}
-                    />
-                    <span className={cn("truncate", isExpanded ? "inline" : "hidden")}>{item.label}</span>
-                  </Link>
+                  </React.Fragment>
                 );
               })}
             </nav>
           </div>
-        )}
-      </div>
 
-      {/* ── 3. BOTÃO DE CRIAR & PUBLICAR ── */}
-      <div className={cn("pt-2", isExpanded ? "block" : "hidden")}>
-        <PublishSheet />
-      </div>
-    </aside>
+          {/* ── 2. PAINEL PESSOAL & REDE SOCIAL ── */}
+          {isAuthenticated && (
+            <div className="space-y-1 pt-2 border-t border-sidebar-border">
+              <span
+                className={cn(
+                  "px-3 text-xs font-medium text-muted-foreground",
+                  isExpanded ? "block" : "hidden"
+                )}
+              >
+                Pessoal
+              </span>
+
+              {hasStore && (
+                <div className="pt-1 pb-1">
+                  {wrapWithRailTooltip(
+                    "Workspace",
+                    <Link
+                      to="/workspace"
+                      aria-label="Workspace"
+                      className={cn(
+                        "flex items-center h-11 min-h-11 rounded-xl bg-foreground text-background font-semibold text-xs transition-colors group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:opacity-90",
+                        isExpanded ? "justify-between px-3" : "justify-center px-0"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Storefront size={isExpanded ? 18 : 20} weight="fill" />
+                        <span className={isExpanded ? "inline" : "hidden"}>Workspace</span>
+                      </div>
+                      <ArrowSquareOut
+                        size={14}
+                        className={cn(
+                          "group-hover:translate-x-0.5 transition-transform",
+                          isExpanded ? "block" : "hidden"
+                        )}
+                      />
+                    </Link>
+                  )}
+                </div>
+              )}
+
+              <nav className="flex flex-col space-y-1 pt-1">
+                {USER_NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const active = isCurrentActive(item);
+
+                  return (
+                    <React.Fragment key={item.to}>
+                      {wrapWithRailTooltip(
+                        item.label,
+                        <Link
+                          to={item.to as any}
+                          aria-label={item.label}
+                          className={cn(
+                            "flex items-center h-11 min-h-11 rounded-xl text-xs transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            isExpanded ? "justify-start px-3 gap-3" : "justify-center px-0",
+                            active
+                              ? isExpanded
+                                ? "bg-sidebar-active text-foreground font-semibold"
+                                : "bg-rail-active text-foreground"
+                              : isExpanded
+                                ? "text-muted-foreground hover:text-foreground hover:bg-sidebar-active font-medium"
+                                : "text-muted-foreground hover:text-foreground hover:bg-rail-hover font-medium"
+                          )}
+                        >
+                          <Icon
+                            size={isExpanded ? 18 : 20}
+                            weight={active ? "fill" : "regular"}
+                            className={cn(
+                              "shrink-0 transition-colors",
+                              active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                            )}
+                          />
+                          <span className={cn("truncate", isExpanded ? "inline" : "hidden")}>{item.label}</span>
+                        </Link>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </nav>
+            </div>
+          )}
+        </div>
+
+        {/* ── 3. BOTÃO DE CRIAR & PUBLICAR ── */}
+        <div className={cn("pt-2", isExpanded ? "block" : "hidden")}>
+          <PublishSheet />
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 }

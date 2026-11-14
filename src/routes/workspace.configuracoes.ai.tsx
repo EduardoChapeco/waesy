@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/configuracoes/ai")({
- head: () => ({ meta: [{ title: "Inteligência Artificial | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Modelos e Chaves | Workspace Waesy" }] }),
  component: AIConfigurationPage,
 });
 
@@ -123,11 +123,11 @@ function AIConfigurationPage() {
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
  <div>
  <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
- <Cpu className="size-5 text-primary" />
- <span>Inteligência Artificial</span>
+ <Cpu className="size-5 text-foreground" />
+ <span>Provedores e Chaves</span>
  </h1>
  <p className="text-xs text-muted-foreground mt-1">
- Gerencie chaves criptografadas de provedores de Inteligência Artificial e automação.
+ Gerencie chaves criptografadas de provedores externos e automação.
  </p>
  </div>
 

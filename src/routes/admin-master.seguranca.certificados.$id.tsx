@@ -96,11 +96,9 @@ function CertificateDetailPage() {
  return (
  <div className="min-h-dvh bg-background">
  {/* Header */}
- <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-10">
+ <div className="border-b border-border bg-background sticky top-0 z-10">
  <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
- <div className={cn("size-9 rounded-lg flex items-center justify-center",
- status.auto_flagged ? "bg-destructive/10" : "bg-primary/10"
- )}>
+ <div className={cn("size-9 rounded-lg flex items-center justify-center bg-muted border border-border")}>
  {status.auto_flagged
  ? <ShieldAlert className="size-5 text-destructive" />
  : <ShieldCheck className="size-5 text-primary" />

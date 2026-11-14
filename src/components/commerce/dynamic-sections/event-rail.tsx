@@ -73,7 +73,7 @@ export function EventRail({ content, resolvedEvents, isEditing }: any) {
  </div>
  )}
  {/* Date Badge overlay */}
- <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm px-3 py-2 rounded-lg text-center leading-tight">
+ <div className="absolute top-4 left-4 bg-card border border-border px-3 py-2 rounded-lg text-center leading-tight">
  <span className="block text-xs font-bold text-muted-foreground uppercase">
  {formatDate(evt.event_date)}
  </span>

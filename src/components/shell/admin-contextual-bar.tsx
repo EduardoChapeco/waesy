@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Shield, Sparkles, Loader2, X } from "lucide-react";
+import { Shield, Layers, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { openOrCreatePageExperienceDocument } from "@/services/surface-cms.functions";
 import { toast } from "sonner";
@@ -88,7 +88,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
         type="button"
         onClick={() => setIsMinimized(false)}
         aria-label="Expandir Barra de Governança"
-        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-30 size-11 min-h-11 min-w-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-30 size-11 min-h-11 min-w-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center border border-border hover:scale-105 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title="Admin Master"
       >
         <Shield className="size-4" />
@@ -99,7 +99,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
   return (
     <aside
       aria-label="Barra de Governança Contextual Master"
-      className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-30 max-w-md w-auto bg-card/95 backdrop-blur-2xl border border-border/60 rounded-xl p-2 px-3 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-bottom-3 duration-300"
+      className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-30 max-w-md w-auto bg-card border border-border rounded-xl p-2 px-3 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-bottom-3 duration-300"
     >
       <div className="flex items-center gap-2">
         <div className="size-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-2xs">
@@ -126,7 +126,7 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
           {openingOmni ? (
             <Loader2 className="size-3.5 animate-spin motion-reduce:transition-none" />
           ) : (
-            <Sparkles className="size-3.5" />
+            <Layers className="size-3.5" />
           )}
           <span>Editar no OmniBuilder</span>
         </Button>

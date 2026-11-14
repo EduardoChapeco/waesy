@@ -106,19 +106,19 @@ export function QuickProfilePeekModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="w-[92vw] max-w-sm sm:max-w-md p-0 overflow-hidden rounded-3xl border border-border/60 bg-card text-foreground shadow-overlay z-50 pt-[max(1.25rem,env(safe-area-inset-top))]"
+        className="w-full max-w-sm sm:max-w-md p-0 overflow-hidden rounded-3xl border border-border bg-card text-foreground shadow-overlay z-50 pt-safe-modal"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Perfil de {memberName}</DialogTitle>
         </DialogHeader>
 
-        {/* ─── Topo de Banner Decorativo Sutil ─────────────────────────── */}
-        <div className="h-20 bg-linear-to-r from-primary/15 via-primary/5 to-muted/40 relative" />
+        {/* ─── Topo de Faixa Neutra ───────────────────────────────────────── */}
+        <div className="h-20 bg-muted border-b border-border relative" />
 
         {/* ─── Corpo do Perfil (Apple HIG & Anti-AI Smell) ─────────────── */}
         <div className="px-5 pb-5 -mt-10 space-y-4">
           <div className="flex items-end justify-between gap-3">
-            <Avatar className="size-20 rounded-2xl border-4 border-card shadow-overlay">
+            <Avatar className="size-20 rounded-2xl border-4 border-card">
               {memberAvatar && (
                 <AvatarImage
                   src={memberAvatar}
@@ -126,7 +126,7 @@ export function QuickProfilePeekModal({
                   className="object-cover"
                 />
               )}
-              <AvatarFallback className="rounded-2xl text-xl font-bold bg-primary/10 text-primary">
+              <AvatarFallback className="rounded-2xl text-xl font-bold bg-muted text-primary">
                 {memberName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

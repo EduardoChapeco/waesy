@@ -205,11 +205,11 @@ export const searchFacetedCatalog = createServerFn({ method: "POST" })
         slug,
         description,
         price_cents,
-        original_price_cents,
+        compare_at_cents,
         status,
         created_at,
-        category:categories(id, name, slug),
-        store:stores(id, name, slug, logo_url, city, state, niche),
+        product_categories(category:categories(id, name, slug)),
+        store:stores(id, name, slug, logo_url, city, state, settings),
         product_media(url, sort_order)
       `)
       .in("status", ["published", "active"]);
@@ -248,8 +248,14 @@ export const searchFacetedCatalog = createServerFn({ method: "POST" })
 
     // 3. Normalização e Atribuição de Relevância
     const mappedItems: FacetedProductItem[] = products.map((p: any) => {
-      const niche = p.store?.niche || "varejo";
+      const storeSettings = (p.store?.settings || {}) as Record<string, any>;
+      const niche = storeSettings.niche || storeSettings.segment || storeSettings.category || "varejo";
       const isBoosted = false; // Integrável com ad_campaigns
+      const primaryCategory = Array.isArray(p.product_categories)
+        ? (Array.isArray(p.product_categories[0]?.category)
+            ? p.product_categories[0]?.category[0]
+            : p.product_categories[0]?.category) || null
+        : p.category || null;
 
       const relevance = calculateRelevanceScore(
         {
@@ -269,7 +275,7 @@ export const searchFacetedCatalog = createServerFn({ method: "POST" })
         slug: p.slug,
         description: p.description,
         price_cents: p.price_cents || 0,
-        original_price_cents: p.original_price_cents,
+        original_price_cents: p.compare_at_cents ?? null,
         cover_url: extractCover(p.product_media),
         store: {
           id: p.store?.id || "",
@@ -280,11 +286,11 @@ export const searchFacetedCatalog = createServerFn({ method: "POST" })
           state: p.store?.state || null,
           niche,
         },
-        category: p.category
+        category: primaryCategory
           ? {
-              id: p.category.id,
-              name: p.category.name,
-              slug: p.category.slug,
+              id: primaryCategory.id,
+              name: primaryCategory.name,
+              slug: primaryCategory.slug,
             }
           : null,
         niche,

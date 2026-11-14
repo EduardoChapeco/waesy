@@ -57,28 +57,28 @@ export function TravelPackageHero({
  alt={title}
  className="absolute inset-0 size-full object-cover group-hover:scale-103 transition-transform duration-200 brightness-95"
  />
- <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+ <div className="absolute inset-0 bg-neutral-950/75 pointer-events-none" />
 
  {/* Conteúdo Sobreposto */}
- <div className="relative z-10 space-y-4 max-w-3xl text-foreground">
+ <div className="relative z-10 space-y-4 max-w-3xl text-neutral-50">
  <div className="flex flex-wrap items-center gap-2">
- <span className="px-3 py-1 rounded-full text-2xs font-bold bg-background text-foreground border border-border/60 uppercase tracking-wider">
+ <span className="px-3 py-1 rounded-full text-2xs font-bold bg-card text-foreground border border-border uppercase tracking-wider">
  {country}
  </span>
  <span className="px-3 py-1 rounded-full text-2xs font-semibold bg-primary text-primary-foreground">
  {durationText}
  </span>
- <span className="px-3 py-1 rounded-full text-2xs font-semibold bg-emerald-500/90 text-foreground">
+ <span className="px-3 py-1 rounded-full text-2xs font-semibold bg-emerald-700 text-emerald-50 border border-emerald-600">
  {mealPlan}
  </span>
  </div>
 
  <div>
- <div className="flex items-center gap-2 text-xs text-foreground/80 mb-1">
+ <div className="flex items-center gap-2 text-xs text-neutral-200 mb-1">
  <MapPin className="size-3.5 text-rose-400" />
  <span>{destination}</span>
  </div>
- <h2 className="text-2xl sm:text-4xl font-serif font-bold text-foreground tracking-tight  leading-tight">
+ <h2 className="text-2xl sm:text-4xl font-serif font-bold text-neutral-50 tracking-tight leading-tight">
  {title}
  </h2>
  </div>
@@ -88,7 +88,7 @@ export function TravelPackageHero({
  {inclusions.slice(0, 4).map((inc, i) => (
  <span
  key={i}
- className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs bg-background/80 border border-border/60 text-foreground"
+ className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs bg-neutral-900 border border-neutral-700 text-neutral-50"
  >
  <ShieldCheck className="size-3 text-emerald-400" />
  <span>{inc}</span>
@@ -97,17 +97,17 @@ export function TravelPackageHero({
  </div>
 
  {/* Bloco de Preço & Conversão */}
- <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-white/20">
+ <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-neutral-700">
  <div className="space-y-1">
- <span className="text-2xs text-foreground/75 font-semibold uppercase tracking-wider">
+ <span className="text-2xs text-neutral-300 font-semibold uppercase tracking-wider">
  A partir de (para 2 pessoas)
  </span>
  <div className="flex items-baseline gap-2">
- {count > 1 && <span className="text-sm font-semibold text-foreground/80">{count}x</span>}
- <span className="text-2xl sm:text-3xl font-black text-foreground font-mono">
+ {count > 1 && <span className="text-sm font-semibold text-neutral-200">{count}x</span>}
+ <span className="text-2xl sm:text-3xl font-black text-neutral-50 font-mono">
  {formatMoney(count > 1 ? installmentCents : priceCents)}
  </span>
- {count > 1 && <span className="text-xs text-foreground/70">ou {formatMoney(priceCents)} à vista</span>}
+ {count > 1 && <span className="text-xs text-neutral-300">ou {formatMoney(priceCents)} à vista</span>}
  </div>
  </div>
 

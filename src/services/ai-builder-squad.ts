@@ -155,9 +155,9 @@ export function generateSectionBlockWithAi(req: SectionGenerationRequest): {
       config: {
         slides: [
           {
-            title: `Bem-vindo à ${storeName}`,
+            title: storeName,
             subtitle: prompt.slice(0, 100),
-            cta_text: "Conhecer Catálogo",
+            cta_text: "Ver Catálogo",
             cta_link: "#produtos",
             background_url: "",
           },

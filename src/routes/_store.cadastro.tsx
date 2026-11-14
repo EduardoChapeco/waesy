@@ -109,35 +109,32 @@ function RegisterPage() {
  }
  };
 
- return (
- <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-background pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] p-4 sm:p-6 lg:p-0">
- {/* ── Left Side: Minimal Brand Screen (Desktop) ────────── */}
- <div className="relative hidden lg:flex lg:w-9/20 bg-zinc-950 text-foreground flex-col justify-between p-12 overflow-hidden">
- <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(120,50,255,0.10),transparent_60%)]" />
- <div className="absolute inset-0 bg-[radial-gradient(#ffffff15_1px,transparent_1px)] [background-size:24px_24px] opacity-20" />
+  return (
+    <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-background pt-safe pb-safe p-4 sm:p-6 lg:p-0">
+      {/* ── Left Side: Minimal Brand Screen (Desktop) ────────── */}
+      <div className="relative hidden lg:flex lg:w-9/20 bg-muted border-r border-border text-foreground flex-col justify-between p-12 overflow-hidden">
+        <div className="relative z-10 flex flex-col h-full justify-between">
+          <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tight">
+            <span className="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-sm font-black">Waesy</span>
+          </Link>
+          <div className="max-w-md">
+            <h2 className="text-3xl font-bold tracking-tight leading-tight">
+              O Sistema Operacional do seu Negócio.
+            </h2>
+          </div>
+        </div>
+      </div>
 
- <div className="relative z-10 flex flex-col h-full justify-between">
- <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tight">
- <span className="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-sm font-black">Waesy</span>
- </Link>
- <div className="max-w-md">
- <h2 className="text-3xl font-bold tracking-tight leading-tight">
- O Sistema Operacional do seu Negócio.
- </h2>
- </div>
- </div>
- </div>
-
- {/* ── Right Side: Clean Register Form ────────── */}
- <div className="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-16">
- <div className="w-full max-w-md space-y-8">
- {/* Mobile Back / Breadcrumb */}
- <div className="flex items-center justify-between">
- <Link
- to="/"
- className="size-10 rounded-lg bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-colors duration-200 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
- aria-label="Voltar para o início"
- >
+      {/* ── Right Side: Clean Register Form ────────── */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-16">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile Back / Breadcrumb */}
+          <div className="flex items-center justify-between">
+            <Link
+              to="/"
+              className="size-11 min-h-11 min-w-11 rounded-lg bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Voltar para o início"
+            >
  <ArrowLeft className="size-4" />
  </Link>
  <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg text-xs">

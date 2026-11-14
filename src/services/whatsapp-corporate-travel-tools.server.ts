@@ -77,15 +77,15 @@ export async function toolSearchCorporateFlightsWooba(
   if (input.companyId) {
     const { data: policy } = await supabase
       .from("travel_policy_versions")
-      .select("rules")
+      .select("rules_json")
       .eq("company_id", input.companyId)
       .eq("is_active", true)
       .order("version_number", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (policy && policy.rules) {
-      const rules = policy.rules as any;
+    if (policy && (policy as any).rules_json) {
+      const rules = (policy as any).rules_json as any;
       if (rules.max_domestic_flight_cents) {
         flightPriceCeilingCents = Number(rules.max_domestic_flight_cents);
       }

@@ -1,7 +1,16 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Save, CheckCircle2, Trash2, Key, BarChart, Calendar, MessageCircle, MapPin, Layers, ShieldCheck, Store, FileText, Truck, RefreshCw, ExternalLink, AlertCircle, Check, Zap, CreditCard, Globe2, Terminal, Bot, Cpu, Plane } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Save, CheckCircle2, Trash2, Key, BarChart, Calendar, MessageCircle, MapPin, Layers, ShieldCheck, Store, FileText, Truck, RefreshCw, ExternalLink, AlertCircle, Check, Zap, CreditCard, Globe2, Terminal, Bot, Cpu, Plane, Mail, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
+import { listTeamMembers } from "@/services/admin-team.functions";
+import {
+  getCorporateEmailHostingOverview,
+  saveCorporateEmailHostingConfig,
+  createCorporateEmailMailbox,
+  assignCorporateEmailMailbox,
+  deleteCorporateEmailMailbox,
+} from "@/services/chat.functions";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -138,19 +147,19 @@ function IntegrationCard({
   };
 
   return (
-    <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
+    <Card className="bg-card rounded-lg border border-border shadow-none flex flex-col justify-between">
       <div>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+              <div className="p-3 bg-muted border border-border rounded-lg text-primary shrink-0">
                 <Icon className="size-5" />
               </div>
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
                   {title}
                   {existingSetting?.is_active ? (
-                    <Badge variant="outline" className="text-xs border-success/40 bg-success/10 text-success">
+                    <Badge variant="outline" className="text-xs border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                       Ativo
                     </Badge>
                   ) : (
@@ -341,7 +350,7 @@ function SecretVaultCard({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+              <div className="p-3 bg-muted border border-border rounded-lg text-primary shrink-0">
                 <Icon className="size-5" />
               </div>
               <div>
@@ -349,7 +358,7 @@ function SecretVaultCard({
                   {title}
                   {existingSecret ? (
                     <Badge variant="default" className="text-xs">
-                      BYOK Ativo
+                      Chave Ativa
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-xs text-muted-foreground">
@@ -365,13 +374,13 @@ function SecretVaultCard({
         </CardHeader>
 
         <CardContent className="space-y-3 pt-1">
-          <div className="text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/50 flex items-center justify-between">
-            <span>Recursos / Modelos:</span>
+          <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg border border-border flex items-center justify-between">
+            <span>Modelos Suportados:</span>
             <span className="font-semibold text-foreground">{modelsLabel}</span>
           </div>
 
           {existingSecret && (
-            <div className="bg-primary/10 text-primary p-3 rounded-lg text-xs flex items-center justify-between border border-primary/20">
+            <div className="bg-muted text-foreground p-3 rounded-lg text-xs flex items-center justify-between border border-border">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 shrink-0 text-primary" />
                 <span className="font-medium">Chave Pessoal Salva:</span>
@@ -532,6 +541,567 @@ function WhatsAppInstancesPanel({
     <WhatsAppQrConnectModal open={qrModalOpen} onOpenChange={setQrModalOpen} instances={instances} onInstancesUpdated={refresh} />
     <WhatsAppTeamSectorsDrawer open={sectorsDrawerOpen} onOpenChange={setSectorsDrawerOpen} companyId="" instanceId={instances[0]?.id} />
   </Card>;
+}
+
+const EMAIL_SECTORS_CATALOG = [
+  { id: "geral", label: "Geral / Triagem" },
+  { id: "vendas", label: "Comercial & Cotações" },
+  { id: "operadora", label: "Operadoras, PNR & Cia Aérea" },
+  { id: "financeiro", label: "Financeiro, Faturas & Boletos" },
+  { id: "suporte", label: "Pós-Venda & SAC" },
+  { id: "logistica", label: "Logística & Embarque" },
+];
+
+function CorporateEmailHostingPanel() {
+  const queryClient = useQueryClient();
+  const { data: overview, isLoading } = useQuery({
+    queryKey: ["corporate-email-hosting-overview"],
+    queryFn: () => getCorporateEmailHostingOverview({ data: {} }).catch(() => null),
+  });
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ["workspace-team-members-email"],
+    queryFn: () => listTeamMembers().catch(() => []),
+  });
+
+  const [showServerConfig, setShowServerConfig] = useState(false);
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [configForm, setConfigForm] = useState({
+    provider: "cloudwebly_cpanel" as "cloudwebly_cpanel" | "custom_cpanel" | "custom_imap_smtp" | "imap_smtp",
+    planStatus: "active" as "active" | "trial" | "external",
+    primaryDomain: "",
+    cpanelHost: "",
+    cpanelPort: 2083,
+    cpanelUsername: "",
+    cpanelApiToken: "",
+    imapHost: "",
+    imapPort: 993,
+    smtpHost: "",
+    smtpPort: 465,
+    autoLinkByCustomerEmail: true,
+    autoLinkByPnrAndTicket: true,
+  });
+
+  useEffect(() => {
+    if (overview?.hostingConfig) {
+      const cfg = overview.hostingConfig;
+      setConfigForm((prev) => ({
+        ...prev,
+        provider: cfg.provider || "cloudwebly_cpanel",
+        planStatus: cfg.planStatus || "active",
+        primaryDomain: cfg.primaryDomain || "",
+        cpanelHost: cfg.cpanelHost || "",
+        cpanelPort: cfg.cpanelPort || 2083,
+        cpanelUsername: cfg.cpanelUsername || "",
+        imapHost: cfg.imapHost || "",
+        imapPort: cfg.imapPort || 993,
+        smtpHost: cfg.smtpHost || "",
+        smtpPort: cfg.smtpPort || 465,
+        autoLinkByCustomerEmail: cfg.autoLinkByCustomerEmail ?? true,
+        autoLinkByPnrAndTicket: cfg.autoLinkByPnrAndTicket ?? true,
+      }));
+    }
+  }, [overview?.hostingConfig]);
+
+  const [newMailboxForm, setNewMailboxForm] = useState({
+    localPart: "",
+    displayName: "",
+    password: "",
+    quotaMb: "1024",
+    departmentSlug: "geral",
+    assignedProfileId: "",
+  });
+  const [isCreatingMailbox, setIsCreatingMailbox] = useState(false);
+
+  const handleSaveConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!configForm.primaryDomain.trim()) {
+      toast.error("Informe o domínio principal (ex: suaempresa.com.br).");
+      return;
+    }
+    setIsSavingConfig(true);
+    try {
+      await saveCorporateEmailHostingConfig({
+        data: {
+          provider: configForm.provider,
+          planStatus: configForm.planStatus,
+          primaryDomain: configForm.primaryDomain.trim(),
+          cpanelHost: configForm.cpanelHost.trim() || undefined,
+          cpanelPort: Number(configForm.cpanelPort) || 2083,
+          cpanelUsername: configForm.cpanelUsername.trim() || undefined,
+          cpanelApiToken: configForm.cpanelApiToken.trim() || undefined,
+          imapHost: configForm.imapHost.trim() || undefined,
+          imapPort: Number(configForm.imapPort) || 993,
+          smtpHost: configForm.smtpHost.trim() || undefined,
+          smtpPort: Number(configForm.smtpPort) || 465,
+          autoLinkByCustomerEmail: configForm.autoLinkByCustomerEmail,
+          autoLinkByPnrAndTicket: configForm.autoLinkByPnrAndTicket,
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["corporate-email-hosting-overview"] });
+      setShowServerConfig(false);
+      toast.success("Hospedagem e servidor de e-mail Cloudwebly / cPanel salvos!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar configuração de hospedagem.");
+    } finally {
+      setIsSavingConfig(false);
+    }
+  };
+
+  const handleCreateMailbox = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMailboxForm.localPart.trim()) {
+      toast.error("Informe o prefixo da caixa de e-mail (ex: atendimento, financeiro, reservas).");
+      return;
+    }
+    const domain = (configForm.primaryDomain || overview?.hostingConfig?.primaryDomain || "seudominio.com.br").trim();
+    const selectedMember = (teamMembers || []).find(
+      (m: any) => String(m.id || m.user_id) === newMailboxForm.assignedProfileId,
+    );
+    setIsCreatingMailbox(true);
+    try {
+      const res: any = await createCorporateEmailMailbox({
+        data: {
+          localPart: newMailboxForm.localPart.trim(),
+          domain,
+          password: newMailboxForm.password || undefined,
+          displayName: newMailboxForm.displayName.trim() || newMailboxForm.localPart.trim(),
+          quotaMb: Number(newMailboxForm.quotaMb) || 1024,
+          departmentSlug: newMailboxForm.departmentSlug,
+          assignedProfileId: newMailboxForm.assignedProfileId || null,
+          assignedProfileName: selectedMember?.full_name || selectedMember?.name || null,
+          autoAssignTicket: true,
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["corporate-email-hosting-overview"] });
+      setNewMailboxForm({
+        localPart: "",
+        displayName: "",
+        password: "",
+        quotaMb: "1024",
+        departmentSlug: "geral",
+        assignedProfileId: "",
+      });
+      toast.success(
+        res?.cpanelProvisioned
+          ? "Caixa de e-mail criada no cPanel/Cloudwebly e vinculada ao setor!"
+          : "Caixa de e-mail corporativa registrada e vinculada ao atendimento!",
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar caixa de e-mail.");
+    } finally {
+      setIsCreatingMailbox(false);
+    }
+  };
+
+  const handleUpdateAssignment = async (
+    mailboxId: string,
+    departmentSlug: string,
+    assignedProfileId: string | null,
+  ) => {
+    const selectedMember = (teamMembers || []).find(
+      (m: any) => String(m.id || m.user_id) === String(assignedProfileId || ""),
+    );
+    try {
+      await assignCorporateEmailMailbox({
+        data: {
+          mailboxId,
+          departmentSlug,
+          assignedProfileId: assignedProfileId || null,
+          assignedProfileName: selectedMember?.full_name || selectedMember?.name || null,
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["corporate-email-hosting-overview"] });
+      toast.success("Vínculo de setor e colaborador atualizado!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao vincular caixa de e-mail.");
+    }
+  };
+
+  const handleDeleteMailbox = async (mailboxId: string, email: string) => {
+    try {
+      await deleteCorporateEmailMailbox({
+        data: { mailboxId, deleteOnCpanel: true },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["corporate-email-hosting-overview"] });
+      toast.success(`Caixa ${email} removida com sucesso.`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao remover caixa de e-mail.");
+    }
+  };
+
+  const activeDomain =
+    configForm.primaryDomain || overview?.hostingConfig?.primaryDomain || "suaempresa.com.br";
+  const mailboxes = overview?.mailboxes || [];
+
+  return (
+    <Card className="lg:col-span-2 border-primary/30 bg-card">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/60 pb-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Mail className="size-4 text-primary" />
+              <span>E-mail Corporativo & Hospedagem Cloudwebly / cPanel</span>
+            </CardTitle>
+            <Badge variant="outline" className="text-2xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
+              Plano Hospedagem Ativo
+            </Badge>
+            <Badge variant="secondary" className="text-2xs font-mono">
+              @{activeDomain}
+            </Badge>
+          </div>
+          <CardDescription className="text-xs">
+            Crie contas de e-mail próprias (@{activeDomain}) via API cPanel/Cloudwebly, exclua caixas, vincule a usuários e setores igual ao WhatsApp e rastreie e-mails vinculados ao cliente, PNR, Cia Aérea e Tickets no Atendimento 360º.
+          </CardDescription>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowServerConfig((v) => !v)}
+            className="px-3 py-1 rounded-lg border border-border bg-muted/40 hover:bg-muted text-xs font-semibold text-foreground inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Globe2 className="size-3.5 text-primary" />
+            <span>{showServerConfig ? "Ocultar Servidor cPanel" : "Configurar Cloudwebly / cPanel"}</span>
+          </button>
+          <Link
+            to="/workspace/atendimento/chat"
+            className="px-3 py-1 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold inline-flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <MessageCircle className="size-3.5" />
+            <span>Abrir Atendimento 360º</span>
+          </Link>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-5 pt-4">
+        {/* PAINEL RECOLHÍVEL: CONEXÃO CLOUDWEBLY / CPANEL UAPI & IMAP/SMTP */}
+        {showServerConfig && (
+          <form
+            onSubmit={handleSaveConfig}
+            className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                <Terminal className="size-3.5" />
+                <span>Conexão Direta Cloudwebly / cPanel UAPI + SMTP/IMAP</span>
+              </span>
+              <span className="text-2xs text-muted-foreground">
+                Provisionamento automático via UAPI Email::add_pop / delete_pop
+              </span>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-2xs font-semibold">Provedor de Hospedagem</Label>
+                <select
+                  value={configForm.provider}
+                  onChange={(e) => setConfigForm((p) => ({ ...p, provider: e.target.value as any }))}
+                  className="w-full h-9 rounded-md border border-border/80 bg-background px-2 text-xs font-semibold"
+                >
+                  <option value="cloudwebly_cpanel">Cloudwebly (cPanel Integrado)</option>
+                  <option value="custom_cpanel">cPanel / WHM Dedicado</option>
+                  <option value="custom_imap_smtp">IMAP / SMTP Externo</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-2xs font-semibold">Domínio Principal do Site/E-mail</Label>
+                <Input
+                  value={configForm.primaryDomain}
+                  onChange={(e) => setConfigForm((p) => ({ ...p, primaryDomain: e.target.value }))}
+                  placeholder="Ex: excelenciatour.com.br"
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+              <div>
+                <Label className="text-2xs font-semibold">Host do Servidor cPanel (Porta 2083)</Label>
+                <Input
+                  value={configForm.cpanelHost}
+                  onChange={(e) => setConfigForm((p) => ({ ...p, cpanelHost: e.target.value }))}
+                  placeholder="Ex: br1.cloudwebly.com"
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+              <div>
+                <Label className="text-2xs font-semibold">Usuário cPanel</Label>
+                <Input
+                  value={configForm.cpanelUsername}
+                  onChange={(e) => setConfigForm((p) => ({ ...p, cpanelUsername: e.target.value }))}
+                  placeholder="Ex: excelenc"
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+              <div>
+                <Label className="text-2xs font-semibold">cPanel API Token (UAPI)</Label>
+                <Input
+                  type="password"
+                  value={configForm.cpanelApiToken}
+                  onChange={(e) => setConfigForm((p) => ({ ...p, cpanelApiToken: e.target.value }))}
+                  placeholder="Token gerado em Manage API Tokens no cPanel"
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+              <div>
+                <Label className="text-2xs font-semibold">Host SMTP / IMAP</Label>
+                <Input
+                  value={configForm.smtpHost}
+                  onChange={(e) =>
+                    setConfigForm((p) => ({ ...p, smtpHost: e.target.value, imapHost: e.target.value }))
+                  }
+                  placeholder="Ex: mail.excelenciatour.com.br"
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/50">
+              <div className="flex flex-wrap items-center gap-4 text-xs">
+                <label className="inline-flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={configForm.autoLinkByCustomerEmail}
+                    onChange={(e) =>
+                      setConfigForm((p) => ({ ...p, autoLinkByCustomerEmail: e.target.checked }))
+                    }
+                    className="rounded border-border"
+                  />
+                  <span>Vincular automaticamente pelo e-mail/nome do cliente</span>
+                </label>
+                <label className="inline-flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={configForm.autoLinkByPnrAndTicket}
+                    onChange={(e) =>
+                      setConfigForm((p) => ({ ...p, autoLinkByPnrAndTicket: e.target.checked }))
+                    }
+                    className="rounded border-border"
+                  />
+                  <span>Correlacionar tags [CID], [TRD], [PNR] e Localizador Cia Aérea</span>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSavingConfig}
+                className="px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                {isSavingConfig ? "Salvando..." : "Salvar Conexão Cloudwebly / cPanel"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* LISTA DE CAIXAS DE E-MAIL ATIVAS & VINCULAÇÃO A SETORES E USUÁRIOS */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Caixas de E-mail Corporativas Ativas ({mailboxes.length})
+            </span>
+            <span className="text-2xs text-muted-foreground">
+              Roteamento automático por Setor e Atendente Responsável (igual ao WhatsApp)
+            </span>
+          </div>
+
+          {isLoading ? (
+            <div className="p-4 text-center text-xs text-muted-foreground">
+              Carregando caixas de e-mail...
+            </div>
+          ) : mailboxes.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+              Nenhuma caixa de e-mail criada ainda. Crie abaixo sua primeira conta @{activeDomain} (ex: atendimento@{activeDomain}, operadora@{activeDomain}, financeiro@{activeDomain}).
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {mailboxes.map((mb: any) => (
+                <div
+                  key={mb.id}
+                  className="rounded-lg border border-border/80 bg-muted/15 p-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+                >
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono font-bold text-xs text-foreground">
+                        {mb.email}
+                      </span>
+                      <Badge variant="secondary" className="text-2xs">
+                        Ativo
+                      </Badge>
+                      <Badge variant="outline" className="text-2xs font-mono">
+                        {mb.quotaMb || 1024} MB
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-2xs bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30"
+                      >
+                        Auto-Link Cliente / PNR / Ticket
+                      </Badge>
+                    </div>
+                    <p className="text-2xs text-muted-foreground">
+                      Exibição: <strong>{mb.displayName}</strong> • Mensagens enviadas pelo Painel 360º deste setor usam esta caixa e vinculam respostas automaticamente ao cliente.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1">
+                      <span className="text-2xs font-semibold text-muted-foreground">Setor:</span>
+                      <select
+                        value={mb.departmentSlug || "geral"}
+                        onChange={(e) =>
+                          handleUpdateAssignment(mb.id, e.target.value, mb.assignedProfileId)
+                        }
+                        aria-label={`Setor da caixa ${mb.email}`}
+                        className="px-2 py-1 rounded-md border border-border/80 bg-background text-2xs font-semibold text-foreground"
+                      >
+                        {EMAIL_SECTORS_CATALOG.map((sec) => (
+                          <option key={sec.id} value={sec.id}>
+                            {sec.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <span className="text-2xs font-semibold text-muted-foreground">Usuário:</span>
+                      <select
+                        value={mb.assignedProfileId || ""}
+                        onChange={(e) =>
+                          handleUpdateAssignment(
+                            mb.id,
+                            mb.departmentSlug || "geral",
+                            e.target.value || null,
+                          )
+                        }
+                        aria-label={`Usuário responsável pela caixa ${mb.email}`}
+                        className="px-2 py-1 rounded-md border border-border/80 bg-background text-2xs font-semibold text-foreground"
+                      >
+                        <option value="">Equipe do Setor (Compartilhado)</option>
+                        {(teamMembers || []).map((m: any) => (
+                          <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
+                            {m.full_name || m.name || m.email || "Colaborador"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteMailbox(mb.id, mb.email)}
+                      className="px-2 py-1 rounded-md border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 text-2xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                      title="Apagar caixa de e-mail"
+                    >
+                      <Trash2 className="size-3" />
+                      <span>Apagar</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* FORMULÁRIO: CRIAR NOVA CONTA DE E-MAIL PRÓPRIA E VINCULAR A SETOR/USUÁRIO */}
+        <form
+          onSubmit={handleCreateMailbox}
+          className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-3"
+        >
+          <span className="text-xs font-bold text-foreground flex items-center gap-1">
+            <Plus className="size-3.5 text-primary" />
+            <span>Criar Nova Conta de E-mail Própria (@{activeDomain})</span>
+          </span>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-2">
+            <div>
+              <Label className="text-2xs font-semibold">Endereço (Prefixo)</Label>
+              <div className="flex items-center">
+                <Input
+                  value={newMailboxForm.localPart}
+                  onChange={(e) =>
+                    setNewMailboxForm((p) => ({
+                      ...p,
+                      localPart: e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""),
+                    }))
+                  }
+                  placeholder="ex: operadora"
+                  className="h-9 text-xs font-mono rounded-r-none"
+                />
+                <span className="h-9 px-2 inline-flex items-center rounded-r-md border border-l-0 border-border bg-muted text-2xs font-mono text-muted-foreground truncate max-w-32">
+                  @{activeDomain}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-2xs font-semibold">Nome de Exibição</Label>
+              <Input
+                value={newMailboxForm.displayName}
+                onChange={(e) => setNewMailboxForm((p) => ({ ...p, displayName: e.target.value }))}
+                placeholder="Ex: Operações & Emissão PNR"
+                className="h-9 text-xs"
+              />
+            </div>
+
+            <div>
+              <Label className="text-2xs font-semibold">Senha da Caixa (cPanel)</Label>
+              <Input
+                type="password"
+                value={newMailboxForm.password}
+                onChange={(e) => setNewMailboxForm((p) => ({ ...p, password: e.target.value }))}
+                placeholder="Senha forte para IMAP/Webmail"
+                className="h-9 text-xs"
+              />
+            </div>
+
+            <div>
+              <Label className="text-2xs font-semibold">Vincular ao Setor / Fila</Label>
+              <select
+                value={newMailboxForm.departmentSlug}
+                onChange={(e) =>
+                  setNewMailboxForm((p) => ({ ...p, departmentSlug: e.target.value }))
+                }
+                className="w-full h-9 rounded-md border border-border/80 bg-background px-2 text-xs font-semibold"
+              >
+                {EMAIL_SECTORS_CATALOG.map((sec) => (
+                  <option key={sec.id} value={sec.id}>
+                    {sec.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label className="text-2xs font-semibold">Vincular a Usuário (Opcional)</Label>
+              <select
+                value={newMailboxForm.assignedProfileId}
+                onChange={(e) =>
+                  setNewMailboxForm((p) => ({ ...p, assignedProfileId: e.target.value }))
+                }
+                className="w-full h-9 rounded-md border border-border/80 bg-background px-2 text-xs font-semibold"
+              >
+                <option value="">Compartilhado no Setor</option>
+                {(teamMembers || []).map((m: any) => (
+                  <option key={m.id || m.user_id} value={String(m.id || m.user_id)}>
+                    {m.full_name || m.name || m.email || "Colaborador"}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-2xs text-muted-foreground">
+              Ao criar, a caixa fica disponível no Painel Lateral 360º do Chat para envio e acompanhamento de e-mails vinculados ao cliente, PNR ou Ticket.
+            </span>
+            <button
+              type="submit"
+              disabled={isCreatingMailbox}
+              className="px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-1 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            >
+              <Plus className="size-3.5" />
+              <span>{isCreatingMailbox ? "Criando..." : "Criar Caixa de E-mail"}</span>
+            </button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
 }
 
 // ============================================================
@@ -840,49 +1410,54 @@ function UnifiedIntegrationsHubPage() {
 
       {/* TABS NAVEGAÇÃO DO HUB */}
       <Tabs defaultValue="payments_gateways" className="w-full space-y-6">
-        <TabsList className="flex flex-wrap items-center h-auto p-2 gap-2 bg-muted/60 rounded-lg border border-border/70">
-          <TabsTrigger value="payments_gateways" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <CreditCard className="size-3.5 text-emerald-500" />
+        <TabsList className="flex flex-wrap items-center h-auto p-2 gap-2 bg-muted rounded-lg border border-border">
+          <TabsTrigger value="payments_gateways" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <CreditCard className="size-4 text-emerald-600 dark:text-emerald-400" />
             Pagamentos
           </TabsTrigger>
 
-          <TabsTrigger value="travel_gds" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Plane className="size-3.5 text-sky-500" />
+          <TabsTrigger value="travel_gds" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Plane className="size-4 text-sky-600 dark:text-sky-400" />
             GDS Turismo
           </TabsTrigger>
 
-          <TabsTrigger value="ai_vault" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Bot className="size-3.5 text-primary" />
-            Cofre IA (BYOK)
+          <TabsTrigger value="ai_vault" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Bot className="size-4 text-primary" />
+            Cofre IA
           </TabsTrigger>
 
-          <TabsTrigger value="marketplaces" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Store className="size-3.5 text-emerald-500" />
+          <TabsTrigger value="marketplaces" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Store className="size-4 text-emerald-600 dark:text-emerald-400" />
             Marketplaces
           </TabsTrigger>
 
-          <TabsTrigger value="erp_fiscal" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <FileText className="size-3.5 text-blue-500" />
+          <TabsTrigger value="erp_fiscal" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <FileText className="size-4 text-sky-600 dark:text-sky-400" />
             Fiscal
           </TabsTrigger>
 
-          <TabsTrigger value="logistics" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Truck className="size-3.5 text-warning-strong" />
+          <TabsTrigger value="logistics" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Truck className="size-4 text-warning-strong" />
             Logística
           </TabsTrigger>
 
-          <TabsTrigger value="messaging" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <MessageCircle className="size-3.5 text-purple-500" />
-            Mensageria
+          <TabsTrigger value="messaging" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <MessageCircle className="size-4 text-violet-600 dark:text-violet-400" />
+            Mensageria & WhatsApp
           </TabsTrigger>
 
-          <TabsTrigger value="growth_pixels" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <BarChart className="size-3.5 text-pink-500" />
+          <TabsTrigger value="email_hosting" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <Mail className="size-4 text-primary" />
+            E-mail & Cloudwebly
+          </TabsTrigger>
+
+          <TabsTrigger value="growth_pixels" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <BarChart className="size-4 text-rose-600 dark:text-rose-400" />
             Pixels
           </TabsTrigger>
 
-          <TabsTrigger value="maps" className="h-9 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <MapPin className="size-3.5 text-teal-500" />
+          <TabsTrigger value="maps" className="h-11 min-h-11 text-xs font-semibold rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:border data-[state=active]:border-border">
+            <MapPin className="size-4 text-teal-600 dark:text-teal-400" />
             Mapas
           </TabsTrigger>
         </TabsList>
@@ -1096,12 +1671,12 @@ function UnifiedIntegrationsHubPage() {
         {/* 1. ABA COFRE DE IA & BYOK */}
         <TabsContent value="ai_vault" className="space-y-4 outline-none">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
-            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-              Pool Ativo (Gemini / Groq / OpenAI)
+            <Badge variant="outline" className="text-xs border-border bg-muted text-foreground">
+              Pool de IA Ativo
             </Badge>
-            <Button asChild variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-primary/30 text-primary hover:bg-primary/10 min-h-11 sm:min-h-0">
+            <Button asChild variant="outline" size="sm" className="h-11 min-h-11 px-3 text-xs rounded-lg font-medium cursor-pointer gap-2 border-border text-foreground hover:bg-muted">
               <Link to="/workspace/configuracoes/inteligencia-artificial">
-                <Bot className="size-3.5 text-primary" />
+                <Bot className="size-4 text-primary" />
                 Modelos de IA
                 <ExternalLink className="size-3 text-muted-foreground" />
               </Link>
@@ -1434,6 +2009,7 @@ function UnifiedIntegrationsHubPage() {
         <TabsContent value="messaging" className="space-y-4 outline-none">
           <div className="grid lg:grid-cols-2 gap-6">
             <WhatsAppInstancesPanel initialInstances={whatsappInstances} onChanged={() => router.invalidate()} />
+            <CorporateEmailHostingPanel />
             <IntegrationCard
               provider="whatsapp_cloud_api"
               title="WhatsApp Cloud API (Oficial Meta)"
@@ -1521,6 +2097,13 @@ function UnifiedIntegrationsHubPage() {
           </div>
         </TabsContent>
 
+        {/* 5B. ABA E-MAIL CORPORATIVO & HOSPEDAGEM CLOUDWEBLY / CPANEL */}
+        <TabsContent value="email_hosting" className="space-y-4 outline-none">
+          <div className="grid lg:grid-cols-2 gap-6">
+            <CorporateEmailHostingPanel />
+          </div>
+        </TabsContent>
+
         {/* 6. ABA PIXELS & GROWTH */}
         <TabsContent value="growth_pixels" className="space-y-4 outline-none">
           <div className="grid lg:grid-cols-2 gap-6">
@@ -1529,18 +2112,18 @@ function UnifiedIntegrationsHubPage() {
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+                    <div className="p-3 bg-muted border border-border rounded-lg text-foreground shrink-0">
                       <Zap className="size-5" />
                     </div>
                     <div>
                       <CardTitle className="text-base flex items-center gap-2">
-                        Google Ads & Meta Ads (Facebook / Instagram) — Protocolo MCP
+                        Meta Ads e Google Ads
                         <Badge variant="secondary" className="text-xs">
-                          OAuth 2.0 + GAQL + CAPI
+                          OAuth 2.0
                         </Badge>
                       </CardTitle>
                       <CardDescription className="text-xs mt-1">
-                        Conexão rápida em 1 clique com autodescoberta de Contas (`act_...` / Customer ID), Pixels, sincronização de gasto real e Skill de Diagnóstico IA.
+                        Conexão rápida em 1 clique com descoberta automática de contas, pixels e métricas de gasto real.
                       </CardDescription>
                     </div>
                   </div>
@@ -1565,7 +2148,7 @@ function UnifiedIntegrationsHubPage() {
                       }}
                       className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 focus-visible:ring-2"
                     >
-                      Conectar Meta Ads (1-Clique)
+                      Conectar Meta Ads
                     </Button>
                     <Button
                       type="button"
@@ -1587,11 +2170,11 @@ function UnifiedIntegrationsHubPage() {
                       }}
                       className="h-11 min-h-11 rounded-lg text-xs font-bold px-4 focus-visible:ring-2"
                     >
-                      Conectar Google Ads (1-Clique)
+                      Conectar Google Ads
                     </Button>
                     <Button asChild size="sm" variant="outline" className="h-11 min-h-11 rounded-lg text-xs font-semibold px-4 focus-visible:ring-2">
                       <Link to="/workspace/marketing/anuncios">
-                        Abrir Painel MCP de Anúncios
+                        Abrir Painel de Anúncios
                       </Link>
                     </Button>
                   </div>
@@ -1600,19 +2183,19 @@ function UnifiedIntegrationsHubPage() {
             </Card>
 
             {/* LinkedIn Company Page Integration Card */}
-            <Card className="bg-card rounded-lg border border-border/70 shadow-none flex flex-col justify-between">
+            <Card className="bg-card rounded-lg border border-border shadow-none flex flex-col justify-between">
               <div>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+                      <div className="p-3 bg-muted border border-border rounded-lg text-foreground shrink-0">
                         <Linkedin className="size-5 fill-current" />
                       </div>
                       <div>
                         <CardTitle className="text-base flex items-center gap-2">
                           LinkedIn Company Page
                           {linkedInStatus?.isConnected ? (
-                            <Badge variant="outline" className="text-xs bg-emerald-600 hover:bg-emerald-600">
+                            <Badge variant="outline" className="text-xs bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200">
                               Conectado Ativo
                             </Badge>
                           ) : (
@@ -1670,7 +2253,7 @@ function UnifiedIntegrationsHubPage() {
                         type="button"
                         onClick={handleConnectLinkedIn}
                         disabled={isConnectingLinkedIn}
-                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+                        className="w-full h-11 min-h-11 rounded-lg text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {isConnectingLinkedIn ? (
                           <>

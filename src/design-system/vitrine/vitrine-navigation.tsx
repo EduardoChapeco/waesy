@@ -16,7 +16,7 @@ import {
   Shirt,
   ShoppingBag,
   Smartphone,
-  Sparkles,
+  Star,
   Store,
   Tag,
   Ticket,
@@ -41,7 +41,7 @@ export type VitrineButtonIconName =
   | "Plane"
   | "Calendar"
   | "Briefcase"
-  | "Sparkles"
+  | "Star"
   | "Tag"
   | "MessageCircle"
   | "MapPin"
@@ -65,7 +65,7 @@ export const VITRINE_BUTTON_ICONS: Record<VitrineButtonIconName, LucideIcon> = {
   Plane,
   Calendar,
   Briefcase,
-  Sparkles,
+  Star,
   Tag,
   MessageCircle,
   MapPin,
@@ -90,7 +90,7 @@ export const VITRINE_BUTTON_ICON_OPTIONS: Array<{ value: VitrineButtonIconName; 
   { value: "Plane", label: "Turismo & Viagens" },
   { value: "Calendar", label: "Agenda & Eventos" },
   { value: "Briefcase", label: "Vagas & Negócios" },
-  { value: "Sparkles", label: "Destaques" },
+  { value: "Star", label: "Destaques" },
   { value: "Tag", label: "Ofertas & Classificados" },
   { value: "MessageCircle", label: "WhatsApp / Atendimento" },
   { value: "MapPin", label: "Localização" },
@@ -239,7 +239,10 @@ export function VitrineButtonsDock({
       isMobile,
     );
     const IconComp =
-      (item.iconName && VITRINE_BUTTON_ICONS[item.iconName]) || ShoppingBag;
+      (item.iconName &&
+        (VITRINE_BUTTON_ICONS[item.iconName] ??
+          ((item.iconName as string) === "Sparkles" ? Star : undefined))) ||
+      ShoppingBag;
     const shape = item.shape || defaultShape;
     const shapeRadius =
       shape === "circle" ? "rounded-full" : shape === "pill" ? "rounded-full" : "rounded-lg";

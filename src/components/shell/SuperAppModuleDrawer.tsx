@@ -71,8 +71,8 @@ export function SuperAppModuleDrawer({
     <VitrineLateralMenuSheet
       open={open}
       onClose={() => onOpenChange(false)}
-      greetingTitle={`Aproveite o ${displayName}!`}
-      greetingSubtitle="SuperApp de comércio, mobilidade e serviços locais"
+      greetingTitle={displayName}
+      greetingSubtitle=""
       showViewModeToggle={true}
       defaultViewMode="grid"
       items={modules as any}

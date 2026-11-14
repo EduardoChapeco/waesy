@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { HotpageDTO } from "@/services/hotpage.functions";
@@ -124,7 +123,6 @@ function HotpageCardContent({ hp, cleanMode }: HotpageCardContentProps) {
               <Badge variant="outline" className="text-xs font-medium px-2 py-1 rounded-full uppercase tracking-wider">
                 {hp.module || "Destaque"}
               </Badge>
-              <Sparkles className="size-3.5 text-primary" />
             </div>
             <span className="text-sm sm:text-base font-bold text-foreground leading-tight break-words text-wrap">
               {hp.title || "Explorar"}

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PLATFORM_LOCATION } from "@/lib/brand.config";
-import { ArrowLeft, Loader2, Plus, Trash2, User, Plane, Building2, MapPin, Calendar, DollarSign, FileSpreadsheet, CheckCircle2, ShieldCheck, Luggage, Clock, Car, Compass, ArrowRight, FileCheck2, Image as ImageIcon, FileText, Boxes, Wrench, Package, MessageCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Trash2, User, Plane, Building2, MapPin, Calendar, DollarSign, FileSpreadsheet, CheckCircle2, ShieldCheck, Luggage, Clock, Car, Compass, ArrowRight, FileCheck2, Image as ImageIcon, FileText, Boxes, Wrench, Package, MessageCircle, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,26 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { createTravelProposal, updateTravelProposal, type FlightSegmentDTO, type HotelOptionDTO, type ItineraryDayDTO, type PricingBreakdownDTO } from "@/services/travel-proposal.functions";
+import {
+  createTravelProposal,
+  updateTravelProposal,
+  listStoreCatalogItemsForProposal,
+  type FlightSegmentDTO,
+  type HotelOptionDTO,
+  type ItineraryDayDTO,
+  type PricingBreakdownDTO,
+} from "@/services/travel-proposal.functions";
 import { createQuote, type QuoteItemInput } from "@/services/quotes.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { listCustomers } from "@/services/crm.functions";
+import { listCustomers, getLeadById } from "@/services/crm.functions";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
-import { getNicheSemantics } from "@/lib/niche-semantics";
+import {
+  formatDynamicFieldLabel,
+  getNicheContractBlueprint,
+  normalizeCustomFieldMap,
+  type UnifiedBridgeCatalogContext,
+} from "@/lib/niches/unified-field-bridge";
+import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
 import { formatMoney } from "@/lib/money";
 import { formatPhone } from "@/lib/document-validator";
 import { cn } from "@/lib/utils";
@@ -32,27 +46,51 @@ import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destina
 
 export const Route = createFileRoute("/workspace/orcamentos/novo")({
  head: () => ({ meta: [{ title: "Novo Orçamento Comercial | Workspace Waesy" }] }),
+ validateSearch: (
+ search: Record<string, unknown>,
+ ): {
+ leadId?: string;
+ dealId?: string;
+ customerId?: string;
+ mode?: "commercial" | "travelos";
+ sourceListingId?: string;
+ } => ({
+ leadId: typeof search.leadId === "string" && search.leadId.trim() ? search.leadId.trim() : undefined,
+ dealId: typeof search.dealId === "string" && search.dealId.trim() ? search.dealId.trim() : undefined,
+ customerId: typeof search.customerId === "string" && search.customerId.trim() ? search.customerId.trim() : undefined,
+ mode: search.mode === "travelos" ? "travelos" : search.mode === "commercial" ? "commercial" : undefined,
+ sourceListingId:
+ typeof search.sourceListingId === "string" && search.sourceListingId.trim()
+ ? search.sourceListingId.trim()
+ : undefined,
+ }),
  loader: async () => {
-   try {
+ try {
  const store = await getStoreSettings().catch(() => null);
  return { store };
-   } catch (err) {
-     console.error("[loader:workspace.orcamentos.novo] Unhandled loader error:", err);
-     return { store: null };
-   }
+ } catch (err) {
+ console.error("[loader:workspace.orcamentos.novo] Unhandled loader error:", err);
+ return { store: null };
+ }
  },
  component: NovoOrcamentoRouterPage,
 });
 
 function NovoOrcamentoRouterPage() {
  const { store } = ((Route.useLoaderData?.() as any) || {});
- const semantics = getNicheSemantics(store);
- const isTourism =
- semantics.nicheId === "tourism" ||
- (store?.segment || store?.type || "").toLowerCase().includes("turis") ||
- (store?.segment || store?.type || "").toLowerCase().includes("viag");
+ const search = Route.useSearch();
+ const storeNicheHint =
+ (store as any)?.niche_id ||
+ (store as any)?.niche ||
+ (store as any)?.segment ||
+ (store as any)?.settings?.niche ||
+ "general_deal";
+ const blueprint = getNicheContractBlueprint(storeNicheHint);
+ const isTourism = blueprint.isTourism;
 
- const [activeMode, setActiveMode] = useState<"commercial" | "travelos">("commercial");
+ const [activeMode, setActiveMode] = useState<"commercial" | "travelos">(
+ search.mode === "travelos" && isTourism ? "travelos" : "commercial",
+ );
 
  return (
  <div className="space-y-6 w-full px-0 sm:px-0">
@@ -71,8 +109,8 @@ function NovoOrcamentoRouterPage() {
  <button
  type="button"
  onClick={() => setActiveMode("commercial")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer min-h-11 sm:min-h-0",
  activeMode === "commercial"
  ? "bg-background text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -83,8 +121,8 @@ function NovoOrcamentoRouterPage() {
  <button
  type="button"
  onClick={() => setActiveMode("travelos")}
- className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer flex items-center gap-2",
+ className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+ "px-4 py-2 rounded-lg font-bold text-xs transition-colors duration-200 cursor-pointer flex items-center gap-2 min-h-11 sm:min-h-0",
  activeMode === "travelos"
  ? "bg-primary text-primary-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground",
@@ -98,18 +136,56 @@ function NovoOrcamentoRouterPage() {
  )}
 
  {activeMode === "travelos" ? (
- <NovoOrcamentoTravelosPage />
+ <NovoOrcamentoTravelosPage
+ leadId={search.leadId}
+ dealId={search.dealId}
+ prefillListingId={search.sourceListingId}
+ />
  ) : (
- <NovoOrcamentoComercialUniversalPage store={store} />
+ <NovoOrcamentoComercialUniversalPage
+ store={store}
+ leadId={search.leadId}
+ dealId={search.dealId}
+ prefillCustomerId={search.customerId}
+ prefillListingId={search.sourceListingId}
+ />
  )}
  </div>
  );
 }
 
-function NovoOrcamentoTravelosPage() {
+function NovoOrcamentoTravelosPage({
+ leadId,
+ dealId,
+ prefillListingId,
+}: {
+ leadId?: string;
+ dealId?: string;
+ prefillListingId?: string;
+}) {
  const navigate = useNavigate();
  const [activeTab, setActiveTab] = useState<"geral" | "voos" | "hospedagem" | "roteiro" | "financeiro">("geral");
  const [isSubmitting, setIsSubmitting] = useState(false);
+ const [linkedListingId, setLinkedListingId] = useState<string | undefined>(prefillListingId);
+ const [linkedListingOrigin, setLinkedListingOrigin] = useState<"product" | "classified" | undefined>(undefined);
+ const [customFieldEntries, setCustomFieldEntries] = useState<Array<{ key: string; value: string }>>([]);
+ const [newTravelCustomKey, setNewTravelCustomKey] = useState("");
+ const [newTravelCustomVal, setNewTravelCustomVal] = useState("");
+ const [isCmsCatalogOpen, setIsCmsCatalogOpen] = useState(false);
+ const [cmsCatalogSearch, setCmsCatalogSearch] = useState("");
+
+ const { data: hydratedLead } = useQuery({
+ queryKey: ["orcamento-novo-lead", leadId],
+ queryFn: () => getLeadById({ data: { leadId: leadId! } }),
+ enabled: Boolean(leadId),
+ staleTime: 60_000,
+ });
+
+ const { data: cmsCatalogItems = [], isLoading: isLoadingCmsCatalog } = useQuery({
+ queryKey: ["orcamento-novo-cms-catalog"],
+ queryFn: () => listStoreCatalogItemsForProposal(),
+ staleTime: 60_000,
+ });
 
  // 1. Dados Principais da Proposta / Cliente
  const [proposalData, setProposalData] = useState({
@@ -167,6 +243,123 @@ function NovoOrcamentoTravelosPage() {
  const [excludesText, setExcludesText] = useState(
  "• Despesas de caráter pessoal e passeios opcionais não citados\n• Taxas turísticas governamentais locais pagas no destino"
  );
+
+ const applyCmsCatalogToTravelos = (item: UnifiedBridgeCatalogContext) => {
+   setLinkedListingId(item.id);
+   setLinkedListingOrigin(item.origin);
+   if (item.originCity) setOriginCity(item.originCity);
+   if (item.priceCents > 0) setCostPerPersonCents(item.priceCents);
+
+   setProposalData((prev) => ({
+     ...prev,
+     title: item.title || prev.title,
+     subtitle: item.description ? item.description.slice(0, 140) : prev.subtitle,
+     destinationCity: item.destination || prev.destinationCity,
+     coverImageUrl: item.heroImageUrl || prev.coverImageUrl,
+   }));
+
+   if (Array.isArray(item.includes) && item.includes.length > 0) {
+     setIncludesText(item.includes.map((inc: string) => `• ${inc}`).join("\n"));
+   }
+   if (Array.isArray(item.excludes) && item.excludes.length > 0) {
+     setExcludesText(item.excludes.map((exc: string) => `• ${exc}`).join("\n"));
+   }
+   if (Array.isArray(item.itinerary) && item.itinerary.length > 0) {
+     setItinerary(
+       item.itinerary.map((d, idx) => ({
+         id: crypto.randomUUID(),
+         day_number: Number(d.day) || idx + 1,
+         title: d.title || `Dia ${idx + 1}`,
+         description: d.description || "",
+         included_meals: Array.isArray((d as any).meals)
+           ? (d as any).meals
+           : (d as any).meals
+             ? [String((d as any).meals)]
+             : [],
+       })),
+     );
+   }
+   if (Array.isArray(item.lodgings) && item.lodgings.length > 0) {
+     setHotels(
+       item.lodgings.map((h) => ({
+         id: crypto.randomUUID(),
+         hotel_name: h.hotelName || h.name || "Hospedagem",
+         destination: h.city || h.location || item.destination || "",
+         room_type: h.roomType || h.room_type || "Suíte Standard",
+         board_basis: h.boardBasis || h.meal_plan || "breakfast",
+         nights_count: 3,
+       })),
+     );
+   }
+   const primaryFlight = item.flights?.[0];
+   if (primaryFlight?.airline_name || primaryFlight?.origin_iata || primaryFlight?.destination_iata) {
+     setFlights([
+       {
+         id: crypto.randomUUID(),
+         type: "outbound",
+         airline_name: primaryFlight.airline_name || "Companhia Aérea",
+         origin_iata: primaryFlight.origin_iata || originIata,
+         origin_city: primaryFlight.origin_city || item.originCity || originCity,
+         destination_iata: primaryFlight.destination_iata || destinationIata,
+         destination_city: primaryFlight.destination_city || item.destination || "",
+         baggage_included: primaryFlight.baggage_included || "1x 23kg",
+         cabin_class: (primaryFlight as any).cabin_class || "Econômica",
+       },
+     ]);
+   }
+
+   const mergedEntriesMap = normalizeCustomFieldMap({
+     ...Object.fromEntries(customFieldEntries.filter((e) => e.key).map((e) => [e.key, e.value])),
+     ...item.rawAttributes,
+     ...(item.boardingRequirements ? { boarding_requirements: item.boardingRequirements } : {}),
+     ...(item.cancellationPolicy ? { cancellation_policy: item.cancellationPolicy } : {}),
+     ...(item.transportType ? { transport_type: item.transportType } : {}),
+   });
+   setCustomFieldEntries(
+     Object.entries(mergedEntriesMap).map(([key, val]) => ({
+       key,
+       value: String(val),
+     })),
+   );
+   setIsCmsCatalogOpen(false);
+   toast.success(`"${item.title}" importado do Catálogo CMS!`);
+ };
+
+ useEffect(() => {
+   const lead = (hydratedLead as any)?.lead;
+   if (!lead) return;
+   const leadCf = normalizeCustomFieldMap(lead.custom_fields || {});
+   setProposalData((prev) => ({
+     ...prev,
+     title: prev.title || lead.title || (lead.destination ? `Pacote ${lead.destination}` : prev.title),
+     clientName: prev.clientName || lead.full_name || "",
+     clientWhatsapp: prev.clientWhatsapp || lead.phone || "",
+     clientEmail: prev.clientEmail || lead.email || "",
+     destinationCity: prev.destinationCity || lead.destination || lead.destination_of_interest || "",
+     adultsCount: lead.pax_count ? Math.max(1, Number(lead.pax_count)) : prev.adultsCount,
+   }));
+   if (lead.estimated_value_cents && costPerPersonCents === 0) {
+     const pax = Math.max(1, Number(lead.pax_count || proposalData.adultsCount || 1));
+     setCostPerPersonCents(Math.round(Number(lead.estimated_value_cents) / pax));
+   }
+   if (lead.source_listing_id) setLinkedListingId(lead.source_listing_id);
+   if (Object.keys(leadCf).length > 0) {
+     setCustomFieldEntries((prev) => {
+       if (prev.length > 0) return prev;
+       return Object.entries(leadCf).map(([key, val]) => ({ key, value: String(val) }));
+     });
+   }
+ }, [hydratedLead]);
+
+ useEffect(() => {
+   if (!prefillListingId || !Array.isArray(cmsCatalogItems) || cmsCatalogItems.length === 0) return;
+   const match = (cmsCatalogItems as UnifiedBridgeCatalogContext[]).find(
+     (it) => it.id === prefillListingId,
+   );
+   if (match && !proposalData.title) {
+     applyCmsCatalogToTravelos(match);
+   }
+ }, [prefillListingId, cmsCatalogItems]);
 
  // Seleção Inteligente de Destino Canônico
  const handleSelectCanonicalDestination = (dest: CanonicalDestination) => {
@@ -318,11 +511,25 @@ function NovoOrcamentoTravelosPage() {
 
  setIsSubmitting(true);
  try {
+ const compiledCustomFields = normalizeCustomFieldMap({
+ ...(originCity ? { origin_city: originCity } : {}),
+ ...(originIata ? { origin_iata: originIata } : {}),
+ ...(destinationIata ? { destination_iata: destinationIata } : {}),
+ ...(roomDistribution ? { room_distribution: roomDistribution } : {}),
+ ...(dealId ? { deal_id: dealId } : {}),
+ ...Object.fromEntries(customFieldEntries.filter((e) => e.key.trim() && e.value.trim()).map((e) => [e.key.trim(), e.value.trim()])),
+ });
+
  // 1. Cria a proposta/orçamento no banco
  const res = await createTravelProposal({
  data: {
+ leadId: leadId || undefined,
+ sourceListingId: linkedListingId || undefined,
+ sourceListingOrigin: linkedListingOrigin || undefined,
+ customFields: compiledCustomFields,
  clientName: proposalData.clientName,
  clientWhatsapp: proposalData.clientWhatsapp,
+ clientEmail: proposalData.clientEmail || undefined,
  title: proposalData.title,
  destinationCity: proposalData.destinationCity || "Destino Especial",
  },
@@ -361,6 +568,7 @@ function NovoOrcamentoTravelosPage() {
  other_taxes_cents: 0,
  discount_cents: discountCents,
  total_price_cents: totalPriceCents,
+ custom_fields: compiledCustomFields,
  installments_options: [
  {
  installments_count: maxInstallments,
@@ -382,19 +590,16 @@ function NovoOrcamentoTravelosPage() {
  },
  });
 
- toast.success("Orçamento Travelos criado com sucesso!");
+ toast.success(
+ openStudio
+ ? "Proposta visual criada! Abrindo Studio..."
+ : "Rascunho da proposta salvo! Abrindo visualização...",
+ );
 
- if (openStudio) {
  navigate({
  to: "/workspace/turismo/propostas/$id",
  params: { id: res.id },
  });
- } else {
- navigate({
- to: "/workspace/orcamentos/$id",
- params: { id: res.id },
- });
- }
  } catch (err: any) {
  toast.error(err.message || "Erro ao salvar proposta.");
  } finally {
@@ -427,7 +632,16 @@ function NovoOrcamentoTravelosPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2">
+ <div className="flex flex-wrap items-center gap-2">
+ <Button
+ type="button"
+ onClick={() => setIsCmsCatalogOpen(true)}
+ variant="outline"
+ className="h-11 min-h-11 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+ >
+ <Database className="size-3.5 text-primary" />
+ <span>Importar Pacote CMS</span>
+ </Button>
  <Button
  onClick={() => handleSaveProposal(false)}
  disabled={isSubmitting}
@@ -672,6 +886,80 @@ function NovoOrcamentoTravelosPage() {
  onChange={(e) => setProposalData({ ...proposalData, childrenCount: Number(e.target.value) || 0 })}
  className="h-10 rounded-lg text-xs font-mono"
  />
+ </div>
+ </div>
+
+ {/* Campos Personalizados & Regras CMS */}
+ <div className="pt-4 border-t border-border/60 space-y-3">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs font-bold text-foreground">Campos Personalizados & Regras CMS</Label>
+ <Badge variant="outline" className="text-xs font-mono">{customFieldEntries.length}</Badge>
+ </div>
+ {customFieldEntries.length > 0 && (
+ <div className="space-y-2">
+ {customFieldEntries.map((entry, idx) => (
+ <div key={`${entry.key}-${idx}`} className="flex items-center gap-2">
+ <Input
+ value={entry.key}
+ onChange={(e) => {
+ const val = e.target.value;
+ setCustomFieldEntries((prev) => prev.map((it, i) => (i === idx ? { ...it, key: val } : it)));
+ }}
+ placeholder="Campo"
+ className="h-9 text-xs font-mono flex-1"
+ />
+ <Input
+ value={entry.value}
+ onChange={(e) => {
+ const val = e.target.value;
+ setCustomFieldEntries((prev) => prev.map((it, i) => (i === idx ? { ...it, value: val } : it)));
+ }}
+ placeholder="Valor"
+ className="h-9 text-xs flex-1"
+ />
+ <Button
+ type="button"
+ variant="ghost"
+ size="icon"
+ onClick={() => setCustomFieldEntries((prev) => prev.filter((_, i) => i !== idx))}
+ className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive shrink-0"
+ >
+ <Trash2 className="size-3.5" />
+ </Button>
+ </div>
+ ))}
+ </div>
+ )}
+ <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+ <Input
+ value={newTravelCustomKey}
+ onChange={(e) => setNewTravelCustomKey(e.target.value)}
+ placeholder="Novo campo (ex: Embarque / Visto)"
+ className="h-11 text-xs flex-1"
+ />
+ <Input
+ value={newTravelCustomVal}
+ onChange={(e) => setNewTravelCustomVal(e.target.value)}
+ placeholder="Valor"
+ className="h-11 text-xs flex-1"
+ />
+ <Button
+ type="button"
+ variant="outline"
+ onClick={() => {
+ if (!newTravelCustomKey.trim() || !newTravelCustomVal.trim()) return;
+ setCustomFieldEntries((prev) => [
+ ...prev,
+ { key: newTravelCustomKey.trim(), value: newTravelCustomVal.trim() },
+ ]);
+ setNewTravelCustomKey("");
+ setNewTravelCustomVal("");
+ }}
+ className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg shrink-0"
+ >
+ <Plus className="size-3.5 mr-1" />
+ Adicionar
+ </Button>
  </div>
  </div>
  </div>
@@ -1288,6 +1576,71 @@ function NovoOrcamentoTravelosPage() {
  </div>
  </TabsContent>
  </Tabs>
+
+ <Dialog open={isCmsCatalogOpen} onOpenChange={setIsCmsCatalogOpen}>
+ <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-border/80">
+ <DialogHeader className="p-5 pb-3 border-b border-border/60">
+ <DialogTitle className="text-base font-bold flex items-center gap-2">
+ <Database className="size-4 text-primary" />
+ <span>Importar Pacote ou Roteiro do Catálogo CMS</span>
+ </DialogTitle>
+ <DialogDescription className="text-xs text-muted-foreground">
+ Selecionar um item preenche destino, voos, hospedagem, roteiro, regras e campos personalizados.
+ </DialogDescription>
+ <Input
+ value={cmsCatalogSearch}
+ onChange={(e) => setCmsCatalogSearch(e.target.value)}
+ placeholder="Buscar pacote ou anúncio..."
+ className="mt-2 h-11 text-xs rounded-lg"
+ />
+ </DialogHeader>
+ <ScrollArea className="max-h-96 p-4">
+ {isLoadingCmsCatalog ? (
+ <div className="py-10 flex justify-center">
+ <Loader2 className="size-5 animate-spin motion-reduce:animate-none text-primary" />
+ </div>
+ ) : (
+ <div className="space-y-2">
+ {(cmsCatalogItems as UnifiedBridgeCatalogContext[])
+ .filter((it) => {
+ if (!cmsCatalogSearch.trim()) return true;
+ const q = cmsCatalogSearch.toLowerCase();
+ return (
+ it.title.toLowerCase().includes(q) ||
+ (it.destination && it.destination.toLowerCase().includes(q))
+ );
+ })
+ .map((item) => (
+ <div
+ key={`${item.origin}-${item.id}`}
+ className="p-3 rounded-lg border border-border/70 bg-muted/20 flex items-center justify-between gap-3"
+ >
+ <div className="min-w-0 flex-1 space-y-1">
+ <div className="flex items-center gap-2">
+ <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
+ <Badge variant="outline" className="text-2xs shrink-0">
+ {item.origin === "classified" ? "Anúncio" : "Produto CMS"}
+ </Badge>
+ </div>
+ <p className="text-2xs text-muted-foreground truncate">
+ {[item.destination, getUnifiedNicheSpec(item.nicheId).label, formatMoney(item.priceCents)].filter(Boolean).join(" • ")}
+ </p>
+ </div>
+ <Button
+ type="button"
+ size="sm"
+ onClick={() => applyCmsCatalogToTravelos(item)}
+ className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg shrink-0"
+ >
+ Importar
+ </Button>
+ </div>
+ ))}
+ </div>
+ )}
+ </ScrollArea>
+ </DialogContent>
+ </Dialog>
  </div>
  );
 }
@@ -1305,12 +1658,36 @@ interface QuoteLineItem {
  image_url?: string;
 }
 
-function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
+function NovoOrcamentoComercialUniversalPage({
+ store,
+ leadId,
+ dealId,
+ prefillCustomerId,
+ prefillListingId,
+}: {
+ store?: any;
+ leadId?: string;
+ dealId?: string;
+ prefillCustomerId?: string;
+ prefillListingId?: string;
+}) {
  const navigate = useNavigate();
  const [isSubmitting, setIsSubmitting] = useState(false);
 
+ // Vínculo Omnichannel (Lead CRM, Anúncio CMS, Nicho e Campos Dinâmicos)
+ const storeNicheHint =
+ store?.niche_id || store?.niche || store?.segment || store?.settings?.niche || "general_deal";
+ const [linkedNicheId, setLinkedNicheId] = useState<string>(storeNicheHint);
+ const [linkedListingId, setLinkedListingId] = useState<string | undefined>(prefillListingId);
+ const [linkedListingOrigin, setLinkedListingOrigin] = useState<"product" | "classified" | undefined>(undefined);
+ const [customFieldEntries, setCustomFieldEntries] = useState<Array<{ key: string; value: string }>>([]);
+ const [newCustomKey, setNewCustomKey] = useState("");
+ const [newCustomVal, setNewCustomVal] = useState("");
+ const [isCmsBridgeOpen, setIsCmsBridgeOpen] = useState(false);
+ const [cmsBridgeSearch, setCmsBridgeSearch] = useState("");
+
  // Cliente & Vínculo CRM
- const [customerId, setCustomerId] = useState<string | null>(null);
+ const [customerId, setCustomerId] = useState<string | null>(prefillCustomerId || null);
  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
  const [clientSearch, setClientSearch] = useState("");
  const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
@@ -1321,6 +1698,19 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  document: "",
  });
 
+ const { data: hydratedLead } = useQuery({
+ queryKey: ["orcamento-universal-lead", leadId],
+ queryFn: () => getLeadById({ data: { leadId: leadId! } }),
+ enabled: Boolean(leadId),
+ staleTime: 60_000,
+ });
+
+ const { data: cmsBridgeItems = [], isLoading: isLoadingCmsBridge } = useQuery({
+ queryKey: ["orcamento-universal-cms-bridge"],
+ queryFn: () => listStoreCatalogItemsForProposal(),
+ staleTime: 60_000,
+ });
+
  // Busca de clientes no CRM em tempo real
  const { data: crmCustomers = [], isLoading: isLoadingCustomers } = useQuery({
  queryKey: ["crm-customers-search", clientSearch],
@@ -1328,6 +1718,96 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  enabled: clientSearch.trim().length >= 1,
  staleTime: 30_000,
  });
+
+ const handleSelectCmsBridgeItem = (cmsItem: UnifiedBridgeCatalogContext) => {
+   setLinkedListingId(cmsItem.id);
+   setLinkedListingOrigin(cmsItem.origin === "product" ? "product" : "classified");
+   if (cmsItem.nicheId) setLinkedNicheId(cmsItem.nicheId);
+
+   const specsSummary = cmsItem.specsRows
+     .slice(0, 4)
+     .map((s) => `${s.label}: ${s.value}`)
+     .join(" | ");
+
+   const rawAttrs = (cmsItem.rawAttributes || {}) as Record<string, unknown>;
+   const nextItem: QuoteLineItem = {
+     id: crypto.randomUUID(),
+     item_type: cmsItem.origin === "product" ? "product_variant" : "manual_item",
+     name: cmsItem.title,
+     description: specsSummary || cmsItem.description?.slice(0, 140) || "",
+     sku: typeof rawAttrs.sku === "string" ? rawAttrs.sku : "",
+     unit_price_cents: cmsItem.priceCents || 0,
+     quantity: 1,
+     discount_cents: 0,
+     image_url: cmsItem.heroImageUrl || undefined,
+   };
+
+   setItems((prev) => {
+     const firstEmpty = prev.length === 1 && !prev[0].name.trim() && prev[0].unit_price_cents === 0;
+     return firstEmpty ? [nextItem] : [...prev, nextItem];
+   });
+
+   const mergedMap = normalizeCustomFieldMap({
+     ...Object.fromEntries(customFieldEntries.filter((e) => e.key.trim()).map((e) => [e.key.trim(), e.value])),
+     ...rawAttrs,
+     ...Object.fromEntries(cmsItem.specsRows.map((s) => [s.label, s.value])),
+     ...(cmsItem.destination ? { destination: cmsItem.destination } : {}),
+     ...(cmsItem.originCity ? { origin_city: cmsItem.originCity } : {}),
+   });
+   setCustomFieldEntries(
+     Object.entries(mergedMap).map(([key, value]) => ({
+       key,
+       value: String(value),
+     })),
+   );
+   setIsCmsBridgeOpen(false);
+   toast.success(`"${cmsItem.title}" importado com ficha técnica do CMS!`);
+ };
+
+ useEffect(() => {
+   const lead = (hydratedLead as any)?.lead;
+   if (!lead) return;
+   const leadCf = normalizeCustomFieldMap(lead.custom_fields || {});
+   setCustomerData((prev) => ({
+     name: prev.name || lead.full_name || "",
+     email: prev.email || lead.email || "",
+     phone: prev.phone || lead.phone || "",
+     document: prev.document || String(leadCf.cpf || leadCf.document || ""),
+   }));
+   if (lead.source_listing_id) setLinkedListingId(lead.source_listing_id);
+   if (lead.niche_id) setLinkedNicheId(lead.niche_id);
+   if (Object.keys(leadCf).length > 0) {
+     setCustomFieldEntries((prev) => {
+       if (prev.length > 0) return prev;
+       return Object.entries(leadCf).map(([key, value]) => ({ key, value: String(value) }));
+     });
+   }
+   if (lead.title || lead.destination || lead.estimated_value_cents) {
+     setItems((prev) => {
+       if (prev.length === 1 && !prev[0].name.trim() && prev[0].unit_price_cents === 0) {
+         return [
+           {
+             ...prev[0],
+             name: lead.title || lead.destination || "Proposta / Atendimento",
+             description: lead.notes || "",
+             unit_price_cents: Number(lead.estimated_value_cents || 0),
+           },
+         ];
+       }
+       return prev;
+     });
+   }
+ }, [hydratedLead]);
+
+ useEffect(() => {
+   if (!prefillListingId || !Array.isArray(cmsBridgeItems) || cmsBridgeItems.length === 0) return;
+   const match = (cmsBridgeItems as UnifiedBridgeCatalogContext[]).find(
+     (it) => it.id === prefillListingId,
+   );
+   if (match && items.length === 1 && !items[0].name.trim()) {
+     handleSelectCmsBridgeItem(match);
+   }
+ }, [prefillListingId, cmsBridgeItems]);
 
  // Catálogo de Produtos da Loja
  const { data: catalogProducts = [], isLoading: isLoadingCatalog } = useQuery({
@@ -1571,8 +2051,19 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  const validUntilDate = new Date();
  validUntilDate.setDate(validUntilDate.getDate() + validUntilDays);
 
+ const compiledCustomFields = normalizeCustomFieldMap({
+ ...(customerData.document.trim() ? { customer_document: customerData.document.trim() } : {}),
+ ...(dealId ? { deal_id: dealId } : {}),
+ ...Object.fromEntries(customFieldEntries.filter((e) => e.key.trim() && e.value.trim()).map((e) => [e.key.trim(), e.value.trim()])),
+ });
+
  const payload = {
  customer_id: customerId || undefined,
+ lead_id: leadId || undefined,
+ source_listing_id: linkedListingId || undefined,
+ source_listing_origin: linkedListingOrigin || undefined,
+ niche_id: linkedNicheId || undefined,
+ custom_fields: Object.keys(compiledCustomFields).length > 0 ? compiledCustomFields : undefined,
  guest_name: customerData.name.trim(),
  guest_email: customerData.email.trim() || undefined,
  guest_phone: customerData.phone.trim() || undefined,
@@ -1803,6 +2294,16 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
               type="button"
               size="sm"
               variant="outline"
+              onClick={() => setIsCmsBridgeOpen(true)}
+              className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer min-h-11 sm:min-h-0"
+            >
+              <Database className="size-3.5 text-primary" />
+              <span>+ Anúncio / Pacote CMS</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
               onClick={() => setIsMasterCatalogOpen(true)}
               className="rounded-lg text-xs font-bold gap-2 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer min-h-11 sm:min-h-0"
             >
@@ -1998,6 +2499,81 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  placeholder="Ex: Negociação aprovada pelo gerente com 5% de margem extra."
  className="rounded-lg text-xs min-h-12"
  />
+ </div>
+
+ {/* Campos Dinâmicos & Personalizados do Nicho */}
+ <div className="pt-4 border-t border-border/60 space-y-3">
+ <div className="flex items-center justify-between gap-2">
+ <Label className="text-xs font-bold text-foreground">Campos Dinâmicos & Personalizados</Label>
+ <Badge variant="outline" className="text-xs font-mono">
+ {customFieldEntries.length}
+ </Badge>
+ </div>
+ {customFieldEntries.length > 0 && (
+ <div className="space-y-2">
+ {customFieldEntries.map((entry, idx) => (
+ <div key={`${entry.key}-${idx}`} className="flex items-center gap-2">
+ <Input
+ value={entry.key}
+ onChange={(e) => {
+ const val = e.target.value;
+ setCustomFieldEntries((prev) => prev.map((it, i) => (i === idx ? { ...it, key: val } : it)));
+ }}
+ placeholder="Campo"
+ className="h-9 text-xs font-mono flex-1"
+ />
+ <Input
+ value={entry.value}
+ onChange={(e) => {
+ const val = e.target.value;
+ setCustomFieldEntries((prev) => prev.map((it, i) => (i === idx ? { ...it, value: val } : it)));
+ }}
+ placeholder="Valor"
+ className="h-9 text-xs flex-1"
+ />
+ <Button
+ type="button"
+ variant="ghost"
+ size="icon"
+ onClick={() => setCustomFieldEntries((prev) => prev.filter((_, i) => i !== idx))}
+ className="size-11 min-h-11 min-w-11 text-muted-foreground hover:text-destructive shrink-0"
+ >
+ <Trash2 className="size-3.5" />
+ </Button>
+ </div>
+ ))}
+ </div>
+ )}
+ <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+ <Input
+ value={newCustomKey}
+ onChange={(e) => setNewCustomKey(e.target.value)}
+ placeholder="Campo (ex: Placa, Metragem, Check-in)"
+ className="h-11 text-xs flex-1"
+ />
+ <Input
+ value={newCustomVal}
+ onChange={(e) => setNewCustomVal(e.target.value)}
+ placeholder="Valor"
+ className="h-11 text-xs flex-1"
+ />
+ <Button
+ type="button"
+ variant="outline"
+ onClick={() => {
+ if (!newCustomKey.trim() || !newCustomVal.trim()) return;
+ setCustomFieldEntries((prev) => [
+ ...prev,
+ { key: newCustomKey.trim(), value: newCustomVal.trim() },
+ ]);
+ setNewCustomKey("");
+ setNewCustomVal("");
+ }}
+ className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg shrink-0"
+ >
+ <Plus className="size-3.5 mr-1" /> Adicionar
+ </Button>
+ </div>
  </div>
  </div>
  </div>
@@ -2238,6 +2814,81 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
       onOpenChange={setIsServiceCatalogOpen}
       onSelectService={handleSelectOnDemandService}
     />
+
+    <Dialog open={isCmsBridgeOpen} onOpenChange={setIsCmsBridgeOpen}>
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card border-border/80">
+        <DialogHeader className="p-5 pb-3 border-b border-border/60">
+          <DialogTitle className="text-base font-bold flex items-center gap-2">
+            <Database className="size-4 text-primary" />
+            <span>Importar Anúncio / Produto CMS Multi-Nicho</span>
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            Sincroniza preço, ficha técnica, atributos e campos personalizados direto para o orçamento e contrato.
+          </DialogDescription>
+          <Input
+            value={cmsBridgeSearch}
+            onChange={(e) => setCmsBridgeSearch(e.target.value)}
+            placeholder="Buscar anúncio ou produto..."
+            className="mt-2 h-11 text-xs rounded-lg"
+          />
+        </DialogHeader>
+        <ScrollArea className="max-h-96 p-4">
+          {isLoadingCmsBridge ? (
+            <div className="py-10 flex justify-center">
+              <Loader2 className="size-5 animate-spin motion-reduce:animate-none text-primary" />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {(cmsBridgeItems as UnifiedBridgeCatalogContext[])
+                .filter((it) => {
+                  if (!cmsBridgeSearch.trim()) return true;
+                  const q = cmsBridgeSearch.toLowerCase();
+                  const skuVal = (it.rawAttributes as Record<string, unknown> | undefined)?.sku;
+                  return (
+                    it.title.toLowerCase().includes(q) ||
+                    getUnifiedNicheSpec(it.nicheId).label.toLowerCase().includes(q) ||
+                    (typeof skuVal === "string" && skuVal.toLowerCase().includes(q))
+                  );
+                })
+                .map((item) => (
+                  <div
+                    key={`${item.origin}-${item.id}`}
+                    className="p-3 rounded-lg border border-border/70 bg-muted/20 flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
+                        <Badge variant="outline" className="text-2xs shrink-0">
+                          {getUnifiedNicheSpec(item.nicheId).label}
+                        </Badge>
+                      </div>
+                      <p className="text-2xs text-muted-foreground truncate">
+                        {[
+                          typeof (item.rawAttributes as Record<string, unknown> | undefined)?.sku === "string"
+                            ? String((item.rawAttributes as Record<string, unknown>).sku)
+                            : "",
+                          item.specsRows.slice(0, 2).map((s) => `${s.label}: ${s.value}`).join(" • "),
+                          formatMoney(item.priceCents),
+                        ]
+                          .filter(Boolean)
+                          .join(" • ")}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => handleSelectCmsBridgeItem(item)}
+                      className="h-11 min-h-11 px-4 text-xs font-bold rounded-lg shrink-0"
+                    >
+                      Inserir
+                    </Button>
+                  </div>
+                ))}
+            </div>
+          )}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   </div>
   );
 }

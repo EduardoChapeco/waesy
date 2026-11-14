@@ -152,11 +152,11 @@ export const getTourCashSummary = createServerFn({ method: "GET" })
  // ── Cálculo de DRE e Lucratividade Real da Excursão ──
  const { data: tour } = await db
    .from("tourism_experiences")
-   .select("price_cents, base_price_cents, seats")
+   .select("price_cents, seats")
    .eq("id", data.tour_id)
    .maybeSingle();
 
- const pricePerSeat = Number(tour?.price_cents || tour?.base_price_cents || 0);
+ const pricePerSeat = Number(tour?.price_cents || 0);
  const seatsList = Array.isArray(tour?.seats) ? tour.seats : [];
  const occupiedSeatsCount = seatsList.filter((s: any) => s.status === "reserved" || s.is_occupied).length;
  const totalRevenueCents = pricePerSeat * occupiedSeatsCount;

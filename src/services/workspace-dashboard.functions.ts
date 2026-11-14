@@ -135,7 +135,7 @@ export const getWorkspaceDashboardKpisFn = createServerFn({ method: "GET" })
     // 2. Consulta de Produtos do Catálogo (products)
     const { data: productsData } = await supabase
       .from("products")
-      .select("id, status, stock_quantity")
+      .select("id, status, product_variants(allow_backorder, stock_on_hand)")
       .eq("store_id", targetStoreId);
 
     const products = productsData || [];
@@ -146,7 +146,15 @@ export const getWorkspaceDashboardKpisFn = createServerFn({ method: "GET" })
       if (prod.status === "active" || prod.status === "published") {
         activeProductsCount++;
       }
-      const qty = typeof (prod as any).stock_quantity === "number" ? (prod as any).stock_quantity : (prod.status === "out_of_stock" ? 0 : 1);
+      const variants = (prod as any).product_variants as Array<{ allow_backorder?: boolean; stock_on_hand?: number }> | undefined;
+      const qty =
+        Array.isArray(variants) && variants.length > 0
+          ? variants.reduce((sum, v) => sum + (v.allow_backorder ? 1 : Math.max(0, Number(v.stock_on_hand || 0))), 0)
+          : typeof (prod as any).stock_quantity === "number"
+            ? (prod as any).stock_quantity
+            : prod.status === "out_of_stock"
+              ? 0
+              : 1;
       if (qty <= 0 || prod.status === "out_of_stock") {
         outOfStockCount++;
       }

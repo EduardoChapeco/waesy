@@ -1,6 +1,7 @@
 import React from "react";
 import { BentoBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import { ShieldCheck, Zap, Globe, Layers, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,7 +28,8 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({
   isEditing = false,
   className = "",
 }) => {
-  const sectionStyle = getSectionStyle(styling);
+  const { isMobile } = useEffectiveViewport();
+  const sectionStyle = getSectionStyle(styling, isMobile);
   const cells = Array.isArray(data?.cells) ? data.cells : [];
 
   if (cells.length === 0) {
@@ -69,9 +71,15 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 grid-flow-dense">
+        <div className={isMobile ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 md:grid-cols-3 gap-5 grid-flow-dense"}>
           {cells.map((cell, idx) => {
-            const span = cell.colSpan === 3 ? "md:col-span-3" : cell.colSpan === 2 ? "md:col-span-2" : "md:col-span-1";
+            const span = isMobile
+              ? "col-span-1"
+              : cell.colSpan === 3
+                ? "md:col-span-3"
+                : cell.colSpan === 2
+                  ? "md:col-span-2"
+                  : "md:col-span-1";
             const CellIcon = (cell.iconName && BENTO_ICONS[cell.iconName]) || Layers;
 
             return (

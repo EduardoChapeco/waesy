@@ -96,10 +96,13 @@ export function CopilotProjectKnowledgePanel({
     try {
       const buffer = await selected.arrayBuffer();
       const rawText = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
+      const isPdf = rawText.startsWith("%PDF-") || selected.type === "application/pdf";
       const extracted = extractReadableTextFromBuffer(new Uint8Array(buffer), rawText);
       if (!extracted || extracted.trim().length < 4) {
         toast.error(
-          "Arquivo binário sem camada textual direta. Cole o conteúdo como nota de contexto ou envie .txt/.md/.csv/.json.",
+          isPdf
+            ? "PDF escaneado, protegido ou comprimido sem camada textual legível. Envie o arquivo no chat multimodal ou cole como nota de texto."
+            : "Arquivo binário sem camada textual direta. Cole o conteúdo como nota de contexto ou envie .txt/.md/.csv/.json.",
         );
         return;
       }

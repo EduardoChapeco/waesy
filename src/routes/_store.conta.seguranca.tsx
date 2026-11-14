@@ -225,7 +225,7 @@ function SecurityAndDevicesPage() {
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-safe pb-24 px-4 sm:px-6 md:px-0 select-none">
+    <div className="w-full max-w-5xl mx-auto space-y-6 pb-safe pb-24 px-0 sm:px-6 md:px-0 select-none">
       {/* ── 0. Native Mobile Header (<768px) ── */}
       <NativeMobileHeader
         title="Segurança"
@@ -235,13 +235,13 @@ function SecurityAndDevicesPage() {
       />
 
       {/* ── 1. Clean Minimalist Header (Desktop >=768px) ── */}
-      <div className="hidden md:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+      <div className="hidden md:flex items-center justify-between gap-4 border-b border-border pb-4 pt-1">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Segurança da Conta
             </h1>
-            <Badge variant="outline" className="text-xs font-mono font-semibold bg-primary/10 text-primary border-primary/20">
+            <Badge variant="outline" className="text-xs font-mono font-semibold bg-muted text-primary border-border">
               Zero-Trust Compliance
             </Badge>
           </div>

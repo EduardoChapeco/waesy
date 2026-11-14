@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { Plus, Trash2, Pencil, ArrowUp, ArrowDown, Layout, Sliders, Layers, Store, Tag, Shuffle, Eye, CheckCircle2, Grid, Sparkles } from "lucide-react";
+import { Plus, Trash2, Pencil, ArrowUp, ArrowDown, Layout, Sliders, Layers, Store, Tag, Shuffle, Eye, CheckCircle2, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -299,7 +299,7 @@ function AdminMasterVitrinesPage() {
             }}
             className="h-11 min-h-11 sm:h-9 px-4 rounded-lg gap-2 font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Sparkles className="size-4" />
+            <Layout className="size-4" />
             <span>{isOpeningOmniBuilder ? "Abrindo..." : "Editar no Omni Builder"}</span>
           </Button>
 

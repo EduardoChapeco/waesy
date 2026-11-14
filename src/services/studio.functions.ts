@@ -909,16 +909,16 @@ export const generateBrandKitWithAI = createServerFn({ method: "POST" })
     // Lê briefing existente para dar contexto à IA
     const { data: briefing } = await supabase
       .from("briefings")
-      .select("company, content")
+      .select("title, business_model, ideal_customer_profile, competitors")
       .eq("store_id", identity.store_id)
       .maybeSingle();
 
     const briefingContext = briefing
       ? {
-          company_name: (briefing as any).company?.name || "",
-          segment: (briefing as any).company?.segment || "",
-          brand_dna: (briefing as any).company?.brand_dna || "",
-          tone_of_voice: (briefing as any).content?.tone_of_voice || "",
+          company_name: (briefing as any).title || "",
+          segment: (briefing as any).business_model || "",
+          brand_dna: (briefing as any).ideal_customer_profile || "",
+          tone_of_voice: "",
         }
       : {};
 

@@ -372,20 +372,20 @@ function CriarNegocioPage() {
  ];
 
  return (
-  <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-2 pb-32 pb-safe space-y-6 animate-in fade-in duration-200">
+  <div className="w-full max-w-6xl mx-auto px-0 sm:px-6 py-2 pb-32 pb-safe space-y-6 animate-in fade-in duration-200">
   {/* ── Top Bar de Retorno / Atalho ao Workspace ou Início + Seletor de Modo ── */}
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
   <NativeBackButton fallbackHref={session?.memberships && session.memberships.length > 0 ? "/workspace" : "/"} />
 
   {/* SELETOR DE MODO APPLE HIG (Expresso vs Avançado) */}
-  <div className="flex items-center p-1 bg-muted/60 rounded-lg border border-border/60 self-start sm:self-auto">
+  <div className="flex items-center p-1 bg-muted rounded-lg border border-border self-start sm:self-auto">
   <button
   type="button"
   onClick={() => setMode("expresso")}
   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
   "px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2",
   mode === "expresso"
-  ? "bg-background text-foreground shadow-xs"
+  ? "bg-card text-foreground border border-border"
   : "text-muted-foreground hover:text-foreground"
   )}
   >
@@ -398,7 +398,7 @@ function CriarNegocioPage() {
   className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
   "px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 flex items-center gap-2",
   mode === "avancado"
-  ? "bg-background text-foreground shadow-xs"
+  ? "bg-card text-foreground border border-border"
   : "text-muted-foreground hover:text-foreground"
   )}
   >
@@ -568,22 +568,22 @@ function CriarNegocioPage() {
  alt={segment.title}
  className="absolute inset-0 size-full object-cover transition-transform duration-200 group-hover:scale-105"
  />
- <div className="absolute inset-0 bg-black/60" />
+ <div className="absolute inset-0 bg-neutral-950/75" />
 
  <div className="relative z-10 flex items-start justify-between gap-2">
- <div className="size-9 rounded-lg flex items-center justify-center backdrop-blur-md bg-foreground/40 border border-white/15 text-foreground">
+ <div className="size-9 rounded-lg flex items-center justify-center bg-neutral-900 border border-neutral-700 text-neutral-50">
  <IconComp className="size-4" />
  </div>
- <Badge className="bg-card/15 backdrop-blur-md text-foreground border-white/20 text-2xs font-semibold px-2 py-1">
+ <Badge className="bg-neutral-900 text-neutral-50 border-neutral-700 text-2xs font-semibold px-2 py-1">
  {segment.badge}
  </Badge>
  </div>
 
- <div className="relative z-10 space-y-1 text-foreground">
+ <div className="relative z-10 space-y-1 text-neutral-50">
  <h3 className="font-bold text-sm tracking-tight leading-snug">
  {segment.title}
  </h3>
- <p className="text-2xs text-foreground/80 line-clamp-2 leading-relaxed">
+ <p className="text-2xs text-neutral-200 line-clamp-2 leading-relaxed">
  {segment.shortDesc}
  </p>
  </div>
@@ -795,18 +795,18 @@ function CriarNegocioPage() {
  className="size-full object-cover"
  />
  )}
- <div className="absolute inset-0 bg-black/60" />
+ <div className="absolute inset-0 bg-neutral-950/75" />
 
- <div className="absolute inset-x-0 bottom-0 p-5 text-foreground space-y-2">
+ <div className="absolute inset-x-0 bottom-0 p-5 text-neutral-50 space-y-2">
  <div className="flex items-center gap-2">
- <Badge className="bg-emerald-500 text-foreground text-2xs font-extrabold px-3 py-1 border-none">
+ <Badge className="bg-emerald-700 text-emerald-50 text-2xs font-extrabold px-3 py-1 border border-emerald-600">
  Zero Taxa de Intermediação
  </Badge>
  </div>
- <h2 className="text-base sm:text-xl font-black tracking-tight text-foreground">
+ <h2 className="text-base sm:text-xl font-black tracking-tight text-neutral-50">
  {logisticsInfo?.title || "Logística"}
  </h2>
- <p className="text-xs text-foreground/90 line-clamp-2 leading-relaxed">
+ <p className="text-xs text-neutral-200 line-clamp-2 leading-relaxed">
  {logisticsInfo?.subtitle ||
  "Conecte-se aos entregadores autônomos da sua cidade com 1 clique sem taxas abusivas."}
  </p>
@@ -816,7 +816,7 @@ function CriarNegocioPage() {
  )}
 
  {/* Configurações Operacionais */}
- <div className="bg-card p-6 sm:p-8 rounded-lg border border-border/70 space-y-6 shadow-xs">
+ <div className="bg-card p-6 sm:p-8 rounded-lg border border-border space-y-6">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <h3 className="text-base font-bold text-foreground">
  {isDeliverySegment ? "Configurações de Entrega & Atendimento" : "Modalidades de Atendimento & Horários"}

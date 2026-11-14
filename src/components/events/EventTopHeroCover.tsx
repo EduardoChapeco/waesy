@@ -86,7 +86,7 @@ export function EventTopHeroCover({
         )}
 
         {/* Overlay sutil para garantir legibilidade dos controles do cabeçalho */}
-        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-neutral-950/60 pointer-events-none" />
 
         {/* ── LADO ESQUERDO: Botão Voltar Circular (44x44px - Piso Ergonômico DL-14 e B.26) ── */}
         {showBackButton && (
@@ -94,7 +94,7 @@ export function EventTopHeroCover({
             type="button"
             onClick={handleBack}
             aria-label="Voltar para a página anterior"
-            className="absolute top-4 left-4 z-20 size-11 min-w-11 min-h-11 rounded-full bg-background/40 backdrop-blur-md border border-white/20 text-primary-foreground hover:bg-background/60 active:scale-95 transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute top-4 left-4 z-20 size-11 min-w-11 min-h-11 rounded-full bg-neutral-900/90 border border-neutral-700 text-neutral-50 hover:bg-neutral-800 active:scale-95 transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <CaretLeft size={22} weight="bold" />
           </button>
@@ -109,14 +109,14 @@ export function EventTopHeroCover({
               className="h-8 max-w-36 object-contain  mb-1"
             />
           ) : (
-            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-card/20 backdrop-blur-md border border-white/30 text-primary-foreground mb-1 shadow-xs">
+            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-neutral-900/90 border border-neutral-700 text-neutral-50 mb-1">
               <Ticket size={14} weight="fill" className="text-warning-strong" />
               <span className="text-2xs font-black tracking-wider uppercase">
                 Waesy + Ingressos
               </span>
             </div>
           )}
-          <p className="text-xs font-bold text-primary-foreground  leading-tight flex items-center gap-1">
+          <p className="text-xs font-bold text-neutral-50 leading-tight flex items-center gap-1">
             <Sparkle size={13} weight="fill" className="text-purple-300 shrink-0" />
             <span>{calloutTitle}</span>
           </p>

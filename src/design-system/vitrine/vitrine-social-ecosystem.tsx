@@ -654,7 +654,7 @@ export function VitrineEcosystemRail({
                 <ModuleIcon className="size-8 text-muted-foreground/40" />
               )}
               {item.badge && (
-                <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-foreground text-xs font-bold">
+                <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-card border border-border text-foreground text-xs font-bold">
                   {item.badge}
                 </span>
               )}

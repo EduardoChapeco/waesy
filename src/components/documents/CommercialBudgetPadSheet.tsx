@@ -26,7 +26,6 @@ import {
   Eye,
   Edit3,
   Loader2,
-  Sparkles,
   ExternalLink,
 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
@@ -61,6 +60,7 @@ interface CommercialBudgetPadSheetProps {
     address?: string;
     cityState?: string;
   };
+  initialNotes?: string;
   initialItems?: Array<{
     title: string;
     sku?: string;
@@ -87,6 +87,7 @@ export function CommercialBudgetPadSheet({
   initialCustomerId,
   initialLeadId,
   initialClientData,
+  initialNotes,
   initialItems,
 }: CommercialBudgetPadSheetProps) {
   const navigate = useNavigate();
@@ -178,6 +179,23 @@ export function CommercialBudgetPadSheet({
       isMounted = false;
     };
   }, [open, docType]);
+
+  // Hidratar Dados do Cliente e Observações Iniciais ao Abrir
+  useEffect(() => {
+    if (!open) return;
+    if (initialClientData) {
+      setClientName(initialClientData.name || "");
+      setClientCompany(initialClientData.companyName || "");
+      setClientDoc(initialClientData.cpfOrCnpj || "");
+      setClientPhone(initialClientData.phone || "");
+      setClientEmail(initialClientData.email || "");
+      setClientAddress(initialClientData.address || "");
+      setClientCityState(initialClientData.cityState || "");
+    }
+    if (typeof initialNotes === "string" && initialNotes.trim()) {
+      setNotes(initialNotes);
+    }
+  }, [open, initialClientData, initialNotes]);
 
   // Hidratar Itens Iniciais se Fornecidos
   useEffect(() => {
@@ -1026,7 +1044,7 @@ export function CommercialBudgetPadSheet({
               {isConverting ? (
                 <Loader2 className="size-4 mr-2 animate-spin motion-reduce:animate-none" />
               ) : (
-                <Sparkles className="size-4 mr-2" />
+                <FileSignature className="size-4 mr-2" />
               )}
               Gerar e Abrir Contrato
             </Button>

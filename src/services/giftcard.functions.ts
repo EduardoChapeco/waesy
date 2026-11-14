@@ -326,7 +326,10 @@ export const getGiftCardByClaimToken = createServerFn({ method: "GET" })
         card_design_id,
         code_display,
         claim_token,
-        status,
+        is_active,
+        delivered_at,
+        opened_at,
+        claimed_at,
         recipient_binding_type,
         expires_at,
         created_at,
@@ -339,11 +342,21 @@ export const getGiftCardByClaimToken = createServerFn({ method: "GET" })
       throw new Error("Vale-presente não encontrado ou link expirado.");
     }
 
+    const derivedStatus = !card.is_active
+      ? "inactive"
+      : card.claimed_at
+        ? "claimed"
+        : card.opened_at
+          ? "opened"
+          : card.delivered_at
+            ? "delivered"
+            : "active";
+
     // Se o cartão estava em 'active' ou 'delivered' e é a primeira abertura, marca OPENED
-    if (card.status === "active" || card.status === "delivered") {
+    if (derivedStatus === "active" || derivedStatus === "delivered") {
       await db
         .from("gift_cards")
-        .update({ opened_at: new Date().toISOString(), status: "opened" })
+        .update({ opened_at: new Date().toISOString() })
         .eq("id", card.id);
 
       await db.from("gift_card_events").insert({
@@ -390,7 +403,7 @@ export const getGiftCardByClaimToken = createServerFn({ method: "GET" })
       recipient_name: card.recipient_name,
       personal_message: card.personal_message,
       card_design_id: card.card_design_id || "classic_gold",
-      status: card.status,
+      status: derivedStatus === "active" || derivedStatus === "delivered" ? "opened" : derivedStatus,
       media: (card.media || [])[0] || null,
       recipient_binding_type: card.recipient_binding_type,
       created_at: card.created_at,
@@ -502,7 +515,9 @@ export const listUserGiftCards = createServerFn({ method: "GET" }).handler(async
       personal_message,
       card_design_id,
       code_display,
-      status,
+      is_active,
+      delivered_at,
+      opened_at,
       claimed_at,
       store:stores(name, logo_url, slug)
     `)
@@ -522,7 +537,7 @@ export const listUserGiftCards = createServerFn({ method: "GET" }).handler(async
       card_design_id,
       code_display,
       claim_token,
-      status,
+      is_active,
       delivered_at,
       opened_at,
       claimed_at,
@@ -531,6 +546,17 @@ export const listUserGiftCards = createServerFn({ method: "GET" }).handler(async
     `)
     .eq("purchaser_user_id", identity.id)
     .order("created_at", { ascending: false });
+
+  const deriveStatus = (c: any) =>
+    !c.is_active
+      ? "inactive"
+      : c.claimed_at
+        ? "claimed"
+        : c.opened_at
+          ? "opened"
+          : c.delivered_at
+            ? "delivered"
+            : "active";
 
   const formatCard = (c: any) => {
     const store = c.store || {};
@@ -548,7 +574,7 @@ export const listUserGiftCards = createServerFn({ method: "GET" }).handler(async
       card_design_id: c.card_design_id || "classic_gold",
       code_display: c.code_display || "•••• ••••",
       claim_token: c.claim_token,
-      status: c.status,
+      status: deriveStatus(c),
       delivered_at: c.delivered_at,
       opened_at: c.opened_at,
       claimed_at: c.claimed_at,
@@ -582,7 +608,9 @@ export const listMerchantGiftCards = createServerFn({ method: "GET" }).handler(a
       funding_source,
       wz_initial,
       wz_remaining,
-      status,
+      is_active,
+      delivered_at,
+      opened_at,
       recipient_name,
       recipient_email,
       sender_name,
@@ -607,13 +635,22 @@ export const listMerchantGiftCards = createServerFn({ method: "GET" }).handler(a
     const initWz = Number(c.wz_initial || 0);
     const remWz = Number(c.wz_remaining || 0);
     const redeemedWz = initWz - remWz;
+    const derivedStatus = !c.is_active
+      ? "inactive"
+      : c.claimed_at
+        ? "claimed"
+        : c.opened_at
+          ? "opened"
+          : c.delivered_at
+            ? "delivered"
+            : "active";
 
     if (c.funding_source === "PURCHASED") {
       totalSoldWz += initWz;
       totalRedeemedWz += redeemedWz;
     }
 
-    if (c.status === "active" || c.status === "opened" || c.status === "delivered") {
+    if (derivedStatus === "active" || derivedStatus === "opened" || derivedStatus === "delivered") {
       activeCount++;
     }
 
@@ -623,7 +660,7 @@ export const listMerchantGiftCards = createServerFn({ method: "GET" }).handler(a
       wz_initial: initWz,
       wz_remaining: remWz,
       wz_formatted: formatWz(remWz),
-      status: c.status,
+      status: derivedStatus,
       recipient_name: c.recipient_name || "Não informado",
       recipient_email: c.recipient_email || null,
       code_display: c.code_display || "•••• ••••",
@@ -735,24 +772,33 @@ export const checkGiftCardBalance = createServerFn({ method: "POST" })
 
     const { data: card } = await db
       .from("gift_cards")
-      .select("id, store_id, wz_remaining, balance_cents, current_balance_cents, status, expires_at")
+      .select("id, store_id, wz_remaining, current_balance_cents, is_active, delivered_at, opened_at, claimed_at, expires_at")
       .or(`redemption_code_hash.eq.${secretHash},code.eq.${code.trim().toUpperCase()}`)
       .limit(1)
       .maybeSingle();
 
     if (!card) throw new Error("Vale-presente não encontrado.");
-    if (card.status !== "active" && card.status !== "opened" && card.status !== "delivered") {
+    const derivedStatus = !card.is_active
+      ? "inactive"
+      : card.claimed_at
+        ? "claimed"
+        : card.opened_at
+          ? "opened"
+          : card.delivered_at
+            ? "delivered"
+            : "active";
+    if (derivedStatus !== "active" && derivedStatus !== "opened" && derivedStatus !== "delivered") {
       throw new Error("Este vale-presente já foi utilizado ou está inativo.");
     }
 
     const wzBal = Number(card.wz_remaining || 0);
-    const balanceCents = card.balance_cents || card.current_balance_cents || wzToBrlCentsReference(wzBal);
+    const balanceCents = card.current_balance_cents || wzToBrlCentsReference(wzBal);
 
     return {
       id: card.id,
       store_id: card.store_id,
       balanceWz: wzBal,
       balanceCents: balanceCents,
-      status: card.status,
+      status: derivedStatus,
     };
   });

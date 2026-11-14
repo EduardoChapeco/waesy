@@ -457,7 +457,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
   // 3. Carrega thread e verifica handoff humano, cooldown e limite de turnos
   const { data: thread } = await db
     .from("chat_threads")
-    .select("id, customer_id, guest_name, guest_phone, metadata")
+    .select("id, customer_id, guest_name, metadata")
     .eq("id", input.threadId)
     .eq("store_id", input.storeId)
     .maybeSingle();
@@ -548,7 +548,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
   if (phoneDigits.length >= 8) {
     const suffix = phoneDigits.slice(-8);
     const [leadsRes, quotesRes] = await Promise.all([
-      db.from("leads_crm").select("id, status, name").eq("store_id", input.storeId).ilike("phone", `%${suffix}%`).limit(5),
+      db.from("leads_crm").select("id, status, full_name").eq("store_id", input.storeId).ilike("phone", `%${suffix}%`).limit(5),
       db.from("travel_quotes").select("id, status").eq("store_id", input.storeId).limit(5),
     ]);
     opportunitiesCount = (leadsRes.data || []).length;
@@ -597,7 +597,7 @@ export async function evaluateControlledAiInboundRuntime(input: {
   } else if (intent === "financial_query") {
     suggestedReply = `Olá, ${customerName}! Recebi sua solicitação sobre pagamento/fatura na ${storeName}. Já estou verificando os detalhes financeiros do seu cadastro.`;
   } else {
-    suggestedReply = `Olá, ${customerName}! Bem-vindo(a) à ${storeName}. Como posso ajudar você hoje?`;
+    suggestedReply = `Olá, ${customerName}! Aqui é da ${storeName}. Como posso ajudar?`;
   }
 
   const crmContextSummary = { opportunitiesCount, activeStage, quotesCount };

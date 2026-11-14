@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Check, Loader2, ArrowRight, MessageSquare, AlertCircle, ShieldCheck, Bot } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { collectClientAttribution } from "@/lib/attribution-collector";
 
 interface LeadFormRendererProps {
   form: LeadFormDTO;
@@ -153,19 +154,8 @@ export function LeadFormRenderer({
 
     setIsSubmitting(true);
     try {
-      // Coleta UTMs da URL
-      let utmSource: string | null = null;
-      let utmMedium: string | null = null;
-      let utmCampaign: string | null = null;
-      let utmContent: string | null = null;
-
-      if (typeof window !== "undefined") {
-        const urlParams = new URLSearchParams(window.location.search);
-        utmSource = urlParams.get("utm_source");
-        utmMedium = urlParams.get("utm_medium");
-        utmCampaign = urlParams.get("utm_campaign");
-        utmContent = urlParams.get("utm_content");
-      }
+      const attr = collectClientAttribution();
+      const sourceUrl = typeof window !== "undefined" ? window.location.href : null;
 
       let deviceFingerprint: string | null = null;
       if (typeof window !== "undefined") {
@@ -174,6 +164,29 @@ export function LeadFormRenderer({
           deviceFingerprint = "fp_client_" + btoa(rawFp).replace(/[^a-zA-Z0-9]/g, "").slice(0, 32);
         } catch {}
       }
+
+      const sharedAttribution = {
+        utmSource: attr.utmSource || null,
+        utmMedium: attr.utmMedium || null,
+        utmCampaign: attr.utmCampaign || null,
+        utmContent: attr.utmContent || null,
+        utmTerm: attr.utmTerm || null,
+        fbclid: attr.fbclid || null,
+        fbp: attr.fbp || null,
+        fbc: attr.fbc || null,
+        gclid: attr.gclid || null,
+        ttclid: attr.ttclid || null,
+        ctwaClid: attr.ctwaClid || null,
+        adId: attr.adId || null,
+        adsetId: attr.adsetId || null,
+        campaignId: attr.campaignId || null,
+        creativeId: attr.creativeId || null,
+        landingUrl: attr.landingUrl || null,
+        sourceUrl,
+        referrer: attr.referrer || null,
+        deviceId: attr.deviceId || null,
+        visitorId: attr.deviceId || null,
+      };
 
       let res;
       if (form.id === "civil-form" && classifiedId) {
@@ -184,6 +197,7 @@ export function LeadFormRenderer({
             contactPhone: phone.trim(),
             contactEmail: email.trim() || null,
             answers,
+            ...sharedAttribution,
             deviceType: typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop",
             deviceFingerprint,
           },
@@ -201,14 +215,23 @@ export function LeadFormRenderer({
             contactPhone: phone.trim(),
             contactEmail: email.trim() || null,
             answers,
-            utmSource,
-            utmMedium,
-            utmCampaign,
-            utmContent,
+            ...sharedAttribution,
             deviceType: typeof window !== "undefined" && window.innerWidth < 768 ? "mobile" : "desktop",
             deviceFingerprint,
           },
         });
+      }
+
+      if (typeof window !== "undefined" && typeof (window as any).fbq === "function") {
+        (window as any).fbq(
+          "track",
+          "Lead",
+          {
+            content_name: form.title || form.slug,
+            content_category: classifiedId ? "classified_form" : "lead_form",
+          },
+          (res as any)?.eventId ? { eventID: (res as any).eventId } : undefined,
+        );
       }
 
       setSubmissionResult(res);

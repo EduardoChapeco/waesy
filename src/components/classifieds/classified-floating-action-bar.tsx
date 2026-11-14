@@ -122,7 +122,7 @@ export function ClassifiedFloatingActionBar({
       <nav
         aria-label="Ações de Contato e Compra"
         className={cn(
-          "sticky bottom-0 z-30 bg-card/95 backdrop-blur-md border-t border-border/40 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-3 mobile-nav-hide-on-keyboard",
+          "sticky bottom-0 z-30 bg-card border-t border-border p-3 pb-4 pb-safe flex items-center justify-between gap-3 mobile-nav-hide-on-keyboard",
           className
         )}
       >

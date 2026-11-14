@@ -130,7 +130,7 @@ export const listServiceConsumedMaterials = createServerFn({ method: "GET" })
 
     const { data, error } = await supabase
       .from("service_consumed_materials")
-      .select("*, products:product_id(id, title, price_cents, stock_quantity), supplies:supply_id(id, name, cost_cents_per_unit, stock_on_hand, unit)")
+      .select("*, products:product_id(id, title, price_cents, product_variants(stock_on_hand)), supplies:supply_id(id, name, cost_cents_per_unit, stock_on_hand, unit)")
       .eq("store_id", identity.store_id)
       .eq("service_id", serviceId);
 

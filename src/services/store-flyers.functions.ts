@@ -182,18 +182,22 @@ export const listActiveStoreFlyers = createServerFn({ method: "GET" })
     if (productIdsToFetch.size > 0) {
       const { data: prods } = await supabase
         .from("products")
-        .select("id, title, price_cents, promotional_price_cents, slug, images")
+        .select("id, title, price_cents, compare_at_cents, attributes, slug, product_media(url, sort_order)")
         .in("id", Array.from(productIdsToFetch));
 
       if (prods) {
         prods.forEach((p: any) => {
+          const media = Array.isArray(p.product_media)
+            ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            : [];
           productsMap[p.id] = {
             id: p.id,
             title: p.title,
             price_cents: p.price_cents,
-            promotional_price_cents: p.promotional_price_cents,
+            promotional_price_cents: (p.attributes as any)?.promotional_price_cents ?? null,
+            compare_at_cents: p.compare_at_cents ?? null,
             slug: p.slug,
-            image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
+            image_url: media.length > 0 ? media[0].url : null,
           };
         });
       }
@@ -277,18 +281,22 @@ export const listStoreFlyersAdmin = createServerFn({ method: "GET" })
     if (productIdsToFetch.size > 0) {
       const { data: prods } = await supabase
         .from("products")
-        .select("id, title, price_cents, promotional_price_cents, slug, images")
+        .select("id, title, price_cents, compare_at_cents, attributes, slug, product_media(url, sort_order)")
         .in("id", Array.from(productIdsToFetch));
 
       if (prods) {
         prods.forEach((p: any) => {
+          const media = Array.isArray(p.product_media)
+            ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            : [];
           productsMap[p.id] = {
             id: p.id,
             title: p.title,
             price_cents: p.price_cents,
-            promotional_price_cents: p.promotional_price_cents,
+            promotional_price_cents: (p.attributes as any)?.promotional_price_cents ?? null,
+            compare_at_cents: p.compare_at_cents ?? null,
             slug: p.slug,
-            image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
+            image_url: media.length > 0 ? media[0].url : null,
           };
         });
       }

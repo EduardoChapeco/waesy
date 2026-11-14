@@ -11,7 +11,116 @@ export interface NicheTemplateDefinition {
   niche: string;
   description: string;
   badge: string;
+  theme?: OmniPageDocument["theme"];
   blocks: Omit<OmniBlockInstance, "id">[];
+}
+
+export function resolveTemplateTheme(
+  templateId: string,
+  niche: string,
+  existingTheme?: OmniPageDocument["theme"],
+): OmniPageDocument["theme"] {
+  const h = String.fromCharCode(35);
+  const presets: Record<string, OmniPageDocument["theme"]> = {
+    template_saas_beauty_belasis: {
+      primaryColor: `${h}db2777`,
+      backgroundColor: `${h}fffbfc`,
+      textColor: `${h}1f1218`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    template_saas_food_restaurante: {
+      primaryColor: `${h}ea1d2c`,
+      backgroundColor: `${h}ffffff`,
+      textColor: `${h}18181b`,
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
+    template_saas_b2b_mercos: {
+      primaryColor: `${h}0284c7`,
+      backgroundColor: `${h}f8fafc`,
+      textColor: `${h}0f172a`,
+      fontFamily: "Space Grotesk, sans-serif",
+      borderRadius: "lg",
+      customThemeEnabled: true,
+    },
+    template_saas_supermarket_osuper: {
+      primaryColor: `${h}16a34a`,
+      backgroundColor: `${h}f7fee7`,
+      textColor: `${h}052e16`,
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
+    template_dark_kitchen: {
+      primaryColor: `${h}f59e0b`,
+      backgroundColor: `${h}09090b`,
+      textColor: `${h}fafafa`,
+      fontFamily: "Space Grotesk, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
+    template_legal_jus: {
+      primaryColor: `${h}1e293b`,
+      backgroundColor: `${h}fafaf9`,
+      textColor: `${h}0c0a09`,
+      fontFamily: "Playfair Display, serif",
+      borderRadius: "md",
+      customThemeEnabled: true,
+    },
+    template_clinic_premium: {
+      primaryColor: `${h}0d9488`,
+      backgroundColor: `${h}f8fafc`,
+      textColor: `${h}0f172a`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    template_tourism: {
+      primaryColor: `${h}0369a1`,
+      backgroundColor: `${h}f0f9ff`,
+      textColor: `${h}082f49`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    template_real_estate: {
+      primaryColor: `${h}b45309`,
+      backgroundColor: `${h}fafaf9`,
+      textColor: `${h}1c1917`,
+      fontFamily: "Playfair Display, serif",
+      borderRadius: "lg",
+      customThemeEnabled: true,
+    },
+  };
+
+  if (presets[templateId]) {
+    return presets[templateId];
+  }
+
+  if (niche === "delivery" || niche === "gastronomy") {
+    return {
+      primaryColor: `${h}ea1d2c`,
+      backgroundColor: `${h}ffffff`,
+      textColor: `${h}18181b`,
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    };
+  }
+
+  return (
+    existingTheme || {
+      primaryColor: `${h}09090b`,
+      backgroundColor: `${h}ffffff`,
+      textColor: `${h}09090b`,
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    }
+  );
 }
 
 export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
@@ -179,7 +288,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
           items: [
             { id: "wsv-b1", label: "Ofertas", badge: "Hoje", iconName: "Tag", tone: "primary", href: "#ofertas" },
             { id: "wsv-b2", label: "Catálogo", iconName: "ShoppingBag", tone: "default", href: "#ofertas" },
-            { id: "wsv-b3", label: "Reels", iconName: "Sparkles", tone: "accent", href: "#encartes" },
+            { id: "wsv-b3", label: "Reels", iconName: "Star", tone: "accent", href: "#encartes" },
             { id: "wsv-b4", label: "Anúncios", iconName: "Car", tone: "default", href: "#anuncios" },
             { id: "wsv-b5", label: "Mural", iconName: "MessageCircle", tone: "default", href: "#novidades" },
             { id: "wsv-b6", label: "Agenda", iconName: "Calendar", tone: "default", href: "#eventos" },
@@ -718,7 +827,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               id: "scs-a2",
               label: "Reels & Vídeos",
               subtitle: "Bastidores em 9:16",
-              iconName: "Sparkles",
+              iconName: "Star",
               tone: "accent",
               href: "#bastidores",
             },
@@ -2223,7 +2332,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
             {
               id: "tab-assinaturas",
               tabLabel: "Clube de Assinaturas",
-              tabIconName: "Sparkles",
+              tabIconName: "Layers",
               title: "Faturamento recorrente garantido todo mês com planos e pacotes",
               description:
                 "Crie planos de barba, cabelo ou manicure com cobrança mensal automática no cartão e aumente a retenção de clientes.",
@@ -4548,6 +4657,7 @@ export function applyTemplateToPage(page: OmniPageDocument, templateId: string):
     ...page,
     schemaVersion: page.schemaVersion ?? 1,
     niche: template.niche,
+    theme: template.theme || resolveTemplateTheme(template.id, template.niche, page.theme),
     source_template_id: template.id,
     source_template_version: "1.0.0",
     blocks: hydratedBlocks,

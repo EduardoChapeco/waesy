@@ -4,6 +4,14 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { sendWhatsAppNotification } from "./integrations.functions";
 import { dispatchClosedLoopLeadQualification } from "./pixels.functions";
+import { compileContractDocument } from "@/lib/contracts/contract-compiler";
+import { autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
+import {
+  formatDynamicFieldLabel,
+  formatFieldPrimitiveValue,
+  getNicheContractBlueprint,
+  normalizeCustomFieldMap,
+} from "@/lib/niches/unified-field-bridge";
 
 // ─── CARTEIRA DE CLIENTES (BFF CANÔNICO) ──────────────────────────────────────
 
@@ -147,21 +155,13 @@ export const listCustomers = createServerFn({ method: "GET" })
 
  const { data: docs } = await supabase
  .from("customer_documents")
- .select("customer_id, expires_at")
- .in("customer_id", customerIds)
- .not("expires_at", "is", null);
+ .select("customer_id, verified_at, created_at")
+ .in("customer_id", customerIds);
 
  if (docs) {
- for (const d of docs) {
- if (!d.expires_at) continue;
- const current = docAlertsMap.get(d.customer_id) || { expired: 0, soon: 0 };
- if (d.expires_at < todayStr) {
- current.expired += 1;
- } else if (d.expires_at <= soonStr) {
- current.soon += 1;
- }
- docAlertsMap.set(d.customer_id, current);
- }
+ // customer_documents não possui coluna expires_at; contagem permanece válida sem quebrar query
+ void todayStr;
+ void soonStr;
  }
  }
 
@@ -271,11 +271,17 @@ export const getCustomer360 = createServerFn({ method: "GET" })
  });
 
  // 4. Busca Oportunidades Comerciais (Leads) vinculadas a este cliente
- const { data: commercialLeads } = await supabase
+ const { data: rawCommercialLeads } = await supabase
  .from("leads_crm")
- .select("id, title, full_name, status, estimated_value_cents, source, lead_source_detail, custom_fields, probability, expected_close_date, created_at, updated_at")
+ .select("id, title, full_name, status, estimated_value_cents, source, lead_source_detail, custom_fields, algorithmic_score, follow_up_at, created_at, updated_at")
  .eq("customer_id", customerId)
  .order("created_at", { ascending: false });
+
+ const commercialLeads = (rawCommercialLeads || []).map((l: any) => ({
+   ...l,
+   probability: l.algorithmic_score ?? null,
+   expected_close_date: l.follow_up_at ?? null,
+ }));
 
  // 5. Busca Cotações / Orçamentos (Integrado a travel_quotes)
  let quotations: any[] = [];
@@ -298,11 +304,16 @@ export const getCustomer360 = createServerFn({ method: "GET" })
  }
 
  // 6. Busca Ingressos / Inscrições em Eventos
- const { data: tickets } = await supabase
+ const { data: rawTickets } = await supabase
  .from("tickets")
- .select("id, event_id, status, created_at, events(title, date)")
+ .select("id, event_id, status, created_at, events(title, event_date)")
  .eq("owner_profile_id", customerId)
  .order("created_at", { ascending: false });
+
+ const tickets = (rawTickets || []).map((t: any) => ({
+   ...t,
+   events: t.events ? { ...t.events, date: t.events.event_date ?? null } : null,
+ }));
 
   // 6b. Busca Viagens Confirmadas do Turismo (tourism_trips)
   let confirmedTrips: any[] = [];
@@ -456,6 +467,30 @@ export const getCustomer360 = createServerFn({ method: "GET" })
     console.warn("[crm] notice fetching commercial_invoices:", err);
   }
 
+  // 6h. Busca Orcamentos Multi-Nicho (quotes)
+  let customerQuotes: any[] = [];
+  try {
+    const cleanPhone = customer.phone ? customer.phone.replace(/\D/g, "").slice(-8) : "";
+    let qtQuery = supabase
+      .from("quotes")
+      .select("id, quote_number, status, total_cents, valid_until, lead_id, niche_id, custom_fields, created_at")
+      .eq("store_id", identity.store_id);
+
+    const qtOr: string[] = [];
+    if (customerId) qtOr.push(`customer_id.eq.${customerId}`);
+    if (customer.email) qtOr.push(`guest_email.eq.${customer.email}`);
+    if (cleanPhone) qtOr.push(`guest_phone.ilike.%${cleanPhone}%`);
+    if (customer.full_name && customer.full_name.length > 2) qtOr.push(`guest_name.ilike.%${customer.full_name}%`);
+
+    if (qtOr.length > 0) {
+      qtQuery = qtQuery.or(qtOr.join(","));
+    }
+    const { data: qtRows } = await qtQuery.order("created_at", { ascending: false });
+    customerQuotes = qtRows || [];
+  } catch (err) {
+    console.warn("[crm] notice fetching quotes:", err);
+  }
+
   // 7. Monta Timeline 360 Unificada
  const timeline: any[] = [];
  (orders || []).forEach((o: any) => {
@@ -567,6 +602,18 @@ export const getCustomer360 = createServerFn({ method: "GET" })
     });
   });
 
+  (customerQuotes || []).forEach((q: any) => {
+    timeline.push({
+      id: `hybrid_quote_${q.id}`,
+      type: "commercial_quote",
+      title: `Orçamento ${q.quote_number || q.id.slice(0, 8)}`,
+      description: `Status: ${q.status} • Total: R$ ${((q.total_cents || 0) / 100).toFixed(2)}`,
+      status: q.status,
+      timestamp: q.created_at,
+      metadata: { quote_id: q.id, total_cents: q.total_cents, lead_id: q.lead_id, niche_id: q.niche_id },
+    });
+  });
+
   (customerContracts || []).forEach((c: any) => {
     const totalCents = c.metadata?.total_value_cents || 0;
     timeline.push({
@@ -594,11 +641,17 @@ export const getCustomer360 = createServerFn({ method: "GET" })
  : 0;
 
   // 8. Busca créditos reais do cliente
-  const { data: customerCredits } = await supabase
+  const { data: rawCustomerCredits } = await supabase
   .from("customer_credits")
-  .select("id, amount_cents, balance_cents, description, created_at")
+  .select("id, balance_cents, created_at")
   .eq("customer_id", customerId)
   .order("created_at", { ascending: false });
+
+  const customerCredits = (rawCustomerCredits || []).map((c: any) => ({
+    ...c,
+    amount_cents: c.balance_cents ?? 0,
+    description: null,
+  }));
 
   const totalCreditCents = (customerCredits || []).reduce(
   (sum: number, c: any) => sum + (c.balance_cents || 0),
@@ -686,8 +739,10 @@ export const getCustomer360 = createServerFn({ method: "GET" })
   walletPasses,
   travelerPreferences,
     proposals: customerProposals,
+    quotes: customerQuotes,
     contracts: customerContracts,
     commercialInvoices: customerInvoices,
+    customFields: customer.custom_fields || {},
     consentRecords: Array.isArray(customer.custom_fields?.consent_records)
       ? customer.custom_fields.consent_records
       : [],
@@ -727,6 +782,8 @@ export const createCustomerSchema = z.object({
  lgpdAccepted: z.boolean().optional().default(false),
  allergies: z.string().optional().nullable(),
  healthNotes: z.string().optional().nullable(),
+ preferredProfessionalId: z.string().uuid().optional().nullable(),
+ nicheMetadata: z.record(z.unknown()).optional(),
  tags: z.array(z.string()).optional(),
  notes: z.string().optional().nullable(),
 });
@@ -779,11 +836,16 @@ export const createCustomer = createServerFn({ method: "POST" })
  emergency_contact_name: input.emergencyContactName?.trim() || null,
  emergency_contact_phone: input.emergencyContactPhone?.trim() || null,
  lgpd_accepted: input.lgpdAccepted ?? false,
+ allergies: input.allergies?.trim() || null,
+ health_notes: input.healthNotes?.trim() || null,
+ preferred_professional_id: input.preferredProfessionalId || null,
+ niche_metadata: input.nicheMetadata || {},
  custom_fields: {
  gender: input.gender || null,
  occupation: input.occupation || null,
  referral_source: input.referralSource || null,
  allergies: input.allergies || null,
+ ...(input.nicheMetadata || {}),
  },
  tags: input.tags || [],
  notes: input.notes?.trim() || null,
@@ -2700,6 +2762,19 @@ export const issueLeadContract = createServerFn({ method: "POST" })
       packageSummary: z.string().min(5),
       totalValueCents: z.number().int().min(0),
       paymentConditions: z.string().default("À vista ou parcelado"),
+      templateId: z.string().optional(),
+      sectionConfig: z
+        .object({
+          showItemsTable: z.boolean().optional(),
+          showSpecsTable: z.boolean().optional(),
+          showItineraryTable: z.boolean().optional(),
+          showPassengersTable: z.boolean().optional(),
+          showFinancialTable: z.boolean().optional(),
+          showCustomFieldsTable: z.boolean().optional(),
+          includeLegalClauses: z.boolean().optional(),
+        })
+        .optional(),
+      customVariables: z.record(z.string(), z.string()).optional(),
     })
   )
   .handler(async ({ data: input }) => {
@@ -2707,12 +2782,19 @@ export const issueLeadContract = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
-    const { data: lead, error: leadErr } = await supabase
-      .from("leads_crm")
-      .select("*")
-      .eq("id", input.leadId)
-      .eq("store_id", identity.store_id)
-      .single();
+    const [{ data: lead, error: leadErr }, { data: storeRow }] = await Promise.all([
+      supabase
+        .from("leads_crm")
+        .select("*")
+        .eq("id", input.leadId)
+        .eq("store_id", identity.store_id)
+        .single(),
+      supabase
+        .from("stores")
+        .select("id, name, cnpj, address, city, state, phone, email, primary_niche_id, settings")
+        .eq("id", identity.store_id)
+        .maybeSingle(),
+    ]);
 
     if (leadErr || !lead) throw new Error("Lead não encontrado");
 
@@ -2728,62 +2810,118 @@ export const issueLeadContract = createServerFn({ method: "POST" })
       customerId = linkedId || null;
     }
 
+    const [{ data: customerRow }, { data: travelProp }] = await Promise.all([
+      customerId
+        ? supabase
+            .from("customers_crm")
+            .select("*")
+            .eq("id", customerId)
+            .eq("store_id", identity.store_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from("travel_proposals")
+        .select("*")
+        .eq("lead_id", lead.id)
+        .eq("store_id", identity.store_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    const storeSettings =
+      (storeRow as any)?.settings && typeof (storeRow as any).settings === "object"
+        ? (storeRow as any).settings
+        : {};
+    const nicheHint = (storeRow as any)?.primary_niche_id || storeSettings.niche_id || storeSettings.niche;
+    const blueprint = getNicheContractBlueprint(nicheHint);
+
     const publicToken = `CTR-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const clientName = lead.full_name || lead.title || "Cliente";
-    const clientDoc = lead.document || "Não informado";
-    const destination = lead.destination || "Não informado";
+    const clientDoc = String(lead.document || (customerRow as any)?.document || lead.custom_fields?.document || "Não informado");
+    const destination = lead.destination || (travelProp as any)?.destination_city || "Não informado";
     const formattedValue = new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format((input.totalValueCents || 0) / 100);
 
-    const { data: contract, error: ctrErr } = await supabase
-      .from("travel_contracts")
-      .insert({
-        store_id: identity.store_id,
-        created_by_profile_id: identity.id,
-        lead_id: lead.id,
-        customer_id: customerId,
-        public_token: publicToken,
-        contract_title: input.contractTitle,
-        client_name: clientName,
-        client_document: clientDoc,
-        client_email: lead.email || null,
-        client_phone: lead.phone || "",
-        destination,
-        travel_start_date: lead.travel_start || null,
-        travel_end_date: lead.travel_end || null,
-        package_summary: input.packageSummary,
-        total_value_cents: input.totalValueCents,
-        payment_conditions: input.paymentConditions,
-        passengers: lead.pax_list || [],
-        status: "sent",
-      })
-      .select()
-      .single();
+    const mergedCustomFields = normalizeCustomFieldMap({
+      ...((customerRow as any)?.custom_fields || {}),
+      ...(lead.custom_fields || {}),
+      ...(((travelProp as any)?.pricing?.custom_fields as Record<string, unknown>) || {}),
+    });
 
-    if (ctrErr) throw new Error(`Erro ao emitir contrato: ${ctrErr.message}`);
+    const specs: Array<{ label: string; value: string }> = [];
+    if (destination && destination !== "Não informado") {
+      specs.push({ label: blueprint.isTourism ? "Destino" : "Objeto / Demanda", value: destination });
+    }
+    if (lead.travel_start) specs.push({ label: "Início / Embarque", value: String(lead.travel_start) });
+    if (lead.travel_end) specs.push({ label: "Retorno / Conclusão", value: String(lead.travel_end) });
+    for (const [k, rawVal] of Object.entries(mergedCustomFields)) {
+      const formatted = formatFieldPrimitiveValue(rawVal);
+      if (formatted && specs.length < 15) {
+        specs.push({ label: formatDynamicFieldLabel(k), value: formatted });
+      }
+    }
 
-    // Sincroniza na tabela canônica public.contracts + public.contract_versions para que o Editor Word/A4 e o Portal de Assinatura funcionem sem quebras
-    const clauses = [
-      {
-        title: "CLÁUSULA 1ª - DO OBJETO E ROTEIRO CONTRATADO",
-        content: `O presente instrumento tem por objeto a intermediação e prestação de serviços de turismo para o destino ${destination}.\n\nResumo dos serviços inclusos:\n${input.packageSummary}`,
+    const compiled = compileContractDocument({
+      title: input.contractTitle,
+      nicheHint,
+      templateId: input.templateId || blueprint.defaultTemplateId,
+      sectionConfig: input.sectionConfig,
+      issuer: {
+        name: (storeRow as any)?.name || "Empresa Contratada",
+        document: (storeRow as any)?.cnpj || "",
+        address: (storeRow as any)?.address || "",
+        cityState: [(storeRow as any)?.city, (storeRow as any)?.state].filter(Boolean).join(" / "),
+        phone: (storeRow as any)?.phone || storeSettings.whatsapp_phone || "",
+        email: (storeRow as any)?.email || "",
       },
-      {
-        title: "CLÁUSULA 2ª - DO VALOR E CONDIÇÕES DE PAGAMENTO",
-        content: `Pelos serviços descritos na Cláusula 1ª, o CONTRATANTE (${clientName}, CPF/CNPJ: ${clientDoc}) pagará à CONTRATADA o valor total de ${formattedValue}, sob a seguinte modalidade: ${input.paymentConditions}.`,
+      customer: {
+        name: clientName,
+        document: clientDoc === "Não informado" ? "" : clientDoc,
+        phone: lead.phone || (customerRow as any)?.phone || "",
+        email: lead.email || (customerRow as any)?.email || "",
+        address: (customerRow as any)?.address || "",
+        cityState: [(customerRow as any)?.city, (customerRow as any)?.state].filter(Boolean).join(" / "),
       },
-      {
-        title: "CLÁUSULA 3ª - DAS REGRAS DE ALTERAÇÃO, CANCELAMENTO E NO-SHOW",
-        content: `Eventuais pedidos de cancelamento, remarcação ou reembolso obedecerão às normas da EMBRATUR (Deliberação Normativa nº 161/85), Código de Defesa do Consumidor e políticas tarifárias dos fornecedores aéreos e hoteleiros.`,
-      },
-      {
-        title: "CLÁUSULA 4ª - DA PROTEÇÃO DE DADOS (LGPD) E ASSINATURA ELETRÔNICA",
-        content: `O CONTRATANTE autoriza o compartilhamento estritamente necessário de seus dados pessoais e de seus acompanhantes com companhias aéreas, hotéis, seguradoras e receptivos locais (Lei nº 13.709/2018), reconhecendo a validade jurídica desta assinatura eletrônica nos termos da MP 2.200-2/2001 e Lei 14.063/2020.`,
-      },
-    ];
-    const contentMarkdown = clauses.map((c) => `### ${c.title}\n\n${c.content}`).join("\n\n");
+      items: [
+        {
+          title: input.packageSummary || destination || input.contractTitle,
+          unit: blueprint.isTourism ? "pacote" : "contrato",
+          quantity: 1,
+          unitPriceCents: input.totalValueCents || 0,
+          totalPriceCents: input.totalValueCents || 0,
+        },
+      ],
+      specs,
+      itinerary: Array.isArray((travelProp as any)?.itinerary) ? (travelProp as any).itinerary : [],
+      passengers: Array.isArray(lead.pax_list)
+        ? lead.pax_list.map((p: any) => ({
+            name: String(p?.name || p?.full_name || clientName),
+            document: p?.document || p?.cpf || undefined,
+            birthDate: p?.birth_date || p?.birthDate || undefined,
+          }))
+        : [],
+      customFields: mergedCustomFields,
+      summaryText: input.packageSummary,
+      totalValueCents: input.totalValueCents || 0,
+      paymentConditions: input.paymentConditions,
+      travelStartDate: lead.travel_start || null,
+      travelEndDate: lead.travel_end || null,
+      destination,
+      customVariables: input.customVariables,
+    });
+
+    const clauses = compiled.clauses.map((c) => ({
+      number: c.number,
+      section: c.section,
+      clause_text: c.clause_text,
+      is_mandatory: c.is_mandatory,
+      title: c.section,
+      content: c.clause_text,
+    }));
+    const contentMarkdown = compiled.contentMarkdown;
     const hashBuffer = await crypto.subtle.digest(
       "SHA-256",
       new TextEncoder().encode(contentMarkdown)
@@ -2791,40 +2929,49 @@ export const issueLeadContract = createServerFn({ method: "POST" })
     const versionHashHex = Array.from(new Uint8Array(hashBuffer))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
+    const signatureFields = autoPositionSignatureFieldsFromContent(contentMarkdown, 2, 2);
 
-    await supabase
+    const { data: contract, error: ctrErr } = await supabase
       .from("contracts")
-      .upsert({
-        id: contract.id,
+      .insert({
         creator_id: identity.id,
         store_id: identity.store_id,
         lead_id: lead.id,
         customer_id: customerId,
         title: input.contractTitle,
-        category: "tourism",
+        category: blueprint.isTourism ? "tourism" : blueprint.contractCategory,
         status: "signing",
         current_version: 1,
         verification_code: publicToken,
+        template_id: compiled.templateIdUsed || null,
         metadata: {
           store_id: identity.store_id,
           lead_id: lead.id,
           customer_id: customerId,
           client_name: clientName,
           client_document: clientDoc,
-          client_email: lead.email || null,
-          client_phone: lead.phone || "",
+          client_email: lead.email || customerRow?.email || null,
+          client_phone: lead.phone || customerRow?.phone || "",
           destination,
           travel_start_date: lead.travel_start || null,
           travel_end_date: lead.travel_end || null,
-          package_summary: input.packageSummary,
+          package_summary: compiled.summaryText,
           total_value_cents: input.totalValueCents,
           payment_conditions: input.paymentConditions,
           passengers: lead.pax_list || [],
+          custom_fields: mergedCustomFields,
+          template_id: compiled.templateIdUsed,
+          niche_id: compiled.nicheId,
         },
       })
-      .then(() => null, () => null);
+      .select()
+      .single();
 
-    await supabase
+    if (ctrErr || !contract) {
+      throw new Error(`Erro ao emitir contrato: ${ctrErr?.message || "falha ao persistir registro canônico"}`);
+    }
+
+    const { data: createdVersion, error: verErr } = await supabase
       .from("contract_versions")
       .insert({
         contract_id: contract.id,
@@ -2832,17 +2979,32 @@ export const issueLeadContract = createServerFn({ method: "POST" })
         title: input.contractTitle,
         content_markdown: contentMarkdown,
         clauses,
-        variables: {
-          client_name: clientName,
-          client_document: clientDoc,
-          destination,
-          total_value: formattedValue,
-          payment_conditions: input.paymentConditions,
-        },
+        variables: compiled.variablesApplied,
         hash_sha256: versionHashHex,
+        signature_fields: signatureFields,
+        page_count: 2,
         is_sealed: false,
       })
-      .then(() => null, () => null);
+      .select("id")
+      .single();
+
+    if (verErr || !createdVersion?.id) {
+      await supabase.from("contracts").delete().eq("id", contract.id);
+      throw new Error(`Erro ao gerar versão do contrato: ${verErr?.message || "falha desconhecida"}`);
+    }
+
+    const resolvedSignerEmail = lead.email || (customerRow as any)?.email || "cliente@waesy.com";
+    const resolvedSignerPhone = lead.phone || (customerRow as any)?.phone || null;
+    await supabase.from("signature_envelopes").insert({
+      contract_version_id: createdVersion.id,
+      signer_name: clientName,
+      signer_email: resolvedSignerEmail,
+      signer_phone: resolvedSignerPhone,
+      signer_cpf: clientDoc && clientDoc !== "Não informado" ? clientDoc : null,
+      signer_role: "party",
+      dispatch_channel: resolvedSignerPhone ? "whatsapp" : "email",
+      status: "pending",
+    });
 
     // Registra na cadeia forense
     await supabase.from("contract_audit_chain").insert({

@@ -37,12 +37,12 @@ export function StoreCard({
       to="/diretorio/$id"
       params={{ id }}
       className={cn(
-        "group relative flex flex-col justify-between w-full rounded-lg bg-card border border-border/60 hover:border-primary/50 transition-colors duration-200 content-auto-card overflow-hidden select-none block shadow-2xs",
+        "group relative flex flex-col justify-between w-full rounded-lg bg-card border border-border hover:border-foreground/40 transition-colors duration-200 content-auto-card overflow-hidden select-none block",
         className,
       )}
     >
       {/* ── Banner de Destaque Superior ─────────────────────── */}
-      <div className="relative h-36 w-full bg-linear-to-r from-muted to-muted/80 overflow-hidden shrink-0">
+      <div className="relative h-36 w-full bg-muted overflow-hidden shrink-0">
         {banner_url ? (
           <img
             src={banner_url}
@@ -53,22 +53,21 @@ export function StoreCard({
             }}
           />
         ) : (
-          <div className="size-full bg-linear-to-br from-primary/20 via-primary/5 to-muted flex items-center justify-center">
-            <Store className="size-10 text-muted-foreground/30" />
+          <div className="size-full bg-muted flex items-center justify-center">
+            <Store className="size-10 text-muted-foreground" />
           </div>
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
 
         {/* Status Badge */}
         <div className="absolute top-3 right-3 z-10">
           <span
-            className={`px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider ${
+            className={`px-3 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider border border-border ${
               is_open
-                ? "bg-emerald-600/95 text-foreground"
-                : "bg-foreground/60 text-foreground/80 border border-white/20"
+                ? "bg-card text-success"
+                : "bg-card text-muted-foreground"
             }`}
           >
-            {is_open ? "● Aberto" : "Fechado"}
+            {is_open ? "Aberto" : "Fechado"}
           </span>
         </div>
       </div>
@@ -76,7 +75,7 @@ export function StoreCard({
       {/* ── Informações da Empresa & Avatar ─────────────────── */}
       <div className="p-4 pt-0 relative flex-1 flex flex-col justify-between space-y-2">
         {/* Floating Avatar */}
-        <div className="size-16 rounded-lg bg-background overflow-hidden -mt-8 relative z-10 flex items-center justify-center border border-border/60 shadow-xs shrink-0">
+        <div className="size-16 rounded-lg bg-background overflow-hidden -mt-8 relative z-10 flex items-center justify-center border border-border shrink-0">
           {avatar_url ? (
             <img
               src={avatar_url}
@@ -101,7 +100,7 @@ export function StoreCard({
               <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
             )}
           </div>
-          <p className="text-xs text-muted-foreground truncate h-4">{displayCategory}</p>
+          <p className="text-xs text-muted-foreground line-clamp-1">{displayCategory}</p>
         </div>
 
         {/* Métricas Autênticas (Zero Fakes — Invariante B.33) */}
@@ -118,7 +117,7 @@ export function StoreCard({
               <span>Verificada</span>
             </span>
           ) : (
-            <span className="text-muted-foreground/60 text-xs font-mono">
+            <span className="text-muted-foreground text-xs font-mono">
               Comércio Local
             </span>
           )}
@@ -141,8 +140,8 @@ export function StoreCard({
         </div>
 
         {/* Botão Canônico de Ação (Piso 44px — Invariante B.22) */}
-        <div className="pt-2 border-t border-border/40 mt-auto shrink-0">
-          <div className="w-full h-11 min-h-11 rounded-lg font-bold text-xs bg-muted/60 group-hover:bg-primary group-hover:text-primary-foreground text-foreground flex items-center justify-center gap-2 transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <div className="pt-2 border-t border-border mt-auto shrink-0">
+          <div className="w-full h-11 min-h-11 rounded-lg font-bold text-xs bg-muted border border-border group-hover:bg-primary group-hover:text-primary-foreground text-foreground flex items-center justify-center gap-2 transition-colors duration-200 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <span>Ver Empresa</span>
             <ArrowRight className="size-4 shrink-0 group-hover:translate-x-1 transition-transform duration-200 motion-reduce:transition-none" />
           </div>

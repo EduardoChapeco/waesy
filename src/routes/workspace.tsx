@@ -29,13 +29,11 @@ function isPlatformAdminUser(session: any): boolean {
     "admin@jah.com",
   ];
   return Boolean(
-    session.role === "admin" ||
     session.role === "superadmin" ||
     session.role === "platform_admin" ||
     session.role === "master" ||
     session.role === "admin_master" ||
     session.user?.role === "platform_admin" ||
-    session.user?.app_metadata?.role === "admin" ||
     session.user?.app_metadata?.role === "platform_admin" ||
     session.user?.app_metadata?.is_master ||
     session.user?.user_metadata?.is_admin_master ||
@@ -472,16 +470,25 @@ function WorkspaceLayout() {
     pathname.startsWith("/workspace/turismo/propostas/") &&
     pathname !== "/workspace/turismo/propostas";
   const isContractEditor = pathname.includes("/contratos/") && pathname.endsWith("/editor");
+  const rawSearchStr =
+    routerState.location.searchStr ||
+    (typeof window !== "undefined" ? window.location.search : "");
+  const routeSearchParams = new URLSearchParams(rawSearchStr);
+  const viewModeParam = routeSearchParams.get("view");
+  const isEmbeddedRequested = viewModeParam === "embedded" || viewModeParam === "sidebar";
   const isStandaloneRequested =
-    typeof window !== "undefined" &&
-    (new URLSearchParams(window.location.search).get("view") === "standalone" ||
-      new URLSearchParams(window.location.search).get("fullscreen") === "true");
+    viewModeParam === "standalone" || routeSearchParams.get("fullscreen") === "true";
+  const isChatFullPage =
+    pathname === "/workspace/atendimento/chat" ||
+    pathname.startsWith("/workspace/atendimento/chat/");
+  const isNativeFullPageChatOrCopilot =
+    (isChatFullPage || pathname.startsWith("/workspace/copilot")) &&
+    !isEmbeddedRequested;
   const isStandaloneVerticalApp =
-    isStandaloneRequested &&
-    (pathname.startsWith("/workspace/atendimento") ||
-      pathname.startsWith("/workspace/copilot") ||
-      pathname.startsWith("/workspace/pdv") ||
-      pathname.startsWith("/workspace/pedidos/gestor"));
+    isNativeFullPageChatOrCopilot ||
+    (isStandaloneRequested &&
+      (pathname.startsWith("/workspace/pdv") ||
+        pathname.startsWith("/workspace/pedidos/gestor")));
   const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isContractEditor || isStandaloneVerticalApp;
 
   const isPlatformAdmin = isPlatformAdminUser(session);
@@ -536,6 +543,13 @@ function WorkspaceLayout() {
             path={pathname}
             storeName={activeMembership?.name}
           />
+        </div>
+      );
+    }
+    if (isStandaloneVerticalApp) {
+      return (
+        <div className="h-dvh w-full overflow-hidden flex flex-col bg-background text-foreground">
+          <Outlet />
         </div>
       );
     }

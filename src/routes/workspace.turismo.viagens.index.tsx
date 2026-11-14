@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plane, FileText, Plus, Calendar, Users, Compass, ArrowUpRight, CheckCircle2, Clock, Luggage, Building2, Banknote, Check, AlertTriangle, FileSpreadsheet } from "lucide-react";
+import { Plane, FileText, Plus, Calendar, Users, Compass, ArrowUpRight, CheckCircle2, Clock, Luggage, Building2, Banknote, Check, AlertTriangle, FileSpreadsheet, Table2, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
@@ -9,6 +9,8 @@ import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/works
 import { NewTripSheet } from "@/components/tourism/trips/new-trip-sheet";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
 import { listStoreTrips, type TourismTripDTO } from "@/services/travel-lifecycle.functions";
+import { listCustomerSuccessOnboardingSheet } from "@/services/support-tickets.functions";
+import { CustomerSuccessOnboardingSheet } from "@/components/support/CustomerSuccessOnboardingSheet";
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -66,12 +68,22 @@ export default function WorkspaceTripsListPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeStatus, setActiveStatus] = useState<TripStatus>("all");
+  const [viewLayout, setViewLayout] = useState<"cards" | "cs_sheet">("cards");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isNewTripOpen, setIsNewTripOpen] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
 
   const safeInitialTrips = Array.isArray(initialTrips) ? initialTrips : [];
+
+  const {
+    data: csSheetRows = [],
+    refetch: refetchCsSheet,
+  } = useQuery({
+    queryKey: ["workspace-tourism-cs-sheet", storeId],
+    queryFn: () => listCustomerSuccessOnboardingSheet({ data: { store_id: storeId, niche_filter: "trip" } }),
+    enabled: Boolean(storeId),
+  });
 
   const {
     data: rawTrips = [],
@@ -154,6 +166,38 @@ export default function WorkspaceTripsListPage() {
             <Plane className="size-3.5" />
             <span>Malha Aérea e PNR</span>
           </Link>
+          <div className="inline-flex items-center gap-1 p-1 rounded-lg border border-border/70 bg-card" role="tablist" aria-label="Modo de Visualização de Viagens">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewLayout === "cards"}
+              onClick={() => setViewLayout("cards")}
+              className={cn(
+                "px-3 py-1 rounded-md text-xs font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                viewLayout === "cards"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutGrid className="size-3.5" />
+              <span>Cards</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewLayout === "cs_sheet"}
+              onClick={() => setViewLayout("cs_sheet")}
+              className={cn(
+                "px-3 py-1 rounded-md text-xs font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                viewLayout === "cs_sheet"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Table2 className="size-3.5" />
+              <span>Planilha Viva CS (Onboarding)</span>
+            </button>
+          </div>
         </div>
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" />
       </div>
@@ -181,8 +225,18 @@ export default function WorkspaceTripsListPage() {
         }}
       />
 
-      {/* ── 2. LISTA DE VIAGENS COM CARDS PADRONIZADOS ── */}
-      {isLoading ? (
+      {/* ── 2. LISTA DE VIAGENS OU PLANILHA VIVA CS (SHEET) ── */}
+      {viewLayout === "cs_sheet" ? (
+        <CustomerSuccessOnboardingSheet
+          storeId={storeId}
+          rows={csSheetRows}
+          onRefresh={() => {
+            refetch();
+            refetchCsSheet();
+          }}
+          onOpenNewTicketForRow={() => navigate({ to: "/workspace/suporte" })}
+        />
+      ) : isLoading ? (
         <div className="py-12 text-center text-xs text-muted-foreground">
           Carregando roteiros de viagem...
         </div>
@@ -222,7 +276,7 @@ export default function WorkspaceTripsListPage() {
               confirmed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
               in_progress: "bg-warning/10 text-warning-strong border-warning/20",
               completed: "bg-sky-500/10 text-sky-600 border-sky-500/20",
-              cancelled: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+              cancelled: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-300 dark:border-rose-800",
             };
 
             const statusLabels: Record<string, string> = {
@@ -235,7 +289,7 @@ export default function WorkspaceTripsListPage() {
             return (
               <div
                 key={trip.id}
-                className="group relative rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card hover:border-black/[0.12] dark:hover:border-white/[0.16] transition-colors duration-200 flex flex-col justify-between overflow-hidden"
+                className="group relative rounded-2xl border border-border bg-card hover:border-foreground transition-colors duration-200 flex flex-col justify-between overflow-hidden"
               >
                 <div className="p-4 space-y-3">
                   {/* Topo do Card */}

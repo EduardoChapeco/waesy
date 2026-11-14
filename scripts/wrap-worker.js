@@ -85,6 +85,7 @@ try {
     bundle: true,
     minify: true,
     treeShaking: true,
+    charset: "utf8",
     legalComments: "none",
     drop: ["console", "debugger"],
     target: "es2022",
@@ -119,6 +120,30 @@ globalThis.__env__ = Object.assign({}, __fallbackEnv__, globalThis.__env__ || {}
     fs.unlinkSync(bundledFile);
   }
   console.log("Successfully created ultra-optimized dist/_worker.js/index.js with Supabase env for Cloudflare Pages.");
+
+  // 1.6 Garante paridade de CSS referenciado pelo Worker SSR em dist/assets/
+  const workerFinalCode = fs.readFileSync(workerIndexFile, "utf-8");
+  const distAssetsDir = path.join(process.cwd(), "dist/assets");
+  const nitroSsrAssetsDir = path.join(process.cwd(), "node_modules/.nitro/vite/services/ssr/assets");
+  if (fs.existsSync(distAssetsDir)) {
+    const cssRefs = new Set([...workerFinalCode.matchAll(/\/assets\/(styles-[a-zA-Z0-9_-]+\.css)/g)].map((m) => m[1]));
+    for (const cssFile of cssRefs) {
+      const targetCss = path.join(distAssetsDir, cssFile);
+      if (!fs.existsSync(targetCss)) {
+        const nitroCss = path.join(nitroSsrAssetsDir, cssFile);
+        if (fs.existsSync(nitroCss)) {
+          fs.copyFileSync(nitroCss, targetCss);
+          console.log(`Copied missing SSR CSS asset into dist/assets/: ${cssFile}`);
+        } else {
+          const fallbackCss = fs.readdirSync(distAssetsDir).find((f) => f.startsWith("styles-") && f.endsWith(".css"));
+          if (fallbackCss) {
+            fs.copyFileSync(path.join(distAssetsDir, fallbackCss), targetCss);
+            console.log(`Aliased dist/assets/${fallbackCss} -> ${cssFile}`);
+          }
+        }
+      }
+    }
+  }
 } catch (esbuildErr) {
   console.warn("Notice during esbuild worker bundling:", esbuildErr.message);
 }

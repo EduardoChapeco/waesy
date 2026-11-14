@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
   Gift,
-  Sparkles,
   Lock,
   Loader2,
   CheckCircle2,
@@ -121,7 +120,7 @@ function RecipientGiftOpeningPage() {
           <div className="space-y-6 p-8 rounded-lg border border-border/60 bg-card  relative overflow-hidden">
             <div className="space-y-2">
               <Badge variant="outline" className="text-xs font-bold px-3 py-1 border-primary/30 text-primary gap-1">
-                <Sparkles className="size-3.5" />
+                <Gift className="size-3.5" />
                 <span>Presente Especial</span>
               </Badge>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">

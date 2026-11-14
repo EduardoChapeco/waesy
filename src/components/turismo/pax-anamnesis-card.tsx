@@ -111,25 +111,25 @@ export function PaxAnamnesisCard({
   return (
     <div className="p-5 rounded-lg border border-border bg-card space-y-4 ">
       {/* Header do Card */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
         <div className="flex items-center gap-2">
-          <HeartHandshake className="size-5 text-primary shrink-0" />
+          <HeartHandshake className="size-5 text-foreground shrink-0" />
           <div>
-            <h2 className="text-sm font-bold text-foreground">Acessibilidade PCD & Anamnese</h2>
-            <p className="text-xs text-muted-foreground">Assistência especial PNAE e conformidade IATA</p>
+            <h2 className="text-sm font-bold text-foreground">Acessibilidade e Anamnese</h2>
+            <p className="text-xs text-muted-foreground">Assistência PNAE e registros IATA</p>
           </div>
         </div>
 
         {/* Badge de Status do Documento */}
         {isLocked ? (
-          <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-xs flex items-center gap-2 py-1 px-3">
+          <Badge variant="outline" className="border-border text-success bg-muted text-xs flex items-center gap-2 py-1 px-3">
             <Lock className="size-3.5 shrink-0" />
-            <span>Documentos Blindados & Homologados</span>
+            <span>Documentos Homologados</span>
           </Badge>
         ) : (
           <Badge variant="secondary" className="text-xs flex items-center gap-2 py-1 px-3">
             <FileCheck className="size-3.5 shrink-0" />
-            <span>Em Validação Documental</span>
+            <span>Em Validação</span>
           </Badge>
         )}
       </div>
@@ -137,10 +137,10 @@ export function PaxAnamnesisCard({
       {/* Grid de Informações */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
         {/* Assistência IATA PCD */}
-        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+        <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
           <span className="text-muted-foreground font-semibold flex items-center gap-2">
-            <HeartHandshake className="size-3.5 text-primary shrink-0" />
-            Códigos de Assistência PNAE (IATA)
+            <HeartHandshake className="size-3.5 text-foreground shrink-0" />
+            Assistência PNAE
           </span>
           <div className="flex flex-wrap gap-2 pt-1">
             {anamnesis.pcdAssistanceCodes.map((code) => (
@@ -162,10 +162,10 @@ export function PaxAnamnesisCard({
         </div>
 
         {/* Restrições Alimentares */}
-        <div className="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-2">
+        <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
           <span className="text-muted-foreground font-semibold flex items-center gap-2">
-            <Utensils className="size-3.5 text-primary shrink-0" />
-            Regime Alimentar & Alergias
+            <Utensils className="size-3.5 text-foreground shrink-0" />
+            Alimentação e Alergias
           </span>
           <div className="flex flex-wrap gap-2 pt-1">
             {anamnesis.dietaryRestrictions.map((diet) => (
@@ -184,10 +184,10 @@ export function PaxAnamnesisCard({
 
       {/* Alertas de Voo / Prontidão */}
       {flightReadiness.warnings.length > 0 && (
-        <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning-strong  text-xs space-y-1">
+        <div className="p-3 rounded-lg bg-muted border border-border text-warning-strong text-xs space-y-1">
           <div className="font-semibold flex items-center gap-2">
             <AlertCircle className="size-4 shrink-0" />
-            <span>Atenção Operacional da Companhia Aérea</span>
+            <span>Atenção da Companhia Aérea</span>
           </div>
           {flightReadiness.warnings.map((w, idx) => (
             <p key={idx} className="leading-relaxed break-words">{w}</p>
@@ -196,10 +196,10 @@ export function PaxAnamnesisCard({
       )}
 
       {flightReadiness.blockers.length > 0 && (
-        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs space-y-1">
+        <div className="p-3 rounded-lg bg-muted border border-border text-destructive text-xs space-y-1">
           <div className="font-semibold flex items-center gap-2">
             <AlertCircle className="size-4 shrink-0" />
-            <span>Pendências para Liberação de Embarque</span>
+            <span>Pendências de Embarque</span>
           </div>
           {flightReadiness.blockers.map((b, idx) => (
             <p key={idx} className="leading-relaxed break-words">{b}</p>
@@ -212,11 +212,11 @@ export function PaxAnamnesisCard({
         <div className="text-xs text-muted-foreground">
           {isLocked ? (
             <span className="flex items-center gap-2">
-              <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-              Dados imutáveis validados por agente credenciado
+              <ShieldCheck className="size-4 text-success shrink-0" />
+              Dados validados por agente credenciado
             </span>
           ) : (
-            <span>Edição permitida até a homologação final da emissão</span>
+            <span>Edição liberada até a homologação final</span>
           )}
         </div>
 
@@ -242,13 +242,13 @@ export function PaxAnamnesisCard({
               if (permission.allowed) {
                 setIsModalOpen(true);
               } else {
-                toast.info("Para alterar dados em passaporte ou RG blindado, entre em contato com o suporte da agência.");
+                toast.info("Para alterar dados blindados, contate o suporte da agência.");
               }
             }}
             className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold focus-visible:ring-2 cursor-pointer"
           >
             <Edit3 className="size-4 mr-2" />
-            {permission.allowed ? "Editar Ficha & PCD" : "Solicitar Alteração"}
+            {permission.allowed ? "Editar Ficha" : "Solicitar Alteração"}
           </Button>
         </div>
       </div>
@@ -257,7 +257,7 @@ export function PaxAnamnesisCard({
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-lg rounded-lg p-6">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-base font-bold">Atualizar Anamnese & Documentos</DialogTitle>
+            <DialogTitle className="text-base font-bold">Atualizar Anamnese</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Preencha os dados oficiais de identificação do passageiro conforme o documento de viagem.
             </DialogDescription>

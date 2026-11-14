@@ -13,6 +13,7 @@ import { requireAdmin, getServerIdentity } from "@/lib/server-access";
 import { assertStoreAccess, MANAGER_ROLES } from "@/lib/identity-core";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { purgeEdgeCacheTags, CACHE_TAGS } from "@/lib/cache/edge-cache";
+import { assertStoreEntitlement } from "@/lib/architecture/module-plan-governance";
 
 // ---------------------------------------------------------------------------
 // Product Types (Formulário Adaptativo)
@@ -273,7 +274,30 @@ export async function _createProduct(input: {
  const effectiveStoreId = identity.store_id;
  if (!effectiveStoreId) throw new Error("Nenhuma loja ativa selecionada.");
 
-  // Calcula menor preço de entrada entre variantes se houver matriz (DEC-433)
+ // Verificação Zero-Trust de cota e assinatura ativa do plano / vertical
+ const [{ data: storeData }, { count: currentCatalogCount }] = await Promise.all([
+ db
+ .from("stores")
+ .select("id, name, slug, organization_id, is_platform_root, plan_tier, subscription_status, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, quota_overrides, settings")
+ .eq("id", effectiveStoreId)
+ .maybeSingle(),
+ db
+ .from("products")
+ .select("id", { count: "exact", head: true })
+ .eq("store_id", effectiveStoreId),
+ ]);
+
+ if (storeData) {
+ assertStoreEntitlement(storeData, {
+ resourceQuota: {
+ resource: "catalog_items",
+ currentCount: currentCatalogCount || 0,
+ increment: 1,
+ },
+ });
+ }
+
+   // Calcula menor preço de entrada entre variantes se houver matriz (DEC-433)
   let effectiveBasePriceCents = input.price_cents;
   if (input.variants && input.variants.length > 0) {
     let minVariantPrice = Infinity;
@@ -308,19 +332,7 @@ export async function _createProduct(input: {
  }
 
  // 2. Fallback resiliente direto nas tabelas relacionais
- let organizationId = "00000000-0000-0000-0000-000000000001";
- try {
- const { data: storeData } = await db
- .from("stores")
- .select("id, organization_id")
- .eq("id", effectiveStoreId)
- .single();
- if (storeData?.organization_id) {
- organizationId = storeData.organization_id;
- }
- } catch {
- // Utiliza organizationId padrão
- }
+ let organizationId = storeData?.organization_id || "00000000-0000-0000-0000-000000000001";
 
  const { data: insertedProduct, error: insertError } = await db
  .from("products")
@@ -338,6 +350,7 @@ export async function _createProduct(input: {
  compare_at_cents: input.compare_at_cents || null,
  cost_cents: input.cost_cents || null,
  attributes: input.attributes || {},
+ niche_metadata: (input as any).niche_metadata || (input.attributes as any)?.niche_metadata || {},
  options: input.options || null,
  is_physical: input.is_physical ?? true,
  weight_kg: input.weight_kg || null,
@@ -2771,19 +2784,69 @@ export const getStoreChannelIntegrationsStatus = createServerFn({ method: "GET" 
         };
       }
       const db = getServerClient();
-      const { data: storeRow } = await db
-        .from("stores")
-        .select("settings")
-        .eq("id", targetStoreId)
-        .maybeSingle();
+      const [{ data: storeRow }, { data: connectors }, { data: vaultCreds }] = await Promise.all([
+        db.from("stores").select("settings").eq("id", targetStoreId).maybeSingle(),
+        db
+          .from("marketplace_connectors")
+          .select("platform, status")
+          .eq("store_id", targetStoreId)
+          .eq("status", "connected"),
+        db
+          .from("integration_credentials")
+          .select("provider, is_active")
+          .eq("store_id", targetStoreId)
+          .eq("is_active", true),
+      ]);
+
       const integrations = (storeRow?.settings as Record<string, any>)?.integrations || {};
+      const connectedPlatforms = new Set([
+        ...((connectors || []).map((c: any) => String(c.platform).toLowerCase())),
+        ...((vaultCreds || []).map((v: any) => String(v.provider).toLowerCase())),
+      ]);
+
       return {
-        google_merchant: { isConnected: Boolean(integrations?.google_merchant?.enabled || integrations?.google_merchant?.connected) },
-        meta_catalog: { isConnected: Boolean(integrations?.meta_catalog?.enabled || integrations?.meta_pixel_id) },
-        whatsapp_catalog: { isConnected: Boolean(integrations?.whatsapp_catalog?.enabled || integrations?.whatsapp?.connected) },
-        ifood: { isConnected: Boolean(integrations?.ifood?.enabled || integrations?.ifood?.connected) },
-        meta_instagram: { isConnected: Boolean(integrations?.meta_instagram?.enabled || integrations?.meta_catalog?.enabled || integrations?.meta_pixel_id) },
-        mercadolivre: { isConnected: Boolean(integrations?.mercadolivre?.enabled || integrations?.mercadolivre?.connected) },
+        google_merchant: {
+          isConnected: Boolean(
+            integrations?.google_merchant?.enabled ||
+              integrations?.google_merchant?.connected ||
+              connectedPlatforms.has("google_business")
+          ),
+        },
+        meta_catalog: {
+          isConnected: Boolean(
+            integrations?.meta_catalog?.enabled ||
+              integrations?.meta_pixel_id ||
+              integrations?.meta_catalog_id
+          ),
+        },
+        whatsapp_catalog: {
+          isConnected: Boolean(
+            integrations?.whatsapp_catalog?.enabled ||
+              integrations?.whatsapp?.connected ||
+              connectedPlatforms.has("whatsapp")
+          ),
+        },
+        ifood: {
+          isConnected: Boolean(
+            integrations?.ifood?.enabled ||
+              integrations?.ifood?.connected ||
+              connectedPlatforms.has("ifood")
+          ),
+        },
+        meta_instagram: {
+          isConnected: Boolean(
+            integrations?.meta_instagram?.enabled ||
+              integrations?.meta_catalog?.enabled ||
+              integrations?.meta_pixel_id
+          ),
+        },
+        mercadolivre: {
+          isConnected: Boolean(
+            integrations?.mercadolivre?.enabled ||
+              integrations?.mercadolivre?.connected ||
+              connectedPlatforms.has("mercadolivre")
+          ),
+        },
       };
     } catch {
       return {

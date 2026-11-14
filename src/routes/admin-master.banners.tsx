@@ -480,26 +480,26 @@ function AdminMasterBannersPage() {
 
                 {/* Placement & City Tags */}
                 <div className="absolute top-2 left-2 z-10 flex items-center gap-2 flex-wrap max-w-17/20">
-                  <span className="bg-foreground/75 text-foreground backdrop-blur-md text-xs font-mono px-2 py-1 rounded-md border border-white/10">
+                  <span className="bg-neutral-900 text-neutral-50 text-xs font-mono px-2 py-1 rounded-md border border-neutral-700">
                     {banner.placement.toUpperCase()}
                   </span>
                   {(banner as any).aspect_ratio_mode && (banner as any).aspect_ratio_mode !== "horizontal" && (
-                    <span className="bg-primary/80 text-primary-foreground backdrop-blur-md text-xs font-mono px-2 py-1 rounded-md">
+                    <span className="bg-primary text-primary-foreground text-xs font-mono px-2 py-1 rounded-md">
                       {(banner as any).aspect_ratio_mode === "square" ? "1:1 QUADRADO" : "4:5 VERTICAL"}
                     </span>
                   )}
                   {banner.city_filter ? (
-                    <span className="bg-primary text-primary-foreground backdrop-blur-md text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1 shadow-xs">
+                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1">
                       <MapPin className="size-2.5" />
                       {banner.city_filter}
                     </span>
                   ) : (
-                    <span className="bg-zinc-800/80 text-zinc-300 text-xs font-medium px-2 py-1 rounded-md border border-white/10">
+                    <span className="bg-neutral-900 text-neutral-100 text-xs font-medium px-2 py-1 rounded-md border border-neutral-700">
                       Global
                     </span>
                   )}
                   {banner.show_overlay && (
-                    <span className="bg-emerald-600/90 text-foreground text-xs font-medium px-2 py-1 rounded-md">
+                    <span className="bg-emerald-700 text-emerald-50 text-xs font-medium px-2 py-1 rounded-md border border-emerald-600">
                       Texto Ativo
                     </span>
                   )}

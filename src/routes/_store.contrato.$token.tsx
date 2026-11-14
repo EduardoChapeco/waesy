@@ -12,6 +12,7 @@ import { SignaturePad } from "@/components/tourism/contract/signature-pad";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
 import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
+import { ContractMarkdownRenderer } from "@/components/contracts/contract-markdown-renderer";
 
 export const Route = createFileRoute("/_store/contrato/$token")({
  head: ({ loaderData }: { loaderData?: { contract: TravelContractDTO | null } }) => ({
@@ -185,9 +186,45 @@ function PublicTravelContractSignaturePage() {
  <h3 className="font-black text-slate-900 uppercase tracking-wider text-2xs">
  2. ESPECIFICAÇÃO DOS SERVIÇOS
  </h3>
- <p className="font-medium text-slate-800 whitespace-pre-line">
- {contract.package_summary}
- </p>
+ <ContractMarkdownRenderer
+   content={contract.package_summary || ""}
+   className="font-medium text-slate-800 text-xs"
+ />
+ {Array.isArray(contract.passengers) && contract.passengers.length > 0 && (
+   <div className="pt-2 space-y-2">
+     <span className="text-2xs font-bold uppercase tracking-wider text-slate-600 block">
+       Manifesto de Passageiros ({contract.passengers.length})
+     </span>
+     <div className="overflow-x-auto scroll-area rounded-lg border border-slate-200 bg-background">
+       <table className="w-full border-collapse text-left text-xs">
+         <thead className="bg-slate-100 text-slate-800">
+           <tr>
+             <th className="px-3 py-2 font-bold border-b border-slate-200">#</th>
+             <th className="px-3 py-2 font-bold border-b border-slate-200">Nome</th>
+             <th className="px-3 py-2 font-bold border-b border-slate-200">Documento</th>
+             <th className="px-3 py-2 font-bold border-b border-slate-200">Embarque</th>
+           </tr>
+         </thead>
+         <tbody className="divide-y divide-slate-200">
+           {contract.passengers.map((pax: any, idx: number) => (
+             <tr key={`${pax?.name || "pax"}-${idx}`}>
+               <td className="px-3 py-2 font-mono text-slate-600">{idx + 1}</td>
+               <td className="px-3 py-2 font-semibold text-slate-900">
+                 {pax?.full_name || pax?.name || "Passageiro"}
+               </td>
+               <td className="px-3 py-2 font-mono text-slate-700">
+                 {pax?.document || pax?.cpf || "A informar"}
+               </td>
+               <td className="px-3 py-2 text-slate-700">
+                 {pax?.boarding_point || pax?.boarding || "-"}
+               </td>
+             </tr>
+           ))}
+         </tbody>
+       </table>
+     </div>
+   </div>
+ )}
  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 text-2xs">
  <div>
  <span className="text-slate-500 block">Destino:</span>
@@ -227,7 +264,10 @@ function PublicTravelContractSignaturePage() {
  <span className="font-black text-slate-900 block text-2xs">
  CLÁUSULA {cl.number}ª — {cl.section}
  </span>
- <p>{cl.clause_text}</p>
+ <ContractMarkdownRenderer
+   content={cl.clause_text || ""}
+   className="text-xs text-slate-700 leading-relaxed"
+ />
  </div>
  ))}
  </div>

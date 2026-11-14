@@ -57,14 +57,14 @@ export function SupermarketClubDashboardView({
               Programa de Vantagens
             </span>
             <h2 className="text-xl font-black">
-              {clubData.userName ? `Olá, ${clubData.userName}` : "Bem-vindo ao Clube"}
+              {clubData.userName ? `Olá, ${clubData.userName}` : "Clube de Vantagens"}
             </h2>
             <p className="text-xs text-muted-foreground font-medium">
-              Você tem acesso aos descontos e cashback exclusivos da rede.
+              Descontos e cashback exclusivos da rede.
             </p>
           </div>
 
-          <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-border/60 shrink-0">
+          <div className="size-12 rounded-2xl bg-muted flex items-center justify-center border border-border shrink-0">
             <Star weight="fill" className="size-6 text-warning-strong" />
           </div>
 

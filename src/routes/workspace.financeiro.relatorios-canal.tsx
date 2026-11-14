@@ -55,7 +55,7 @@ const CHANNEL_BAR_COLORS: Record<string, string> = {
   correios: "bg-warning",
   balcao_pos: "bg-slate-600",
   vitrine_online: "bg-sky-500",
-  outros: "bg-zinc-500",
+  outros: "bg-neutral-500",
 };
 
 function MarginBadge({ value }: { value: number }) {

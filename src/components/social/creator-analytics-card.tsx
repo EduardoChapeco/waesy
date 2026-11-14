@@ -31,15 +31,15 @@ export function CreatorAnalyticsCard({
  : 0;
 
  return (
- <div className="rounded-lg bg-card border border-border/60 p-5 sm:p-6 space-y-5  select-none">
+ <div className="rounded-lg bg-card border border-border p-5 sm:p-6 space-y-5 select-none">
  {/* Header do Card Privado */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
  <div className="flex items-center gap-3">
- <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+ <div className="size-8 rounded-lg bg-muted border border-border flex items-center justify-center text-foreground">
  <Activity className="size-4" />
  </div>
  <div>
- <h3 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2 line-clamp-1 truncate">
+ <h3 className="text-sm font-semibold text-foreground tracking-tight flex items-center gap-2 line-clamp-2 text-anti-truncate">
  <span>Desempenho e Métricas do Criador</span>
  <span className="text-2xs px-2 py-1 rounded-md bg-muted text-muted-foreground font-semibold">
  Privado
@@ -52,7 +52,7 @@ export function CreatorAnalyticsCard({
  </div>
 
  <div className="flex items-center gap-2">
- <div className="flex items-center gap-1 text-emerald-600 text-xs font-bold bg-emerald-500/10 px-3 py-1 rounded-lg">
+ <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-300 text-xs font-bold bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 px-3 py-1 rounded-lg">
  <TrendingUp className="size-3.5" />
  <span>{engagementRate}% Engajamento</span>
  </div>

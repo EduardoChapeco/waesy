@@ -3,6 +3,11 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireStaff } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import {
+  extractNormalizedCatalogContext,
+  normalizeCustomFieldMap,
+  type UnifiedBridgeCatalogContext,
+} from "@/lib/niches/unified-field-bridge";
 
 // ─── Tipos e Contratos de Domínio ─────────────────────────────────────────────
 
@@ -129,6 +134,9 @@ export interface PricingBreakdownDTO {
     has_interest?: boolean;
   }>;
   payment_terms?: string;
+  custom_fields?: Record<string, any>;
+  source_listing_id?: string | null;
+  source_listing_origin?: string | null;
 }
 
 export interface TravelProposalDTO {
@@ -139,6 +147,8 @@ export interface TravelProposalDTO {
   agency_whatsapp?: string | null;
   agency_phone?: string | null;
   agency_email?: string | null;
+  agent_name?: string | null;
+  agent_whatsapp?: string | null;
   quote_id: string;
   lead_id?: string | null;
   customer_id?: string | null;
@@ -150,6 +160,10 @@ export interface TravelProposalDTO {
   customer_name?: string;
   client_whatsapp: string;
   client_email?: string | null;
+  client_document?: string | null;
+  custom_fields?: Record<string, any>;
+  source_listing_id?: string | null;
+  source_listing_origin?: string | null;
   adults_count: number;
   children_count: number;
   canvas_format: ProposalCanvasFormat;
@@ -233,6 +247,12 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
         basePriceCents + boardingTaxCents + otherTaxesCents - discountCents,
     ) || 0;
 
+  const customFields = normalizeCustomFieldMap(
+    meta.custom_fields ||
+      rawPricing.custom_fields ||
+      (row.custom_fields && typeof row.custom_fields === "object" ? row.custom_fields : {}),
+  );
+
   const defaultPricing: PricingBreakdownDTO = {
     currency: rawPricing.currency || "",
     base_price_cents: basePriceCents || totalCents,
@@ -245,6 +265,7 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
       ? rawPricing.installments_options
       : [],
     payment_terms: rawPricing.payment_terms || undefined,
+    custom_fields: customFields,
   };
 
   const title =
@@ -289,6 +310,11 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
       ? row.excludes
       : Array.isArray(meta.excludes) ? meta.excludes : [];
 
+  const sourceListingId =
+    row.source_listing_id || meta.source_listing_id || rawPricing.source_listing_id || null;
+  const sourceListingOrigin =
+    row.source_listing_origin || meta.source_listing_origin || rawPricing.source_listing_origin || null;
+
   return {
     id: row.id,
     store_id: row.store_id || null,
@@ -306,6 +332,10 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     customer_name: clientName,
     client_whatsapp: clientWhatsapp,
     client_email: clientEmail,
+    client_document: meta.client_document || row.client_document || rawPricing.client_document || null,
+    custom_fields: customFields,
+    source_listing_id: sourceListingId,
+    source_listing_origin: sourceListingOrigin,
     adults_count: row.adults_count ?? meta.adults_count ?? 0,
     children_count: row.children_count ?? meta.children_count ?? 0,
     canvas_format: (row.canvas_format ||
@@ -412,6 +442,30 @@ function pickPublicFields(value: unknown, fields: readonly string[]): Record<str
   return result;
 }
 
+const PUBLIC_STUDIO_CUSTOM_FIELD_KEYS = [
+  "canvas_bg_color",
+  "canvas_brand_color",
+  "canvas_font_preset",
+  "hidden_sections",
+  "boarding_requirements",
+  "cancellation_policy",
+  "agent_name",
+  "agent_whatsapp",
+  "agency_name",
+] as const;
+
+function publicCustomFields(value: unknown): Record<string, string> {
+  const source = publicObject(value);
+  const out: Record<string, string> = {};
+  for (const key of PUBLIC_STUDIO_CUSTOM_FIELD_KEYS) {
+    const val = publicText(source[key], 500);
+    if (val) {
+      out[key] = val;
+    }
+  }
+  return out;
+}
+
 function publicPricing(value: unknown): PricingBreakdownDTO {
   const pricing = publicObject(value);
   const total = publicNumber(pricing.total_price_cents ?? pricing.total_cents ?? pricing.price_cents) ?? 0;
@@ -425,6 +479,7 @@ function publicPricing(value: unknown): PricingBreakdownDTO {
         return [{ installments_count: count, installment_value_cents: amount, method: method || "other", has_interest: option.has_interest === true }];
       })
     : [];
+  const safeCustomFields = publicCustomFields(pricing.custom_fields);
 
   return {
     currency: publicText(pricing.currency, 8) || "BRL",
@@ -436,6 +491,7 @@ function publicPricing(value: unknown): PricingBreakdownDTO {
     total_cents: total,
     installments_options: installments,
     payment_terms: publicText(pricing.payment_terms, 500),
+    ...(Object.keys(safeCustomFields).length > 0 ? { custom_fields: safeCustomFields } : {}),
   };
 }
 
@@ -480,7 +536,7 @@ function publicOptions(value: unknown): TravelProposalOptionDTO[] {
       flights: publicFlights(option.flights),
       hotels: publicHotels(option.hotels),
       itinerary: publicItinerary(option.itinerary),
-      transfers: Array.isArray(option.transfers) ? option.transfers.slice(0, 40).map((item) => pickPublicFields(item, ["type", "vehicle", "date"])) as unknown as TransferDTO[] : [],
+      transfers: Array.isArray(option.transfers) ? option.transfers.slice(0, 40).map((item) => pickPublicFields(item, ["type", "vehicle", "date", "description", "route", "pickup_time", "dropoff_time"])) as unknown as TransferDTO[] : [],
       tours: Array.isArray(option.tours) ? option.tours.slice(0, 40).map((tour) => pickPublicFields(tour, ["id", "title", "description", "duration", "price_cents", "image_url", "included", "is_included"])) : [],
       includes: publicStringList(option.includes),
       excludes: publicStringList(option.excludes),
@@ -491,6 +547,10 @@ function publicOptions(value: unknown): TravelProposalOptionDTO[] {
 
 function toPublicTravelProposalDTO(dto: TravelProposalDTO): TravelProposalDTO {
   const publicToken = publicText(dto.public_token, 256) || "";
+  const safeCustomFields = {
+    ...publicCustomFields(dto.pricing?.custom_fields),
+    ...publicCustomFields(dto.custom_fields),
+  };
   return {
     ...dto,
     id: publicToken,
@@ -511,18 +571,42 @@ function toPublicTravelProposalDTO(dto: TravelProposalDTO): TravelProposalDTO {
     flights: publicFlights(dto.flights),
     hotels: publicHotels(dto.hotels),
     itinerary: publicItinerary(dto.itinerary),
-    transfers: Array.isArray(dto.transfers) ? dto.transfers.slice(0, 40).map((item) => pickPublicFields(item, ["type", "vehicle", "date"])) as unknown as TransferDTO[] : [],
+    transfers: Array.isArray(dto.transfers) ? dto.transfers.slice(0, 40).map((item) => pickPublicFields(item, ["type", "vehicle", "date", "description", "route", "pickup_time", "dropoff_time"])) as unknown as TransferDTO[] : [],
     tours: Array.isArray(dto.tours) ? dto.tours.slice(0, 40).map((item) => pickPublicFields(item, ["id", "title", "description", "duration", "price_cents", "image_url", "included", "is_included"])) : [],
     rooms: [],
     includes: publicStringList(dto.includes),
     excludes: publicStringList(dto.excludes),
     pricing: publicPricing(dto.pricing),
+    custom_fields: safeCustomFields,
     options: publicOptions(dto.options),
     ai_sales_advisor_enabled: false,
     ai_sales_advisor_prompt: null,
     special_notes: null,
     access_pin: dto.access_pin || null,
   };
+}
+
+async function computeProposalSnapshotHash(payload: Record<string, unknown>): Promise<string> {
+  const canonicalJson = JSON.stringify({
+    schema_version: "travel-proposal-snapshot-v1",
+    ...payload,
+  });
+  if (globalThis.crypto?.subtle) {
+    const encoded = new TextEncoder().encode(canonicalJson);
+    const digestBuffer = await globalThis.crypto.subtle.digest("SHA-256", encoded);
+    return Array.from(new Uint8Array(digestBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  let h1 = 0xdeadbeef ^ canonicalJson.length;
+  let h2 = 0x41c6ce57 ^ canonicalJson.length;
+  for (let i = 0; i < canonicalJson.length; i++) {
+    const ch = canonicalJson.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  const hex = (Math.abs(h1).toString(16).padStart(8, "0") + Math.abs(h2).toString(16).padStart(8, "0")).repeat(4);
+  return hex.slice(0, 64);
 }
 
 // ─── 1. Criação de Proposta (Workspace) ───────────────────────────────────────
@@ -567,6 +651,10 @@ export const createTravelProposalInputSchema = z.object({
   excludes: z.array(z.string()).optional(),
   pricing: z.any().optional(),
   leadId: z.string().uuid().optional().nullable(),
+  customFields: z.record(z.string(), z.unknown()).optional(),
+  sourceListingId: z.string().optional().nullable(),
+  sourceListingOrigin: z.enum(["product", "classified"]).optional().nullable(),
+  status: z.enum(["draft", "sent"]).optional(),
 });
 
 export const createTravelProposal = createServerFn({ method: "POST" })
@@ -606,6 +694,12 @@ export const createTravelProposal = createServerFn({ method: "POST" })
             basePriceCents + boardingTaxCents + otherTaxesCents - discountCents,
         ) || 0;
 
+      const normalizedCustomFields = normalizeCustomFieldMap(input.customFields || {});
+      const hasCustomFields = Object.keys(normalizedCustomFields).length > 0;
+      const clientDocument = input.clientDocument?.trim() || (typeof normalizedCustomFields.document === "string" ? normalizedCustomFields.document : null);
+      const sourceListingId = input.sourceListingId?.trim() || (typeof normalizedCustomFields.source_listing_id === "string" ? normalizedCustomFields.source_listing_id : null);
+      const sourceListingOrigin = input.sourceListingOrigin || (typeof normalizedCustomFields.source_listing_origin === "string" ? normalizedCustomFields.source_listing_origin : null);
+
       const initialPricing: PricingBreakdownDTO = {
         currency: rawPricing.currency || input.currency || "BRL",
         base_price_cents: basePriceCents || calculatedTotal,
@@ -634,6 +728,9 @@ export const createTravelProposal = createServerFn({ method: "POST" })
                 ]
               : [],
         payment_terms: rawPricing.payment_terms || undefined,
+        custom_fields: hasCustomFields ? normalizedCustomFields : undefined,
+        source_listing_id: sourceListingId,
+        source_listing_origin: sourceListingOrigin,
       };
 
       const includesList = input.includes || [
@@ -649,6 +746,30 @@ export const createTravelProposal = createServerFn({ method: "POST" })
       ];
 
       let insertedId = "";
+      const effectiveStatus = input.status || "sent";
+      const snapshotHash = await computeProposalSnapshotHash({
+        title,
+        subtitle: input.subtitle?.trim() || null,
+        destination_city: destinationCity,
+        client_name: clientName,
+        travel_start_date: startDate,
+        travel_end_date: endDate,
+        adults_count: adultsCount,
+        children_count: input.childrenCount || 0,
+        canvas_format: input.canvasFormat || "a4-portrait",
+        template_theme: input.templateTheme || "editorial-flat",
+        hero_image_url: input.coverPhotoUrl || null,
+        flights: input.flights || [],
+        hotels: input.hotels || [],
+        itinerary: input.itinerary || [],
+        transfers: input.transfers || [],
+        tours: input.tours || [],
+        pricing: initialPricing,
+        includes: includesList,
+        excludes: excludesList,
+        options: input.options || [],
+        valid_until: validUntilDate.toISOString(),
+      });
 
       // 1. Inserção nativa na tabela travel_proposals
       try {
@@ -661,6 +782,7 @@ export const createTravelProposal = createServerFn({ method: "POST" })
             lead_id: input.leadId || null,
             customer_id: input.customerId || null,
             public_token: publicToken,
+            snapshot_hash: snapshotHash,
             canvas_format: input.canvasFormat || "a4-portrait",
             template_theme: input.templateTheme || "editorial-flat",
             title,
@@ -687,7 +809,7 @@ export const createTravelProposal = createServerFn({ method: "POST" })
             excludes: excludesList,
             important_notes: input.initialNotes ? [input.initialNotes] : [],
             special_notes: input.initialNotes?.trim() || null,
-            status: "draft",
+            status: effectiveStatus,
           })
           .select("id")
           .single();
@@ -719,12 +841,16 @@ export const createTravelProposal = createServerFn({ method: "POST" })
       // 2. Inserção de compatibilidade na tabela quotes
       const conditionsMeta = JSON.stringify({
         public_token: publicToken,
+        snapshot_hash: snapshotHash,
         lead_id: input.leadId || null,
         title,
         client_name: clientName,
         client_whatsapp: clientWhatsapp,
         client_email: input.clientEmail?.trim() || null,
-        client_document: input.clientDocument?.trim() || null,
+        client_document: clientDocument || null,
+        custom_fields: hasCustomFields ? normalizedCustomFields : undefined,
+        source_listing_id: sourceListingId,
+        source_listing_origin: sourceListingOrigin,
         customer_id: input.customerId || null,
         destination_city: destinationCity,
         travel_start_date: startDate,
@@ -750,7 +876,7 @@ export const createTravelProposal = createServerFn({ method: "POST" })
       });
 
       try {
-        const { data: quoteInserted, error: qErr } = await supabase
+        const { data: quoteInserted } = await supabase
           .from("quotes")
           .insert({
             id: insertedId ? insertedId : undefined,
@@ -766,7 +892,7 @@ export const createTravelProposal = createServerFn({ method: "POST" })
             subtotal_cents: calculatedTotal,
             total_cents: calculatedTotal,
             discount_cents: 0,
-            status: "draft",
+            status: effectiveStatus,
             created_by: identity?.id || null,
           })
           .select("id")
@@ -825,16 +951,19 @@ export const getTravelProposalById = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const { requireStaff } = await import("@/lib/server-access");
     const identity = await requireStaff();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.id);
 
     // 1. Busca prioritária em travel_proposals; falha canônica não vira fallback silencioso.
-    const { data: propRow, error: proposalReadError } = await supabase
+    let propQuery = supabase
       .from("travel_proposals")
       .select("*, stores(name, logo_url, settings)")
-      .eq("store_id", identity.store_id)
-      .eq("id", data.id)
-      .maybeSingle();
+      .eq("store_id", identity.store_id);
+    propQuery = isUuid ? propQuery.eq("id", data.id) : propQuery.eq("public_token", data.id);
+    const { data: propRow, error: proposalReadError } = await propQuery.maybeSingle();
     if (proposalReadError) throw new Error(`Não foi possível carregar a proposta canônica: ${proposalReadError.message}`);
     if (propRow) return rowToProposalDTO(propRow);
+
+    if (!isUuid) return null;
 
     // 2. Fallback na tabela quotes
     const { data: row, error: quoteReadError } = await supabase
@@ -881,6 +1010,7 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
         includes: z.array(z.string()).optional(),
         excludes: z.array(z.string()).optional(),
         pricing: z.any().optional(),
+        custom_fields: z.record(z.string(), z.unknown()).optional(),
         special_notes: z.string().optional().nullable(),
         status: z.enum(["draft", "sent", "rejected", "expired"]).optional(),
         valid_until: z.string().optional().nullable(),
@@ -891,6 +1021,7 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const { requireStaff } = await import("@/lib/server-access");
     const identity = await requireStaff();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.id);
 
     const rawPricing = data.patch.pricing || {};
     const totalCents =
@@ -928,18 +1059,23 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
       if (data.patch.tours !== undefined) propPatch.tours = data.patch.tours;
       if (data.patch.rooms !== undefined) propPatch.rooms = data.patch.rooms;
       if (data.patch.options !== undefined) propPatch.options = data.patch.options;
-      if (data.patch.pricing !== undefined) propPatch.pricing = data.patch.pricing;
+      if (data.patch.pricing !== undefined) {
+        propPatch.pricing = data.patch.custom_fields
+          ? { ...data.patch.pricing, custom_fields: { ...(data.patch.pricing?.custom_fields || {}), ...data.patch.custom_fields } }
+          : data.patch.pricing;
+      }
       if (data.patch.includes !== undefined) propPatch.includes = data.patch.includes;
       if (data.patch.excludes !== undefined) propPatch.excludes = data.patch.excludes;
       if (data.patch.special_notes !== undefined) propPatch.special_notes = data.patch.special_notes;
       if (data.patch.status) propPatch.status = data.patch.status;
       if (data.patch.cover_image_url !== undefined) propPatch.hero_image_url = data.patch.cover_image_url;
 
-      const { data: updatedProposal, error: updatePropErr } = await supabase
+      let updateQuery = supabase
         .from("travel_proposals")
         .update(propPatch)
-        .eq("store_id", identity.store_id)
-        .eq("id", data.id)
+        .eq("store_id", identity.store_id);
+      updateQuery = isUuid ? updateQuery.eq("id", data.id) : updateQuery.eq("public_token", data.id);
+      const { data: updatedProposal, error: updatePropErr } = await updateQuery
         .select("id")
         .maybeSingle();
 
@@ -960,46 +1096,56 @@ export const updateTravelProposal = createServerFn({ method: "POST" })
     }
 
     // 2. Atualiza na tabela quotes
-    try {
-      const { data: currentQuote } = await supabase
-        .from("quotes")
-        .select("conditions, guest_name, guest_phone, total_cents")
-        .eq("store_id", identity.store_id)
-        .eq("id", data.id)
-        .maybeSingle();
-
-      if (currentQuote) {
-        let existingMeta: Record<string, any> = {};
-        try {
-          if (currentQuote.conditions) existingMeta = JSON.parse(currentQuote.conditions);
-        } catch {
-          existingMeta = {};
-        }
-
-        const mergedMeta = { ...existingMeta, ...data.patch };
-        const quotePatch: Record<string, any> = {
-          conditions: JSON.stringify(mergedMeta),
-          updated_at: new Date().toISOString(),
-        };
-
-        if (totalCents !== undefined) quotePatch.total_cents = totalCents;
-        if (data.patch.client_name) quotePatch.guest_name = data.patch.client_name;
-        if (data.patch.client_whatsapp) quotePatch.guest_phone = data.patch.client_whatsapp;
-        if (data.patch.client_email !== undefined) quotePatch.guest_email = data.patch.client_email;
-        if (data.patch.title) quotePatch.internal_notes = data.patch.title;
-        if (data.patch.status) quotePatch.status = data.patch.status;
-
-        const { error: quoteUpdateErr } = await supabase
+    if (isUuid) {
+      try {
+        const { data: currentQuote } = await supabase
           .from("quotes")
-          .update(quotePatch)
+          .select("conditions, guest_name, guest_phone, total_cents")
           .eq("store_id", identity.store_id)
-          .eq("id", data.id);
-        if (quoteUpdateErr) {
-          console.warn("[updateTravelProposal] Aviso ao atualizar quotes:", quoteUpdateErr.message);
+          .eq("id", data.id)
+          .maybeSingle();
+
+        if (currentQuote) {
+          let existingMeta: Record<string, any> = {};
+          try {
+            if (currentQuote.conditions) existingMeta = JSON.parse(currentQuote.conditions);
+          } catch {
+            existingMeta = {};
+          }
+
+          const mergedMeta = {
+            ...existingMeta,
+            ...data.patch,
+            custom_fields: {
+              ...(existingMeta.custom_fields || {}),
+              ...(data.patch.pricing?.custom_fields || {}),
+              ...(data.patch.custom_fields || {}),
+            },
+          };
+          const quotePatch: Record<string, any> = {
+            conditions: JSON.stringify(mergedMeta),
+            updated_at: new Date().toISOString(),
+          };
+
+          if (totalCents !== undefined) quotePatch.total_cents = totalCents;
+          if (data.patch.client_name) quotePatch.guest_name = data.patch.client_name;
+          if (data.patch.client_whatsapp) quotePatch.guest_phone = data.patch.client_whatsapp;
+          if (data.patch.client_email !== undefined) quotePatch.guest_email = data.patch.client_email;
+          if (data.patch.title) quotePatch.internal_notes = data.patch.title;
+          if (data.patch.status) quotePatch.status = data.patch.status;
+
+          const { error: quoteUpdateErr } = await supabase
+            .from("quotes")
+            .update(quotePatch)
+            .eq("store_id", identity.store_id)
+            .eq("id", data.id);
+          if (quoteUpdateErr) {
+            console.warn("[updateTravelProposal] Aviso ao atualizar quotes:", quoteUpdateErr.message);
+          }
         }
+      } catch (err: any) {
+        console.warn("[updateTravelProposal] Exceção ao atualizar quotes:", err?.message);
       }
-    } catch (err: any) {
-      console.warn("[updateTravelProposal] Exceção ao atualizar quotes:", err?.message);
     }
 
     return { success: true };
@@ -1019,10 +1165,27 @@ export const getPublicTravelProposalByToken = createServerFn({ method: "GET" })
 
     if (proposalReadError) throw new Error(`Não foi possível carregar a proposta: ${proposalReadError.message}`);
     if (!propRow) return null;
-    if (!["sent", "approved", "expired"].includes(propRow.status)) return null;
+
+    if (propRow.status === "draft") {
+      let identity: any = null;
+      try {
+        identity = await getServerIdentity();
+      } catch {
+        identity = null;
+      }
+      const isAuthorizedStaff =
+        Boolean(identity) &&
+        (identity?.store_id === propRow.store_id ||
+          identity?.role === "admin" ||
+          identity?.role === "master" ||
+          (propRow.created_by_profile_id && identity?.id === propRow.created_by_profile_id));
+      if (!isAuthorizedStaff) return null;
+    } else if (!["sent", "approved", "expired"].includes(propRow.status)) {
+      return null;
+    }
 
     const publicRow = { ...propRow, acceptance_status: "pending", accepted_option_id: null };
-    if (propRow.store_id) {
+    if (propRow.store_id && propRow.status !== "draft") {
       const { data: acceptance, error: acceptanceReadError } = await supabase
         .from("travel_proposal_acceptances")
         .select("status, acceptance_fingerprint, proposal_snapshot_hash, selected_option_id")
@@ -1250,8 +1413,7 @@ export const listAgencyTravelProposals = createServerFn({ method: "GET" })
 
 export const duplicateTravelProposal = createServerFn({ method: "POST" })
   .validator(z.object({ id: z.string().min(1) }))
-  .handler(async ({ data }): Promise<{ success: boolean; id: string }> => {
-    const supabase = getServerClient();
+  .handler(async ({ data }): Promise<{ success: boolean; id: string; publicToken?: string }> => {
     const existing = await getTravelProposalById({ data: { id: data.id } });
     if (!existing) {
       throw new Error("Proposta original não encontrada.");
@@ -1260,6 +1422,8 @@ export const duplicateTravelProposal = createServerFn({ method: "POST" })
     const res = await createTravelProposal({
       data: {
         title: `${existing.title} (Cópia)`,
+        subtitle: existing.subtitle || null,
+        coverPhotoUrl: existing.cover_image_url || undefined,
         clientName: existing.client_name,
         clientWhatsapp: existing.client_whatsapp,
         clientEmail: existing.client_email,
@@ -1276,14 +1440,18 @@ export const duplicateTravelProposal = createServerFn({ method: "POST" })
         transfers: existing.transfers,
         tours: existing.tours,
         rooms: existing.rooms,
+        options: existing.options,
         includes: existing.includes,
         excludes: existing.excludes,
         pricing: existing.pricing,
+        leadId: existing.lead_id || null,
+        customFields: existing.custom_fields || undefined,
         initialNotes: existing.special_notes || undefined,
+        status: "sent",
       },
     });
 
-    return { success: true, id: res.id };
+    return { success: true, id: res.id, publicToken: res.publicToken };
   });
 
 // ─── 8. Excluir Proposta de Viagem ─────────────────────────────────────────────
@@ -1519,4 +1687,44 @@ export const bundleTravelProposalsIntoSingleLink = createServerFn({ method: "POS
       publicToken: primary.public_token,
       optionsCount: bundledOptions.length,
     };
+  });
+
+export const listStoreCatalogItemsForProposal = createServerFn({ method: "GET" })
+  .handler(async (): Promise<UnifiedBridgeCatalogContext[]> => {
+    const identity = await requireStaff();
+    const storeId = identity?.store_id;
+    if (!storeId) return [];
+
+    const supabase = getServerClient();
+    const [{ data: storeRow }, { data: productsRows }, { data: classifiedsRows }] = await Promise.all([
+      supabase.from("stores").select("id, primary_niche_id, settings").eq("id", storeId).maybeSingle(),
+      supabase
+        .from("products")
+        .select("*, product_variants(*), product_media(*)")
+        .eq("store_id", storeId)
+        .order("updated_at", { ascending: false })
+        .limit(50),
+      supabase
+        .from("classifieds")
+        .select("*")
+        .eq("store_id", storeId)
+        .neq("status", "archived")
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
+
+    const nicheHint =
+      (storeRow as any)?.primary_niche_id ||
+      ((storeRow as any)?.settings && typeof (storeRow as any).settings === "object"
+        ? (storeRow as any).settings.niche_id || (storeRow as any).settings.niche
+        : undefined);
+
+    const normalizedProducts = (productsRows || []).map((row: any) =>
+      extractNormalizedCatalogContext({ origin: "product", row }, nicheHint),
+    );
+    const normalizedClassifieds = (classifiedsRows || []).map((row: any) =>
+      extractNormalizedCatalogContext({ origin: "classified", row }, nicheHint),
+    );
+
+    return [...normalizedProducts, ...normalizedClassifieds];
   });

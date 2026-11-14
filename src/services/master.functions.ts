@@ -197,10 +197,10 @@ export const getPlatformStoresList = createServerFn({ method: "GET" }).handler(a
  await requirePlatformAdmin();
  const db = getServerClient();
  const [storesRes, membersRes, instancesRes] = await Promise.all([
-   db
-     .from("stores")
-     .select("id, name, slug, is_active, is_platform_root, created_at, settings, plan_tier")
-     .order("created_at", { ascending: false }),
+    db
+      .from("stores")
+      .select("id, name, slug, is_active, is_platform_root, created_at, settings, plan_tier, subscription_tier, subscription_status, trial_ends_at, billing_cycle, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, quota_overrides")
+      .order("created_at", { ascending: false }),
    db
      .from("workspace_members")
      .select("store_id, role")

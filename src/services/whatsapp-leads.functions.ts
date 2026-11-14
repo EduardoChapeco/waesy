@@ -64,6 +64,22 @@ export const recordWhatsAppLead = createServerFn({ method: "POST" })
       utm_source: z.string().optional().nullable(),
       utm_medium: z.string().optional().nullable(),
       utm_campaign: z.string().optional().nullable(),
+      utm_content: z.string().optional().nullable(),
+      utm_term: z.string().optional().nullable(),
+      fbclid: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      gclid: z.string().optional().nullable(),
+      ttclid: z.string().optional().nullable(),
+      ctwa_clid: z.string().optional().nullable(),
+      ad_id: z.string().optional().nullable(),
+      adset_id: z.string().optional().nullable(),
+      campaign_id: z.string().optional().nullable(),
+      creative_id: z.string().optional().nullable(),
+      form_id: z.string().optional().nullable(),
+      landing_url: z.string().optional().nullable(),
+      referrer: z.string().optional().nullable(),
+      device_id: z.string().optional().nullable(),
       visitor_id: z.string().optional().nullable(),
       device_type: z.enum(["mobile", "desktop", "tablet"]).optional().default("mobile"),
       metadata: z.record(z.any()).optional().default({}),
@@ -75,6 +91,11 @@ export const recordWhatsAppLead = createServerFn({ method: "POST" })
     const userId = identity?.customer_id || null;
 
     const sanitizedPhone = input.phone_target.replace(/\D/g, "");
+    const { normalizePhoneE164, recordAttributionTouchpoint } = await import("@/services/omnichannel-attribution.server");
+    const { data: userProfile } = userId
+      ? await supabase.from("profiles").select("phone, email").eq("id", userId).maybeSingle()
+      : { data: null as any };
+    const leadPhoneE164 = normalizePhoneE164(userProfile?.phone);
 
     let req: Request | null = null;
     try {
@@ -126,13 +147,67 @@ export const recordWhatsAppLead = createServerFn({ method: "POST" })
       throw new Error("Não foi possível registrar o lead com segurança. Tente novamente.");
     }
 
-    return res as {
+    const resultRow = res as {
       success: boolean;
       id: string;
       lead_code: string;
       phone_target: string;
       created_at: string;
     };
+
+    try {
+      await supabase
+        .from("whatsapp_lead_conversions")
+        .update({
+          lead_phone_e164: leadPhoneE164,
+          fbclid: input.fbclid || null,
+          fbp: input.fbp || null,
+          fbc: input.fbc || null,
+          gclid: input.gclid || null,
+          ttclid: input.ttclid || null,
+          ctwa_clid: input.ctwa_clid || null,
+          ad_id: input.ad_id || null,
+          campaign_id: input.campaign_id || null,
+        } as any)
+        .eq("id", resultRow.id);
+
+      await recordAttributionTouchpoint(supabase, {
+        storeId: input.store_id || null,
+        deviceId: input.device_id || null,
+        visitorId: input.visitor_id || null,
+        profileId: userId,
+        phone: leadPhoneE164,
+        email: userProfile?.email || null,
+        leadCode: resultRow.lead_code,
+        ctwaClid: input.ctwa_clid || null,
+        fbclid: input.fbclid || null,
+        fbp: input.fbp || null,
+        fbc: input.fbc || null,
+        gclid: input.gclid || null,
+        ttclid: input.ttclid || null,
+        utmSource: input.utm_source || null,
+        utmMedium: input.utm_medium || null,
+        utmCampaign: input.utm_campaign || null,
+        utmContent: input.utm_content || null,
+        utmTerm: input.utm_term || null,
+        adId: input.ad_id || null,
+        adsetId: input.adset_id || null,
+        campaignId: input.campaign_id || null,
+        creativeId: input.creative_id || null,
+        formId: input.form_id || null,
+        sourceUrl: input.origin_url || null,
+        landingUrl: input.landing_url || null,
+        referrer: input.referrer || null,
+        entityType: input.entity_type,
+        entityId: input.entity_id || null,
+        entityTitle: input.entity_title || null,
+        capturedVia: "whatsapp_click",
+      });
+    } catch {
+      // Best-effort attribution enrichment
+    }
+
+    return resultRow;
   });
 
 // ============================================================================
@@ -160,6 +235,26 @@ export const getProtectedWhatsAppContact = createServerFn({ method: "POST" })
       custom_message: z.string().optional().nullable(),
       origin_url: z.string().optional().nullable(),
       niche: z.string().optional().nullable(),
+      utm_source: z.string().optional().nullable(),
+      utm_medium: z.string().optional().nullable(),
+      utm_campaign: z.string().optional().nullable(),
+      utm_content: z.string().optional().nullable(),
+      utm_term: z.string().optional().nullable(),
+      fbclid: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      gclid: z.string().optional().nullable(),
+      ttclid: z.string().optional().nullable(),
+      ctwa_clid: z.string().optional().nullable(),
+      ad_id: z.string().optional().nullable(),
+      adset_id: z.string().optional().nullable(),
+      campaign_id: z.string().optional().nullable(),
+      creative_id: z.string().optional().nullable(),
+      form_id: z.string().optional().nullable(),
+      landing_url: z.string().optional().nullable(),
+      referrer: z.string().optional().nullable(),
+      device_id: z.string().optional().nullable(),
+      visitor_id: z.string().optional().nullable(),
     }),
   )
   .handler(async ({ data: input }) => {
@@ -187,7 +282,15 @@ export const getProtectedWhatsAppContact = createServerFn({ method: "POST" })
     // Usuário autenticado: extrai telefone e grava lead rastreável
     const sanitizedPhone = input.phone.replace(/\D/g, "");
     const supabase = getServerClient();
+    const { normalizePhoneE164, recordAttributionTouchpoint, dispatchServerSidePixelConversion } = await import("@/services/omnichannel-attribution.server");
+    const { data: userProfile } = await supabase
+      .from("profiles")
+      .select("full_name, phone, email")
+      .eq("id", userId)
+      .maybeSingle();
+    const leadPhoneE164 = normalizePhoneE164(userProfile?.phone);
     let leadCode: string | null = null;
+    let convId: string | null = null;
 
     try {
       const { data: res, error } = await supabase.rpc("record_whatsapp_lead", {
@@ -197,19 +300,27 @@ export const getProtectedWhatsAppContact = createServerFn({ method: "POST" })
         p_entity_title: input.entity_title || null,
         p_phone_target: sanitizedPhone,
         p_origin_url: input.origin_url || null,
-        p_utm_source: null,
-        p_utm_medium: null,
-        p_utm_campaign: null,
-        p_visitor_id: null,
+        p_utm_source: input.utm_source || null,
+        p_utm_medium: input.utm_medium || null,
+        p_utm_campaign: input.utm_campaign || null,
+        p_visitor_id: input.visitor_id || null,
         p_user_id: userId,
         p_device_type: "mobile",
-        p_metadata: { niche: input.niche, authenticated_lead: true },
+        p_metadata: {
+          niche: input.niche,
+          authenticated_lead: true,
+          ad_id: input.ad_id || null,
+          campaign_id: input.campaign_id || null,
+          fbclid: input.fbclid || null,
+          gclid: input.gclid || null,
+        },
       });
 
       if (error || !res?.lead_code) {
         throw new Error(error?.message || "RPC não confirmou a persistência do lead.");
       }
       leadCode = res.lead_code;
+      convId = res.id || null;
     } catch (err) {
       console.error("[whatsapp-leads] Erro na gravação de lead protegido:", err);
       return {
@@ -219,6 +330,84 @@ export const getProtectedWhatsAppContact = createServerFn({ method: "POST" })
         targetUrl: null,
         leadCode: null,
       };
+    }
+
+    try {
+      if (convId) {
+        await supabase
+          .from("whatsapp_lead_conversions")
+          .update({
+            lead_phone_e164: leadPhoneE164,
+            fbclid: input.fbclid || null,
+            fbp: input.fbp || null,
+            fbc: input.fbc || null,
+            gclid: input.gclid || null,
+            ttclid: input.ttclid || null,
+            ctwa_clid: input.ctwa_clid || null,
+            ad_id: input.ad_id || null,
+            campaign_id: input.campaign_id || null,
+          } as any)
+          .eq("id", convId);
+      }
+
+      await recordAttributionTouchpoint(supabase, {
+        storeId: input.store_id || null,
+        deviceId: input.device_id || null,
+        visitorId: input.visitor_id || null,
+        profileId: userId,
+        phone: leadPhoneE164,
+        email: userProfile?.email || null,
+        leadCode,
+        ctwaClid: input.ctwa_clid || null,
+        fbclid: input.fbclid || null,
+        fbp: input.fbp || null,
+        fbc: input.fbc || null,
+        gclid: input.gclid || null,
+        ttclid: input.ttclid || null,
+        utmSource: input.utm_source || null,
+        utmMedium: input.utm_medium || null,
+        utmCampaign: input.utm_campaign || null,
+        utmContent: input.utm_content || null,
+        utmTerm: input.utm_term || null,
+        adId: input.ad_id || null,
+        adsetId: input.adset_id || null,
+        campaignId: input.campaign_id || null,
+        creativeId: input.creative_id || null,
+        formId: input.form_id || null,
+        sourceUrl: input.origin_url || null,
+        landingUrl: input.landing_url || null,
+        referrer: input.referrer || null,
+        entityType: input.entity_type,
+        entityId: input.entity_id || null,
+        entityTitle: input.entity_title || null,
+        capturedVia: "protected_whatsapp_click",
+      });
+
+      if (input.store_id && leadCode) {
+        await dispatchServerSidePixelConversion(supabase, {
+          storeId: input.store_id,
+          eventName: "Contact",
+          eventId: `contact_${leadCode}`,
+          eventSource: "whatsapp_click",
+          phone: leadPhoneE164,
+          email: userProfile?.email || null,
+          fullName: userProfile?.full_name || null,
+          fbp: input.fbp || null,
+          fbc: input.fbc || null,
+          ctwaClid: input.ctwa_clid || null,
+          sourceUrl: input.origin_url || input.landing_url || null,
+          customData: {
+            entity_type: input.entity_type,
+            entity_title: input.entity_title || undefined,
+            lead_code: leadCode,
+            utm_source: input.utm_source || undefined,
+            utm_campaign: input.utm_campaign || undefined,
+            ad_id: input.ad_id || undefined,
+          },
+        });
+      }
+    } catch {
+      // Best-effort attribution & CAPI enrichment
     }
 
     const cleanWithDdi =

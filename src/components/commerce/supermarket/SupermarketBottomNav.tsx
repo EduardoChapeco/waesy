@@ -105,7 +105,7 @@ export function SupermarketBottomNav({
                 )}
 
                 {tab.badge ? (
-                  <span className="absolute -top-1.5 -right-3 px-2 py-0.2 rounded-full text-3xs font-extrabold bg-emerald-600 text-white">
+                  <span className="absolute -top-1 -right-3 px-2 py-1 rounded-full text-3xs font-extrabold bg-emerald-600 text-emerald-50">
                     {tab.badge}
                   </span>
                 ) : null}

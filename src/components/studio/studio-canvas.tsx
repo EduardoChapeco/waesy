@@ -4,7 +4,6 @@ import {
   Type,
   Square,
   Send,
-  Sparkles,
   QrCode,
   Undo2,
   Redo2,
@@ -98,6 +97,7 @@ export function StudioCanvas({
   selectedElementId: externalSelectedId,
   onSelectElement,
   onUpdateElementPosition,
+  zoom = 1,
 }: StudioCanvasProps) {
   const [aspect, setAspect] = useState<'1:1' | '16:9' | '9:16' | '1.91:1'>(aspectRatio);
   // design-lint-ignore DL-01 reason:"HTML5 canvas default background color initialization" expiry:"2030-01-01"
@@ -113,6 +113,51 @@ export function StudioCanvas({
     present: INITIAL_LAYERS,
     future: [],
   });
+
+  useEffect(() => {
+    setAspect(aspectRatio);
+  }, [aspectRatio]);
+
+  useEffect(() => {
+    if (background?.value) {
+      setBgColor(background.value);
+    }
+  }, [background?.value]);
+
+  useEffect(() => {
+    if (externalSelectedId !== undefined) {
+      setSelectedLayerId(externalSelectedId);
+    }
+  }, [externalSelectedId]);
+
+  useEffect(() => {
+    if (!Array.isArray(elements)) return;
+    if (elements.length === 0) return;
+    const mapped: CanvasLayer[] = elements.map((el: any, idx: number) => {
+      const props = el.properties || {};
+      const posX = typeof el.position?.x === 'number' ? Math.round((el.position.x / 100) * 540) : typeof el.x === 'number' ? el.x : 40;
+      const posY = typeof el.position?.y === 'number' ? Math.round((el.position.y / 100) * 260) : typeof el.y === 'number' ? el.y : 40 + idx * 44;
+      const rawType = el.type === 'shape' ? 'shape' : el.type === 'badge' || el.type === 'sticker' ? 'sticker' : el.type === 'qr' ? 'qr' : 'text';
+      return {
+        id: String(el.id || `el-${idx}`),
+        type: rawType,
+        text: String(props.content ?? el.text ?? ''),
+        fontSize: Number(props.fontSize ?? el.fontSize ?? (rawType === 'text' ? 24 : 14)),
+        fontWeight: props.fontWeight === '900' || props.fontWeight === 'black' ? 'black' : props.fontWeight === 'bold' || Number(props.fontWeight) >= 600 ? 'bold' : 'bold',
+        // design-lint-ignore DL-01 reason:"Fallback ink hexadecimal padrao de camada sobre fundo escuro de artboard canvas" expiry:"2027-12-31"
+        color: String(props.color ?? el.color ?? '#ffffff'),
+        backgroundColor: props.backgroundColor ?? el.backgroundColor,
+        x: posX,
+        y: posY,
+        width: el.size?.width ? Math.max(80, Math.round(el.size.width * 3)) : el.width,
+        height: el.size?.height ? Math.max(40, Math.round(el.size.height * 2)) : el.height,
+        qrUrl: props.qrUrl ?? el.qrUrl,
+        zIndex: Number(el.zIndex ?? idx + 1),
+        isLocked: Boolean(el.locked ?? el.isLocked),
+      };
+    });
+    setHistory((curr) => ({ ...curr, present: mapped }));
+  }, [elements]);
 
   const layers = history.present;
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(externalSelectedId || 'l-2');
@@ -551,8 +596,8 @@ export function StudioCanvas({
             onClick={() => addStickerLayer('DESTAQUE')}
             className="h-11 min-h-11 px-4 rounded-lg text-xs flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <Sparkles className="size-4 text-warning-strong" />
-            Selo / Badge
+            <Layers className="size-4 text-warning-strong" />
+            Selo
           </Button>
 
           <Button
@@ -587,8 +632,13 @@ export function StudioCanvas({
         onPointerUp={handlePointerUp}
       >
         <div
+          id="studio-canvas-stage"
           /* design-lint-ignore DL-05 reason:"Dynamic background color on canvas artboard" expiry:"2030-01-01" */
-          style={{ backgroundColor: bgColor }}
+          style={{
+            backgroundColor: bgColor,
+            transform: zoom !== 1 ? `scale(${zoom})` : undefined,
+            transformOrigin: 'center center',
+          }}
           ref={canvasContainerRef}
           className={cn(
             'w-full max-w-2xl rounded-lg relative overflow-hidden border border-border/80 transition-opacity',

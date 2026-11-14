@@ -28,14 +28,14 @@ export function ThumbnailPreviewRail({ items = [], onSelectPost }: ThumbnailPrev
  className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-300"
  loading="lazy"
  />
- <div className="absolute inset-0 bg-black/50" />
+ <div className="absolute inset-0 bg-neutral-950/60" />
 
  <div className="relative z-10 p-2 w-full">
- <p className="text-2xs font-bold text-foreground truncate leading-tight">
+ <p className="text-2xs font-bold text-neutral-50 line-clamp-2 text-anti-truncate leading-tight">
  {post.author.name}
  </p>
  {post.location_name && (
- <p className="text-3xs text-foreground/80 truncate flex items-center gap-1 mt-1">
+ <p className="text-3xs text-neutral-200 line-clamp-1 flex items-center gap-1 mt-1">
  <MapPin className="size-2.5 shrink-0" />
  {post.location_name}
  </p>

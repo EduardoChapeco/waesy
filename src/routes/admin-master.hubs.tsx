@@ -255,7 +255,7 @@ function AdminMasterHubsPage() {
 
         <Button
           onClick={handleOpenNew}
-          className="h-11 px-5 rounded-lg font-medium text-xs bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs"
+          className="h-11 px-5 rounded-lg font-medium text-xs bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer"
         >
           <Plus className="size-4 mr-2" />
           Nova Categoria Global

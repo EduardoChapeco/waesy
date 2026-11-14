@@ -152,9 +152,9 @@ export function CartItemEditDrawer({
  side="right" size="wide" className="flex flex-col p-0 bg-background max-sm:inset-0 max-sm:h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-none overscroll-contain"
  >
  {/* Cabeçalho Fixo */}
- <SheetHeader className="px-6 py-4 bg-card/60 backdrop-blur-md shrink-0">
+ <SheetHeader className="px-6 py-4 bg-card border-b border-border shrink-0">
  <div className="flex items-center gap-2">
- <div className="size-11 min-h-11 min-w-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-11 min-h-11 min-w-11 rounded-lg bg-muted border border-border text-primary flex items-center justify-center">
  <SlidersHorizontal className="size-4" />
  </div>
  <div>
@@ -377,7 +377,7 @@ export function CartItemEditDrawer({
  </div>
 
  {/* Rodapé Fixo com Total e Ação */}
- <div className=" bg-card/90 backdrop-blur-md p-5 pb-safe space-y-3 shrink-0">
+ <div className="bg-card border-t border-border p-5 pb-safe space-y-3 shrink-0">
  <div className="flex items-center justify-between">
  <div>
  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">

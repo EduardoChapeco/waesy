@@ -100,17 +100,17 @@ export function ThreadsCommunityHeader({
           />
         )}
 
-        {/* Gradiente escurecedor defensivo para garantir contraste AA (>= 4.5:1) em qualquer imagem ou gradiente */}
-        <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+        {/* Scrim defensivo para garantir contraste AA (>= 4.5:1) sobre capa */}
+        <div className="absolute inset-0 bg-neutral-950/75 pointer-events-none" />
 
         {/* Conteúdo Interno da Capa com Safe-Area no Mobile */}
         <div className="relative z-10 pt-safe pt-4 sm:pt-6 px-4 sm:px-6 pb-6 flex flex-col justify-between min-h-64 sm:min-h-72">
           {/* ── Linha Superior: Barra de Busca Pill & Ação Rápida (+) ─────── */}
           <div className="flex items-center justify-between gap-3">
-            {/* Campo de Busca Interno com Frosted Glass */}
+            {/* Campo de Busca Interno */}
             <form onSubmit={handleSearchSubmit} className="grow min-w-0">
               <div className="relative flex items-center">
-                <Search className="absolute left-3.5 size-4 text-primary-foreground/80 pointer-events-none" />
+                <Search className="absolute left-3.5 size-4 text-neutral-300 pointer-events-none" />
                 <input
                   type="search"
                   value={searchValue}
@@ -193,27 +193,27 @@ export function ThreadsCommunityHeader({
                   {recentMembers.slice(0, 6).map((member, idx) => (
                     <Avatar
                       key={member.id || idx}
-                      className="size-7 sm:size-8 border-2 border-white/90 ring-1 ring-black/20 shrink-0"
+                      className="size-7 sm:size-8 border-2 border-neutral-100 shrink-0"
                     >
                       {member.avatar_url && (
                         <AvatarImage src={member.avatar_url} alt={member.name} />
                       )}
-                      <AvatarFallback className="text-2xs font-bold bg-card text-zinc-900">
+                      <AvatarFallback className="text-2xs font-bold bg-muted text-foreground">
                         {member.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   ))}
                 </div>
               ) : (
-                <div className="size-7 sm:size-8 rounded-full bg-card/20 border-2 border-white/90 flex items-center justify-center text-primary-foreground text-xs">
+                <div className="size-7 sm:size-8 rounded-full bg-neutral-900 border-2 border-neutral-200 flex items-center justify-center text-neutral-50 text-xs">
                   <Users className="size-4" />
                 </div>
               )}
 
               {/* Contadores Textuais */}
-              <div className="text-xs sm:text-sm font-semibold text-primary-foreground/95 drop-shadow-xs">
+              <div className="text-xs sm:text-sm font-semibold text-neutral-50">
                 <span>{memberCountFormatted} participantes</span>
-                <span className="mx-2 text-primary-foreground/60">•</span>
+                <span className="mx-2 text-neutral-300">•</span>
                 <span className="text-emerald-300 font-bold">{onlineCountFormatted} online</span>
               </div>
             </div>

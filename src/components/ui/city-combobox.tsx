@@ -17,7 +17,7 @@ const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm", className)} {...props} />
+  <DrawerPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-overlay", className)} {...props} />
 ));
 DrawerOverlay.displayName = "DrawerOverlay";
 
@@ -30,7 +30,7 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-lg border border-border/60 bg-background pb-safe",
+        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-lg border border-border bg-background pb-safe",
         "max-h-vh-80",
         className,
       )}
@@ -321,7 +321,7 @@ export function CityCombobox({
             <DrawerPrimitive.Trigger asChild>
               <TriggerButton onClick={() => setMobileOpen(true)} />
             </DrawerPrimitive.Trigger>
-            <DrawerContent className="pb-[env(safe-area-inset-bottom)] min-h-vh-60">
+            <DrawerContent className="pb-safe min-h-vh-60">
               <div className="px-4 pb-2 pt-1">
                 <DrawerPrimitive.Title className="text-base font-bold text-foreground">
                   Selecionar Cidade
@@ -347,8 +347,8 @@ export function CityCombobox({
           {desktopOpen && (
             <div
               className={cn(
-                "absolute left-0 right-0 top-[calc(100%+6px)] z-50",
-                "bg-popover border border-border/80 rounded-lg ",
+                "absolute left-0 right-0 top-full mt-2 z-50",
+                "bg-popover border border-border rounded-lg shadow-overlay",
                 "overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150",
               )}
             >

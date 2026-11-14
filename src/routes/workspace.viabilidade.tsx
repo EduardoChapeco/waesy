@@ -16,7 +16,6 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
-  Sparkles,
   Store,
   Target,
   TrendingUp,
@@ -532,7 +531,7 @@ export function WorkspaceViabilityPage() {
                 </>
               ) : (
                 <>
-                  <Sparkles className="size-4" />
+                  <Activity className="size-4" />
                   <span>Analisar Viabilidade</span>
                 </>
               )}

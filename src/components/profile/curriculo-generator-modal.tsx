@@ -587,9 +587,9 @@ export function CurriculoGeneratorModal({
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     {certifications.map((cert: any, i: number) => (
-                      <div key={i} className="p-2 rounded-lg bg-zinc-50 border border-zinc-100">
-                        <span className="font-bold text-zinc-900 block truncate">{cert.name}</span>
-                        <span className="text-zinc-500 text-xs font-mono block">
+                      <div key={i} className="p-2 rounded-lg bg-neutral-100 border border-neutral-200">
+                        <span className="font-bold text-zinc-900 block line-clamp-2 text-anti-truncate">{cert.name}</span>
+                        <span className="text-zinc-600 text-xs font-mono block">
                           {cert.issuer} {cert.issue_date && `• ${cert.issue_date}`}
                         </span>
                       </div>

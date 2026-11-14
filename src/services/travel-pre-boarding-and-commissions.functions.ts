@@ -2438,13 +2438,21 @@ export const getAgencySalesAndCommissionConfigFn = createServerFn({ method: "GET
           .order("created_at", { ascending: true }),
         supabase
           .from("stores")
-          .select("id, owner_id, settings")
+          .select("id, settings")
           .eq("id", targetStoreId)
           .maybeSingle(),
       ]);
 
-      if (identity?.user_id && storeRes.data?.owner_id === identity.user_id) {
-        isManagerOrOwner = true;
+      if (!isManagerOrOwner && identity?.user_id) {
+        const { data: memberRow } = await supabase
+          .from("store_members")
+          .select("role")
+          .eq("store_id", targetStoreId)
+          .or(`user_id.eq.${identity.user_id},profile_id.eq.${identity.user_id}`)
+          .maybeSingle();
+        if (["owner", "admin", "manager", "gerente", "diretor", "master"].includes(String(memberRow?.role || "").toLowerCase())) {
+          isManagerOrOwner = true;
+        }
       }
 
       const settingsObj =
@@ -2612,20 +2620,16 @@ export const saveAgencySalesAndCommissionConfigFn = createServerFn({ method: "PO
 
       const { data: storeRow } = await supabase
         .from("stores")
-        .select("id, owner_id, settings")
+        .select("id, settings")
         .eq("id", targetStoreId)
         .maybeSingle();
-
-      if (identity?.user_id && storeRow?.owner_id === identity.user_id) {
-        isManagerOrOwner = true;
-      }
 
       if (identity?.user_id && !isManagerOrOwner) {
         const { data: memberRow } = await supabase
           .from("store_members")
           .select("role")
           .eq("store_id", targetStoreId)
-          .eq("user_id", identity.user_id)
+          .or(`user_id.eq.${identity.user_id},profile_id.eq.${identity.user_id}`)
           .maybeSingle();
         const memberRole = String(memberRow?.role || "").toLowerCase();
         if (["owner", "admin", "manager", "gerente", "diretor", "master"].includes(memberRole)) {

@@ -376,7 +376,7 @@ export function PrometheeNewsArticleReaderBlock({
           isEditing ? "sticky bottom-4 mt-4" : "fixed bottom-4 inset-x-0"
         } z-30 flex justify-center px-4 pointer-events-none`}
       >
-        <div className="pointer-events-auto rounded-full border border-border bg-background/95 backdrop-blur-md px-3 py-1 flex items-center gap-2">
+        <div className="pointer-events-auto rounded-full border border-border bg-card px-3 py-1 flex items-center gap-2">
           <button
             type="button"
             onClick={() => portal.toggleLike(article.id)}

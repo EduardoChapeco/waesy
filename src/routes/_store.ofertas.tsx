@@ -16,6 +16,8 @@ import { OfferCard } from "@/components/commerce/offer-card";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { getGlobalDealsPage, type GlobalDealNicheSection } from "@/services/marketplace.functions";
+import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
+import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
@@ -63,17 +65,21 @@ export const Route = createFileRoute("/_store/ofertas")({
   loader: async ({ location, deps: { nicho } }) => {
     const activeCity = resolveActiveCity(location?.search);
     try {
-      const [dealsPage, banners, hotpages] = await Promise.all([
+      const [dealsPage, banners, hotpages, marketplaceFeed] = await Promise.all([
         getGlobalDealsPage({
           data: nicho && nicho !== "todos" ? { nicheFilter: nicho, limit: 10 } : { limit: 8 },
         }).catch(() => ({ sections: [], totalDeals: 0, maxDiscount: 0, hasRealData: false })),
         listActiveBanners({ data: { placement: "ofertas", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "ofertas" } }).catch(() => []),
+        getModularSurfaceFeed({ data: { surfaceSlug: "ofertas", city: activeCity } }).catch(() => ({
+          sections: [],
+          allProducts: [],
+        })),
       ]);
-      return { dealsPage, banners, hotpages };
+      return { dealsPage, banners, hotpages, marketplaceFeed };
     } catch (err) {
       console.error("[loader:_store.ofertas] Unhandled error:", err);
-      return { dealsPage: null, banners: null, hotpages: null };
+      return { dealsPage: null, banners: null, hotpages: null, marketplaceFeed: null };
     }
   },
   component: OfertasPage,
@@ -81,7 +87,7 @@ export const Route = createFileRoute("/_store/ofertas")({
 });
 
 function OfertasPage() {
-  const { dealsPage, banners, hotpages } = (Route.useLoaderData?.() as any) || {};
+  const { dealsPage, banners, hotpages, marketplaceFeed } = (Route.useLoaderData?.() as any) || {};
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
@@ -107,7 +113,7 @@ function OfertasPage() {
         mobileOnly
         badge={
           maxDiscount > 0 ? (
-            <span className="px-2 py-1 rounded-full text-2xs font-bold bg-primary/10 text-primary">
+            <span className="px-2 py-1 rounded-full text-2xs font-bold bg-muted border border-border text-foreground">
               Até {maxDiscount}% OFF
             </span>
           ) : undefined
@@ -121,7 +127,7 @@ function OfertasPage() {
       ) : (
         <header className="hidden md:flex items-center justify-between gap-4 pt-2">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
               <Lightning size={20} weight="fill" />
             </div>
             <div>
@@ -143,6 +149,10 @@ function OfertasPage() {
         </section>
       )}
 
+      {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 && (
+        <ModularSurfaceFeed sections={marketplaceFeed.sections} />
+      )}
+
       <div className="relative w-full overflow-hidden">
         <div
           aria-hidden="true"
@@ -158,10 +168,10 @@ function OfertasPage() {
               type="button"
               id={`chip-ofertas-${chip.id}`}
               onClick={() => handleNicheChange(chip.id)}
-              className={`snap-start shrink-0 h-11 min-h-11 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-colors duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`snap-start shrink-0 h-11 min-h-11 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-2 whitespace-nowrap transition-colors duration-200 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeNiche === chip.id
-                  ? "bg-foreground text-background shadow-xs"
-                  : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-muted-foreground border border-border hover:text-foreground hover:border-foreground"
               }`}
             >
               <span>{chip.label}</span>
@@ -173,7 +183,7 @@ function OfertasPage() {
       {/* ── 3. Carrosséis de Ofertas por Nicho ── */}
       {sections.length === 0 ? (
         <div className="py-16 px-4 flex flex-col items-center justify-center text-center select-none">
-          <div className="size-16 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground/35 mb-3">
+          <div className="size-16 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground mb-3">
             <Percent size={34} weight="thin" />
           </div>
           <p className="text-sm font-medium text-muted-foreground">
@@ -191,10 +201,8 @@ function OfertasPage() {
               {/* Header do nicho */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div
-                    className={`size-8 rounded-lg bg-linear-to-br ${section.color} flex items-center justify-center text-foreground shrink-0 `}
-                  >
-                    <span className="text-base leading-none">{section.emoji}</span>
+                  <div className="size-8 rounded-lg bg-muted border border-border flex items-center justify-center text-foreground shrink-0">
+                    <Tag size={16} weight="bold" />
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-foreground leading-tight">
@@ -230,7 +238,7 @@ function OfertasPage() {
                       mechanic_label={offer.mechanic_label}
                       ends_at={offer.ends_at}
                       has_flash_offer={offer.has_flash_offer}
-                      cover_image={offer.cover_image || "/banner-placeholder.png"}
+                      cover_image={offer.cover_image || ""}
                       selling_unit={offer.selling_unit || "un"}
                       in_stock={offer.in_stock === true}
                     />
@@ -246,7 +254,7 @@ function OfertasPage() {
                       key={store.id}
                       to="/mercado"
                       search={{ niche: section.nicho } as any}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card hover:border-foreground/30 transition-colors duration-200 shrink-0"
+                      className="flex items-center gap-2 px-3 min-h-11 rounded-lg bg-card border border-border hover:border-foreground transition-colors duration-200 shrink-0"
                     >
                       {store.avatar_url ? (
                         <img
@@ -276,8 +284,8 @@ function OfertasPage() {
           ))}
 
           {/* CTA Final */}
-          <section className="rounded-lg border-0 bg-card/60 p-6 text-center space-y-3">
-            <div className="size-12 rounded-lg bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+          <section className="rounded-lg border border-border bg-card p-6 text-center space-y-3">
+            <div className="size-12 rounded-lg bg-muted border border-border text-muted-foreground flex items-center justify-center mx-auto">
               <ShoppingCart size={24} />
             </div>
             <h3 className="text-sm font-bold text-foreground">Você é lojista?</h3>
@@ -285,7 +293,7 @@ function OfertasPage() {
               Publique suas promoções e apareça aqui para milhares de consumidores na região.
               Configure descontos no Workspace.
             </p>
-            <Button asChild size="sm" variant="outline" className="rounded-lg font-bold text-xs">
+            <Button asChild size="sm" variant="outline" className="h-11 min-h-11 rounded-lg font-bold text-xs">
               <Link to="/workspace/marketing/promocoes">Criar Promoção</Link>
             </Button>
           </section>

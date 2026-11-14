@@ -1,5 +1,6 @@
 import React from "react";
 import { InfiniteMarqueeBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { ArrowUpRight } from "lucide-react";
 import { isSafeBuilderHref } from "@/lib/builder/safe-href";
 
@@ -30,10 +31,7 @@ export const InfiniteMarqueeRibbon: React.FC<InfiniteMarqueeRibbonProps> = ({
     xl: "py-12",
   }[styling?.paddingY || "sm"];
 
-  const customStyle: React.CSSProperties = {
-    backgroundColor: styling?.backgroundColor || undefined,
-    color: styling?.textColor || undefined,
-  };
+  const customStyle = getSectionStyle(styling).style;
 
   if (items.length === 0) {
     return (
@@ -58,7 +56,7 @@ export const InfiniteMarqueeRibbon: React.FC<InfiniteMarqueeRibbonProps> = ({
       id={id}
       style={customStyle}
       aria-label={data.title || "Destaques em letreiro contínuo"}
-      className={`relative w-full overflow-hidden ${paddingYClasses} border-y border-border/40 bg-card/60 backdrop-blur-xs ${className}`}
+      className={`relative w-full overflow-hidden ${paddingYClasses} border-y border-border bg-card ${className}`}
     >
       {data.title && (
         <div className="max-w-7xl mx-auto px-4 mb-3 text-center sm:text-left">

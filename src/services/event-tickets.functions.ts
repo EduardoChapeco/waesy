@@ -109,11 +109,11 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
 
     const { data: userProfile } = await ssrClient
       .from("profiles")
-      .select("id, full_name, phone, email, tax_id")
+      .select("id, full_name, phone, tax_id")
       .eq("id", user.id)
       .maybeSingle();
 
-    const userEmail = userProfile?.email || user.email || "";
+    const userEmail = user.email || "";
     const userTaxId = userProfile?.tax_id || "";
     const userPhone = userProfile?.phone || (user as any).phone || "";
 
@@ -199,14 +199,14 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
       let appQuery = ssrClient
         .from("classified_applications")
         .select(`
-          id, classified_id, name, phone, email, candidate_role, cover_letter, status, created_at,
+          id, classified_id, name, phone, email, feedback_notes, cover_letter, status, applied_at,
           classified:classifieds (
             id, title, category, location_name, images, attributes,
             profiles(full_name, phone)
           )
         `)
-        .not("candidate_role", "like", "survey_vote:%")
-        .order("created_at", { ascending: false });
+        .neq("status", "vote_cast")
+        .order("applied_at", { ascending: false });
 
       if (user.id) {
         appQuery = appQuery.or(
@@ -218,6 +218,12 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
 
       if (!appErr && applications) {
         for (const app of applications as any[]) {
+          if (
+            String(app.feedback_notes || "").startsWith("survey_vote:") ||
+            String(app.feedback_notes || "").startsWith("testimonial:")
+          ) {
+            continue;
+          }
           const classified = app.classified;
           const cat = classified?.category;
           const attrs = classified?.attributes || {};
@@ -226,9 +232,9 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
 
           if (ticketsMap.has(app.id)) continue;
 
-          const lotLabel = app.candidate_role?.startsWith("Ingresso: ")
-            ? app.candidate_role.replace("Ingresso: ", "")
-            : app.candidate_role || "Inscrição Confirmada";
+          const lotLabel = app.feedback_notes?.startsWith("Ingresso: ")
+            ? app.feedback_notes.replace("Ingresso: ", "")
+            : app.feedback_notes || "Inscrição Confirmada";
 
           // Extrai código humano do cover_letter se existir
           let humanCode = `WAESY-${app.id.slice(0, 8).toUpperCase()}`;
@@ -237,7 +243,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
             humanCode = matchCode[1];
           }
 
-          const isUsed = app.status === "used";
+          const isUsed = app.status === "used" || app.status === "checked_in";
           const isCancelled = app.status === "cancelled" || app.status === "rejected";
 
           const dto: CustomerEventTicketDTO = {
@@ -258,7 +264,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
             coverUrl: classified?.images?.[0] || null,
             isUsed,
             accessCode: humanCode,
-            createdAt: app.created_at,
+            createdAt: app.applied_at,
             gatesOpenTime: attrs.gates_open_time || null,
             recipientName: app.name || null,
             recipientEmail: app.email || null,
@@ -431,7 +437,7 @@ export const getEventTicketDetails = createServerFn({ method: "GET" })
     const { data: app } = await ssrClient
       .from("classified_applications")
       .select(`
-        id, classified_id, name, phone, email, candidate_role, cover_letter, status, created_at,
+        id, classified_id, name, phone, email, feedback_notes, cover_letter, status, applied_at,
         classified:classifieds (
           id, title, content, location_name, images, attributes,
           profiles(full_name, phone, avatar_url)
@@ -446,6 +452,7 @@ export const getEventTicketDetails = createServerFn({ method: "GET" })
       const matchCode = app.cover_letter?.match(/Código WCTS-1:\s*([A-Z0-9-]+)/i);
       const humanCode = matchCode?.[1] || `WAESY-${app.id.slice(0, 8).toUpperCase()}`;
       const qrDataUri = generateQrCodeDataUri(humanCode);
+      const isUsed = app.status === "used" || app.status === "checked_in";
 
       return {
         ticket: {
@@ -459,16 +466,16 @@ export const getEventTicketDetails = createServerFn({ method: "GET" })
           eventLocation: attrs.venue_name || classified.location_name || null,
           eventAddress: attrs.venue_address || null,
           coverUrl: classified.images?.[0] || null,
-          lotName: app.candidate_role || "Inscrição Confirmada",
+          lotName: String(app.feedback_notes || "Inscrição Confirmada").replace(/^Ingresso:\s*/i, ""),
           priceCents: attrs.ticket_price_cents || 0,
-          status: app.status === "used" ? "used" : app.status === "cancelled" ? "revoked" : "valid",
-          isUsed: app.status === "used",
+          status: isUsed ? "used" : app.status === "cancelled" ? "revoked" : "valid",
+          isUsed,
           qrHash: humanCode,
           humanCode,
           qrDataUri,
           recipientName: app.name,
           recipientEmail: app.email,
-          createdAt: app.created_at,
+          createdAt: app.applied_at,
           organizer: {
             name: attrs.host_name || classified.profiles?.full_name || "Organizador",
             phone: attrs.host_phone || classified.profiles?.phone || null,
@@ -720,14 +727,18 @@ export const transferEventTicket = createServerFn({ method: "POST" })
       throw new Error(`Ingresso em status '${ticket.status}' não pode ser transferido.`);
     }
 
-    // 2. Busca se o destinatário já possui perfil no Waesy
-    const { data: targetProfile } = await supabase
-      .from("profiles")
-      .select("id, full_name, email")
-      .eq("email", input.newRecipientEmail.trim())
-      .maybeSingle();
-
-    const newOwnerId = targetProfile?.id || ticket.owner_profile_id;
+    // 2. Busca se o destinatário já possui perfil no Waesy via Auth Admin (profiles não possui coluna email)
+    let newOwnerId = ticket.owner_profile_id;
+    try {
+      const targetEmail = input.newRecipientEmail.trim().toLowerCase();
+      const { data: usersPage } = await supabase.auth.admin.listUsers({ perPage: 200 });
+      const matchedUser = (usersPage?.users || []).find((u: any) => String(u.email || "").toLowerCase() === targetEmail);
+      if (matchedUser?.id) {
+        newOwnerId = matchedUser.id;
+      }
+    } catch {
+      // fallback seguro mantém owner atual se lookup admin indisponível
+    }
 
     // 3. Gera nova assinatura criptográfica WCTS-1 e novo Human Code
     const signed = signTicketPayload({

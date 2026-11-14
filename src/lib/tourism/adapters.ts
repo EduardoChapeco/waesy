@@ -6,6 +6,9 @@ export type BaseViewModel = {
   agency: {
     name: string;
     logo_url?: string;
+    whatsapp?: string;
+    phone?: string;
+    email?: string;
     brand_color: string;
     brand_color_fg: string;
     brand_color_light: string;
@@ -38,6 +41,9 @@ export function buildBaseViewModel(p: Proposal, agencyData: any): BaseViewModel 
     agency: {
       name: agencyData?.name || "Agência",
       logo_url: agencyData?.logo_url,
+      whatsapp: agencyData?.whatsapp,
+      phone: agencyData?.phone,
+      email: agencyData?.email,
       brand_color: agencyData?.brand_color || "#3b82f6",
       brand_color_fg: agencyData?.brand_color_fg || "#ffffff",
       brand_color_light: agencyData?.brand_color_light || "#eff6ff",

@@ -147,7 +147,7 @@ export function ProductDetailMobile({
 
         {/* Contador de Fotos */}
         {mediaList.length > 1 && (
-          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-foreground/60 backdrop-blur-md text-foreground text-2xs font-mono font-medium pointer-events-none">
+          <div className="absolute bottom-3 right-3 px-3 py-1 rounded-full bg-neutral-950 border border-neutral-800 text-neutral-50 text-2xs font-mono font-medium pointer-events-none">
             {(currentMediaIndex >= 0 ? currentMediaIndex : 0) + 1} / {mediaList.length}
           </div>
         )}
@@ -505,7 +505,7 @@ export function ProductDetailMobile({
       </div>
 
       {/* ── 9. STICKY BOTTOM ACTION BAR (Native-First: Nielsen Norman & Apple HIG) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-3 safe-bottom flex items-center justify-between gap-3 mobile-nav-hide-on-keyboard">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border px-4 py-3 safe-bottom flex items-center justify-between gap-3 mobile-nav-hide-on-keyboard">
         {/* Seletor de Quantidade Mobile */}
         <div className="flex items-center rounded-lg bg-secondary/80 border border-border/60 h-11 px-1 shrink-0">
           <button

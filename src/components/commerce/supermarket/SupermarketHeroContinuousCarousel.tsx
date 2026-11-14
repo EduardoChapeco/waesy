@@ -91,7 +91,7 @@ export function SupermarketHeroContinuousCarousel({
                 </span>
               ) : null}
               {banner.title ? (
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-background/85 backdrop-blur-xs">
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-card border-t border-border">
                   <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-1">
                     {banner.title}
                   </h3>

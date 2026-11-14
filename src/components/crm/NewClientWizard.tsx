@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { createCustomer } from "@/services/crm.functions";
 import { formatMoney } from "@/lib/money";
+import { getUnifiedNicheSpec } from "@/lib/niches/niche-ssot";
 
 const STEPS = ["Perfil", "Contato", "Endereço", "Saúde & Segmento", "Revisão"];
 
@@ -41,6 +42,7 @@ export interface NewClientWizardProps {
  onClose: () => void;
  onSuccess: () => void;
  teamMembers?: Array<{ id: string; fullName: string; role?: string }>;
+ store?: any;
 }
 
 export function NewClientWizard({
@@ -48,7 +50,9 @@ export function NewClientWizard({
  onClose,
  onSuccess,
  teamMembers = [],
+ store,
 }: NewClientWizardProps) {
+ const nicheSpec = getUnifiedNicheSpec(store);
  const [step, setStep] = useState(0);
  const [submitting, setSubmitting] = useState(false);
  const [loadingCep, setLoadingCep] = useState(false);
@@ -199,6 +203,7 @@ export function NewClientWizard({
  addressLine: addressLine.trim() || null,
  creditLimitCents: isNaN(creditCents) ? 0 : creditCents,
  assignedTo: assignedTo === "none" ? null : assignedTo,
+ preferredProfessionalId: assignedTo === "none" ? null : assignedTo,
  tags,
  notes: notes.trim() || null,
  gender: gender === "uninformed" ? null : gender,
@@ -209,6 +214,11 @@ export function NewClientWizard({
  lgpdAccepted,
  allergies: allergies.trim() || null,
  healthNotes: healthNotes.trim() || null,
+ nicheMetadata: {
+   niche_id: nicheSpec.id,
+   niche_label: nicheSpec.label,
+   vertical_sku: store?.vertical_sku || nicheSpec.defaultVerticalSku,
+ },
  },
  });
 
@@ -588,16 +598,22 @@ export function NewClientWizard({
  </div>
  )}
 
- {/* PASSO 3: SAÚDE, ANAMNESE & SEGMENTO (PADRÃO BELASIS) */}
+ {/* PASSO 3: ANAMNESE, FICHA DO NICHO & SEGMENTO */}
  {step === 3 && (
  <div className="space-y-5 animate-in fade-in duration-200">
  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-1">
  <div className="flex items-center gap-2 text-xs font-bold text-primary">
  <HeartPulse className="size-4" />
- <span>Anamnese & Alertas de Atendimento (Paridade Belasis)</span>
+ <span>
+   {nicheSpec.id === "automotive"
+     ? "Perfil Técnico, Frota & Observações"
+     : `Ficha & Alertas de Atendimento — ${nicheSpec.shortLabel}`}
+ </span>
  </div>
  <p className="text-xs text-muted-foreground">
- Cadastre restrições clínicas, alergias e observações para alertar a equipe nos atendimentos.
+   {nicheSpec.id === "automotive"
+     ? "Registre observações de veículo, histórico de manutenção e preferências do condutor."
+     : "Cadastre restrições clínicas, alergias e observações para alertar a equipe nos atendimentos."}
  </p>
  </div>
 
@@ -781,9 +797,13 @@ export function NewClientWizard({
  <div className="p-3 rounded-lg border border-warning/30 bg-warning/10 text-xs space-y-1">
  <div className="flex items-center gap-2 font-bold text-warning-strong">
  <AlertTriangle className="size-3.5" />
- <span>Alertas Clínicos & Anamnese (Belasis)</span>
+ <span>
+   {nicheSpec.id === "automotive"
+     ? "Observações Técnicas & Veículo"
+     : "Alertas Clínicos & Anamnese"}
+ </span>
  </div>
- {allergies && <p className="text-foreground font-medium">Alergias: {allergies}</p>}
+ {allergies && <p className="text-foreground font-medium">{nicheSpec.id === "automotive" ? "Observação:" : "Alergias:"} {allergies}</p>}
  {healthNotes && <p className="text-muted-foreground">{healthNotes}</p>}
  </div>
  )}

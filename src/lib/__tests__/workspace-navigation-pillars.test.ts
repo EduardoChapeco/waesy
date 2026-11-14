@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  ADMIN_MASTER_ISOLATED_ROUTES,
   getMasterSidebarPillars,
   getSidebarConfig,
   resolveWorkspaceNavigation,
@@ -75,49 +76,49 @@ describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
     }
   });
 
-  it("dynamically adapts Master Sector titles and ordering to global vertical benchmarks", () => {
+  it("dynamically adapts Master Sector titles and ordering without compound jargon", () => {
     const gastroPillars = getMasterSidebarPillars(
       resolveWorkspaceNavigation({ niche: "gastronomy" }),
     );
-    expect(gastroPillars.find((p) => p.id === "comercial")?.label).toBe("Pedidos & KDS");
-    expect(gastroPillars.find((p) => p.id === "catalogo")?.label).toBe("Cardápio & Insumos");
-    expect(gastroPillars.find((p) => p.id === "rh")?.label).toBe("Equipe & Motoboys");
+    expect(gastroPillars.find((p) => p.id === "comercial")?.label).toBe("Pedidos");
+    expect(gastroPillars.find((p) => p.id === "catalogo")?.label).toBe("Cardápio");
+    expect(gastroPillars.find((p) => p.id === "rh")?.label).toBe("Equipe");
 
     const servicesPillars = getMasterSidebarPillars(
       resolveWorkspaceNavigation({ niche: "services" }),
     );
-    expect(servicesPillars.find((p) => p.id === "comercial")?.label).toBe("Agenda & Recepção");
-    expect(servicesPillars.find((p) => p.id === "catalogo")?.label).toBe("Pacotes & Serviços");
-    expect(servicesPillars.find((p) => p.id === "rh")?.label).toBe("Profissionais & Comissões");
+    expect(servicesPillars.find((p) => p.id === "comercial")?.label).toBe("Agenda");
+    expect(servicesPillars.find((p) => p.id === "catalogo")?.label).toBe("Serviços");
+    expect(servicesPillars.find((p) => p.id === "rh")?.label).toBe("Profissionais");
 
     const tourismPillars = getMasterSidebarPillars(
       resolveWorkspaceNavigation({ niche: "tourism" }),
     );
-    expect(tourismPillars.find((p) => p.id === "comercial")?.label).toBe("Comercial & Cotação");
-    expect(tourismPillars.find((p) => p.id === "logistica")?.label).toBe("Operações & Embarques");
-    expect(tourismPillars.find((p) => p.id === "catalogo")?.label).toBe("Catálogo & Tarifários");
-    expect(tourismPillars.find((p) => p.id === "financeiro")?.label).toBe("Financeiro & Câmbio");
+    expect(tourismPillars.find((p) => p.id === "comercial")?.label).toBe("Cotações");
+    expect(tourismPillars.find((p) => p.id === "logistica")?.label).toBe("Embarques");
+    expect(tourismPillars.find((p) => p.id === "catalogo")?.label).toBe("Roteiros");
+    expect(tourismPillars.find((p) => p.id === "financeiro")?.label).toBe("Financeiro");
 
     const legalPillars = getMasterSidebarPillars(
       resolveWorkspaceNavigation({ niche: "legal" }),
     );
-    expect(legalPillars.find((p) => p.id === "comercial")?.label).toBe("Processos & Casos");
-    expect(legalPillars.find((p) => p.id === "logistica")?.label).toBe("Agenda & Prazos");
-    expect(legalPillars.find((p) => p.id === "financeiro")?.label).toBe("Honorários & Financeiro");
+    expect(legalPillars.find((p) => p.id === "comercial")?.label).toBe("Processos");
+    expect(legalPillars.find((p) => p.id === "logistica")?.label).toBe("Prazos");
+    expect(legalPillars.find((p) => p.id === "financeiro")?.label).toBe("Honorários");
 
     const realEstatePillars = getMasterSidebarPillars(
       resolveWorkspaceNavigation({ niche: "real_estate" }),
     );
-    expect(realEstatePillars.find((p) => p.id === "catalogo")?.label).toBe("Carteira de Imóveis");
-    expect(realEstatePillars.find((p) => p.id === "logistica")?.label).toBe("Vistorias & Manutenções");
-    expect(realEstatePillars.find((p) => p.id === "rh")?.label).toBe("Corretores & Comissões");
+    expect(realEstatePillars.find((p) => p.id === "catalogo")?.label).toBe("Imóveis");
+    expect(realEstatePillars.find((p) => p.id === "logistica")?.label).toBe("Vistorias");
+    expect(realEstatePillars.find((p) => p.id === "rh")?.label).toBe("Corretores");
 
     const retailPillars = getMasterSidebarPillars(
       resolveWorkspaceNavigation({ niche: "retail" }),
     );
-    expect(retailPillars.find((p) => p.id === "comercial")?.label).toBe("Vendas & PDV");
-    expect(retailPillars.find((p) => p.id === "catalogo")?.label).toBe("Catálogo & Estoque");
-    expect(retailPillars.find((p) => p.id === "logistica")?.label).toBe("Logística & Expedição");
+    expect(retailPillars.find((p) => p.id === "comercial")?.label).toBe("Vendas");
+    expect(retailPillars.find((p) => p.id === "catalogo")?.label).toBe("Catálogo");
+    expect(retailPillars.find((p) => p.id === "logistica")?.label).toBe("Logística");
   });
 
   it("preserves essential operational submodules in getSidebarConfig across all 17 niches", () => {
@@ -147,6 +148,10 @@ describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
       .readdirSync(routesDir)
       .filter((f) => f.startsWith("workspace.") && f.endsWith(".tsx"));
 
+    const isolatedPaths = new Set<string>(
+      ADMIN_MASTER_ISOLATED_ROUTES.map((r) => r.path),
+    );
+
     const staticWorkspaceRoutes = Array.from(
       new Set(
         routeFiles
@@ -163,7 +168,8 @@ describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
               !r.includes("$") &&
               !r.endsWith("/novo") &&
               r !== "/workspace" &&
-              r !== "/workspace/catalogo",
+              r !== "/workspace/catalogo" &&
+              !isolatedPaths.has(r),
           ),
       ),
     );

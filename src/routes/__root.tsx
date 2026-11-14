@@ -6,14 +6,15 @@ import { CookieBanner } from "@/components/commerce/cookie-banner";
 import appCss from "../styles.css?url";
 import { getThemeSettings, getPublicStoreSettings } from "@/services/cms.functions";
 import { themeInitScript } from "@/lib/theme";
+import { buildBrandThemeCss, resolveThemeStyleAttr } from "@/lib/brand-theme";
 
 function NotFoundComponent() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-lg text-center space-y-4">
-        <h1 className="text-5xl font-bold text-foreground">404 — Página não encontrada</h1>
+        <h1 className="text-5xl font-bold text-foreground">Página não encontrada</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          O endereço solicitado não existe ou foi movido no Waesy Local Marketplace. Consulte nosso mapa do site, documentação técnica para desenvolvedores ou guia para agentes de IA.
+          O endereço solicitado não existe ou foi movido.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -215,7 +216,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const { theme, brand, pixels } = ((Route.useLoaderData?.() as any) || {});
-  const dynamicAccent = brand?.accent_color;
+  const brandThemeCss = buildBrandThemeCss(brand);
+  const themeStyleAttr = resolveThemeStyleAttr(brand?.theme_style);
 
   const metaPixel = pixels?.find((p: any) => p.provider === "meta_pixel")?.pixelId;
   const gaPixel = pixels?.find((p: any) => p.provider === "google_analytics")?.measurementId;
@@ -223,36 +225,17 @@ function RootShell({ children }: { children: ReactNode }) {
   const tiktokPixel = pixels?.find((p: any) => p.provider === "tiktok_pixel")?.pixelId;
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-theme-style={themeStyleAttr}>
       <head>
         <HeadContent />
         {/* Script anti-FOUC: aplica classe .dark/.light antes do primeiro paint */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 
         {/* Dynamic Master Brand Theme Colors (Zero Hardcoding) */}
-        {dynamicAccent && (
+        {brandThemeCss && (
           <style
             id="waesy-brand-theme-vars"
-            dangerouslySetInnerHTML={{
-              __html: `
-                :root {
-                  --magic-accent-primary: ${dynamicAccent};
-                  --primary: ${dynamicAccent};
-                  --ring: ${dynamicAccent};
-                  --color-accent: ${dynamicAccent};
-                  --border-focus: ${dynamicAccent};
-                  --accent-soft: color-mix(in srgb, ${dynamicAccent} 10%, transparent);
-                }
-                .dark, [data-theme="dark"] {
-                  --magic-accent-primary: ${dynamicAccent};
-                  --primary: ${dynamicAccent};
-                  --ring: ${dynamicAccent};
-                  --color-accent: ${dynamicAccent};
-                  --border-focus: ${dynamicAccent};
-                  --accent-soft: color-mix(in srgb, ${dynamicAccent} 18%, transparent);
-                }
-              `.trim(),
-            }}
+            dangerouslySetInnerHTML={{ __html: brandThemeCss }}
           />
         )}
 

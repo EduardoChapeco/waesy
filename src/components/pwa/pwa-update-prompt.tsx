@@ -107,7 +107,7 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
       aria-label="Nova versão disponível"
       className={cn(
         // Posicionamento: acima do BottomNav mobile (bottom-20) e livre no desktop (bottom-6)
-        "fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50",
+        "fixed bottom-20 sm:bottom-6 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-50 flex justify-center",
         // Entrada animada
         "animate-in slide-in-from-bottom-4 fade-in duration-300",
         className
@@ -115,15 +115,13 @@ export function PwaUpdatePrompt({ className }: PwaUpdatePromptProps) {
     >
       <div
         className={cn(
-          // Glassmorphism silencioso — fundo neutro, borda ultra-fina, sombra suave
           "flex items-center gap-3 px-4 py-3 rounded-lg",
-          "bg-background/85 backdrop-blur-xl backdrop-saturate-150",
-          "border border-border/60  shadow-black/10",
-          "max-w-[calc(100vw-2rem)] sm:max-w-sm w-full sm:w-auto"
+          "bg-card border border-border shadow-overlay",
+          "w-full sm:w-auto sm:max-w-sm"
         )}
       >
         {/* Ícone de atualização */}
-        <div className="shrink-0 size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div className="shrink-0 size-8 rounded-lg bg-muted border border-border flex items-center justify-center">
           <ArrowsClockwise
             size={16}
             weight="bold"

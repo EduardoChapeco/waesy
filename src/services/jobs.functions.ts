@@ -742,7 +742,7 @@ export const getEmployerProfileInsights = createServerFn({ method: "GET" })
  // 2. Consultar avaliações em classified_applications
  const { data: classApps } = await supabase
  .from("classified_applications")
- .select("previous_company_rating, previous_company_feedback, reason_for_leaving, last_salary_cents, created_at")
+ .select("previous_company_rating, previous_company_feedback, reason_for_leaving, last_salary_cents, applied_at")
  .ilike("previous_company_name", `%${cleanCompany}%`)
  .not("previous_company_rating", "is", null);
 
@@ -784,7 +784,7 @@ export const getEmployerProfileInsights = createServerFn({ method: "GET" })
  rating: r.previous_company_rating ?? null,
  feedback: r.previous_company_feedback || null,
  reason_for_leaving: r.reason_for_leaving || null,
- date: r.created_at,
+ date: (r as any).created_at || (r as any).applied_at,
  }));
 
   return {

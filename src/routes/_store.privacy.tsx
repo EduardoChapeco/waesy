@@ -50,7 +50,7 @@ function PrivacyTrustAnchorPage() {
         <div className="p-5 rounded-lg border border-border bg-card space-y-2">
           <div className="flex items-center gap-2 text-primary">
             <Lock className="size-4" />
-            <h2 className="text-sm font-bold text-foreground">1. Minimização & Zero-Trust</h2>
+            <h2 className="text-sm font-bold text-foreground">1. Minimização e Zero-Trust</h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Coletamos estritamente os dados necessários para prestação de serviços de comércio local, entrega,

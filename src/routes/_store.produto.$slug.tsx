@@ -25,6 +25,7 @@ import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getPublicExperienceDocumentBySlug } from "@/services/builder.functions";
 import { ProductAiSdrChat } from "@/components/commerce/product-ai-sdr-chat";
 import { addToCart } from "@/services/cart.functions";
+import { registerStorefrontProductInterest } from "@/services/tourism.functions";
 import { getIdentity } from "@/services/identity.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { ProductTelemetry, trackAddToCartEvent } from "@/components/commerce/product-telemetry";
@@ -263,6 +264,267 @@ export const Route = createFileRoute("/_store/produto/$slug")({
   component: ProductPage,
 });
 
+function TravelProductReserveView({
+  product,
+  travelData,
+  currentThumbnailUrl,
+  mediaUrls,
+  storePhone,
+  isOwner,
+  identity,
+  onNavigateEdit,
+}: {
+  product: ProductDetailDTO;
+  travelData: any;
+  currentThumbnailUrl: string | null;
+  mediaUrls: string[];
+  storePhone: string;
+  isOwner: boolean;
+  identity: any;
+  onNavigateEdit: () => void;
+}) {
+  const { setIsCartOpen } = useCartContext();
+  const [inquiryOpen, setInquiryOpen] = useState(false);
+  const [pendingDeparture, setPendingDeparture] = useState<DepartureOption | undefined>(undefined);
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [guestsCount, setGuestsCount] = useState(2);
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const storeId = (product as any)?.store?.id || (product as any)?.store_id;
+
+  const openWhatsappForPackage = (selectedDeparture?: DepartureOption, customLeadSummary?: string) => {
+    const cleanPhone = storePhone ? storePhone.replace(/\D/g, "") : "";
+    if (!cleanPhone) {
+      toast.success("Solicitacao registrada no CRM da loja!");
+      return;
+    }
+    const depInfo = selectedDeparture && selectedDeparture.departure_date
+      ? ` para a saida de ${new Date(selectedDeparture.departure_date + "T00:00:00").toLocaleDateString("pt-BR")}`
+      : "";
+    const msg = encodeURIComponent(
+      `Ola! Tenho interesse no pacote *${product.title}*${depInfo}.${customLeadSummary ? `\n${customLeadSummary}` : " Gostaria de confirmar disponibilidade e reserva!"}`
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
+  };
+
+  const handleTravelReserve = async (selectedDeparture?: DepartureOption) => {
+    const targetVariantId = product.variants?.[0]?.id;
+    if (targetVariantId && (product.priceCents || 0) > 0) {
+      if (identity?.id && storeId) {
+        registerStorefrontProductInterest({
+          data: {
+            productId: product.id,
+            storeId,
+            selectedDeparture: (selectedDeparture || undefined) as any,
+            guestsCount: 1,
+          },
+        }).catch(() => {});
+      }
+      try {
+        await addToCart({
+          data: {
+            variantId: targetVariantId,
+            quantity: 1,
+          },
+        });
+        toast.success("Pacote de viagem adicionado ao carrinho!");
+        setIsCartOpen(true);
+      } catch (err: any) {
+        toast.error(err?.message || "Erro ao adicionar pacote ao carrinho.");
+      }
+      return;
+    }
+
+    if (identity?.id && storeId) {
+      try {
+        const res = await registerStorefrontProductInterest({
+          data: {
+            productId: product.id,
+            storeId,
+            selectedDeparture: (selectedDeparture || undefined) as any,
+            guestsCount: 1,
+          },
+        });
+        if (!res?.requiresContact) {
+          toast.success("Interesse registrado para a agencia!");
+          openWhatsappForPackage(selectedDeparture);
+          return;
+        }
+      } catch {
+        // Fallback para modal de contato se perfil estiver incompleto
+      }
+    }
+
+    setPendingDeparture(selectedDeparture);
+    setInquiryOpen(true);
+  };
+
+  const handleSubmitInquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (contactName.trim().length < 2) {
+      toast.error("Informe seu nome completo.");
+      return;
+    }
+    if (contactPhone.replace(/\D/g, "").length < 8) {
+      toast.error("Informe um WhatsApp valido.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await registerStorefrontProductInterest({
+        data: {
+          productId: product.id,
+          storeId,
+          contactName: contactName.trim(),
+          contactPhone: contactPhone.trim(),
+          contactEmail: contactEmail.trim() || undefined,
+          guestsCount,
+          selectedDeparture: (pendingDeparture || undefined) as any,
+          notes: notes.trim() || undefined,
+        },
+      });
+      toast.success("Solicitacao enviada ao CRM da agencia!");
+      setInquiryOpen(false);
+      openWhatsappForPackage(
+        pendingDeparture,
+        `Nome: ${contactName.trim()} | Passageiros: ${guestsCount}${notes.trim() ? ` | Obs: ${notes.trim()}` : ""}`,
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao registrar solicitacao.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <ProductTelemetry
+        storeId={product.store_id || (product as any)?.storeId || (product as any)?.store?.id}
+        productId={product.id}
+        title={product.title}
+        description={product.description || (product as any)?.summary}
+        priceCents={product.priceCents || 0}
+        currency="BRL"
+        imageUrl={currentThumbnailUrl || product.media?.[0]?.url}
+        brandName={(product as any)?.store?.name || "Waesy"}
+        categoryName="Turismo"
+        sku={(product as any).sku || product.id}
+        inStock={true}
+      />
+      <TravelPackageDetailView
+        packageData={travelData}
+        productTitle={product.title}
+        priceCents={product.priceCents || 0}
+        compareAtCents={product.compareAtCents}
+        coverImageUrl={currentThumbnailUrl}
+        mediaUrls={mediaUrls}
+        storeName={(product as any)?.store?.name}
+        storePhone={storePhone}
+        isOwner={isOwner}
+        onReserveClick={handleTravelReserve}
+        onEditClick={onNavigateEdit}
+      />
+      <ProductAiSdrChat
+        productId={product.id}
+        storeId={storeId}
+        storeName={(product as any)?.store?.name}
+        itemTitle={product.title}
+        niche="tourism"
+        triggerVariant="floating"
+      />
+      <Sheet open={inquiryOpen} onOpenChange={setInquiryOpen}>
+        <SheetContent className="space-y-4">
+          <SheetHeader>
+            <SheetTitle>Solicitar Atendimento</SheetTitle>
+            <SheetDescription>
+              Envie seus dados para a agência responsável.
+            </SheetDescription>
+          </SheetHeader>
+          <form onSubmit={handleSubmitInquiry} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="pkg-lead-name" className="text-xs font-semibold text-foreground">
+                Nome completo
+              </label>
+              <Input
+                id="pkg-lead-name"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="Seu nome completo"
+                className="h-11"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="pkg-lead-phone" className="text-xs font-semibold text-foreground">
+                WhatsApp com DDD
+              </label>
+              <Input
+                id="pkg-lead-phone"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="(49) 99999-9999"
+                className="h-11"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label htmlFor="pkg-lead-email" className="text-xs font-semibold text-foreground">
+                  E-mail (opcional)
+                </label>
+                <Input
+                  id="pkg-lead-email"
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="voce@email.com"
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="pkg-lead-pax" className="text-xs font-semibold text-foreground">
+                  Passageiros
+                </label>
+                <Input
+                  id="pkg-lead-pax"
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={guestsCount}
+                  onChange={(e) => setGuestsCount(Math.max(1, Number(e.target.value) || 1))}
+                  className="h-11"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="pkg-lead-notes" className="text-xs font-semibold text-foreground">
+                Observacoes ou preferencias
+              </label>
+              <Input
+                id="pkg-lead-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ex: quarto duplo, embarque preferencial"
+                className="h-11"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-11 min-h-11 font-semibold cursor-pointer"
+            >
+              {submitting ? "Enviando..." : "Enviar e Falar com a Agencia"}
+            </Button>
+          </form>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
 function ProductPage() {
   const loaderData = (Route.useLoaderData() as any) || {};
   const product = loaderData.productResult as ProductDetailDTO | null;
@@ -294,14 +556,8 @@ function ProductPage() {
         identity.role === "admin")
   );
 
-  const storeSettings = (product as any)?.store?.settings || {};
   const storeSemantics = getNicheSemantics((product as any)?.store);
-  const isTourismStore =
-    storeSemantics.nicheId === "tourism" ||
-    storeSettings.niche === "tourism" ||
-    storeSettings.segment === "tourism" ||
-    storeSettings.type === "tourism" ||
-    (product as any)?.store?.niche === "tourism";
+  const isTourismStore = storeSemantics.nicheId === "tourism";
 
   const isTravelPackage = Boolean(
     isTourismStore ||
@@ -310,10 +566,6 @@ function ProductPage() {
       (product as any)?.metadata?.travel_package ||
       (product as any)?.product_type?.slug === "pacote-viagem" ||
       (product as any)?.product_type?.slug === "turismo" ||
-      (product as any)?.store?.segment === "tourism" ||
-      (product as any)?.store?.segment === "tourism_agency" ||
-      (product as any)?.store?.type === "tourism_agency" ||
-      (product as any)?.store?.settings?.segment === "tourism_agency" ||
       product.title?.toLowerCase().includes("resort") ||
       product.title?.toLowerCase().includes("viagem") ||
       product.title?.toLowerCase().includes("pacote") ||
@@ -348,79 +600,22 @@ function ProductPage() {
       product.store?.whatsapp ||
       (product as any)?.seller?.phone || "";
 
-    const { setIsCartOpen } = useCartContext();
-
-    const handleTravelReserve = async (selectedDeparture?: DepartureOption) => {
-      const targetVariantId = product.variants?.[0]?.id;
-      if (targetVariantId && (product.priceCents || 0) > 0) {
-        try {
-          await addToCart({
-            data: {
-              variantId: targetVariantId,
-              quantity: 1,
-            },
-          });
-          toast.success("Pacote de viagem adicionado ao carrinho!");
-          setIsCartOpen(true);
-        } catch (err: any) {
-          toast.error(err?.message || "Erro ao adicionar pacote ao carrinho.");
-        }
-      } else {
-        const cleanPhone = storePhone ? storePhone.replace(/\D/g, "") : "";
-        if (!cleanPhone) {
-          toast.error("Contato de atendimento da loja não informado.");
-          return;
-        }
-        const depInfo = selectedDeparture && selectedDeparture.departure_date
-          ? ` para a saída de ${new Date(selectedDeparture.departure_date + "T00:00:00").toLocaleDateString("pt-BR")}`
-          : "";
-        const msg = encodeURIComponent(`Olá! Tenho interesse no pacote *${product.title}*${depInfo}. Gostaria de confirmar disponibilidade e reserva!`);
-        window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
-      }
-    };
-
     return (
-      <div className="relative">
-        <ProductTelemetry
-          storeId={product.store_id || (product as any)?.storeId || (product as any)?.store?.id}
-          productId={product.id}
-          title={product.title}
-          description={product.description || (product as any)?.summary}
-          priceCents={product.priceCents || 0}
-          currency="BRL"
-          imageUrl={currentThumbnailUrl || product.media?.[0]?.url}
-          brandName={(product as any)?.store?.name || "Waesy"}
-          categoryName="Turismo"
-          sku={(product as any).sku || product.id}
-          inStock={true}
-        />
-        <TravelPackageDetailView
-          packageData={travelData}
-          productTitle={product.title}
-          priceCents={product.priceCents || 0}
-          compareAtCents={product.compareAtCents}
-          coverImageUrl={currentThumbnailUrl}
-          mediaUrls={mediaUrls}
-          storeName={(product as any)?.store?.name}
-          storePhone={storePhone}
-          isOwner={isOwner}
-          onReserveClick={handleTravelReserve}
-          onEditClick={() =>
-            router.navigate({
-              to: "/workspace/catalogo/produtos/$id",
-              params: { id: product.id },
-            })
-          }
-        />
-        <ProductAiSdrChat
-          productId={product.id}
-          storeId={(product as any)?.store?.id || (product as any)?.store_id}
-          storeName={(product as any)?.store?.name}
-          itemTitle={product.title}
-          niche="tourism"
-          triggerVariant="floating"
-        />
-      </div>
+      <TravelProductReserveView
+        product={product}
+        travelData={travelData}
+        currentThumbnailUrl={currentThumbnailUrl}
+        mediaUrls={mediaUrls}
+        storePhone={storePhone}
+        isOwner={isOwner}
+        identity={identity}
+        onNavigateEdit={() =>
+          router.navigate({
+            to: "/workspace/catalogo/produtos/$id",
+            params: { id: product.id },
+          })
+        }
+      />
     );
   }
 

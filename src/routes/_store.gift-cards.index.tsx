@@ -192,9 +192,9 @@ function GiftCardPurchaseStudioPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-background text-foreground w-full max-w-5xl mx-auto space-y-6 pb-28 px-4 sm:px-6 animate-in fade-in duration-200">
+    <div className="min-h-dvh bg-background text-foreground w-full max-w-5xl mx-auto space-y-6 pb-28 px-0 sm:px-6 animate-in fade-in duration-200">
       {/* ── 1. Top Header ── */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-2">
+      <div className="flex items-center justify-between gap-3 border-b border-border pb-3 pt-2">
         <div className="flex items-center gap-3">
           <NativeBackButton fallbackHref="/conta/gift-cards" />
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">

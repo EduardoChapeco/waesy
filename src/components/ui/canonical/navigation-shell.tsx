@@ -21,7 +21,7 @@ export const CanonicalAppHeader = React.forwardRef<HTMLElement, CanonicalAppHead
       <header
         ref={ref}
         className={cn(
-          "sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-border bg-card/90 px-4 backdrop-blur-sm transition-colors",
+          "sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-border bg-card px-4 transition-colors",
           className
         )}
         {...props}
@@ -70,7 +70,7 @@ export const CanonicalBottomBar = React.forwardRef<HTMLElement, CanonicalBottomB
         ref={ref}
         aria-label="Navegação móvel"
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 flex h-16 w-full items-center justify-around border-t border-border bg-card/95 px-2 pb-safe backdrop-blur-sm md:hidden",
+          "fixed bottom-0 left-0 right-0 z-30 flex h-16 w-full items-center justify-around border-t border-border bg-card px-2 pb-safe md:hidden",
           className
         )}
         {...props}

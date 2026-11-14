@@ -699,7 +699,7 @@ export function shouldPublishItemToMarketplace(
   if (item.is_published_to_marketplace === false) {
     return false;
   }
-  const metadata = (item.metadata ?? item.settings ?? {}) as Record<string, any>;
+  const metadata = (item.metadata ?? item.attributes ?? item.settings ?? {}) as Record<string, any>;
   if (metadata.is_published_to_marketplace === false) {
     return false;
   }

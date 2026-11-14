@@ -409,7 +409,7 @@ function SecurityTelemetryPage() {
                         <div>
                           <p className="font-bold text-foreground font-mono">{atk.attack_type}</p>
                           {atk.blocked && (
-                            <span className="text-3xs bg-red-500/10 text-red-600 border border-red-500/20 px-2 py-0.2 rounded font-bold inline-flex items-center gap-1 mt-1">
+                            <span className="text-3xs bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200 border border-red-200 dark:border-red-800 px-2 py-1 rounded font-bold inline-flex items-center gap-1 mt-1">
                               <Ban className="size-2.5" /> Auto-Bloqueado
                             </span>
                           )}

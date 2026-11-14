@@ -6,7 +6,6 @@ import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Sparkles,
   CheckCircle2,
   Users,
   Building2,
@@ -98,21 +97,21 @@ function QuoteBundleComparisonPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground">
       {/* ── Header Especial de Comparação de Múltiplos Orçamentos ── */}
-      <div className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border/70 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 space-y-3">
+      <div className="sticky top-0 z-30 bg-card border-b border-border">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4 space-y-3">
           {/* Topo: Identificação do Cliente, Agência e Composição */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <Link
                 to="/classificados"
-                className="size-11 rounded-lg border border-border/60 bg-muted/40 hover:bg-muted flex items-center justify-center text-foreground shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="size-11 rounded-lg border border-border bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Voltar"
               >
                 <ArrowLeft className="size-4" />
               </Link>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge className="bg-primary/10 text-primary border border-primary/25 text-xs font-bold">
+                  <Badge className="bg-muted text-foreground border border-border text-xs font-bold">
                     Proposta Comparativa ({items.length} Opções)
                   </Badge>
                   {bundle.client_name && (
@@ -240,7 +239,7 @@ function QuoteBundleComparisonPage() {
           {/* Nota do Consultor para a Opção Ativa */}
           {(activeItem?.advisor_notes || bundle.intro_notes) && (
             <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-2 text-xs text-foreground">
-              <Sparkles className="size-4 text-primary shrink-0 mt-1" />
+              <Plane className="size-4 text-primary shrink-0 mt-1" />
               <div>
                 <span className="font-bold text-primary mr-2">
                   Nota do Consultor ({activeItem?.option_label || `Opção ${selectedIndex + 1}`}):

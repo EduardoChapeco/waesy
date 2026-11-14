@@ -312,7 +312,7 @@ export function CardDetailPanel({
                       </Badge>
                     )}
                   </div>
-                  <h3 className="text-lg font-black text-foreground truncate">{departure.client_name}</h3>
+                  <h3 className="text-lg font-black text-foreground line-clamp-2 text-anti-truncate">{departure.client_name}</h3>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                     {departure.destination_city && (
                       <span className="flex items-center gap-1 font-semibold text-foreground">

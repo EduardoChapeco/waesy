@@ -58,8 +58,8 @@ export function IFoodRecentStoresRail({
             to={`/loja/${store.slug}` as any}
             className="w-28 sm:w-32 h-32 sm:h-36 rounded-2xl bg-muted/40 hover:bg-muted/70 border border-border/60 p-2 flex flex-col items-center justify-between shrink-0 snap-start transition-transform duration-200 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs group text-center"
           >
-            {/* Logo Redondo Central com Sombra */}
-            <div className="size-14 sm:size-16 rounded-full overflow-hidden border border-border/80 bg-background flex items-center justify-center shrink-0 shadow-xs relative group-hover:scale-105 transition-transform">
+            {/* Logo Redondo Central */}
+            <div className="size-14 sm:size-16 rounded-full overflow-hidden border border-border bg-background flex items-center justify-center shrink-0 relative group-hover:scale-105 transition-transform">
               {store.logoUrl ? (
                 <img
                   src={store.logoUrl}
@@ -79,7 +79,7 @@ export function IFoodRecentStoresRail({
 
             {/* Badge Verde ("R$ 5 off" ou "Grátis") */}
             {store.badge && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.2 rounded-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-3xs font-black tracking-tight leading-none">
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-sm bg-emerald-100 text-emerald-950 dark:bg-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 text-3xs font-black tracking-tight leading-none">
                 <Tag size={10} weight="bold" />
                 <span>{store.badge}</span>
               </div>

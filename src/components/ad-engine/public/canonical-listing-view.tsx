@@ -323,7 +323,7 @@ export function CanonicalListingView({
 
               {/* Badges de Destaque */}
               <div className="absolute top-3 left-3 flex items-center gap-2 flex-wrap">
-                <Badge className="bg-background/90 text-foreground backdrop-blur-xs text-2xs font-semibold">
+                <Badge className="bg-card text-foreground border border-border text-2xs font-semibold">
                   {nicheConfig?.label || "Anúncio"}
                 </Badge>
                 {listing.status === "draft" && (

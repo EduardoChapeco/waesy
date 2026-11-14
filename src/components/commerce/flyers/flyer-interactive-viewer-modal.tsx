@@ -164,16 +164,16 @@ export function FlyerInteractiveViewerModal({
             "flex items-center justify-between px-4 sm:px-6 py-3 border-b z-20 shrink-0",
             isRetro
               ? "bg-warning text-red-950 border-warning font-sans"
-              : "bg-background/80 backdrop-blur-md text-foreground border-border/40"
+              : "bg-background text-foreground border-border"
           )}
         >
           <div className="flex items-center gap-3 min-w-0">
             {isRetro ? (
-              <span className="px-2 py-1 rounded bg-red-600 text-warning-strong text-2xs font-black uppercase tracking-wider shadow-xs animate-pulse motion-reduce:animate-none">
+              <span className="px-2 py-1 rounded bg-red-600 text-warning-strong text-2xs font-black uppercase tracking-wider animate-pulse motion-reduce:animate-none">
                 {currentFlyer.badge_text || "OFERTAÇO"}
               </span>
             ) : (
-              <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-2xs font-bold">
+              <span className="px-2 py-1 rounded-full bg-muted border border-border text-foreground text-2xs font-bold">
                 {currentFlyer.badge_text || "Encarte da Semana"}
               </span>
             )}
@@ -255,7 +255,7 @@ export function FlyerInteractiveViewerModal({
         </div>
 
         {/* ─── Palco Central da Imagem com Hotspots Interativos ────────── */}
-        <div className="relative flex-1 bg-foreground/90 flex items-center justify-center overflow-hidden select-none">
+        <div className="relative flex-1 bg-muted flex items-center justify-center overflow-hidden select-none">
           {/* Navegação Anterior / Próximo Lateral */}
           {flyers.length > 1 && (
             <>
@@ -263,7 +263,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handlePrev}
                 aria-label="Encarte anterior"
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-foreground/60 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center hover:bg-foreground/80 hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-card text-foreground border border-border shadow-overlay flex items-center justify-center hover:bg-muted hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronLeft className="size-6" />
               </button>
@@ -272,7 +272,7 @@ export function FlyerInteractiveViewerModal({
                 type="button"
                 onClick={handleNext}
                 aria-label="Próximo encarte"
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-foreground/60 backdrop-blur-md text-foreground border border-white/20 flex items-center justify-center hover:bg-foreground/80 hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-30 size-11 min-h-11 min-w-11 rounded-full bg-card text-foreground border border-border shadow-overlay flex items-center justify-center hover:bg-muted hover:scale-105 active:scale-95 transition-transform duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ChevronRight className="size-6" />
               </button>
@@ -342,16 +342,17 @@ export function FlyerInteractiveViewerModal({
 
           {/* ─── Mini-Card Flutuante do Produto Selecionado (Bottom-Right) ─── */}
           {activeHotspot && (
-            <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-84 z-40 bg-background/95 backdrop-blur-xl p-4 rounded-lg border border-border/80  text-foreground animate-in fade-in slide-in-from-bottom-3 duration-200">
-              <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
+            <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-84 z-40 bg-card p-4 rounded-lg border border-border shadow-overlay text-foreground animate-in fade-in slide-in-from-bottom-3 duration-200">
+              <div className="flex items-start justify-between gap-2 pb-2 border-b border-border">
                 <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   <Tag className="size-3.5 text-primary" />
                   <span>Oferta Vinculada</span>
                 </div>
                 <button
                   type="button"
+                  aria-label="Fechar"
                   onClick={() => setActiveHotspot(null)}
-                  className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="size-11 sm:size-8 min-h-11 sm:min-h-0 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -419,7 +420,7 @@ export function FlyerInteractiveViewerModal({
         </div>
 
         {/* ─── Footer: Dica de Toque & Gaveta de Todos os Produtos ──── */}
-        <div className="px-4 py-3 bg-foreground/80 border-t border-white/10 flex items-center justify-between text-2xs text-zinc-400 shrink-0">
+        <div className="px-4 py-3 bg-neutral-900 border-t border-neutral-800 flex items-center justify-between text-2xs text-neutral-300 shrink-0">
           <div className="flex items-center gap-2">
             <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
             <span>

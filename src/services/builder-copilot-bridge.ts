@@ -70,12 +70,10 @@ export function buildSpreadsheetPayload(title: string, userPrompt: string): {
     return {
       columns: ["Data", "Descrição", "Categoria", "Entrada (R$)", "Saída (R$)", "Saldo (R$)"],
       rows: [
-        ["2026-10-15", "Venda Balcão PDV 101", "Receita", 650.0, 0.0, 650.0],
-        ["2026-10-15", "Fornecedor Insumos", "Despesa", 0.0, 220.0, 430.0],
-        ["2026-10-16", "Pedido Delivery Waesy 82", "Receita", 185.0, 0.0, 615.0],
-        ["2026-10-16", "Manutenção e Serviços", "Despesa", 0.0, 90.0, 525.0],
+        ["[Modelo]", "Receita a lançar (editar linha)", "Receita", 0.0, 0.0, 0.0],
+        ["[Modelo]", "Despesa operacional (editar linha)", "Despesa", 0.0, 0.0, 0.0],
       ],
-      summary: { total_entrada: 835.0, total_saida: 310.0, saldo_liquido: 525.0 },
+      summary: { total_entrada: 0.0, total_saida: 0.0, saldo_liquido: 0.0 },
     };
   }
 
@@ -83,23 +81,20 @@ export function buildSpreadsheetPayload(title: string, userPrompt: string): {
     return {
       columns: ["Nome / Razão Social", "Segmento", "Telefone / WhatsApp", "Cidade", "Status"],
       rows: [
-        ["Mercado Central SMO", "Varejo", "(49) 99821-4400", "São Miguel do Oeste", "Qualificado"],
-        ["Agropecuária Fronteira", "Agronegócio", "(49) 99112-3344", "Chapecó", "Proposta Enviada"],
-        ["Restaurante Horizonte", "Gastronomia", "(49) 98833-2211", "Chapecó", "Em Atendimento"],
+        ["[Modelo] Contato a preencher", "Segmento do cliente", "Informe WhatsApp", "Sua Cidade", "Novo"],
       ],
-      summary: { total_leads: 3, taxa_conversao: 33.3 },
+      summary: { total_leads: 0, taxa_conversao: 0 },
     };
   }
 
-  // Padrão Geral de Métricas
+  // Estrutura em branco para métricas reais
   return {
     columns: ["Indicador / Item", "Meta", "Realizado", "Desvio (%)", "Status"],
     rows: [
-      ["Novos Clientes", "50", "42", "-16%", "Atenção"],
-      ["Faturamento Mensal (R$)", "45.000", "48.200", "+7,1%", "Atingido"],
-      ["Ticket Médio (R$)", "120", "135", "+12,5%", "Excelente"],
+      ["[Modelo] Receita Mensal", "Definir meta", "A preencher", "0%", "Pendente"],
+      ["[Modelo] Conversões", "Definir meta", "A preencher", "0%", "Pendente"],
     ],
-    summary: { cumprimento_geral: 101.2 },
+    summary: { cumprimento_geral: 0 },
   };
 }
 
@@ -212,10 +207,10 @@ export function buildWebsitePayload(title: string, userPrompt: string): {
       },
       {
         type: "cta",
-        title: "Pronto para fazer seu pedido?",
+        title: "Pronto para falar com nossa equipe?",
         content: {
-          buttonText: "Entrar em Contato Agora",
-          actionUrl: "https://wa.me/5549999999999",
+          buttonText: "Solicitar Atendimento",
+          actionUrl: "#contato",
         },
       },
     ],
@@ -741,6 +736,7 @@ export const getBuilderDocumentFn = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
     const db = getServerClient();
     const { data: doc, error } = await db
       .from("workspace_builder_documents")
@@ -749,6 +745,15 @@ export const getBuilderDocumentFn = createServerFn({ method: "GET" })
       .single();
 
     if (error || !doc) throw new Error("Documento não encontrado");
+    if (!doc.is_public) {
+      if (!identity?.id) throw new Error("Acesso negado a documento privado.");
+      const isAuthor = doc.author_profile_id === identity.id;
+      if (!isAuthor && doc.store_id) {
+        assertStoreAccess(identity, STAFF_ROLES, doc.store_id);
+      } else if (!isAuthor) {
+        throw new Error("Acesso negado a este documento.");
+      }
+    }
     return {
       id: doc.id,
       storeId: doc.store_id,
@@ -906,7 +911,7 @@ export const persistCopilotGeneratedArtifactFn = createServerFn({ method: "POST"
           success: true,
           targetTable: "experience_documents",
           recordId: createdPage.id,
-          redirectRoute: `/workspace/aparencia`,
+          redirectRoute: `/workspace/builder/${createdPage.id}/editor`,
         };
       }
 
@@ -1021,9 +1026,79 @@ export const persistCopilotGeneratedArtifactFn = createServerFn({ method: "POST"
         success: true,
         targetTable: "workspace_builder_documents",
         recordId: savedDoc.id,
-        redirectRoute: `/workspace/copilot`,
+        redirectRoute: `/workspace/builder?doc=${encodeURIComponent(savedDoc.id)}`,
       };
     },
   );
+
+export interface UnifiedBuilderDocSummaryDTO {
+  id: string;
+  source: "workspace_builder" | "experience_page";
+  docType: string;
+  title: string;
+  slug: string | null;
+  updatedAt: string;
+  editorHref: string;
+}
+
+export const listUnifiedBuilderDocumentsFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<UnifiedBuilderDocSummaryDTO[]> => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) return [];
+
+    const db = getServerClient();
+    const storeId = (identity as any).store_id || (identity as any).activeStoreId || null;
+
+    const builderQuery = db
+      .from("workspace_builder_documents")
+      .select("id, doc_type, title, slug, updated_at")
+      .eq("author_profile_id", identity.id)
+      .order("updated_at", { ascending: false })
+      .limit(30);
+
+    const expQuery = storeId
+      ? db
+          .from("experience_documents")
+          .select("id, document_type, title, slug, updated_at")
+          .eq("store_id", storeId)
+          .order("updated_at", { ascending: false })
+          .limit(30)
+      : Promise.resolve({ data: [] });
+
+    const [builderRes, expRes] = await Promise.all([builderQuery, expQuery]);
+
+    const merged: UnifiedBuilderDocSummaryDTO[] = [];
+
+    if (Array.isArray(builderRes?.data)) {
+      for (const row of builderRes.data) {
+        merged.push({
+          id: row.id,
+          source: "workspace_builder",
+          docType: row.doc_type || "document",
+          title: row.title || "Documento",
+          slug: row.slug || null,
+          updatedAt: row.updated_at || new Date().toISOString(),
+          editorHref: `/workspace/builder?doc=${encodeURIComponent(row.id)}`,
+        });
+      }
+    }
+
+    if (Array.isArray((expRes as any)?.data)) {
+      for (const row of (expRes as any).data) {
+        merged.push({
+          id: row.id,
+          source: "experience_page",
+          docType: row.document_type || "website",
+          title: row.title || "Página Omni",
+          slug: row.slug || null,
+          updatedAt: row.updated_at || new Date().toISOString(),
+          editorHref: `/workspace/builder/${encodeURIComponent(row.id)}/editor`,
+        });
+      }
+    }
+
+    return merged.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+);
 
 

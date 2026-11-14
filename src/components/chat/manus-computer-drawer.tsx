@@ -18,6 +18,8 @@ import {
   CheckCircle2,
   Monitor,
   RefreshCw,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react'
 
 export interface ManusComputerStep {
@@ -43,6 +45,7 @@ interface ManusComputerDrawerProps {
   agentName?: string
   taskTitle?: string
   steps?: ManusComputerStep[]
+  executionStatus?: 'idle' | 'running' | 'completed' | 'failed'
 }
 
 export function ManusComputerDrawer({
@@ -51,6 +54,7 @@ export function ManusComputerDrawer({
   agentName = 'Waesy 2.0 Lite',
   taskTitle = 'Execução Autônoma Multi-Agente',
   steps = [],
+  executionStatus,
 }: ManusComputerDrawerProps) {
   const [currentStepIdx, setCurrentStepIdx] = useState(0)
   const [activeToolTab, setActiveToolTab] = useState<'bash' | 'browser' | 'editor'>('editor')
@@ -59,6 +63,8 @@ export function ManusComputerDrawer({
 
   const hasSteps = Array.isArray(steps) && steps.length > 0
   const currentStep = hasSteps ? (steps[currentStepIdx] || steps[0]) : null
+  const derivedStatus: 'idle' | 'running' | 'completed' | 'failed' =
+    executionStatus || (!hasSteps ? 'idle' : 'completed')
 
   const handleSelectStep = (idx: number) => {
     setCurrentStepIdx(idx)
@@ -90,10 +96,30 @@ export function ManusComputerDrawer({
 
             <Badge
               variant="outline"
-              className="text-xs font-semibold gap-2 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+              className={
+                derivedStatus === 'failed'
+                  ? 'text-xs font-semibold gap-2 bg-destructive/10 text-destructive border-destructive/30'
+                  : derivedStatus === 'running'
+                    ? 'text-xs font-semibold gap-2 bg-primary/10 text-primary border-primary/30'
+                    : derivedStatus === 'idle'
+                      ? 'text-xs font-semibold gap-2 bg-muted text-muted-foreground border-border/60'
+                      : 'text-xs font-semibold gap-2 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+              }
             >
-              <CheckCircle2 className="size-3.5" />
-              O Waesy concluiu a tarefa
+              {derivedStatus === 'failed' ? (
+                <AlertCircle className="size-3.5" />
+              ) : derivedStatus === 'running' ? (
+                <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+              ) : (
+                <CheckCircle2 className="size-3.5" />
+              )}
+              {derivedStatus === 'failed'
+                ? 'Execução com falha'
+                : derivedStatus === 'running'
+                  ? 'Execução em andamento'
+                  : derivedStatus === 'idle'
+                    ? 'Aguardando execução'
+                    : 'Tarefa concluída'}
             </Badge>
           </div>
 

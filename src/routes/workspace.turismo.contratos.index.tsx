@@ -175,15 +175,15 @@ export default function WorkspaceContractsIndexPage() {
               return (
                 <Card
                   key={c.id}
-                  className="rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card p-4 sm:p-5 space-y-4 hover:border-black/[0.12] dark:hover:border-white/[0.16] transition-colors flex flex-col justify-between shadow-none"
+                  className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-4 hover:border-foreground transition-colors flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0">
                         <span className="text-xs font-mono text-muted-foreground uppercase font-bold">
                           Token: {c.public_token}
                         </span>
-                        <h3 className="text-sm font-bold text-foreground line-clamp-1">
+                        <h3 className="text-sm font-bold text-foreground line-clamp-2 text-anti-truncate">
                           {c.contract_title}
                         </h3>
                       </div>

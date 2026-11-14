@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaqBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { ChevronDown, HelpCircle } from "lucide-react";
 
 export interface FaqCleanAccordionProps {
@@ -35,10 +36,7 @@ export const FaqCleanAccordion: React.FC<FaqCleanAccordionProps> = ({
     full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
-  const customStyle: React.CSSProperties = {
-    backgroundColor: styling?.backgroundColor || undefined,
-    color: styling?.textColor || undefined,
-  };
+  const customStyle = getSectionStyle(styling).style;
 
   const items = data.items ?? [];
 

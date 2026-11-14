@@ -165,7 +165,7 @@ export const searchTravelSuppliers = createServerFn({ method: 'GET' })
 
       let q = db
         .from('travel_suppliers')
-        .select('id, name, kind, city, country, rating, phone, email, commission_rate')
+        .select('id, name, kind, city, country, phone, email, commission_rate')
         .eq('store_id', storeId)
         .ilike('name', `%${data.search}%`)
         .order('name')

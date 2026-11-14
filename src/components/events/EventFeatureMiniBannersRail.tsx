@@ -65,12 +65,12 @@ export function EventFeatureMiniBannersRail({
                 />
               )}
 
-              <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+              <div className="absolute inset-0 bg-neutral-950/60 pointer-events-none" />
 
               {/* Topo: Badge */}
               <div className="relative z-10">
                 {item.badgeText && (
-                  <span className="text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-full bg-card/20 backdrop-blur-xs border border-white/30 text-primary-foreground inline-block">
+                  <span className="text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-50 inline-block">
                     {item.badgeText}
                   </span>
                 )}
@@ -79,17 +79,17 @@ export function EventFeatureMiniBannersRail({
               {/* Base: Chamada e Chip de Ação */}
               <div className="relative z-10 space-y-2">
                 <div>
-                  <h3 className="text-xs sm:text-sm font-bold leading-tight line-clamp-2 drop-shadow-xs">
+                  <h3 className="text-xs sm:text-sm font-bold leading-tight line-clamp-2 text-anti-truncate text-neutral-50">
                     {item.title}
                   </h3>
                   {item.subtitle && (
-                    <p className="text-3xs text-primary-foreground/80 line-clamp-1 mt-1 drop-shadow-xs">
+                    <p className="text-3xs text-neutral-200 line-clamp-1 mt-1">
                       {item.subtitle}
                     </p>
                   )}
                 </div>
 
-                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-card/20 backdrop-blur-md text-primary-foreground text-3xs font-bold group-hover:bg-card/30 transition-colors">
+                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-50 text-3xs font-bold group-hover:bg-neutral-800 transition-colors">
                   <span>{item.actionText || "Conferir"}</span>
                   <CaretRight size={10} weight="bold" />
                 </div>

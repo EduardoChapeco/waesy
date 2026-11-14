@@ -469,94 +469,60 @@ function AdminMasterHotpagesPage() {
  <button
  onClick={() => setActiveMainTab("hero_module")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
+ "flex items-center justify-center gap-2 px-4 min-h-11 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeMainTab === "hero_module"
- ? "bg-background text-foreground border border-border/60"
- : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+ ? "bg-background text-foreground border border-border"
+ : "text-muted-foreground hover:text-foreground hover:bg-muted"
  )}
  >
  <LayoutGrid className="size-4 text-primary" />
- <span>1. Cards Herói do Topo (Módulos 16:9)</span>
+ <span>Cards Herói</span>
  </button>
 
  <button
  onClick={() => setActiveMainTab("category_hub")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
+ "flex items-center justify-center gap-2 px-4 min-h-11 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeMainTab === "category_hub"
- ? "bg-background text-foreground border border-border/60"
- : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+ ? "bg-background text-foreground border border-border"
+ : "text-muted-foreground hover:text-foreground hover:bg-muted"
  )}
  >
  <Tag className="size-4 text-primary" />
- <span>2. Botões de Supercategorias (Chips)</span>
+ <span>Supercategorias</span>
  </button>
 
  <button
  onClick={() => setActiveMainTab("editorial_card")}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
+ "flex items-center justify-center gap-2 px-4 min-h-11 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
  activeMainTab === "editorial_card"
- ? "bg-background text-foreground border border-border/60"
- : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+ ? "bg-background text-foreground border border-border"
+ : "text-muted-foreground hover:text-foreground hover:bg-muted"
  )}
  >
  <Layers className="size-4 text-primary" />
- <span>3. Coleções e Hotpages Editoriais</span>
+ <span>Coleções Editoriais</span>
  </button>
 
         <button
           onClick={() => setActiveMainTab("drawer_module")}
           className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            "flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-xs font-bold transition-colors duration-200",
+            "flex items-center justify-center gap-2 px-4 min-h-11 rounded-lg text-xs font-bold transition-colors duration-200 cursor-pointer",
             activeMainTab === "drawer_module"
-              ? "bg-background text-foreground border border-border/60"
-              : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+              ? "bg-background text-foreground border border-border"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
           )}
         >
           <LayoutGrid className="size-4 text-primary" />
-          <span>4. Menu Lateral Mobile (iFood / Threads)</span>
+          <span>Menu Lateral Mobile</span>
         </button>
- </div>
-
- {/* ── Informações Explicativas da Aba Ativa ── */}
- <div className="p-4 rounded-lg bg-card border border-border/60 text-xs text-muted-foreground flex items-center justify-between">
- <div>
- {activeMainTab === "hero_module" && (
- <p>
- <strong className="text-foreground">Cards Herói do Topo (Exclusivo da Home):</strong> Cards 16:9
- panorâmicos representando os 8 grandes módulos do Super App (Classificados, Mercado, Gastronomia, Empregos, etc.).
- São <strong>100% limpos</strong> de textos/badges HTML por padrão — a arte gráfica enviada já contém a identidade visual.
- </p>
- )}
- {activeMainTab === "category_hub" && (
- <p>
- <strong className="text-foreground">Botões de Supercategorias (Continuação):</strong> Fileira de botões (chips)
- logo abaixo dos cards grandes contendo as categorias adicionais (Farmácia, Bebidas, Açougue, Eletrônicos, Moda, Casa, Pet, etc.).
- Permite ícones PNG transparentes 1:1 e rotas diretas.
- </p>
- )}
- {activeMainTab === "editorial_card" && (
- <p>
- <strong className="text-foreground">Coleções & Hotpages Editoriais (Trilho de Hotpages):</strong> Seção temático-sazonal
- posicionada abaixo dos Banners e Stories (ex: "Ofertas Relâmpago", "Almoço Rápido", "Mercado em 15 Min").
- </p>
- )}
-        {activeMainTab === "drawer_module" && (
-          <p>
-            <strong className="text-foreground">Menu Lateral Mobile (Paridade iFood / Threads):</strong> Módulos e atalhos exibidos na
-            barra lateral acionada pelo botão superior esquerdo. Suporta seções semânticas ("Categorias", "Destaques para Explorar",
-            "Destaques do Waesy", "Seleção"), cards amplos 2 colunas, squircles 4 colunas com badges e alternador Grade/Lista.
-            <strong> Itens não são excluídos</strong>, apenas desativados para preservação histórica.
-          </p>
-        )}
- </div>
  </div>
 
  {/* ── Sub-Filtro por Módulo (Visível principalmente na aba de Hotpages Editoriais) ── */}
         {(activeMainTab === "editorial_card" || activeMainTab === "category_hub") && (
  /* design-lint-ignore DL-30 reason:"Barra horizontal de sub-filtros de modulos com overflow nativo" expiry:"2027-12-31" */
- <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
+ <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel no-scrollbar pb-2 scrollbar-hide border-b border-border">
  {MODULE_TABS.map((tab) => {
  const isSelected = selectedModuleTab === tab.id;
  const count =
@@ -569,10 +535,10 @@ function AdminMasterHotpagesPage() {
  key={tab.id}
  onClick={() => setSelectedModuleTab(tab.id)}
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
- "px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 flex items-center gap-2",
+ "px-3 min-h-11 sm:min-h-9 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-200 flex items-center gap-2 cursor-pointer",
  isSelected
- ? "bg-foreground text-background shadow-xs font-bold"
- : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+ ? "bg-foreground text-background font-bold"
+ : "bg-muted text-muted-foreground hover:text-foreground"
  )}
  >
  <span>{tab.label}</span>
@@ -580,8 +546,8 @@ function AdminMasterHotpagesPage() {
  className={cn(
  "text-2xs px-2 py-1 rounded-md font-medium",
  isSelected
- ? "bg-background/20 text-background"
- : "bg-background/80 text-muted-foreground"
+ ? "bg-background text-foreground"
+ : "bg-background text-muted-foreground"
  )}
  >
  {count}
@@ -628,7 +594,7 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative flex flex-col justify-end aspect-16/9 rounded-lg sm:rounded-lg border border-border/80 bg-card overflow-hidden transition-colors duration-200 duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
+ className="group relative flex flex-col justify-end aspect-16/9 rounded-lg border border-border bg-card overflow-hidden transition-colors duration-200 hover:border-foreground"
  >
  {item.cover_image_url ? (
  <img
@@ -638,15 +604,15 @@ function AdminMasterHotpagesPage() {
  loading="lazy"
  />
  ) : (
- <div className="absolute inset-0 size-full bg-muted flex items-center justify-center text-muted-foreground/40 font-bold text-xs">
+ <div className="absolute inset-0 size-full bg-muted flex items-center justify-center text-muted-foreground font-bold text-xs">
  {item.title}
  </div>
  )}
 
  {/* Se explicitamente habilitado título */}
  {item.show_title && (
- <div className="relative z-10 p-3 bg-linear-to-t from-black/80 via-black/20 to-transparent">
- <p className="text-xs font-bold text-foreground leading-tight truncate">
+ <div className="relative z-10 p-3 bg-card border-t border-border">
+ <p className="text-xs font-bold text-foreground leading-tight line-clamp-2 text-anti-truncate">
  {item.title}
  </p>
  </div>
@@ -654,14 +620,14 @@ function AdminMasterHotpagesPage() {
 
  {/* Rota Tag */}
  <div className="absolute bottom-2 left-2 z-20">
- <span className="text-xs font-mono font-bold bg-foreground/75 text-foreground/90 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-xs">
+ <span className="text-xs font-mono font-bold bg-card text-foreground px-2 py-1 rounded-lg border border-border">
  {item.target_route || `/${item.slug.replace(/^home-/, "")}`}
  </span>
  </div>
 
  {/* Ações de Hover */}
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1">
+ <div className="bg-background p-1 rounded-lg border border-border flex items-center gap-1">
  <Button
  size="sm"
  variant="ghost"
@@ -860,12 +826,12 @@ function AdminMasterHotpagesPage() {
  {showBadgeOnCard && (
  <div className="flex items-center gap-2 flex-wrap">
  {item.badge_label && (
- <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card/25 backdrop-blur-md text-foreground border border-white/20">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-card text-foreground border border-border">
  {item.badge_label}
  </span>
  )}
  {item.hero_stat_badge && (
- <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary/30">
+ <span className="inline-block px-2 py-1 rounded-md text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground border border-primary">
  {item.hero_stat_badge}
  </span>
  )}
@@ -873,14 +839,14 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showTitleOnCard && item.title && (
- <h3 className="text-xs sm:text-sm font-semibold text-foreground leading-tight line-clamp-2">
+ <h3 className="text-xs sm:text-sm font-semibold text-foreground leading-tight line-clamp-2 text-anti-truncate">
  {item.title}
  </h3>
  )}
  </div>
 
  <div className="absolute top-2 right-2 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-background/90 backdrop-blur-md p-1 rounded-lg border border-border/80 flex items-center gap-1">
+ <div className="bg-background p-1 rounded-lg border border-border flex items-center gap-1">
  <Button
  size="sm"
  variant="ghost"
@@ -932,15 +898,15 @@ function AdminMasterHotpagesPage() {
  >
  <form onSubmit={handleSubmit} className="space-y-4 p-1 max-h-full sm:max-h-180 overflow-y-auto no-scrollbar pr-1">
  {/* Pré-visualização ao Vivo */}
- <div className="p-4 rounded-lg bg-muted/30 border border-border/80 space-y-2">
+ <div className="p-4 rounded-lg bg-muted border border-border space-y-2">
  <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
  <Eye className="size-3.5 text-primary" />
  Pré-visualização em Tempo Real
  </span>
 
  {templateType === "category_hub" ? (
- <div className="p-3 rounded-lg bg-card border border-border/80 flex items-center gap-3">
- <div className="size-11 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
+ <div className="p-3 rounded-lg bg-card border border-border flex items-center gap-3">
+ <div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0 border border-border overflow-hidden">
  {customIconUrl ? (
  <img src={customIconUrl} alt="Preview" className="size-7 object-contain" />
  ) : (
@@ -953,7 +919,7 @@ function AdminMasterHotpagesPage() {
  </div>
  </div>
  ) : (
- <div className={`relative aspect-16/9 rounded-lg overflow-hidden bg-card border border-border/80 ${showShadow ? "shadow-xs" : "shadow-xs"}`}>
+ <div className="relative aspect-16/9 rounded-lg overflow-hidden bg-card border border-border">
  {coverImageUrl ? (
  <img src={coverImageUrl} alt="Preview Capa" className="size-full object-cover" />
  ) : (
@@ -974,12 +940,12 @@ function AdminMasterHotpagesPage() {
  {showBadge && (badgeLabel || heroStatBadge) && (
  <div className="absolute top-2 right-2 flex items-center gap-1">
  {badgeLabel && (
- <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-card/25 backdrop-blur-md text-foreground px-2 py-1 rounded-md border border-white/20 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-card text-foreground px-2 py-1 rounded-md border border-border">
  {badgeLabel}
  </span>
  )}
  {heroStatBadge && (
- <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary/30 shadow-xs">
+ <span className="text-3xs font-mono font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-1 rounded-md border border-primary">
  {heroStatBadge}
  </span>
  )}
@@ -987,8 +953,8 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showTitle && title && (
- <div className="absolute bottom-2.5 left-3 right-3 text-left">
- <p className="text-sm font-bold text-foreground leading-tight truncate">{title}</p>
+ <div className="absolute bottom-2 left-3 right-3 text-left">
+ <p className="text-sm font-bold text-foreground leading-tight line-clamp-2 text-anti-truncate">{title}</p>
  </div>
  )}
  </div>

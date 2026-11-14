@@ -39,13 +39,8 @@ export const IRRF_BRACKETS_2026: IRRFBracket[] = [
 export const IRRF_DEPENDENT_DEDUCTION_CENTS_2026 = 18959; // R$ 189,59 por dependente
 export const IRRF_SIMPLIFIED_DISCOUNT_CENTS_2026 = 56480; // R$ 564,80
 
-export interface SalaryBreakdownItem {
-  code: string;
-  description: string;
-  reference?: string;
-  type: "earning" | "deduction" | "neutral";
-  amount_cents: number;
-}
+import type { SalaryBreakdownItem } from "@/types/hr";
+export type { SalaryBreakdownItem };
 
 export interface PayrollCalculationInput {
   baseSalaryCents: number;

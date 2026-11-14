@@ -399,11 +399,11 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
       </div>
 
       {/* Mapa Real Interativo MapLibre GL (Carto Voyager / OpenStreetMap) */}
-      <div className="rounded-lg overflow-hidden border border-border/70 relative bg-muted/20 shadow-2xs">
+      <div className="rounded-lg overflow-hidden border border-border relative bg-muted">
         <div ref={mapContainer} className="w-full h-56" />
         {!value?.lat && (
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 text-center z-10 pointer-events-none">
-            <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border/70 shadow-xs max-w-xs">
+          <div className="absolute inset-0 bg-background/85 flex items-center justify-center p-4 text-center z-10 pointer-events-none">
+            <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border max-w-xs">
               Digite seu CEP ou endereço e clique em <strong>Localizar</strong> para fixar o ponto exato no mapa.
             </p>
           </div>

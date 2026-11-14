@@ -23,7 +23,7 @@ import { SimLabQuickTestSheet } from "@/components/simlab/SimLabQuickTestSheet";
 import { executeMcpTool } from "@/services/mcp-server.functions";
 import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
-import { Mic, MicOff, Send, Wand2, Sparkles } from "lucide-react";
+import { Mic, MicOff, Send, Wand2 } from "lucide-react";
 import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
 
 export const Route = createFileRoute("/workspace/marketing/anuncios")({
@@ -686,7 +686,7 @@ function AnunciosWorkspacePage() {
                   className="h-11 min-h-11 rounded-lg text-xs font-semibold px-4 flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={() => setIsPromoFlyerOpen(true)}
                 >
-                  <Sparkles className="size-4" />
+                  <Wand2 className="size-4" />
                   Abrir Estúdio Visual (Canva Mode)
                 </Button>
               </div>

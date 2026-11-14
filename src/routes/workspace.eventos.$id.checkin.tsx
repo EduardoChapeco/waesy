@@ -394,14 +394,14 @@ function EventCheckinPage() {
           )}
 
           {/* Card de Leitura */}
-          <div className="p-5 rounded-lg bg-card border border-border/80 space-y-4">
+          <div className="p-5 rounded-lg bg-card border border-border space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                <QrCode className="size-5 text-primary" />
-                <h2 className="text-sm font-bold text-foreground">Validar Ingresso / Credencial Staff</h2>
+                <QrCode className="size-5 text-foreground" />
+                <h2 className="text-sm font-bold text-foreground">Validar Ingresso</h2>
               </div>
               <Badge variant="outline" className="text-xs font-mono gap-1">
-                <ShieldCheck className="size-3 text-emerald-600" />
+                <ShieldCheck className="size-3 text-success" />
                 HMAC-SHA256
               </Badge>
             </div>

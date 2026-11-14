@@ -52,7 +52,7 @@ export interface TravelerAddress {
   utility_bill_verified: boolean;
 }
 
-export type TravelerDocumentType =
+export type TravelDossierDocumentType =
   | "rg_front"
   | "rg_back"
   | "cnh"
@@ -66,7 +66,7 @@ export type TravelerDocumentType =
 
 export interface TravelerDocumentItem {
   id: string;
-  type: TravelerDocumentType;
+  type: TravelDossierDocumentType;
   label: string;
   file_url?: string | null;
   status: "pendente" | "enviado" | "validado" | "rejeitado";

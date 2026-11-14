@@ -640,8 +640,8 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
         block_type: "customer_travel_portal",
         parent_id: genId("container"),
         content: {
-          title: "Minhas Viagens & Vouchers",
-          subtitle: "Acompanhe seus pacotes confirmados, vouchers de hospedagem e cartões de embarque.",
+          title: "Viagens",
+          subtitle: "Pacotes confirmados, vouchers e embarques.",
         },
       },
     ],

@@ -459,7 +459,7 @@ export const seedCanonicalAutomationWorkflows = createServerFn({ method: "POST" 
         delayMinutes: 60,
         description: "Coleta de avaliação e depoimento 24h após o retorno da viagem.",
         messageTemplate:
-          "Olá {nome}, bem-vindo de volta de {destino}! De 0 a 10, como foi sua experiência conosco? Avalie rapidamente em: {link_dossie}",
+          "Olá {nome}, como foi sua viagem para {destino}? Avalie sua experiência em: {link_dossie}",
       },
       {
         title: "Follow-up de Orçamento em Aberto (24h / 48h)",

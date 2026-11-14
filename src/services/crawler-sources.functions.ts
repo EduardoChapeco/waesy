@@ -8,7 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, requireAdmin } from "@/lib/server-access";
+import { getServerIdentity, requirePlatformAdmin } from "@/lib/server-access";
 import { executeContinuousCrawl } from "@/lib/mining/continuous-crawler.engine";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { parseFeed } from "@/lib/mining/rss-ingester.engine";
@@ -107,7 +107,7 @@ export const toggleCrawlerSourceActive = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { data: updated, error } = await supabase
@@ -145,7 +145,7 @@ export const upsertCrawlerSource = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data: input }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const payload = {
@@ -199,7 +199,7 @@ export const triggerCrawlerSourceFetch = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { data: source, error: sourceErr } = await supabase
@@ -523,7 +523,7 @@ export async function pollActiveCrawlerSources(limit = 10): Promise<{
 export const pollDueCrawlerSourcesFn = createServerFn({ method: "POST" })
   .validator(z.object({ limit: z.number().int().min(1).max(50).default(10) }).optional())
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     return await pollActiveCrawlerSources(data?.limit || 10);
   });
 

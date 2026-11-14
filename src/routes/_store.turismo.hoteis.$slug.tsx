@@ -8,7 +8,6 @@ import {
   Coffee,
   Waves,
   Utensils,
-  Sparkles,
   BedDouble,
   Users,
   Maximize2,
@@ -134,11 +133,11 @@ function PublicHotelDetailPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Barra Superior / Header de Navegação */}
-      <div className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md">
-        <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
+      <div className="sticky top-0 z-30 border-b border-border bg-background">
+        <div className="mx-auto max-w-6xl px-2 sm:px-4 h-14 flex items-center justify-between">
           <Link
             to={"/turismo" as any}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground h-11 min-h-11 px-2 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Voltar para Turismo"
           >
             <ChevronLeft className="size-4" />
@@ -149,7 +148,7 @@ function PublicHotelDetailPage() {
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center justify-center size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="inline-flex items-center justify-center size-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Compartilhar hotel"
             >
               <Share2 className="size-4" />
@@ -164,7 +163,7 @@ function PublicHotelDetailPage() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-6xl px-4 pt-6 space-y-8">
+      <main className="mx-auto max-w-6xl px-0 sm:px-4 pt-6 space-y-8">
         {/* Bloco de Título e Localização */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
@@ -172,13 +171,13 @@ function PublicHotelDetailPage() {
               {hotel.name}
             </h1>
             {hotel.stars > 0 && (
-              <span className="inline-flex items-center gap-1 text-sm font-bold text-warning-strong bg-warning/10 px-2 py-1 rounded-md">
-                <Star className="size-4 fill-warning" />
+              <span className="inline-flex items-center gap-1 text-sm font-bold text-warning-strong bg-muted border border-border px-2 py-1 rounded-md">
+                <Star className="size-4 fill-warning text-warning" />
                 {hotel.stars} Estrelas
               </span>
             )}
             {hotel.is_verified_canonical && (
-              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+              <Badge variant="outline" className="text-xs bg-muted text-foreground border-border">
                 <ShieldCheck className="size-3 mr-1" />
                 Estabelecimento Homologado
               </Badge>
@@ -201,7 +200,7 @@ function PublicHotelDetailPage() {
                 alt={hotel.name}
                 className="h-full w-full object-cover transition-colors duration-300"
               />
-              <div className="absolute bottom-3 right-3 rounded-lg bg-background/80 backdrop-blur-md px-3 py-1 text-xs font-semibold text-foreground border border-border/50">
+              <div className="absolute bottom-3 right-3 rounded-lg bg-card px-3 py-1 text-xs font-semibold text-foreground border border-border">
                 Foto {selectedPhotoIndex + 1} de {allPhotos.length}
               </div>
             </div>
@@ -353,7 +352,7 @@ function PublicHotelDetailPage() {
                         </span>
                         {room.amenities && room.amenities.length > 0 && (
                           <span className="flex items-center gap-1 truncate">
-                            <Sparkles className="size-3.5 text-primary" />
+                            <Coffee className="size-3.5 text-primary" />
                             {room.amenities.length} comodidades
                           </span>
                         )}
@@ -393,7 +392,7 @@ function PublicHotelDetailPage() {
 
               <div className="rounded-lg border border-border/70 bg-card p-4 space-y-2">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Sparkles className="size-4 text-primary" />
+                  <ShieldCheck className="size-4 text-primary" />
                   Família, Crianças & Bem-Estar
                 </h3>
                 <p className="text-xs text-muted-foreground">

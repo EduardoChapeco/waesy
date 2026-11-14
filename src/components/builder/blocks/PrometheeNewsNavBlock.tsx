@@ -134,7 +134,7 @@ export function PrometheeNewsNavBlock({
           role="dialog"
           aria-modal="true"
           aria-label="Enviar pauta"
-          className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-stretch sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-50 bg-overlay flex items-stretch sm:items-center justify-center p-0 sm:p-4"
         >
           <div className="w-full h-dvh sm:h-auto sm:max-h-dvh sm:max-w-lg bg-background text-foreground sm:rounded-3xl border-0 sm:border sm:border-border flex flex-col overflow-hidden safe-top safe-bottom">
             <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-border">
@@ -142,7 +142,7 @@ export function PrometheeNewsNavBlock({
               <button
                 type="button"
                 onClick={() => portal.setIsCitizenModalOpen(false)}
-                className="size-11 min-h-11 shrink-0 rounded-full border border-border bg-muted/30 hover:bg-muted flex items-center justify-center text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="size-11 min-h-11 shrink-0 rounded-full border border-border bg-muted hover:bg-accent flex items-center justify-center text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Fechar envio de pauta"
               >
                 <X className="size-4" />

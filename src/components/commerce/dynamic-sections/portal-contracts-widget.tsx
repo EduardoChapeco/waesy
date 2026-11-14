@@ -106,12 +106,12 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  </h2>
  </div>
  <p className="text-sm text-muted-foreground mt-1">
- {content?.subtitle || "Gerencie suas minutas jurídicas, termos assinados e vias em PDF."}
+ {content?.subtitle || "Minutas, termos assinados e vias em PDF."}
  </p>
  </div>
- <Badge variant="outline" className="w-fit text-xs px-3 py-1 flex items-center gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+ <Badge variant="outline" className="w-fit text-xs px-3 py-1 flex items-center gap-2 border-border text-foreground bg-muted">
  <Shield className="w-3.5 h-3.5" />
- Conformidade Jurídica MP 2.200-2/2001
+ Conformidade MP 2.200-2
  </Badge>
  </div>
 
@@ -119,7 +119,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
         {contractsList.map((ct) => (
  <div
  key={ct.id}
- className="p-5 rounded-lg border border-border/60 bg-card hover:border-border transition-colors duration-200 duration-200  flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+ className="p-5 rounded-lg border border-border bg-card transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
  >
  <div className="space-y-2 flex-1">
  <div className="flex items-center gap-3 flex-wrap">

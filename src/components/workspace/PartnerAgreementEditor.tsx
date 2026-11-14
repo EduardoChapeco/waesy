@@ -467,9 +467,9 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
 
         {/* Modal de Coleta de Assinatura */}
         {signatureModalOpen && (
-          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
             <div className="bg-card border border-border rounded-lg max-w-lg w-full p-4 space-y-4">
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+              <div className="flex items-center justify-between border-b border-border pb-3">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <PenTool className="size-4 text-primary" />
                   Assinatura do Profissional Parceiro
@@ -478,7 +478,7 @@ export function PartnerAgreementEditor({ members }: PartnerAgreementEditorProps)
                   variant="ghost"
                   size="sm"
                   onClick={() => setSignatureModalOpen(false)}
-                  className="size-11 min-h-11 min-w-11 rounded-lg p-0 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="size-11 min-h-11 min-w-11 rounded-lg p-0 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Fechar"
                 >
                   <X className="size-4" />

@@ -18,39 +18,49 @@ export const Route = createFileRoute("/api/feed/meta.csv")({
         try {
           const db = getServerClient();
           const url = new URL(request.url);
-          const storeId = url.searchParams.get("store") || url.searchParams.get("storeId");
+          let storeParam = url.searchParams.get("store") || url.searchParams.get("storeId");
 
-          let query = db
+          if (!storeParam) {
+            const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+            storeParam = await resolveTenantStoreId();
+          }
+
+          if (!storeParam) {
+            return new Response("Missing store parameter", { status: 400 });
+          }
+
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storeParam);
+          const { data: resolvedStore } = await db
+            .from("stores")
+            .select("id")
+            .eq(isUuid ? "id" : "slug", storeParam)
+            .maybeSingle();
+
+          if (!resolvedStore?.id) {
+            return new Response("Store not found", { status: 404 });
+          }
+
+          const { data: products, error } = await db
             .from("products")
             .select(
               `
-              id, slug, title, short_description, description, manufacturer, price_cents, compare_at_cents, status,
-              product_variants(id, sku, price_cents, price_override_cents, stock_on_hand),
+              id, slug, title, short_description, description, manufacturer, price_cents, compare_at_cents, status, availability_channels, attributes,
+              product_variants(id, sku, price_override_cents, stock_on_hand),
               product_media(url, sort_order)
             `
             )
-            .in("status", ["published", "active"]);
-
-          let resolvedStoreId: string | null = null;
-          if (storeId) {
-            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storeId);
-            if (isUuid) {
-              resolvedStoreId = storeId;
-            } else {
-              const { data: st } = await db.from("stores").select("id").eq("slug", storeId).maybeSingle();
-              resolvedStoreId = st?.id || null;
-            }
-          }
-
-          if (resolvedStoreId) {
-            query = query.eq("store_id", resolvedStoreId);
-          }
-
-          const { data: products, error } = await query.limit(500);
+            .eq("store_id", resolvedStore.id)
+            .in("status", ["published", "active"])
+            .limit(500);
 
           if (error) {
             return new Response("Erro ao carregar catálogo", { status: 500 });
           }
+
+          const publicProducts = (products || []).filter((p: any) => {
+            const vis = p?.attributes?.commercial_rules?.visibility_channel ?? p?.availability_channels?.visibility_channel;
+            return !["vip_only", "store_only", "hidden"].includes(String(vis || ""));
+          });
 
           // Header CSV canônico exigido pelo Facebook / Meta Commerce Manager
           const headers = [
@@ -68,7 +78,7 @@ export const Route = createFileRoute("/api/feed/meta.csv")({
 
           const rows: string[] = [headers.join(",")];
 
-          for (const p of products || []) {
+          for (const p of publicProducts) {
             const variants = p.product_variants || [];
             const medias = (p.product_media || []).sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
             const thumb = medias[0]?.url || "";
@@ -77,14 +87,13 @@ export const Route = createFileRoute("/api/feed/meta.csv")({
               variants.push({
                 id: p.id,
                 sku: p.slug,
-                price_cents: p.price_cents,
-                price_override_cents: null,
+                price_override_cents: p.price_cents,
                 stock_on_hand: 0,
               });
             }
 
             for (const v of variants) {
-              const effectivePrice = (v.price_override_cents ?? v.price_cents ?? p.price_cents) / 100;
+              const effectivePrice = (v.price_override_cents ?? p.price_cents) / 100;
               const link = `${url.origin}/produto/${p.slug}?v=${v.sku || v.id}&utm_source=meta_catalog&utm_medium=dpa`;
               const availability = (v.stock_on_hand || 0) > 0 ? "in stock" : "out of stock";
 

@@ -26,6 +26,9 @@ import { PrometheeNewsFeedBlock } from "./blocks/PrometheeNewsFeedBlock";
 import { PrometheeNewsAdSlotBlock } from "./blocks/PrometheeNewsAdSlotBlock";
 import { PrometheeNewsArticleReaderBlock } from "./blocks/PrometheeNewsArticleReaderBlock";
 import { PrometheeNewsFooterBlock } from "./blocks/PrometheeNewsFooterBlock";
+import { SiteHeaderBlock } from "./blocks/SiteHeaderBlock";
+import { SiteFooterBlock } from "./blocks/SiteFooterBlock";
+import { CmsCollectionGridBlock } from "./blocks/CmsCollectionGridBlock";
 import {
   VitrineMetamorphicBannerBlock,
   VitrineBentoTetrisBlock,
@@ -783,24 +786,24 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
 
   createClassicOmniBlock({
     id: "customer_travel_portal",
-    name: "Portal do Viajante B2C (Minhas Viagens & Vouchers)",
+    name: "Portal do Viajante",
     category: "tourism",
-    description: "Área do cliente para consulta de reservas ativas, bilhetes aéreos, download de voucher e suporte direto.",
+    description: "Reservas ativas, bilhetes, vouchers e suporte.",
     component: CustomerTravelPortal,
     defaultProps: {
-      title: "Minhas Viagens & Vouchers",
-      subtitle: "Acompanhe seus pacotes confirmados, vouchers de hospedagem e cartões de embarque.",
+      title: "Viagens",
+      subtitle: "Reservas confirmadas, vouchers e embarques.",
     },
   }),
 
   createClassicOmniBlock({
     id: "tourism_quote_hero",
-    name: "Cotação de Viagens & Destinos",
+    name: "Cotação de Viagens",
     category: "tourism",
-    description: "Formulário de solicitação de cotação com captura direta para WhatsApp.",
+    description: "Solicitação de cotação direta para atendimento.",
     component: TourismQuoteHero,
     defaultProps: {
-      title: "Sua Próxima Viagem Inesquecível Começa Aqui",
+      title: "Solicitar Cotação de Viagem",
       subtitle: "Roteiros exclusivos, passagens aéreas e pacotes completos com assessoria especializada.",
       badge: "Agência Especializada em Turismo",
       bgImageUrl: "",
@@ -1461,25 +1464,25 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
 
   createClassicOmniBlock({
     id: "portal_appointments",
-    name: "Minha Agenda & Atendimentos",
+    name: "Agendamentos",
     category: "services",
-    description: "Quadro com próximos horários agendados, profissional responsável e local.",
+    description: "Horários agendados, profissional e local.",
     component: PortalAppointmentsWidget,
     defaultProps: {
-      title: "Meus Agendamentos",
-      subtitle: "Acompanhe seus horários confirmados e datas de atendimento.",
+      title: "Agendamentos",
+      subtitle: "Horários e atendimentos confirmados.",
     },
   }),
 
   createClassicOmniBlock({
     id: "portal_orders_rentals",
-    name: "Minhas Compras & Locações",
+    name: "Compras e Locações",
     category: "services",
-    description: "Histórico consolidado de pedidos entregues e prazos de devolução de locações.",
+    description: "Pedidos entregues e prazos de locação.",
     component: PortalOrdersRentalsWidget,
     defaultProps: {
       title: "Compras e Locações",
-      subtitle: "Monitore o status de expedição e prazos ativos.",
+      subtitle: "Status de expedição e prazos ativos.",
     },
   }),
 
@@ -1965,15 +1968,15 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
   },
   {
     id: "vitrine_lateral_drawer",
-    name: "Menu Lateral Deslizante (Canvas Nativo)",
+    name: "Menu Lateral",
     category: "vitrine_app",
     description:
-      "Menu lateral de navegação com empurrão de tela suave, alternador Grade/Lista, seções temáticas, cards amplos e squircles com badges.",
+      "Menu lateral de navegação com visualização em grade ou lista e atalhos.",
     capabilities: ["responsive", "cms", "commerce"],
     component: VitrineLateralDrawerBlock as any,
     defaultProps: {
-      greetingTitle: "Aproveite o nosso App!",
-      greetingSubtitle: "Explore categorias e atalhos rápidos",
+      greetingTitle: "Menu",
+      greetingSubtitle: "Atalhos",
       showViewModeToggle: true,
       defaultViewMode: "grid",
       sections: [
@@ -2101,6 +2104,59 @@ export const SITE_BUILDER_BLOCKS: SiteBuilderBlockDefinition[] = [
       showFilterChips: true,
     },
   },
+  // ── HEADER GLOBAL, RODAPÉ GLOBAL & COLEÇÕES CMS ──
+  {
+    id: "site_header",
+    name: "Cabeçalho Global do Site (Header)",
+    category: "hero",
+    description:
+      "Barra superior institucional conectada aos menus do CMS com logo, links responsivos, busca opcional e botão CTA.",
+    capabilities: ["responsive", "cms"],
+    component: SiteHeaderBlock as any,
+    defaultProps: {
+      brandName: "Minha Marca",
+      menuHandle: "header_nav",
+      headerScrollMode: "freezes",
+      showSearch: false,
+      searchPlaceholder: "Buscar no site...",
+      ctaLabel: "Fale Conosco",
+      ctaHref: "#contato",
+      links: [],
+    },
+  },
+  {
+    id: "site_footer",
+    name: "Rodapé Global do Site (Footer)",
+    category: "cta_footer",
+    description:
+      "Rodapé multi-coluna conectado ao menu de rodapé do CMS com identidade da marca, links rápidos e contatos oficiais.",
+    capabilities: ["responsive", "cms"],
+    component: SiteFooterBlock as any,
+    defaultProps: {
+      brandName: "Minha Marca",
+      description: "Atendimento oficial, catálogos atualizados e canais verificados.",
+      menuHandle: "footer_menu",
+      links: [],
+    },
+  },
+  {
+    id: "cms_collection_grid",
+    name: "Grade Dinâmica de Coleção CMS",
+    category: "vitrine_app",
+    description:
+      "Renderiza registros reais de qualquer coleção customizada do banco CMS (imóveis, portfólio, equipe, cardápios ou catálogos).",
+    capabilities: ["responsive", "cms"],
+    component: CmsCollectionGridBlock as any,
+    defaultProps: {
+      title: "Destaques do Acervo",
+      subtitle: "Conteúdo sincronizado diretamente das coleções do CMS.",
+      collectionSlug: "",
+      layout: "grid",
+      columns: 3,
+      ctaLabel: "Ver detalhes",
+      showEmptyState: true,
+    },
+  },
 ];
 
 export function getSiteBlocksByCategory(category: string): SiteBuilderBlockDefinition[] {
@@ -2168,10 +2224,14 @@ import {
   HelpCircle,
   Store,
   Newspaper,
+  PanelTop,
+  Database,
 } from "lucide-react";
 
 export type WixBlockCategory =
   | "all"
+  | "navigation"
+  | "cms"
   | "vitrine_app"
   | "news_editorial"
   | "hero"
@@ -2185,6 +2245,8 @@ export type WixBlockCategory =
 
 export const WIX_CATEGORY_CONFIG: { id: WixBlockCategory; label: string; icon: any }[] = [
   { id: "all", label: "Todos", icon: LayoutGrid },
+  { id: "navigation", label: "Header & Rodapé", icon: PanelTop },
+  { id: "cms", label: "Coleções CMS", icon: Database },
   { id: "vitrine_app", label: "Vitrine & App", icon: Store },
   { id: "news_editorial", label: "Notícias & Jornal", icon: Newspaper },
   { id: "hero", label: "Apresentação", icon: LayoutTemplate },
@@ -2320,4 +2382,9 @@ export const BLOCK_TO_WIX_CATEGORY: Record<string, WixBlockCategory> = {
   vitrine_recent_stores_rail: "vitrine_app",
   vitrine_feature_mini_banners: "vitrine_app",
   vitrine_stores_feed_list: "vitrine_app",
+
+  // Header Global, Rodapé Global & Coleções CMS
+  site_header: "navigation",
+  site_footer: "navigation",
+  cms_collection_grid: "cms",
 };

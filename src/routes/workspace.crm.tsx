@@ -633,7 +633,7 @@ export default function WorkspaceCrmPage() {
                               className="size-11 min-h-11 min-w-11 p-0 rounded-lg text-primary hover:text-primary hover:bg-primary/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               title="Atender no SAC"
                             >
-                              <Link to="/workspace/atendimento" search={{ search: customer.phone || customer.full_name || undefined, threadId: undefined }}>
+                              <Link to={"/workspace/atendimento/chat" as any} search={{ search: customer.phone || customer.full_name || undefined, threadId: undefined } as any}>
                                 <Headphones className="size-4" />
                               </Link>
                             </Button>

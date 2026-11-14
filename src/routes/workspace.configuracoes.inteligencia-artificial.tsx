@@ -16,7 +16,7 @@ import { listTenantAiProviders, saveTenantAiProvider, deleteTenantAiProvider, te
 export const Route = createFileRoute(
  "/workspace/configuracoes/inteligencia-artificial"
 )({
- head: () => ({ meta: [{ title: "Inteligência Artificial e Chaves | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Automação e Chaves | Workspace" }] }),
  loader: async () => {
    try {
  const store = await getStoreSettings().catch(() => null);

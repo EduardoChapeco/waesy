@@ -13,7 +13,6 @@ import {
   Eye,
   CheckCircle2,
   Grid,
-  Sparkles,
   Search,
   ArrowUpRight,
 } from "lucide-react";
@@ -565,7 +564,7 @@ function AdminMasterHomeEditorPage() {
             }
             className="gap-2 h-11 min-h-11 font-semibold cursor-pointer"
           >
-            <Sparkles size={16} />
+            <Layout size={16} />
             <span>{isOpeningOmniBuilder ? "Abrindo..." : "Editar no Omni Builder"}</span>
           </Button>
 
@@ -981,7 +980,7 @@ function AdminMasterHomeEditorPage() {
         <div className="p-4 rounded-lg bg-muted/30 border border-border/60 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-primary" />
+              <Layers size={16} className="text-primary" />
               <span className="text-xs font-bold text-foreground">Pré-Visualização Dinâmica</span>
             </div>
             <div className="flex items-center gap-1 bg-background p-1 rounded-lg border border-border/60">

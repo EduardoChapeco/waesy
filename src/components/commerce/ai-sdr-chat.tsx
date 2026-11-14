@@ -132,11 +132,11 @@ export function AiSdrChat({ classifiedId, storeId, sellerProfileId, storeName, s
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base font-semibold">
               <Bot className="size-5 text-primary" />
-              Vendedor Inteligente (IA)
+              Assistente do Anúncio
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground space-y-3 pt-2 text-left">
               <p>
-                Este anúncio conta com um <strong>Agente SDR</strong> — um assistente de vendas com Inteligência Artificial treinado para responder suas dúvidas sobre o produto.
+                Este anúncio conta com um assistente de vendas para responder suas dúvidas sobre o produto.
               </p>
               <p>
                 O agente pode te ajudar com:

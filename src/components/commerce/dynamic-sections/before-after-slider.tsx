@@ -93,7 +93,7 @@ export function BeforeAfterSlider({
  alt={after_label}
  className="absolute inset-0 w-full h-full object-cover"
  />
- <span className="absolute top-4 right-4 bg-background/80 backdrop-blur-md text-foreground text-xs font-bold px-3 py-2 rounded-full shadow ">
+ <span className="absolute top-4 right-4 bg-card border border-border text-foreground text-xs font-bold px-3 py-2 rounded-full">
  {after_label}
  </span>
 
@@ -108,7 +108,7 @@ export function BeforeAfterSlider({
  maxWidth: "none",
  }}
  />
- <span className="absolute top-4 left-4 bg-background/80 backdrop-blur-md text-foreground text-xs font-bold px-3 py-2 rounded-full shadow ">
+ <span className="absolute top-4 left-4 bg-card border border-border text-foreground text-xs font-bold px-3 py-2 rounded-full">
  {before_label}
  </span>
  </div>

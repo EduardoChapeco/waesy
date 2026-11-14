@@ -123,18 +123,18 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
           </SheetTrigger>
           <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl p-6 overscroll-contain">
             <SheetHeader>
-              <SheetTitle className="text-lg font-bold">Cadastrar Patrocinador / Apoiador</SheetTitle>
+              <SheetTitle className="text-lg font-bold">Cadastrar Patrocinador</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
-                Informe os dados da marca e a cota de patrocínio negociada.
+                Informe a empresa e a cota de patrocínio.
               </SheetDescription>
             </SheetHeader>
 
             <form onSubmit={handleCreate} className="space-y-4 mt-6">
               <div className="space-y-2">
-                <Label className="text-xs font-bold">Nome da Empresa / Marca *</Label>
+                <Label className="text-xs font-bold">Empresa ou Marca *</Label>
                 <Input
                   required
-                  placeholder="Ex: Cervejaria Heineken / Banco Sicoob"
+                  placeholder="Ex: Cooperativa Regional"
                   className="h-11 rounded-lg text-xs"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}

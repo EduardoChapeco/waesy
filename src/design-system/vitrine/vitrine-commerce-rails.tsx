@@ -6,7 +6,6 @@ import {
   Package,
   Plus,
   ShoppingBag,
-  Sparkles,
   Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -248,7 +247,7 @@ export function VitrineProductShelf({
     const safeLeadHref = isEditorCanvas ? undefined : resolveSafeLinkHref(leadCard.href);
 
     const leadBody = (
-      <div className="group relative w-56 sm:w-64 h-full min-h-80 rounded-lg border border-border/70 bg-primary/10 overflow-hidden flex flex-col justify-between p-4 shrink-0 snap-start hover:border-primary/60 transition-colors duration-150 motion-reduce:transition-none">
+      <div className="group relative w-56 sm:w-64 h-full min-h-80 rounded-lg border border-border bg-card overflow-hidden flex flex-col justify-between p-4 shrink-0 snap-start hover:border-primary transition-colors duration-150 motion-reduce:transition-none">
         {mediaSrc && (
           <img
             src={mediaSrc}
@@ -260,17 +259,17 @@ export function VitrineProductShelf({
 
         <div className="relative z-10 flex items-start justify-between">
           {leadCard.badge ? (
-            <span className="px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-primary">
+            <span className="px-2 py-1 rounded-md bg-card border border-border text-xs font-bold uppercase tracking-wider text-primary">
               {leadCard.badge}
             </span>
           ) : (
-            <span className="size-10 rounded-lg bg-background/90 backdrop-blur-md text-primary flex items-center justify-center">
-              <Sparkles className="size-5" />
+            <span className="size-10 rounded-lg bg-card border border-border text-primary flex items-center justify-center">
+              <Tag className="size-5" />
             </span>
           )}
         </div>
 
-        <div className="relative z-10 rounded-lg bg-background/90 backdrop-blur-md border border-border/60 p-3 space-y-2">
+        <div className="relative z-10 rounded-lg bg-card border border-border p-3 space-y-2">
           {leadCard.title && (
             <h3 className="text-sm sm:text-base font-extrabold text-foreground leading-tight break-words text-wrap">
               {leadCard.title}
@@ -406,7 +405,7 @@ export function VitrineProductShelf({
                   </span>
                 )}
                 {product.badge && (
-                  <span className="px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-foreground text-xs font-bold">
+                  <span className="px-2 py-1 rounded-md bg-card border border-border text-foreground text-xs font-bold">
                     {product.badge}
                   </span>
                 )}
@@ -757,7 +756,7 @@ export function VitrineClassifiedsRail({
               </div>
             )}
             {badgeLabel && (
-              <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-background/90 backdrop-blur-md text-foreground text-xs font-bold">
+              <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-card border border-border text-foreground text-xs font-bold">
                 {badgeLabel}
               </span>
             )}
@@ -836,7 +835,7 @@ export function VitrineClassifiedsRail({
           {viewAllLabel && safeViewAllHref && (
             <a
               href={safeViewAllHref}
-              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 inline-flex items-center gap-1 shrink-0 transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold text-primary hover:bg-muted inline-flex items-center gap-1 shrink-0 transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span>{viewAllLabel}</span>
               <ChevronRight className="size-4" />

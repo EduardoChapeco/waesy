@@ -104,8 +104,8 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
       {/* Background Image with Semantic Overlay */}
       {bgImageUrl && (
         <div className="absolute inset-0 z-0">
-          <img src={bgImageUrl} alt={title} className="size-full object-cover object-center opacity-20" />
-          <div className="absolute inset-0 bg-background/85 backdrop-blur-xs" />
+          <img src={bgImageUrl} alt={title} className="size-full object-cover object-center opacity-15" />
+          <div className="absolute inset-0 bg-background/90" />
         </div>
       )}
 
@@ -114,7 +114,7 @@ export const TourismQuoteHero: React.FC<TourismQuoteHeroProps> = ({
           {/* Coluna Esquerda: Headline & Value Props */}
           <div className="space-y-6 lg:col-span-7">
             {badge && (
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-xs font-bold text-primary">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1 text-xs font-bold text-primary">
                 <Layers className="size-4 text-primary" />
                 <span>{badge}</span>
               </div>

@@ -17,7 +17,6 @@ import {
   Zap,
   Briefcase,
   GraduationCap,
-  Sparkles,
   Award,
   Smartphone,
   Laptop,

@@ -79,11 +79,11 @@ export function LocationMapCardSection({
  </div>
  </div>
 
- <div className="lg:col-span-6 rounded-lg overflow-hidden aspect-4/3 bg-muted border border-border/60 relative flex items-center justify-center">
+ <div className="lg:col-span-6 rounded-lg overflow-hidden aspect-4/3 bg-muted border border-border relative flex items-center justify-center">
  {googleMapsUrl && <img src={googleMapsUrl} alt="Mapa" className="size-full object-cover" />}
- <div className="absolute inset-0 bg-background/20 backdrop-blur-2xs flex items-center justify-center">
- <div className="p-4 rounded-lg bg-background/95 border border-border  flex items-center gap-3">
- <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+ <div className="absolute inset-0 bg-neutral-950/30 flex items-center justify-center">
+ <div className="p-4 rounded-lg bg-card border border-border flex items-center gap-3">
+ <div className="size-10 rounded-lg bg-muted border border-border flex items-center justify-center text-primary">
  <MapPin className="size-5" />
  </div>
  <div>

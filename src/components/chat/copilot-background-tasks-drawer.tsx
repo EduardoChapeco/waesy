@@ -127,14 +127,14 @@ export function CopilotBackgroundTasksDrawer({
                 size="sm"
                 onClick={() => setActiveTab("running")}
                 className={cn(
-                  "h-11 min-h-11 rounded-xl text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  "h-11 min-h-11 rounded-xl text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "running"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 <span>Em Execução</span>
-                <span className="ml-2 px-2 py-0.2 rounded-full bg-background/20 text-2xs font-mono">
+                <span className="ml-2 px-2 py-1 rounded-full bg-background text-foreground text-2xs font-mono">
                   {runningTasks.length}
                 </span>
               </Button>
@@ -145,14 +145,14 @@ export function CopilotBackgroundTasksDrawer({
                 size="sm"
                 onClick={() => setActiveTab("completed")}
                 className={cn(
-                  "h-11 min-h-11 rounded-xl text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  "h-11 min-h-11 rounded-xl text-xs font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   activeTab === "completed"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 <span>Concluídas</span>
-                <span className="ml-2 px-2 py-0.2 rounded-full bg-background/20 text-2xs font-mono">
+                <span className="ml-2 px-2 py-1 rounded-full bg-background text-foreground text-2xs font-mono">
                   {completedTasks.length}
                 </span>
               </Button>

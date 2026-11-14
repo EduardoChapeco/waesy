@@ -210,6 +210,23 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       utmMedium: z.string().optional().nullable(),
       utmCampaign: z.string().optional().nullable(),
       utmContent: z.string().optional().nullable(),
+      utmTerm: z.string().optional().nullable(),
+      fbclid: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      gclid: z.string().optional().nullable(),
+      ttclid: z.string().optional().nullable(),
+      ctwaClid: z.string().optional().nullable(),
+      adId: z.string().optional().nullable(),
+      adsetId: z.string().optional().nullable(),
+      campaignId: z.string().optional().nullable(),
+      creativeId: z.string().optional().nullable(),
+      landingUrl: z.string().optional().nullable(),
+      sourceUrl: z.string().optional().nullable(),
+      referrer: z.string().optional().nullable(),
+      deviceId: z.string().optional().nullable(),
+      visitorId: z.string().optional().nullable(),
+      leadCode: z.string().optional().nullable(),
       deviceType: z.string().default("mobile"),
       deviceFingerprint: z.string().optional().nullable(),
     }),
@@ -321,78 +338,55 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
       }
     }
 
-    // 2.1 Atualização Atômica do Lead e Cliente se leadId foi fornecido ou por matching de telefone
-    let matchedLeadId = data.leadId || null;
-    if (!matchedLeadId && cleanPhone) {
-      try {
-        const { data: matchedLeads } = await supabase
-          .from("leads_crm")
-          .select("id")
-          .eq("store_id", formRow.store_id)
-          .eq("phone", cleanPhone)
-          .order("created_at", { ascending: false })
-          .limit(1);
-        if (matchedLeads && matchedLeads.length > 0) {
-          matchedLeadId = matchedLeads[0].id;
-        }
-      } catch (err) {
-        console.warn("[lead-forms] notice matching lead by phone:", err);
-      }
-    }
+    // 2.1 Ingestao ou atualizacao canonica no CRM (leads_crm + customers_crm com todas raw_answers)
+    const { buildPhoneLookupCandidates, recordAttributionTouchpoint, dispatchServerSidePixelConversion } =
+      await import("@/services/omnichannel-attribution.server");
+    const phoneInfo = buildPhoneLookupCandidates(data.contactPhone);
+    const formLeadCode = data.leadCode || `WAEF-${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 
-    if (matchedLeadId) {
-      try {
-        const answers = data.answers || {};
-        const dest = answers.destino || answers.destination || answers.cidade_destino;
-        const start = answers.data_embarque || answers.data_ida || answers.data_viagem || answers.travel_start;
-        const end = answers.data_retorno || answers.data_volta || answers.travel_end;
-        const paxRaw = answers.passageiros || answers.pax;
-        let paxCount: number | undefined = undefined;
-        if (paxRaw) {
-          const num = parseInt(String(paxRaw), 10);
-          if (!isNaN(num) && num > 0) paxCount = num;
-          else if (String(paxRaw).toLowerCase().includes("casal")) paxCount = 2;
-          else if (String(paxRaw).toLowerCase().includes("familia")) paxCount = 4;
-          else if (String(paxRaw).toLowerCase().includes("grupo")) paxCount = 6;
-        }
-
-        const leadPatch: Record<string, any> = {
-          updated_at: new Date().toISOString(),
-        };
-        if (dest && typeof dest === "string") leadPatch.destination = dest.trim();
-        if (start && typeof start === "string") leadPatch.travel_start = start.trim();
-        if (end && typeof end === "string") leadPatch.travel_end = end.trim();
-        if (paxCount) leadPatch.pax_count = paxCount;
-
-        await supabase
-          .from("leads_crm")
-          .update(leadPatch)
-          .eq("id", matchedLeadId);
-
-        const { data: leadRow } = await supabase
-          .from("leads_crm")
-          .select("customer_id")
-          .eq("id", matchedLeadId)
-          .single();
-
-        if (leadRow?.customer_id) {
-          const custPatch: Record<string, any> = {
-            updated_at: new Date().toISOString(),
-          };
-          if (answers.cpf || answers.documento) {
-            custPatch.document = String(answers.cpf || answers.documento).trim();
-          }
-          if (answers.endereco) {
-            custPatch.address = String(answers.endereco).trim();
-          }
-          await supabase
-            .from("customers_crm")
-            .update(custPatch)
-            .eq("id", leadRow.customer_id);
-        }
-      } catch (patchErr) {
-        console.warn("[lead-forms] notice updating lead from onboarding submission:", patchErr);
-      }
+    let ingestedLeadId: string | null = data.leadId || null;
+    let ingestedCustomerId: string | null = null;
+    try {
+      const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+      const ingested = await ingestOmnichannelLead(supabase, {
+        storeId: formRow.store_id,
+        leadId: data.leadId || null,
+        source: "lead_form",
+        sourceDetail: formRow.title || formRow.slug,
+        fullName: data.contactName.trim(),
+        phone: data.contactPhone.trim(),
+        email: cleanEmail,
+        sourceFormId: formRow.id,
+        sourceListingId: data.classifiedId || null,
+        sourceListingOrigin: data.classifiedId ? "classified" : "form",
+        customFields: {
+          ...(data.answers || {}),
+          lead_code: formLeadCode,
+          ...(data.utmSource ? { utm_source: data.utmSource } : {}),
+          ...(data.utmMedium ? { utm_medium: data.utmMedium } : {}),
+          ...(data.utmCampaign ? { utm_campaign: data.utmCampaign } : {}),
+          ...(data.utmContent ? { utm_content: data.utmContent } : {}),
+          ...(data.utmTerm ? { utm_term: data.utmTerm } : {}),
+          ...(data.fbclid ? { fbclid: data.fbclid } : {}),
+          ...(data.fbp ? { fbp: data.fbp } : {}),
+          ...(data.fbc ? { fbc: data.fbc } : {}),
+          ...(data.gclid ? { gclid: data.gclid } : {}),
+          ...(data.ttclid ? { ttclid: data.ttclid } : {}),
+          ...(data.ctwaClid ? { ctwa_clid: data.ctwaClid } : {}),
+          ...(data.adId ? { meta_ad_id: data.adId, ad_id: data.adId } : {}),
+          ...(data.adsetId ? { meta_adset_id: data.adsetId, adset_id: data.adsetId } : {}),
+          ...(data.campaignId ? { meta_campaign_id: data.campaignId, campaign_id: data.campaignId } : {}),
+          ...(data.creativeId ? { creative_id: data.creativeId } : {}),
+          ...(data.landingUrl ? { landing_url: data.landingUrl } : {}),
+          ...(data.sourceUrl ? { source_url: data.sourceUrl } : {}),
+          ...(data.referrer ? { referrer: data.referrer } : {}),
+          ...(data.deviceId ? { device_id: data.deviceId } : {}),
+        },
+      });
+      if (ingested.leadId) ingestedLeadId = ingested.leadId;
+      if (ingested.customerId) ingestedCustomerId = ingested.customerId;
+    } catch (patchErr) {
+      console.warn("[lead-forms] notice ingesting omnichannel lead:", patchErr);
     }
 
     // 3. Salva a submissão com Telemetria Completa de Borda Cloudflare
@@ -406,11 +400,20 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
         contact_name: data.contactName.trim(),
         contact_email: cleanEmail,
         contact_phone: data.contactPhone.trim(),
+        phone_digits: phoneInfo.digits || null,
         is_new_registered_user: isNewRegisteredUser,
         utm_source: data.utmSource || null,
         utm_medium: data.utmMedium || null,
         utm_campaign: data.utmCampaign || null,
         utm_content: data.utmContent || null,
+        utm_term: data.utmTerm || null,
+        fbclid: data.fbclid || null,
+        fbp: data.fbp || null,
+        fbc: data.fbc || null,
+        gclid: data.gclid || null,
+        ttclid: data.ttclid || null,
+        ad_id: data.adId || null,
+        campaign_id: data.campaignId || null,
         device_type: data.deviceType,
         ip_address: telemetry.ip,
         device_fingerprint: fingerprint,
@@ -438,6 +441,69 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     if (submissionError || !submissionRow) {
       console.error("[lead-forms] Erro ao gravar submissão:", submissionError);
       throw new Error("Erro ao registrar resposta do formulário");
+    }
+
+    const eventId = `lead_form_${submissionRow.id}`;
+    await recordAttributionTouchpoint(supabase, {
+      storeId: formRow.store_id,
+      deviceId: data.deviceId || null,
+      visitorId: data.visitorId || null,
+      profileId,
+      phone: phoneInfo.e164 || data.contactPhone.trim(),
+      email: cleanEmail,
+      leadCode: formLeadCode,
+      ctwaClid: data.ctwaClid || null,
+      fbclid: data.fbclid || null,
+      fbp: data.fbp || null,
+      fbc: data.fbc || null,
+      gclid: data.gclid || null,
+      ttclid: data.ttclid || null,
+      utmSource: data.utmSource || null,
+      utmMedium: data.utmMedium || null,
+      utmCampaign: data.utmCampaign || null,
+      utmContent: data.utmContent || null,
+      utmTerm: data.utmTerm || null,
+      adId: data.adId || null,
+      adsetId: data.adsetId || null,
+      campaignId: data.campaignId || null,
+      creativeId: data.creativeId || null,
+      formId: formRow.id,
+      sourceUrl: data.sourceUrl || null,
+      landingUrl: data.landingUrl || null,
+      referrer: data.referrer || null,
+      entityType: data.classifiedId ? "classified" : "form",
+      entityId: data.classifiedId || formRow.id,
+      entityTitle: formRow.title,
+      capturedVia: "lead_form",
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
+    });
+
+    if (!isSpam && formRow.store_id) {
+      await dispatchServerSidePixelConversion(supabase, {
+        storeId: formRow.store_id,
+        eventName: "Lead",
+        eventId,
+        eventSource: "lead_form",
+        leadId: ingestedLeadId,
+        phone: phoneInfo.e164 || data.contactPhone.trim(),
+        email: cleanEmail,
+        fullName: data.contactName.trim(),
+        fbp: data.fbp || null,
+        fbc: data.fbc || null,
+        ctwaClid: data.ctwaClid || null,
+        sourceUrl: data.sourceUrl || data.landingUrl || null,
+        clientIpAddress: telemetry.ip,
+        clientUserAgent: telemetry.userAgent,
+        customData: {
+          form_id: formRow.id,
+          form_slug: formRow.slug,
+          lead_code: formLeadCode,
+          utm_source: data.utmSource || undefined,
+          utm_campaign: data.utmCampaign || undefined,
+          ad_id: data.adId || undefined,
+        },
+      });
     }
 
     // 4. Incrementa contador de submissões no formulário
@@ -486,12 +552,17 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
         }
       }
 
+      msg += `\n\nRef: #${formLeadCode}`;
       const formattedNumber = cleanTarget.startsWith("55") ? cleanTarget : `55${cleanTarget}`;
       whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(msg)}`;
     }
 
     return {
       submissionId: submissionRow.id,
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
+      leadCode: formLeadCode,
+      eventId,
       afterSubmitAction: formRow.after_submit_action,
       whatsappUrl,
       redirectUrl: formRow.redirect_url,
@@ -1023,6 +1094,25 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       contactEmail: z.string().email().optional().nullable(),
       answers: z.record(z.any()).default({}),
       utmSource: z.string().optional().nullable(),
+      utmMedium: z.string().optional().nullable(),
+      utmCampaign: z.string().optional().nullable(),
+      utmContent: z.string().optional().nullable(),
+      utmTerm: z.string().optional().nullable(),
+      fbclid: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      gclid: z.string().optional().nullable(),
+      ttclid: z.string().optional().nullable(),
+      ctwaClid: z.string().optional().nullable(),
+      adId: z.string().optional().nullable(),
+      adsetId: z.string().optional().nullable(),
+      campaignId: z.string().optional().nullable(),
+      creativeId: z.string().optional().nullable(),
+      landingUrl: z.string().optional().nullable(),
+      sourceUrl: z.string().optional().nullable(),
+      referrer: z.string().optional().nullable(),
+      deviceId: z.string().optional().nullable(),
+      visitorId: z.string().optional().nullable(),
       deviceType: z.string().default("desktop"),
       deviceFingerprint: z.string().optional().nullable(),
     }),
@@ -1083,6 +1173,10 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
 
     // 3. Registra na tabela de leads (lead_form_submissions) com Telemetria Completa
     let submissionId = crypto.randomUUID();
+    const { buildPhoneLookupCandidates, recordAttributionTouchpoint, dispatchServerSidePixelConversion } =
+      await import("@/services/omnichannel-attribution.server");
+    const phoneInfo = buildPhoneLookupCandidates(data.contactPhone);
+    const civilLeadCode = `WAEC-${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 
     try {
       const { data: subRow } = await supabase
@@ -1097,8 +1191,20 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
           contact_name: data.contactName.trim(),
           contact_email: data.contactEmail?.trim() || null,
           contact_phone: data.contactPhone.trim(),
+          phone_digits: phoneInfo.digits || null,
           is_new_registered_user: false,
           utm_source: data.utmSource || null,
+          utm_medium: data.utmMedium || null,
+          utm_campaign: data.utmCampaign || null,
+          utm_content: data.utmContent || null,
+          utm_term: data.utmTerm || null,
+          fbclid: data.fbclid || null,
+          fbp: data.fbp || null,
+          fbc: data.fbc || null,
+          gclid: data.gclid || null,
+          ttclid: data.ttclid || null,
+          ad_id: data.adId || null,
+          campaign_id: data.campaignId || null,
           device_type: data.deviceType,
           ip_address: telemetry.ip,
           device_fingerprint: fingerprint,
@@ -1127,6 +1233,118 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
       console.warn("[lead-forms] Aviso ao gravar submission civil:", insertErr);
     }
 
+    // 3.1 Espelhar no Kanban CRM (leads_crm + customers_crm) quando anuncio pertence a uma loja
+    let ingestedLeadId: string | null = null;
+    let ingestedCustomerId: string | null = null;
+    if (classified.store_id) {
+      try {
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        const ingested = await ingestOmnichannelLead(supabase, {
+          storeId: classified.store_id,
+          source: "classified_form",
+          sourceDetail: classified.title,
+          fullName: data.contactName.trim(),
+          phone: data.contactPhone.trim(),
+          email: data.contactEmail?.trim() || null,
+          sourceListingId: classified.id,
+          sourceListingOrigin: "classified",
+          sourceListingTitle: classified.title,
+          sourceFormId: (classified.attributes as any)?.lead_form_id || null,
+          sourceSubmissionId: submissionId,
+          customFields: {
+            ...(data.answers || {}),
+            lead_code: civilLeadCode,
+            ...(data.utmSource ? { utm_source: data.utmSource } : {}),
+            ...(data.utmMedium ? { utm_medium: data.utmMedium } : {}),
+            ...(data.utmCampaign ? { utm_campaign: data.utmCampaign } : {}),
+            ...(data.utmContent ? { utm_content: data.utmContent } : {}),
+            ...(data.utmTerm ? { utm_term: data.utmTerm } : {}),
+            ...(data.fbclid ? { fbclid: data.fbclid } : {}),
+            ...(data.fbp ? { fbp: data.fbp } : {}),
+            ...(data.fbc ? { fbc: data.fbc } : {}),
+            ...(data.gclid ? { gclid: data.gclid } : {}),
+            ...(data.ttclid ? { ttclid: data.ttclid } : {}),
+            ...(data.ctwaClid ? { ctwa_clid: data.ctwaClid } : {}),
+            ...(data.adId ? { meta_ad_id: data.adId, ad_id: data.adId } : {}),
+            ...(data.adsetId ? { meta_adset_id: data.adsetId, adset_id: data.adsetId } : {}),
+            ...(data.campaignId ? { meta_campaign_id: data.campaignId, campaign_id: data.campaignId } : {}),
+            ...(data.creativeId ? { creative_id: data.creativeId } : {}),
+            ...(data.landingUrl ? { landing_url: data.landingUrl } : {}),
+            ...(data.sourceUrl ? { source_url: data.sourceUrl } : {}),
+            ...(data.referrer ? { referrer: data.referrer } : {}),
+            ...(data.deviceId ? { device_id: data.deviceId } : {}),
+          },
+        });
+        ingestedLeadId = ingested.leadId;
+        ingestedCustomerId = ingested.customerId;
+      } catch (ingestErr) {
+        console.warn("[lead-forms] Aviso ao espelhar lead civil no CRM:", ingestErr);
+      }
+    }
+
+    const eventId = `lead_civil_${submissionId}`;
+    await recordAttributionTouchpoint(supabase, {
+      storeId: classified.store_id || null,
+      deviceId: data.deviceId || null,
+      visitorId: data.visitorId || null,
+      profileId,
+      phone: phoneInfo.e164 || data.contactPhone.trim(),
+      email: data.contactEmail?.trim() || null,
+      leadCode: civilLeadCode,
+      ctwaClid: data.ctwaClid || null,
+      fbclid: data.fbclid || null,
+      fbp: data.fbp || null,
+      fbc: data.fbc || null,
+      gclid: data.gclid || null,
+      ttclid: data.ttclid || null,
+      utmSource: data.utmSource || null,
+      utmMedium: data.utmMedium || null,
+      utmCampaign: data.utmCampaign || null,
+      utmContent: data.utmContent || null,
+      utmTerm: data.utmTerm || null,
+      adId: data.adId || null,
+      adsetId: data.adsetId || null,
+      campaignId: data.campaignId || null,
+      creativeId: data.creativeId || null,
+      formId: (classified.attributes as any)?.lead_form_id || null,
+      sourceUrl: data.sourceUrl || null,
+      landingUrl: data.landingUrl || null,
+      referrer: data.referrer || null,
+      entityType: "classified",
+      entityId: classified.id,
+      entityTitle: classified.title,
+      capturedVia: "civil_inquiry_form",
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
+    });
+
+    if (!isSpam && classified.store_id) {
+      await dispatchServerSidePixelConversion(supabase, {
+        storeId: classified.store_id,
+        eventName: "Lead",
+        eventId,
+        eventSource: "civil_inquiry_form",
+        leadId: ingestedLeadId,
+        phone: phoneInfo.e164 || data.contactPhone.trim(),
+        email: data.contactEmail?.trim() || null,
+        fullName: data.contactName.trim(),
+        fbp: data.fbp || null,
+        fbc: data.fbc || null,
+        ctwaClid: data.ctwaClid || null,
+        sourceUrl: data.sourceUrl || data.landingUrl || null,
+        clientIpAddress: telemetry.ip,
+        clientUserAgent: telemetry.userAgent,
+        customData: {
+          classified_id: classified.id,
+          classified_title: classified.title,
+          lead_code: civilLeadCode,
+          utm_source: data.utmSource || undefined,
+          utm_campaign: data.utmCampaign || undefined,
+          ad_id: data.adId || undefined,
+        },
+      });
+    }
+
     // 4. Prepara link do WhatsApp como fallback
     let whatsappUrl: string | null = null;
     const targetPhone = (classified as any).contact_whatsapp || (classified as any).whatsapp || null;
@@ -1142,6 +1360,7 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
           }
         }
       }
+      msg += `\n\nRef: #${civilLeadCode}`;
       const formattedNumber = cleanTarget.startsWith("55") ? cleanTarget : `55${cleanTarget}`;
       whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(msg)}`;
     }
@@ -1149,6 +1368,8 @@ export const submitCivilInquiryLead = createServerFn({ method: "POST" })
     return {
       success: true,
       submissionId,
+      leadId: ingestedLeadId,
+      customerId: ingestedCustomerId,
       classifiedId: classified.id,
       sellerProfileId: classified.author_profile_id,
       storeId: classified.store_id || undefined,

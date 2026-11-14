@@ -109,16 +109,11 @@ export const geoSearchPlacesFn = createServerFn({ method: "GET" })
     const { lat, lng, radiusKm, category, limit } = input;
 
     // Buscar lojas com status ativo
-    let query = db
+    const { data, error } = await db
       .from("stores")
-      .select("id, name, slug, category, settings, status")
-      .eq("status", "active");
+      .select("id, name, slug, settings")
+      .eq("is_active", true);
 
-    if (category && category !== "all") {
-      query = query.ilike("category", `%${category}%`);
-    }
-
-    const { data, error } = await query;
     if (error || Boolean(data) === false) {
       return {
         places: [],
@@ -128,9 +123,14 @@ export const geoSearchPlacesFn = createServerFn({ method: "GET" })
     }
 
     const matchedPlaces: PlaceWithDistanceDTO[] = [];
+    const filterCat = category && category !== "all" ? category.trim().toLowerCase() : null;
 
     for (const store of data) {
       const settings = (store.settings as Record<string, any>) || {};
+      if (filterCat) {
+        const storeCat = String(settings.category || settings.segment || "").toLowerCase();
+        if (!storeCat.includes(filterCat)) continue;
+      }
       const storeLat = settings.latitude ?? settings.lat;
       const storeLng = settings.longitude ?? settings.lng;
 
@@ -147,7 +147,7 @@ export const geoSearchPlacesFn = createServerFn({ method: "GET" })
           id: store.id,
           name: store.name,
           slug: store.slug,
-          category: store.category || "Comércio Local",
+          category: settings.category || settings.segment || "Comércio Local",
           description: settings.description || null,
           logoUrl: settings.logoUrl || settings.logo_url || null,
           bannerUrl: settings.bannerUrl || settings.coverUrl || null,

@@ -249,7 +249,7 @@ export function CanonicalVideoPlayer({
 
       {/* Botão de Play central quando pausado */}
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/40 backdrop-blur-xs transition-opacity">
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/50 transition-opacity">
           <div className="size-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-transform group-hover:scale-105">
             <Play className="size-6 ml-1" fill="currentColor" />
           </div>
@@ -263,7 +263,7 @@ export function CanonicalVideoPlayer({
             <button
               type="button"
               onClick={handleTogglePlay}
-              className="size-11 min-h-11 min-w-11 rounded-full bg-background/40 hover:bg-background/60 text-primary-foreground flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="size-11 min-h-11 min-w-11 rounded-full bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700 text-neutral-50 flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={isPlaying ? "Pausar" : "Reproduzir"}
             >
               {isPlaying ? <Pause className="size-4" /> : <Play className="size-4 ml-1" fill="currentColor" />}
@@ -272,7 +272,7 @@ export function CanonicalVideoPlayer({
             <button
               type="button"
               onClick={handleToggleMute}
-              className="size-11 min-h-11 min-w-11 rounded-full bg-background/40 hover:bg-background/60 text-primary-foreground flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="size-11 min-h-11 min-w-11 rounded-full bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700 text-neutral-50 flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={isMuted ? "Ativar som" : "Desativar som"}
             >
               {isMuted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}

@@ -100,7 +100,7 @@ export const getStorePixelConfig = createServerFn({ method: "GET" })
 
     const { data: config, error } = await supabase
       .from("store_pixel_configs")
-      .select("id, store_id, meta_pixel_id, meta_capi_token, meta_test_event_code, google_ads_id, google_analytics_id, tiktok_pixel_id, track_page_view, track_view_content, track_add_to_cart, track_initiate_checkout, track_lead, track_whatsapp_click, updated_at")
+      .select("id, store_id, meta_pixel_id, meta_capi_token, meta_test_event_code, google_ads_id, ga4_measurement_id, track_page_views, track_whatsapp_leads, track_catalog_views, track_quotes, track_purchases, updated_at")
       .eq("store_id", targetStoreId)
       .maybeSingle();
 
@@ -145,6 +145,14 @@ export const getStorePixelConfig = createServerFn({ method: "GET" })
     const publicConfig = Object.fromEntries(Object.entries(config as Record<string, any>).filter(([key]) => !["meta_capi_token", "meta_test_event_code"].includes(key)));
     return {
       ...(publicConfig as StorePixelConfigDTO),
+      google_analytics_id: config.ga4_measurement_id || null,
+      tiktok_pixel_id: null,
+      track_page_view: config.track_page_views ?? true,
+      track_view_content: config.track_catalog_views ?? true,
+      track_add_to_cart: config.track_purchases ?? true,
+      track_initiate_checkout: config.track_purchases ?? true,
+      track_lead: config.track_quotes ?? true,
+      track_whatsapp_click: config.track_whatsapp_leads ?? true,
       meta_capi_token: null,
       meta_capi_configured: Boolean(metaPayload?.access_token || (config as any).meta_capi_token),
       meta_test_event_code_configured: Boolean(metaPayload?.test_event_code || (config as any).meta_test_event_code),
@@ -228,14 +236,12 @@ export const saveStorePixelConfig = createServerFn({ method: "POST" })
       meta_capi_token: null,
       meta_test_event_code: null,
       google_ads_id: conversionId.trim() || null,
-      google_analytics_id: data.google_analytics_id?.trim() || null,
-      tiktok_pixel_id: data.tiktok_pixel_id?.trim() || null,
-      track_page_view: data.track_page_view,
-      track_view_content: data.track_view_content,
-      track_add_to_cart: data.track_add_to_cart,
-      track_initiate_checkout: data.track_initiate_checkout,
-      track_lead: data.track_lead,
-      track_whatsapp_click: data.track_whatsapp_click,
+      ga4_measurement_id: data.google_analytics_id?.trim() || null,
+      track_page_views: data.track_page_view,
+      track_catalog_views: data.track_view_content,
+      track_purchases: data.track_add_to_cart || data.track_initiate_checkout,
+      track_quotes: data.track_lead,
+      track_whatsapp_leads: data.track_whatsapp_click,
       updated_at: new Date().toISOString(),
     };
 
@@ -270,14 +276,25 @@ export const getPublicStorePixels = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("store_pixel_configs")
       .select(
-        "meta_pixel_id, google_ads_id, google_analytics_id, tiktok_pixel_id, track_page_view, track_view_content, track_add_to_cart, track_initiate_checkout, track_lead, track_whatsapp_click"
+        "meta_pixel_id, google_ads_id, ga4_measurement_id, track_page_views, track_catalog_views, track_purchases, track_quotes, track_whatsapp_leads"
       )
       .eq("store_id", storeId)
       .maybeSingle();
 
     if (error || !data) return null;
 
-    return data;
+    return {
+      meta_pixel_id: data.meta_pixel_id,
+      google_ads_id: data.google_ads_id,
+      google_analytics_id: data.ga4_measurement_id || null,
+      tiktok_pixel_id: null,
+      track_page_view: data.track_page_views ?? true,
+      track_view_content: data.track_catalog_views ?? true,
+      track_add_to_cart: data.track_purchases ?? true,
+      track_initiate_checkout: data.track_purchases ?? true,
+      track_lead: data.track_quotes ?? true,
+      track_whatsapp_click: data.track_whatsapp_leads ?? true,
+    };
   });
 
 /**
@@ -330,20 +347,30 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
       }
       const { data: publicStore, error: publicStoreError } = await supabase
         .from("stores")
-        .select("id, status")
+        .select("id, is_active")
         .eq("id", data.storeId)
-        .eq("status", "active")
+        .eq("is_active", true)
         .maybeSingle();
       if (publicStoreError || !publicStore) {
         throw new Error("Loja pública não está ativa para telemetria CAPI.");
       }
     }
 
-    const { data: config, error } = await supabase
+    const { data: rawConfig, error } = await supabase
       .from("store_pixel_configs")
-      .select("meta_pixel_id, meta_capi_token, meta_test_event_code, track_lead, track_whatsapp_click, track_add_to_cart, track_initiate_checkout, track_view_content")
+      .select("meta_pixel_id, meta_capi_token, meta_test_event_code, track_whatsapp_leads, track_catalog_views, track_quotes, track_purchases")
       .eq("store_id", data.storeId)
       .maybeSingle();
+    const config = rawConfig
+      ? {
+          ...rawConfig,
+          track_lead: rawConfig.track_quotes,
+          track_whatsapp_click: rawConfig.track_whatsapp_leads,
+          track_add_to_cart: rawConfig.track_purchases,
+          track_initiate_checkout: rawConfig.track_purchases,
+          track_view_content: rawConfig.track_catalog_views,
+        }
+      : null;
 
     if (error || !config || !config.meta_pixel_id) {
       return { sent: false, reason: "CAPI não configurado para esta loja" };
@@ -456,13 +483,13 @@ async function dispatchGoogleAdsConversion(params: {
 }): Promise<{ sent: boolean; error?: string }> {
   const { data: config } = await params.supabase
     .from("store_pixel_configs")
-    .select("google_analytics_id, google_ads_id")
+    .select("ga4_measurement_id, google_ads_id")
     .eq("store_id", params.storeId)
     .maybeSingle();
 
   // Requer o GA4 Measurement ID (G-XXXX) e o API Secret do GA4 Data Stream
   const googleSecrets = await getActiveIntegrationPayload(params.storeId, "google_analytics");
-  const measurementId = String(googleSecrets?.measurement_id || config?.google_analytics_id || "").trim();
+  const measurementId = String(googleSecrets?.measurement_id || config?.ga4_measurement_id || "").trim();
   if (!measurementId) {
     return { sent: false, error: "Google Analytics ID não configurado" };
   }
@@ -712,6 +739,150 @@ export const dispatchClosedLoopLeadQualification = createServerFn({ method: "POS
       gaEvent: gaEventName,
       results,
       eventId,
+    };
+  });
+
+export const recordStorefrontAttributionVisit = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid(),
+      landingUrl: z.string().optional().nullable(),
+      sourceUrl: z.string().optional().nullable(),
+      referrer: z.string().optional().nullable(),
+      entityType: z.string().optional().nullable(),
+      entityId: z.string().optional().nullable(),
+      entityTitle: z.string().optional().nullable(),
+      utmSource: z.string().optional().nullable(),
+      utmMedium: z.string().optional().nullable(),
+      utmCampaign: z.string().optional().nullable(),
+      utmContent: z.string().optional().nullable(),
+      utmTerm: z.string().optional().nullable(),
+      fbclid: z.string().optional().nullable(),
+      fbp: z.string().optional().nullable(),
+      fbc: z.string().optional().nullable(),
+      gclid: z.string().optional().nullable(),
+      ttclid: z.string().optional().nullable(),
+      ctwaClid: z.string().optional().nullable(),
+      adId: z.string().optional().nullable(),
+      adsetId: z.string().optional().nullable(),
+      campaignId: z.string().optional().nullable(),
+      creativeId: z.string().optional().nullable(),
+      formId: z.string().optional().nullable(),
+      deviceId: z.string().optional().nullable(),
+      visitorId: z.string().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+    let userPhone: string | null = null;
+    let userEmail: string | null = null;
+    if (identity?.id) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("id", identity.id)
+        .maybeSingle();
+      userPhone = prof?.phone || null;
+      userEmail = identity.email || null;
+    }
+
+    const { recordAttributionTouchpoint } = await import("@/services/omnichannel-attribution.server");
+    const touchpointId = await recordAttributionTouchpoint(supabase, {
+      storeId: data.storeId,
+      deviceId: data.deviceId || null,
+      visitorId: data.visitorId || null,
+      profileId: identity?.id || null,
+      phone: userPhone,
+      email: userEmail,
+      ctwaClid: data.ctwaClid || null,
+      fbclid: data.fbclid || null,
+      fbp: data.fbp || null,
+      fbc: data.fbc || null,
+      gclid: data.gclid || null,
+      ttclid: data.ttclid || null,
+      utmSource: data.utmSource || null,
+      utmMedium: data.utmMedium || null,
+      utmCampaign: data.utmCampaign || null,
+      utmContent: data.utmContent || null,
+      utmTerm: data.utmTerm || null,
+      adId: data.adId || null,
+      adsetId: data.adsetId || null,
+      campaignId: data.campaignId || null,
+      creativeId: data.creativeId || null,
+      formId: data.formId || null,
+      sourceUrl: data.sourceUrl || null,
+      landingUrl: data.landingUrl || null,
+      referrer: data.referrer || null,
+      entityType: data.entityType || null,
+      entityId: data.entityId || null,
+      entityTitle: data.entityTitle || null,
+      capturedVia: "storefront_visit",
+    });
+
+    return { ok: true, touchpointId };
+  });
+
+export const getStoreAttributionOverview = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        storeId: z.string().uuid().optional(),
+        days: z.number().int().min(1).max(365).optional().default(30),
+      })
+      .optional(),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    const storeId = data?.storeId || identity.store_id || (await resolveTenantStoreId());
+    if (!storeId) throw new Error("Identificador da loja não fornecido.");
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"], storeId);
+    const supabase = getServerClient();
+
+    const sinceIso = new Date(Date.now() - (data?.days || 30) * 86400_000).toISOString();
+
+    const [tpRes, telemetryRes, threadsRes] = await Promise.all([
+      (supabase.from("ad_attribution_touchpoints") as any)
+        .select("id, phone_e164, email, lead_code, ad_platform, utm_source, utm_medium, utm_campaign, ad_id, campaign_id, form_id, ad_headline, entity_type, entity_title, ctwa_clid, fbclid, gclid, captured_via, lead_id, thread_id, created_at")
+        .eq("store_id", storeId)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false })
+        .limit(40),
+      supabase
+        .from("lead_conversion_telemetry")
+        .select("id, event_name, event_id, event_source, channel, lead_id, thread_id, status, response_data, dispatched_at")
+        .eq("store_id", storeId)
+        .gte("dispatched_at", sinceIso)
+        .order("dispatched_at", { ascending: false })
+        .limit(40),
+      supabase
+        .from("chat_threads")
+        .select("id, guest_name, group_subject, primary_phone_e164, lead_id, attribution, updated_at")
+        .eq("store_id", storeId)
+        .not("attribution", "eq", "{}")
+        .gte("updated_at", sinceIso)
+        .order("updated_at", { ascending: false })
+        .limit(20),
+    ]);
+
+    const touchpoints = (tpRes?.data as any[]) || [];
+    const telemetryLogs = (telemetryRes?.data as any[]) || [];
+    const attributedThreads = (threadsRes?.data as any[]) || [];
+
+    return {
+      touchpoints,
+      telemetryLogs,
+      attributedThreads,
+      summary: {
+        totalTouchpoints: touchpoints.length,
+        metaAdsCount: touchpoints.filter((t) => t.ad_platform === "meta_ads" || t.ctwa_clid || t.fbclid).length,
+        googleAdsCount: touchpoints.filter((t) => t.ad_platform === "google_ads" || t.gclid).length,
+        formSubmissionsCount: touchpoints.filter((t) => String(t.captured_via || "").includes("form")).length,
+        whatsappClicksCount: touchpoints.filter((t) => String(t.captured_via || "").includes("whatsapp")).length,
+        ctwaCount: touchpoints.filter((t) => Boolean(t.ctwa_clid)).length,
+        capiSuccessCount: telemetryLogs.filter((l) => l.status === "delivered" || l.status === "dispatched").length,
+        capiErrorCount: telemetryLogs.filter((l) => l.status === "failed").length,
+      },
     };
   });
 

@@ -199,7 +199,7 @@ export function CommercialShowcaseTemplate({
         <section aria-label={`Produtos em Destaque de ${nicheTitle}`} className="space-y-3 py-1">
           <div className="px-3 sm:px-4 flex items-center justify-between">
             <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-tight">
-              Produtos & Ofertas de {nicheTitle}
+              Produtos e Ofertas de {nicheTitle}
             </h2>
             <span className="text-xs text-muted-foreground font-medium">
               {products.length} itens

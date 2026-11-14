@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
 import {
   AIChatShell,
@@ -38,7 +38,7 @@ import {
 } from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Monitor, Info, Layers, Globe2, Share2 } from "lucide-react";
+import { Monitor, Info, Layers, Globe2, Share2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -227,7 +227,7 @@ function CopilotPage() {
     stableClientMessageId?: string,
   ) => {
     if (!text.trim() || isSending) return;
-    if (effectiveUserId && !isUuid(activeThreadId)) {
+    if (effectiveUserId && !isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
       toast.error(
         "A conversa ainda não está disponível. Tente recarregar ou criar uma nova thread.",
       );
@@ -258,14 +258,50 @@ function CopilotPage() {
     setIsSending(true);
 
     try {
-      if (effectiveUserId && isUuid(activeThreadId) && activeThreadId !== DEFAULT_GUEST_THREAD_ID) {
+      let targetThreadId = requestThreadId;
+      if (effectiveUserId && (!isUuid(targetThreadId) || targetThreadId === DEFAULT_GUEST_THREAD_ID)) {
+        try {
+          const created = await createAiConversationThread({
+            data: {
+              type: "ai_assistant",
+              title: text.slice(0, 48) || "Assessor Local",
+              metadata: { source: "store_copilot" },
+              workingMemory: {},
+            },
+          });
+          if (runId !== activeRunRef.current) return;
+          if (created?.id) {
+            targetThreadId = created.id;
+            activeThreadRef.current = created.id;
+            setActiveThreadId(created.id);
+            setThreads((prev) => [
+              {
+                id: created.id,
+                type: (created.thread_type as any) || "ai_assistant",
+                title: created.subject || "Assessor Local",
+                isPinned: true,
+              },
+              ...prev.filter((t) => t.id !== DEFAULT_GUEST_THREAD_ID),
+            ]);
+          } else {
+            throw new Error("Não foi possível iniciar sua conversa persistida.");
+          }
+        } catch (threadErr: any) {
+          throw new Error(threadErr?.message || "Falha ao criar conversa autenticada do Copilot.");
+        }
+      }
+
+      if (effectiveUserId) {
+        if (!isUuid(targetThreadId) || targetThreadId === DEFAULT_GUEST_THREAD_ID) {
+          throw new Error("Conversa autenticada inválida. Tente novamente ou recarregue a página.");
+        }
         const uploadedAttachments = await uploadComposerAttachments(
           attachments,
           uploadCopilotMultimodalAttachment as any,
         );
         const result = await sendAiConversationMessage({
           data: {
-            threadId: requestThreadId,
+            threadId: targetThreadId,
             clientMessageId: userMessageItem.id,
             message: text,
             replyToId,
@@ -274,7 +310,11 @@ function CopilotPage() {
             userLng: userCoords.lng,
           },
         });
-        if (runId !== activeRunRef.current || activeThreadRef.current !== requestThreadId) return;
+        const threadSwitched =
+          targetThreadId === requestThreadId
+            ? activeThreadRef.current !== requestThreadId
+            : activeThreadRef.current !== targetThreadId;
+        if (runId !== activeRunRef.current || threadSwitched) return;
         setMessages((prev) => {
           const executionFailed =
             result?.aiMessage?.status === "failed" ||
@@ -314,7 +354,7 @@ function CopilotPage() {
         if (result?.updatedWorkingMemory) {
           setThreads((prev) =>
             prev.map((thread) =>
-              thread.id === requestThreadId
+              thread.id === targetThreadId
                 ? { ...thread, workingMemory: result.updatedWorkingMemory }
                 : thread,
             ),
@@ -346,8 +386,18 @@ function CopilotPage() {
           artifact: execution.artifact,
           structuredPayload: execution.structuredPayload,
         };
-        if (runId === activeRunRef.current && activeThreadRef.current === requestThreadId)
-          setMessages((prev) => [...prev, aiMessageItem]);
+        if (runId === activeRunRef.current && activeThreadRef.current === requestThreadId) {
+          const guestFailed =
+            execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL";
+          setMessages((prev) => [
+            ...prev.map((item) =>
+              item.id === userMessageItem.id
+                ? { ...item, status: guestFailed ? ("failed" as const) : ("delivered" as const) }
+                : item,
+            ),
+            aiMessageItem,
+          ]);
+        }
       }
     } catch (err: any) {
       if (runId === activeRunRef.current) {
@@ -588,10 +638,16 @@ function CopilotPage() {
   );
 
   return (
-    <div className="h-full flex-1 w-full flex flex-col min-h-0 overflow-hidden bg-background">
+    <div className="h-dvh w-full flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
       {/* Barra Superior Copilot */}
       <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border/60 bg-card/60 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
+          <Button asChild variant="ghost" size="sm" className="h-11 min-h-11 px-3 gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+            <Link to="/">
+              <ArrowLeft className="size-4" />
+              <span>Início</span>
+            </Link>
+          </Button>
           <Badge variant="outline" className="font-mono text-2xs font-bold gap-1 border-primary/40 text-primary bg-primary/5">
             <Globe2 className="size-3" />
             <span>Waesy Copilot</span>
@@ -602,42 +658,29 @@ function CopilotPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {computerSteps.length > 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsComputerOpen(true)}
-              className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 border-primary/30 text-foreground hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Monitor className="size-4 text-primary" />
-              <span className="hidden sm:inline">Computador do Waesy</span>
-              <span className="rounded bg-muted px-2 py-0 font-mono text-xs">
-                {computerSteps.length}
-              </span>
-            </Button>
-          )}
-
           <Button
             type="button"
-            variant="outline"
-            onClick={() => setIsBackgroundTasksOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
-            title="Tarefas em Segundo Plano"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsComputerOpen(true)}
+            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            title="Inspecionar terminal, navegador e editor do Computador Waesy"
           >
-            <Layers className="size-4 text-muted-foreground" />
-            <span className="hidden md:inline">Processos</span>
-            {runningBackgroundCount > 0 && (
+            <Monitor className="size-4 text-primary" />
+            <span className="hidden sm:inline">Computador</span>
+            {computerSteps.length > 0 && (
               <span className="rounded bg-muted px-2 py-0 font-mono text-xs">
-                {runningBackgroundCount}
+                {computerSteps.length}
               </span>
             )}
           </Button>
 
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
+            size="sm"
             onClick={() => setIsTelemetryOpen(true)}
-            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-11 min-h-11 px-3 rounded-lg text-xs font-semibold gap-2 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             title="Informações da Tarefa e Créditos"
           >
             <Info className="size-4 text-muted-foreground" />
@@ -663,6 +706,7 @@ function CopilotPage() {
 
       <div className="flex-1 min-h-0 overflow-hidden">
         <AIChatShell
+          mode="concierge"
           threads={threads}
           activeThreadId={activeThreadId}
           messages={messages}

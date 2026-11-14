@@ -5,7 +5,8 @@
  * pertinentes à realidade de cada segmento comercial (Turismo, Gastronomia, Varejo, etc.).
  */
 
-import { PlusCircle, Utensils, Coffee, Plane, Shield, MapPin, BedDouble, Sliders, Scissors, Layers, Shirt, Tag, Gift, Wrench, Smartphone, Scale, FileCheck, Building2, Calendar, KeyRound, HeartPulse, Apple, Sparkles, Car, GraduationCap, Briefcase, ShoppingBag, Package, Box, Pill, Dog, Hammer, Ticket, BookOpen, Clock, Stethoscope, Dumbbell, Palette, ShieldCheck, Truck, Award, type LucideIcon } from 'lucide-react';
+import { PlusCircle, Utensils, Coffee, Plane, Shield, MapPin, BedDouble, Sliders, Scissors, Layers, Shirt, Tag, Gift, Wrench, Smartphone, Scale, FileCheck, Building2, Calendar, KeyRound, HeartPulse, Apple, Car, GraduationCap, Briefcase, ShoppingBag, Package, Box, Pill, Dog, Hammer, Ticket, BookOpen, Clock, Stethoscope, Dumbbell, Palette, ShieldCheck, Truck, Award, type LucideIcon } from 'lucide-react';
+import { tryResolveUnifiedNicheId } from "./niche-ssot";
 
 export interface OptionValuePreset {
  label: string;
@@ -661,7 +662,7 @@ export const NICHE_OPTION_PRESETS: Record<string, OptionGroupPreset[]> = {
     {
       id: "pet-perfume",
       name: "Perfume & Finalização",
-      icon: Sparkles,
+      icon: Award,
       desc: "Fragrância suave hipoalergênica ou sem cheiro",
       data: {
         display_name: "Finalização do Banho",
@@ -744,7 +745,7 @@ export const NICHE_OPTION_PRESETS: Record<string, OptionGroupPreset[]> = {
     {
       id: "auto-ac-sanitizing",
       name: "Higienização de Ar-Condicionado",
-      icon: Sparkles,
+      icon: ShieldCheck,
       desc: "Oxi-sanitização com ozônio e filtro novo",
       data: {
         display_name: "Higienização de Cabine & Ar",
@@ -787,7 +788,7 @@ export const NICHE_OPTION_PRESETS: Record<string, OptionGroupPreset[]> = {
     {
       id: "construction-tinting-system",
       name: "Sistema Tintométrico Personalizado",
-      icon: Sparkles,
+      icon: Palette,
       desc: "Cor de linha do catálogo ou leitura personalizada",
       data: {
         display_name: "Preparação de Cor no Sistema Tintométrico",
@@ -1186,6 +1187,16 @@ export const NICHE_OPTION_PRESETS: Record<string, OptionGroupPreset[]> = {
 const NICHE_ALIASES: Record<string, string> = {
   vehicles: "automotive",
   healthcare: "pharmacy",
+  dental: "pharmacy",
+  aesthetics_clinic: "services",
+  beauty_salon: "services",
+  barbershop: "services",
+  psychology: "services",
+  vet_petshop: "pet",
+  market_perishables: "supermarket",
+  accounting: "legal",
+  law_firm: "legal",
+  organizations: "services",
   creator: "services",
   news: "services",
   generic: "retail",
@@ -1229,8 +1240,21 @@ export interface NicheModifierPlaceholders {
  * Retorna placeholders 100% humanizados e aderentes à realidade do nicho ativo,
  * erradicando vazamento de termos gastronômicos (ex: bacon) em moda, turismo ou serviços.
  */
+function resolvePresetNicheKey(nicheId?: string): string {
+  const raw = (nicheId || "").trim().toLowerCase();
+  if (!raw) return "retail";
+  if (NICHE_OPTION_PRESETS[raw]) return raw;
+  if (NICHE_ALIASES[raw]) return NICHE_ALIASES[raw];
+  const unified = tryResolveUnifiedNicheId(raw);
+  if (unified) {
+    if (NICHE_OPTION_PRESETS[unified]) return unified;
+    if (NICHE_ALIASES[unified]) return NICHE_ALIASES[unified];
+  }
+  return raw;
+}
+
 export function getNicheModifierPlaceholders(nicheId?: string): NicheModifierPlaceholders {
-  const resolved = NICHE_ALIASES[nicheId || ""] || nicheId || "retail";
+  const resolved = resolvePresetNicheKey(nicheId);
 
   switch (resolved) {
     case "retail":
@@ -1385,7 +1409,7 @@ export function getNicheModifierPlaceholders(nicheId?: string): NicheModifierPla
  * Se o nicho não tiver lista específica, resolve via alias ou utiliza o fallback de varejo.
  */
 export function getNicheOptionGroupPresets(nicheId: string): OptionGroupPreset[] {
-  const resolved = NICHE_ALIASES[nicheId] || nicheId;
+  const resolved = resolvePresetNicheKey(nicheId);
   return NICHE_OPTION_PRESETS[resolved] || NICHE_OPTION_PRESETS.retail;
 }
 

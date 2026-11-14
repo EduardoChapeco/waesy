@@ -381,7 +381,7 @@ export function VitrineLateralDrawerBlock({
               className="h-11 min-h-11 px-4 rounded-xl border border-border bg-card text-foreground text-xs font-semibold inline-flex items-center gap-2 cursor-pointer hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <LayoutGrid className="size-4 text-primary" />
-              <span>{data?.greetingTitle || data?.drawerTitle || "Categorias & Atalhos"}</span>
+              <span>{data?.greetingTitle || data?.drawerTitle || "Categorias"}</span>
             </button>
           </div>
         )}
@@ -389,7 +389,7 @@ export function VitrineLateralDrawerBlock({
         <VitrineLateralMenuSheet
           open={isOpen}
           onClose={() => setIsOpen(false)}
-          greetingTitle={data?.greetingTitle || data?.drawerTitle || "Aproveite o nosso App!"}
+          greetingTitle={data?.greetingTitle || data?.drawerTitle || "Menu"}
           greetingSubtitle={data?.greetingSubtitle}
           showViewModeToggle={data?.showViewModeToggle !== false}
           defaultViewMode={data?.defaultViewMode || "grid"}
@@ -603,7 +603,7 @@ export function VitrineStoresFeedListBlock({
     showFilterChips?: boolean;
   };
 }) {
-  const { isEditorCanvas } = useEffectiveViewport();
+  const { isEditorCanvas, isMobile } = useEffectiveViewport();
   const [activeFilters, setActiveFilters] = React.useState<string[]>([]);
   const [favorites, setFavorites] = React.useState<Record<string, boolean>>({});
 
@@ -688,7 +688,7 @@ export function VitrineStoresFeedListBlock({
               Nenhum estabelecimento corresponde aos filtros selecionados.
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div className={isMobile ? "grid grid-cols-1 gap-3" : "grid grid-cols-1 lg:grid-cols-2 gap-3"}>
               {mappedStores.map((st) => (
                 <IFoodStoreFeedCard
                   key={st.id}

@@ -109,19 +109,19 @@ export function MediaLightboxModal({
  if (!isOpen || !currentMediaUrl) return null;
 
  return (
- <div className="fixed inset-0 z-50 bg-foreground/95 backdrop-blur-md flex flex-col justify-between animate-in fade-in duration-200 select-none">
+ <div className="fixed inset-0 z-50 bg-neutral-950 flex flex-col justify-between animate-in fade-in duration-200 select-none">
  {/* Top Bar */}
- <div className="px-4 py-3 flex items-center justify-between text-foreground z-10 shrink-0">
- <div className="flex items-center gap-3">
- <Avatar className="size-9 border border-white/20">
+ <div className="px-4 py-3 flex items-center justify-between text-neutral-50 z-10 shrink-0">
+ <div className="flex items-center gap-3 min-w-0">
+ <Avatar className="size-9 border border-neutral-700">
  <AvatarImage src={post.author.avatar_url || undefined} />
- <AvatarFallback className="bg-card/20 text-foreground font-bold text-xs">
+ <AvatarFallback className="bg-neutral-800 text-neutral-50 font-bold text-xs">
  {post.author.name.charAt(0).toUpperCase()}
  </AvatarFallback>
  </Avatar>
- <div>
- <p className="text-sm font-bold truncate">{post.author.name}</p>
- <p className="text-2xs text-foreground/60">
+ <div className="min-w-0">
+ <p className="text-sm font-bold line-clamp-1 text-anti-truncate">{post.author.name}</p>
+ <p className="text-2xs text-neutral-400">
  Foto {currentIndex + 1} de {post.media_urls.length}
  </p>
  </div>
@@ -142,7 +142,7 @@ export function MediaLightboxModal({
  {post.media_urls.length > 1 && currentIndex > 0 && (
   <button
   onClick={() => setCurrentIndex((prev) => prev - 1)}
-  className="absolute left-3 sm:left-6 z-20 size-11 rounded-full bg-foreground/60 hover:bg-foreground/80 text-foreground flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  className="absolute left-3 sm:left-6 z-20 size-11 min-h-11 min-w-11 rounded-full bg-card border border-border hover:bg-muted text-foreground flex items-center justify-center transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   <ChevronLeft className="size-6" />
   </button>
@@ -151,14 +151,14 @@ export function MediaLightboxModal({
  <img
  src={currentMediaUrl}
  alt={`Mídia ${currentIndex + 1}`}
- className="max-h-vh-75 max-w-full rounded-lg object-contain transition-colors duration-200 duration-300"
+ className="max-h-vh-75 max-w-full rounded-lg object-contain transition-colors duration-200"
  />
 
  {/* Next Button */}
  {post.media_urls.length > 1 && currentIndex < post.media_urls.length - 1 && (
   <button
   onClick={() => setCurrentIndex((prev) => prev + 1)}
-  className="absolute right-3 sm:right-6 z-20 size-11 rounded-full bg-foreground/60 hover:bg-foreground/80 text-foreground flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  className="absolute right-3 sm:right-6 z-20 size-11 min-h-11 min-w-11 rounded-full bg-card border border-border hover:bg-muted text-foreground flex items-center justify-center transition-transform active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
   <ChevronRight className="size-6" />
   </button>
@@ -166,20 +166,20 @@ export function MediaLightboxModal({
  </div>
 
   {/* Bottom Floating Interaction Bar */}
-  <div className="px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-foreground/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-foreground shrink-0">
+  <div className="px-4 py-4 pb-safe bg-card border-t border-border flex items-center justify-between text-foreground shrink-0">
     <div className="flex items-center gap-3">
       {/* Curtir foto específica */}
       <Button
         variant="ghost"
         onClick={() => toggleLikeMutation.mutate()}
-        className={`h-11 px-4 rounded-lg gap-2 text-sm font-semibold transition-colors duration-200 cursor-pointer shadow-2xs ${
+        className={`h-11 px-4 rounded-lg gap-2 text-sm font-semibold transition-colors duration-200 cursor-pointer border ${
           currentStat.user_liked
-            ? "bg-destructive/20 text-destructive hover:bg-destructive/30"
-            : "bg-card/10 hover:bg-card/20 text-foreground"
+            ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90"
+            : "bg-muted hover:bg-accent border-border text-foreground"
         }`}
       >
         <Heart
-          className={`size-4.5 ${currentStat.user_liked ? "fill-current text-destructive" : ""}`}
+          className={`size-4 ${currentStat.user_liked ? "fill-current" : ""}`}
         />
         <span className="hidden sm:inline">{currentStat.likes_count} curtidas nesta foto</span>
         <span className="sm:hidden">{currentStat.likes_count}</span>
@@ -189,7 +189,7 @@ export function MediaLightboxModal({
       <Button
         variant="ghost"
         onClick={() => setIsCommentDrawerOpen(true)}
-        className="h-11 px-4 rounded-lg gap-2 text-sm font-semibold bg-card/10 hover:bg-card/20 text-foreground transition-colors duration-200 cursor-pointer shadow-2xs"
+        className="h-11 px-4 rounded-lg gap-2 text-sm font-semibold bg-muted hover:bg-accent border border-border text-foreground transition-colors duration-200 cursor-pointer"
       >
         <MessageSquare className="size-4.5" />
         <span className="hidden sm:inline">

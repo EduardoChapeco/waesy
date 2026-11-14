@@ -721,10 +721,10 @@ export const listMySignedContracts = createServerFn({ method: "GET" }).handler(
     const { data, error } = await supabase
       .from("contract_envelopes")
       .select(
-        `id, status, signed_at, certificate_hash, created_at,
-        contracts!inner(title, stores(name, slug))`
+        `id, envelope_code, status, sealed_at, crypto_hash, created_at,
+        contracts!inner(title, customer_id, stores(name, slug))`
       )
-      .eq("signer_profile_id", identity.id)
+      .eq("contracts.customer_id", identity.id)
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -737,8 +737,8 @@ export const listMySignedContracts = createServerFn({ method: "GET" }).handler(
       id: env.id,
       title: env.contracts?.title || "Contrato",
       status: env.status,
-      signedAt: env.signed_at,
-      certificateHash: env.certificate_hash,
+      signedAt: env.sealed_at || null,
+      certificateHash: env.crypto_hash || env.envelope_code || null,
       storeName: env.contracts?.stores?.name || null,
       storeSlug: env.contracts?.stores?.slug || null,
       createdAt: env.created_at,

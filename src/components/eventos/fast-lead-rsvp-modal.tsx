@@ -18,7 +18,6 @@ import {
   CheckCircle2,
   Copy,
   Download,
-  Sparkles,
   QrCode,
 } from "lucide-react";
 import { formatDate } from "@/lib/datetime";

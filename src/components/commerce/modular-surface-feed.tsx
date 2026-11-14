@@ -204,18 +204,18 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                     <span className="text-xs font-semibold">{section.title}</span>
                   </div>
                 )}
-                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-neutral-950/60" />
                 <div className="absolute bottom-3 left-4 right-4 text-left">
                   {section.badge_tag && (
-                    <span className="inline-block px-2 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card/20 backdrop-blur-md text-foreground border border-white/20 mb-1">
+                    <span className="inline-block px-2 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider bg-card text-foreground border border-border mb-1">
                       {section.badge_tag}
                     </span>
                   )}
-                  <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight ">
+                  <h3 className="text-sm sm:text-base font-bold text-neutral-50 leading-tight">
                     {section.title}
                   </h3>
                   {section.subtitle && (
-                    <p className="text-xs text-foreground/80 line-clamp-1">{section.subtitle}</p>
+                    <p className="text-xs text-neutral-200 line-clamp-1">{section.subtitle}</p>
                   )}
                 </div>
               </SurfaceLink>
@@ -234,7 +234,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
                   {section.title}
                 </h2>
                 {section.badge_tag && (
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-muted text-primary border border-border">
                     {section.badge_tag}
                   </span>
                 )}
@@ -434,7 +434,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
             <section key={section.id} aria-label={section.title} className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                  <span className="size-6 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center font-bold text-xs">
                     <SquaresFour size={14} weight="bold" />
                   </span>
                   <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">
@@ -460,7 +460,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
             <section key={section.id} aria-label={section.title} className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                  <span className="size-6 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center font-bold text-xs">
                     <Lightning size={14} weight="fill" />
                   </span>
                   <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">

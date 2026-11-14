@@ -14,7 +14,6 @@ import {
   ChevronUp,
   Square,
   Clock,
-  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -207,11 +206,11 @@ export function AIActivityTrail({
                         <span className="font-semibold text-foreground truncate">
                           {step.label}
                         </span>
-                        <span className="text-3xs uppercase tracking-wider text-muted-foreground font-mono bg-muted/60 px-1 py-0.2 rounded">
+                        <span className="text-3xs uppercase tracking-wider text-muted-foreground font-mono bg-muted px-1 py-1 rounded">
                           {STEP_LABELS[step.type]}
                         </span>
                         {step.role && (
-                          <span className="text-3xs font-mono font-medium text-primary bg-primary/10 border border-primary/20 px-1 py-0.2 rounded">
+                          <span className="text-3xs font-mono font-medium text-primary bg-muted border border-border px-1 py-1 rounded">
                             {step.role}
                           </span>
                         )}

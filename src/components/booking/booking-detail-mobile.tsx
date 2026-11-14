@@ -43,13 +43,13 @@ export function BookingDetailMobile({
           </div>
         )}
 
-        {/* Gradiente superior para contraste dos botões */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-black/40 pointer-events-none z-10" />
+        {/* Overlay superior discreto para contraste dos botões */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-neutral-950/60 pointer-events-none z-10" />
 
         {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agendar"
-          className="absolute top-3 left-3 size-11 rounded-full bg-foreground/50  text-foreground flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 "
+          className="absolute top-3 left-3 size-11 rounded-full bg-card text-foreground flex items-center justify-center border border-border active:scale-95 transition-transform z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Voltar para Serviços"
         >
           <ArrowLeft size={20} weight="bold" />
@@ -57,7 +57,7 @@ export function BookingDetailMobile({
 
         {/* Ações Flutuantes Superior Direito (44px Apple HIG) */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
-          <div className="size-11 rounded-full bg-foreground/50  text-foreground flex items-center justify-center border border-white/20 ">
+          <div className="size-11 rounded-full bg-card text-foreground flex items-center justify-center border border-border">
             <ContentActionsMenu
               entityType="product"
               entityId={service.id}
@@ -210,7 +210,7 @@ export function BookingDetailMobile({
       </div>
 
       {/* ── 7. Sticky Bottom Action Bar (Thumb Zone & Safe-Area) ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background  border-t border-border/60 p-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] mobile-nav-hide-on-keyboard flex items-center justify-between gap-3 shadow-overlay">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border p-3 pb-4 pb-safe mobile-nav-hide-on-keyboard flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <span className="text-2xs text-muted-foreground uppercase font-bold tracking-wider block">
             Valor da Sessão

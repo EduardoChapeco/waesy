@@ -1,11 +1,25 @@
 /**
- * Template 3: Proposta Oficial Exce Tur (Dark/Saint Viagens)
- * Focado em luxo, contraste, capa dramática e resumo flutuante
+ * Template 3: Dark Luxo Editorial (Obsidian & Champagne Gold)
+ * Contraste WCAG AA/AAA verificado sobre canvas escuro ou customizado.
  */
+import type React from "react";
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import { Plane, Hotel, Car, Compass, Check, X, PhoneCall, MapPin, Utensils } from "lucide-react";
+import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
+import {
+  Plane,
+  Hotel,
+  Car,
+  Compass,
+  Check,
+  X,
+  PhoneCall,
+  MapPin,
+  Utensils,
+  ShieldCheck,
+  FileText,
+} from "lucide-react";
 
 interface TemplateProps {
   proposal: Proposal;
@@ -14,225 +28,263 @@ interface TemplateProps {
 
 export default function TemplateDarkPremium({ proposal: p, agency }: TemplateProps) {
   const vm = buildBaseViewModel(p, agency);
-  const brand = "var(--brand-primary, " + (vm.agency.brand_color || (String.fromCharCode(35) + "1E3A5F")) + ")";
+  const raw = p as unknown as Record<string, any>;
+  const theme = resolveProposalCanvasTheme(
+    { ...raw, template: raw.template || "dark-premium" },
+    vm.agency,
+  );
+  const customEntries: Array<{ key: string; label: string; value: string }> = Array.isArray(
+    raw.custom_field_entries,
+  )
+    ? raw.custom_field_entries
+    : [];
+  const hasConditions = Boolean(
+    raw.boarding_requirements ||
+      raw.cancellation_policy ||
+      p.terms ||
+      customEntries.length > 0,
+  );
 
   return (
     <div
-      className="flex flex-col w-full bg-card text-slate-900 pb-16"
-      style={{ fontFamily: "var(--brand-body-font, sans-serif)" }}
+      style={theme.cssVars as React.CSSProperties}
+      className="flex flex-col w-full p-canvas-root p-body-font pb-16"
     >
-      {/* CAPA DRAMÁTICA (500px) */}
-      <div className="relative w-full h-125 break-inside-avoid">
+      {/* CAPA CINEMATOGRÁFICA */}
+      <div className="relative w-full min-h-112 break-inside-avoid overflow-hidden border-b p-border-main">
         {p.cover_image_url ? (
           <img
             src={p.cover_image_url}
+            alt={p.title || "Capa da proposta"}
             crossOrigin="anonymous"
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 w-full h-full bg-slate-900" />
+          <div className="absolute inset-0 w-full h-full p-surface-subtle" />
         )}
-        {/* Degradê Escuro do Topo para Transparente */}
-        <div className="absolute inset-0 bg-slate-950/60" />
+        <div className="absolute inset-0 p-surface-hero-overlay" />
 
-        {/* TOPO: LOGO E REFERÊNCIA */}
-        <div className="absolute top-0 left-0 w-full p-12 flex justify-between items-start text-white">
-          {vm.agency.logo_url ? (
-            <img
-              src={vm.agency.logo_url}
-              crossOrigin="anonymous"
-              alt="Logo"
-              className="h-10 w-auto max-w-40 aspect-banner-ultrawide object-contain drop-shadow-md" width={160} height={40}
-            />
-          ) : (
-            <div className="text-2xl font-bold tracking-widest text-white uppercase drop-shadow-sm">
-              {vm.agency.name}
+        <div className="relative z-10 flex flex-col justify-between min-h-112 p-8 sm:p-12 p-text-on-dark">
+          {/* TOPO: LOGO E REFERÊNCIA */}
+          <div className="flex justify-between items-start gap-4">
+            {vm.agency.logo_url ? (
+              <img
+                src={vm.agency.logo_url}
+                crossOrigin="anonymous"
+                alt={vm.agency.name}
+                className="h-11 w-auto max-w-44 object-contain"
+                width={176}
+                height={44}
+              />
+            ) : (
+              <div className="text-xl font-bold tracking-widest uppercase p-text-on-dark">
+                {vm.agency.name}
+              </div>
+            )}
+            <div className="text-right">
+              <div className="text-xs font-semibold uppercase tracking-widest p-text-on-dark-muted">
+                Proposta Oficial
+              </div>
+              <div className="text-lg font-mono font-bold p-text-brand">#{p.number}</div>
             </div>
-          )}
-          <div className="text-right text-white">
-            <div className="ds-label-caps opacity-80 text-white/80">Proposta Oficial</div>
-            <div className="text-xl font-mono font-bold">#{p.number}</div>
           </div>
-        </div>
 
-        {/* Título Centralizado na Capa */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-16 px-12 text-center text-white">
-          <h1
-            className="text-6xl font-bold tracking-tight mb-6 text-white drop-shadow-md"
-            style={{
-              color: "#ffffff",
-              fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)",
-              textShadow: "0 4px 16px rgba(0,0,0,0.7)",
-            }}
-          >
-            {p.title || "Proposta Exclusiva"}
-          </h1>
-          <div
-            className="text-lg font-medium opacity-90 max-w-lg text-white/90 drop-shadow-sm"
-          >
-            {p.destination || "Roteiro Personalizado"}
-          </div>
-        </div>
-
-        {/* Onda Inferior de Transição (Pinta com a cor primaria) */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-0">
-          <svg
-            className="relative block w-full h-15"
-            data-name="Layer 1"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.08,130.83,119.34,201.33,109.11,241.6,103.32,282.51,84.4,321.39,56.44Z"
-              style={{ fill: brand }}
-            ></path>
-          </svg>
-        </div>
-      </div>
-
-      {/* BLOCO DE CORES ABAIXO DA CAPA */}
-      <div
-        /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-        style={{ backgroundColor: brand }}
-        className="pb-24 pt-4 px-12 relative z-10 break-inside-avoid"
-      >
-        {/* Resumo Executivo Flutuante */}
-        <div className="bg-card rounded-lg p-8 border border-slate-200 -mt-24 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-slate-100">
-          <div>
-            <div className="ds-label-caps text-slate-400 mb-2">Cliente</div>
-            <div className="font-semibold text-slate-900 text-sm">
-              {(p as any).client_name || "—"}
+          {/* TÍTULO CENTRALIZADO NA CAPA */}
+          <div className="my-auto py-10 text-center max-w-3xl mx-auto space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-semibold uppercase tracking-widest p-surface-brand-soft border p-border-brand">
+              Experiência Exclusiva
             </div>
-          </div>
-          <div>
-            <div className="ds-label-caps text-slate-400 mb-2">Período</div>
-            <div className="font-semibold text-slate-900 text-sm">
-              {p.travel_start ? formatDate(p.travel_start) : "—"} <br />{" "}
-              {p.travel_end ? formatDate(p.travel_end) : "—"}
-            </div>
-          </div>
-          <div>
-            <div className="ds-label-caps text-zinc-500 mb-1">Viajantes</div>
-            <div className="text-sm font-semibold text-zinc-800">
-              {vm.totalPax ? `${vm.totalPax} pax` : "—"}
-            </div>
-          </div>
-          <div>
-            <div className="ds-label-caps text-slate-400 mb-2">Válido até</div>
-            <div className="font-semibold text-slate-900 text-sm text-red-500">
-              {p.valid_until ? formatDate(p.valid_until) : "—"}
-            </div>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight p-text-on-dark p-heading-font">
+              {p.title || "Proposta Exclusiva"}
+            </h1>
+            <p className="text-base sm:text-lg font-medium p-text-on-dark-muted">
+              {p.destination || "Roteiro Personalizado"}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* CORPO BRANCO COM HEADERS PASTÉIS */}
-      <div className="-mt-16 bg-card rounded-t-3xl pt-16 px-12 relative z-20 space-y-12">
-        {/* VOOS (Azul Pastel) */}
-        {vm.hasFlights && (
-          <div className="break-inside-avoid">
-            <h2
-              className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3"
-              style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
-            >
-              <Plane className="w-6 h-6 text-blue-500" /> Transporte Aéreo
-            </h2>
-            <div className="space-y-6">
+      {/* RESUMO EXECUTIVO FLUTUANTE */}
+      {theme.isSectionVisible("summary") && (
+        <div className="px-8 sm:px-12 -mt-8 relative z-20 break-inside-avoid">
+          <div className="p-surface-card rounded-xl p-6 sm:p-8 border p-border-main grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+            <div className="space-y-1">
+              <div className="text-xs uppercase font-bold tracking-widest p-text-faint">
+                Cliente
+              </div>
+              <div className="font-bold p-text-ink text-sm sm:text-base">
+                {raw.client_name || vm.client.name || "—"}
+              </div>
+            </div>
+            <div className="space-y-1 sm:border-l p-border-subtle sm:pl-4">
+              <div className="text-xs uppercase font-bold tracking-widest p-text-faint">
+                Período
+              </div>
+              <div className="font-semibold p-text-ink text-sm">
+                {p.travel_start ? formatDate(p.travel_start) : "—"}
+                {p.travel_end ? ` a ${formatDate(p.travel_end)}` : ""}
+              </div>
+            </div>
+            <div className="space-y-1 sm:border-l p-border-subtle sm:pl-4">
+              <div className="text-xs uppercase font-bold tracking-widest p-text-faint">
+                Viajantes
+              </div>
+              <div className="text-sm sm:text-base font-bold p-text-ink">
+                {vm.totalPax ? `${vm.totalPax} pax` : "—"}
+              </div>
+            </div>
+            <div className="space-y-1 sm:border-l p-border-subtle sm:pl-4">
+              <div className="text-xs uppercase font-bold tracking-widest p-text-faint">
+                Validade
+              </div>
+              <div className="font-bold p-text-brand text-sm sm:text-base">
+                {p.valid_until ? formatDate(p.valid_until) : "Consulte"}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CORPO DE CONTEÚDO */}
+      <div className="pt-10 px-8 sm:px-12 space-y-12">
+        {/* VOOS */}
+        {theme.isSectionVisible("flights") && vm.hasFlights && (
+          <section className="break-inside-avoid space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b p-border-main">
+              <Plane className="size-5 p-text-brand shrink-0" />
+              <h2 className="text-2xl font-bold p-text-ink p-heading-font">
+                Transporte Aéreo
+              </h2>
+            </div>
+            <div className="space-y-4">
               {p.flights!.map((f, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
+                  className="border p-border-main rounded-xl overflow-hidden p-surface-card break-inside-avoid"
                 >
-                  <div className="bg-blue-50 px-6 py-3 flex justify-between items-center border-b border-blue-100">
-                    <span className="ds-label-caps text-blue-600">{f.airline_name || f.airline || "Companhia Aérea"}</span>
-                    <span className="text-xs font-mono font-bold text-blue-800 bg-blue-100/50 px-3 py-1 rounded-full">
+                  <div className="p-surface-brand-soft px-6 py-3 flex justify-between items-center border-b p-border-subtle">
+                    <span className="text-xs font-bold uppercase tracking-widest p-text-brand">
+                      {f.airline_name || f.airline || "Companhia Aérea"}
+                    </span>
+                    <span className="text-xs font-mono font-bold p-text-ink p-surface-card px-3 py-1 rounded-full border p-border-main">
                       {f.flight_number || "Voo Confirmado"}
                     </span>
                   </div>
-                  <div className="p-6 bg-card flex items-center">
-                    <div className="w-1/3 text-center">
-                      <div className="text-4xl font-bold text-slate-900">
+                  <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div className="w-full sm:w-1/3 text-center">
+                      <div className="text-3xl sm:text-4xl font-bold p-text-ink tracking-tight">
                         {(f.origin_iata || f.origin || "---").slice(0, 3).toUpperCase()}
                       </div>
-                      <div className="text-sm font-bold text-slate-500 mt-1">
+                      <div className="text-sm font-semibold p-text-muted mt-1">
                         {f.departure_time || "--:--"}
                       </div>
                     </div>
-                    <div className="flex-1 px-4 relative flex items-center justify-center">
-                      <div className="w-full border-t border-dashed border-slate-300 absolute" />
-                      <div className="bg-card border border-slate-200 px-4 py-1 rounded-full z-10 ds-meta font-bold text-slate-400 uppercase tracking-widest">
-                        {f.departure_date ? formatDate(f.departure_date) : f.date ? formatDate(f.date) : "—"}
+                    <div className="flex-1 w-full px-4 relative flex flex-col items-center justify-center">
+                      <div className="w-full border-t border-dashed p-border-main" />
+                      <div className="-mt-3 p-surface-subtle border p-border-main px-4 py-1 rounded-full text-xs font-bold p-text-muted uppercase tracking-widest">
+                        {f.departure_date
+                          ? formatDate(f.departure_date)
+                          : f.date
+                            ? formatDate(f.date)
+                            : "Direto"}
                       </div>
+                      {f.baggage_rules && (
+                        <div className="text-xs p-text-faint mt-2">{f.baggage_rules}</div>
+                      )}
                     </div>
-                    <div className="w-1/3 text-center">
-                      <div className="text-4xl font-bold text-slate-900">
+                    <div className="w-full sm:w-1/3 text-center">
+                      <div className="text-3xl sm:text-4xl font-bold p-text-ink tracking-tight">
                         {(f.destination_iata || f.destination || "---").slice(0, 3).toUpperCase()}
                       </div>
-                      <div className="text-sm font-bold text-slate-500 mt-1">{f.arrival_time || "--:--"}</div>
+                      <div className="text-sm font-semibold p-text-muted mt-1">
+                        {f.arrival_time || "--:--"}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* HOTÉIS */}
-        {vm.hasHotels && (
-          <div className="break-inside-avoid">
-            <h2
-              className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3"
-              style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
-            >
-              <Hotel className="w-6 h-6 text-warning-strong" /> Acomodação
-            </h2>
-            <div className="space-y-6">
+        {theme.isSectionVisible("hotels") && vm.hasHotels && (
+          <section className="break-inside-avoid space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b p-border-main">
+              <Hotel className="size-5 p-text-brand shrink-0" />
+              <h2 className="text-2xl font-bold p-text-ink p-heading-font">
+                Hospedagem Selecionada
+              </h2>
+            </div>
+            <div className="space-y-5">
               {p.hotels!.map((h, i) => (
                 <div
                   key={i}
-                  className="border border-slate-200 rounded-lg overflow-hidden break-inside-avoid"
+                  className="border p-border-main rounded-xl overflow-hidden p-surface-card break-inside-avoid"
                 >
-                  <div className="bg-warning/10 px-6 py-3 flex justify-between items-center border-b border-warning/30">
-                    <span className="ds-label-caps text-warning-strong">Hotel e Resort</span>
-                    <span className="ds-label-caps text-warning-strong bg-warning/50 px-3 py-1 rounded-full">
-                      {h.meal_plan || "Só Hospedagem"}
+                  <div className="p-surface-brand-soft px-6 py-3 flex justify-between items-center border-b p-border-subtle">
+                    <span className="text-xs font-bold uppercase tracking-widest p-text-brand">
+                      Hotel & Resort
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-wider p-text-ink p-surface-card px-3 py-1 rounded-full border p-border-main">
+                      {h.meal_plan || "Café da Manhã"}
                     </span>
                   </div>
-                  <div className="p-6 bg-card">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-1">{h.name}</h3>
-                    <div className="text-sm text-slate-500 mb-6">{h.city}</div>
+                  <div className="p-6 space-y-5">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-bold p-text-ink">{h.name}</h3>
+                      {h.city && (
+                        <div className="text-sm p-text-muted mt-1 flex items-center gap-2">
+                          <MapPin className="size-3.5 p-text-brand shrink-0" />
+                          <span>{h.city}</span>
+                        </div>
+                      )}
+                    </div>
 
-                    <div className="flex gap-8 mb-6 bg-slate-50 p-4 rounded-card border border-slate-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-surface-subtle p-4 rounded-lg border p-border-subtle">
                       <div>
-                        <div className="ds-meta uppercase font-bold text-slate-400">Check-in</div>
-                        <div className="font-semibold text-slate-800">{formatDate(h.checkin)}</div>
+                        <div className="text-xs uppercase font-bold tracking-wider p-text-faint">
+                          Check-in
+                        </div>
+                        <div className="font-semibold p-text-ink text-sm mt-1">
+                          {h.checkin ? formatDate(h.checkin) : "—"}
+                        </div>
                       </div>
                       <div>
-                        <div className="ds-meta uppercase font-bold text-slate-400">Check-out</div>
-                        <div className="font-semibold text-slate-800">{formatDate(h.checkout)}</div>
+                        <div className="text-xs uppercase font-bold tracking-wider p-text-faint">
+                          Check-out
+                        </div>
+                        <div className="font-semibold p-text-ink text-sm mt-1">
+                          {h.checkout ? formatDate(h.checkout) : "—"}
+                        </div>
                       </div>
                       <div>
-                        <div className="ds-meta uppercase font-bold text-slate-400">Quartos</div>
-                        <div className="font-semibold text-slate-800">
-                          {h.rooms?.[0] ? h.rooms[0].type : "Standard"}
+                        <div className="text-xs uppercase font-bold tracking-wider p-text-faint">
+                          Acomodação
+                        </div>
+                        <div className="font-semibold p-text-ink text-sm mt-1">
+                          {h.rooms?.[0]
+                            ? h.rooms.map((r: any) => `${r.qty || 1}x ${r.type}`).join(", ")
+                            : (h as any).room_type || "Standard"}
                         </div>
                       </div>
                     </div>
 
                     {h.images?.[0] && (
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-48">
-                        <div className="col-span-2 rounded-lg overflow-hidden">
+                        <div className="sm:col-span-2 rounded-lg overflow-hidden border p-border-subtle">
                           <img
                             src={h.images[0]}
+                            alt={h.name}
                             crossOrigin="anonymous"
                             className="w-full h-full object-cover"
                           />
                         </div>
                         {h.images[1] && (
-                          <div className="rounded-lg overflow-hidden">
+                          <div className="rounded-lg overflow-hidden border p-border-subtle">
                             <img
                               src={h.images[1]}
+                              alt={h.name}
                               crossOrigin="anonymous"
                               className="w-full h-full object-cover"
                             />
@@ -244,133 +296,150 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* ROTEIRO DIA A DIA */}
-        {vm.hasItinerary && (
-          <div className="mb-14 break-inside-avoid">
-            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200">
-              <Compass className="w-5 h-5 text-warning-strong" />
-              <h2
-                className="text-2xl font-bold text-slate-900 tracking-tight"
-                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
-              >
+        {theme.isSectionVisible("itinerary") && vm.hasItinerary && (
+          <section className="break-inside-avoid space-y-6">
+            <div className="flex items-center gap-3 pb-3 border-b p-border-main">
+              <Compass className="size-5 p-text-brand shrink-0" />
+              <h2 className="text-2xl font-bold p-text-ink p-heading-font">
                 Roteiro Dia a Dia
               </h2>
             </div>
-            <div className="pl-4">
-              <div className="border-l-2 py-2 border-slate-200">
-                {p.itinerary!.map((d, i) => (
-                  <div key={i} className="relative pl-8 pb-8 last:pb-0 break-inside-avoid">
-                    <div
-                      className="absolute w-5 h-5 rounded-full -left-2.5 border-2 border-background top-1 flex items-center justify-center text-3xs font-bold text-foreground"
-                      /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                      style={{ backgroundColor: brand }}
-                    >
-                      {i + 1}
+            <div className="space-y-4">
+              {p.itinerary!.map((d, i) => (
+                <div
+                  key={i}
+                  className="p-surface-card border p-border-main rounded-xl p-5 sm:p-6 break-inside-avoid space-y-3"
+                >
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs uppercase tracking-wider font-bold p-surface-brand">
+                      {d.day || `Dia ${i + 1}`}
+                    </span>
+                    <h4 className="text-lg font-bold p-text-ink">{d.title}</h4>
+                  </div>
+                  {Boolean(
+                    (d as any).city ||
+                      (d as any).location ||
+                      ((d as any).meals && (d as any).meals.length > 0) ||
+                      ((d as any).included_meals && (d as any).included_meals.length > 0),
+                  ) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {Boolean((d as any).city || (d as any).location) && (
+                        <span className="inline-flex items-center gap-1 text-xs p-text-muted p-surface-subtle border p-border-subtle px-3 py-1 rounded-full font-medium">
+                          <MapPin className="size-3 p-text-brand" />
+                          {(d as any).city || (d as any).location}
+                        </span>
+                      )}
+                      {Boolean(
+                        ((d as any).meals && (d as any).meals.length > 0) ||
+                          ((d as any).included_meals && (d as any).included_meals.length > 0),
+                      ) && (
+                        <span className="inline-flex items-center gap-1 text-xs p-text-muted p-surface-subtle border p-border-subtle px-3 py-1 rounded-full font-medium">
+                          <Utensils className="size-3 p-text-brand" />
+                          {Array.isArray((d as any).meals)
+                            ? (d as any).meals.join(", ")
+                            : Array.isArray((d as any).included_meals)
+                              ? (d as any).included_meals.join(", ")
+                              : (d as any).meals || (d as any).included_meals}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="px-3 py-1 rounded-full ds-label-caps text-slate-800 bg-slate-100 font-bold">
-                        {d.day || `Dia ${i + 1}`}
-                      </span>
-                      <h4 className="text-lg font-bold text-slate-900">{d.title}</h4>
-                    </div>
-                    {((d as any).city || (d as any).location || ((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        {((d as any).city || (d as any).location) && (
-                          <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                            <MapPin className="size-3 text-slate-400" />
-                            {(d as any).city || (d as any).location}
-                          </span>
-                        )}
-                        {(((d as any).meals && (d as any).meals.length > 0) || ((d as any).included_meals && (d as any).included_meals.length > 0)) && (
-                          <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-medium">
-                            <Utensils className="size-3 text-slate-400" />
-                            {Array.isArray((d as any).meals) ? (d as any).meals.join(", ") : Array.isArray((d as any).included_meals) ? (d as any).included_meals.join(", ") : (d as any).meals || (d as any).included_meals}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    <p className="text-slate-600 leading-relaxed text-sm text-justify whitespace-pre-wrap">
+                  )}
+                  {d.description && (
+                    <p className="p-text-muted leading-relaxed text-sm whitespace-pre-wrap">
                       {d.description}
                     </p>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* TRASLADOS */}
-        {vm.hasTransfers && (
-          <div className="mb-14 break-inside-avoid">
-            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200">
-              <Car className="w-5 h-5 text-warning-strong" />
-              <h2
-                className="text-2xl font-bold text-slate-900 tracking-tight"
-                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
-              >
+        {theme.isSectionVisible("transfers") && vm.hasTransfers && (
+          <section className="break-inside-avoid space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b p-border-main">
+              <Car className="size-5 p-text-brand shrink-0" />
+              <h2 className="text-2xl font-bold p-text-ink p-heading-font">
                 Traslados & Receptivo
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {p.transfers!.map((t, i) => (
-                <div key={i} className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2">
+                <div
+                  key={i}
+                  className="p-5 rounded-xl border p-border-main p-surface-card space-y-2"
+                >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-slate-900 text-sm">{t.description || "Transfer In/Out"}</span>
-                    <span className="px-2 py-1 rounded text-3xs font-bold uppercase tracking-wider bg-slate-200 text-slate-700">
+                    <span className="font-bold p-text-ink text-sm">
+                      {t.description || "Transfer In/Out"}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider p-surface-brand-soft border p-border-brand">
                       {t.type === "shared" ? "Regular" : "Privativo"}
                     </span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                    {t.vehicle && <span>Veículo: <strong>{t.vehicle}</strong></span>}
+                  <div className="flex flex-wrap items-center gap-3 text-xs p-text-muted">
+                    {t.vehicle && (
+                      <span>
+                        Veículo: <strong className="p-text-ink">{t.vehicle}</strong>
+                      </span>
+                    )}
                     {t.date && <span>Data: {formatDate(t.date)}</span>}
                   </div>
-                  {t.notes && <p className="text-xs text-slate-500 italic">{t.notes}</p>}
+                  {t.notes && <p className="text-xs p-text-faint">{t.notes}</p>}
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* PASSEIOS */}
-        {vm.hasTours && (
-          <div className="mb-14 break-inside-avoid">
-            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200">
-              <Compass className="w-5 h-5 text-warning-strong" />
-              <h2
-                className="text-2xl font-bold text-slate-900 tracking-tight"
-                style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
-              >
+        {theme.isSectionVisible("tours") && vm.hasTours && (
+          <section className="break-inside-avoid space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b p-border-main">
+              <Compass className="size-5 p-text-brand shrink-0" />
+              <h2 className="text-2xl font-bold p-text-ink p-heading-font">
                 Passeios & Experiências
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {p.tours!.map((tour, i) => (
-                <div key={i} className="p-5 rounded-lg border border-slate-200 bg-slate-50 space-y-2">
-                  <span className="font-bold text-slate-900 text-sm block">{tour.description || (tour as any).title || "Passeio"}</span>
-                  {tour.date && <div className="text-xs text-slate-500">Programação: {tour.date}</div>}
-                  {tour.notes && <p className="text-xs text-slate-600 whitespace-pre-wrap">{tour.notes}</p>}
+                <div
+                  key={i}
+                  className="p-5 rounded-xl border p-border-main p-surface-card space-y-2"
+                >
+                  <span className="font-bold p-text-ink text-sm block">
+                    {tour.description || (tour as any).title || "Passeio"}
+                  </span>
+                  {tour.date && <div className="text-xs p-text-muted">Programação: {tour.date}</div>}
+                  {tour.notes && (
+                    <p className="text-xs p-text-muted whitespace-pre-wrap">{tour.notes}</p>
+                  )}
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* INCLUSÕES & EXCLUSÕES */}
-        {(vm.hasIncludes || vm.hasExcludes) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-14 break-inside-avoid">
+        {theme.isSectionVisible("includes") && (vm.hasIncludes || vm.hasExcludes) && (
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 break-inside-avoid">
             {vm.hasIncludes && (
-              <div className="p-6 rounded-lg border border-slate-200 bg-slate-50">
-                <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
-                  <Check className="size-4 text-emerald-600" />
-                  O que está incluso
+              <div className="p-6 rounded-xl border p-border-main p-surface-card">
+                <h3 className="font-bold p-text-ink text-base mb-4 flex items-center gap-2">
+                  <span className="p-badge-success p-1 rounded-full">
+                    <Check className="size-3.5" />
+                  </span>
+                  <span>O que está incluso</span>
                 </h3>
-                <ul className="space-y-2 text-xs text-slate-700">
+                <ul className="space-y-3 text-xs sm:text-sm p-text-muted">
                   {p.includes!.map((inc, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-emerald-600 shrink-0 mt-1">•</span>
+                    <li key={i} className="flex items-start gap-3">
+                      <Check className="size-4 p-text-brand shrink-0 mt-1" />
                       <span>{inc}</span>
                     </li>
                   ))}
@@ -378,118 +447,166 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
               </div>
             )}
             {vm.hasExcludes && (
-              <div className="p-6 rounded-lg border border-slate-200 bg-slate-50">
-                <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
-                  <X className="size-4 text-rose-500" />
-                  Não incluso
+              <div className="p-6 rounded-xl border p-border-main p-surface-card">
+                <h3 className="font-bold p-text-ink text-base mb-4 flex items-center gap-2">
+                  <span className="p-badge-danger p-1 rounded-full">
+                    <X className="size-3.5" />
+                  </span>
+                  <span>Não incluso</span>
                 </h3>
-                <ul className="space-y-2 text-xs text-slate-700">
+                <ul className="space-y-3 text-xs sm:text-sm p-text-muted">
                   {p.excludes!.map((exc, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-rose-500 shrink-0 mt-1">•</span>
+                    <li key={i} className="flex items-start gap-3">
+                      <X className="size-4 p-text-faint shrink-0 mt-1" />
                       <span>{exc}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-          </div>
+          </section>
+        )}
+
+        {/* CONDIÇÕES GERAIS E REQUISITOS */}
+        {theme.isSectionVisible("conditions") && hasConditions && (
+          <section className="p-6 rounded-xl border p-border-main p-surface-card space-y-4 break-inside-avoid">
+            <div className="flex items-center gap-2">
+              <FileText className="size-4 p-text-brand" />
+              <h3 className="text-base font-bold p-text-ink">
+                Condições Comerciais & Informações Importantes
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs p-text-muted">
+              {raw.boarding_requirements && (
+                <div className="p-surface-subtle p-4 rounded-lg border p-border-subtle space-y-1">
+                  <div className="font-bold uppercase tracking-wider p-text-ink">
+                    Requisitos de Embarque
+                  </div>
+                  <p className="whitespace-pre-line">{raw.boarding_requirements}</p>
+                </div>
+              )}
+              {raw.cancellation_policy && (
+                <div className="p-surface-subtle p-4 rounded-lg border p-border-subtle space-y-1">
+                  <div className="font-bold uppercase tracking-wider p-text-ink">
+                    Política de Cancelamento e Reembolso
+                  </div>
+                  <p className="whitespace-pre-line">{raw.cancellation_policy}</p>
+                </div>
+              )}
+            </div>
+            {customEntries.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                {customEntries.map((entry) => (
+                  <div
+                    key={entry.key}
+                    className="p-surface-subtle p-3 rounded-lg border p-border-subtle"
+                  >
+                    <div className="text-xs uppercase font-bold p-text-faint">{entry.label}</div>
+                    <div className="text-xs font-semibold p-text-ink mt-1">{entry.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {p.terms && (
+              <p className="text-xs p-text-faint leading-relaxed whitespace-pre-line border-t p-border-subtle pt-3">
+                {p.terms}
+              </p>
+            )}
+          </section>
         )}
 
         {/* FINANCEIRO */}
-        <div className="mt-20 break-inside-avoid">
-          <div className="bg-slate-800 rounded-lg p-12 text-foreground text-center border border-slate-700 relative overflow-hidden">
-            <div className="absolute inset-0 bg-card/5 pointer-events-none" />
-
-            <h2
-              className="text-3xl mb-8"
-              style={{ fontFamily: "var(--brand-heading-font, 'Playfair Display', serif)" }}
-            >
-              Resumo do Investimento
-            </h2>
-
-            <div className="flex flex-col md:flex-row justify-between items-start gap-12">
-              <div className="flex-1">
-                <div className="ds-meta uppercase font-bold tracking-widest text-zinc-500 mb-2">
+        {theme.isSectionVisible("financial") && (
+          <section className="break-inside-avoid">
+            <div className="p-surface-card rounded-2xl p-8 sm:p-10 border-2 p-border-brand space-y-8">
+              <div className="text-center space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest p-surface-brand-soft">
+                  <ShieldCheck className="size-3.5" /> Proposta Garantida
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold p-text-ink p-heading-font">
+                  Resumo do Investimento
+                </h2>
+                <div className="text-xs uppercase font-bold tracking-widest p-text-faint pt-2">
                   Total do Pacote
                 </div>
-                <div className="text-5xl font-light text-foreground mb-6">
+                <div className="text-4xl sm:text-5xl font-bold p-text-ink tracking-tight">
                   {formatCurrency(vm.totals.total, p.currency)}
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-8 max-w-2xl mx-auto mt-12">
-              <div
-                className="bg-zinc-800/50 border border-zinc-700/50 p-6 rounded-none border-l-2"
-                /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                style={{ borderLeftColor: brand }}
-              >
-                <div className="ds-meta uppercase font-bold tracking-widest text-zinc-500 mb-2">
-                  Parcelamento
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                <div className="p-surface-subtle border p-border-main p-6 rounded-xl text-center space-y-2">
+                  <div className="text-xs uppercase font-bold tracking-widest p-text-faint">
+                    Parcelamento no Cartão
+                  </div>
+                  <div className="text-xl font-bold p-text-ink">
+                    {vm.totals.parcelasCartao}x de{" "}
+                    {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
+                  </div>
+                  <div className="text-xs p-text-muted">Consulte condições de entrada</div>
                 </div>
-                <div className="text-lg font-semibold text-foreground">
-                  {vm.totals.parcelasCartao}x de{" "}
-                  {formatCurrency(vm.totals.valorParcelaCartao, p.currency)}
-                </div>
-              </div>
-              <div className="bg-warning/10 rounded-lg p-6 border border-warning/30 backdrop-blur relative">
-                <div className="ds-meta uppercase font-bold tracking-widest text-zinc-400 mb-2">
-                  À vista (PIX)
-                </div>
-                <div
-                  className="ds-meta font-bold px-2 py-1"
-                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                  style={{ color: brand, border: `1px solid ${brand}` }}
-                >
-                  -{vm.totals.descontoPixPercentual}%
-                </div>
-                <div
-                  className="text-xl font-bold"
-                  /* design-lint-ignore DL-05 reason:"Estilizacao dinamica da paleta de proposta da agencia" expiry:"2027-12-31" */
-                  style={{ color: brand }}
-                >
-                  {formatCurrency(vm.totals.totalPix, p.currency)}
+
+                <div className="p-surface-brand-soft rounded-xl p-6 border p-border-brand text-center space-y-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-xs uppercase font-bold tracking-widest p-text-brand">
+                      À vista no PIX
+                    </span>
+                    {vm.totals.descontoPixPercentual > 0 && (
+                      <span className="p-badge-success text-xs font-bold px-2 py-1 rounded-full">
+                        -{vm.totals.descontoPixPercentual}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-2xl font-bold p-text-brand">
+                    {formatCurrency(vm.totals.totalPix, p.currency)}
+                  </div>
+                  <div className="text-xs p-text-muted">Liquidação imediata com desconto</div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
+        )}
       </div>
 
       {/* FOOTER */}
-      <div className="mt-16 pt-10 border-t border-slate-200 px-12 flex justify-between items-center break-inside-avoid">
-        {p.agent_name && (
+      {theme.isSectionVisible("footer") && (
+        <div className="mt-14 pt-8 border-t p-border-main px-8 sm:px-12 flex flex-col sm:flex-row justify-between items-center gap-4 break-inside-avoid">
           <div className="flex items-center gap-4">
             {p.agent_photo_url ? (
               <img
                 src={p.agent_photo_url}
+                alt={p.agent_name || vm.agency.name}
                 crossOrigin="anonymous"
-                className="w-14 h-14 rounded-full object-cover border border-slate-200"
+                className="w-12 h-12 rounded-full object-cover border p-border-main"
               />
             ) : (
-              <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">
-                {p.agent_name.charAt(0)}
+              <div className="w-12 h-12 rounded-full p-surface-brand flex items-center justify-center font-bold text-base">
+                {(p.agent_name || vm.agency.name || "A").charAt(0)}
               </div>
             )}
             <div>
-              <div className="font-bold text-slate-900 text-lg">{p.agent_name}</div>
-              <div className="ds-label-caps text-slate-400 mb-1">Consultor Premium</div>
-              <div className="text-sm font-medium">{p.agent_whatsapp}</div>
+              <div className="font-bold p-text-ink text-base">
+                {p.agent_name || vm.agency.name}
+              </div>
+              <div className="text-xs uppercase tracking-wider p-text-faint">
+                Consultor Especialista
+              </div>
+              {(p.agent_whatsapp || vm.agency.whatsapp) && (
+                <div className="text-xs font-semibold p-text-brand flex items-center gap-1 mt-1">
+                  <PhoneCall className="size-3" /> {p.agent_whatsapp || vm.agency.whatsapp}
+                </div>
+              )}
             </div>
           </div>
-        )}
-        {vm.agency.logo_url && (
-          <img
-            src={vm.agency.logo_url}
-            crossOrigin="anonymous"
-            alt="Logo Agência"
-            className="h-10 w-auto max-w-40 aspect-banner-ultrawide object-contain grayscale"
-            width={160}
-            height={40}
-          />
-        )}
-      </div>
+
+          <div className="text-center sm:text-right">
+            <div className="text-xs uppercase tracking-widest p-text-faint">Ref. Proposta</div>
+            <div className="font-mono text-xs p-text-muted">
+              #{p.number} {p.public_token ? `· ${p.public_token.slice(0, 10)}` : ""}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -183,9 +183,9 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
       </DialogTrigger>
       <DialogContent className="max-h-screen max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Waesy Studio — Criador de Modelos</DialogTitle>
+          <DialogTitle>Criador de Modelos</DialogTitle>
           <DialogDescription>
-            Defina o nicho e seções para estruturar uma nova página pronta para edição.
+            Defina nicho e seções para gerar uma página editável.
           </DialogDescription>
         </DialogHeader>
 

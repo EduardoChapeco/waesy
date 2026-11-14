@@ -64,7 +64,7 @@ export function WorkspaceAccountSwitcher({
         <button
           type="button"
           disabled={isSwitching}
-          className="flex w-full items-center justify-between h-11 min-h-11 px-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors duration-200 text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex w-full items-center justify-between h-11 min-h-11 px-3 rounded-xl bg-transparent hover:bg-rail-hover transition-colors text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           title={`Espaço de Trabalho: ${activeStore?.name || "Meu Negócio"}`}
         >
           <div className="flex items-center gap-3 min-w-0">
@@ -96,7 +96,7 @@ export function WorkspaceAccountSwitcher({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className="w-80 sm:w-88 p-2 rounded-2xl border border-border/60 bg-card overflow-hidden space-y-2"
+        className="w-80 sm:w-88 p-2 rounded-2xl border border-border bg-popover overflow-hidden space-y-2"
       >
         {/* ── 1. Topo: Empresa Ativa em Destaque ── */}
         <div className="p-3 rounded-xl bg-muted/50 flex items-center justify-between gap-2">
@@ -263,12 +263,12 @@ export function WorkspaceAccountSwitcher({
         </div>
 
         {/* ── 5. Rodapé Operacional: Criar Novo Negócio ── */}
-        <div className="pt-2 border-t border-border/40 px-1">
+        <div className="pt-2 border-t border-border px-1">
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="w-full text-xs font-bold rounded-lg h-11 min-h-11 gap-2 justify-center border-border/60 bg-card hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full text-xs font-bold rounded-lg h-11 min-h-11 gap-2 justify-center border-border bg-card hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Link
               to="/criar-negocio"

@@ -132,7 +132,7 @@ export function IFoodFeatureMiniBannersRail({
               key={item.id}
               to={item.targetUrl as any}
               className={cn(
-                "w-36 sm:w-40 h-48 sm:h-52 rounded-2xl p-3 flex flex-col justify-between shrink-0 snap-start overflow-hidden relative group transition-transform duration-200 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-xs",
+                "w-36 sm:w-40 h-48 sm:h-52 rounded-2xl p-3 flex flex-col justify-between shrink-0 snap-start overflow-hidden relative group transition-transform duration-200 active:scale-95 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 !hasCustomBg && fallbackColor,
               )}
               style={hasCustomBg ? { backgroundColor: item.bgColor! } : undefined}
@@ -140,17 +140,17 @@ export function IFoodFeatureMiniBannersRail({
               {/* Topo do Card: Badge + Título */}
               <div className="z-10 space-y-1">
                 {item.badgeText && (
-                  <span className="inline-block px-2 py-1 rounded-full bg-card/20 backdrop-blur-xs text-primary-foreground text-3xs font-extrabold uppercase tracking-wider">
+                  <span className="inline-block px-2 py-1 rounded-full bg-neutral-950/85 border border-neutral-800 text-neutral-50 text-2xs font-extrabold uppercase tracking-wider">
                     {item.badgeText}
                   </span>
                 )}
                 {item.showText !== false && (
                   <>
-                    <h3 className="text-sm font-extrabold text-primary-foreground leading-snug line-clamp-2 drop-shadow-xs">
+                    <h3 className="text-sm font-extrabold text-primary-foreground leading-snug line-clamp-2">
                       {item.title}
                     </h3>
                     {item.subtitle && (
-                      <p className="text-xs text-primary-foreground/80 line-clamp-1">{item.subtitle}</p>
+                      <p className="text-xs text-primary-foreground/90 line-clamp-1">{item.subtitle}</p>
                     )}
                   </>
                 )}
@@ -171,9 +171,9 @@ export function IFoodFeatureMiniBannersRail({
                 </div>
               )}
 
-              {/* Minifaixa Inferior Canônica (Ícone/Mídia + Rótulo + Chevron) */}
+              {/* Minifaixa Inferior Canônica */}
               <div className="z-10 mt-auto pt-2 flex items-center">
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-neutral-950/75 backdrop-blur-md text-neutral-50 text-xs font-bold leading-none shadow-xs group-hover:bg-neutral-950/85 transition-colors max-w-full">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-neutral-950/90 border border-neutral-800 text-neutral-50 text-xs font-bold leading-none group-hover:bg-neutral-950 transition-colors max-w-full">
                   {item.iconUrl ? (
                     <img
                       src={item.iconUrl}

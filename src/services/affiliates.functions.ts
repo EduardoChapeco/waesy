@@ -723,15 +723,15 @@ export const getAffiliateShowcaseProducts = createServerFn({ method: "GET" }).ha
       .from("products")
       .select(`
         id,
-        name,
+        title,
         slug,
         description,
         price_cents,
-        original_price_cents,
-        images,
-        category_id,
+        compare_at_cents,
         store_id,
-        is_active,
+        status,
+        product_media(url, sort_order),
+        product_categories(category_id),
         stores (
           id,
           name,
@@ -740,7 +740,7 @@ export const getAffiliateShowcaseProducts = createServerFn({ method: "GET" }).ha
           city
         )
       `)
-      .eq("status", "published")
+      .in("status", ["published", "active"])
       .limit(16);
 
     if (error) {
@@ -748,19 +748,24 @@ export const getAffiliateShowcaseProducts = createServerFn({ method: "GET" }).ha
       return [];
     }
 
-    return (products || []).map((p: any) => ({
-      id: p.id,
-      name: p.title,
-      slug: p.slug,
-      priceCents: p.price_cents || 0,
-      originalPriceCents: p.original_price_cents || null,
-      imageUrl: Array.isArray(p.images) && p.images[0] ? p.images[0] : null,
-      storeName: p.stores?.name || "Loja Parceira",
-      storeSlug: p.stores?.slug || "",
-      storeLogo: p.stores?.logo_url || null,
-      storeCity: p.stores?.city || null,
-      estimatedCommissionCents: Math.round((p.price_cents || 0) * 0.08), // 8% estimado de comissão
-    }));
+    return (products || []).map((p: any) => {
+      const media = Array.isArray(p.product_media)
+        ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        : [];
+      return {
+        id: p.id,
+        name: p.title,
+        slug: p.slug,
+        priceCents: p.price_cents || 0,
+        originalPriceCents: p.compare_at_cents || null,
+        imageUrl: media[0]?.url || null,
+        storeName: p.stores?.name || "Loja Parceira",
+        storeSlug: p.stores?.slug || "",
+        storeLogo: p.stores?.logo_url || null,
+        storeCity: p.stores?.city || null,
+        estimatedCommissionCents: Math.round((p.price_cents || 0) * 0.08), // 8% estimado de comissão
+      };
+    });
   } catch (err) {
     console.error("[affiliates] Falha em getAffiliateShowcaseProducts:", err);
     return [];
@@ -776,8 +781,8 @@ export const getAvailablePartnerStores = createServerFn({ method: "GET" }).handl
   try {
     const { data: stores, error } = await supabase
       .from("stores")
-      .select("id, name, slug, logo_url, banner_url, city, state, segment, status")
-      .eq("status", "active")
+      .select("id, name, slug, logo_url, banner_url, city, state, settings, is_active")
+      .eq("is_active", true)
       .limit(12);
 
     if (error) {
@@ -785,18 +790,21 @@ export const getAvailablePartnerStores = createServerFn({ method: "GET" }).handl
       return [];
     }
 
-    return (stores || []).map((s: any) => ({
-      id: s.id,
-      name: s.name,
-      slug: s.slug,
-      logoUrl: s.logo_url || null,
-      bannerUrl: s.banner_url || null,
-      city: getDefaultCity(s.city),
-      state: getDefaultState(s.state),
-      segment: s.segment || "Varejo",
-      couponCode: `${s.slug.toUpperCase().substring(0, 6)}10`,
-      discountPercent: 10,
-    }));
+    return (stores || []).map((s: any) => {
+      const settings = (s.settings || {}) as Record<string, any>;
+      return {
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        logoUrl: s.logo_url || null,
+        bannerUrl: s.banner_url || null,
+        city: getDefaultCity(s.city),
+        state: getDefaultState(s.state),
+        segment: settings.segment || settings.category || "Varejo",
+        couponCode: `${s.slug.toUpperCase().substring(0, 6)}10`,
+        discountPercent: 10,
+      };
+    });
   } catch (err) {
     console.error("[affiliates] Falha em getAvailablePartnerStores:", err);
     return [];
@@ -1636,11 +1644,11 @@ export const getCreatorEvents = createServerFn({ method: "GET" })
 
     const { data: creator } = await supabase
       .from("creator_profiles")
-      .select("id, user_id, name, stage_name")
+      .select("id, user_id, name")
       .eq("handle", cleanHandle)
       .maybeSingle();
 
-    const stageName = (creator as any)?.stage_name || creator?.name || cleanHandle;
+    const stageName = creator?.name || cleanHandle;
 
     try {
       let query = supabase
@@ -1655,7 +1663,8 @@ export const getCreatorEvents = createServerFn({ method: "GET" })
           city,
           state,
           cover_image,
-          price_cents,
+          price_min_cents,
+          price_max_cents,
           is_free,
           is_external_ticket,
           external_ticket_url,
@@ -1671,7 +1680,7 @@ export const getCreatorEvents = createServerFn({ method: "GET" })
 
       if (creator?.user_id) {
         query = query.or(
-          `creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${stageName}%,created_by.eq.${creator.user_id}`
+          `creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${stageName}%,author_profile_id.eq.${creator.user_id}`
         );
       } else {
         query = query.or(
@@ -1684,7 +1693,10 @@ export const getCreatorEvents = createServerFn({ method: "GET" })
         console.warn("[affiliates] Erro ao buscar eventos do criador:", error);
         return [];
       }
-      return events || [];
+      return (events || []).map((ev: any) => ({
+        ...ev,
+        price_cents: ev.price_min_cents ?? 0,
+      }));
     } catch (err) {
       console.error("[affiliates] Falha em getCreatorEvents:", err);
       return [];
@@ -1716,26 +1728,29 @@ export const getCreatorFullShowcaseData = createServerFn({ method: "GET" })
     if (storeIds.length > 0) {
       const { data: stores } = await supabase
         .from("stores")
-        .select("id, name, slug, logo_url, banner_url, city, state, segment")
+        .select("id, name, slug, logo_url, banner_url, city, state, settings")
         .in("id", storeIds)
-        .eq("status", "active");
+        .eq("is_active", true);
 
-      partnerStores = (stores || []).map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        slug: s.slug,
-        logoUrl: s.logo_url || null,
-        bannerUrl: s.banner_url || null,
-        city: getDefaultCity(s.city),
-        state: s.state || "SC",
-        segment: s.segment || "Varejo",
-        couponCode: `${cleanHandle.toUpperCase().slice(0, 6)}10`,
-        discountPercent: 10,
-      }));
+      partnerStores = (stores || []).map((s: any) => {
+        const settings = (s.settings || {}) as Record<string, any>;
+        return {
+          id: s.id,
+          name: s.name,
+          slug: s.slug,
+          logoUrl: s.logo_url || null,
+          bannerUrl: s.banner_url || null,
+          city: getDefaultCity(s.city),
+          state: s.state || "SC",
+          segment: settings.segment || settings.category || "Varejo",
+          couponCode: `${cleanHandle.toUpperCase().slice(0, 6)}10`,
+          discountPercent: 10,
+        };
+      });
     }
 
     // 2. Produtos em Destaque na Vitrine
-    const { data: pinnedProducts } = await supabase
+    const { data: rawPinnedProducts } = await supabase
       .from("creator_showcase_products")
       .select(`
         id,
@@ -1745,11 +1760,11 @@ export const getCreatorFullShowcaseData = createServerFn({ method: "GET" })
         is_pinned,
         product:products (
           id,
-          name,
+          title,
           slug,
           description,
           price_cents,
-          images,
+          product_media(url, sort_order),
           store:stores (
             id,
             name,
@@ -1762,18 +1777,36 @@ export const getCreatorFullShowcaseData = createServerFn({ method: "GET" })
       .order("is_pinned", { ascending: false })
       .order("sort_order", { ascending: true });
 
+    const pinnedProducts = (rawPinnedProducts || []).map((item: any) => {
+      if (!item.product) return item;
+      const media = Array.isArray(item.product.product_media)
+        ? [...item.product.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        : [];
+      return {
+        ...item,
+        product: {
+          ...item.product,
+          name: item.product.title,
+          images: media.map((m: any) => m.url).filter(Boolean),
+        },
+      };
+    });
+
     // 3. Eventos da Marca
     const events = await (async () => {
       try {
         const { data: evts } = await supabase
           .from("events")
-          .select("id, title, description, event_date, location, city, state, cover_image, price_cents, is_free, is_external_ticket, external_ticket_url, category")
+          .select("id, title, description, event_date, location, city, state, cover_image, price_min_cents, is_free, is_external_ticket, external_ticket_url, category")
           .eq("status", "published")
           .gte("event_date", new Date().toISOString())
-          .or(`creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${creator.stage_name || creator.name}%`)
+          .or(`creator_handle.ilike.%${cleanHandle}%,organizer_name.ilike.%${creator.name}%`)
           .order("event_date", { ascending: true })
           .limit(6);
-        return evts || [];
+        return (evts || []).map((ev: any) => ({
+          ...ev,
+          price_cents: ev.price_min_cents ?? 0,
+        }));
       } catch {
         return [];
       }
@@ -1782,13 +1815,13 @@ export const getCreatorFullShowcaseData = createServerFn({ method: "GET" })
     return {
       creator: {
         ...creator,
-        stage_name: creator.stage_name || creator.name,
-        category: creator.category || creator.niche || "Geral",
+        stage_name: creator.name,
+        category: creator.niche || "Geral",
         showcase_order: creator.showcase_order || ["banner", "stores", "products", "events"],
         partner_store_ids: creator.partner_store_ids || [],
       },
       partnerStores,
-      pinnedProducts: pinnedProducts || [],
+      pinnedProducts,
       events,
     };
   });

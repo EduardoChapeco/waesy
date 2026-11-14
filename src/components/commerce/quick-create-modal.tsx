@@ -177,7 +177,7 @@ export function QuickCreateModal({
           side="bottom"
           className="max-h-overlay-max flex flex-col p-0 bg-background rounded-t-3xl border-t border-border overflow-hidden"
         >
-          <SheetHeader className="p-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur-md">
+          <SheetHeader className="p-4 flex items-center justify-between shrink-0 bg-background border-b border-border">
             <div className="flex items-center gap-3">
               <button
                 onClick={closeSheet}

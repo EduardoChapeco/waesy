@@ -14,10 +14,10 @@ export function PublicFooter({ menuItems = [], store }: { menuItems?: any[]; sto
  const colSize = Math.ceil(navItems.length / 2) || 1;
  const col1 = navItems.slice(0, colSize);
  const col2 = navItems.slice(colSize);
- return (
- <footer className="mt-16 bg-card">
- <div className="mx-auto max-w-screen-xl px-4 py-12 md:px-6">
- <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
+  return (
+    <footer className="mt-16 bg-card border-t border-border/60">
+      <div className="mx-auto max-w-screen-xl px-4 py-12 md:px-6">
+        <div className="grid gap-10 md:grid-cols-3">
  <div className="space-y-3">
  <Logo src={store?.logoUrl || store?.settings?.logoUrl || store?.settings?.logo_url} />
  {(store?.logoUrl || store?.settings?.logoUrl || store?.settings?.logo_url) && (

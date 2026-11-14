@@ -36,6 +36,10 @@ export interface SiteBuilderBlockDefinition<T = any> {
     stores?: any[];
     banners?: any[];
     hotpages?: any[];
+    navigationMenus?: any[];
+    cmsCollections?: any[];
+    cmsItems?: any[];
+    activeCmsCollection?: any;
     activeSubstate?: string;
     onUpdateInlineText?: (fieldPath: string, newValue: string) => void;
   }>;

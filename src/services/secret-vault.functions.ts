@@ -132,6 +132,8 @@ export const listConfiguredSecrets = createServerFn({ method: "GET" }).handler(a
 });
 
 export const getAICapabilityBindings = createServerFn({ method: "GET" }).handler(async () => {
+ const identity = await getIdentity();
+ if (!identity?.id) throw new Error("Não autenticado");
  const supabase = getServerClient();
 
  const { data, error } = await supabase

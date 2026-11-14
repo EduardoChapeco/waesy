@@ -114,6 +114,47 @@ export const createUnifiedListingTransaction = createServerFn({ method: "POST" }
     const transactionId = newDeal.id;
     const documentsGenerated: string[] = [];
 
+    // 3.1 Sincronizacao bilateral com Kanban CRM (leads_crm + customers_crm)
+    if (listing.store_id) {
+      try {
+        const { data: buyerProfile } = await supabase
+          .from("profiles")
+          .select("full_name, phone, cpf")
+          .eq("id", identity.id)
+          .maybeSingle();
+        const { ingestOmnichannelLead } = await import("./omnichannel-lead-ingestion");
+        await ingestOmnichannelLead(supabase, {
+          storeId: listing.store_id,
+          source: `unified_listing:${data.transactionType}`,
+          sourceDetail: listing.title,
+          fullName: buyerProfile?.full_name || "Cliente da Vitrine",
+          phone: buyerProfile?.phone || null,
+          email: identity.email || null,
+          document: buyerProfile?.cpf || null,
+          destination: attrs.destination || attrs.travel_package?.destination || listing.title,
+          travelStart: data.scheduledDate || null,
+          paxCount: data.quantity,
+          paxAdults: data.quantity,
+          estimatedValueCents: totalCents,
+          message: data.notes || null,
+          status: data.transactionType === "quote" ? "qualified" : "negotiation",
+          sourceDealId: transactionId,
+          sourceListingId: listing.id,
+          sourceListingOrigin: data.origin === "classified" ? "classified" : "product",
+          sourceListingTitle: listing.title,
+          customFields: {
+            transaction_type: data.transactionType,
+            payment_method: data.paymentMethod,
+            departure_option_id: data.departureOptionId || null,
+            deposit_cents: depositCents,
+            balance_cents: balanceCents,
+          },
+        });
+      } catch (crmErr) {
+        console.warn("[unified-listing-workflow] Aviso ao sincronizar CRM:", crmErr);
+      }
+    }
+
     // 4. F38: Geração de Documentos Específicos por Nicho e Tipo de Transação
     if (listing.niche_id === "turismo") {
       documentsGenerated.push("voucher_turismo", "contrato_viagem");

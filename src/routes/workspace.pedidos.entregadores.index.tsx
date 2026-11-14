@@ -293,20 +293,20 @@ function CouriersListPage() {
           }}
         />
 
-        {/* ── ABA: ROTAS CONSOLIDADAS DE ENTREGA (PADRÃO PÁGINA 3) ── */}
+        {/* ── ABA: ROTAS CONSOLIDADAS DE ENTREGA ── */}
         {activeTab === "routes" && (
           <div className="space-y-4">
-            <div className="p-4 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 rounded-lg bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <RouteIcon className="size-4 text-primary" />
-                  <h3 className="text-sm font-bold text-foreground">Rotas Consolidadas & Telemetria</h3>
-                  <Badge variant="outline" className="text-2xs font-bold bg-primary/10 text-primary border-none">
-                    Tempo Real
+                  <RouteIcon className="size-4 text-foreground" />
+                  <h3 className="text-sm font-bold text-foreground">Rotas de Entrega</h3>
+                  <Badge variant="outline" className="text-2xs font-bold bg-muted text-foreground border-border">
+                    Ao Vivo
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Despachos ativos agrupados por entregador com itinerário, PIN de conferência e status.
+                  Despachos agrupados por entregador com itinerário e PIN.
                 </p>
               </div>
               <Button asChild size="sm" className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">
@@ -318,21 +318,21 @@ function CouriersListPage() {
             </div>
 
             {groupedRoutes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center border rounded-lg bg-card border-border/60">
-                <Truck className="size-10 text-muted-foreground/30 mb-3" />
-                <p className="text-sm font-semibold text-foreground">Nenhuma rota de entrega ativa no momento.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center border rounded-lg bg-card border-border">
+                <Truck className="size-10 text-muted-foreground mb-3" />
+                <p className="text-sm font-semibold text-foreground">Nenhuma rota ativa no momento.</p>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                  Assim que pedidos forem despachados para a frota, as rotas agrupadas aparecerão aqui automaticamente.
+                  As rotas aparecem aqui quando pedidos forem despachados para a frota.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {groupedRoutes.map((routeGroup, idx) => (
-                  <div key={routeGroup.courierName + idx} className="rounded-lg bg-card border border-border/60 overflow-hidden shadow-xs">
-                    <div className="p-4 bg-muted/30 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div key={routeGroup.courierName + idx} className="rounded-lg bg-card border border-border overflow-hidden">
+                    <div className="p-4 bg-muted border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                          <Bike className="size-5 text-primary" />
+                        <div className="size-10 rounded-lg bg-card flex items-center justify-center shrink-0">
+                          <Bike className="size-5 text-foreground" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -346,7 +346,7 @@ function CouriersListPage() {
                               href={`tel:${routeGroup.courierPhone}`}
                               className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 mt-1"
                             >
-                              <Phone className="size-3 text-primary" />
+                              <Phone className="size-3 text-foreground" />
                               <span>{routeGroup.courierPhone}</span>
                             </a>
                           )}
@@ -363,11 +363,11 @@ function CouriersListPage() {
                       </div>
                     </div>
 
-                    <div className="divide-y divide-border/40">
+                    <div className="divide-y divide-border">
                       {routeGroup.dispatches.map((disp: any, stopIdx: number) => {
                         const isDelivered = disp.status === "delivered";
                         return (
-                          <div key={disp.id || stopIdx} className="p-4 space-y-2 hover:bg-muted/10 transition-colors">
+                          <div key={disp.id || stopIdx} className="p-4 space-y-2 hover:bg-muted transition-colors">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
                                 <span className="size-6 rounded-md bg-muted text-foreground font-mono font-bold text-2xs flex items-center justify-center shrink-0">
@@ -390,7 +390,7 @@ function CouriersListPage() {
                                   {isDelivered ? <CheckCircle2 className="size-3" /> : <Clock className="size-3" />}
                                   {isDelivered ? "Entregue" : "Em Rota"}
                                 </Badge>
-                                <span className="font-mono text-2xs font-bold px-2 py-1 rounded-md bg-muted text-muted-foreground border border-border/40">
+                                <span className="font-mono text-2xs font-bold px-2 py-1 rounded-md bg-muted text-muted-foreground border border-border">
                                   PIN: {disp.pin_code}
                                 </span>
                                 <span className="font-mono font-bold text-xs text-foreground">
@@ -427,20 +427,20 @@ function CouriersListPage() {
           </div>
         )}
 
-        {/* ── ABA: ESPELHO FINANCEIRO & FECHAMENTO DE VALES ── */}
+        {/* ── ABA: FECHAMENTO DE VALES ── */}
         {activeTab === "settlement" && (
           <div className="space-y-4">
-            <div className="p-4 rounded-lg bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 rounded-lg bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <Receipt className="size-4 text-primary" />
-                  <h3 className="text-sm font-bold text-foreground">Espelho Financeiro & Fechamento de Vales</h3>
-                  <Badge variant="outline" className="text-2xs font-bold bg-primary/10 text-primary border-none">
-                    Acerto de Contas
+                  <Receipt className="size-4 text-foreground" />
+                  <h3 className="text-sm font-bold text-foreground">Fechamento de Vales</h3>
+                  <Badge variant="outline" className="text-2xs font-bold bg-muted text-foreground border-border">
+                    Acerto
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Consolidação de fretes brutos, dedução de adiantamentos/combustível e apuração do valor líquido a pagar via Pix.
+                  Fretes brutos, deduções de vales e líquido a pagar via Pix.
                 </p>
               </div>
               <Button asChild size="sm" className="h-11 min-h-11 px-4 rounded-lg font-bold text-xs gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring">

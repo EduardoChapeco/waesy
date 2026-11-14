@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, AlertCircle, Sparkles, ShieldCheck } from "lucide-react";
+import { CheckCircle2, AlertCircle, ShieldCheck } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import type { ResumeDataDTO } from "@/types/resume";
@@ -172,7 +172,7 @@ export function ResumeAnalysisCard({
       {/* ── CARD 3: ASSISTENTE DE REDAÇÃO DE IMPACTO ── */}
       <div className="p-6 rounded-lg bg-primary/5 border border-primary/20 space-y-4">
         <div className="flex items-center gap-2 text-primary">
-          <Sparkles className="size-4" />
+          <ShieldCheck className="size-4" />
           <h4 className="text-xs font-bold uppercase tracking-wider">
             Dicas de Redação Profissional
           </h4>

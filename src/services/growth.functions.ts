@@ -200,7 +200,7 @@ export const listCampaigns = createServerFn({ method: "GET" }).handler(async () 
  .from("ad_campaigns")
  .select(
  `
- id, title, status, budget_cents, start_date, end_date, target_url, placements,
+ id, title, status, budget_cents, starts_at, ends_at, target_url, placements,
  campaign_metrics(impressions, clicks, spend_cents)
  `,
  )

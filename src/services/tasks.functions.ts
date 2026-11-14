@@ -142,7 +142,46 @@ export const listWorkspaceTasks = createServerFn({ method: "GET" })
 
  const { data: tasks, error } = await query;
  if (error) throw error;
- return tasks || [];
+ const rawTasks = (tasks || []) as any[];
+
+ const profileIds = Array.from(
+   new Set(
+     rawTasks
+       .flatMap((t) => [
+         t.assigned_to_profile_id,
+         t.context_id,
+         (t.custom_fields as any)?.customer_id,
+       ])
+       .filter((id): id is string => typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))
+   )
+ );
+
+ const profileMap = new Map<string, { full_name?: string; avatar_url?: string }>();
+ if (profileIds.length > 0) {
+   const { data: profiles } = await db
+     .from("profiles")
+     .select("id, full_name, avatar_url")
+     .in("id", profileIds);
+   for (const p of profiles || []) {
+     profileMap.set(p.id, p);
+   }
+ }
+
+ return rawTasks.map((t) => {
+   const cf = ((t.custom_fields || {}) as Record<string, any>);
+   const custProf = (cf.customer_id && profileMap.get(cf.customer_id)) || (t.context_id && profileMap.get(t.context_id));
+   const assigneeProf = t.assigned_to_profile_id ? profileMap.get(t.assigned_to_profile_id) : undefined;
+   return {
+     ...t,
+     assigned_to_name: assigneeProf?.full_name || cf.assigned_to_name || null,
+     custom_fields: {
+       ...cf,
+       customer_name: cf.customer_name || custProf?.full_name || null,
+       customer_avatar_url: cf.customer_avatar_url || custProf?.avatar_url || null,
+       assigned_to_avatar_url: assigneeProf?.avatar_url || null,
+     },
+   };
+ });
  });
 
 export const getTaskDetails = createServerFn({ method: "GET" })

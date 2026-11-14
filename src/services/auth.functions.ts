@@ -1951,7 +1951,7 @@ export const adminAuditHandleLookup = createServerFn({ method: "POST" })
     // 1. Perfil atual
     const { data: currentOwner } = await db
       .from("profiles")
-      .select("id, full_name, username, role, email, phone, created_at")
+      .select("id, full_name, username, role, phone, created_at")
       .eq("username", clean)
       .maybeSingle();
 

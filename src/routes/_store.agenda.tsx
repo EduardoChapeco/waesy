@@ -644,19 +644,19 @@ function AgendaPadronizadaPage() {
                               </div>
                             )}
                             <div className="absolute top-2.5 left-2.5">
-                              <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-xs font-bold">
+                              <Badge variant="secondary" className="bg-card text-foreground border border-border text-xs font-bold">
                                 {item.badge}
                               </Badge>
                             </div>
                             <div className="absolute bottom-2.5 right-2.5">
-                              <span className="bg-foreground/75 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-md">
+                              <span className="bg-neutral-950 text-neutral-50 border border-neutral-800 text-xs font-mono font-bold px-2 py-1 rounded-md">
                                 {item.dateDisplay}
                               </span>
                             </div>
                           </div>
 
                           <div className="p-4 space-y-1">
-                            <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                            <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 text-anti-truncate">
                               {item.title}
                             </h3>
                             {item.location && (
@@ -668,7 +668,7 @@ function AgendaPadronizadaPage() {
                           </div>
                         </Link>
 
-                        <div className="p-4 pt-0 flex items-center justify-between border-t border-border/30 mt-2">
+                        <div className="p-4 pt-0 flex items-center justify-between border-t border-border mt-2">
                           <span className="text-xs font-bold text-primary font-mono">
                             {item.priceOrStatus}
                           </span>
@@ -693,10 +693,10 @@ function AgendaPadronizadaPage() {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group rounded-lg border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-colors duration-200 flex flex-col justify-between"
+                  className="group rounded-lg border border-border bg-card overflow-hidden hover:border-foreground transition-colors duration-200 flex flex-col justify-between"
                 >
                   <Link to={item.to as any} className="flex-1 flex flex-col cursor-pointer">
-                    <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 shrink-0">
+                    <div className="relative aspect-16/10 w-full overflow-hidden bg-muted shrink-0">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -705,17 +705,17 @@ function AgendaPadronizadaPage() {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="size-full bg-muted/50 flex items-center justify-center">
+                        <div className="size-full bg-muted flex items-center justify-center">
                           <CalendarDots size={28} className="text-muted-foreground/30" />
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5">
-                        <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md border border-border/40">
+                        <Badge className="bg-card text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md border border-border">
                           {item.badge}
                         </Badge>
                       </div>
                       <div className="absolute bottom-2.5 right-2.5">
-                        <span className="bg-foreground/75 backdrop-blur-md text-foreground text-xs font-mono font-bold px-2 py-1 rounded-md">
+                        <span className="bg-neutral-950 text-neutral-50 border border-neutral-800 text-xs font-mono font-bold px-2 py-1 rounded-md">
                           {item.dateDisplay}
                         </span>
                       </div>
@@ -784,7 +784,7 @@ function AgendaPadronizadaPage() {
                       </div>
                     )}
                     <div className="absolute top-2.5 left-2.5">
-                      <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md border border-border/40">
+                      <Badge className="bg-card text-foreground font-mono text-xs uppercase font-bold px-2 py-1 rounded-md border border-border">
                         {item.badge}
                       </Badge>
                     </div>

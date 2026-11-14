@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Hotel as HotelIcon, Check, ChevronsUpDown, Search, X, Star, MapPin, Sparkles, Sliders } from "lucide-react";
+import { Hotel as HotelIcon, Check, ChevronsUpDown, Search, X, Star, MapPin, Sliders } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +28,7 @@ const DrawerOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-50 bg-background/80 backdrop-blur-sm", className)}
+    className={cn("fixed inset-0 z-50 bg-overlay", className)}
     {...props}
   />
 ));
@@ -43,7 +43,7 @@ const DrawerContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-lg border border-border/60 bg-background pb-safe max-h-full",
+        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-lg border border-border bg-background pb-safe max-h-full",
         className,
       )}
       {...props}
@@ -347,7 +347,7 @@ function HotelPickerPanel({
                 }}
                 className="inline-flex items-center gap-2 h-11 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold cursor-pointer hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <Sparkles className="size-3.5" />
+                <HotelIcon className="size-3.5" />
                 Usar &ldquo;{searchQuery.trim()}&rdquo; como hospedagem personalizada
               </button>
             )}

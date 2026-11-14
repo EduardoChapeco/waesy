@@ -67,14 +67,10 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
       </div>
 
       {/* Hero Promo Banner */}
-      <div
-        style={{
-          background: `linear-gradient(135deg, ${themeColor} 0%, #000000 100%)`,
-        }}
-        className="rounded-lg p-4 text-foreground space-y-2 relative overflow-hidden shadow-xs border border-white/10"
-      >
+      <div className="rounded-lg p-4 bg-card text-foreground space-y-2 relative overflow-hidden border border-border">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-card/20 text-foreground backdrop-blur-sm flex items-center gap-1">
+          <span className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-muted border border-border text-foreground flex items-center gap-1">
+            <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: themeColor }} />
             <Star className="size-3 fill-current" />
             <span>Exclusivo App</span>
           </span>
@@ -82,7 +78,7 @@ export const AppHomeFeed: React.FC<AppHomeFeedProps> = ({
 
         <div className="space-y-1">
           <h4 className="font-bold text-sm leading-snug line-clamp-1">{bannerTitle}</h4>
-          <p className="text-xs text-foreground/80 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
             {bannerSubtitle}
           </p>
         </div>

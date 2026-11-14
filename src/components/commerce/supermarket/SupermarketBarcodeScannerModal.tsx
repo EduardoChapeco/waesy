@@ -155,13 +155,13 @@ export function SupermarketBarcodeScannerModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="scanner-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay animate-in fade-in select-none"
     >
       <div className="relative w-full max-w-md rounded-3xl bg-card border border-border overflow-hidden flex flex-col">
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-border/40">
+        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="size-9 rounded-xl bg-muted border border-border text-primary flex items-center justify-center">
               <Barcode size={22} weight="bold" />
             </div>
             <div>
@@ -175,7 +175,7 @@ export function SupermarketBarcodeScannerModal({
           <button
             type="button"
             onClick={onClose}
-            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="size-11 min-h-11 min-w-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Fechar leitor"
           >
             <X size={20} weight="bold" />
@@ -190,7 +190,7 @@ export function SupermarketBarcodeScannerModal({
               setMode("camera");
               startCamera();
             }}
-            className={`flex-1 h-11 min-h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={`flex-1 h-11 min-h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               mode === "camera"
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:text-foreground"
@@ -206,7 +206,7 @@ export function SupermarketBarcodeScannerModal({
               stopCamera();
               setMode("manual");
             }}
-            className={`flex-1 h-11 min-h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+            className={`flex-1 h-11 min-h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               mode === "manual"
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:text-foreground"
@@ -220,7 +220,7 @@ export function SupermarketBarcodeScannerModal({
         {/* Conteúdo Principal */}
         <div className="p-6 space-y-4">
           {mode === "camera" ? (
-            <div className="relative w-full aspect-square rounded-2xl bg-muted overflow-hidden flex items-center justify-center border border-border/60">
+            <div className="relative w-full aspect-square rounded-2xl bg-muted overflow-hidden flex items-center justify-center border border-border">
               <video
                 ref={videoRef}
                 playsInline
@@ -231,7 +231,7 @@ export function SupermarketBarcodeScannerModal({
               {isCameraActive ? (
                 <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
                   {/* Moldura de mira */}
-                  <div className="relative size-56 border-2 border-primary/80 rounded-2xl">
+                  <div className="relative size-56 border-2 border-primary rounded-2xl">
                     <div className="absolute top-0 left-0 size-4 border-t-4 border-l-4 border-primary rounded-tl-lg" />
                     <div className="absolute top-0 right-0 size-4 border-t-4 border-r-4 border-primary rounded-tr-lg" />
                     <div className="absolute bottom-0 left-0 size-4 border-b-4 border-l-4 border-primary rounded-bl-lg" />
@@ -240,7 +240,7 @@ export function SupermarketBarcodeScannerModal({
                     {/* Linha laser de escaneamento */}
                     <div className="absolute inset-x-2 top-1/2 h-0.5 bg-destructive animate-pulse motion-reduce:animate-none" />
                   </div>
-                  <p className="mt-4 px-3 py-1 rounded-full bg-card/90 text-foreground text-xs font-semibold backdrop-blur-sm border border-border/40">
+                  <p className="mt-4 px-3 py-1 rounded-full bg-card text-foreground text-xs font-semibold border border-border">
                     Aponte para o código de barras
                   </p>
                 </div>

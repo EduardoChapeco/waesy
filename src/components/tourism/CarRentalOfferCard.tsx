@@ -60,165 +60,8 @@ export interface CarRentalOfferItem {
 }
 
 export const DEFAULT_B2C_CAR_OFFERS: CarRentalOfferItem[] = [];
-const _LEGACY_B2C_CAR_OFFERS_UNUSED: CarRentalOfferItem[] = [
-  {
-    id: "car-b2c-compact-1",
-    rentalCompany: "Localiza",
-    providerOrigin: "infotravel_b2c",
-    isCorporateB2B: false,
-    vehicleCategory: "Carros Pequenos",
-    vehicleModelExample: "Chevrolet Onix, HB20 ou similar",
-    transmission: "Manual",
-    passengersCount: 5,
-    bagsCount: 2,
-    doorsCount: 4,
-    hasAirConditioning: true,
-    includesUnlimitedMileage: true,
-    includesFullProtection: true,
-    freeCancellation: true,
-    pickupLocation: "Aeroporto de Chapecó (XAP)",
-    dropoffLocation: "Aeroporto de Chapecó (XAP)",
-    paymentTiming: "pay_at_pickup",
-    dailyRateBrl: 129,
-    totalThreeDaysBrl: 387,
-  },
-  {
-    id: "car-b2c-sedan-2",
-    rentalCompany: "Movida",
-    providerOrigin: "infotravel_b2c",
-    isCorporateB2B: false,
-    vehicleCategory: "Sedã Executivo",
-    vehicleModelExample: "Toyota Corolla, Virtus ou similar",
-    transmission: "Automático",
-    passengersCount: 5,
-    bagsCount: 3,
-    doorsCount: 4,
-    hasAirConditioning: true,
-    includesUnlimitedMileage: true,
-    includesFullProtection: true,
-    freeCancellation: true,
-    pickupLocation: "Aeroporto de Chapecó (XAP)",
-    dropoffLocation: "Aeroporto de Chapecó (XAP)",
-    paymentTiming: "pay_at_pickup",
-    dailyRateBrl: 189,
-    totalThreeDaysBrl: 567,
-  },
-  {
-    id: "car-b2c-suv-3",
-    rentalCompany: "Unidas",
-    providerOrigin: "infotravel_b2c",
-    isCorporateB2B: false,
-    vehicleCategory: "SUVs e Caminhonetes",
-    vehicleModelExample: "Jeep Compass, T-Cross ou similar",
-    transmission: "Automático",
-    passengersCount: 5,
-    bagsCount: 4,
-    doorsCount: 4,
-    hasAirConditioning: true,
-    includesUnlimitedMileage: true,
-    includesFullProtection: true,
-    freeCancellation: true,
-    pickupLocation: "Aeroporto de Chapecó (XAP)",
-    dropoffLocation: "Aeroporto de Chapecó (XAP)",
-    paymentTiming: "pay_at_pickup",
-    dailyRateBrl: 239,
-    totalThreeDaysBrl: 717,
-  },
-  {
-    id: "car-b2c-util-4",
-    rentalCompany: "InfoTravel GDS",
-    providerOrigin: "infotravel_b2c",
-    isCorporateB2B: false,
-    vehicleCategory: "Utilitários",
-    vehicleModelExample: "Fiat Toro, Oroch ou similar",
-    transmission: "Automático",
-    passengersCount: 5,
-    bagsCount: 4,
-    doorsCount: 4,
-    hasAirConditioning: true,
-    includesUnlimitedMileage: true,
-    includesFullProtection: true,
-    freeCancellation: true,
-    pickupLocation: "Aeroporto de Chapecó (XAP)",
-    dropoffLocation: "Aeroporto de Chapecó (XAP)",
-    paymentTiming: "pay_at_pickup",
-    dailyRateBrl: 269,
-    totalThreeDaysBrl: 807,
-  },
-];
 
 export const DEFAULT_B2B_WOOBA_CAR_OFFERS: CarRentalOfferItem[] = [];
-const _LEGACY_B2B_WOOBA_CAR_OFFERS_UNUSED: CarRentalOfferItem[] = [
-  {
-    id: "car-b2b-wooba-1",
-    rentalCompany: "Localiza · Wooba Corporate",
-    providerOrigin: "wooba_b2b",
-    isCorporateB2B: true,
-    vehicleCategory: "Carros Pequenos",
-    vehicleModelExample: "Chevrolet Onix Plus ou similar (Frota B2B)",
-    transmission: "Automático",
-    passengersCount: 5,
-    bagsCount: 2,
-    doorsCount: 4,
-    hasAirConditioning: true,
-    includesUnlimitedMileage: true,
-    includesFullProtection: true,
-    freeCancellation: true,
-    pickupLocation: "Aeroporto de Congonhas (CGH)",
-    dropoffLocation: "Aeroporto de Congonhas (CGH)",
-    paymentTiming: "corporate_billed",
-    dailyRateBrl: 118,
-    totalThreeDaysBrl: 354,
-    corporateAgreementCode: "CORP-WOOBA-LOC",
-    billingModalityLabel: "Faturado 15/30 dias · Sem caução no cartão pessoal",
-  },
-  {
-    id: "car-b2b-wooba-2",
-    rentalCompany: "Movida · Wooba Corporate",
-    providerOrigin: "wooba_b2b",
-    isCorporateB2B: true,
-    vehicleCategory: "Sedã Executivo",
-    vehicleModelExample: "Toyota Corolla XEi ou similar (Frota B2B)",
-    transmission: "Automático",
-    passengersCount: 5,
-    bagsCount: 3,
-    doorsCount: 4,
-    hasAirConditioning: true,
-    includesUnlimitedMileage: true,
-    includesFullProtection: true,
-    freeCancellation: true,
-    pickupLocation: "Aeroporto de Congonhas (CGH)",
-    dropoffLocation: "Aeroporto de Congonhas (CGH)",
-    paymentTiming: "corporate_billed",
-    dailyRateBrl: 172,
-    totalThreeDaysBrl: 516,
-    corporateAgreementCode: "CORP-WOOBA-MOV",
-    billingModalityLabel: "Faturado 15/30 dias · Proteção integral inclusa",
-  },
-  {
-    id: "car-b2b-wooba-3",
-    rentalCompany: "Unidas · Wooba Corporate",
-    providerOrigin: "wooba_b2b",
-    isCorporateB2B: true,
-    vehicleCategory: "SUVs e Caminhonetes",
-    vehicleModelExample: "Jeep Compass Longitude ou similar",
-    transmission: "Automático",
-    passengersCount: 5,
-    bagsCount: 4,
-    doorsCount: 4,
-    hasAirConditioning: true,
-    includesUnlimitedMileage: true,
-    includesFullProtection: true,
-    freeCancellation: true,
-    pickupLocation: "Aeroporto de Congonhas (CGH)",
-    dropoffLocation: "Aeroporto de Congonhas (CGH)",
-    paymentTiming: "corporate_billed",
-    dailyRateBrl: 215,
-    totalThreeDaysBrl: 645,
-    corporateAgreementCode: "CORP-WOOBA-UNI",
-    billingModalityLabel: "Faturado 15/30 dias · Sem bloqueio de limite",
-  },
-];
 
 export interface CarRentalOfferCardProps {
   offer: CarRentalOfferItem;
@@ -256,9 +99,17 @@ export function CarRentalOfferCard({
 
   return (
     <article
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect?.(offer)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect?.(offer);
+        }
+      }}
       className={cn(
-        "rounded-2xl border border-border bg-card p-4 flex flex-col justify-between transition-colors hover:border-primary/40 cursor-pointer gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "rounded-2xl border border-border bg-card p-4 flex flex-col justify-between transition-colors hover:border-ring cursor-pointer gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
     >
@@ -266,32 +117,32 @@ export function CarRentalOfferCard({
       <div className="flex items-center justify-between gap-2">
         <Badge
           variant="secondary"
-          className="text-xs font-bold px-2 py-1 rounded-lg bg-muted text-foreground truncate"
+          className="text-xs font-bold px-2 py-1 rounded-lg bg-muted text-foreground line-clamp-2 text-anti-truncate"
         >
           {offer.rentalCompany}
         </Badge>
         {offer.isCorporateB2B ? (
-          <span className="text-3xs font-mono font-bold uppercase px-2 py-1 rounded-md bg-primary/10 text-primary shrink-0">
+          <span className="text-3xs font-mono font-bold uppercase px-2 py-1 rounded-md bg-muted border border-border text-primary shrink-0">
             Wooba B2B
           </span>
         ) : (
-          <span className="text-3xs font-mono font-semibold uppercase px-2 py-1 rounded-md bg-muted text-muted-foreground shrink-0">
+          <span className="text-3xs font-mono font-semibold uppercase px-2 py-1 rounded-md bg-muted border border-border text-muted-foreground shrink-0">
             InfoTravel B2C
           </span>
         )}
       </div>
 
       {/* Vehicle Visual Area (aspect-4/3 clean container without nested border+bg-card) */}
-      <div className="relative aspect-4/3 w-full rounded-xl bg-muted/50 p-3 flex flex-col justify-between overflow-hidden">
+      <div className="relative aspect-4/3 w-full rounded-xl bg-muted p-3 flex flex-col justify-between overflow-hidden">
         <div className="flex items-center justify-between gap-1 z-10">
-          <span className="text-3xs font-semibold px-2 py-1 rounded-md bg-background/80 text-foreground flex items-center gap-1">
+          <span className="text-3xs font-semibold px-2 py-1 rounded-md bg-card border border-border text-foreground flex items-center gap-1">
             <Gear size={12} weight="bold" />
             <span>{offer.transmission}</span>
           </span>
           {offer.hasAirConditioning !== false && (
-            <span className="text-3xs font-semibold px-2 py-1 rounded-md bg-background/80 text-foreground flex items-center gap-1">
+            <span className="text-3xs font-semibold px-2 py-1 rounded-md bg-card border border-border text-foreground flex items-center gap-1">
               <Snowflake size={12} weight="bold" />
-              <span>Ar-cond.</span>
+              <span>Ar-condicionado</span>
             </span>
           )}
         </div>
@@ -306,8 +157,8 @@ export function CarRentalOfferCard({
               loading="lazy"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center text-muted-foreground/70 gap-1">
-              <Car size={56} weight="duotone" className="text-primary/80" />
+            <div className="flex flex-col items-center justify-center text-muted-foreground gap-1">
+              <Car size={56} weight="duotone" className="text-primary" />
               <span className="text-3xs font-mono uppercase tracking-wider text-muted-foreground">
                 {offer.includesUnlimitedMileage !== false ? "KM Livre" : "Franquia KM"}
               </span>
@@ -316,11 +167,11 @@ export function CarRentalOfferCard({
         </div>
 
         <div className="flex items-center justify-between gap-2 z-10 text-3xs font-semibold text-muted-foreground">
-          <span className="flex items-center gap-1 bg-background/80 px-2 py-1 rounded-md text-foreground">
+          <span className="flex items-center gap-1 bg-card border border-border px-2 py-1 rounded-md text-foreground">
             <Users size={12} weight="bold" />
             <span>{offer.passengersCount || 5} lugares</span>
           </span>
-          <span className="flex items-center gap-1 bg-background/80 px-2 py-1 rounded-md text-foreground">
+          <span className="flex items-center gap-1 bg-card border border-border px-2 py-1 rounded-md text-foreground">
             <SuitcaseRolling size={12} weight="bold" />
             <span>{offer.bagsCount || 2} malas</span>
           </span>
@@ -333,7 +184,7 @@ export function CarRentalOfferCard({
           <h3 className="text-base font-bold text-foreground leading-snug">
             {offer.vehicleCategory}
           </h3>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className="text-xs text-muted-foreground line-clamp-2 text-anti-truncate">
             {offer.vehicleModelExample}
           </p>
         </div>

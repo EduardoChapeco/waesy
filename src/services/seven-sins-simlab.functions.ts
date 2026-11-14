@@ -88,13 +88,13 @@ export async function generateSevenSinCopyLogic(data: {
     const supabase = getServerClient();
     const { data: product, error } = await supabase
       .from("products")
-      .select("title, name, price_cents, description")
+      .select("title, price_cents, description")
       .eq("id", data.productId)
       .eq("store_id", storeId)
       .maybeSingle();
     if (error) throw new Error(`Falha ao carregar o produto selecionado: ${error.message}`);
     if (!product) throw new Error("O produto não existe neste workspace.");
-    productName = product.title || product.name || productName;
+    productName = product.title || productName;
     productDescription = product.description || "";
     priceBrl = Number.isFinite(product.price_cents) && product.price_cents != null ? product.price_cents / 100 : null;
   }

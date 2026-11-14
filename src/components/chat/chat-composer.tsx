@@ -158,13 +158,13 @@ export function ChatComposer({
     <footer
       aria-label="Área de composição de mensagem"
       className={cn(
-        "shrink-0 min-h-0 border-t border-border/40 bg-background/95 backdrop-blur-md pb-safe pb-3 sm:pb-4",
+        "shrink-0 min-h-0 border-t border-border bg-background pb-safe pb-3 sm:pb-4",
         className
       )}
     >
       {/* ── Banner de Citação de Mensagem (Reply) ── */}
       {replyTo && (
-        <div className="flex items-center justify-between px-3 py-2 bg-muted/40 border-b border-border/30 text-xs">
+        <div className="flex items-center justify-between px-3 py-2 bg-muted border-b border-border text-xs">
           <div className="flex items-center gap-2 min-w-0">
             <CornerDownLeft className="size-3.5 text-primary shrink-0" />
             <div className="min-w-0">

@@ -1,6 +1,7 @@
 import React from "react";
 import { HeroBlockData, OmniBlockStyling } from "../types";
 import { getSectionStyle } from "../utils";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import { ArrowRight, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getSafeBuilderHref } from "@/lib/builder/safe-href";
@@ -13,9 +14,10 @@ export interface HeroMinimalSplitProps {
 }
 
 export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, styling, className = "" }) => {
-  const sectionStyle = getSectionStyle(styling);
-  const primaryHref = getSafeBuilderHref(data.primaryCta.href) ?? "#";
-  const secondaryHref = data.secondaryCta ? getSafeBuilderHref(data.secondaryCta.href) ?? "#" : undefined;
+  const { isMobile } = useEffectiveViewport();
+  const sectionStyle = getSectionStyle(styling, isMobile);
+  const primaryHref = data?.primaryCta?.href ? getSafeBuilderHref(data.primaryCta.href) ?? "#" : "#";
+  const secondaryHref = data?.secondaryCta?.href ? getSafeBuilderHref(data.secondaryCta.href) ?? "#" : undefined;
   return (
     <section
       id={id}
@@ -23,10 +25,16 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
       className={`relative w-full bg-background text-foreground overflow-hidden border-b border-border/40 ${sectionStyle.className} ${className}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div
+          className={
+            isMobile
+              ? "grid grid-cols-1 gap-8 items-center"
+              : "grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center"
+          }
+        >
 
           {/* Lado Esquerdo: 60% da Largura Útil (7 de 12 colunas) */}
-          <div className="lg:col-span-7 flex flex-col items-start text-left">
+          <div className={isMobile ? "col-span-1 flex flex-col items-start text-left" : "lg:col-span-7 flex flex-col items-start text-left"}>
             {/* Pílula de Contexto Superior */}
             {data.badgeText && (
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-6">
@@ -36,7 +44,13 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
             )}
 
             {/* Título Display Monumental */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-foreground mb-6 [text-wrap:balance]">
+            <h1
+              className={
+                isMobile
+                  ? "text-3xl font-black tracking-tighter leading-tight text-foreground mb-4 [text-wrap:balance]"
+                  : "text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-tight text-foreground mb-6 [text-wrap:balance]"
+              }
+            >
               {data.title}
             </h1>
 
@@ -104,7 +118,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
           </div>
 
           {/* Lado Direito: 40% da Largura Útil (5 de 12 colunas) */}
-          <div className="lg:col-span-5 relative">
+          <div className={isMobile ? "col-span-1 relative" : "lg:col-span-5 relative"}>
             <div className="relative mx-auto max-w-md lg:max-w-none rounded-lg overflow-hidden border border-border/60 bg-muted/20 shadow-xs aspect-4/5 sm:aspect-square lg:aspect-4/5">
               {data.imageUrl ? (
                 <img
@@ -122,9 +136,9 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
                 </div>
               )}
 
-              {/* Card Flutuante de Vidro Fosco com Indicador Pulsante */}
+              {/* Card Flutuante Fosco com Indicador Pulsante */}
               {data.floatingStat && (
-                <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:min-w-60 bg-background/85 backdrop-blur-md border border-border/80 rounded-lg p-4">
+                <div className="absolute bottom-6 left-6 right-6 sm:right-auto sm:min-w-60 bg-card border border-border rounded-lg p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground block mb-1">

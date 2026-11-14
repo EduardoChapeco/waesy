@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChannelBadge } from "@/components/commerce/channel-badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { EmptyState } from "@/components/state/states";
+import { EmptyState, ErrorState } from "@/components/state/states";
 import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
 import { StatTile, SegmentedControl } from "@/design-system/components";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -32,14 +32,18 @@ export const Route = createFileRoute("/workspace/pedidos/")({
  head: () => ({ meta: [{ title: "Pedidos | Workspace Waesy" }] }),
  loader: async () => {
    try {
+ let loadError: string | null = null;
  const [orders, store] = await Promise.all([
- listOrders().catch(() => []),
+ listOrders().catch((err: any) => {
+   loadError = err?.message || "Falha ao carregar lista de pedidos.";
+   return [];
+ }),
  getStoreSettings().catch(() => null),
  ]);
- return { orders: orders || [], store };
-   } catch (err) {
+ return { orders: orders || [], store, loadError };
+   } catch (err: any) {
      console.error("[loader:workspace.pedidos.index] Unhandled loader error:", err);
-     return { orders: [], store: null };
+     return { orders: [], store: null, loadError: err?.message || "Erro ao carregar pedidos." };
    }
  },
  component: AdminOrdersPage,
@@ -88,7 +92,7 @@ function getStatusLabel(status: string, semantics?: any) {
 
 function AdminOrdersPage() {
   const { isCompact: isMobile } = useWindowSizeClass();
-  const { orders: initialOrders = [], store = null } = ((Route.useLoaderData() as any) || {});
+  const { orders: initialOrders = [], store = null, loadError = null } = ((Route.useLoaderData() as any) || {});
   const semantics = useMemo(() => getNicheSemantics(store), [store]);
   const router = useRouter();
   const [orders, setOrders] = useState<any[]>(initialOrders);
@@ -289,6 +293,13 @@ function AdminOrdersPage() {
 
  return (
     <div className="w-full px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
+ {loadError && (
+  <ErrorState
+   title="Erro ao carregar pedidos"
+   description={loadError}
+   onRetry={() => router.invalidate()}
+  />
+ )}
  {/* ── Toolbar Canônica do Workspace (AGENTS.md B.26 & NC-001) ── */}
  <WorkspaceCanonicalToolbar
   title={pageTitle}

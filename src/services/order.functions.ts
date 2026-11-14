@@ -8,6 +8,7 @@ import { sendWhatsAppNotification } from "@/services/integrations.functions";
 import { withDataPayload } from "@/services/cart-helpers";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 import { DEFAULT_CANONICAL_TABLES } from "@/services/reservations.functions";
+import { pushOrderUpdateToOriginMarketplace } from "@/lib/marketplace-vault.server";
 
 // ---------------------------------------------------------------------------
 // Order status enum (shared between validator and domain logic)
@@ -163,6 +164,14 @@ export async function _updateOrderStatus(
  }
  }
 
+ // Sincroniza cancelamento com marketplace de origem (iFood / Mercado Livre) em background
+ void pushOrderUpdateToOriginMarketplace({
+   storeId: store_id,
+   orderId,
+   targetStatus: "cancelled",
+   cancellationReason: "Cancelado pelo administrador.",
+ }).catch((err) => console.warn("[order.functions] Falha push cancelamento marketplace:", err));
+
  return { status: "ok" as const, message: "Pedido cancelado com sucesso." };
  }
 
@@ -272,6 +281,12 @@ export async function _updateOrderStatus(
 
  const { error } = await db.from("orders").update(updatePayload).eq("id", orderId);
  if (error) throw error;
+
+ void pushOrderUpdateToOriginMarketplace({
+   storeId: store_id,
+   orderId,
+   targetStatus: status,
+ }).catch((err) => console.warn("[order.functions] Falha push status marketplace:", err));
 
  // ── Ledger Criptográfico SHA-256 — registra transições financeiras críticas ──
  // Qualquer transição financeira confirmável gera entrada imutável com hash encadeado
@@ -816,6 +831,16 @@ export const updateOrderShipment = createServerFn({ method: "POST" })
  .single();
 
  if (error) throw error;
+
+ void pushOrderUpdateToOriginMarketplace({
+  storeId: identity.store_id,
+  orderId,
+  targetStatus: statusToApply,
+  trackingCode,
+  carrierName: carrierName || "Transportadora",
+  trackingUrl: trackingUrl || undefined,
+ }).catch((err) => console.warn("[order.functions] Falha push rastreio:", err));
+
  return data;
  } catch (e: unknown) {
  console.error("[order.functions] updateOrderShipment error:", e);
@@ -862,6 +887,7 @@ export const editOrderItems = createServerFn({ method: "POST" })
  });
 
  if (error) throw error;
+
  return data;
  } catch (e: unknown) {
  console.error("[order.functions] editOrderItems error:", e);
@@ -2267,16 +2293,21 @@ export const reorderCustomerOrder = createServerFn({ method: "POST" })
         // Buscar variante ativa e preço vigente no catálogo
         const { data: variant } = await db
           .from("product_variants")
-          .select("id, price_cents, is_active, stock_on_hand")
+          .select("id, price_override_cents, status, stock_on_hand, products(price_cents)")
           .eq(item.item_id ? "id" : "sku", item.item_id || item.variant_sku)
           .maybeSingle();
 
-        if (!variant || variant.is_active === false) {
+        if (!variant || variant.status !== "active") {
           warnings.push(`O item "${item.product_title}" não está mais disponível no catálogo.`);
           continue;
         }
 
-        const effectivePrice = variant.price_cents ?? item.unit_price_cents;
+        const effectivePrice =
+          variant.price_override_cents ??
+          (Array.isArray((variant as any).products)
+            ? (variant as any).products[0]?.price_cents
+            : (variant as any).products?.price_cents) ??
+          item.unit_price_cents;
         if (effectivePrice !== item.unit_price_cents) {
           warnings.push(`O preço de "${item.product_title}" foi atualizado no catálogo.`);
         }

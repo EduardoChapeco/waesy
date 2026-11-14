@@ -95,7 +95,7 @@ export const listKycVerificationsForAdmin = createServerFn({ method: "GET" })
  .validator(z.object({ status: z.string().optional() }).optional())
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- if (!identity || !["admin", "master", "platform_admin"].includes(identity.role)) {
+ if (!identity || (!identity.isPlatformAdmin && !["master", "platform_admin", "admin_master", "superadmin"].includes(identity.role))) {
  throw new Error("Acesso restrito à governança master");
  }
 
@@ -121,7 +121,7 @@ export const auditKycVerification = createServerFn({ method: "POST" })
  .validator(auditKycVerificationSchema)
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
- if (!identity || !["admin", "master", "platform_admin"].includes(identity.role)) {
+ if (!identity || (!identity.isPlatformAdmin && !["master", "platform_admin", "admin_master", "superadmin"].includes(identity.role))) {
  throw new Error("Acesso restrito à governança master");
  }
 

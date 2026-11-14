@@ -642,7 +642,7 @@ export default function WorkspaceDestinationsPage() {
  {filtered.map((dest: DestinationDTO) => (
  <Card
  key={dest.id}
- className="rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card overflow-hidden hover:border-black/[0.12] dark:hover:border-white/[0.16] transition-colors duration-200 flex flex-col justify-between group shadow-none"
+ className="rounded-2xl border border-border bg-card overflow-hidden hover:border-foreground transition-colors duration-200 flex flex-col justify-between group"
  >
  {/* Capa do Destino */}
  <div className="h-44 w-full relative bg-muted overflow-hidden">
@@ -653,13 +653,13 @@ export default function WorkspaceDestinationsPage() {
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
  />
  ) : (
- <div className="w-full h-full flex items-center justify-center bg-muted/60 text-muted-foreground">
+ <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
  <Camera className="size-8" />
  </div>
  )}
 
  <div className="absolute top-3 left-3 flex items-center gap-2">
- <Badge className="bg-background/95 text-foreground border border-border/80 text-xs font-semibold shadow-xs">
+ <Badge className="bg-card text-foreground border border-border text-xs font-semibold">
  {dest.state ? `${dest.state} • ${dest.country}` : dest.country}
  </Badge>
  </div>

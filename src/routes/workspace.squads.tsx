@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
@@ -20,13 +20,15 @@ export const Route = createFileRoute("/workspace/squads")({
 });
 
 function SquadsPage() {
+  const [activeView, setActiveView] = useState<"workspace" | "catalog">("workspace");
   const [selectedSquadSlug, setSelectedSquadSlug] = useState<string>("sales_squad");
-  const [promptInput, setPromptInput] = useState("Lead interessado em plano empresarial para 3 lojas com orçamento mensal de R$ 5.000");
+  const [promptInput, setPromptInput] = useState("");
   const [runResult, setRunResult] = useState<SquadRunResultDTO | null>(null);
 
-  const { data: squads = [], isLoading } = useQuery({
+  const { data: squads = [] } = useQuery({
     queryKey: ["ai-squads-list"],
     queryFn: () => listSquads(),
+    enabled: activeView === "catalog",
   });
 
   const selectedSquad = squads.find((s) => s.slug === selectedSquadSlug) || squads[0];
@@ -35,7 +37,7 @@ function SquadsPage() {
     mutationFn: executeSquad,
     onSuccess: (res) => {
       setRunResult(res);
-      toast.success(`Squad ${selectedSquad?.name} concluiu todas as etapas!`);
+      toast.success(`Squad ${selectedSquad?.name} concluiu todas as etapas.`);
     },
     onError: (err: any) => {
       toast.error(err.message || "Erro na execução do squad");
@@ -43,58 +45,77 @@ function SquadsPage() {
   });
 
   return (
-    <div className="space-y-6 pb-12 w-full p-4 sm:p-6">
-      {/* Header com Estilo Apple HIG */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Squads de Agentes Autônomos
-            </h1>
-            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
-              Grafo & Handoff v1.0
-            </Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Redes colaborativas de agentes especialistas resolvendo fluxos complexos ponta a ponta com supervisão contínua.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/40">
-          <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
-          <span>Orçamento e arbitragem fiscalizados por Supervisor Central.</span>
-        </div>
+    <div className="space-y-6 pb-12 w-full px-0 sm:p-6">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/40 px-4 sm:px-0 pb-4">
+        <Button
+          type="button"
+          variant={activeView === "workspace" ? "default" : "outline"}
+          onClick={() => setActiveView("workspace")}
+          className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Users className="size-4 mr-2" />
+          Meus Squads e Execuções
+        </Button>
+        <Button
+          type="button"
+          variant={activeView === "catalog" ? "default" : "outline"}
+          onClick={() => setActiveView("catalog")}
+          className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Bot className="size-4 mr-2" />
+          Catálogo de Handoff Multi-Agentes
+        </Button>
       </div>
 
-      {/* Seletor de Squads Canônicos */}
-      {squads.length === 0 ? (
-        <div className="p-8 text-center text-xs text-muted-foreground bg-card rounded-lg border border-border/40">
-          Nenhum squad autônomo disponível no momento.
-        </div>
+      {activeView === "workspace" ? (
+        <Outlet />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {squads.map((squad) => {
-            const isSelected = squad.slug === selectedSquad?.slug;
-            return (
-              <button
-                key={squad.slug}
-                onClick={() => {
-                  setSelectedSquadSlug(squad.slug);
-                  setRunResult(null);
-                  if (squad.slug === "sales_squad") {
-                    setPromptInput("Lead interessado em plano empresarial para 3 lojas com orçamento mensal de R$ 5.000");
-                  } else if (squad.slug === "publishing_squad") {
-                    setPromptInput("Criar campanha de lançamento de nova coleção de verão com foco no público jovem");
-                  } else if (squad.slug === "finance_squad") {
-                    setPromptInput("Comprovante PIX de R$ 1.250,00 pago pela Fornecedora de Embalagens Brasil LTDA em 28/09/2026");
-                  }
-                }}
-                className={`p-4 rounded-lg border text-left transition-colors duration-200 ${
-                  isSelected
-                    ? "bg-card border-primary ring-1 ring-primary/20"
-                    : "bg-card border-border/60 hover:border-border hover:bg-card"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
-              >
+        <div className="space-y-6 px-4 sm:px-0">
+          {/* Header com Estilo Apple HIG */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                  Squads de Agentes Autônomos
+                </h1>
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
+                  Grafo & Handoff v1.0
+                </Badge>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Redes colaborativas de agentes especialistas com supervisão contínua.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/40">
+              <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
+              <span>Orçamento e arbitragem fiscalizados por Supervisor Central.</span>
+            </div>
+          </div>
+
+          {/* Seletor de Squads Canônicos */}
+          {squads.length === 0 ? (
+            <div className="p-8 text-center text-xs text-muted-foreground bg-card rounded-lg border border-border/40">
+              Nenhum squad autônomo disponível no momento.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {squads.map((squad) => {
+                const isSelected = squad.slug === selectedSquad?.slug;
+                return (
+                  <button
+                    key={squad.slug}
+                    type="button"
+                    onClick={() => {
+                      setSelectedSquadSlug(squad.slug);
+                      setRunResult(null);
+                    }}
+                    className={`min-h-11 p-4 rounded-lg border text-left transition-colors duration-200 ${
+                      isSelected
+                        ? "bg-card border-primary ring-1 ring-primary/20"
+                        : "bg-card border-border/60 hover:border-border hover:bg-card"
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
+                  >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground">{squad.name}</span>
                   <Badge variant="secondary" className="text-xs font-mono">
@@ -241,6 +262,8 @@ function SquadsPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>

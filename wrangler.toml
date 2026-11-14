@@ -3,9 +3,6 @@ pages_build_output_dir = "dist"
 compatibility_date = "2026-06-18"
 compatibility_flags = ["nodejs_compat"]
 
-[limits]
-max_subrequests = 1000
-
 # Runtime variables and secrets are managed exclusively in the Cloudflare Pages
 # environment. Do not duplicate them in [vars]: Pages injects project bindings
 # and Wrangler rejects duplicate names during Function publication.

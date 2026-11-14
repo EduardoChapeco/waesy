@@ -269,7 +269,13 @@ import { Route as WorkspaceAfiliadosConciliacaoRouteImport } from './routes/work
 import { Route as WorkspaceAgendaIndexRouteImport } from './routes/workspace.agenda.index'
 import { Route as WorkspaceAgendaRecursosRouteImport } from './routes/workspace.agenda.recursos'
 import { Route as WorkspaceAtendimentoIndexRouteImport } from './routes/workspace.atendimento.index'
+import { Route as WorkspaceAtendimentoAtendentesRouteImport } from './routes/workspace.atendimento.atendentes'
+import { Route as WorkspaceAtendimentoChatRouteImport } from './routes/workspace.atendimento.chat'
+import { Route as WorkspaceAtendimentoFilasRouteImport } from './routes/workspace.atendimento.filas'
+import { Route as WorkspaceAtendimentoHorariosRouteImport } from './routes/workspace.atendimento.horarios'
+import { Route as WorkspaceAtendimentoWhatsappRouteImport } from './routes/workspace.atendimento.whatsapp'
 import { Route as WorkspaceB2bIndexRouteImport } from './routes/workspace.b2b.index'
+import { Route as WorkspaceBuilderIndexRouteImport } from './routes/workspace.builder.index'
 import { Route as WorkspaceCaptacaoIndexRouteImport } from './routes/workspace.captacao.index'
 import { Route as WorkspaceCaptacaoNdasRouteImport } from './routes/workspace.captacao.ndas'
 import { Route as WorkspaceCatalogoIndexRouteImport } from './routes/workspace.catalogo.index'
@@ -365,6 +371,7 @@ import { Route as WorkspaceOnboardingRevisaoRouteImport } from './routes/workspa
 import { Route as WorkspaceOrcamentosIndexRouteImport } from './routes/workspace.orcamentos.index'
 import { Route as WorkspaceOrcamentosIdRouteImport } from './routes/workspace.orcamentos.$id'
 import { Route as WorkspaceOrcamentosNovoRouteImport } from './routes/workspace.orcamentos.novo'
+import { Route as WorkspaceOrdensServicoIndexRouteImport } from './routes/workspace.ordens-servico.index'
 import { Route as WorkspacePacotesIndexRouteImport } from './routes/workspace.pacotes.index'
 import { Route as WorkspacePdvIndexRouteImport } from './routes/workspace.pdv.index'
 import { Route as WorkspacePdvComandasRouteImport } from './routes/workspace.pdv.comandas'
@@ -1779,9 +1786,44 @@ const WorkspaceAtendimentoIndexRoute =
     path: '/atendimento/',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceAtendimentoAtendentesRoute =
+  WorkspaceAtendimentoAtendentesRouteImport.update({
+    id: '/atendimento/atendentes',
+    path: '/atendimento/atendentes',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceAtendimentoChatRoute =
+  WorkspaceAtendimentoChatRouteImport.update({
+    id: '/atendimento/chat',
+    path: '/atendimento/chat',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceAtendimentoFilasRoute =
+  WorkspaceAtendimentoFilasRouteImport.update({
+    id: '/atendimento/filas',
+    path: '/atendimento/filas',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceAtendimentoHorariosRoute =
+  WorkspaceAtendimentoHorariosRouteImport.update({
+    id: '/atendimento/horarios',
+    path: '/atendimento/horarios',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceAtendimentoWhatsappRoute =
+  WorkspaceAtendimentoWhatsappRouteImport.update({
+    id: '/atendimento/whatsapp',
+    path: '/atendimento/whatsapp',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceB2bIndexRoute = WorkspaceB2bIndexRouteImport.update({
   id: '/b2b/',
   path: '/b2b/',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceBuilderIndexRoute = WorkspaceBuilderIndexRouteImport.update({
+  id: '/builder/',
+  path: '/builder/',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceCaptacaoIndexRoute = WorkspaceCaptacaoIndexRouteImport.update({
@@ -2320,6 +2362,12 @@ const WorkspaceOrcamentosNovoRoute = WorkspaceOrcamentosNovoRouteImport.update({
   path: '/orcamentos/novo',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceOrdensServicoIndexRoute =
+  WorkspaceOrdensServicoIndexRouteImport.update({
+    id: '/ordens-servico/',
+    path: '/ordens-servico/',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspacePacotesIndexRoute = WorkspacePacotesIndexRouteImport.update({
   id: '/pacotes/',
   path: '/pacotes/',
@@ -3121,6 +3169,11 @@ export interface FileRoutesByFullPath {
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/afiliados/conciliacao': typeof WorkspaceAfiliadosConciliacaoRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
+  '/workspace/atendimento/atendentes': typeof WorkspaceAtendimentoAtendentesRoute
+  '/workspace/atendimento/chat': typeof WorkspaceAtendimentoChatRoute
+  '/workspace/atendimento/filas': typeof WorkspaceAtendimentoFilasRoute
+  '/workspace/atendimento/horarios': typeof WorkspaceAtendimentoHorariosRoute
+  '/workspace/atendimento/whatsapp': typeof WorkspaceAtendimentoWhatsappRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
   '/workspace/catalogo/colecoes': typeof WorkspaceCatalogoColecoesRouteWithChildren
@@ -3245,6 +3298,7 @@ export interface FileRoutesByFullPath {
   '/workspace/agenda/': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento/': typeof WorkspaceAtendimentoIndexRoute
   '/workspace/b2b/': typeof WorkspaceB2bIndexRoute
+  '/workspace/builder/': typeof WorkspaceBuilderIndexRoute
   '/workspace/captacao/': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo/': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes/': typeof WorkspaceClientesIndexRoute
@@ -3262,6 +3316,7 @@ export interface FileRoutesByFullPath {
   '/workspace/noticias/': typeof WorkspaceNoticiasIndexRoute
   '/workspace/onboarding/': typeof WorkspaceOnboardingIndexRoute
   '/workspace/orcamentos/': typeof WorkspaceOrcamentosIndexRoute
+  '/workspace/ordens-servico/': typeof WorkspaceOrdensServicoIndexRoute
   '/workspace/pacotes/': typeof WorkspacePacotesIndexRoute
   '/workspace/pdv/': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos/': typeof WorkspacePedidosIndexRoute
@@ -3568,6 +3623,11 @@ export interface FileRoutesByTo {
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/afiliados/conciliacao': typeof WorkspaceAfiliadosConciliacaoRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
+  '/workspace/atendimento/atendentes': typeof WorkspaceAtendimentoAtendentesRoute
+  '/workspace/atendimento/chat': typeof WorkspaceAtendimentoChatRoute
+  '/workspace/atendimento/filas': typeof WorkspaceAtendimentoFilasRoute
+  '/workspace/atendimento/horarios': typeof WorkspaceAtendimentoHorariosRoute
+  '/workspace/atendimento/whatsapp': typeof WorkspaceAtendimentoWhatsappRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
   '/workspace/catalogo/tabelas': typeof WorkspaceCatalogoTabelasRoute
@@ -3691,6 +3751,7 @@ export interface FileRoutesByTo {
   '/workspace/agenda': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento': typeof WorkspaceAtendimentoIndexRoute
   '/workspace/b2b': typeof WorkspaceB2bIndexRoute
+  '/workspace/builder': typeof WorkspaceBuilderIndexRoute
   '/workspace/captacao': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes': typeof WorkspaceClientesIndexRoute
@@ -3708,6 +3769,7 @@ export interface FileRoutesByTo {
   '/workspace/noticias': typeof WorkspaceNoticiasIndexRoute
   '/workspace/onboarding': typeof WorkspaceOnboardingIndexRoute
   '/workspace/orcamentos': typeof WorkspaceOrcamentosIndexRoute
+  '/workspace/ordens-servico': typeof WorkspaceOrdensServicoIndexRoute
   '/workspace/pacotes': typeof WorkspacePacotesIndexRoute
   '/workspace/pdv': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos': typeof WorkspacePedidosIndexRoute
@@ -4024,6 +4086,11 @@ export interface FileRoutesById {
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/afiliados/conciliacao': typeof WorkspaceAfiliadosConciliacaoRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
+  '/workspace/atendimento/atendentes': typeof WorkspaceAtendimentoAtendentesRoute
+  '/workspace/atendimento/chat': typeof WorkspaceAtendimentoChatRoute
+  '/workspace/atendimento/filas': typeof WorkspaceAtendimentoFilasRoute
+  '/workspace/atendimento/horarios': typeof WorkspaceAtendimentoHorariosRoute
+  '/workspace/atendimento/whatsapp': typeof WorkspaceAtendimentoWhatsappRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
   '/workspace/catalogo/colecoes': typeof WorkspaceCatalogoColecoesRouteWithChildren
@@ -4148,6 +4215,7 @@ export interface FileRoutesById {
   '/workspace/agenda/': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento/': typeof WorkspaceAtendimentoIndexRoute
   '/workspace/b2b/': typeof WorkspaceB2bIndexRoute
+  '/workspace/builder/': typeof WorkspaceBuilderIndexRoute
   '/workspace/captacao/': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo/': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes/': typeof WorkspaceClientesIndexRoute
@@ -4165,6 +4233,7 @@ export interface FileRoutesById {
   '/workspace/noticias/': typeof WorkspaceNoticiasIndexRoute
   '/workspace/onboarding/': typeof WorkspaceOnboardingIndexRoute
   '/workspace/orcamentos/': typeof WorkspaceOrcamentosIndexRoute
+  '/workspace/ordens-servico/': typeof WorkspaceOrdensServicoIndexRoute
   '/workspace/pacotes/': typeof WorkspacePacotesIndexRoute
   '/workspace/pdv/': typeof WorkspacePdvIndexRoute
   '/workspace/pedidos/': typeof WorkspacePedidosIndexRoute
@@ -4481,6 +4550,11 @@ export interface FileRouteTypes {
     | '/viajante/viagem/$id'
     | '/workspace/afiliados/conciliacao'
     | '/workspace/agenda/recursos'
+    | '/workspace/atendimento/atendentes'
+    | '/workspace/atendimento/chat'
+    | '/workspace/atendimento/filas'
+    | '/workspace/atendimento/horarios'
+    | '/workspace/atendimento/whatsapp'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
     | '/workspace/catalogo/colecoes'
@@ -4605,6 +4679,7 @@ export interface FileRouteTypes {
     | '/workspace/agenda/'
     | '/workspace/atendimento/'
     | '/workspace/b2b/'
+    | '/workspace/builder/'
     | '/workspace/captacao/'
     | '/workspace/catalogo/'
     | '/workspace/clientes/'
@@ -4622,6 +4697,7 @@ export interface FileRouteTypes {
     | '/workspace/noticias/'
     | '/workspace/onboarding/'
     | '/workspace/orcamentos/'
+    | '/workspace/ordens-servico/'
     | '/workspace/pacotes/'
     | '/workspace/pdv/'
     | '/workspace/pedidos/'
@@ -4928,6 +5004,11 @@ export interface FileRouteTypes {
     | '/viajante/viagem/$id'
     | '/workspace/afiliados/conciliacao'
     | '/workspace/agenda/recursos'
+    | '/workspace/atendimento/atendentes'
+    | '/workspace/atendimento/chat'
+    | '/workspace/atendimento/filas'
+    | '/workspace/atendimento/horarios'
+    | '/workspace/atendimento/whatsapp'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
     | '/workspace/catalogo/tabelas'
@@ -5051,6 +5132,7 @@ export interface FileRouteTypes {
     | '/workspace/agenda'
     | '/workspace/atendimento'
     | '/workspace/b2b'
+    | '/workspace/builder'
     | '/workspace/captacao'
     | '/workspace/catalogo'
     | '/workspace/clientes'
@@ -5068,6 +5150,7 @@ export interface FileRouteTypes {
     | '/workspace/noticias'
     | '/workspace/onboarding'
     | '/workspace/orcamentos'
+    | '/workspace/ordens-servico'
     | '/workspace/pacotes'
     | '/workspace/pdv'
     | '/workspace/pedidos'
@@ -5383,6 +5466,11 @@ export interface FileRouteTypes {
     | '/viajante/viagem/$id'
     | '/workspace/afiliados/conciliacao'
     | '/workspace/agenda/recursos'
+    | '/workspace/atendimento/atendentes'
+    | '/workspace/atendimento/chat'
+    | '/workspace/atendimento/filas'
+    | '/workspace/atendimento/horarios'
+    | '/workspace/atendimento/whatsapp'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
     | '/workspace/catalogo/colecoes'
@@ -5507,6 +5595,7 @@ export interface FileRouteTypes {
     | '/workspace/agenda/'
     | '/workspace/atendimento/'
     | '/workspace/b2b/'
+    | '/workspace/builder/'
     | '/workspace/captacao/'
     | '/workspace/catalogo/'
     | '/workspace/clientes/'
@@ -5524,6 +5613,7 @@ export interface FileRouteTypes {
     | '/workspace/noticias/'
     | '/workspace/onboarding/'
     | '/workspace/orcamentos/'
+    | '/workspace/ordens-servico/'
     | '/workspace/pacotes/'
     | '/workspace/pdv/'
     | '/workspace/pedidos/'
@@ -7479,11 +7569,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceAtendimentoIndexRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/atendimento/atendentes': {
+      id: '/workspace/atendimento/atendentes'
+      path: '/atendimento/atendentes'
+      fullPath: '/workspace/atendimento/atendentes'
+      preLoaderRoute: typeof WorkspaceAtendimentoAtendentesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/atendimento/chat': {
+      id: '/workspace/atendimento/chat'
+      path: '/atendimento/chat'
+      fullPath: '/workspace/atendimento/chat'
+      preLoaderRoute: typeof WorkspaceAtendimentoChatRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/atendimento/filas': {
+      id: '/workspace/atendimento/filas'
+      path: '/atendimento/filas'
+      fullPath: '/workspace/atendimento/filas'
+      preLoaderRoute: typeof WorkspaceAtendimentoFilasRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/atendimento/horarios': {
+      id: '/workspace/atendimento/horarios'
+      path: '/atendimento/horarios'
+      fullPath: '/workspace/atendimento/horarios'
+      preLoaderRoute: typeof WorkspaceAtendimentoHorariosRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/atendimento/whatsapp': {
+      id: '/workspace/atendimento/whatsapp'
+      path: '/atendimento/whatsapp'
+      fullPath: '/workspace/atendimento/whatsapp'
+      preLoaderRoute: typeof WorkspaceAtendimentoWhatsappRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/b2b/': {
       id: '/workspace/b2b/'
       path: '/b2b'
       fullPath: '/workspace/b2b/'
       preLoaderRoute: typeof WorkspaceB2bIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/builder/': {
+      id: '/workspace/builder/'
+      path: '/builder'
+      fullPath: '/workspace/builder/'
+      preLoaderRoute: typeof WorkspaceBuilderIndexRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/captacao/': {
@@ -8149,6 +8281,13 @@ declare module '@tanstack/react-router' {
       path: '/orcamentos/novo'
       fullPath: '/workspace/orcamentos/novo'
       preLoaderRoute: typeof WorkspaceOrcamentosNovoRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/ordens-servico/': {
+      id: '/workspace/ordens-servico/'
+      path: '/ordens-servico'
+      fullPath: '/workspace/ordens-servico/'
+      preLoaderRoute: typeof WorkspaceOrdensServicoIndexRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/pacotes/': {
@@ -9464,6 +9603,11 @@ interface WorkspaceRouteChildren {
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   WorkspaceAfiliadosConciliacaoRoute: typeof WorkspaceAfiliadosConciliacaoRoute
   WorkspaceAgendaRecursosRoute: typeof WorkspaceAgendaRecursosRoute
+  WorkspaceAtendimentoAtendentesRoute: typeof WorkspaceAtendimentoAtendentesRoute
+  WorkspaceAtendimentoChatRoute: typeof WorkspaceAtendimentoChatRoute
+  WorkspaceAtendimentoFilasRoute: typeof WorkspaceAtendimentoFilasRoute
+  WorkspaceAtendimentoHorariosRoute: typeof WorkspaceAtendimentoHorariosRoute
+  WorkspaceAtendimentoWhatsappRoute: typeof WorkspaceAtendimentoWhatsappRoute
   WorkspaceCaptacaoNdasRoute: typeof WorkspaceCaptacaoNdasRoute
   WorkspaceCatalogoAtributosRoute: typeof WorkspaceCatalogoAtributosRoute
   WorkspaceCatalogoColecoesRoute: typeof WorkspaceCatalogoColecoesRouteWithChildren
@@ -9573,6 +9717,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAgendaIndexRoute: typeof WorkspaceAgendaIndexRoute
   WorkspaceAtendimentoIndexRoute: typeof WorkspaceAtendimentoIndexRoute
   WorkspaceB2bIndexRoute: typeof WorkspaceB2bIndexRoute
+  WorkspaceBuilderIndexRoute: typeof WorkspaceBuilderIndexRoute
   WorkspaceCaptacaoIndexRoute: typeof WorkspaceCaptacaoIndexRoute
   WorkspaceCatalogoIndexRoute: typeof WorkspaceCatalogoIndexRoute
   WorkspaceClientesIndexRoute: typeof WorkspaceClientesIndexRoute
@@ -9590,6 +9735,7 @@ interface WorkspaceRouteChildren {
   WorkspaceNoticiasIndexRoute: typeof WorkspaceNoticiasIndexRoute
   WorkspaceOnboardingIndexRoute: typeof WorkspaceOnboardingIndexRoute
   WorkspaceOrcamentosIndexRoute: typeof WorkspaceOrcamentosIndexRoute
+  WorkspaceOrdensServicoIndexRoute: typeof WorkspaceOrdensServicoIndexRoute
   WorkspacePacotesIndexRoute: typeof WorkspacePacotesIndexRoute
   WorkspacePdvIndexRoute: typeof WorkspacePdvIndexRoute
   WorkspacePedidosIndexRoute: typeof WorkspacePedidosIndexRoute
@@ -9649,6 +9795,11 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceIndexRoute: WorkspaceIndexRoute,
   WorkspaceAfiliadosConciliacaoRoute: WorkspaceAfiliadosConciliacaoRoute,
   WorkspaceAgendaRecursosRoute: WorkspaceAgendaRecursosRoute,
+  WorkspaceAtendimentoAtendentesRoute: WorkspaceAtendimentoAtendentesRoute,
+  WorkspaceAtendimentoChatRoute: WorkspaceAtendimentoChatRoute,
+  WorkspaceAtendimentoFilasRoute: WorkspaceAtendimentoFilasRoute,
+  WorkspaceAtendimentoHorariosRoute: WorkspaceAtendimentoHorariosRoute,
+  WorkspaceAtendimentoWhatsappRoute: WorkspaceAtendimentoWhatsappRoute,
   WorkspaceCaptacaoNdasRoute: WorkspaceCaptacaoNdasRoute,
   WorkspaceCatalogoAtributosRoute: WorkspaceCatalogoAtributosRoute,
   WorkspaceCatalogoColecoesRoute: WorkspaceCatalogoColecoesRouteWithChildren,
@@ -9763,6 +9914,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAgendaIndexRoute: WorkspaceAgendaIndexRoute,
   WorkspaceAtendimentoIndexRoute: WorkspaceAtendimentoIndexRoute,
   WorkspaceB2bIndexRoute: WorkspaceB2bIndexRoute,
+  WorkspaceBuilderIndexRoute: WorkspaceBuilderIndexRoute,
   WorkspaceCaptacaoIndexRoute: WorkspaceCaptacaoIndexRoute,
   WorkspaceCatalogoIndexRoute: WorkspaceCatalogoIndexRoute,
   WorkspaceClientesIndexRoute: WorkspaceClientesIndexRoute,
@@ -9780,6 +9932,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceNoticiasIndexRoute: WorkspaceNoticiasIndexRoute,
   WorkspaceOnboardingIndexRoute: WorkspaceOnboardingIndexRoute,
   WorkspaceOrcamentosIndexRoute: WorkspaceOrcamentosIndexRoute,
+  WorkspaceOrdensServicoIndexRoute: WorkspaceOrdensServicoIndexRoute,
   WorkspacePacotesIndexRoute: WorkspacePacotesIndexRoute,
   WorkspacePdvIndexRoute: WorkspacePdvIndexRoute,
   WorkspacePedidosIndexRoute: WorkspacePedidosIndexRoute,

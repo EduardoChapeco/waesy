@@ -27,7 +27,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <nav
       aria-label="Navegação do Aplicativo"
-      className="w-full bg-card/95 backdrop-blur-md border-t border-border/60 px-2 py-2 flex items-center justify-around shrink-0 select-none safe-area-bottom"
+      className="w-full bg-card border-t border-border px-2 py-2 flex items-center justify-around shrink-0 select-none safe-area-bottom"
     >
       {tabs.map((tab) => {
         const Icon = tab.icon;

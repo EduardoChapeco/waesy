@@ -591,7 +591,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
                     size="icon"
                     onClick={() => handleOpenRecrop(idx)}
                     title="Ajustar e Recortar"
-                    className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-neutral-900/90 border border-neutral-700 text-neutral-50 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     aria-label="Ajustar e Recortar Imagem"
                   >
                     <Crop className="size-4" />
@@ -603,7 +603,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
                   size="icon"
                   onClick={() => removeMedia(idx)}
                   title="Remover"
-                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-foreground/80 backdrop-blur-xs text-background hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  className="size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-neutral-900/90 border border-neutral-700 text-neutral-50 hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   aria-label="Remover Mídia"
                 >
                   <X className="size-4" />
@@ -612,11 +612,11 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
 
               {/* Badge de Capa (#1) ou Posição (#2, #3, ...) */}
               {idx === 0 ? (
-                <span className="absolute bottom-2 left-2 text-xs font-bold bg-primary text-primary-foreground px-2 py-1 rounded shadow-xs">
+                <span className="absolute bottom-2 left-2 text-xs font-bold bg-primary text-primary-foreground px-2 py-1 rounded">
                   Capa
                 </span>
               ) : (
-                <span className="absolute bottom-2 left-2 text-xs font-mono font-bold bg-neutral-950/70 text-neutral-100 px-2 py-1 rounded backdrop-blur-xs">
+                <span className="absolute bottom-2 left-2 text-xs font-mono font-bold bg-neutral-900 border border-neutral-700 text-neutral-100 px-2 py-1 rounded">
                   #{idx + 1}
                 </span>
               )}

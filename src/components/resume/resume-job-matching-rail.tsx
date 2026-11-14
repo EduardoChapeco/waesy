@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   Briefcase,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
   MapPin,
@@ -108,7 +107,7 @@ export function ResumeJobMatchingRail({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border/60 shadow-2xs">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" />
+            <Briefcase className="size-4 text-primary" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Vagas Compatíveis com seu Perfil
             </h3>

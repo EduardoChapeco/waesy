@@ -214,7 +214,7 @@ function PostThreadPage() {
   const bodyText = post.content_text || (post as any).content || "";
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-2xl mx-auto px-0 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
       {/* Header Padronizado Canônico com Botão de Retorno e Ações Minimalistas */}
       <NativeMobileHeader
         title="Publicação"

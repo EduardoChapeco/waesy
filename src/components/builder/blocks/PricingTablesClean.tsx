@@ -16,7 +16,31 @@ export interface PricingTablesCleanProps {
 export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data, styling, className = "", onSelectTier }) => {
   const [isAnnual, setIsAnnual] = useState(false);
   const sectionStyle = getSectionStyle(styling);
-  const hasAnnualPrices = data.tiers.length > 0 && data.tiers.every((tier) => typeof tier.priceAnnualCents === "number");
+  const rawTiers = Array.isArray(data?.tiers)
+    ? data.tiers
+    : Array.isArray((data as any)?.plans)
+      ? (data as any).plans
+      : [];
+  const tiers = rawTiers.map((tier: any, index: number) => ({
+    ...tier,
+    id: tier?.id || `tier-${index}`,
+    name: tier?.name || tier?.title || `Plano ${index + 1}`,
+    description: tier?.description || tier?.subtitle || "",
+    priceMonthlyCents:
+      typeof tier?.priceMonthlyCents === "number"
+        ? tier.priceMonthlyCents
+        : typeof tier?.price === "string"
+          ? Math.round(
+              (Number(tier.price.replace(/[^\d.,-]/g, "").replace(/\./g, "").replace(",", ".")) || 0) * 100,
+            )
+          : 0,
+    priceAnnualCents: typeof tier?.priceAnnualCents === "number" ? tier.priceAnnualCents : undefined,
+    isPopular: Boolean(tier?.isPopular ?? tier?.highlighted),
+    features: Array.isArray(tier?.features) ? tier.features : [],
+    ctaLabel: tier?.ctaLabel || "Contratar Agora",
+    ctaHref: tier?.ctaHref || tier?.href || undefined,
+  }));
+  const hasAnnualPrices = tiers.length > 0 && tiers.every((tier: any) => typeof tier.priceAnnualCents === "number");
 
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -71,8 +95,13 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
         </div>
 
         {/* Grid de 3 Planos */}
+        {tiers.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+            Nenhum plano configurado neste bloco.
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-          {data.tiers.map((tier) => {
+          {tiers.map((tier: any) => {
             const rawPrice = isAnnual && typeof tier.priceAnnualCents === "number" ? tier.priceAnnualCents : tier.priceMonthlyCents;
             const priceFormatted = formatPrice(rawPrice);
             const ctaTarget = tier.ctaHref?.trim() || tier.href?.trim();
@@ -126,7 +155,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
 
                   {/* Lista de Recursos */}
                   <div className="space-y-3 mb-8">
-                    {tier.features.map((feature, idx) => (
+                    {tier.features.map((feature: string, idx: number) => (
                       <div key={idx} className="flex items-start gap-3 text-xs sm:text-sm">
                         <Check className={`size-4 shrink-0 mt-1 ${
                           tier.isPopular ? "text-emerald-400" : "text-emerald-600"
@@ -184,6 +213,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
             );
           })}
         </div>
+        )}
 
       </div>
     </section>

@@ -168,11 +168,22 @@ export const listUserFavorites = createServerFn({ method: "GET" })
  if (productIds.length > 0) {
    const { data: products } = await supabase
      .from("products")
-     .select("id, name, slug, price_cents, images, status")
+     .select("id, title, slug, price_cents, status, product_media(url, sort_order)")
      .in("id", productIds);
 
-   (products || []).forEach((p) => {
-     productMap[p.id] = p;
+   (products || []).forEach((p: any) => {
+     const media = Array.isArray(p.product_media)
+       ? [...p.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+       : [];
+     productMap[p.id] = {
+       id: p.id,
+       name: p.title,
+       title: p.title,
+       slug: p.slug,
+       price_cents: p.price_cents,
+       images: media.map((m: any) => m.url).filter(Boolean),
+       status: p.status,
+     };
    });
 
    // Se algum ID não foi encontrado em produtos, busca em booking_services (serviços e agendamentos)
@@ -206,11 +217,14 @@ export const listUserFavorites = createServerFn({ method: "GET" })
  if (eventIds.length > 0) {
  const { data: events } = await supabase
  .from("events")
- .select("id, title, description, cover_image, event_date, location_name")
+ .select("id, title, description, cover_image, event_date, location, venue_name")
  .in("id", eventIds);
 
- (events || []).forEach((e) => {
- eventMap[e.id] = e;
+ (events || []).forEach((e: any) => {
+ eventMap[e.id] = {
+   ...e,
+   location_name: e.venue_name || e.location || null,
+ };
  });
  }
 

@@ -62,7 +62,7 @@ export async function executeMultiProviderSearch(
   // 1. Carregar integrações ativas configuradas pela agência
   const { data: integrations } = await supabase
     .from("travel_operator_integrations")
-    .select("id, provider_code, display_name, engine_type, default_markup_percent, is_active, credentials_vault_ref")
+    .select("id, provider_code, display_name, engine_type, default_markup_percent, is_active, vault_secret_id")
     .eq("store_id", query.agencyId)
     .eq("is_active", true);
 
@@ -87,7 +87,7 @@ export async function executeMultiProviderSearch(
   // 2. Despacho em paralelo com Promise.allSettled
   const searchPromises = activeProviders.map(async (provider) => {
     try {
-      if (!provider.credentials_vault_ref) {
+      if (!provider.vault_secret_id) {
         errors.push(`${provider.provider_code}: BLOCKED — PROVIDER CREDENTIAL REQUIRED (credenciais ausentes no cofre)`);
         return;
       }
@@ -349,13 +349,13 @@ export async function executeMultiProviderBookingSaga(params: {
       // 1. Verificação estrita de credenciais ativas do provedor no cofre (P0-3)
       const { data: integration } = await supabase
         .from("travel_operator_integrations")
-        .select("id, provider_code, credentials_vault_ref, is_active")
+        .select("id, provider_code, vault_secret_id, is_active")
         .eq("store_id", params.agencyId)
         .eq("provider_code", item.providerCode)
         .eq("is_active", true)
         .maybeSingle();
 
-      if (!integration || !integration.credentials_vault_ref) {
+      if (!integration || !integration.vault_secret_id) {
         throw new Error(
           `BLOCKED — PROVIDER CREDENTIAL REQUIRED: Provedor ${item.providerCode} não possui credenciais ativas cadastradas na agência.`
         );

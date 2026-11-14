@@ -67,14 +67,28 @@ export const ClassicBlockAdapter: React.FC<ClassicBlockAdapterProps> = ({
   const { cart, refreshCart, setIsCartOpen } = useCart();
 
   const isLegacyTwBg = Boolean(styling.backgroundColor && styling.backgroundColor.startsWith("bg-"));
+  const hasCustomBg = Boolean(!isLegacyTwBg && styling.backgroundColor);
+  const hasCustomFg = Boolean(styling.textColor && !styling.textColor.startsWith("text-"));
   const sectionStyle: React.CSSProperties = {
-    backgroundColor: !isLegacyTwBg && styling.backgroundColor ? styling.backgroundColor : undefined,
-    color: styling.textColor && !styling.textColor.startsWith("text-") ? styling.textColor : undefined,
+    backgroundColor: hasCustomBg ? styling.backgroundColor : undefined,
+    color: hasCustomFg ? styling.textColor : undefined,
     animationDelay:
       typeof styling.animationDelayMs === "number" && styling.animationDelayMs > 0
         ? `${styling.animationDelayMs}ms`
         : undefined,
-  };
+    ...(hasCustomBg && styling.backgroundColor !== "var(--background)"
+      ? {
+          "--background": styling.backgroundColor,
+          "--color-background": styling.backgroundColor,
+        }
+      : {}),
+    ...(hasCustomFg && styling.textColor !== "var(--foreground)"
+      ? {
+          "--foreground": styling.textColor,
+          "--color-foreground": styling.textColor,
+        }
+      : {}),
+  } as React.CSSProperties;
 
   const getPaddingClass = (pad?: string) => {
     switch (pad) {

@@ -13,14 +13,14 @@ describe("Fase 3: Portal do Cliente 360 & Widgets Dinâmicos", () => {
  it("builderRegistry deve registrar portal_carnes_bills com manifest estrito", () => {
  const manifest = builderRegistry["portal_carnes_bills"];
  expect(manifest).toBeDefined();
- expect(manifest.name).toBe("Carnê Digital & Parcelas PIX");
+ expect(manifest.name).toBe("Carnê Digital");
  expect(manifest.icon).toBe("QrCode");
  });
 
  it("builderRegistry deve registrar portal_appointments com manifest estrito", () => {
  const manifest = builderRegistry["portal_appointments"];
  expect(manifest).toBeDefined();
- expect(manifest.name).toBe("Agendamentos & Linha do Tempo");
+ expect(manifest.name).toBe("Agendamentos");
  expect(manifest.icon).toBe("Calendar");
  });
 

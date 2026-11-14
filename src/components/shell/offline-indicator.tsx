@@ -43,10 +43,10 @@ export function OfflineIndicator() {
       role="status"
       aria-live="polite"
       className={cn(
-        "fixed top-3 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-xs font-medium shadow-overlay backdrop-blur-md border transition-colors duration-200 duration-300 flex items-center gap-2",
+        "fixed top-3 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-xs font-medium border transition-colors duration-200 flex items-center gap-2",
         !isOnline
-          ? "bg-warning/90 text-warning-strong border-warning/30 animate-in fade-in slide-in-from-top-2"
-          : "bg-emerald-600/90 text-foreground border-emerald-500/30 animate-in fade-in"
+          ? "bg-warning text-warning-foreground border-warning animate-in fade-in slide-in-from-top-2"
+          : "bg-emerald-700 text-neutral-50 border-emerald-800 animate-in fade-in"
       )}
     >
       {!isOnline ? (

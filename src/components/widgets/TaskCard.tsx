@@ -94,28 +94,28 @@ export function TaskCard({
         <div className="flex items-center gap-2 min-w-0">
           <Badge
             variant="outline"
-            className="text-xs font-bold uppercase tracking-wider px-2 py-0 rounded-md border-border/60 bg-muted/40 text-muted-foreground truncate"
+            className="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md border-border bg-muted text-muted-foreground line-clamp-1"
           >
             {category}
           </Badge>
 
-          <span className="font-mono text-xs font-semibold text-muted-foreground/80 shrink-0">
+          <span className="font-mono text-xs font-semibold text-muted-foreground shrink-0">
             #{code}
           </span>
         </div>
 
         {/* Indicador de Presença em Tempo Real */}
         {activeEditor ? (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold font-mono animate-in fade-in duration-200">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold font-mono animate-in fade-in duration-200">
             <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
-            <span className="truncate max-w-24">
+            <span className="line-clamp-1 max-w-24">
               {activeEditor.name.split(" ")[0]} editando
             </span>
           </div>
         ) : (
           <Badge
             variant="outline"
-            className={cn("text-xs font-bold px-2 py-0 h-4 border", priorityInfo.className)}
+            className={cn("text-xs font-bold px-2 py-1 border", priorityInfo.className)}
           >
             {priorityInfo.label}
           </Badge>

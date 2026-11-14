@@ -12,6 +12,7 @@ import { getServerIdentity } from "@/lib/server-access";
 import { sanitizeForAI } from "@/lib/ai/openrouter";
 import { getNextActiveKey, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { getAiPersonaContextInternal } from "@/services/ai-persona.functions";
+import { assertStoreEntitlement } from "@/lib/architecture/module-plan-governance";
 
 // ─── Schema do Anúncio Pré-preenchido (Omni-Extractor V121) ─────────────────
 const AIClassifiedSchema = z.object({
@@ -355,7 +356,7 @@ export const chatWithSDR = createServerFn({ method: "POST" })
         .select(`
           id, title, description, short_description, price_cents, compare_at_cents,
           attributes, is_physical, store_id,
-          store:stores (id, name, slug, phone, ai_knowledge_base, ai_sales_agent_enabled, settings)
+          store:stores (id, name, slug, phone, ai_knowledge_base, ai_sales_agent_enabled, settings, plan_tier, subscription_status, vertical_sku, enabled_modules, quota_overrides)
         `)
         .eq("id", productId)
         .maybeSingle();
@@ -384,7 +385,7 @@ export const chatWithSDR = createServerFn({ method: "POST" })
           id, title, content, price_cents, category, sub_category, deal_type, attributes,
           ai_agent_enabled, ai_instructions, max_discount_pct,
           delivery_type, contact_whatsapp, store_id,
-          store:stores (id, name, ai_knowledge_base, ai_sales_agent_enabled)
+          store:stores (id, name, slug, ai_knowledge_base, ai_sales_agent_enabled, settings, plan_tier, subscription_status, vertical_sku, enabled_modules, quota_overrides)
         `)
         .eq("id", classifiedId)
         .maybeSingle();
@@ -409,7 +410,7 @@ export const chatWithSDR = createServerFn({ method: "POST" })
     } else if (storeId) {
       const { data: store, error } = await db
         .from("stores")
-        .select("id, name, slug, phone, ai_knowledge_base, ai_sales_agent_enabled, settings, description")
+        .select("id, name, slug, phone, ai_knowledge_base, ai_sales_agent_enabled, settings, description, plan_tier, subscription_status, vertical_sku, enabled_modules, quota_overrides")
         .eq("id", storeId)
         .maybeSingle();
 
@@ -422,6 +423,25 @@ export const chatWithSDR = createServerFn({ method: "POST" })
       const storeSettings = store.settings || {};
       itemNiche = storeSettings.niche || storeSettings.segment || "lojas";
       isTravel = itemNiche === "tourism" || itemNiche === "viagem";
+    }
+
+    if (targetStoreId && storeData) {
+      const monthStart = new Date();
+      monthStart.setUTCDate(1);
+      monthStart.setUTCHours(0, 0, 0, 0);
+      const { count: aiCallsThisMonth } = await db
+        .from("sdr_chat_sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("store_id", targetStoreId)
+        .gte("updated_at", monthStart.toISOString());
+
+      assertStoreEntitlement(storeData, {
+        resourceQuota: {
+          resource: "ai_calls",
+          currentCount: aiCallsThisMonth || 0,
+          increment: 1,
+        },
+      });
     }
 
     // Buscar produtos complementares da loja para cross-selling no SDR
@@ -567,11 +587,11 @@ export const escalateSdrToHuman = createServerFn({ method: "POST" })
     try {
       const identity = await getServerIdentity();
       userId = identity.user_id || null;
+      userEmail = (identity as any).email || null;
       if (userId) {
-        const { data: profile } = await db.from("profiles").select("full_name, email").eq("id", userId).maybeSingle();
+        const { data: profile } = await db.from("profiles").select("full_name").eq("id", userId).maybeSingle();
         if (profile) {
           userName = profile.full_name || "Cliente";
-          userEmail = profile.email || null;
         }
       }
     } catch { /* visitante anônimo */ }
@@ -762,7 +782,6 @@ export async function internalListSdrChatSessions(params?: {
       classifieds:classified_id (
         id,
         title,
-        slug,
         price_cents,
         category,
         city

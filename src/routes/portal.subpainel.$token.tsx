@@ -243,10 +243,10 @@ function EventSubpanelPortalPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       {/* ── 1. TopBar do Operador (Isolada, Sem Navegação Global) ── */}
-      <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-md border-b border-border/60 px-4 py-3">
+      <header className="sticky top-0 z-30 bg-background border-b border-border px-4 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-11 min-h-11 min-w-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="size-11 min-h-11 min-w-11 rounded-lg bg-muted border border-border text-primary flex items-center justify-center shrink-0">
               {getPanelIcon()}
             </div>
             <div className="min-w-0">
@@ -254,7 +254,7 @@ function EventSubpanelPortalPage() {
                 <h1 className="text-sm font-bold text-foreground break-words">
                   {subpanel.name}
                 </h1>
-                <Badge variant="outline" className="text-xs px-2 py-0 border-emerald-500/40 text-emerald-600 bg-emerald-500/10 shrink-0">
+                <Badge variant="outline" className="text-xs px-2 py-1 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 shrink-0">
                   Online
                 </Badge>
               </div>

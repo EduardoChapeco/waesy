@@ -236,12 +236,12 @@ export function CreditCardInvoiceView({
         <button
           type="button"
           onClick={onManageCardsClick}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+          className="h-20 min-h-20 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
+          <div className="size-8 rounded-lg bg-card border border-border flex items-center justify-center text-foreground">
             <CreditCard className="size-4" />
           </div>
-          <span className="text-3xs font-bold text-zinc-800 leading-tight block truncate w-full">
+          <span className="text-3xs font-bold text-foreground leading-tight block line-clamp-2 text-anti-truncate w-full">
             Meus cartões
           </span>
         </button>
@@ -249,12 +249,12 @@ export function CreditCardInvoiceView({
         <button
           type="button"
           onClick={onAdjustLimitClick}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+          className="h-20 min-h-20 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
+          <div className="size-8 rounded-lg bg-card border border-border flex items-center justify-center text-foreground">
             <SlidersHorizontal className="size-4" />
           </div>
-          <span className="text-3xs font-bold text-zinc-800 leading-tight block truncate w-full">
+          <span className="text-3xs font-bold text-foreground leading-tight block line-clamp-2 text-anti-truncate w-full">
             Limites
           </span>
         </button>
@@ -262,12 +262,12 @@ export function CreditCardInvoiceView({
         <button
           type="button"
           onClick={onVirtualCardClick}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+          className="h-20 min-h-20 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
+          <div className="size-8 rounded-lg bg-card border border-border flex items-center justify-center text-foreground">
             <Smartphone className="size-4" />
           </div>
-          <span className="text-3xs font-bold text-zinc-800 leading-tight block truncate w-full">
+          <span className="text-3xs font-bold text-foreground leading-tight block line-clamp-2 text-anti-truncate w-full">
             Virtual
           </span>
         </button>
@@ -275,12 +275,12 @@ export function CreditCardInvoiceView({
         <button
           type="button"
           onClick={onInvestClick}
-          className="h-20 min-h-20 rounded-2xl bg-zinc-100 hover:bg-zinc-200/70 active:bg-zinc-200 border border-zinc-200/50 p-2 flex flex-col items-center justify-center gap-2 transition-transform transition-colors text-center cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+          className="h-20 min-h-20 rounded-2xl bg-muted hover:bg-accent border border-border p-2 flex flex-col items-center justify-center gap-2 transition-colors text-center cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className="size-8 rounded-lg bg-zinc-200/60 flex items-center justify-center text-zinc-900">
+          <div className="size-8 rounded-lg bg-card border border-border flex items-center justify-center text-foreground">
             <TrendingUp className="size-4" />
           </div>
-          <span className="text-3xs font-bold text-zinc-800 leading-tight block truncate w-full">
+          <span className="text-3xs font-bold text-foreground leading-tight block line-clamp-2 text-anti-truncate w-full">
             Investir em CDB
           </span>
         </button>
@@ -293,8 +293,8 @@ export function CreditCardInvoiceView({
         </span>
 
         {currentInvoice.items.length === 0 ? (
-          <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200/60 text-center space-y-1">
-            <span className="text-xs font-bold text-zinc-800 block">
+          <div className="p-6 rounded-2xl bg-muted border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-foreground block">
               Nenhuma compra nesta fatura
             </span>
             <span className="text-2xs text-muted-foreground block">
@@ -306,10 +306,10 @@ export function CreditCardInvoiceView({
             {currentInvoice.items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-200/60 shadow-2xs hover:bg-zinc-100 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  <div className="size-11 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-800 shrink-0">
+                  <div className="size-11 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground shrink-0">
                     {item.category === "transport" ? (
                       <Fuel className="size-5" />
                     ) : (
@@ -318,7 +318,7 @@ export function CreditCardInvoiceView({
                   </div>
 
                   <div className="min-w-0">
-                    <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                    <span className="text-xs sm:text-sm font-bold text-foreground block line-clamp-2 text-anti-truncate">
                       {item.description}
                     </span>
                     <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-1">

@@ -254,7 +254,7 @@ export function CardapioVerticalPage() {
       </header>
 
       {/* ── 2. Lista de Itens do Cardápio ── */}
-      <main className="max-w-4xl mx-auto px-4 py-4 space-y-3">
+      <main className="max-w-4xl mx-auto px-0 sm:px-4 py-4 space-y-3">
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filteredProducts.map((prod: any) => {

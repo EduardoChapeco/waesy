@@ -153,9 +153,9 @@ function ResolutionDrawer({
     <Sheet open={isOpen} onOpenChange={(val) => !val && onClose()}>
       <SheetContent size="wide" className="sm:max-w-xl md:max-w-2xl flex flex-col h-full bg-background border-l border-border/60">
         <SheetHeader>
-          <SheetTitle>Finalizar Troca / Devolução</SheetTitle>
+          <SheetTitle>Finalizar Troca</SheetTitle>
           <SheetDescription>
-            Pedido #{exchange?.orderToken} — Defina a resolução para o cliente.
+            Pedido #{exchange?.orderToken} — Defina a resolução.
           </SheetDescription>
         </SheetHeader>
 

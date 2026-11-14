@@ -3,7 +3,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Smartphone, Monitor, Sparkles, Copy, Check, Info } from "lucide-react";
+import { Smartphone, Monitor, Copy, Check, Info } from "lucide-react";
+
 import { getCanonicalDimensions } from "@/lib/crop-image";
 import { toast } from "sonner";
 
@@ -62,8 +63,7 @@ export function BidirectionalMediaUploader({
       {/* ─── Cabeçalho do Bloco Bidirecional ──────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
         <div>
-          <h3 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" />
+          <h3 className="text-xs sm:text-sm font-bold text-foreground">
             {label}
           </h3>
           {description && (

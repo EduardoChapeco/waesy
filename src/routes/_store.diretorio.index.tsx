@@ -148,10 +148,10 @@ export function DirectoryPage() {
         searchPlaceholder="Buscar empresas, clínicas, serviços..."
       />
       {/* ── Cabeçalho Inpage Desktop (Apple HIG) ── */}
-      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border/40">
+      <div className="hidden md:flex items-center justify-between pt-4 pb-3 border-b border-border">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Guia & Diretório Local</h1>
-          <p className="text-xs text-muted-foreground mt-1">Empresas, comércios, clínicas e prestadores de serviços verificados na região</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Diretório Local</h1>
+          <p className="text-xs text-muted-foreground mt-1">Empresas e prestadores verificados na região</p>
         </div>
       </div>
       <div className="space-y-4 pt-2 sm:pt-4">
@@ -227,7 +227,7 @@ export function DirectoryPage() {
  ))}
 
   {/* Seção Geral: Todas as Empresas da Região */}
-  <div className="space-y-3 pt-3 border-t border-border/40">
+  <div className="space-y-3 pt-3 border-t border-border">
     <div className="flex items-center justify-between">
       <h2 className="text-base font-bold text-foreground flex items-center gap-2">
         <Storefront size={18} weight="bold" className="text-primary" />
@@ -236,14 +236,14 @@ export function DirectoryPage() {
     </div>
 
     {/* Mobile: WhatsApp Minimalist List */}
-    <div className="block sm:hidden divide-y divide-border/30 rounded-lg border border-border/40 bg-card overflow-hidden">
+    <div className="block sm:hidden divide-y divide-border rounded-lg border border-border bg-card overflow-hidden">
       {filteredListings.map((item) => (
         <DirectoryMobileWhatsAppItem key={item.id} item={item} />
       ))}
     </div>
 
     {/* Desktop: Grid Canônico */}
-    <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+    <div className="hidden sm:grid sm:grid-cols-2 gap-4 items-stretch">
       {filteredListings.map((item) => (
         <div key={item.id} className="h-full flex flex-col">
           <DirectoryBusinessCard item={item} />
@@ -253,7 +253,7 @@ export function DirectoryPage() {
   </div>
 
   {filteredListings.length === 0 && !isLoading && (
-    <div className="py-16 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
+    <div className="py-16 text-center space-y-3 bg-card rounded-lg border border-border p-8">
       <EmptyState title="Nenhuma empresa ou serviço encontrado nesta categoria." />
       <div className="pt-2">
         <Button
@@ -277,19 +277,19 @@ export function DirectoryPage() {
       {viewMode === "grid" && (
         <div>
           {filteredListings.length === 0 && !isLoading ? (
-            <div className="py-24 text-center space-y-3 bg-card rounded-lg border border-border/60 p-8">
+            <div className="py-24 text-center space-y-3 bg-card rounded-lg border border-border p-8">
               <EmptyState title="Nenhuma empresa encontrada com estes filtros." />
             </div>
           ) : (
             <>
               {/* Mobile: WhatsApp Minimalist List */}
-              <div className="block sm:hidden divide-y divide-border/30 rounded-lg border border-border/40 bg-card overflow-hidden">
+              <div className="block sm:hidden divide-y divide-border rounded-lg border border-border bg-card overflow-hidden">
                 {filteredListings.map((item) => (
                   <DirectoryMobileWhatsAppItem key={item.id} item={item} />
                 ))}
               </div>
               {/* Desktop: Grid Canônico */}
-              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
+              <div className="hidden sm:grid sm:grid-cols-2 gap-4 sm:gap-5 items-stretch">
                 {filteredListings.map((item) => (
                   <div key={item.id} className="h-full flex flex-col">
                     <DirectoryBusinessCard item={item} />
@@ -435,7 +435,7 @@ function DirectoryBusinessCard({
           {/* Badge de Verificado no Topo Direito (Apenas se verificado) */}
           {item.is_verified && (
             <div className="absolute top-2.5 right-2.5">
-              <Badge className="bg-background/90 text-foreground backdrop-blur-md text-xs font-bold px-2 py-1 rounded-lg border border-border/40 flex items-center gap-1 shadow-2xs">
+              <Badge className="bg-card text-foreground text-xs font-bold px-2 py-1 rounded-lg border border-border flex items-center gap-1">
                 <ShieldCheck size={12} weight="bold" className="text-primary" />
                 <span>Verificado</span>
               </Badge>
@@ -567,11 +567,11 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
   const whatsappNumber = (item.contact_whatsapp || item.contact_phone || "").replace(/\D/g, "");
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-border/60 bg-card hover:border-foreground/30 transition-colors duration-200 min-h-36 pl-32 sm:pl-44 w-full">
+    <div className="group relative overflow-hidden rounded-lg border border-border bg-card hover:border-foreground transition-colors duration-200 min-h-36 pl-32 sm:pl-44 w-full">
       <Link
         to="/diretorio/$id"
         params={{ id: item.id }}
-        className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-lg bg-muted/40 block cursor-pointer"
+        className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-lg bg-muted block cursor-pointer"
       >
         {coverUrl ? (
           <img
@@ -581,13 +581,13 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted/50">
-            <Briefcase size={24} className="text-primary/30" />
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <Briefcase size={24} className="text-muted-foreground" />
           </div>
         )}
 
         <div className="absolute top-2.5 left-2.5">
-          <Badge className="bg-background/90 text-foreground backdrop-blur-md text-xs font-bold px-2 py-1 rounded-md border border-border/40">
+          <Badge className="bg-card text-foreground text-xs font-bold px-2 py-1 rounded-md border border-border">
             {categoryLabel}
           </Badge>
         </div>
@@ -596,7 +596,7 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
       <div className="p-4 sm:p-4 flex flex-col justify-between min-h-36 gap-2">
         <Link to="/diretorio/$id" params={{ id: item.id }} className="space-y-1 block min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-sm sm:text-base text-foreground truncate group-hover:text-primary transition-colors">
+            <h3 className="font-bold text-sm sm:text-base text-foreground line-clamp-2 text-anti-truncate group-hover:text-primary transition-colors">
               {item.business_name}
             </h3>
             {item.is_verified && (

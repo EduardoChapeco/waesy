@@ -157,7 +157,7 @@ export const consumeCivilTokens = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     if (!identity.id) {
       throw new Error(
-        "Autenticação necessária para consumir serviços com inteligência artificial.",
+        "Autenticação necessária para utilizar este recurso.",
       );
     }
 

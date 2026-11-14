@@ -303,15 +303,15 @@ function RecipeDetailPage() {
               <span className="text-xs font-mono">Gastronomia Autêntica Local</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+          <div className="absolute inset-0 bg-neutral-950/50 pointer-events-none" />
 
           {/* Badges Flutuantes sobre a Imagem */}
           <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-lg bg-background/90 backdrop-blur-none px-3 py-1 text-xs font-mono font-bold text-foreground">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-card border border-border px-3 py-1 text-xs font-mono font-bold text-foreground">
               {recipe.category || "Receita"}
             </span>
             {recipe.cuisine && (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-background/90 backdrop-blur-none px-3 py-1 text-xs font-mono text-muted-foreground">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-card border border-border px-3 py-1 text-xs font-mono text-muted-foreground">
                 {recipe.cuisine}
               </span>
             )}

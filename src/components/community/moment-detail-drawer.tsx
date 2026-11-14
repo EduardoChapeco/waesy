@@ -60,13 +60,13 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
  </div>
  )}
 
- <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+ <div className="absolute inset-0 bg-neutral-950/60 pointer-events-none" />
 
  {/* Botão Fechar no Topo */}
  <button
  type="button"
  onClick={onClose}
- className="absolute top-3 right-3 size-8 rounded-full bg-foreground/60 backdrop-blur-md text-foreground flex items-center justify-center hover:bg-foreground/80 transition-colors duration-200 cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="absolute top-3 right-3 size-8 rounded-full bg-neutral-900 text-neutral-50 border border-neutral-700 flex items-center justify-center hover:bg-neutral-800 transition-colors duration-200 cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
  aria-label="Fechar momento"
  >
  <X size={16} weight="bold" />
@@ -74,38 +74,38 @@ export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps)
 
  {/* Badges de Ao Vivo & Tempo */}
  <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
- <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-black uppercase tracking-wider bg-destructive/90 text-foreground backdrop-blur-md animate-pulse motion-reduce:animate-none">
- <span className="size-1.5 rounded-full bg-card animate-ping motion-reduce:animate-none" />
+ <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-2xs font-black uppercase tracking-wider bg-destructive text-destructive-foreground">
+ <span className="size-1.5 rounded-full bg-neutral-50 shrink-0" />
  Ao Vivo
  </span>
 
- <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-2xs font-mono font-bold bg-foreground/60 backdrop-blur-md text-foreground border border-white/20">
+ <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-2xs font-mono font-bold bg-neutral-900 text-neutral-50 border border-neutral-700">
  <Clock size={12} />
  <span>{formatRelativeTime(moment.created_at || new Date().toISOString())}</span>
  </span>
  </div>
 
  {/* Autor do Momento sobreposto na foto */}
- <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-foreground z-10">
+ <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-neutral-50 z-10">
  <div className="flex items-center gap-2 min-w-0">
  {moment.avatar_url ? (
  <img
  src={moment.avatar_url}
  alt={moment.author_name}
- className="size-9 rounded-full object-cover border-2 border-white/80 shrink-0"
+ className="size-9 rounded-full object-cover border-2 border-neutral-200 shrink-0"
  />
  ) : (
- <div className="size-9 rounded-full bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center border-2 border-white/80 shrink-0">
+ <div className="size-9 rounded-full bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center border-2 border-neutral-200 shrink-0">
  {(moment.author_name || "M")[0].toUpperCase()}
  </div>
  )}
 
  <div className="min-w-0">
- <span className="text-xs font-bold truncate block drop-">
+ <span className="text-xs font-bold truncate block">
  {moment.author_name || "Membro Comunitário"}
  </span>
- <span className="text-2xs text-foreground/80 flex items-center gap-1 truncate drop-">
- <MapPin size={10} weight="fill" className="text-primary" />
+ <span className="text-2xs text-neutral-200 flex items-center gap-1 truncate">
+ <MapPin size={10} weight="fill" className="text-neutral-50" />
  <span>{moment.title || "Chapecó"}</span>
  </span>
  </div>

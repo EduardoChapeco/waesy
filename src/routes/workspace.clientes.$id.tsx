@@ -1348,13 +1348,13 @@ function CustomerDetailPage() {
 
         {/* ── Aba 7: Prontuários Clínicos / Anamnese (Padrão Belasis 360°) ── */}
         <TabsContent value="clinical" className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg bg-card border border-border">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <HeartPulse className="size-4 text-primary" />
-                <h3 className="text-sm font-bold text-foreground">Dossiê Clínico & Anamnese</h3>
-                <Badge variant="outline" className="text-2xs font-bold bg-primary/10 text-primary border-none">
-                  Saúde & Estética
+                <HeartPulse className="size-4 text-foreground" />
+                <h3 className="text-sm font-bold text-foreground">Prontuário e Anamnese</h3>
+                <Badge variant="outline" className="text-2xs font-bold bg-muted text-foreground border-border">
+                  Saúde
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">

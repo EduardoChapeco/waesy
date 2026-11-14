@@ -259,10 +259,10 @@ export default function TourismIncidentsPage() {
               <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }}
                 key={incident.id}
                 onClick={() => setSelectedId(incident.id)}
-                className="flex items-center justify-between p-4 sm:p-4 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card hover:border-black/[0.12] dark:hover:border-white/[0.16] hover:bg-muted/20 cursor-pointer transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex items-center justify-between p-4 sm:p-4 rounded-2xl border border-border bg-card hover:border-foreground hover:bg-muted cursor-pointer transition-colors duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="size-9 rounded-lg bg-muted text-foreground border border-border flex items-center justify-center shrink-0">
                     <IncidentTypeIcon type={incident.incident_type} />
                   </div>
                   <div className="space-y-1 min-w-0 flex-1">

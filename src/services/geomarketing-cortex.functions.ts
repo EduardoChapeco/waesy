@@ -298,12 +298,12 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
     const [dirRes, storesRes] = await Promise.all([
       supabase
         .from("directory_listings")
-        .select("id, business_name, category, subcategory, city, address")
+        .select("id, business_name, category, metadata, city, address")
         .ilike("city", `%${city.trim()}%`)
         .limit(20),
       supabase
         .from("stores")
-        .select("id, name, category, city, address")
+        .select("id, name, settings, city, address")
         .ilike("city", `%${city.trim()}%`)
         .limit(15),
     ]);
@@ -315,7 +315,8 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
       const lon = centerLon + offset.dLon;
       const dist = calculateHaversineDistanceKm(centerLat, centerLon, lat, lon);
       if (dist <= radiusKm) {
-        const catLower = `${row.category || ""} ${row.subcategory || ""}`.toLowerCase();
+        const subcat = (row.metadata as any)?.subcategory || "";
+        const catLower = `${row.category || ""} ${subcat}`.toLowerCase();
         const isAnchor =
           catLower.includes("mercado") ||
           catLower.includes("banco") ||
@@ -328,7 +329,7 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
           id: `dir-${row.id}`,
           name: row.business_name || `Estabelecimento #${idx + 1}`,
           kind: isAnchor ? "anchor" : "competitor",
-          category: row.subcategory || row.category || nicheSlug,
+          category: subcat || row.category || nicheSlug,
           latitude: lat,
           longitude: lon,
           weight: isAnchor ? 1.4 : 1.0,
@@ -352,11 +353,12 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
       const lon = centerLon + offset.dLon;
       const dist = calculateHaversineDistanceKm(centerLat, centerLon, lat, lon);
       if (dist <= radiusKm) {
+        const stSettings = (st.settings as Record<string, any>) || {};
         competitors.push({
           id: `store-${st.id}`,
           name: st.name,
           kind: "competitor",
-          category: st.category || nicheSlug,
+          category: stSettings.category || stSettings.segment || nicheSlug,
           latitude: lat,
           longitude: lon,
           weight: 1.15,

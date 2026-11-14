@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MediaGalleryBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import { Image as ImageIcon, X, ZoomIn } from "lucide-react";
 
 export interface MediaGalleryMosaicProps {
@@ -15,7 +17,17 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
   styling,
   className = "",
 }) => {
+  const { isMobile } = useEffectiveViewport();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedImage) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedImage(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedImage]);
 
   const paddingYClasses = {
     none: "py-0",
@@ -35,10 +47,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
     full: "rounded-lg",
   }[styling?.borderRadius || "xl"];
 
-  const customStyle: React.CSSProperties = {
-    backgroundColor: styling?.backgroundColor || undefined,
-    color: styling?.textColor || undefined,
-  };
+  const customStyle = getSectionStyle(styling).style;
 
   const items = (data.items || []).filter((item) => !!item.imageUrl);
 
@@ -77,7 +86,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className={isMobile ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"}>
           {items.map((item, index) => {
             const isFeatured = index === 0;
             return (
@@ -87,7 +96,7 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
                 onClick={() => setSelectedImage(item.imageUrl)}
                 aria-label={item.title || "Ampliar imagem da galeria"}
                 className={`group relative overflow-hidden ${radiusClass} border border-border/60 bg-muted/20 cursor-pointer transition-colors duration-300 hover:border-foreground/20 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none ${
-                  isFeatured ? "sm:col-span-2 lg:col-span-2 aspect-16/10" : "aspect-square"
+                  isFeatured && !isMobile ? "sm:col-span-2 lg:col-span-2 aspect-16/10" : "aspect-square"
                 }`}
               >
                 <img
@@ -96,14 +105,14 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none"
                   loading="lazy"
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-background/90 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none flex flex-col justify-end p-4 border-t border-border/40 text-foreground">
+                <div className="absolute inset-x-0 bottom-0 bg-card opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:transition-none flex flex-col justify-end p-4 border-t border-border text-foreground">
                   {item.title && (
                     <span className="text-sm sm:text-base font-bold tracking-tight text-foreground">{item.title}</span>
                   )}
                   {item.caption && (
                     <span className="text-xs text-muted-foreground mt-1">{item.caption}</span>
                   )}
-                  <div className="absolute top-4 right-4 size-8 rounded-full bg-muted/80 backdrop-blur-md flex items-center justify-center text-foreground">
+                  <div className="absolute top-4 right-4 size-8 rounded-full bg-muted border border-border flex items-center justify-center text-foreground">
                     <ZoomIn className="size-4" />
                   </div>
                 </div>
@@ -127,14 +136,14 @@ export const MediaGalleryMosaic: React.FC<MediaGalleryMosaicProps> = ({
             type="button"
             onClick={() => setSelectedImage(null)}
             aria-label="Fechar visualização ampliada"
-            className="fixed inset-0 bg-background/90 backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="fixed inset-0 bg-overlay cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
 
           <button
             type="button"
             onClick={() => setSelectedImage(null)}
             aria-label="Fechar visualização ampliada"
-            className="absolute top-6 right-6 z-10 size-11 min-h-11 rounded-full bg-muted/80 hover:bg-muted text-foreground flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="absolute top-6 right-6 z-10 size-11 min-h-11 rounded-full bg-card border border-border hover:bg-muted text-foreground flex items-center justify-center transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <X className="size-5" />
           </button>

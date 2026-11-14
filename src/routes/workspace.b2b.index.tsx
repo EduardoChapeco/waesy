@@ -14,7 +14,6 @@ import {
   BadgePercent,
   Store,
   Layers,
-  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";

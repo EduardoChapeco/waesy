@@ -317,14 +317,14 @@ function AfiliadosPage() {
       />
 
       {/* ─── Top Bar Desktop Apple HIG (Direta, Comercial e Sem Viés de Perfil) ─── */}
-      <div className="hidden md:block border-b border-border/40 bg-card/70 backdrop-blur-md px-6 py-4 sticky top-0 z-20">
+      <div className="hidden md:block border-b border-border bg-card px-6 py-4 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-base font-bold tracking-tight text-foreground">
               Central de Afiliados
             </h1>
             {partner && (
-              <Badge variant="outline" className="text-xs font-mono bg-primary/5 text-primary border-primary/20 shrink-0">
+              <Badge variant="outline" className="text-xs font-mono bg-muted text-primary border-border shrink-0">
                 @{referralHandle}
               </Badge>
             )}
@@ -351,10 +351,10 @@ function AfiliadosPage() {
       </div>
 
       {/* Container Principal com Respiro Anti-Claustrofobia */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <div className="max-w-5xl mx-auto px-0 sm:px-6 py-4 sm:py-6">
         {isLoading && !partner ? (
           <div className="max-w-md mx-auto py-20 text-center space-y-4">
-            <div className="size-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse motion-reduce:animate-none">
+            <div className="size-12 rounded-lg bg-muted border border-border text-primary flex items-center justify-center mx-auto animate-pulse motion-reduce:animate-none">
               <Star className="size-6" />
             </div>
             <p className="text-sm font-semibold text-foreground">Carregando central de afiliados...</p>
@@ -365,7 +365,7 @@ function AfiliadosPage() {
             {/* Navegação Horizontal Contínua em Linha Única (B.39) */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
               <TabsList
-                className="h-11 p-1 bg-muted/40 rounded-lg border border-border/40 flex flex-nowrap items-center gap-1 overflow-x-auto no-scrollbar tab-list w-full"
+                className="h-11 p-1 bg-muted rounded-lg border border-border flex flex-nowrap items-center gap-1 overflow-x-auto no-scrollbar tab-list w-full"
               >
                 <TabsTrigger value="dashboard" className="h-11 min-h-11 px-3 text-xs rounded-lg gap-2 font-medium shrink-0">
                   <TrendingUp className="size-4" />
@@ -1127,7 +1127,7 @@ function AfiliadosPage() {
                                     Sem imagem
                                   </div>
                                 )}
-                                <Badge className="absolute top-2 right-2 text-xs bg-background/90 text-foreground backdrop-blur-md">
+                                <Badge className="absolute top-2 right-2 text-xs bg-card text-foreground border border-border">
                                   ~{formatMoney(p.estimatedCommissionCents)} comissão
                                 </Badge>
                               </div>

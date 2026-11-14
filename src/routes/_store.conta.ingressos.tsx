@@ -12,7 +12,6 @@ import {
   Share2,
   Search,
   ArrowRight,
-  Sparkles,
   Info,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -373,8 +372,8 @@ function CustomerTicketsPage() {
             <div className="flex flex-col sm:flex-row items-center gap-2 mt-3">
               <Button asChild size="default" className="rounded-lg h-11 min-h-11 px-6 text-xs font-bold gap-2 focus-visible:ring-2 focus-visible:ring-primary shadow-xs">
                 <Link to="/eventos">
-                  <Sparkles className="size-4" />
-                  <span>Explorar Eventos & Shows</span>
+                  <Ticket className="size-4" />
+                  <span>Explorar Eventos</span>
                 </Link>
               </Button>
               <Button asChild variant="outline" size="default" className="rounded-lg h-11 min-h-11 px-5 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-primary">

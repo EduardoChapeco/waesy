@@ -175,13 +175,13 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
  <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-auto">
  {/* ── Card Minimalista Expansível (Card Flutuante Expansível) ── */}
  {isExpanded && (
- <div className="w-[90vw] sm:w-105 bg-background/95 backdrop-blur-xl border border-border/80 rounded-lg p-4  space-y-4 animate-in fade-in zoom-in-95 duration-200">
+ <div className="w-full max-w-sm sm:w-105 bg-card border border-border rounded-lg p-4 shadow-overlay space-y-4 animate-in fade-in zoom-in-95 duration-200">
  {/* Header do Floating Composer */}
- <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center justify-between pb-2 border-b border-border">
  <div className="flex items-center gap-3">
- <Avatar className="size-8 rounded-full border border-border/60">
+ <Avatar className="size-8 rounded-full border border-border">
  <AvatarImage src={userAvatar} alt={userName} />
- <AvatarFallback className="text-2xs font-bold bg-primary/10 text-primary">
+ <AvatarFallback className="text-2xs font-bold bg-muted text-primary">
  {userInitial}
  </AvatarFallback>
  </Avatar>
@@ -193,7 +193,7 @@ export function FloatingCommunityDock({ session }: FloatingCommunityDockProps) {
 
  <button
  onClick={() => setIsExpanded(false)}
- className="size-7 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+ className="size-11 sm:size-8 min-h-11 sm:min-h-8 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
  aria-label="Fechar compositor"
  >
  <X size={15} weight="bold" />

@@ -10,6 +10,11 @@ import { cn } from "@/lib/utils";
 import type { TaskPriority, TaskContextType } from "./task-types";
 import { CONTEXT_TYPE_LABELS, PRIORITY_LABELS } from "./task-types";
 import { createWorkspaceTask } from "@/services/tasks.functions";
+import {
+  SAC_FUNCTION_ROLES,
+  buildCompositeTraceHash,
+  type SacFunctionRoleKey,
+} from "@/lib/entity-trace-hash";
 
 interface NewTaskModalProps {
   open: boolean;
@@ -17,6 +22,11 @@ interface NewTaskModalProps {
   storeId: string;
   onTaskCreated: () => void;
   defaultMyDay?: boolean;
+  initialCustomerName?: string;
+  initialCustomerAvatarUrl?: string | null;
+  initialCustomerId?: string | null;
+  initialEntityCode?: string;
+  initialContextType?: TaskContextType;
 }
 
 const COMMON_TAGS = [
@@ -37,13 +47,20 @@ export function NewTaskModal({
   storeId,
   onTaskCreated,
   defaultMyDay = false,
+  initialCustomerName = "",
+  initialCustomerAvatarUrl = null,
+  initialCustomerId = null,
+  initialEntityCode = "",
+  initialContextType = "general",
 }: NewTaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [dueDate, setDueDate] = useState("");
-  const [contextType, setContextType] = useState<TaskContextType>("general");
-  const [contextLabel, setContextLabel] = useState("");
+  const [contextType, setContextType] = useState<TaskContextType>(initialContextType);
+  const [contextLabel, setContextLabel] = useState(initialEntityCode);
+  const [customerName, setCustomerName] = useState(initialCustomerName);
+  const [assignedSector, setAssignedSector] = useState<SacFunctionRoleKey>("customer_success");
   const [recurrence, setRecurrence] = useState<"none" | "daily" | "weekly" | "monthly" | "weekdays">("none");
   const [estimatedMinutes, setEstimatedMinutes] = useState<number>(0);
   const [tags, setTags] = useState<string[]>([]);
@@ -58,8 +75,10 @@ export function NewTaskModal({
     setDescription("");
     setPriority("medium");
     setDueDate("");
-    setContextType("general");
-    setContextLabel("");
+    setContextType(initialContextType);
+    setContextLabel(initialEntityCode);
+    setCustomerName(initialCustomerName);
+    setAssignedSector("customer_success");
     setRecurrence("none");
     setEstimatedMinutes(0);
     setTags([]);
@@ -100,6 +119,20 @@ export function NewTaskModal({
 
     try {
       setSubmitting(true);
+      const traceHash =
+        customerName.trim() || contextLabel.trim()
+          ? buildCompositeTraceHash({
+              customerId: initialCustomerId || customerName.trim(),
+              entityType: contextType === "group_tour" ? "trip" : (contextType as any),
+              entityIdOrCode: contextLabel.trim() || null,
+            })
+          : null;
+      const autoTags = Array.from(
+        new Set([
+          ...tags,
+          ...(traceHash ? [traceHash.split(" · ")[0]] : []),
+        ])
+      );
       await createWorkspaceTask({
         data: {
           store_id: storeId,
@@ -109,12 +142,22 @@ export function NewTaskModal({
           status: "todo",
           due_date: dueDate ? new Date(dueDate).toISOString() : null,
           context_type: contextType,
-          context_label: contextLabel.trim() || undefined,
-          tags,
+          context_id: initialCustomerId || undefined,
+          context_label:
+            [customerName.trim(), contextLabel.trim(), traceHash].filter(Boolean).join(" · ") || undefined,
+          tags: autoTags,
           is_my_day: isMyDay,
           recurrence,
           estimated_minutes: estimatedMinutes,
           checklists: checklists.length > 0 ? checklists : undefined,
+          custom_fields: {
+            customer_id: initialCustomerId || null,
+            customer_name: customerName.trim() || null,
+            customer_avatar_url: initialCustomerAvatarUrl || null,
+            entity_code: contextLabel.trim() || null,
+            trace_hash: traceHash,
+            assigned_sector: assignedSector,
+          },
         },
       });
 
@@ -254,16 +297,47 @@ export function NewTaskModal({
             </select>
           </div>
 
-          {/* Vínculo de Negócio */}
+          {/* Vínculo de Negócio & Hash Rastreável Multi-Nicho */}
           <div className="p-4 rounded-lg border border-border/60 bg-muted/20 space-y-3">
             <div className="flex items-center gap-2">
               <Briefcase className="size-4 text-primary" />
-              <span className="text-xs font-bold text-foreground">Vínculo Comercial</span>
-              <span className="text-2xs text-muted-foreground ml-auto">Opcional</span>
+              <span className="text-xs font-bold text-foreground">Vínculo de Cliente, Operação & Setor</span>
+              <span className="text-2xs text-muted-foreground font-mono ml-auto">
+                {customerName.trim() || contextLabel.trim()
+                  ? buildCompositeTraceHash({
+                      customerId: initialCustomerId || customerName.trim(),
+                      entityType: contextType === "group_tour" ? "trip" : (contextType as any),
+                      entityIdOrCode: contextLabel.trim() || null,
+                    })
+                  : "#WZY-SYNC"}
+              </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-2xs font-semibold text-muted-foreground">Tipo</label>
+                <label className="text-2xs font-semibold text-muted-foreground">Cliente / Passageiro</label>
+                <Input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Ex: Evellyn Grossi"
+                  className="h-9 rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-2xs font-semibold text-muted-foreground">Setor / Função Responsável</label>
+                <select
+                  value={assignedSector}
+                  onChange={(e) => setAssignedSector(e.target.value as SacFunctionRoleKey)}
+                  className="w-full h-9 px-3 rounded-lg border border-input bg-background text-xs font-medium text-foreground focus:outline-none"
+                >
+                  {SAC_FUNCTION_ROLES.map((r) => (
+                    <option key={r.key} value={r.key}>{r.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-2xs font-semibold text-muted-foreground">Tipo de Operação (Multi-Nicho)</label>
                 <select
                   value={contextType}
                   onChange={(e) => setContextType(e.target.value as TaskContextType)}
@@ -276,17 +350,17 @@ export function NewTaskModal({
               </div>
 
               <div className="space-y-1">
-                <label className="text-2xs font-semibold text-muted-foreground">Referência</label>
+                <label className="text-2xs font-semibold text-muted-foreground">Código Viagem / PNR / Pedido</label>
                 <Input
                   value={contextLabel}
                   onChange={(e) => setContextLabel(e.target.value)}
                   placeholder={
-                    contextType === "group_tour" ? "Ex: Gramado Outubro" :
-                    contextType === "order" ? "Ex: Pedido #1234" :
-                    contextType === "lead" ? "Ex: João Silva" :
-                    "Identificador opcional..."
+                    contextType === "group_tour" ? "Ex: TRP-2026 / PNR ABC123" :
+                    contextType === "order" ? "Ex: PED-1234" :
+                    contextType === "lead" ? "Ex: OPR-8821" :
+                    "Código ou PNR..."
                   }
-                  className="h-9 rounded-lg text-xs"
+                  className="h-9 rounded-lg text-xs font-mono"
                 />
               </div>
             </div>

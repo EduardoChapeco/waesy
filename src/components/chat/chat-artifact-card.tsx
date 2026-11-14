@@ -325,7 +325,7 @@ export function ChatArtifactCard({
               )}
             </div>
 
-            <h3 className="text-sm font-semibold text-foreground truncate mt-1">
+            <h3 className="text-sm font-semibold text-foreground line-clamp-2 text-anti-truncate mt-1">
               {artifact.title}
             </h3>
           </div>
@@ -333,11 +333,11 @@ export function ChatArtifactCard({
 
         {artifact.authorName && (
           <div className="text-right shrink-0">
-            <span className="text-2xs text-muted-foreground block truncate">
+            <span className="text-2xs text-muted-foreground block line-clamp-1">
               {artifact.authorName}
             </span>
             {artifact.authorRole && (
-              <span className="text-2xs text-primary font-medium block truncate">
+              <span className="text-2xs text-primary font-medium block line-clamp-1">
                 {artifact.authorRole}
               </span>
             )}

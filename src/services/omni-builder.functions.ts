@@ -638,7 +638,7 @@ async function syncOmniDocumentToPlatformCms(
           title: t.title || "Bloco",
           subtitle: t.subtitle || null,
           badge_text: t.tag || null,
-          icon_name: t.iconName || "Sparkles",
+          icon_name: t.iconName || "Star",
           image_url: t.imageUrl || t.imageDesktopUrl || t.imageMobileUrl || "",
           image_desktop_url: t.imageDesktopUrl || t.imageUrl || null,
           image_mobile_url: t.imageMobileUrl || t.imageUrl || null,

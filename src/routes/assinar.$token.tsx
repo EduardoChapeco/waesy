@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { FileSignature, ShieldCheck, CheckCircle2, Lock, Hash, AlertCircle, Loader2, ArrowRight, FileText, Calendar, Camera, RefreshCcw, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
+import { ContractMarkdownRenderer } from "@/components/contracts/contract-markdown-renderer";
 
 import { getEnvelopeByToken, signContractEnvelope, getPublicGovBrSigningConfig, getUserSavedSignature, saveUserSignature } from "@/services/contracts.functions";
 import { Button } from "@/components/ui/button";
@@ -256,9 +256,10 @@ function SignContractPage() {
             Termos e Cláusulas Contratuais
           </h2>
 
-          <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-138 overflow-y-auto rounded-lg p-4 sm:p-6 bg-muted/10 font-serif prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown>{version?.content_markdown || ""}</ReactMarkdown>
-          </div>
+          <ContractMarkdownRenderer
+            content={version?.content_markdown || ""}
+            className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-138 overflow-y-auto rounded-lg p-4 sm:p-6 bg-muted/10 font-serif"
+          />
         </div>
 
         {/* SE JÁ FOI ASSINADO: EXIBE PROTOCOLO COMPLETO E LINK DE VERIFICAÇÃO */}

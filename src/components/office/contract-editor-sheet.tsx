@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ContractClauseLibrary, OfficeContractClause, replaceContractVariables, DEFAULT_CLAUSES } from './contract-clause-library';
 import { ContractSignPad, SignatureData } from './contract-sign-pad';
+import { ContractMarkdownRenderer } from '@/components/contracts/contract-markdown-renderer';
 
 interface ContractEditorSheetProps {
  initialTitle?: string;
@@ -63,12 +64,12 @@ export function ContractEditorSheet({
  };
 
  return (
- <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
- <div className="w-full max-w-5xl h-vh-90 bg-card border border-border rounded-lg shadow-overlay flex flex-col overflow-hidden">
+ <div className="fixed inset-0 z-50 bg-overlay flex items-center justify-center p-4">
+ <div className="w-full max-w-5xl h-vh-90 bg-card border border-border rounded-lg flex flex-col overflow-hidden">
  {/* Header */}
- <div className="p-4 border-b border-border flex items-center justify-between bg-muted/20">
+ <div className="p-4 border-b border-border flex items-center justify-between bg-muted">
  <div className="flex items-center gap-3">
- <div className="p-2 rounded-lg bg-primary/10 text-primary">
+ <div className="p-2 rounded-lg bg-card border border-border text-foreground">
  <FileText className="w-5 h-5" />
  </div>
  <div>
@@ -210,8 +211,8 @@ export function ContractEditorSheet({
  <p className="text-xs text-muted-foreground mt-1">{storeName}</p>
  </div>
 
- <div className="text-xs leading-relaxed whitespace-pre-wrap font-serif space-y-4">
- {previewContent}
+ <div className="text-xs leading-relaxed font-serif space-y-4">
+   <ContractMarkdownRenderer content={previewContent} />
  </div>
 
  {signatures.length > 0 && (

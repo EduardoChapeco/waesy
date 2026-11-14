@@ -33,14 +33,14 @@ export const Route = createFileRoute("/workspace/financeiro/contas-pagar")({
 });
 
 const CATEGORY_LABELS: Record<ObligationCategory, { label: string; icon: any; color: string }> = {
-  supplier: { label: "Fornecedor", icon: Briefcase, color: "text-blue-600 bg-blue-500/10 border-blue-500/20" },
-  rent: { label: "Aluguel e Imóvel", icon: Building2, color: "text-purple-600 bg-purple-500/10 border-purple-500/20" },
-  utilities: { label: "Água / Luz / Net", icon: Zap, color: "text-warning-strong bg-warning/10 border-warning/20" },
-  payroll: { label: "Folha / Equipe", icon: Layers, color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" },
-  tax: { label: "Tributos e DAS", icon: Landmark, color: "text-rose-600 bg-rose-500/10 border-rose-500/20" },
-  marketing: { label: "Marketing / Ads", icon: Tag, color: "text-pink-600 bg-pink-500/10 border-pink-500/20" },
-  software: { label: "Software / SaaS", icon: Receipt, color: "text-cyan-600 bg-cyan-500/10 border-cyan-500/20" },
-  other: { label: "Outras Despesas", icon: DollarSign, color: "text-zinc-600 bg-zinc-500/10 border-zinc-500/20" },
+  supplier: { label: "Fornecedor", icon: Briefcase, color: "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800" },
+  rent: { label: "Aluguel e Imóvel", icon: Building2, color: "text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800" },
+  utilities: { label: "Água / Luz / Net", icon: Zap, color: "text-warning-strong bg-muted border-border" },
+  payroll: { label: "Folha / Equipe", icon: Layers, color: "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800" },
+  tax: { label: "Tributos e DAS", icon: Landmark, color: "text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950 border-rose-200 dark:border-rose-800" },
+  marketing: { label: "Marketing / Ads", icon: Tag, color: "text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-950 border-pink-200 dark:border-pink-800" },
+  software: { label: "Software / SaaS", icon: Receipt, color: "text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800" },
+  other: { label: "Outras Despesas", icon: DollarSign, color: "text-muted-foreground bg-muted border-border" },
 };
 
 function ContasPagarPage() {

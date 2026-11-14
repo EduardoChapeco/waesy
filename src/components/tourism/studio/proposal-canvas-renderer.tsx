@@ -2,6 +2,25 @@ import React from "react";
 import type { TravelProposalDTO } from "@/services/travel-proposal.functions";
 import { getProposalTemplate } from "@/components/tourism/proposals/templates";
 import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
+import {
+  formatDynamicFieldLabel,
+  formatFieldPrimitiveValue,
+  normalizeCustomFieldMap,
+} from "@/lib/niches/unified-field-bridge";
+import { resolveProposalCanvasTheme } from "@/lib/tourism/proposal-theme-palettes";
+
+const INTERNAL_STUDIO_CUSTOM_KEYS = new Set([
+  "canvas_bg_color",
+  "canvas_brand_color",
+  "canvas_font_preset",
+  "hidden_sections",
+  "boarding_requirements",
+  "cancellation_policy",
+  "agent_name",
+  "agent_whatsapp",
+  "agency_name",
+  "agency_logo_url",
+]);
 
 interface ProposalCanvasRendererProps {
   proposal: TravelProposalDTO;
@@ -220,8 +239,42 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
           ]
         : [];
 
+  const rawCustomFields = {
+    ...(pricing.custom_fields && typeof pricing.custom_fields === "object" ? pricing.custom_fields : {}),
+    ...(raw.custom_fields && typeof raw.custom_fields === "object" ? raw.custom_fields : {}),
+  } as Record<string, unknown>;
+
+  const normalizedCustomFields = normalizeCustomFieldMap(rawCustomFields);
+  const customFieldEntries = Object.entries(normalizedCustomFields)
+    .filter(([key]) => !INTERNAL_STUDIO_CUSTOM_KEYS.has(key))
+    .map(([key, value]) => ({
+      key,
+      label: formatDynamicFieldLabel(key),
+      value: formatFieldPrimitiveValue(value),
+    }))
+    .filter((entry) => Boolean(entry.value));
+
+  const customAgentName =
+    typeof rawCustomFields.agent_name === "string" && rawCustomFields.agent_name.trim()
+      ? rawCustomFields.agent_name.trim()
+      : proposal.agent_name;
+  const customAgentWhatsapp =
+    typeof rawCustomFields.agent_whatsapp === "string" && rawCustomFields.agent_whatsapp.trim()
+      ? rawCustomFields.agent_whatsapp.trim()
+      : proposal.agent_whatsapp || proposal.agency_whatsapp;
+  const customAgencyName =
+    typeof rawCustomFields.agency_name === "string" && rawCustomFields.agency_name.trim()
+      ? rawCustomFields.agency_name.trim()
+      : proposal.agency_name;
+
   return {
     ...proposal,
+    template: normalizeTemplateId(
+      (proposal as any)?.template || proposal.template_theme || "editorial-flat",
+    ),
+    agent_name: customAgentName,
+    agent_whatsapp: customAgentWhatsapp,
+    agency_name: customAgencyName,
     number:
       raw.number ||
       proposal.quote_id?.slice(0, 8).toUpperCase() ||
@@ -249,6 +302,23 @@ function normalizeProposalForCanvas(proposal: TravelProposalDTO): Record<string,
     transfers: normalizedTransfers,
     tours: normalizedTours,
     custom_payments: customPayments,
+    custom_fields: {
+      ...normalizedCustomFields,
+      ...rawCustomFields,
+    },
+    custom_field_entries: customFieldEntries,
+    boarding_requirements:
+      typeof rawCustomFields.boarding_requirements === "string"
+        ? rawCustomFields.boarding_requirements
+        : typeof normalizedCustomFields.boarding_requirements === "string"
+          ? normalizedCustomFields.boarding_requirements
+          : undefined,
+    cancellation_policy:
+      typeof rawCustomFields.cancellation_policy === "string"
+        ? rawCustomFields.cancellation_policy
+        : typeof normalizedCustomFields.cancellation_policy === "string"
+          ? normalizedCustomFields.cancellation_policy
+          : undefined,
   };
 }
 
@@ -258,24 +328,41 @@ export function ProposalCanvasRenderer({ proposal }: ProposalCanvasRendererProps
   const templateId = normalizeTemplateId(rawTemplate);
   const normalizedProposal = normalizeProposalForCanvas(proposal);
 
-  const agency = {
-    name: proposal.agency_name || "Agência",
+  const baseAgency = {
+    name: normalizedProposal.agency_name || proposal.agency_name || "Agência",
     logo_url: proposal.agency_logo_url,
-    brand_color: (proposal as any)?.agency_brand_color || "#0A2540",
-    brand_color_fg: "#ffffff",
-    brand_color_light: "#eff6ff",
+    brand_color: (proposal as any)?.agency_brand_color,
     phone: proposal.agency_phone,
     email: proposal.agency_email,
-    whatsapp: proposal.agency_whatsapp,
+    whatsapp: normalizedProposal.agent_whatsapp || proposal.agency_whatsapp,
+  };
+
+  const theme = resolveProposalCanvasTheme(normalizedProposal, baseAgency);
+
+  const agency = {
+    ...baseAgency,
+    brand_color: theme.brandColor,
+    brand_color_fg: theme.brandFg,
+    brand_color_light: theme.brandSoft,
   };
 
   const TemplateComponent = getProposalTemplate(templateId);
   return (
-    <div className="w-full space-y-4">
-      <TemplateComponent proposal={normalizedProposal as any} agency={agency} />
-      <div className="pt-2 pb-6 flex justify-center">
-        <PoweredByWaesyBadge variant="minimal" shortUrl="waesy.me/propostas" />
+    <div
+      data-proposal-canvas="true"
+      data-canvas-tone={theme.tone}
+      data-canvas-bg={theme.canvasBg}
+      style={theme.cssVars as React.CSSProperties}
+      className="p-canvas-root w-full min-h-full flex flex-col justify-between"
+    >
+      <div className="w-full flex-1">
+        <TemplateComponent proposal={normalizedProposal as any} agency={agency} />
       </div>
+      {theme.isSectionVisible("footer") && (
+        <div className="pt-3 pb-6 flex justify-center p-surface-subtle border-t p-border-subtle">
+          <PoweredByWaesyBadge variant="minimal" shortUrl="waesy.me/propostas" />
+        </div>
+      )}
     </div>
   );
 }

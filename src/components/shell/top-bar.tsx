@@ -37,7 +37,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
       : DEFAULT_BRAND_NAME;
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/40 pt-safe">
+    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border pt-safe">
       <div className="px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 h-14 sm:h-16 w-full">
         {/* Lado Esquerdo: Logo + Selo Beta Silencioso + Localização */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
@@ -47,7 +47,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             onClick={() => drawerStore.openSuperApp()}
             aria-label="Abrir catálogo do SuperApp"
             title="Catálogo Waesy"
-            className="md:hidden size-11 min-h-11 min-w-11 -ml-1 rounded-lg flex items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="waesy-compact-only size-11 min-h-11 min-w-11 -ml-1 rounded-lg items-center justify-center text-foreground hover:bg-muted active:bg-accent active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <List className="size-6" weight="bold" />
           </button>
@@ -58,7 +58,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             onClick={() => openQuickCreateModal(location.pathname)}
             aria-label="Criar"
             title="Criar"
-            className="hidden sm:flex size-11 min-h-11 min-w-11 rounded-lg items-center justify-center text-foreground hover:bg-muted/50 active:bg-muted/80 active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="waesy-rail-flex size-11 min-h-11 min-w-11 rounded-lg items-center justify-center text-foreground hover:bg-muted active:bg-accent active:scale-95 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Plus className="size-5" weight="bold" />
           </button>
@@ -86,7 +86,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
             type="button"
             onClick={() => setBetaModalOpen(true)}
             title="Versão Beta"
-            className="hidden sm:inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="hidden sm:inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border bg-muted hover:bg-accent transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             BETA
           </button>
@@ -95,21 +95,21 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           <LocationMasterPill className="hidden sm:flex max-w-36 sm:max-w-52" />
         </div>
 
-        {/* Centro (Desktop >= 768px): Busca Global Inteligente Silenciosa */}
-        <div className="hidden md:flex flex-1 max-w-xl mx-4">
+        {/* Centro (Medium/Expanded >= 600px): Busca Global Inteligente Silenciosa */}
+        <div className="waesy-rail-flex flex-1 max-w-xl mx-4">
           <Link
             to="/buscar"
-            className="w-full flex items-center justify-between px-4 h-11 min-h-11 rounded-lg bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-colors group border border-border/40 hover:border-border/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full flex items-center justify-between px-4 h-11 min-h-11 rounded-lg bg-muted hover:bg-accent text-muted-foreground hover:text-foreground text-xs font-normal transition-colors group border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="flex items-center gap-3 min-w-0">
               <MagnifyingGlass
                 size={15}
                 weight="bold"
-                className="text-muted-foreground/70 group-hover:text-foreground transition-colors shrink-0"
+                className="text-muted-foreground group-hover:text-foreground transition-colors shrink-0"
               />
               <span className="truncate">Buscar lugares, classificados, vagas ou serviços...</span>
             </div>
-            <kbd className="hidden xl:inline-flex items-center gap-1 px-2 py-1 text-2xs font-mono font-medium text-muted-foreground/80 bg-background rounded-md border border-border/40 shrink-0">
+            <kbd className="hidden xl:inline-flex items-center gap-1 px-2 py-1 text-2xs font-mono font-medium text-muted-foreground bg-background rounded-md border border-border shrink-0">
               ⌘K
             </kbd>
           </Link>
@@ -121,7 +121,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           <button
             type="button"
             onClick={() => openWhatsAppUnifiedSearch()}
-            className="md:hidden flex items-center justify-center size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="waesy-compact-only items-center justify-center size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Buscar"
             title="Buscar"
           >

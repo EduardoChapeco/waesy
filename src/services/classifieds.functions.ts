@@ -1331,11 +1331,11 @@ export const upsertClassified = createServerFn({ method: "POST" })
       if (!hasDirectMembership) {
         const { data: storeOwnerOrMember } = await supabase
           .from("stores")
-          .select("id, owner_id")
+          .select("id, organization_id")
           .eq("id", rest.store_id)
           .maybeSingle();
 
-        let authorizedStore = storeOwnerOrMember?.owner_id === identity.id;
+        let authorizedStore = storeOwnerOrMember?.organization_id === identity.id;
         if (!authorizedStore) {
           const { data: memberRow } = await supabase
             .from("workspace_members")
@@ -1892,7 +1892,7 @@ export const listClassifiedJobApplications = createServerFn({ method: "GET" })
       .from("classified_applications")
       .select("*")
       .eq("classified_id", classified_id)
-      .order("created_at", { ascending: false });
+      .order("applied_at", { ascending: false });
 
     if (error) {
       console.error("[classifieds] Erro ao listar candidaturas:", error);
@@ -2435,16 +2435,16 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
         ? "https://sandbox.asaas.com/api/v3"
         : "https://api.asaas.com/api/v3";
 
-      // Busca email e nome do usuário no banco (identity não tem esses campos)
+      // Busca nome do usuário no banco (e email da identidade autenticada)
       const { data: userProfile } = await supabase
         .from("profiles")
-        .select("name, username, email")
+        .select("full_name, username")
         .eq("id", identity.id!)
         .maybeSingle();
 
-      const userEmail = (userProfile as any)?.email || "";
+      const userEmail = identity.email || "";
       const userName =
-        (userProfile as any)?.name || (userProfile as any)?.username || "Usuário Waesy";
+        (userProfile as any)?.full_name || (userProfile as any)?.username || "Usuário Waesy";
 
       // Primeiro: verifica/cria customer no Asaas
       let asaasCustomerId: string | null = null;
@@ -3402,22 +3402,22 @@ export const refineClassifiedWithAI = createServerFn({ method: "POST" })
         if (entityId) {
           const { data: existingAd } = await supabase
             .from("classifieds")
-            .select("id, user_id, store_id")
+            .select("id, author_profile_id, store_id")
             .eq("id", entityId)
             .maybeSingle();
 
-          if (existingAd && existingAd.user_id !== identity.id) {
+          if (existingAd && existingAd.author_profile_id !== identity.id) {
             throw new Error("Acesso negado: você não possui permissão para refinar este anúncio.");
           }
         }
         if (storeId) {
           const { data: existingStore } = await supabase
             .from("stores")
-            .select("id, owner_id")
+            .select("id, organization_id")
             .eq("id", storeId)
             .maybeSingle();
 
-          if (existingStore && existingStore.owner_id !== identity.id) {
+          if (existingStore && existingStore.organization_id !== identity.id) {
             throw new Error("Acesso negado: você não possui permissão para operar nesta loja.");
           }
         }
@@ -3473,7 +3473,7 @@ export const signClassifiedNda = createServerFn({ method: "POST" })
     // 1. Validar que o anúncio existe e exige NDA
     const { data: classified, error: classifiedErr } = await supabase
       .from("classified_ads")
-      .select("id, owner_id, title, attributes")
+      .select("id, author_profile_id, title, attributes")
       .eq("id", data.classifiedId)
       .maybeSingle();
 
@@ -3482,7 +3482,7 @@ export const signClassifiedNda = createServerFn({ method: "POST" })
     }
 
     // Se o usuário é o próprio anunciante, não precisa assinar
-    if (classified.owner_id === identity.id) {
+    if (classified.author_profile_id === identity.id) {
       return {
         success: true,
         alreadyOwner: true,
@@ -3557,11 +3557,11 @@ export const checkClassifiedNdaStatus = createServerFn({ method: "GET" })
     // 1. Verificar se é o proprietário
     const { data: classified } = await supabase
       .from("classified_ads")
-      .select("owner_id")
+      .select("author_profile_id")
       .eq("id", data.classifiedId)
       .maybeSingle();
 
-    if (classified?.owner_id === identity.id) {
+    if (classified?.author_profile_id === identity.id) {
       return { isSigned: true, isOwner: true };
     }
 
@@ -3599,13 +3599,13 @@ export const listClassifiedNdaSignatures = createServerFn({ method: "GET" })
     // Validar autoridade do proprietário ou admin
     const { data: classified } = await supabase
       .from("classified_ads")
-      .select("id, owner_id, title")
+      .select("id, author_profile_id, title")
       .eq("id", data.classifiedId)
       .single();
 
     if (!classified) throw new Error("Anúncio não encontrado");
 
-    if (classified.owner_id !== identity.id && identity.role !== "admin") {
+    if (classified.author_profile_id !== identity.id && identity.role !== "admin") {
       throw new Error("Apenas o anunciante pode auditar os termos de sigilo deste anúncio.");
     }
 

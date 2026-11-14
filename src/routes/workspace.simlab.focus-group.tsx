@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useRef, useEffect } from 'react';
-import { Users, Send, Layers, Brain, ShieldCheck, CheckCircle2, Activity, TrendingUp, DollarSign, Filter, Sliders, ArrowRight, Clock, Command, MessageSquare, ChevronRight, Info, Key, Briefcase, Home, Wallet, CreditCard, UserCheck, Scale, FileText, Cpu, Sparkles, Package } from 'lucide-react';
+import { Users, Send, Layers, Brain, ShieldCheck, CheckCircle2, Activity, TrendingUp, DollarSign, Filter, Sliders, ArrowRight, Clock, Command, MessageSquare, ChevronRight, Info, Key, Briefcase, Home, Wallet, CreditCard, UserCheck, Scale, FileText, Cpu, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -296,7 +296,7 @@ function FocusGroupPage() {
             onClick={() => handleOpenApplyModal()}
             className="h-8 rounded-lg text-xs font-semibold gap-2 min-h-11 sm:min-h-0"
           >
-            <Sparkles className="size-3.5" />
+            <CheckCircle2 className="size-3.5" />
             <span>Aplicar ao Catálogo</span>
           </Button>
 
@@ -488,7 +488,7 @@ function FocusGroupPage() {
                             onClick={() => handleOpenApplyModal(s.content)}
                             className="text-xs text-primary font-medium hover:underline flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                           >
-                            <Sparkles className="size-3" />
+                            <CheckCircle2 className="size-3" />
                             <span>Aplicar esta sugestão ao catálogo</span>
                           </button>
                         </div>
@@ -680,7 +680,7 @@ function FocusGroupPage() {
         <DialogContent className="sm:max-w-xl p-6 space-y-4">
           <DialogHeader>
             <div className="flex items-center gap-2">
-              <Sparkles className="size-5 text-primary" />
+              <Package className="size-5 text-primary" />
               <DialogTitle className="text-base font-bold">Aplicar Insights do SimLab ao Catálogo</DialogTitle>
             </div>
             <DialogDescription className="text-xs text-muted-foreground">

@@ -660,7 +660,7 @@ function MobilityPage() {
         />
 
         {destination && (
-          <div className="absolute top-4 right-4 z-20 hidden sm:flex items-center gap-3 px-4 py-2 rounded-lg bg-card/95 backdrop-blur-xl border border-border/80 text-foreground text-xs font-mono font-bold shadow-xs">
+          <div className="absolute top-4 right-4 z-20 hidden sm:flex items-center gap-3 px-4 py-2 rounded-lg bg-card border border-border text-foreground text-xs font-mono font-bold shadow-overlay">
             <span className="font-bold text-foreground">{routeStats.distanceKm} km</span>
             <span className="text-muted-foreground">•</span>
             <span className="text-muted-foreground">~{routeStats.durationMin} min</span>
@@ -684,7 +684,7 @@ function MobilityPage() {
             {/* ── 2. PAINEL DE SOLICITAÇÃO (DRAWER MOBILE / CARD LATERAL DESKTOP) ── */}
       <div
         className={cn(
-          "absolute z-30 overflow-y-auto no-scrollbar bg-card/95 backdrop-blur-2xl p-5 text-foreground border-border/80 space-y-4 animate-in duration-300",
+          "absolute z-30 overflow-y-auto no-scrollbar bg-card p-5 text-foreground border-border shadow-overlay space-y-4 animate-in duration-300",
           selectedCategory === "ride" && scheduleMode === "now" && requestStatus === "idle"
             ? "hidden sm:block sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border sm:slide-in-from-left-4"
             : "bottom-0 left-0 right-0 max-h-screen rounded-t-lg border-t sm:bottom-4 sm:top-4 sm:left-4 sm:right-auto sm:w-96 sm:max-w-md sm:max-h-none sm:rounded-lg sm:border slide-in-from-bottom-4 sm:slide-in-from-left-4"
@@ -1580,7 +1580,7 @@ function MobilityPage() {
 
       {/* ── 3. FLOATING BANNER PWA ── */}
       {showPwaBanner && (
-        <div className="hidden lg:flex fixed bottom-4 right-4 z-30 max-w-xs w-full p-4 rounded-lg bg-card/95 backdrop-blur-2xl border border-border/80 flex-col gap-3 animate-in fade-in slide-in-from-bottom-2">
+        <div className="hidden lg:flex fixed bottom-4 right-4 z-30 max-w-xs w-full p-4 rounded-lg bg-card border border-border shadow-overlay flex-col gap-3 animate-in fade-in slide-in-from-bottom-2">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="size-9 rounded-lg bg-foreground text-background flex items-center justify-center font-bold">

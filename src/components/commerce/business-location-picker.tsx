@@ -694,11 +694,11 @@ export function BusinessLocationPicker({
  )}
  </div>
 
- <div className="relative w-full h-56 rounded-lg overflow-hidden border border-border/80 bg-muted/40 shadow-xs">
+ <div className="relative w-full h-56 rounded-lg overflow-hidden border border-border bg-muted">
  <div ref={mapContainer} className="size-full" />
  {!value.latitude && (
- <div className="absolute inset-0 bg-background/60 backdrop-blur-xs flex items-center justify-center p-4 text-center z-10 pointer-events-none">
- <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border/80 shadow-xs max-w-xs">
+ <div className="absolute inset-0 bg-neutral-950/35 flex items-center justify-center p-4 text-center z-10 pointer-events-none">
+ <p className="text-xs font-medium text-muted-foreground bg-card p-3 rounded-lg border border-border max-w-xs">
  Digite seu CEP ou endereço e clique em <strong>Localizar no Mapa</strong> para fixar o ponto exato de entrega.
  </p>
  </div>

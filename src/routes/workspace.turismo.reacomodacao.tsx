@@ -277,9 +277,9 @@ export default function ReaccommodationPage() {
           {filteredCases.map((c) => (
             <div
               key={c.id}
-              className="p-5 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] bg-card flex flex-col gap-4 shadow-none"
+              className="p-5 rounded-2xl border border-border bg-card flex flex-col gap-4"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-lg bg-muted text-foreground">
                     <ShieldAlert className="size-5 text-muted-foreground" />

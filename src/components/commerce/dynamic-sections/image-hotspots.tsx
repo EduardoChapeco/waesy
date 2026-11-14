@@ -106,7 +106,7 @@ export function ImageHotspots({
 
  {/* Floating Mini-Card / Drawer for Active Hotspot */}
  {activeHotspot && !onHotspotClickInEditor && (
- <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-80 bg-background/95 backdrop-blur-md p-4 z-30 transition-colors duration-200 animate-in fade-in slide-in-">
+ <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-80 bg-card border border-border rounded-xl p-4 z-30 transition-colors duration-200 animate-in fade-in slide-in-">
  <div className="flex items-center justify-between mb-3 pb-2 ">
  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
  Produto em Destaque

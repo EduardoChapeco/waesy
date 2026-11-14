@@ -546,7 +546,7 @@ export function ProductPricingTab({
                   <AlertTriangle className="size-3.5 shrink-0" />
                   <span className="flex-1 text-2xs">
                     Integração Google inativa.{" "}
-                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                    <Link to="/workspace/integracoes/marketplaces" className="underline font-bold text-foreground hover:text-primary">
                       Conectar conta
                     </Link>
                   </span>
@@ -581,7 +581,7 @@ export function ProductPricingTab({
                   <AlertTriangle className="size-3.5 shrink-0" />
                   <span className="flex-1 text-2xs">
                     Catálogo Meta desconectado.{" "}
-                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                    <Link to="/workspace/integracoes/marketplaces" className="underline font-bold text-foreground hover:text-primary">
                       Vincular página
                     </Link>
                   </span>
@@ -616,7 +616,7 @@ export function ProductPricingTab({
                   <AlertTriangle className="size-3.5 shrink-0" />
                   <span className="flex-1 text-2xs">
                     Mercado Livre desconectado.{" "}
-                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                    <Link to="/workspace/integracoes/marketplaces" className="underline font-bold text-foreground hover:text-primary">
                       Autorizar conta
                     </Link>
                   </span>
@@ -651,7 +651,7 @@ export function ProductPricingTab({
                   <AlertTriangle className="size-3.5 shrink-0" />
                   <span className="flex-1 text-2xs">
                     Conector de delivery inativo.{" "}
-                    <Link to="/workspace/configuracoes" className="underline font-bold text-foreground hover:text-primary">
+                    <Link to="/workspace/integracoes/marketplaces" className="underline font-bold text-foreground hover:text-primary">
                       Configurar integração
                     </Link>
                   </span>

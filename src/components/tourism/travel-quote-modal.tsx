@@ -138,9 +138,9 @@ export function TravelQuoteModal({
  <Dialog open={open} onOpenChange={handleOpenChange}>
  <DialogContent className="sm:max-w-md sm:w-full sm:rounded-lg p-0 overflow-hidden bg-card border-border">
  {/* Header de Cotação de Viagem */}
- <div className="bg-linear-to-r from-blue-700 via-indigo-600 to-violet-700 text-foreground p-5 space-y-1 relative">
+ <div className="bg-card border-b border-border text-foreground p-5 space-y-1 relative">
  <div className="flex items-center justify-between">
- <span className="text-2xs font-mono font-black uppercase tracking-wider bg-card/20 px-3 py-1 rounded-full backdrop-blur-md">
+ <span className="text-2xs font-mono font-black uppercase tracking-wider bg-muted border border-border px-3 py-1 rounded-full">
  Cotação Especial de Viagem
  </span>
  <span className="text-xs font-mono font-bold opacity-80">

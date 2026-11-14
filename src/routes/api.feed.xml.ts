@@ -80,13 +80,13 @@ export const Route = createFileRoute("/api/feed/xml")({
  );
  }
 
- const { data: products, error } = await db
+ const { data: rawProducts, error } = await db
  .from("products")
  .select(
  `
- id, slug, title, short_description, description, manufacturer, price_cents, compare_at_cents, status, google_product_category,
- product_categories(name),
- product_variants(id, sku, price_cents, price_override_cents, attributes, stock_on_hand),
+ id, slug, title, short_description, description, manufacturer, price_cents, compare_at_cents, status, google_product_category, availability_channels, attributes,
+ product_categories(categories(name)),
+ product_variants(id, sku, price_override_cents, attributes, stock_on_hand),
  product_media(url, sort_order)
  `,
  )
@@ -97,6 +97,11 @@ export const Route = createFileRoute("/api/feed/xml")({
  console.error("Feed XML Error:", error);
  return new Response("Error fetching catalog", { status: 500 });
  }
+
+ const products = (rawProducts || []).filter((p: any) => {
+ const vis = p?.attributes?.commercial_rules?.visibility_channel ?? p?.availability_channels?.visibility_channel;
+ return !["vip_only", "store_only", "hidden"].includes(String(vis || ""));
+ });
 
  const storeName = store?.name || "Waesy Commerce";
 
@@ -121,8 +126,7 @@ export const Route = createFileRoute("/api/feed/xml")({
  variants.push({
  id: p.id,
  sku: p.slug,
- price_cents: p.price_cents,
- price_override_cents: null,
+ price_override_cents: p.price_cents,
  stock_on_hand: 0, // Estoque zero canônico (sem fallbacks fictícios)
  attributes: {},
  });
@@ -130,7 +134,7 @@ export const Route = createFileRoute("/api/feed/xml")({
 
  for (const v of variants) {
  // Use variant price_override_cents if available, fallback to product price
- const effectivePriceCents = v.price_override_cents ?? v.price_cents ?? p.price_cents;
+ const effectivePriceCents = v.price_override_cents ?? p.price_cents;
  const priceBrl = (effectivePriceCents / 100).toFixed(2);
  const salePriceBrl =
  p.compare_at_cents && p.compare_at_cents > effectivePriceCents
@@ -173,9 +177,13 @@ export const Route = createFileRoute("/api/feed/xml")({
  if (p.google_product_category) {
  xml += ` <g:google_product_category>${escapeXml(String(p.google_product_category))}</g:google_product_category>\n`;
  }
- if ((p as any).category_name) {
-        xml += `      <g:product_type>${escapeXml((p as any).category_name)}</g:product_type>\n`;
-      }
+ const firstCategoryRel = Array.isArray((p as any).product_categories)
+ ? (p as any).product_categories[0]
+ : (p as any).product_categories;
+ const categoryName = firstCategoryRel?.categories?.name || firstCategoryRel?.name || (p as any).category_name;
+ if (categoryName) {
+ xml += ` <g:product_type>${escapeXml(categoryName)}</g:product_type>\n`;
+ }
 
  if (v.attributes && typeof v.attributes === "object") {
  const attrs = v.attributes as Record<string, string>;

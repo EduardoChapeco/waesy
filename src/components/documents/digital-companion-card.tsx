@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { generateQrCodeDataUri } from "@/lib/qr-code";
 import { exportElementAsImage } from "@/lib/pdf-export";
+import { renderElementToCanvasSafe } from "@/lib/canvas/html2canvas-safe";
 
 import type {
   CompanionCardNiche,
@@ -198,17 +199,14 @@ export function DigitalCompanionCard({
     try {
       setIsExporting(true);
       setExportMessage("Compilando PDF de bolso...");
-      const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
       const pages = ref.current.querySelectorAll<HTMLElement>(".companion-story-page");
       let pdf: any = null;
 
       for (let i = 0; i < pages.length; i++) {
-        const canvas = await html2canvas(pages[i], {
+        const canvas = await renderElementToCanvasSafe(pages[i], {
           scale: 2.5,
-          useCORS: true,
           backgroundColor: null,
-          scrollY: -window.scrollY,
         });
         const imgData = canvas.toDataURL("image/jpeg", 0.95);
         const pdfWidth = 400;
@@ -399,7 +397,7 @@ export function DigitalCompanionCard({
                     {companyLogoUrl ? (
                       <img src={companyLogoUrl} alt={companyName} className="h-9 w-auto object-contain brightness-0 invert" />
                     ) : (
-                      <div className="size-9 rounded-lg bg-zinc-900/80 backdrop-blur-md flex items-center justify-center text-neutral-100 border border-zinc-700 shrink-0">
+                      <div className="size-9 rounded-lg bg-neutral-900 flex items-center justify-center text-neutral-100 border border-neutral-700 shrink-0">
                         <Star className="size-5" />
                       </div>
                     )}
@@ -419,7 +417,7 @@ export function DigitalCompanionCard({
                 {/* Bloco Central / Inferior */}
                 <div className="space-y-4">
                   {code && (
-                    <div className="inline-flex items-center gap-2 bg-zinc-900/80 backdrop-blur-md px-3 py-2 rounded-full border border-zinc-700">
+                    <div className="inline-flex items-center gap-2 bg-neutral-900 px-3 py-2 rounded-full border border-neutral-700">
                       <Ticket className="size-3.5 text-emerald-400" />
                       <span className="text-xs font-mono font-bold tracking-widest text-neutral-100">ID: {code}</span>
                     </div>
@@ -433,7 +431,7 @@ export function DigitalCompanionCard({
                   </div>
 
                   {participants.length > 0 && (
-                    <div className="p-4 rounded-lg bg-zinc-900/80 backdrop-blur-md border border-zinc-700 space-y-2">
+                    <div className="p-4 rounded-lg bg-neutral-900 border border-neutral-700 space-y-2">
                       <p className="text-xs font-bold uppercase tracking-wider text-neutral-300">
                         {participantsLabel}
                       </p>

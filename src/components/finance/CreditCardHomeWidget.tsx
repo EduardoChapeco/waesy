@@ -13,7 +13,7 @@
  */
 
 import React from "react";
-import { ChevronRight, CreditCard, Sparkles, Plus } from "lucide-react";
+import { ChevronRight, CreditCard, Plus } from "lucide-react";
 import { formatCents, cn } from "@/lib/utils";
 
 export interface CreditCardHomeWidgetProps {

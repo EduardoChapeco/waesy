@@ -292,7 +292,7 @@ function StoreLayout() {
 
   return (
     <AppShell session={activeSession} brandSettings={brandSettings}>
-      <StoreAnalyticsInjector storeSettings={storeData?.settings} />
+      <StoreAnalyticsInjector storeId={storeData?.id || null} storeSettings={storeData?.settings} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

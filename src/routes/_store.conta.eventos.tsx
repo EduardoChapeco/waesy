@@ -14,7 +14,6 @@ import {
   EyeOff,
   Video,
   Image as ImageIcon,
-  Sparkles,
   MapPin,
   Clock,
   Search,
@@ -337,13 +336,13 @@ function CivilianEventsPage() {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <div className="max-w-6xl mx-auto px-0 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* ── Desktop Header ── */}
         <div className="hidden md:flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Meus Eventos & Produções</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Meus Eventos</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Crie, gerencie bilheterias, stories e listas de presença para seus eventos.
+              Bilheterias, stories e listas de presença.
             </p>
           </div>
           <Button
@@ -357,7 +356,7 @@ function CivilianEventsPage() {
 
         {/* ── Metrics Summary Bar ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="bg-card border border-border/60 rounded-2xl p-4 flex flex-col justify-center">
+          <div className="bg-card border border-border rounded-2xl p-4 flex flex-col justify-center">
             <span className="text-xs text-muted-foreground font-medium">Eventos Cadastrados</span>
             <span className="text-xl sm:text-2xl font-bold text-foreground mt-1">{totalEvents}</span>
           </div>
@@ -498,7 +497,7 @@ function CivilianEventsPage() {
 
                         {hasStory && (
                           <Badge variant="outline" className="text-xs text-purple-600 border-purple-500/30 flex items-center gap-1">
-                            <Sparkles className="size-3" />
+                            <Video className="size-3" />
                             Story 9:16
                           </Badge>
                         )}
@@ -809,7 +808,7 @@ function CivilianEventsPage() {
             {/* Story 9:16 (GAP-04) */}
             <div className="space-y-2 p-3 bg-muted/40 rounded-2xl">
               <Label className="text-xs font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="size-3.5 text-purple-600" />
+                <Video className="size-3.5 text-purple-600" />
                 Story Imersivo 9:16 (Auto-Abertura)
               </Label>
               <MediaUploader

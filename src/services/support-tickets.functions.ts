@@ -22,6 +22,14 @@ export interface SupportTicketItem {
  status: TicketStatus;
  customer_id?: string | null;
  customer_name?: string | null;
+ customer_avatar_url?: string | null;
+ customer_phone?: string | null;
+ trace_hash?: string | null;
+ entity_trace_hash?: string | null;
+ sac_function_role?: string | null;
+ assigned_to_name?: string | null;
+ thread_id?: string | null;
+ source_origin?: "operator_ticket" | "chat_sac" | "tourism_incident";
  order_id?: string | null;
  booking_id?: string | null;
  tour_id?: string | null;
@@ -31,6 +39,42 @@ export interface SupportTicketItem {
  timer_spent_seconds?: number;
  created_at: string;
  updated_at: string;
+}
+
+export interface CustomerSuccessSheetRowDTO {
+ id: string;
+ entity_type: "trip" | "order" | "contract" | "dossier";
+ entity_id: string;
+ entity_code: string;
+ entity_trace_hash: string;
+ title: string;
+ subtitle: string;
+ service_date?: string | null;
+ total_cents: number;
+ status: string;
+ customer_id?: string | null;
+ customer_name: string;
+ customer_phone?: string | null;
+ customer_avatar_url?: string | null;
+ customer_trace_hash: string;
+ thread_id?: string | null;
+ trip_id?: string | null;
+ pnr_locator?: string | null;
+ operator_name?: string | null;
+ assigned_agent_name?: string | null;
+ steps: {
+   docs_received: boolean;
+   contract_signed: boolean;
+   payment_verified: boolean;
+   issuance_completed: boolean;
+   vouchers_sent: boolean;
+   onboarding_ready: boolean;
+   cs_completed: boolean;
+ };
+ completed_steps_count: number;
+ progress_percent: number;
+ linked_tasks_count: number;
+ open_tickets_count: number;
 }
 
 export interface SupportMessageItem {
@@ -91,9 +135,161 @@ export const listSupportTickets = createServerFn({ method: "GET" })
  query = query.eq("status", data.status);
  }
 
- const { data: tickets, error } = await query;
- if (error) throw error;
- return (tickets || []) as SupportTicketItem[];
+ const [opRes, chatSacRes, incRes] = await Promise.all([
+   query,
+   db
+     .from("store_support_tickets")
+     .select("*")
+     .eq("store_id", data.store_id)
+     .order("created_at", { ascending: false })
+     .limit(50),
+   db
+     .from("tourism_incident_tickets")
+     .select("*")
+     .eq("store_id", data.store_id)
+     .order("created_at", { ascending: false })
+     .limit(50),
+ ]);
+
+ if (opRes.error) throw opRes.error;
+ const opTickets = (opRes.data || []) as any[];
+ const chatTickets = (chatSacRes.data || []) as any[];
+ const incidents = (incRes.data || []) as any[];
+
+ const customerIds = Array.from(
+   new Set(
+     [
+       ...opTickets.map((t) => t.customer_id),
+       ...chatTickets.map((t) => t.customer_id),
+     ].filter((v): v is string => typeof v === "string" && v.length > 10)
+   )
+ );
+
+ const avatarByCustomerId = new Map<string, { full_name?: string; avatar_url?: string; phone?: string }>();
+ if (customerIds.length > 0) {
+   const { data: profiles } = await db
+     .from("profiles")
+     .select("id, full_name, avatar_url, phone")
+     .in("id", customerIds);
+   for (const p of profiles || []) {
+     avatarByCustomerId.set(p.id, p);
+   }
+ }
+
+ const shortHash = (prefix: string, seed?: string | null) => {
+   const cleaned = String(seed || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+   return `#${prefix}-${cleaned.slice(-4) || "0000"}`;
+ };
+
+ const enrichedOp: SupportTicketItem[] = opTickets.map((t: any, idx: number) => {
+   const prof = t.customer_id ? avatarByCustomerId.get(t.customer_id) : undefined;
+   const custName = t.customer_name || prof?.full_name || null;
+   const custTrace = custName || t.customer_id ? shortHash("CLI", t.customer_id || custName) : null;
+   const entTrace = t.tour_id
+     ? shortHash("TRP", t.tour_id)
+     : t.order_id
+       ? shortHash("PED", t.order_id)
+       : t.booking_id
+         ? shortHash("AGD", t.booking_id)
+         : null;
+   const roleKey =
+     t.category === "tourism"
+       ? "operadora_cia"
+       : t.category === "finance"
+         ? "reembolso_financeiro"
+         : t.priority === "urgent" || t.priority === "high"
+           ? "sac_pepinos"
+           : "customer_success";
+   return {
+     ...t,
+     ticket_number: t.ticket_number || idx + 100,
+     customer_name: custName,
+     customer_avatar_url: prof?.avatar_url || null,
+     customer_phone: prof?.phone || null,
+     trace_hash: custTrace,
+     entity_trace_hash: entTrace,
+     sac_function_role: roleKey,
+     source_origin: "operator_ticket",
+   };
+ });
+
+ const enrichedChatSac: SupportTicketItem[] = chatTickets
+   .filter((ct: any) => !enrichedOp.some((op) => op.subject.includes(ct.title)))
+   .map((ct: any, idx: number) => {
+     let meta: Record<string, any> = {};
+     if (typeof ct.resolution_notes === "string" && ct.resolution_notes.startsWith("{")) {
+       try {
+         meta = JSON.parse(ct.resolution_notes);
+       } catch {
+         meta = {};
+       }
+     }
+     const prof = ct.customer_id ? avatarByCustomerId.get(ct.customer_id) : undefined;
+     const custName = meta.customer_name || prof?.full_name || "Cliente Chat";
+     const custAvatar = meta.customer_avatar_url || prof?.avatar_url || null;
+     const mappedStatus: TicketStatus =
+       ct.status === "under_review" || ct.status === "action_required"
+         ? "in_progress"
+         : ct.status === "resolved"
+           ? "resolved"
+           : "open";
+     return {
+       id: ct.id,
+       store_id: ct.store_id,
+       ticket_number: 500 + idx,
+       ticket_code: shortHash("SAC", ct.id),
+       subject: ct.title,
+       category: (meta.linked_entity_type === "trip" ? "tourism" : ct.ticket_type === "return_exchange" ? "finance" : "other") as TicketCategory,
+       priority: (ct.priority || "normal") as TicketPriority,
+       status: mappedStatus,
+       customer_id: ct.customer_id || null,
+       customer_name: custName,
+       customer_avatar_url: custAvatar,
+       trace_hash: meta.trace_hash || shortHash("CLI", ct.customer_id || custName),
+       entity_trace_hash: meta.linked_entity_code || (meta.linked_entity_id ? shortHash("TRP", meta.linked_entity_id) : null),
+       sac_function_role: meta.sac_function_role || "sac_pepinos",
+       thread_id: ct.thread_id || null,
+       source_origin: "chat_sac",
+       created_at: ct.created_at,
+       updated_at: ct.updated_at || ct.created_at,
+     };
+   });
+
+ const enrichedIncidents: SupportTicketItem[] = incidents.map((inc: any, idx: number) => {
+   const mappedStatus: TicketStatus =
+     inc.status === "resolved" || inc.status === "closed"
+       ? "resolved"
+       : inc.status === "open"
+         ? "open"
+         : "in_progress";
+   return {
+     id: inc.id,
+     store_id: inc.store_id,
+     ticket_number: 800 + idx,
+     ticket_code: shortHash("INC", inc.id),
+     subject: `${inc.airline_code ? `[${inc.airline_code}] ` : ""}${inc.description || "Incidente de Viagem"}`,
+     category: "tourism",
+     priority: (inc.priority || "high") as TicketPriority,
+     status: mappedStatus,
+     customer_name: inc.passenger_name || "Passageiro em Viagem",
+     customer_phone: inc.passenger_contact || null,
+     trace_hash: shortHash("CLI", inc.passenger_name || inc.id),
+     entity_trace_hash: inc.booking_reference ? `#PNR-${String(inc.booking_reference).toUpperCase()}` : shortHash("TRP", inc.id),
+     sac_function_role: "sac_pepinos",
+     source_origin: "tourism_incident",
+     created_at: inc.created_at,
+     updated_at: inc.updated_at || inc.created_at,
+   };
+ });
+
+ const allMerged = [...enrichedOp, ...enrichedChatSac, ...enrichedIncidents].sort(
+   (a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime()
+ );
+
+ if (data.status && data.status !== "all") {
+   return allMerged.filter((t) => t.status === data.status);
+ }
+ return allMerged;
  });
 
 export const getSupportTicketDetails = createServerFn({ method: "GET" })
@@ -238,29 +434,68 @@ export const updateSupportTicketStatus = createServerFn({ method: "POST" })
 
  const db = getServerClient();
 
- const { data: ticket, error: tErr } = await db
+ const { data: ticket } = await db
  .from("operator_support_tickets")
  .select("store_id")
  .eq("id", data.ticket_id)
- .single();
+ .maybeSingle();
 
- if (tErr || !ticket) throw new Error("Chamado não encontrado.");
- if (ticket.store_id !== identity.store_id && !(identity.role === "platform_admin")) {
- throw new Error("Acesso não autorizado a este chamado.");
+ if (ticket) {
+   if (ticket.store_id !== identity.store_id && !(identity.role === "platform_admin")) {
+     throw new Error("Acesso não autorizado a este chamado.");
+   }
+   const { data: updated, error } = await db
+     .from("operator_support_tickets")
+     .update({
+       status: data.status,
+       updated_at: new Date().toISOString(),
+     })
+     .eq("id", data.ticket_id)
+     .select()
+     .single();
+   if (error) throw error;
+   return updated;
  }
 
- const { data: updated, error } = await db
- .from("operator_support_tickets")
- .update({
- status: data.status,
- updated_at: new Date().toISOString(),
- })
- .eq("id", data.ticket_id)
- .select()
- .single();
+ // Fallback para store_support_tickets (Chat SAC)
+ const { data: chatTicket } = await db
+   .from("store_support_tickets")
+   .select("id, store_id")
+   .eq("id", data.ticket_id)
+   .maybeSingle();
 
- if (error) throw error;
- return updated;
+ if (chatTicket) {
+   const mappedChatStatus = data.status === "in_progress" ? "under_review" : data.status === "closed" ? "resolved" : data.status;
+   const { data: updatedChat, error: cErr } = await db
+     .from("store_support_tickets")
+     .update({ status: mappedChatStatus })
+     .eq("id", data.ticket_id)
+     .select()
+     .single();
+   if (cErr) throw cErr;
+   return updatedChat;
+ }
+
+ // Fallback para tourism_incident_tickets
+ const { data: incTicket } = await db
+   .from("tourism_incident_tickets")
+   .select("id, store_id")
+   .eq("id", data.ticket_id)
+   .maybeSingle();
+
+ if (incTicket) {
+   const mappedIncStatus = data.status === "in_progress" ? "in_analysis" : data.status;
+   const { data: updatedInc, error: iErr } = await db
+     .from("tourism_incident_tickets")
+     .update({ status: mappedIncStatus, updated_at: new Date().toISOString() })
+     .eq("id", data.ticket_id)
+     .select()
+     .single();
+   if (iErr) throw iErr;
+   return updatedInc;
+ }
+
+ throw new Error("Chamado não encontrado.");
  });
 
 // ---------------------------------------------------------------------------
@@ -650,6 +885,340 @@ export const closeCustomerTicket = createServerFn({ method: "POST" })
 
     if (error) throw new Error("Erro ao encerrar chamado: " + error.message);
     return { success: true };
+  });
+
+export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      store_id: z.string().uuid(),
+      niche_filter: z.enum(["all", "trip", "order", "contract"]).optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<CustomerSuccessSheetRowDTO[]> => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+    const db = getServerClient();
+
+    const [tripsRes, ordersRes, contractsRes, threadsRes, tasksRes, ticketsRes] = await Promise.all([
+      db
+        .from("tourism_trips")
+        .select("id, trip_number, title, destination_city, travel_start_date, total_cents, status, customer_id, client_name, client_whatsapp, operator_name, financial_details, created_at")
+        .eq("store_id", data.store_id)
+        .neq("status", "cancelled")
+        .order("created_at", { ascending: false })
+        .limit(50),
+      db
+        .from("orders")
+        .select("id, total_cents, status, customer_id, created_at")
+        .eq("store_id", data.store_id)
+        .order("created_at", { ascending: false })
+        .limit(30),
+      db
+        .from("contracts")
+        .select("id, verification_code, title, status, customer_id, metadata, created_at")
+        .eq("store_id", data.store_id)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      db
+        .from("chat_threads")
+        .select("id, customer_id, guest_name, guest_phone, entity_id, assigned_to_profile_id, metadata, updated_at")
+        .eq("store_id", data.store_id)
+        .order("updated_at", { ascending: false })
+        .limit(60),
+      db
+        .from("workspace_tasks")
+        .select("id, status, context_id, custom_fields, tags")
+        .eq("store_id", data.store_id)
+        .neq("status", "done")
+        .neq("status", "archived")
+        .limit(100),
+      db
+        .from("operator_support_tickets")
+        .select("id, status, customer_id, tour_id, order_id")
+        .eq("store_id", data.store_id)
+        .in("status", ["open", "in_progress"])
+        .limit(100),
+    ]);
+
+    const trips = (tripsRes.data || []) as any[];
+    const orders = (ordersRes.data || []) as any[];
+    const contracts = (contractsRes.data || []) as any[];
+    const threads = (threadsRes.data || []) as any[];
+    const activeTasks = (tasksRes.data || []) as any[];
+    const openTickets = (ticketsRes.data || []) as any[];
+
+    const customerIds = Array.from(
+      new Set(
+        [
+          ...trips.map((t) => t.customer_id),
+          ...orders.map((o) => o.customer_id),
+          ...contracts.map((c) => c.customer_id),
+          ...threads.map((th) => th.customer_id),
+        ].filter((v): v is string => typeof v === "string" && v.length > 10)
+      )
+    );
+
+    const profileMap = new Map<string, { full_name?: string; avatar_url?: string; phone?: string }>();
+    if (customerIds.length > 0) {
+      const { data: profiles } = await db
+        .from("profiles")
+        .select("id, full_name, avatar_url, phone")
+        .in("id", customerIds);
+      for (const p of profiles || []) {
+        profileMap.set(p.id, p);
+      }
+    }
+
+    const threadByCustomerId = new Map<string, any>();
+    const threadByPhone = new Map<string, any>();
+    for (const th of threads) {
+      if (th.customer_id && !threadByCustomerId.has(th.customer_id)) {
+        threadByCustomerId.set(th.customer_id, th);
+      }
+      const digits = String(th.guest_phone || th.entity_id || "").replace(/\D/g, "");
+      if (digits.length >= 8 && !threadByPhone.has(digits)) {
+        threadByPhone.set(digits, th);
+      }
+    }
+
+    const shortHash = (prefix: string, seed?: string | null) => {
+      const cleaned = String(seed || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+      return `#${prefix}-${cleaned.slice(-4) || "0000"}`;
+    };
+
+    const computeStepMetrics = (rawSteps: Record<string, any>, defaults: Partial<Record<string, boolean>> = {}) => {
+      const steps = {
+        docs_received: Boolean(rawSteps.docs_received ?? defaults.docs_received ?? false),
+        contract_signed: Boolean(rawSteps.contract_signed ?? defaults.contract_signed ?? false),
+        payment_verified: Boolean(rawSteps.payment_verified ?? defaults.payment_verified ?? false),
+        issuance_completed: Boolean(rawSteps.issuance_completed ?? defaults.issuance_completed ?? false),
+        vouchers_sent: Boolean(rawSteps.vouchers_sent ?? defaults.vouchers_sent ?? false),
+        onboarding_ready: Boolean(rawSteps.onboarding_ready ?? defaults.onboarding_ready ?? false),
+        cs_completed: Boolean(rawSteps.cs_completed ?? defaults.cs_completed ?? false),
+      };
+      const completedCount = Object.values(steps).filter(Boolean).length;
+      const progressPercent = Math.round((completedCount / 7) * 100);
+      return { steps, completedCount, progressPercent };
+    };
+
+    const rows: CustomerSuccessSheetRowDTO[] = [];
+
+    // 1. Viagens confirmadas / em andamento (tourism_trips)
+    for (const tr of trips) {
+      const prof = tr.customer_id ? profileMap.get(tr.customer_id) : undefined;
+      const digits = String(tr.client_whatsapp || prof?.phone || "").replace(/\D/g, "");
+      const linkedThread = (tr.customer_id && threadByCustomerId.get(tr.customer_id)) || (digits ? threadByPhone.get(digits) : null);
+      const threadMeta = (linkedThread?.metadata || {}) as Record<string, any>;
+      const tripFin = (tr.financial_details || {}) as Record<string, any>;
+      const mergedRawSteps = {
+        ...(tripFin.cs_onboarding_steps || {}),
+        ...(threadMeta.cs_onboarding_steps || {}),
+      };
+      const dossiers = Array.isArray(threadMeta.travel_dossiers) ? threadMeta.travel_dossiers : [];
+      const primaryPnr = dossiers[0]?.pnrLocator || tripFin.pnr_locator || null;
+
+      const { steps, completedCount, progressPercent } = computeStepMetrics(mergedRawSteps, {
+        issuance_completed: tr.status === "confirmed" || tr.status === "in_progress" || tr.status === "completed",
+        cs_completed: tr.status === "completed",
+      });
+
+      const custName = tr.client_name || prof?.full_name || linkedThread?.guest_name || "Passageiro";
+      const custAvatar = threadMeta.customer_profile_override?.avatar_url || prof?.avatar_url || threadMeta.avatar_url || null;
+      const custTrace = shortHash("CLI", tr.customer_id || digits || custName);
+      const entTrace = tr.trip_number ? `#${String(tr.trip_number).toUpperCase()}` : shortHash("TRP", tr.id);
+
+      const tasksCount = activeTasks.filter((tsk) => {
+        const cf = (tsk.custom_fields || {}) as Record<string, any>;
+        return (
+          (tr.customer_id && (tsk.context_id === tr.customer_id || cf.customer_id === tr.customer_id)) ||
+          cf.entity_id === tr.id ||
+          (Array.isArray(tsk.tags) && tsk.tags.includes(custTrace))
+        );
+      }).length;
+
+      const ticketsCount = openTickets.filter(
+        (tk) => tk.tour_id === tr.id || (tr.customer_id && tk.customer_id === tr.customer_id)
+      ).length;
+
+      rows.push({
+        id: `trip-${tr.id}`,
+        entity_type: "trip",
+        entity_id: tr.id,
+        entity_code: tr.trip_number || `TRP-${tr.id.slice(0, 4).toUpperCase()}`,
+        entity_trace_hash: entTrace,
+        title: tr.destination_city || tr.title || "Roteiro de Viagem",
+        subtitle: [tr.operator_name, primaryPnr ? `PNR ${primaryPnr}` : null].filter(Boolean).join(" · ") || "Pacote Turístico",
+        service_date: tr.travel_start_date || tr.created_at,
+        total_cents: Number(tr.total_cents || 0),
+        status: tr.status,
+        customer_id: tr.customer_id || null,
+        customer_name: custName,
+        customer_phone: tr.client_whatsapp || prof?.phone || linkedThread?.guest_phone || null,
+        customer_avatar_url: custAvatar,
+        customer_trace_hash: custTrace,
+        thread_id: linkedThread?.id || null,
+        trip_id: tr.id,
+        pnr_locator: primaryPnr,
+        operator_name: tr.operator_name || dossiers[0]?.operatorName || null,
+        steps,
+        completed_steps_count: completedCount,
+        progress_percent: progressPercent,
+        linked_tasks_count: tasksCount,
+        open_tickets_count: ticketsCount,
+      });
+    }
+
+    // 2. Dossiês de Viagem / PNR registrados diretamente nas conversas (sem tourism_trips duplicado)
+    for (const th of threads) {
+      const meta = (th.metadata || {}) as Record<string, any>;
+      const dossiers = Array.isArray(meta.travel_dossiers) ? meta.travel_dossiers : [];
+      if (dossiers.length === 0) continue;
+      if (th.customer_id && rows.some((r) => r.customer_id === th.customer_id && r.entity_type === "trip")) continue;
+
+      const d = dossiers[0];
+      const prof = th.customer_id ? profileMap.get(th.customer_id) : undefined;
+      const custName = meta.customer_profile_override?.full_name || prof?.full_name || th.guest_name || th.guest_phone || "Cliente em Atendimento";
+      const custAvatar = meta.customer_profile_override?.avatar_url || prof?.avatar_url || meta.avatar_url || null;
+      const custTrace = shortHash("CLI", th.customer_id || th.guest_phone || th.id);
+      const entTrace = d.pnrLocator ? `#PNR-${String(d.pnrLocator).toUpperCase()}` : shortHash("TRP", d.id || th.id);
+
+      const { steps, completedCount, progressPercent } = computeStepMetrics(meta.cs_onboarding_steps || {}, {
+        issuance_completed: Boolean(d.pnrLocator || d.operatorPackageId),
+      });
+
+      const tasksCount = activeTasks.filter((tsk) => {
+        const cf = (tsk.custom_fields || {}) as Record<string, any>;
+        return cf.thread_id === th.id || (Array.isArray(tsk.tags) && tsk.tags.includes(custTrace));
+      }).length;
+
+      rows.push({
+        id: `dossier-${th.id}`,
+        entity_type: "dossier",
+        entity_id: String(d.id || th.id),
+        entity_code: d.pnrLocator || d.operatorPackageId || `PNR-${th.id.slice(0, 4).toUpperCase()}`,
+        entity_trace_hash: entTrace,
+        title: d.destination || "Viagem / Aéreo em Atendimento",
+        subtitle: [d.operatorName, d.airlineName, d.pnrLocator ? `PNR ${d.pnrLocator}` : null].filter(Boolean).join(" · ") || "Dossiê PNR",
+        service_date: d.departureDate || th.updated_at,
+        total_cents: 0,
+        status: d.flightStatus || "confirmed",
+        customer_id: th.customer_id || null,
+        customer_name: custName,
+        customer_phone: th.guest_phone || prof?.phone || null,
+        customer_avatar_url: custAvatar,
+        customer_trace_hash: custTrace,
+        thread_id: th.id,
+        trip_id: null,
+        pnr_locator: d.pnrLocator || null,
+        operator_name: d.operatorName || null,
+        steps,
+        completed_steps_count: completedCount,
+        progress_percent: progressPercent,
+        linked_tasks_count: tasksCount,
+        open_tickets_count: 0,
+      });
+    }
+
+    // 3. Pedidos / Compras (Multi-nicho E-commerce & Serviços)
+    for (const ord of orders) {
+      const prof = ord.customer_id ? profileMap.get(ord.customer_id) : undefined;
+      const linkedThread = ord.customer_id ? threadByCustomerId.get(ord.customer_id) : null;
+      const threadMeta = (linkedThread?.metadata || {}) as Record<string, any>;
+      const custName = prof?.full_name || linkedThread?.guest_name || "Cliente Pedido";
+      const custAvatar = threadMeta.customer_profile_override?.avatar_url || prof?.avatar_url || threadMeta.avatar_url || null;
+      const custTrace = shortHash("CLI", ord.customer_id || ord.id);
+      const entTrace = shortHash("PED", ord.id);
+      const isPaid = ["paid", "completed", "delivered"].includes(String(ord.status));
+      const isDelivered = ["completed", "delivered"].includes(String(ord.status));
+
+      const { steps, completedCount, progressPercent } = computeStepMetrics(threadMeta.cs_onboarding_steps || {}, {
+        docs_received: true,
+        contract_signed: true,
+        payment_verified: isPaid,
+        issuance_completed: isPaid,
+        vouchers_sent: isDelivered,
+        onboarding_ready: isDelivered,
+        cs_completed: ord.status === "completed",
+      });
+
+      const tasksCount = activeTasks.filter((tsk) => {
+        const cf = (tsk.custom_fields || {}) as Record<string, any>;
+        return tsk.context_id === ord.id || cf.entity_id === ord.id || (ord.customer_id && cf.customer_id === ord.customer_id);
+      }).length;
+
+      rows.push({
+        id: `order-${ord.id}`,
+        entity_type: "order",
+        entity_id: ord.id,
+        entity_code: `PED-${ord.id.slice(0, 6).toUpperCase()}`,
+        entity_trace_hash: entTrace,
+        title: `Pedido #${ord.id.slice(0, 6).toUpperCase()}`,
+        subtitle: `Compra / Pedido · Status: ${ord.status}`,
+        service_date: ord.created_at,
+        total_cents: Number(ord.total_cents || 0),
+        status: ord.status,
+        customer_id: ord.customer_id || null,
+        customer_name: custName,
+        customer_phone: prof?.phone || linkedThread?.guest_phone || null,
+        customer_avatar_url: custAvatar,
+        customer_trace_hash: custTrace,
+        thread_id: linkedThread?.id || null,
+        trip_id: null,
+        steps,
+        completed_steps_count: completedCount,
+        progress_percent: progressPercent,
+        linked_tasks_count: tasksCount,
+        open_tickets_count: openTickets.filter((tk) => tk.order_id === ord.id).length,
+      });
+    }
+
+    // 4. Contratos / Agendamentos (Multi-nicho)
+    for (const ctr of contracts) {
+      if (ctr.customer_id && rows.some((r) => r.customer_id === ctr.customer_id && r.entity_type === "trip")) continue;
+      const prof = ctr.customer_id ? profileMap.get(ctr.customer_id) : undefined;
+      const linkedThread = ctr.customer_id ? threadByCustomerId.get(ctr.customer_id) : null;
+      const threadMeta = (linkedThread?.metadata || {}) as Record<string, any>;
+      const custName = prof?.full_name || linkedThread?.guest_name || (ctr.metadata as any)?.customer_name || "Cliente Contrato";
+      const custAvatar = threadMeta.customer_profile_override?.avatar_url || prof?.avatar_url || threadMeta.avatar_url || null;
+      const custTrace = shortHash("CLI", ctr.customer_id || ctr.id);
+      const entTrace = ctr.verification_code ? `#CTR-${String(ctr.verification_code).slice(-4).toUpperCase()}` : shortHash("CTR", ctr.id);
+      const isSigned = ctr.status === "signed" || ctr.status === "active" || ctr.status === "completed";
+
+      const { steps, completedCount, progressPercent } = computeStepMetrics(threadMeta.cs_onboarding_steps || {}, {
+        docs_received: true,
+        contract_signed: isSigned,
+      });
+
+      rows.push({
+        id: `contract-${ctr.id}`,
+        entity_type: "contract",
+        entity_id: ctr.id,
+        entity_code: ctr.verification_code || `CTR-${ctr.id.slice(0, 5).toUpperCase()}`,
+        entity_trace_hash: entTrace,
+        title: ctr.title || "Contrato de Prestação de Serviço",
+        subtitle: `Documento Contratual · ${isSigned ? "Assinado" : "Aguardando Assinatura"}`,
+        service_date: ctr.created_at,
+        total_cents: Number((ctr.metadata as any)?.total_amount_cents || 0),
+        status: ctr.status,
+        customer_id: ctr.customer_id || null,
+        customer_name: custName,
+        customer_phone: prof?.phone || linkedThread?.guest_phone || null,
+        customer_avatar_url: custAvatar,
+        customer_trace_hash: custTrace,
+        thread_id: linkedThread?.id || null,
+        trip_id: null,
+        steps,
+        completed_steps_count: completedCount,
+        progress_percent: progressPercent,
+        linked_tasks_count: 0,
+        open_tickets_count: 0,
+      });
+    }
+
+    if (data.niche_filter && data.niche_filter !== "all") {
+      return rows.filter((r) => (data.niche_filter === "trip" ? r.entity_type === "trip" || r.entity_type === "dossier" : r.entity_type === data.niche_filter));
+    }
+    return rows;
   });
 
 // ---------------------------------------------------------------------------

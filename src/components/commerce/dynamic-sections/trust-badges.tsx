@@ -52,7 +52,7 @@ export function TrustBadges({ content, design_tokens }: TrustBadgesProps) {
  return (
  <div
  className={cn(
- "w-full grid grid-cols-2 @md:grid-cols-4 gap-6 py-12 px-4 border-y border-border/30 bg-muted/30 backdrop-blur-sm",
+ "w-full grid grid-cols-2 @md:grid-cols-4 gap-6 py-12 px-4 border-y border-border bg-muted",
  design_tokens?.className,
  )}
  style={{

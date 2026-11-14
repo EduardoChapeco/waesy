@@ -94,9 +94,9 @@ function TransactionCertificatesPage() {
  return (
  <div className="min-h-dvh bg-background">
  {/* Header */}
- <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm">
+ <div className="border-b border-border bg-background">
  <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
- <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+ <div className="size-9 rounded-lg bg-muted border border-border text-primary flex items-center justify-center">
  <Fingerprint className="size-5" />
  </div>
  <div>

@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Sparkles, Info, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Info, CheckCircle2, AlertCircle } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
@@ -731,8 +731,8 @@ function ProfileCivilPage() {
                   {/* 5 Sugestões Atômicas Clicáveis */}
                   {handleSuggestions.length > 0 && (
                     <div className="space-y-2 pt-1">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                        <Sparkles className="size-3 text-primary" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground">
+                        <Check className="size-3 text-primary" />
                         <span>Sugestões disponíveis para você:</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -1149,7 +1149,7 @@ function ProfileCivilPage() {
             <div className="bg-card rounded-lg p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                  <Sparkles className="size-4 text-primary shrink-0" />
+                  <Building2 className="size-4 text-primary shrink-0" />
                   <span>Banner de Destaque / Evento</span>
                 </div>
                 <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">

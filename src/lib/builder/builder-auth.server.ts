@@ -248,10 +248,10 @@ async function verifyActorHasStoreEditorRole(
     return true;
   }
 
-  // 3. Verifica propriedade direta da loja (stores.owner_id)
+  // 3. Verifica propriedade direta da loja (stores.organization_id)
   const { data: storeRow } = await db
     .from("stores")
-    .select("id, owner_id, is_platform_root")
+    .select("id, organization_id, is_platform_root")
     .eq("id", storeId)
     .maybeSingle();
 
@@ -259,7 +259,7 @@ async function verifyActorHasStoreEditorRole(
     return false;
   }
 
-  if (storeRow?.owner_id && storeRow.owner_id === actorId) {
+  if (storeRow?.organization_id && storeRow.organization_id === actorId) {
     return true;
   }
 

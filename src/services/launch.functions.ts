@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getAnonServerClient, getServerClient } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/server-access";
+import { requirePlatformAdmin } from "@/lib/server-access";
 import { internalLookupCnpj, type CnpjCompanyDTO } from "./public-apis.functions";
 
 export interface FounderLeadDTO {
@@ -242,7 +242,7 @@ export const updateLaunchLandingSettings = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { data: updated, error } = await supabase
@@ -280,7 +280,7 @@ export const listFounderLeads = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     let query = supabase
@@ -323,7 +323,7 @@ export const updateFounderLeadStatus = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requirePlatformAdmin();
     const supabase = getServerClient();
 
     const { data: updated, error } = await supabase

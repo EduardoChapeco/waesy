@@ -89,7 +89,7 @@ export const getExecutiveGrowthMetrics = createServerFn({ method: "GET" }).handl
     // Faturamento de faturas da plataforma
     db.from("platform_invoices").select("id, amount_cents, status"),
     // Contagem de classificados ativos
-    Promise.resolve(db.from("classified_ads").select("id, is_active", { count: "exact" })).catch(() => ({ count: 0, data: [] } as any)),
+    Promise.resolve(db.from("classified_ads").select("id, status", { count: "exact" }).eq("status", "active")).catch(() => ({ count: 0, data: [] } as any)),
     // Livro-caixa corporativo real (gastos e aportes)
     Promise.resolve(db.from("platform_financial_records").select("*").order("entry_date", { ascending: false })).catch(() => ({ data: [] } as any)),
     // Metas cadastradas por período/estágio

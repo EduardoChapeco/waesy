@@ -177,11 +177,11 @@ function KitchenPrepTimePage() {
     >
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-24">
         {/* ── Top Header Canônico ── */}
-        <header className="sticky top-0 z-20 border-b border-border/80 bg-background/95 backdrop-blur-md px-4 sm:px-6 py-4">
+        <header className="sticky top-0 z-20 border-b border-border bg-background px-4 sm:px-6 py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="size-9 rounded-lg bg-muted border border-border text-primary flex items-center justify-center shrink-0">
                   <Clock className="size-5" />
                 </div>
                 <div>

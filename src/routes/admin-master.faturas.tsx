@@ -43,12 +43,16 @@ export const Route = createFileRoute("/admin-master/faturas")({
   loader: async () => {
     try {
       const [invoices, stores] = await Promise.all([
-        getPlatformInvoicesList().catch(() => []),
-        getPlatformStoresList().catch(() => []),
+        getPlatformInvoicesList(),
+        getPlatformStoresList(),
       ]);
-      return { invoices: invoices || [], stores: stores || [] };
-    } catch {
-      return { invoices: [], stores: [] };
+      return { invoices: invoices || [], stores: stores || [], loadError: null as string | null };
+    } catch (err: unknown) {
+      return {
+        invoices: [],
+        stores: [],
+        loadError: err instanceof Error ? err.message : "Erro ao carregar faturas da plataforma.",
+      };
     }
   },
   component: MasterFaturasPage,
@@ -66,8 +70,20 @@ export const Route = createFileRoute("/admin-master/faturas")({
 });
 
 function MasterFaturasPage() {
-  const { invoices, stores } = ((Route.useLoaderData?.() as any) || {});
+  const { invoices, stores, loadError } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-20">
+        <ErrorState
+          title="Falha ao Carregar Faturas"
+          description={loadError}
+          onRetry={() => router.invalidate()}
+        />
+      </div>
+    );
+  }
 
   const [isCreating, setIsCreating] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -308,11 +324,11 @@ function MasterFaturasPage() {
 
       {/* Create Form */}
       {isCreating && (
-        <div className="bg-card rounded-lg border border-border/80 p-5 ">
-          <h2 className="text-sm font-semibold mb-3">Emitir Nova Fatura / Cobrança</h2>
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-sm font-semibold mb-3">Emitir Cobrança</h2>
           <form onSubmit={handleCreateInvoice} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs font-semibold">Loja / Empresa Destino</Label>
+              <Label className="text-xs font-semibold">Loja</Label>
               <Select value={storeId} onValueChange={setStoreId}>
                 <SelectTrigger className="h-9 rounded-lg bg-background text-xs">
                   <SelectValue placeholder="Selecione a loja..." />

@@ -72,7 +72,7 @@ export function SpecialistTeamGridSection({
 
  {member.registrationNumber && (
  <div className="absolute bottom-2 left-2">
- <Badge variant="secondary" className="text-2xs font-mono bg-background/90 backdrop-blur-md shadow-2xs">
+ <Badge variant="secondary" className="text-2xs font-mono bg-card text-foreground border border-border">
  {member.registrationNumber}
  </Badge>
  </div>

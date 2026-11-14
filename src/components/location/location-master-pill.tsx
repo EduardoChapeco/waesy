@@ -678,7 +678,7 @@ export function LocationPickerModal({
  e.stopPropagation();
  onTriggerGPS();
  }}
- className="rounded-lg font-bold text-xs bg-background/90 backdrop-blur-md gap-2 "
+ className="rounded-lg font-bold text-xs bg-background border-border gap-2 min-h-11"
  >
  <Crosshair className="size-3.5 text-primary" />
  <span>GPS Atual</span>

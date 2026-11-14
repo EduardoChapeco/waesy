@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Heart, QrCode, CreditCard, Banknote, Loader2, Sparkles } from "lucide-react";
+import { Heart, QrCode, CreditCard, Banknote, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -130,8 +130,8 @@ export function MobilityTipModal({
                     : "bg-muted/20 border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
-                <Sparkles className="size-3.5 text-warning-strong" />
-                <span>Outro valor personalizado</span>
+                <Banknote className="size-3.5 text-warning-strong" />
+                <span>Outro valor</span>
               </button>
             </div>
 

@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   Layers,
   ShieldCheck,
-  Sparkles,
   ExternalLink,
   Loader2,
   AlertCircle,
@@ -48,13 +47,16 @@ import {
 
 interface MultiBrandEcosystemGovernanceCardProps {
   storeId?: string;
+  mode?: "workspace" | "admin-master";
   onUpdated?: () => void;
 }
 
 export function MultiBrandEcosystemGovernanceCard({
   storeId,
+  mode = "workspace",
   onUpdated,
 }: MultiBrandEcosystemGovernanceCardProps) {
+  const isAdminMasterMode = mode === "admin-master";
   const [governance, setGovernance] = useState<StoreMultiBrandGovernanceDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -242,149 +244,153 @@ export function MultiBrandEcosystemGovernanceCard({
         </div>
       </div>
 
-      {/* 2. Seletor de Marca Vertical Especializada */}
-      <div className="space-y-3 pt-4 border-t border-border/40">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Layers className="size-4 text-primary" />
-              <span>Marca Vertical do Sistema</span>
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Adapta a terminologia, módulos padrão e identidade operacional sem perder dados do núcleo.
-            </p>
-          </div>
-          <Badge variant="outline" className="text-xs font-mono font-bold self-start sm:self-center">
-            {activeBrandConfig.brandName} ({activeBrandConfig.primaryDomain})
-          </Badge>
-        </div>
+      {/* 2. Seletor de Marca Vertical Especializada (Exclusivo Admin Master) */}
+      {isAdminMasterMode && (
+        <>
+          <div className="space-y-3 pt-4 border-t border-border/40">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Layers className="size-4 text-primary" />
+                  <span>Marca Vertical do Sistema</span>
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Adapta a terminologia, módulos padrão e identidade operacional sem perder dados do núcleo.
+                </p>
+              </div>
+              <Badge variant="outline" className="text-xs font-mono font-bold self-start sm:self-center">
+                {activeBrandConfig.brandName} ({activeBrandConfig.primaryDomain})
+              </Badge>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {BRAND_VERTICAL_LIST.map((brand) => {
-            const isSelected = selectedBrand === brand.id;
-            return (
-              <button
-                key={brand.id}
-                type="button"
-                onClick={() => setSelectedBrand(brand.id)}
-                className={cn(
-                  "p-4 rounded-lg text-left transition-colors flex flex-col justify-between gap-2 min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isSelected
-                    ? "bg-primary/10 ring-1 ring-primary text-foreground"
-                    : "bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <div className="flex items-start justify-between gap-2 w-full">
-                  <div>
-                    <span className="text-xs font-bold text-foreground block">
-                      {brand.brandName}
-                    </span>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {brand.primaryDomain}
-                    </span>
-                  </div>
-                  {isSelected && (
-                    <CheckCircle2 className="size-4 text-primary shrink-0" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {BRAND_VERTICAL_LIST.map((brand) => {
+                const isSelected = selectedBrand === brand.id;
+                return (
+                  <button
+                    key={brand.id}
+                    type="button"
+                    onClick={() => setSelectedBrand(brand.id)}
+                    className={cn(
+                      "p-4 rounded-lg text-left transition-colors flex flex-col justify-between gap-2 min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "bg-primary/10 ring-1 ring-primary text-foreground"
+                        : "bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2 w-full">
+                      <div>
+                        <span className="text-xs font-bold text-foreground block">
+                          {brand.brandName}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {brand.primaryDomain}
+                        </span>
+                      </div>
+                      {isSelected && (
+                        <CheckCircle2 className="size-4 text-primary shrink-0" />
+                      )}
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {brand.tagline}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-1 pt-1">
+                      {brand.targetSegments.slice(0, 3).map((seg) => (
+                        <span
+                          key={seg}
+                          className="text-xs px-2 py-1 rounded-md bg-background text-muted-foreground font-medium"
+                        >
+                          {seg}
+                        </span>
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 3. Empacotamento por Planos (Feature Tiers) & Domínio White-Label */}
+          <div className="space-y-4 pt-4 border-t border-border/40">
+            <div>
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <ShieldCheck className="size-4 text-primary" />
+                <span>Camada de Plano & Domínio White-Label</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Define quais módulos operacionais ficam visíveis no menu lateral para simplificar a rotina da equipe.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {SUBSCRIPTION_TIER_LIST.map((tier) => {
+                const isSelected = selectedTier === tier.id;
+                return (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => setSelectedTier(tier.id)}
+                    className={cn(
+                      "p-4 rounded-lg text-left transition-colors flex flex-col justify-between gap-2 min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isSelected
+                        ? "bg-primary/10 ring-1 ring-primary text-foreground"
+                        : "bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-xs font-bold text-foreground flex items-center gap-2">
+                        <Layers className="size-3.5 text-primary" />
+                        Plano {tier.name}
+                      </span>
+                      <Badge variant="outline" className="text-xs font-mono">
+                        {tier.includedModules.length} módulos
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {tier.tagline}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-end pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="custom-whitelabel-domain" className="text-xs font-bold text-foreground flex items-center gap-2">
+                  <ExternalLink className="size-3.5 text-primary" />
+                  <span>Domínio Próprio / Subdomínio White-Label</span>
+                </Label>
+                <Input
+                  id="custom-whitelabel-domain"
+                  value={customDomain}
+                  onChange={(e) => setCustomDomain(e.target.value)}
+                  placeholder={`ex: ${governance?.storeName?.toLowerCase().replace(/\s+/g, "") || "minhaempresa"}.${activeBrandConfig.primaryDomain}`}
+                  className="h-11 min-h-11 rounded-lg text-xs font-mono"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveBrandAndTier}
+                  disabled={isSavingBrand}
+                  className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring w-full sm:w-auto"
+                >
+                  {isSavingBrand ? (
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
+                  ) : (
+                    <CheckCircle2 className="size-4 text-primary" />
                   )}
-                </div>
-
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {brand.tagline}
-                </p>
-
-                <div className="flex flex-wrap items-center gap-1 pt-1">
-                  {brand.targetSegments.slice(0, 3).map((seg) => (
-                    <span
-                      key={seg}
-                      className="text-xs px-2 py-1 rounded-md bg-background text-muted-foreground font-medium"
-                    >
-                      {seg}
-                    </span>
-                  ))}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. Empacotamento por Planos (Feature Tiers) & Domínio White-Label */}
-      <div className="space-y-4 pt-4 border-t border-border/40">
-        <div>
-          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <ShieldCheck className="size-4 text-primary" />
-            <span>Camada de Plano & Domínio White-Label</span>
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Define quais módulos operacionais ficam visíveis no menu lateral para simplificar a rotina da equipe.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {SUBSCRIPTION_TIER_LIST.map((tier) => {
-            const isSelected = selectedTier === tier.id;
-            return (
-              <button
-                key={tier.id}
-                type="button"
-                onClick={() => setSelectedTier(tier.id)}
-                className={cn(
-                  "p-4 rounded-lg text-left transition-colors flex flex-col justify-between gap-2 min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isSelected
-                    ? "bg-primary/10 ring-1 ring-primary text-foreground"
-                    : "bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                    <Sparkles className="size-3.5 text-primary" />
-                    Plano {tier.name}
-                  </span>
-                  <Badge variant="outline" className="text-xs font-mono">
-                    {tier.includedModules.length} módulos
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {tier.tagline}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-end pt-2">
-          <div className="space-y-2">
-            <Label htmlFor="custom-whitelabel-domain" className="text-xs font-bold text-foreground flex items-center gap-2">
-              <ExternalLink className="size-3.5 text-primary" />
-              <span>Domínio Próprio / Subdomínio White-Label</span>
-            </Label>
-            <Input
-              id="custom-whitelabel-domain"
-              value={customDomain}
-              onChange={(e) => setCustomDomain(e.target.value)}
-              placeholder={`ex: ${governance?.storeName?.toLowerCase().replace(/\s+/g, "") || "minhaempresa"}.${activeBrandConfig.primaryDomain}`}
-              className="h-11 min-h-11 rounded-lg text-xs font-mono"
-            />
+                  <span>Aplicar Vertical & Plano</span>
+                </Button>
+              </div>
+            </div>
           </div>
-
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSaveBrandAndTier}
-              disabled={isSavingBrand}
-              className="h-11 min-h-11 px-6 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring w-full sm:w-auto"
-            >
-              {isSavingBrand ? (
-                <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary" />
-              ) : (
-                <CheckCircle2 className="size-4 text-primary" />
-              )}
-              <span>Aplicar Vertical & Plano</span>
-            </Button>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

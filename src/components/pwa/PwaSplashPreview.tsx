@@ -35,13 +35,13 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
             className="max-h-48 max-w-48 object-contain rounded-lg  transition-transform duration-200"
           />
         ) : iconUrl ? (
-          <div className="size-24 rounded-lg overflow-hidden  border border-white/10 shrink-0">
+          <div className="size-24 rounded-lg overflow-hidden border border-border shrink-0">
             <img src={iconUrl} alt={shortName} className="size-full object-cover" />
           </div>
         ) : (
           <div
             style={{ backgroundColor: themeColor }}
-            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-foreground  border border-white/15"
+            className="size-24 rounded-lg flex items-center justify-center font-black text-3xl text-neutral-50 border border-border"
           >
             {shortName.slice(0, 2).toUpperCase()}
           </div>
@@ -49,7 +49,7 @@ export const PwaSplashPreview: React.FC<PwaSplashPreviewProps> = ({
 
         <div className="space-y-1 text-center">
           <h3 className="font-bold text-lg text-foreground tracking-tight">{shortName}</h3>
-          <p className="text-xs text-neutral-400 max-w-44 truncate">{appName}</p>
+          <p className="text-xs text-muted-foreground max-w-44 line-clamp-1">{appName}</p>
         </div>
 
         {/* Indicador de carregamento animado */}

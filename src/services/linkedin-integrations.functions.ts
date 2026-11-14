@@ -920,7 +920,7 @@ export const searchTalentHunterPool = createServerFn({ method: "POST" })
 
     let query = supabase
       .from("profiles")
-      .select("id, full_name, username, avatar_url, headline, occupation, city, state, resume_data")
+      .select("id, full_name, username, avatar_url, occupation, city, state, resume_data")
       .not("resume_data", "is", null)
       .limit(input.limit);
 

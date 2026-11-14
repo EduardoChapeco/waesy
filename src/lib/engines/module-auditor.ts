@@ -49,7 +49,7 @@ export class ModuleAuditor {
  // 1. Auditoria da Loja Base
  const { data: store, error: storeError } = await client
  .from('stores')
- .select('id, name, slug, phone, document, settings, is_active')
+ .select('id, name, slug, phone, cnpj, settings, is_active')
  .eq('id', storeId)
  .maybeSingle();
 
@@ -80,7 +80,7 @@ export class ModuleAuditor {
  };
  }
 
- if (!store.document) {
+ if (!store.cnpj) {
  score -= 15;
  issues.push({
  code: 'MISSING_DOCUMENT',

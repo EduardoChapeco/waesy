@@ -88,7 +88,7 @@ export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
 
     const { data: store } = await db
       .from("stores")
-      .select("id, name, segment, settings")
+      .select("id, name, settings")
       .eq("id", resolvedStoreId)
       .single();
 
@@ -96,7 +96,8 @@ export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
       throw new Error("Loja não encontrada; configuração comercial indisponível.");
     }
 
-    const seg = (store.segment || "").toLowerCase();
+    const storeSettings = (store.settings as Record<string, any>) || {};
+    const seg = String(storeSettings.segment || storeSettings.category || "").toLowerCase();
     let detectedNiche: "grocery" | "food" | "retail" | "services" | "general" | "tourism" = "general";
     if (seg.includes("mercado") || seg.includes("market") || seg.includes("conveniencia") || seg.includes("supermercado")) {
       detectedNiche = "grocery";

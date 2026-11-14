@@ -20,7 +20,6 @@ import {
   Check,
   Plus,
   ShieldCheck,
-  Sparkles,
   MapPin,
   Clock,
   ArrowRight,

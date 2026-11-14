@@ -89,7 +89,7 @@ function FeedPage() {
       {/* ─── Feed Container Central (Largura Padrão Editorial & Padrão 1px Mobile) ───────────── */}
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
         {/* ── 1. Menu de Abas Discreto no Topo (Padrão TikTok / Threads) ── */}
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/40">
+        <div className="sticky top-0 z-20 bg-background border-b border-border">
           <div className="flex items-center justify-between px-3 sm:px-4 h-11 min-h-11 gap-2">
             <div className="flex items-center gap-5 sm:gap-8 overflow-x-auto scroll-area-carousel no-scrollbar">
               {FEED_TABS.map((tab) => {

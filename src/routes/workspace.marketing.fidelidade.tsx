@@ -437,8 +437,8 @@ export default function LoyaltyDashboardPage() {
  className={cn(
  "size-8 rounded-full flex items-center justify-center text-xs font-bold border transition-colors duration-200",
  isStamped
- ? "bg-card text-foreground border-white shadow-xs"
- : "bg-foreground/20 text-foreground/40 border-white/20",
+ ? "bg-card text-foreground border-border"
+ : "bg-neutral-900/70 text-neutral-200 border-neutral-600",
  )}
  >
  {isStamped ? <SelectedIconComponent className="size-4 text-emerald-600" /> : i + 1}

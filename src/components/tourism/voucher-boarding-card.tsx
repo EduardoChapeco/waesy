@@ -137,8 +137,8 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {voucher.passengers && voucher.passengers.length > 0 && (
  <div className="space-y-3">
  <div className="flex items-center gap-2 pb-2 border-b border-neutral-200">
- <Users className="size-4 text-neutral-500" />
- <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
+ <Users className="size-4 text-muted-foreground" />
+ <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Passageiros e Documentação
  </span>
  </div>
@@ -146,12 +146,12 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  {voucher.passengers.map((p: any, idx: number) => (
  <div
  key={idx}
- className="p-4 rounded-lg border border-neutral-200 bg-neutral-50/60 flex flex-col justify-between space-y-2"
+ className="p-4 rounded-lg border border-border bg-card flex flex-col justify-between space-y-2"
  >
- <span className="font-bold text-neutral-900 text-sm truncate">{p.name}</span>
- <div className="flex items-center gap-3 text-xs text-neutral-600 font-mono">
- {p.document && <span>Doc: <strong className="text-neutral-800">{p.document}</strong></span>}
- {p.seat && <span>Assento: <strong className="text-neutral-800">{p.seat}</strong></span>}
+ <span className="font-bold text-foreground text-sm line-clamp-2 text-anti-truncate">{p.name}</span>
+ <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
+ {p.document && <span>Doc: <strong className="text-foreground">{p.document}</strong></span>}
+ {p.seat && <span>Assento: <strong className="text-foreground">{p.seat}</strong></span>}
  </div>
  </div>
  ))}
@@ -236,48 +236,48 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   {voucher.hotels.map((hotel: any, idx: number) => (
   <div
   key={idx}
-  className="p-4 rounded-lg border border-neutral-200 bg-neutral-50/70 space-y-3 shadow-2xs"
+  className="p-4 rounded-lg border border-border bg-card space-y-3"
   >
   <div className="flex items-start justify-between gap-2">
   <div>
-  <h4 className="font-bold text-neutral-900 text-sm sm:text-base line-clamp-1 truncate">{hotel.name}</h4>
+  <h4 className="font-bold text-foreground text-sm sm:text-base line-clamp-2 text-anti-truncate">{hotel.name}</h4>
   {hotel.city && (
-  <span className="text-xs text-neutral-500 flex items-center gap-1 mt-1">
+  <span className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
   <MapPin className="size-3.5" /> {hotel.city}
   </span>
   )}
   </div>
   {hotel.confirmation && (
   <div className="text-right font-mono">
-  <span className="text-2xs text-neutral-400 block uppercase">Reserva</span>
-  <span className="font-bold text-neutral-900 text-xs sm:text-sm">
+  <span className="text-2xs text-muted-foreground block uppercase">Reserva</span>
+  <span className="font-bold text-foreground text-xs sm:text-sm">
   {hotel.confirmation}
   </span>
   </div>
   )}
   </div>
 
-  <div className="grid grid-cols-2 gap-3 text-xs bg-card p-3 rounded-lg border border-neutral-200">
+  <div className="grid grid-cols-2 gap-3 text-xs bg-muted p-3 rounded-lg border border-border">
   <div>
-  <span className="text-2xs text-neutral-400 block uppercase">Check-in</span>
-  <span className="font-bold text-neutral-800">{hotel.checkin || "—"}</span>
+  <span className="text-2xs text-muted-foreground block uppercase">Check-in</span>
+  <span className="font-bold text-foreground">{hotel.checkin || "—"}</span>
   </div>
   <div>
-  <span className="text-2xs text-neutral-400 block uppercase">Check-out</span>
-  <span className="font-bold text-neutral-800">{hotel.checkout || "—"}</span>
+  <span className="text-2xs text-muted-foreground block uppercase">Check-out</span>
+  <span className="font-bold text-foreground">{hotel.checkout || "—"}</span>
   </div>
   {hotel.room_type && (
   <div>
-  <span className="text-2xs text-neutral-400 block uppercase">Quarto</span>
-  <span className="font-semibold text-neutral-800 truncate block">
+  <span className="text-2xs text-muted-foreground block uppercase">Quarto</span>
+  <span className="font-semibold text-foreground line-clamp-2 text-anti-truncate block">
   {hotel.room_type}
   </span>
   </div>
   )}
   {hotel.meal_plan && (
   <div>
-  <span className="text-2xs text-neutral-400 block uppercase">Regime</span>
-  <span className="font-semibold text-neutral-800">{hotel.meal_plan}</span>
+  <span className="text-2xs text-muted-foreground block uppercase">Regime</span>
+  <span className="font-semibold text-foreground">{hotel.meal_plan}</span>
   </div>
   )}
   </div>

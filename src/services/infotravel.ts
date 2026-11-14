@@ -1738,14 +1738,13 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
       if (data.service === "hotels") {
         let hotelQuery = db
           .from("global_hotels")
-          .select("id, name, city, state, country, star_rating, meal_plan_default, amenities, photos")
+          .select("id, name, city, state, country, stars, amenities")
           .or(`city.ilike.%${safeDest}%,name.ilike.%${safeDest}%,country.ilike.%${safeDest}%`)
           .limit(8);
 
         const { data: hotels } = await hotelQuery;
         if (Array.isArray(hotels)) {
           for (const h of hotels) {
-            const photos = Array.isArray((h as any).photos) ? (h as any).photos : [];
             const amenities = Array.isArray((h as any).amenities) ? (h as any).amenities : [];
             results.push({
               id: String(h.id),
@@ -1754,12 +1753,12 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
               subtitle: [h.city, h.state, h.country].filter(Boolean).join(", "),
               destination: String(h.city || safeDest),
               priceCents: 0,
-              badge: h.star_rating ? `${h.star_rating} Estrelas` : "Hospedagem Verificada",
+              badge: h.stars ? `${h.stars} Estrelas` : "Hospedagem Verificada",
               includes: [
-                h.meal_plan_default ? String(h.meal_plan_default) : "Café da Manhã",
+                "Café da Manhã",
                 ...amenities.slice(0, 3).map(String),
               ],
-              imageUrl: photos[0] ? String(photos[0]) : null,
+              imageUrl: null,
               source: "agency_catalog",
             });
           }
@@ -1769,9 +1768,9 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
       // Consulta produtos/pacotes publicados na vitrine
       let prodQuery = db
         .from("products")
-        .select("id, name, slug, description, price_cents, image_url, metadata, store_id")
-        .eq("is_active", true)
-        .or(`name.ilike.%${safeDest}%,description.ilike.%${safeDest}%`)
+        .select("id, title, slug, description, price_cents, attributes, store_id, product_media(url, sort_order)")
+        .in("status", ["active", "published"])
+        .or(`title.ilike.%${safeDest}%,description.ilike.%${safeDest}%`)
         .limit(8);
 
       if (data.storeId) {
@@ -1781,11 +1780,14 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
       const { data: products } = await prodQuery;
       if (Array.isArray(products)) {
         for (const p of products) {
-          const meta = (p.metadata && typeof p.metadata === "object" ? p.metadata : {}) as Record<string, any>;
+          const meta = (p.attributes && typeof p.attributes === "object" ? p.attributes : {}) as Record<string, any>;
+          const sortedMedia = Array.isArray((p as any).product_media)
+            ? [...(p as any).product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            : [];
           results.push({
             id: String(p.id),
             category: data.service,
-            title: String(p.name),
+            title: String(p.title),
             subtitle: String(meta.destination || p.description || safeDest).slice(0, 110),
             destination: String(meta.destination || safeDest),
             departureDate: data.departureDate || meta.departure_date || undefined,
@@ -1795,7 +1797,7 @@ export const publicTourismAutoServiceSearchFn = createServerFn({ method: "POST" 
             includes: Array.isArray(meta.includes) && meta.includes.length > 0
               ? meta.includes.slice(0, 4).map(String)
               : [safeOrigin ? `Saída: ${safeOrigin}` : "Roteiro Completo", "Assessoria Especializada"],
-            imageUrl: p.image_url ? String(p.image_url) : null,
+            imageUrl: sortedMedia[0]?.url ? String(sortedMedia[0].url) : null,
             slug: p.slug ? String(p.slug) : null,
             source: "agency_catalog",
           });

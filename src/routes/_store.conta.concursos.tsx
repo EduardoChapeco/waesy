@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_store/conta/concursos")({
       { title: "Meus Sorteios e Cupons | Minha Conta" },
       {
         name: "description",
-        content: "Acompanhe seus cupons emitidos, status dos sorteios e prÃªmios conquistados.",
+        content: "Acompanhe seus cupons emitidos, status dos sorteios e prêmios conquistados.",
       },
     ],
   }),

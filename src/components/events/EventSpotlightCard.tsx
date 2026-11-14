@@ -90,14 +90,14 @@ export function EventSpotlightCard({
 
           {/* Badge de Data Flutuante no Topo */}
           <div className="absolute top-2.5 left-2.5 z-10">
-            <span className="bg-background/65 text-primary-foreground backdrop-blur-xs text-3xs sm:text-2xs font-mono font-bold px-2 py-1 rounded-md border border-white/20">
+            <span className="bg-neutral-950 text-neutral-50 text-3xs sm:text-2xs font-mono font-bold px-2 py-1 rounded-md border border-neutral-800">
               {formattedDate}
             </span>
           </div>
 
           {category && (
             <div className="absolute top-2.5 right-2.5 z-10">
-              <span className="bg-primary/90 text-primary-foreground text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-md">
+              <span className="bg-primary text-primary-foreground text-3xs font-black uppercase tracking-wider px-2 py-1 rounded-md">
                 {category}
               </span>
             </div>
@@ -113,12 +113,12 @@ export function EventSpotlightCard({
           <div className="space-y-1 pt-1">
             <div className="flex items-center gap-2 text-2xs text-muted-foreground font-mono">
               <CalendarBlank size={12} weight="bold" className="shrink-0 text-primary" />
-              <span className="truncate">{formattedDate}</span>
+              <span className="line-clamp-1">{formattedDate}</span>
             </div>
 
             <div className="flex items-center gap-2 text-2xs text-muted-foreground">
               <MapPin size={12} weight="bold" className="shrink-0" />
-              <span className="truncate">{displayLocation}</span>
+              <span className="line-clamp-1">{displayLocation}</span>
             </div>
           </div>
         </div>

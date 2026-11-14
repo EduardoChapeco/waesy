@@ -49,6 +49,12 @@ import {
   detectBuilderDocType,
 } from "./builder-copilot-bridge";
 import { retrieveRelevantProjectKnowledgeContext } from "./copilot-projects.functions";
+import {
+  listActiveExternalMcpToolsForUser,
+  invokeExternalMcpToolForUser,
+} from "./mcp-connectors.functions";
+import { getActiveSkillSlugsForUser } from "./ai-skills-router.functions";
+import { runSquadGraphExecution } from "./ai-agent-squad-orchestrator.functions";
 
 // ============================================================
 // Schemas de Validação
@@ -399,17 +405,15 @@ export function resolveAiPipelineSteps(
       previewSummary:
         "Métricas consolidadas de entradas, saídas, margem e indicadores de desempenho.",
       data: {
-        headers: ["Mês", "Entradas (R$)", "Saídas (R$)", "Saldo Líquido (R$)", "Margem (%)"],
+        headers: ["Período", "Entradas (R$)", "Saídas (R$)", "Saldo Líquido (R$)", "Margem (%)"],
         rows: [
-          ["Janeiro", "45.000,00", "28.000,00", "17.000,00", "37,7%"],
-          ["Fevereiro", "52.000,00", "31.000,00", "21.000,00", "40,3%"],
-          ["Março", "61.000,00", "34.000,00", "27.000,00", "44,2%"],
+          ["Período 1 (Modelo)", "0,00", "0,00", "0,00", "0,0%"],
         ],
       },
     };
 
     responseMessage =
-      "Gerei a planilha com as métricas financeiras e fluxo de caixa. O artefato tabular pode ser visualizado ou exportado diretamente:";
+      "Gerei o modelo estrutural da planilha com as métricas financeiras. O artefato tabular pode ser preenchido ou exportado diretamente:";
     updatedMemory.last_spreadsheet_created = new Date().toISOString();
   }
   // Detectar solicitação de compras, carrinho ou mercado
@@ -437,20 +441,12 @@ export function resolveAiPipelineSteps(
           type: "commerce_cart",
           data: {
             cartId: crypto.randomUUID(),
-            storeName: "Mercado & Varejo Central",
-            items: [
-              {
-                id: "item-1",
-                product_id: "prod-1",
-                title: "Cesta de Produtos Selecionados",
-                unit_price_cents: 8900,
-                quantity: 1,
-              },
-            ],
-            subtotalCents: 8900,
-            shippingCents: 800,
+            storeName: "Catálogo da Loja",
+            items: [],
+            subtotalCents: 0,
+            shippingCents: 0,
             discountCents: 0,
-            totalCents: 9700,
+            totalCents: 0,
           },
         },
       ],
@@ -580,9 +576,53 @@ export interface ResolvedCopilotAttachments {
 const COPILOT_ATTACHMENT_MAX_BYTES = 8 * 1024 * 1024;
 const COPILOT_ATTACHMENT_MAX_COUNT = 4;
 
+export async function extractPdfTextBestEffort(buf: Buffer): Promise<string> {
+  const chunks: string[] = [];
+  const pushLiteralsFromString = (source: string) => {
+    const parenRegex = /\(([^()\\]{3,240})\)/g;
+    let m: RegExpExecArray | null = parenRegex.exec(source);
+    while (m && chunks.length < 3500) {
+      const cleaned = m[1].replace(/[^\x20-\x7E\xA0-\xFF]/g, " ").replace(/\s+/g, " ").trim();
+      if (cleaned.length >= 3 && /[a-zA-ZÀ-ÿ0-9]/.test(cleaned)) {
+        chunks.push(cleaned);
+      }
+      m = parenRegex.exec(source);
+    }
+  };
+
+  const rawLatin1 = buf.toString("latin1");
+  pushLiteralsFromString(rawLatin1);
+
+  if (chunks.join(" ").length < 80) {
+    try {
+      const zlib = await import("zlib");
+      const streamRegex = /stream\r?\n([\s\S]*?)\r?\n?endstream/g;
+      let sm: RegExpExecArray | null = streamRegex.exec(rawLatin1);
+      let inspectedStreams = 0;
+      while (sm && inspectedStreams < 48 && chunks.length < 3500) {
+        inspectedStreams += 1;
+        const compressedBytes = Buffer.from(sm[1], "latin1");
+        if (compressedBytes.length > 0 && compressedBytes.length <= 2 * 1024 * 1024) {
+          try {
+            const inflated = zlib.inflateSync(compressedBytes).toString("latin1");
+            pushLiteralsFromString(inflated);
+          } catch {
+            // Stream não comprimido com zlib/FlateDecode ou protegido
+          }
+        }
+        sm = streamRegex.exec(rawLatin1);
+      }
+    } catch {
+      // Ambiente sem zlib disponível
+    }
+  }
+
+  return chunks.join(" ").replace(/\s+/g, " ").trim().slice(0, 20_000);
+}
+
 /**
  * Baixa os anexos do chat e os converte em insumo real para a IA:
- * imagens viram payload multimodal (visão/OCR), CSV/TXT/JSON viram texto no prompt.
+ * imagens viram payload multimodal (visão/OCR), CSV/TXT/JSON/PDF viram texto no prompt.
  * Falhas por anexo são reportadas em `notes` (nunca silenciadas como sucesso).
  */
 export async function resolveCopilotAttachments(
@@ -627,7 +667,14 @@ export async function resolveCopilotAttachments(
       } else if (mime === "text/plain" || mime === "text/csv" || mime === "application/json") {
         result.textBlocks.push(buf.toString("utf-8").slice(0, 20_000));
       } else if (mime === "application/pdf") {
-        result.notes.push("PDF recebido: apenas metadados disponíveis; leitura de texto de PDF não está ativa.");
+        const extractedPdf = await extractPdfTextBestEffort(buf);
+        if (extractedPdf.length >= 12) {
+          result.textBlocks.push(extractedPdf);
+        } else {
+          result.notes.push(
+            "PDF recebido sem camada de texto selecionável (digitalizado ou protegido); envie capturas das páginas para leitura visual (OCR).",
+          );
+        }
       } else {
         result.notes.push(`Tipo de anexo não suportado: ${mime || "desconhecido"}.`);
       }
@@ -1084,6 +1131,37 @@ export async function executeAiCopilotPipeline(
       }
     }
 
+    const hasAttachments = Array.isArray(context.attachments) && context.attachments.length > 0;
+    const resolvedAttachments = hasAttachments
+      ? await resolveCopilotAttachments(context.attachments)
+      : { images: [], textBlocks: [], notes: [] };
+
+    if (hasAttachments) {
+      steps.push({
+        id: `step-attachments-${startTime}`,
+        type: "tool",
+        label: "Leitura de Anexos & Documentos",
+        detail: `${resolvedAttachments.images.length} imagem(ns), ${resolvedAttachments.textBlocks.length} bloco(s) de texto extraído(s)`,
+        status: "completed",
+        fsmPhase: "UNDERSTANDING",
+        startedAt: new Date(startTime).toISOString(),
+        completedAt: new Date().toISOString(),
+        durationMs: Math.max(1, Date.now() - startTime),
+      });
+    }
+
+    const attachmentPromptBlock = [
+      ...resolvedAttachments.textBlocks.map((t, i) => `<ANEXO_${i + 1}>\n${t.slice(0, 8000)}\n</ANEXO_${i + 1}>`),
+      ...resolvedAttachments.notes.map((n) => `Observação sobre anexo: ${n}`),
+    ].join("\n\n");
+
+    const [activeSkillSlugs, externalMcpTools] = context.userId
+      ? await Promise.all([
+          getActiveSkillSlugsForUser(context.userId, context.storeId).catch(() => [] as string[]),
+          listActiveExternalMcpToolsForUser(context.userId).catch(() => []),
+        ])
+      : [[] as string[], [] as Awaited<ReturnType<typeof listActiveExternalMcpToolsForUser>>];
+
     // Executa o Gateway de IA Soberano se houver modelo ativo no pool (com Prompt Sandboxing)
     let gatewayResponse: any = null;
     try {
@@ -1122,6 +1200,22 @@ Se houver itens no CONTEXTO SOBERANO acima, mencione-os de forma clara, consulti
         ? "\n- Base de Conhecimento do Projeto (<PROJECT_KNOWLEDGE_BASE>): Toda vez que o bloco estiver presente, baseie sua resposta prioritariamente nos documentos, diretrizes, tarifas e regras anexadas ao projeto."
         : "";
 
+      const activeSkillsPromptBlock =
+        activeSkillSlugs.length > 0
+          ? `\n<HABILIDADES_ATIVAS>\nHabilidades habilitadas pelo usuário: ${activeSkillSlugs.join(", ")}\n</HABILIDADES_ATIVAS>`
+          : "";
+
+      const externalMcpPromptBlock =
+        externalMcpTools.length > 0
+          ? `\n<EXTERNAL_MCP_TOOLS>\nFerramentas MCP Externas conectadas (para executar, informe "tool_name" exatamente como abaixo):\n${externalMcpTools
+              .slice(0, 20)
+              .map(
+                (t) =>
+                  `- "${t.compositeToolName}" (${t.serverName}): ${t.description || t.toolName}`,
+              )
+              .join("\n")}\n</EXTERNAL_MCP_TOOLS>`
+          : "";
+
       const systemPrompt = `${persona.systemDirective}
 Identidade Operacional: ${persona.name} (${persona.role}) [${persona.tag}].
 
@@ -1150,15 +1244,20 @@ Ferramentas disponíveis:
 Responda SEMPRE em formato JSON com os campos:
 {
   "intent": "search_places" | "interactive_map" | "generate_dashboard" | "creative_post" | "create_ad" | "estimate_mobility" | "search_catalog" | "travel_itinerary" | "legal_triage" | "commercial_proposal" | "financial_report" | "general_chat",
+  "tool_name": "opcional: nome exato de tool WebMCP ou mcp_ext:<servidor>:<tool>",
   "tool_args": { ... },
   "message": "Mensagem acolhedora, consultiva, didática e humana para o usuário seguindo os 4 blocos",
   "step_label": "Título amigável da ação",
   "step_detail": "Detalhe amigável para o usuário"
-}${internalSearchContext}${projectKnowledgeBlock ? `\n${projectKnowledgeBlock}` : ""}${longTermMemory.formattedContext ? `\n${longTermMemory.formattedContext}` : ""}`;
+}${internalSearchContext}${activeSkillsPromptBlock}${externalMcpPromptBlock}${projectKnowledgeBlock ? `\n${projectKnowledgeBlock}` : ""}${longTermMemory.formattedContext ? `\n${longTermMemory.formattedContext}` : ""}`;
+
+      const effectiveStage1Prompt = attachmentPromptBlock
+        ? `${userPrompt}\n\n[CONTEÚDO DOS ANEXOS ENVIADOS]\n${attachmentPromptBlock}`
+        : userPrompt;
 
       // 🛡️ Prompt Sandboxing: Isola dados não-confiáveis externos em <user_untrusted_data>
       const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(
-        userPrompt,
+        effectiveStage1Prompt,
         systemPrompt,
       );
 
@@ -1344,23 +1443,138 @@ Responda SEMPRE em formato JSON com os campos:
       };
     }
 
-    // ── 0.1 Despachante WebMCP (26 Ferramentas Canônicas) ──
+    // ── 0.05 Orquestração de Squads (Manus Fragmentation) ──
+    const squadTriggerMatch =
+      /\/squad\b|\b(executar|acionar|orquestrar)\s+squad\b|\b(sales_squad|publishing_squad|finance_squad)\b|\bhandoff\s+multi-?agente|\bequipe\s+de\s+agentes/i.test(
+        userPrompt,
+      );
+    const isSquadSkillEnabled =
+      activeSkillSlugs.length === 0 || activeSkillSlugs.includes("squad_orchestrator");
+
+    if (squadTriggerMatch && isSquadSkillEnabled) {
+      fsm.transition("WAITING_TOOL", "Fragmentando demanda entre agentes especialistas do Squad");
+      const chosenSquadSlug = /\bfinance_squad\b|\b(pix|comprovante|concilia|faturamento|caixa)\b/i.test(
+        userPrompt,
+      )
+        ? "finance_squad"
+        : /\bpublishing_squad\b|\b(post|carrossel|campanha|copy|publica|social)\b/i.test(
+              userPrompt,
+            )
+          ? "publishing_squad"
+          : "sales_squad";
+
+      try {
+        const squadRun = await runSquadGraphExecution(
+          chosenSquadSlug,
+          {
+            prompt: attachmentPromptBlock
+              ? `${userPrompt}\n\n[CONTEÚDO DOS ANEXOS]\n${attachmentPromptBlock}`
+              : userPrompt,
+            context: { city: context.city, storeId: context.storeId },
+          },
+          { userId: context.userId, storeId: context.storeId },
+        );
+
+        for (const h of squadRun.handoffs) {
+          steps.push({
+            id: `step-squad-${chosenSquadSlug}-${h.stepIndex}-${Date.now()}`,
+            type: "skill",
+            label: `${h.toAgent} (Etapa ${h.stepIndex})`,
+            detail: h.objective,
+            status: h.acceptanceVerified ? "completed" : "failed",
+            fsmPhase: "PARTIAL_RESULT",
+            startedAt: new Date().toISOString(),
+            completedAt: new Date().toISOString(),
+            durationMs: h.latencyMs,
+          });
+        }
+
+        const finalText =
+          String(squadRun.finalOutput?.output || "") ||
+          squadRun.supervisorNotes ||
+          `Execução do squad ${chosenSquadSlug} finalizada.`;
+
+        artifact = {
+          id: crypto.randomUUID(),
+          type: "document",
+          title: `Relatório de Execução do Squad (${chosenSquadSlug})`,
+          version: 1,
+          totalVersions: 1,
+          authorName: persona.name,
+          authorRole: "Orquestrador Multi-Agentes",
+          previewSummary: `${squadRun.stepsCompleted} etapa(s) concluída(s) via handoff supervisionado.`,
+          data: {
+            squadSlug: chosenSquadSlug,
+            runId: squadRun.runId,
+            stepsCompleted: squadRun.stepsCompleted,
+            handoffs: squadRun.handoffs,
+            content: finalText,
+          },
+        };
+
+        if (canTransitionCopilotPhase(fsm.currentPhase, "PARTIAL_RESULT")) {
+          fsm.transition("PARTIAL_RESULT", `Squad ${chosenSquadSlug} concluiu ${squadRun.stepsCompleted} etapas`);
+        }
+        if (canTransitionCopilotPhase(fsm.currentPhase, "VALIDATING")) {
+          fsm.transition("VALIDATING", "Validando entrega final do squad");
+        }
+        if (canTransitionCopilotPhase(fsm.currentPhase, "COMPLETED")) {
+          fsm.transition("COMPLETED", `Squad ${chosenSquadSlug} finalizado`);
+        }
+
+        updatedMemory.last_squad_slug = chosenSquadSlug;
+        updatedMemory.last_squad_run_id = squadRun.runId;
+
+        return {
+          responseMessage: finalText,
+          executionId: squadRun.runId,
+          activitySteps: steps,
+          artifact,
+          updatedMemory,
+          fsmPhase: fsm.currentPhase,
+          fsmState: fsm.snapshot,
+        };
+      } catch (squadErr: any) {
+        fsm.recordFailure(squadErr);
+        return {
+          responseMessage: `Não foi possível concluir a orquestração do squad "${chosenSquadSlug}": ${String(squadErr?.message || "Erro interno").slice(0, 120)}`,
+          activitySteps: steps,
+          updatedMemory,
+          fsmPhase: fsm.currentPhase,
+          fsmState: fsm.snapshot,
+        };
+      }
+    }
+
+    // ── 0.1 Despachante WebMCP & MCP Externo ──
     const mcpCandidateTool = (gatewayResponse?.tool_name ||
       (intent in MCP_TOOL_REGISTRY ? intent : "")) as string;
-    const isMcpTool = Boolean(mcpCandidateTool && MCP_TOOL_REGISTRY[mcpCandidateTool]);
+    const externalToolDef = externalMcpTools.find(
+      (t) => t.compositeToolName === mcpCandidateTool,
+    );
+    const isExternalMcpTool = Boolean(context.userId && externalToolDef);
+    const isBuiltinMcpTool = Boolean(mcpCandidateTool && MCP_TOOL_REGISTRY[mcpCandidateTool]);
 
-    if (isMcpTool) {
+    if (isExternalMcpTool || isBuiltinMcpTool) {
       const stepStart = Date.now();
-      const toolDef = MCP_TOOL_REGISTRY[mcpCandidateTool];
-      fsm.transition("WAITING_TOOL", `Executando WebMCP Tool: ${mcpCandidateTool}`);
+      const toolDef = isBuiltinMcpTool ? MCP_TOOL_REGISTRY[mcpCandidateTool] : undefined;
+      fsm.transition(
+        "WAITING_TOOL",
+        `Executando ${isExternalMcpTool ? "MCP Externo" : "WebMCP Tool"}: ${mcpCandidateTool}`,
+      );
 
       steps.push({
         id: `step-mcp-${mcpCandidateTool}-${stepStart}`,
         type: "tool",
-        label: gatewayResponse?.step_label || "Ação Especializada",
+        label:
+          gatewayResponse?.step_label ||
+          (isExternalMcpTool
+            ? `MCP Externo: ${externalToolDef?.serverName || mcpCandidateTool}`
+            : "Ação Especializada"),
         detail:
           gatewayResponse?.step_detail ||
-          toolDef.description ||
+          externalToolDef?.description ||
+          toolDef?.description ||
           "Consultando registros oficiais da plataforma",
         status: "running",
         fsmPhase: "WAITING_TOOL",
@@ -1368,12 +1582,21 @@ Responda SEMPRE em formato JSON com os campos:
       });
 
       try {
-        const mcpResult = await executeMcpToolCall({
-          tool: mcpCandidateTool,
-          arguments: toolArgs,
-          storeId: context.storeId,
-          signal: context.signal,
-        });
+        const mcpResult: {
+          status: "success" | "error";
+          content: Array<{ type: string; text?: string; data?: any }>;
+        } = isExternalMcpTool
+          ? await invokeExternalMcpToolForUser(
+              context.userId!,
+              mcpCandidateTool,
+              (toolArgs || {}) as Record<string, unknown>,
+            )
+          : await executeMcpToolCall({
+              tool: mcpCandidateTool,
+              arguments: toolArgs,
+              storeId: context.storeId,
+              signal: context.signal,
+            });
         const toolDurationMs = Date.now() - stepStart;
         const toolText = mcpResult.content.find((content) => content.type === "text")?.text;
         toolCalls.push({
@@ -2048,8 +2271,8 @@ Responda SEMPRE em formato JSON com os campos:
       const term = toolArgs.query || extractSearchTerm(promptLower);
       let prodQuery = db
         .from("products")
-        .select("id, store_id, title, description, price_cents, images")
-        .eq("is_active", true)
+        .select("id, store_id, title, description, price_cents, product_media(url, sort_order)")
+        .in("status", ["active", "published"])
         .limit(4);
 
       if (context.storeId) {
@@ -2062,7 +2285,10 @@ Responda SEMPRE em formato JSON com os campos:
       const { data: prods } = await prodQuery;
 
       if (prods && prods.length > 0) {
-        const mainProd = prods[0];
+        const mainProd = prods[0] as any;
+        const mainMedia = Array.isArray(mainProd.product_media)
+          ? [...mainProd.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          : [];
         structuredPayload = {
           blocks: [
             {
@@ -2074,7 +2300,7 @@ Responda SEMPRE em formato JSON com os campos:
                   title: mainProd.title,
                   description: mainProd.description,
                   price_cents: mainProd.price_cents,
-                  image_url: (mainProd as any).images?.[0] || null,
+                  image_url: mainMedia[0]?.url || null,
                 },
                 modifier_groups: [
                   {
@@ -2567,17 +2793,10 @@ Responda SEMPRE em formato JSON com os campos:
     }
 
     // ── Estágio 4: Síntese Analítica IA sobre Registros Recuperados (@synthesizer) ──
-    const hasAttachments = Array.isArray(context.attachments) && context.attachments.length > 0;
     if (hasAttachments || !gatewayResponse?.message || (structuredPayload?.blocks && structuredPayload.blocks.length > 0 && intent !== "general_chat")) {
       try {
         const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
-        const resolvedAttachments = hasAttachments
-          ? await resolveCopilotAttachments(context.attachments)
-          : { images: [], textBlocks: [], notes: [] };
-        const attachmentContext = [
-          ...resolvedAttachments.textBlocks.map((t, i) => `Conteúdo do anexo ${i + 1}:\n${t}`),
-          ...resolvedAttachments.notes.map((n) => `Observação: ${n}`),
-        ].join("\n\n");
+        const attachmentContext = attachmentPromptBlock;
 
         const retrievedSummary = JSON.stringify({
           intent,
@@ -4126,7 +4345,6 @@ export const uploadCopilotMultimodalAttachment = createServerFn({ method: "POST"
     const bucket = "copilot-uploads";
     let uploadUrl = "";
 
-    // Tentativa com fallback de bucket para garantir resiliência
     const { error: uploadError } = await supabase.storage.from(bucket).upload(storagePath, buffer, {
       contentType: cleanMime,
       upsert: true,
@@ -4139,13 +4357,19 @@ export const uploadCopilotMultimodalAttachment = createServerFn({ method: "POST"
         upsert: true,
       });
       if (fbErr) {
-        console.warn("[copilot-upload] fallback bucket storage warning:", fbErr.message);
+        throw new Error(
+          `Falha no upload do anexo em todos os buckets autorizados: ${uploadError.message} / ${fbErr.message}`,
+        );
       }
       const { data: fbUrl } = supabase.storage.from(fallbackBucket).getPublicUrl(storagePath);
       uploadUrl = fbUrl?.publicUrl || "";
     } else {
       const { data: pubData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
       uploadUrl = pubData?.publicUrl || "";
+    }
+
+    if (!uploadUrl) {
+      throw new Error("Não foi possível obter a URL pública do anexo enviado.");
     }
 
     // Processamento e extração inicial de texto/conteúdo
@@ -4160,9 +4384,13 @@ export const uploadCopilotMultimodalAttachment = createServerFn({ method: "POST"
       const ascii = buffer.toString("latin1");
       const pageMatches = ascii.match(/\/Type\s*\/Page\b/g);
       const pagesCount = pageMatches ? pageMatches.length : 1;
-      extractedText = `[Documento PDF: ${data.fileName}, aprox. ${pagesCount} página(s), tamanho: ${(sizeBytes / 1024).toFixed(1)} KB]`;
+      const pdfText = await extractPdfTextBestEffort(buffer);
+      extractedText =
+        pdfText.length >= 12
+          ? pdfText.slice(0, 30_000)
+          : `[Documento PDF: ${data.fileName}, aprox. ${pagesCount} página(s), tamanho: ${(sizeBytes / 1024).toFixed(1)} KB — sem camada textual selecionável]`;
     } else if (cleanMime.startsWith("image/")) {
-      extractedText = `[Imagem anexada: ${data.fileName}, formato ${cleanMime}, tamanho: ${(sizeBytes / 1024).toFixed(1)} KB. Pronta para extração OCR/IA]`;
+      extractedText = `[Imagem anexada: ${data.fileName}, formato ${cleanMime}, tamanho: ${(sizeBytes / 1024).toFixed(1)} KB. Pronta para leitura visual/OCR]`;
     }
 
     return {

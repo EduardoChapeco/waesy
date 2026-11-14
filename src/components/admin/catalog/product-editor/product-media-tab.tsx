@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ImagePlus, Sparkles, Download, Plus, Check, Layers } from "lucide-react";
+import { ImagePlus, Download, Plus, Check, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,7 +78,7 @@ export function ProductMediaTab({ images, onImagesChange, variants }: ProductMed
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
+                <Layers className="size-4 text-primary" />
                 <span className="text-sm font-bold text-foreground">
                   Fotos da Grade de Variações
                 </span>

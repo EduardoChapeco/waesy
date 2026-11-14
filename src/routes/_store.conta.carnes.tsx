@@ -7,7 +7,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CreditCard, CheckCircle2, Clock, AlertCircle, Upload, FileText, Building2, Calendar, DollarSign, Copy, ChevronRight, ShieldCheck, TrendingDown, Info, Check, ExternalLink, FileCheck, MessageSquare, Smartphone, ShoppingBag, HelpCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, CreditCard, CheckCircle2, Clock, AlertCircle, Upload, FileText, Building2, Calendar, DollarSign, Copy, ChevronRight, ShieldCheck, TrendingDown, Info, Check, ExternalLink, FileCheck, MessageSquare, Smartphone, ShoppingBag, HelpCircle } from "lucide-react";
 import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { NativeMobileHeader } from "@/components/navigation";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
@@ -472,7 +472,7 @@ function ClientCarnesPage() {
                         className="min-h-11 h-11 px-3 rounded-lg text-xs font-bold gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
                         title="Simular quitação antecipada com dedução de encargos"
                       >
-                        <Sparkles className="size-3.5" />
+                        <CheckCircle2 className="size-3.5" />
                         <span>Quitar Antecipado</span>
                       </Button>
                     )}
@@ -653,7 +653,7 @@ function ClientCarnesPage() {
         <DialogContent className="max-w-md rounded-lg p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-emerald-600" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
               Quitação Antecipada
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">

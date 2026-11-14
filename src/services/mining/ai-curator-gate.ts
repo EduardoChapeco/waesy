@@ -33,7 +33,7 @@ export async function checkAiCurationAccess(
     if (storeId) {
       const { data: store } = await supabase
         .from("stores")
-        .select("id, plan, is_platform_root")
+        .select("id, plan_tier, subscription_plan, is_platform_root")
         .eq("id", storeId)
         .maybeSingle();
 
@@ -42,7 +42,8 @@ export async function checkAiCurationAccess(
         return { allowed: true, isPremium: true, hasByok: false };
       }
 
-      if (store?.plan && store.plan !== "free" && store.plan !== "gratuito") {
+      const activePlan = (store as any)?.plan_tier || (store as any)?.subscription_plan;
+      if (activePlan && activePlan !== "free" && activePlan !== "gratuito") {
         isPremium = true;
       }
     }
@@ -71,7 +72,7 @@ export async function checkAiCurationAccess(
       isPremium: false,
       hasByok: false,
       message:
-        "A Curadoria Avançada com Inteligência Artificial exige um Plano Premium ou a inserção da sua Chave de API própria (BYOK) nas Configurações.",
+        "A curadoria avançada exige Plano Premium ou Chave de API própria (BYOK) nas Configurações.",
     };
   } catch (err: any) {
     console.error("[checkAiCurationAccess] Error checking access:", err);

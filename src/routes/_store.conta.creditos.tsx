@@ -53,7 +53,7 @@ function UnifiedCreditsPage() {
   );
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-24 px-4 sm:px-6">
+    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-6">
       {/* ── 1. Top Header com Navegação Nativa Mobile e Desktop ── */}
       <NativeMobileHeader
         title="Créditos em Loja"
