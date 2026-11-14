@@ -11,6 +11,14 @@ const serverBrowserOnlyShim = fileURLToPath(
   new URL("./src/lib/server-browser-only-shim.ts", import.meta.url),
 );
 
+const serverRechartsShim = fileURLToPath(
+  new URL("./src/lib/server-recharts-shim.ts", import.meta.url),
+);
+
+const serverClientNoopShim = fileURLToPath(
+  new URL("./src/lib/server-client-noop-shim.ts", import.meta.url),
+);
+
 const clientServerCoreShim = fileURLToPath(
   new URL("./src/lib/client-start-server-core-shim.ts", import.meta.url),
 );
@@ -18,12 +26,27 @@ const clientServerCoreShim = fileURLToPath(
 const clientOnlyServerCoreGuard = {
   name: "waesy-client-only-server-core-guard",
   enforce: "pre" as const,
-  resolveId(source: string, _importer: string | undefined, options?: { ssr?: boolean }) {
+  resolveId(source: string, importer: string | undefined, options?: { ssr?: boolean }) {
     if (source === "@tanstack/start-server-core" && options?.ssr !== true) {
       return clientServerCoreShim;
     }
-    if (options?.ssr === true && ["jspdf", "html2canvas", "maplibre-gl", "xlsx"].includes(source)) {
-      return serverBrowserOnlyShim;
+    if (options?.ssr === true) {
+      if (["jspdf", "html2canvas", "maplibre-gl", "xlsx"].includes(source)) {
+        return serverBrowserOnlyShim;
+      }
+      if (source === "recharts" || source.startsWith("recharts/")) {
+        return serverRechartsShim;
+      }
+      if (["react-easy-crop", "canvas-confetti", "libphonenumber-js"].includes(source)) {
+        return serverClientNoopShim;
+      }
+      if (
+        source === "@/components/builder/OmniEditor" ||
+        (source === "./OmniEditor" &&
+          importer?.replace(/\\/g, "/").endsWith("/components/builder/index.ts"))
+      ) {
+        return serverClientNoopShim;
+      }
     }
     return null;
   },
