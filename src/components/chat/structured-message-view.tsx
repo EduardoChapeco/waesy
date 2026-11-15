@@ -119,7 +119,8 @@ export interface AIChatAction {
     | "open_place"
     | "request_travel_quote"
     | "submit_legal_demand"
-    | "publish_ad";
+    | "publish_ad"
+    | "open_artifact";
   payload: Record<string, any>;
 }
 

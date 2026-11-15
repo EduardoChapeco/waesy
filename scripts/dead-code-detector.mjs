@@ -129,6 +129,17 @@ export function auditDeadCode(options = {}) {
     }
   }
 
+  // Inclui shims e entrypoints declarados em vite.config.ts (ex: new URL("./src/...", import.meta.url))
+  const viteConfigPath = path.resolve(ROOT_DIR, "vite.config.ts");
+  if (fs.existsSync(viteConfigPath)) {
+    const viteContent = fs.readFileSync(viteConfigPath, "utf8");
+    const rootDummy = path.resolve(ROOT_DIR, "__vite__.ts").replace(/\\/g, "/");
+    for (const match of viteContent.matchAll(/["'](\.\/src\/[^"']+)["']/g)) {
+      const resolved = resolveImport(rootDummy, match[1], fileSet);
+      if (resolved) importedSet.add(resolved);
+    }
+  }
+
   const discoveredUnreferencedFiles = allFiles
     .map((file) => file.replace(/\\/g, "/"))
     .filter((file) => !isEntryPoint(file) && !importedSet.has(file))

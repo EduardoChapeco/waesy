@@ -243,8 +243,14 @@ describe("Microfase D — Subrequests Cloudflare, Hierarquia RAG e Telemetria Re
       path.resolve(__dirname, "../routes/workspace.copilot.tsx"),
       "utf8",
     );
+    const copilotHookSrc = fs.readFileSync(
+      path.resolve(__dirname, "../hooks/use-copilot-session.ts"),
+      "utf8",
+    );
     expect(workspaceCopilotSrc).not.toContain("tasks={[]}");
     expect(workspaceCopilotSrc).toContain("listUserDurableAiTasks");
-    expect(workspaceCopilotSrc).toContain("cancelDurableAiTask");
+    expect(workspaceCopilotSrc).toContain("useCopilotSession");
+    expect(copilotHookSrc).toContain("listUserDurableAiTasks");
+    expect(copilotHookSrc).toContain("cancelDurableAiTask");
   });
 });

@@ -188,11 +188,12 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 }
 
 function sanitizeUntrustedSnippet(text: string, maxLength = 1200): string {
-  return text
-    .replace(/[\u0000-\u001F\u007F]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, maxLength);
+  let cleaned = "";
+  for (let i = 0; i < text.length; i += 1) {
+    const code = text.charCodeAt(i);
+    cleaned += code <= 0x1f || code === 0x7f ? " " : text[i];
+  }
+  return cleaned.replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
 async function fetchJsonSafe(

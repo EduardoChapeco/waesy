@@ -298,18 +298,10 @@ export const uploadStoreMedia = createServerFn({ method: "POST" })
       // Extrai os bytes a partir da string base64
       const buffer = decodeInlineUpload(base64Data);
 
-      let { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
         contentType: fileType,
         upsert: true,
       });
-
-      if (uploadError && /bucket not found/i.test(uploadError.message || "")) {
-        await supabase.storage.createBucket(bucket, { public: !PRIVATE_SIGNED_BUCKETS.has(bucket) }).catch(() => null);
-        ({ error: uploadError } = await supabase.storage.from(bucket).upload(uniqueName, buffer, {
-          contentType: fileType,
-          upsert: true,
-        }));
-      }
 
       if (uploadError) {
         throw new Error(`Erro ao fazer upload da mídia: ${uploadError.message}`);
@@ -437,7 +429,7 @@ export const uploadAdminMedia = createServerFn({ method: "POST" })
 
 /**
  * Upload universal e resiliente de mídia (imagens e vídeos) via Server Function
- * Bypassa RLS client-side através do service_role e auto-cria buckets faltantes.
+ * Bypassa RLS client-side através do service_role com validação prévia de bucket/MIME.
  */
 export const uploadMediaUniversal = createServerFn({ method: "POST" })
   .validator(

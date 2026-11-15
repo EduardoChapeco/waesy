@@ -9,7 +9,8 @@ const studioMigration = fs.readFileSync(path.resolve(process.cwd(), "supabase/mi
 describe("Storage de mídia — W9.2", () => {
   it("valida MIME e limite de bytes antes de persistir", () => {
     expect(universal).toContain("assertAllowedBffBucket(bucket)");
-    expect(universal).toContain("validateMimeType(fileType)");
+    expect(universal).toContain("resolveNormalizedMimeType(fileType, fileName)");
+    expect(universal).toContain("validateMimeType(normalizedType)");
     expect(universal).toContain("decodeInlineUpload(base64Data)");
     expect(source).toContain("MAX_INLINE_UPLOAD_BYTES");
   });
@@ -26,11 +27,11 @@ describe("Storage de mídia — W9.2", () => {
     expect(universal).toContain("inspectImageDimensions(buffer, normalizedType)");
     expect(universal).toContain("createSignedUrl(uniqueName, 60 * 60)");
     expect(universal).toContain("sha256,");
-    expect(universal).toContain("expiresInSeconds: 60 * 60");
+    expect(universal).toContain("expiresInSeconds: PRIVATE_SIGNED_BUCKETS.has(bucket) ? 60 * 60 : 0");
   });
 
   it("não deriva extensão confiável do nome fornecido pelo usuário", () => {
-    expect(universal).toContain("const ext = extensionForMime(normalizedType)");
+    expect(universal).toContain("const ext = extensionForMime(normalizedType, fileName)");
     expect(universal).not.toContain('fileName.split(".").pop()?.toLowerCase()');
   });
 

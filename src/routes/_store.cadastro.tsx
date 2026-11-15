@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate, useRouter, redirect } from "@tanstack/react-router";
 import { ChevronRight, Eye, EyeOff, ShieldCheck, Layers, ArrowRight, ArrowLeft } from 'lucide-react';
+import { GoogleLogo } from "@phosphor-icons/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

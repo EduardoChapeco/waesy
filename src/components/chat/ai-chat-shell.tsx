@@ -100,6 +100,7 @@ export interface ChatThreadItem {
   avatarUrl?: string;
   lastMessageSnippet?: string;
   lastMessageAt?: string;
+  createdAt?: string;
   unreadCount?: number;
   isPinned?: boolean;
   isArchived?: boolean;
@@ -167,7 +168,7 @@ export interface AIChatShellProps {
   onCreateProject?: (payload: {
     title: string;
     folderId?: string | null;
-  }) => Promise<void> | void;
+  }) => Promise<unknown> | void;
   onAssignThreadHierarchy?: (
     threadId: string,
     hierarchy: { folderId?: string | null; projectId?: string | null },

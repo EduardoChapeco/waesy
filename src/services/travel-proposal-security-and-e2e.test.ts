@@ -539,12 +539,17 @@ describe("Proposals Workspace & Public Route UI Contract Integrity", () => {
       path.resolve(process.cwd(), "src/routes/workspace.turismo.propostas.index.tsx"),
       "utf8",
     );
-    expect(indexSrc).toContain("ProposalsSheetTable");
-    expect(indexSrc).toContain("ProposalGridCard");
-    expect(indexSrc).toContain("ProposalQuickPreviewSheet");
-    expect(indexSrc).toContain("ProposalPasswordDialog");
-    expect(indexSrc).toContain("list-offscreen-export-canvas");
-    expect(indexSrc).toContain("useWindowSizeClass");
+    const managerSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "src/components/tourism/proposals/TourismProposalsManager.tsx"),
+      "utf8",
+    );
+    expect(indexSrc).toContain("TourismProposalsManager");
+    expect(managerSrc).toContain("ProposalsSheetTable");
+    expect(managerSrc).toContain("ProposalGridCard");
+    expect(managerSrc).toContain("ProposalQuickPreviewSheet");
+    expect(managerSrc).toContain("ProposalPasswordDialog");
+    expect(managerSrc).toContain("list-offscreen-export-canvas");
+    expect(managerSrc).toContain("useWindowSizeClass");
 
     const publicSrc = fs.readFileSync(
       path.resolve(process.cwd(), "src/routes/_store.proposta.$token.tsx"),

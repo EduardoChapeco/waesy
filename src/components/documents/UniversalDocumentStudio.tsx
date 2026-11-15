@@ -638,7 +638,7 @@ export function UniversalDocumentStudio({
           : undefined,
       markdownContent:
         archetype === "presentation_deck" ? presentationDeckMarkdown : interpolatedMarkdown,
-      pageFormat: cmsConfig.format === "vertical-scroll" ? "a4-portrait" : cmsConfig.format,
+      pageFormat: cmsConfig.format,
       theme: {
         templateId: cmsConfig.visualThemeId,
         canvasBg: cmsConfig.canvasBg,
@@ -807,9 +807,7 @@ export function UniversalDocumentStudio({
               markdownContent={
                 archetype === "presentation_deck" ? presentationDeckMarkdown : interpolatedMarkdown
               }
-              pageFormat={
-                cmsConfig.format === "vertical-scroll" ? "a4-portrait" : cmsConfig.format
-              }
+              pageFormat={cmsConfig.format}
               theme={{
                 templateId: cmsConfig.visualThemeId,
                 canvasBg: cmsConfig.canvasBg,
@@ -1006,7 +1004,7 @@ export function UniversalDocumentStudio({
                         {archetype === "presentation_deck" && !isCanvasPresentation && currentEditableSlide && (
                           <section className="space-y-3 border-t border-border pt-4">
                             <div className="flex items-center justify-between gap-2">
-                              <Label className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                              <Label className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
                                 <Layers className="size-3.5" />
                                 <span>Slides da Apresentação ({editableSlides.length})</span>
                               </Label>
@@ -1014,14 +1012,14 @@ export function UniversalDocumentStudio({
                                 type="button"
                                 variant="outline"
                                 onClick={handleAddPresentationSlide}
-                                className="h-11 min-h-11 px-2.5 text-xs font-bold gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="h-11 min-h-11 px-3 text-xs font-bold gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <Plus className="size-3.5" />
                                 <span>Novo Slide</span>
                               </Button>
                             </div>
 
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="flex flex-wrap gap-2">
                               {editableSlides.map((sl, idx) => (
                                 <button
                                   key={sl.id}
@@ -1039,7 +1037,7 @@ export function UniversalDocumentStudio({
                               ))}
                             </div>
 
-                            <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2.5">
+                            <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-3">
                               <div className="flex items-center justify-between gap-2">
                                 <Badge variant="secondary" className="text-2xs">
                                   Editando Slide {currentEditableSlide.pageNumber}
@@ -1110,9 +1108,9 @@ export function UniversalDocumentStudio({
                                 {currentEditableSlide.cards.map((card, cIdx) => (
                                   <div
                                     key={cIdx}
-                                    className="p-2 rounded border border-border bg-background space-y-1.5"
+                                    className="p-2 rounded border border-border bg-background space-y-2"
                                   >
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-2">
                                       <Input
                                         value={card.label}
                                         onChange={(e) => {
@@ -1873,7 +1871,7 @@ export function UniversalDocumentStudio({
                             {activeTemplateMeta?.shortLabel}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Button
                             type="button"
                             variant={viewAllSlidesInCanvas ? "secondary" : "outline"}
@@ -1925,17 +1923,16 @@ export function UniversalDocumentStudio({
                             key={slide.id}
                             className={cn(
                               "presentation-page w-full min-h-full p-8 sm:p-10 flex flex-col justify-between gap-6 waesy-dyn-bg waesy-dyn-fg",
-                              cmsConfig.fontPreset === "editorial_serif"
+                              cmsConfig.fontPreset === "editorial" ||
+                                cmsConfig.fontPreset === "luxury"
                                 ? "font-serif"
-                                : cmsConfig.fontPreset === "technical_mono"
-                                  ? "font-mono"
-                                  : "font-sans",
+                                : "font-sans",
                             )}
                             style={
                               {
                                 "--dyn-bg": resolvedTheme.canvasBg,
-                                "--dyn-fg": resolvedTheme.canvasFg,
-                                "--dyn-bdr": resolvedTheme.surfaceBorder,
+                                "--dyn-fg": resolvedTheme.ink,
+                                "--dyn-bdr": resolvedTheme.border,
                               } as React.CSSProperties
                             }
                           >
@@ -1957,7 +1954,7 @@ export function UniversalDocumentStudio({
                                         alt={tenant.companyName}
                                         crossOrigin="anonymous"
                                         onError={() => setAgencyLogoFailed(true)}
-                                        className="h-12 w-auto max-w-40 object-contain rounded-md bg-white/95 px-2 py-1 border border-border/40 shrink-0"
+                                        className="h-12 w-auto max-w-40 object-contain rounded-md bg-card px-2 py-1 border border-border/40 shrink-0"
                                       />
                                     ) : (
                                       <div
@@ -2001,8 +1998,8 @@ export function UniversalDocumentStudio({
                                       className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider waesy-dyn-bg waesy-dyn-fg"
                                       style={
                                         {
-                                          "--dyn-bg": resolvedTheme.brandSoftBg,
-                                          "--dyn-fg": resolvedTheme.brandSoftFg,
+                                          "--dyn-bg": resolvedTheme.brandSoft,
+                                          "--dyn-fg": resolvedTheme.ink,
                                         } as React.CSSProperties
                                       }
                                     >
@@ -2046,8 +2043,8 @@ export function UniversalDocumentStudio({
                                   className="p-4 rounded-xl border text-sm leading-relaxed waesy-dyn-bg waesy-dyn-bdr"
                                   style={
                                     {
-                                      "--dyn-bg": resolvedTheme.surfaceBg,
-                                      "--dyn-bdr": resolvedTheme.surfaceBorder,
+                                      "--dyn-bg": resolvedTheme.surfaceCard,
+                                      "--dyn-bdr": resolvedTheme.border,
                                     } as React.CSSProperties
                                   }
                                 >
@@ -2064,8 +2061,8 @@ export function UniversalDocumentStudio({
                                       className="p-4 rounded-xl border space-y-2 flex flex-col justify-between waesy-dyn-bg waesy-dyn-bdr"
                                       style={
                                         {
-                                          "--dyn-bg": resolvedTheme.surfaceBg,
-                                          "--dyn-bdr": resolvedTheme.surfaceBorder,
+                                          "--dyn-bg": resolvedTheme.surfaceCard,
+                                          "--dyn-bdr": resolvedTheme.border,
                                         } as React.CSSProperties
                                       }
                                     >
@@ -2105,16 +2102,16 @@ export function UniversalDocumentStudio({
                                   {slide.steps.map((st) => (
                                     <div
                                       key={st.stepNumber}
-                                      className="p-4 rounded-xl border space-y-1.5 waesy-dyn-bg waesy-dyn-bdr"
+                                      className="p-4 rounded-xl border space-y-2 waesy-dyn-bg waesy-dyn-bdr"
                                       style={
                                         {
-                                          "--dyn-bg": resolvedTheme.surfaceBg,
-                                          "--dyn-bdr": resolvedTheme.surfaceBorder,
+                                          "--dyn-bg": resolvedTheme.surfaceCard,
+                                          "--dyn-bdr": resolvedTheme.border,
                                         } as React.CSSProperties
                                       }
                                     >
                                       <span
-                                        className="inline-flex px-2.5 py-0.5 rounded text-2xs font-bold waesy-dyn-bg waesy-dyn-fg"
+                                        className="inline-flex px-3 py-1 rounded text-2xs font-bold waesy-dyn-bg waesy-dyn-fg"
                                         style={
                                           {
                                             "--dyn-bg": resolvedTheme.brandAccent,
@@ -2138,10 +2135,10 @@ export function UniversalDocumentStudio({
                             <footer
                               className="pt-4 border-t flex items-center justify-between gap-4 text-xs opacity-80 waesy-dyn-bdr"
                               style={
-                                { "--dyn-bdr": resolvedTheme.surfaceBorder } as React.CSSProperties
+                                { "--dyn-bdr": resolvedTheme.border } as React.CSSProperties
                               }
                             >
-                              <div className="space-y-0.5">
+                              <div className="space-y-1">
                                 <span className="font-bold block">
                                   {tenant.companyName} · {formState.clientName || "Apresentação Executiva"}
                                 </span>
@@ -2154,7 +2151,7 @@ export function UniversalDocumentStudio({
                                 <img
                                   src={qrCodeUri}
                                   alt={`QR Code ${formState.protocolCode}`}
-                                  className="size-12 rounded border border-border bg-white p-1 shrink-0"
+                                  className="size-12 rounded border border-border bg-card p-1 shrink-0"
                                 />
                               )}
                             </footer>

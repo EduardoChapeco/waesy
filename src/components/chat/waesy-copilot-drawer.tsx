@@ -185,15 +185,21 @@ export function WaesyCopilotDrawer(_props: { session?: { id?: string; user?: { i
 
   const handleDrawerAction = async (action: AIChatAction) => {
     return dispatchCopilotClientAction(action, {
-      refreshCart,
-      setCartOpen: setIsGlobalCartOpen,
-      navigate: (to) => {
-        setIsOpen(false);
-        navigate({ to: to as any });
+      onAddedToCart: async () => {
+        await refreshCart();
+        setIsGlobalCartOpen(true);
       },
-      notifySuccess: (msg) => toast.success(msg),
-      notifyInfo: (msg) => toast.info(msg),
-      notifyError: (msg) => toast.error(msg),
+      onBeforeNavigate: () => setIsOpen(false),
+      navigate: (opts) => {
+        setIsOpen(false);
+        navigate({ to: opts.to as any, search: opts.search as any });
+      },
+      notify: {
+        success: (msg) => toast.success(msg),
+        info: (msg) => toast.info(msg),
+        error: (msg) => toast.error(msg),
+      },
+      mode: "concierge",
     });
   };
 

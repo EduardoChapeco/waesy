@@ -1190,7 +1190,7 @@ export const upgradeStoreToWaesyMax = createServerFn({ method: "POST" }).handler
     upgraded_to_max_at: now,
   };
 
-  await supabase
+  const { error: upgradeErr } = await supabase
     .from("stores")
     .update({
       plan_tier: "max",
@@ -1198,6 +1198,10 @@ export const upgradeStoreToWaesyMax = createServerFn({ method: "POST" }).handler
       updated_at: now,
     })
     .eq("id", identity.store_id);
+
+  if (upgradeErr) {
+    throw new Error(upgradeErr.message || "Falha ao atualizar assinatura Waesy Max.");
+  }
 
   try {
     const { recordSubscriptionMonthlyFee } = await import("./billing-ledger.functions");

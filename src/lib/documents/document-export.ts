@@ -659,3 +659,13 @@ export async function exportDocumentBundle(
   });
   return { ok: true, format };
 }
+
+export async function exportStudioDocument(
+  format: DocumentExportFormat,
+  options: Omit<ExportDocumentBundleOptions, "format">,
+): Promise<{ ok: boolean; format: DocumentExportFormat }> {
+  return exportDocumentBundle({
+    ...options,
+    format,
+  });
+}

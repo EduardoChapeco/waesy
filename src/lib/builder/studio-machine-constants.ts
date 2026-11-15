@@ -5,6 +5,7 @@
  */
 
 import type { StudioBrandProfile } from "@/types/studio-machine";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 export const VISUAL_STYLES = {
   escamas_ultra: "Escamas (Hyper-Layered 3D)",
@@ -52,9 +53,9 @@ export const DEFAULT_BRAND_PROFILE: StudioBrandProfile = {
   name: "Waesy Notícias & Hub",
   niche: "Jornalismo & Comércio Local",
   handle: "@waesybrasil",
-  primaryColor: "var(--color-slate-900)",
-  secondaryColor: "var(--color-sky-400)",
-  accentColor: "var(--warning)",
+  primaryColor: TOKEN_HEX.neutral900,
+  secondaryColor: TOKEN_HEX.blue600,
+  accentColor: TOKEN_HEX.amber500,
   fontHeading: "Inter",
   fontBody: "Inter",
   mood: "Clean, editorial, autoridade de dados, alto contraste",

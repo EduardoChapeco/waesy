@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { assertStoreAccess, getServerIdentity, STAFF_ROLES } from "@/lib/server-access";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { getIbgeMarketIntelligence } from "@/services/ibge-market-intelligence.functions";
 import {
@@ -39,8 +39,8 @@ export interface ComperatorCompetitorRow {
   distanceKm: number;
   latitude: number;
   longitude: number;
-  estimatedTicketCents: number;
-  pricePositioning: "economico" | "intermediario" | "premium";
+  estimatedTicketCents: number | null;
+  pricePositioning: "economico" | "intermediario" | "premium" | "nao_informado";
   source: string;
   strengths: string[];
   weaknesses: string[];
@@ -203,21 +203,6 @@ const saveViabilityCanvasInputSchema = z.object({
   executiveSummary: z.string().optional(),
 });
 
-function deterministicOffset(seed: string, index: number, maxDeltaDeg: number): { dLat: number; dLon: number } {
-  let h = 2166136261 >>> 0;
-  const str = `${seed}:${index}`;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  const angle = ((h % 360) * Math.PI) / 180;
-  const distFactor = 0.22 + (((h >>> 8) % 75) / 100);
-  return {
-    dLat: Number((Math.sin(angle) * maxDeltaDeg * distFactor).toFixed(6)),
-    dLon: Number((Math.cos(angle) * maxDeltaDeg * distFactor).toFixed(6)),
-  };
-}
-
 async function geocodeAddressOrFallback(
   targetAddress: string,
   city: string,
@@ -283,39 +268,40 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
   radiusKm: number;
   city: string;
   nicheSlug: string;
-  baseTicketCents: number;
+  baseTicketCents?: number;
 }): Promise<{
   competitors: GeoPointOfInterest[];
   anchors: GeoPointOfInterest[];
 }> {
-  const { centerLat, centerLon, radiusKm, city, nicheSlug, baseTicketCents } = params;
+  const { centerLat, centerLon, radiusKm, city, nicheSlug } = params;
   const supabase = getServerClient();
   const competitors: GeoPointOfInterest[] = [];
   const anchors: GeoPointOfInterest[] = [];
 
-  // 1. Consulta Diretório Comercial e Lojas Reais no Supabase
+  // 1. Consulta Diretório Comercial e Lojas Reais no Supabase (apenas coordenadas e preços reais)
   try {
     const [dirRes, storesRes] = await Promise.all([
       supabase
         .from("directory_listings")
-        .select("id, business_name, category, metadata, city, address")
+        .select("id, business_name, category, metadata, city, address, latitude, longitude, rating, reviews_count")
         .ilike("city", `%${city.trim()}%`)
         .limit(20),
       supabase
         .from("stores")
-        .select("id, name, settings, city, address")
+        .select("id, name, settings, city, address, google_rating, google_review_count")
         .ilike("city", `%${city.trim()}%`)
         .limit(15),
     ]);
 
     const dirRows = dirRes.data || [];
-    dirRows.forEach((row: any, idx: number) => {
-      const offset = deterministicOffset(row.id || row.business_name, idx, 0.011);
-      const lat = centerLat + offset.dLat;
-      const lon = centerLon + offset.dLon;
+    dirRows.forEach((row: any) => {
+      const lat = typeof row.latitude === "number" ? row.latitude : Number(row.latitude);
+      const lon = typeof row.longitude === "number" ? row.longitude : Number(row.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) return;
       const dist = calculateHaversineDistanceKm(centerLat, centerLon, lat, lon);
       if (dist <= radiusKm) {
-        const subcat = (row.metadata as any)?.subcategory || "";
+        const meta = (row.metadata as Record<string, any>) || {};
+        const subcat = meta.subcategory || "";
         const catLower = `${row.category || ""} ${subcat}`.toLowerCase();
         const isAnchor =
           catLower.includes("mercado") ||
@@ -324,18 +310,26 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
           catLower.includes("farmacia") ||
           catLower.includes("hospital");
 
-        const priceVariance = 0.85 + ((idx % 5) * 0.08);
+        const realAvgTicket =
+          typeof meta.avg_ticket_cents === "number" && meta.avg_ticket_cents > 0
+            ? meta.avg_ticket_cents
+            : null;
+        const realReviewsCount = Number(row.reviews_count || 0);
+        const realRating =
+          realReviewsCount > 0 && typeof row.rating === "number" ? Number(row.rating) : null;
+
         const poi: GeoPointOfInterest = {
           id: `dir-${row.id}`,
-          name: row.business_name || `Estabelecimento #${idx + 1}`,
+          name: row.business_name || row.category || "Estabelecimento local",
           kind: isAnchor ? "anchor" : "competitor",
           category: subcat || row.category || nicheSlug,
           latitude: lat,
           longitude: lon,
           weight: isAnchor ? 1.4 : 1.0,
-          avgPriceCents: Math.round(baseTicketCents * priceVariance),
+          avgPriceCents: realAvgTicket,
+          rating: realRating,
           source: "supabase_directory",
-          address: row.address || `${city} - Centro`,
+          address: row.address || city,
         };
         if (isAnchor) {
           anchors.push(poi);
@@ -346,14 +340,19 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
     });
 
     const storeRows = storesRes.data || [];
-    storeRows.forEach((st: any, idx: number) => {
+    storeRows.forEach((st: any) => {
       if (competitors.length >= 12) return;
-      const offset = deterministicOffset(st.id || st.name, idx + 30, 0.012);
-      const lat = centerLat + offset.dLat;
-      const lon = centerLon + offset.dLon;
+      const stSettings = (st.settings as Record<string, any>) || {};
+      const lat = typeof stSettings.latitude === "number" ? stSettings.latitude : Number(stSettings.latitude);
+      const lon = typeof stSettings.longitude === "number" ? stSettings.longitude : Number(stSettings.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) return;
       const dist = calculateHaversineDistanceKm(centerLat, centerLon, lat, lon);
       if (dist <= radiusKm) {
-        const stSettings = (st.settings as Record<string, any>) || {};
+        const realAvgTicket =
+          typeof stSettings.avg_ticket_cents === "number" && stSettings.avg_ticket_cents > 0
+            ? stSettings.avg_ticket_cents
+            : null;
+        const realReviewsCount = Number(st.google_review_count || 0);
         competitors.push({
           id: `store-${st.id}`,
           name: st.name,
@@ -362,9 +361,10 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
           latitude: lat,
           longitude: lon,
           weight: 1.15,
-          avgPriceCents: Math.round(baseTicketCents * (0.9 + (idx % 4) * 0.07)),
+          avgPriceCents: realAvgTicket,
+          rating: realReviewsCount > 0 && typeof st.google_rating === "number" ? Number(st.google_rating) : null,
           source: "supabase_store",
-          address: st.address || `${city}`,
+          address: st.address || city,
         });
       }
     });
@@ -398,7 +398,7 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
     if (osmRes.ok) {
       const osmJson: any = await osmRes.json();
       const elements: any[] = osmJson?.elements || [];
-      elements.forEach((el, idx) => {
+      elements.forEach((el) => {
         if (!el.lat || !el.lon || !el.tags?.name) return;
         const amenityOrShop = el.tags.amenity || el.tags.shop || "comercio";
         const isAnchor = ["bank", "pharmacy", "school", "supermarket"].includes(amenityOrShop);
@@ -411,11 +411,12 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
           latitude: Number(el.lat),
           longitude: Number(el.lon),
           weight: isAnchor ? 1.5 : 1.0,
-          avgPriceCents: Math.round(baseTicketCents * (0.88 + ((idx % 5) * 0.06))),
+          avgPriceCents: null,
+          rating: null,
           source: "osm_overpass",
           address: el.tags["addr:street"]
             ? `${el.tags["addr:street"]}${el.tags["addr:housenumber"] ? `, ${el.tags["addr:housenumber"]}` : ""}`
-            : `${city}`,
+            : city,
         };
 
         if (isAnchor && anchors.length < 10) {
@@ -426,58 +427,7 @@ async function discoverCompetitorsAndUrbanAnchors(params: {
       });
     }
   } catch {
-    // Fallback determinístico territorial abaixo caso Overpass oscile
-  }
-
-  // 3. Garantia determinística de malha territorial caso o município ainda tenha poucos registros indexados
-  const benchmark = NICHE_ECONOMIC_BENCHMARKS[nicheSlug] || NICHE_ECONOMIC_BENCHMARKS.gastronomia;
-  if (false && competitors.length < 3) {
-    const fallbackCompetitorNames = [
-      ` Operador Tradicional ${city} Centro`,
-      `Rede Express ${benchmark.label.split(",")[0]}`,
-      `Especialista Local ${city} Sul`,
-      `Ponto Premium Avenida Principal`,
-    ];
-    fallbackCompetitorNames.forEach((label, idx) => {
-      if (competitors.length >= 4) return;
-      const offset = deterministicOffset(`${city}-${nicheSlug}-comp`, idx, 0.009);
-      competitors.push({
-        id: `local-comp-${idx + 1}`,
-        name: label.trim(),
-        kind: "competitor",
-        category: benchmark.label.split(",")[0],
-        latitude: Number((centerLat + offset.dLat).toFixed(6)),
-        longitude: Number((centerLon + offset.dLon).toFixed(6)),
-        weight: 1.0,
-        avgPriceCents: Math.round(baseTicketCents * (0.88 + idx * 0.09)),
-        source: "heuristic_local",
-        address: `Eixo Comercial Central · ${city}`,
-      });
-    });
-  }
-
-  if (anchors.length < 3) {
-    const fallbackAnchors = [
-      { name: `Supermercado Âncora Regional (${city})`, category: "Supermercado / Hipermercado", weight: 1.6 },
-      { name: `Agência Bancária & Polo Financeiro`, category: "Serviços Bancários", weight: 1.3 },
-      { name: `Farmácia & Saúde Central 24h`, category: "Saúde & Fluxo Contínuo", weight: 1.25 },
-      { name: `Colégio / Polo Universitário Local`, category: "Educação & Tráfego Diário", weight: 1.4 },
-    ];
-    fallbackAnchors.forEach((anc, idx) => {
-      if (anchors.length >= 4) return;
-      const offset = deterministicOffset(`${city}-anchor`, idx, 0.0075);
-      anchors.push({
-        id: `local-anchor-${idx + 1}`,
-        name: anc.name,
-        kind: "anchor",
-        category: anc.category,
-        latitude: Number((centerLat + offset.dLat).toFixed(6)),
-        longitude: Number((centerLon + offset.dLon).toFixed(6)),
-        weight: anc.weight,
-        source: "heuristic_local",
-        address: `Raio Primário · ${city}`,
-      });
-    });
+    // Sem âncoras ou POIs sintéticos: retorna estritamente dados reais obtidos
   }
 
   return { competitors, anchors };
@@ -487,42 +437,36 @@ function buildComperatorMatrix(
   centerLat: number,
   centerLon: number,
   competitors: GeoPointOfInterest[],
-  nicheSlug: string,
   baseTicketCents: number,
 ): ComperatorCompetitorRow[] {
-  const benchmark = NICHE_ECONOMIC_BENCHMARKS[nicheSlug] || NICHE_ECONOMIC_BENCHMARKS.gastronomia;
-  const features = benchmark.defaultFeatures;
-
-  return competitors.slice(0, 8).map((comp, idx) => {
+  return competitors.slice(0, 8).map((comp) => {
     const distKm = calculateHaversineDistanceKm(
       centerLat,
       centerLon,
       comp.latitude,
       comp.longitude,
     );
-    const estTicket = comp.avgPriceCents || Math.round(baseTicketCents * (0.9 + (idx % 4) * 0.08));
-    const ratio = estTicket / Math.max(100, baseTicketCents);
+    const estTicket = typeof comp.avgPriceCents === "number" && comp.avgPriceCents > 0 ? comp.avgPriceCents : null;
+    const ratio = estTicket !== null ? estTicket / Math.max(100, baseTicketCents) : null;
     const pricePositioning: ComperatorCompetitorRow["pricePositioning"] =
-      ratio < 0.93 ? "economico" : ratio > 1.08 ? "premium" : "intermediario";
-
-    const featureSupport: Record<string, boolean> = {};
-    features.forEach((feat, fIdx) => {
-      featureSupport[feat] = (idx + fIdx) % 2 === 0;
-    });
+      ratio === null
+        ? "nao_informado"
+        : ratio < 0.93
+          ? "economico"
+          : ratio > 1.08
+            ? "premium"
+            : "intermediario";
 
     const strengths =
-      pricePositioning === "economico"
-        ? ["Preço de entrada agressivo", "Tráfego recorrente de bairro"]
-        : pricePositioning === "premium"
-          ? ["Percepção de marca consolidada", "Margem unitária elevada"]
-          : ["Localização conhecida na microrregião", "Mix tradicional validado"];
+      pricePositioning === "nao_informado"
+        ? []
+        : pricePositioning === "economico"
+          ? ["Ticket médio inferior ao cenário base informado"]
+          : pricePositioning === "premium"
+            ? ["Ticket médio superior ao cenário base informado"]
+            : ["Posicionamento de preço próximo ao cenário base"];
 
-    const weaknesses =
-      pricePositioning === "economico"
-        ? ["Baixa diferenciação digital e jornada sem fidelização", "Atendimento padronizado sem personalização"]
-        : pricePositioning === "premium"
-          ? ["Barreira de preço para classes C1/C2 em compras semanais", "Menor velocidade de giro em dias úteis"]
-          : ["Ausência de precificação dinâmica e entrega integrada", "Presença omnichannel subutilizada"];
+    const weaknesses: string[] = [];
 
     return {
       id: comp.id,
@@ -543,7 +487,7 @@ function buildComperatorMatrix(
               : "Malha Territorial",
       strengths,
       weaknesses,
-      featureSupport,
+      featureSupport: {},
     };
   });
 }
@@ -929,7 +873,6 @@ export const runCortexViabilityAndGeomarketingStudy = createServerFn({ method: "
       coords.latitude,
       coords.longitude,
       competitors,
-      nicheSlug,
       baseTicketCents,
     );
 
@@ -1322,47 +1265,74 @@ export const saveViabilityCanvasAndSwot = createServerFn({ method: "POST" })
   .validator((d: unknown) => saveViabilityCanvasInputSchema.parse(d))
   .handler(async ({ data }): Promise<{ success: boolean; updatedAt: string }> => {
     const { studyId, storeId, swotAnalysis, bmcCanvas, executiveSummary } = data;
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para salvar alterações do estudo de viabilidade.");
+    }
+
     const supabase = getServerClient();
+    const { data: existingStudy, error: fetchErr } = await supabase
+      .from("market_viability_studies")
+      .select("id, store_id, user_id")
+      .eq("id", studyId)
+      .maybeSingle();
+
+    if (fetchErr) {
+      throw new Error(fetchErr.message || "Falha ao localizar estudo de viabilidade.");
+    }
+    if (!existingStudy) {
+      throw new Error("Estudo de viabilidade não encontrado.");
+    }
+
+    const scopedStoreId = storeId || existingStudy.store_id;
+    if (scopedStoreId) {
+      assertStoreAccess(identity, STAFF_ROLES, scopedStoreId);
+    } else if (existingStudy.user_id && existingStudy.user_id !== identity.id && !identity.isPlatformAdmin) {
+      throw new Error("Acesso não autorizado a este estudo de viabilidade.");
+    }
+
     const updatedAt = new Date().toISOString();
+    const updatePayload: Record<string, unknown> = {
+      swot_analysis: swotAnalysis,
+      bmc_canvas: bmcCanvas,
+      updated_at: updatedAt,
+    };
+    if (executiveSummary !== undefined) {
+      updatePayload.executive_summary = executiveSummary;
+    }
 
-    try {
-      const updatePayload: Record<string, unknown> = {
-        swot_analysis: swotAnalysis,
-        bmc_canvas: bmcCanvas,
-        updated_at: updatedAt,
-      };
-      if (executiveSummary !== undefined) {
-        updatePayload.executive_summary = executiveSummary;
+    const { error: updateErr } = await supabase
+      .from("market_viability_studies")
+      .update(updatePayload)
+      .eq("id", studyId);
+
+    if (updateErr) {
+      throw new Error(updateErr.message || "Falha ao salvar Business Model Canvas e SWOT.");
+    }
+
+    if (scopedStoreId) {
+      const { error: bmcErr } = await supabase
+        .from("store_business_model_canvas")
+        .upsert(
+          {
+            store_id: scopedStoreId,
+            key_partners: bmcCanvas.key_partners,
+            key_activities: bmcCanvas.key_activities,
+            key_resources: bmcCanvas.key_resources,
+            value_propositions: bmcCanvas.value_propositions,
+            customer_relationships: bmcCanvas.customer_relationships,
+            channels: bmcCanvas.channels,
+            customer_segments: bmcCanvas.customer_segments,
+            cost_structure: bmcCanvas.cost_structure,
+            revenue_streams: bmcCanvas.revenue_streams,
+            updated_at: updatedAt,
+          },
+          { onConflict: "store_id" },
+        );
+
+      if (bmcErr) {
+        throw new Error(bmcErr.message || "Falha ao sincronizar Business Model Canvas da loja.");
       }
-
-      await supabase
-        .from("market_viability_studies")
-        .update(updatePayload)
-        .eq("id", studyId);
-
-      if (storeId) {
-        await supabase
-          .from("store_business_model_canvas")
-          .upsert(
-            {
-              store_id: storeId,
-              key_partners: bmcCanvas.key_partners,
-              key_activities: bmcCanvas.key_activities,
-              key_resources: bmcCanvas.key_resources,
-              value_propositions: bmcCanvas.value_propositions,
-              customer_relationships: bmcCanvas.customer_relationships,
-              channels: bmcCanvas.channels,
-              customer_segments: bmcCanvas.customer_segments,
-              cost_structure: bmcCanvas.cost_structure,
-              revenue_streams: bmcCanvas.revenue_streams,
-              updated_at: updatedAt,
-            },
-            { onConflict: "store_id" },
-          )
-          .then(() => null, () => null);
-      }
-    } catch (err) {
-      console.warn("[geomarketing-cortex] Aviso ao persistir edição de BMC/SWOT:", err);
     }
 
     return { success: true, updatedAt };
@@ -1371,12 +1341,12 @@ export const saveViabilityCanvasAndSwot = createServerFn({ method: "POST" })
 export interface CompetitorWebAuditDTO {
   competitorId: string;
   competitorName: string;
-  communicationTone: "Formal & Corporativo" | "Promocional & Popular" | "Premium & Exclusivo" | "Jovem & Digital";
-  publicPriceRange: string;
-  estimatedRating: number;
-  digitalMaturityScore: number;
+  communicationTone: string | null;
+  publicPriceRange: string | null;
+  estimatedRating: number | null;
+  digitalMaturityScore: number | null;
   channelsDetected: string[];
-  strategicWeaknessToExploit: string;
+  strategicWeaknessToExploit: string | null;
 }
 
 export const inspectCompetitorWebPresence = createServerFn({ method: "POST" })
@@ -1387,31 +1357,119 @@ export const inspectCompetitorWebPresence = createServerFn({ method: "POST" })
         competitorName: z.string(),
         category: z.string().default("comercio"),
         city: z.string().default("Chapecó"),
-        estimatedTicketCents: z.number().default(5500),
+        estimatedTicketCents: z.number().nullable().optional(),
       })
       .parse(d),
   )
   .handler(async ({ data }): Promise<CompetitorWebAuditDTO> => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error("Não autorizado a auditar concorrentes.");
+    }
+
     const { competitorId, competitorName, category, city, estimatedTicketCents } = data;
-    const ticketBrl = Math.round(estimatedTicketCents / 100);
-    const tone: CompetitorWebAuditDTO["communicationTone"] =
-      ticketBrl > 90
-        ? "Premium & Exclusivo"
-        : ticketBrl < 40
-          ? "Promocional & Popular"
-          : category.toLowerCase().includes("turism") || category.toLowerCase().includes("clin")
-            ? "Formal & Corporativo"
-            : "Jovem & Digital";
+    const supabase = getServerClient();
+    const channelsDetected: string[] = [];
+    let estimatedRating: number | null = null;
+    let publicPriceRange: string | null = null;
+    let digitalMaturityScore: number | null = null;
+    let communicationTone: string | null = null;
+    let strategicWeaknessToExploit: string | null = null;
+
+    if (competitorId.startsWith("store-")) {
+      const storeId = competitorId.slice("store-".length);
+      const [{ data: storeRow }, { data: prodRows }] = await Promise.all([
+        supabase
+          .from("stores")
+          .select("id, slug, phone, email, social_links, google_rating, google_review_count, is_active, ai_sales_agent_enabled, pix_key")
+          .eq("id", storeId)
+          .maybeSingle(),
+        supabase
+          .from("products")
+          .select("price_cents")
+          .eq("store_id", storeId)
+          .eq("is_active", true)
+          .limit(30),
+      ]);
+
+      if (storeRow) {
+        if (storeRow.is_active && storeRow.slug) channelsDetected.push("Vitrine Waesy");
+        if (storeRow.phone) channelsDetected.push("WhatsApp Comercial");
+        if (storeRow.email) channelsDetected.push("E-mail Comercial");
+        const socials = (storeRow.social_links as Record<string, any>) || {};
+        if (socials.instagram) channelsDetected.push("Instagram");
+        if (socials.website) channelsDetected.push("Site Institucional");
+        if (Number(storeRow.google_review_count || 0) > 0) {
+          channelsDetected.push("Google Perfil");
+          estimatedRating = typeof storeRow.google_rating === "number" ? Number(storeRow.google_rating) : null;
+        }
+        const activePrices = (prodRows || [])
+          .map((p: any) => Number(p.price_cents))
+          .filter((v) => Number.isFinite(v) && v > 0);
+        if (activePrices.length > 0) {
+          const minBrl = Math.round(Math.min(...activePrices) / 100);
+          const maxBrl = Math.round(Math.max(...activePrices) / 100);
+          publicPriceRange = minBrl === maxBrl ? `R$ ${minBrl}` : `R$ ${minBrl} a R$ ${maxBrl}`;
+        }
+        const rawScore =
+          channelsDetected.length * 16 +
+          (activePrices.length > 0 ? 15 : 0) +
+          (storeRow.pix_key ? 10 : 0) +
+          (storeRow.ai_sales_agent_enabled ? 15 : 0);
+        digitalMaturityScore = Math.min(100, rawScore);
+        communicationTone = storeRow.ai_sales_agent_enabled
+          ? "Atendimento Automatizado"
+          : channelsDetected.length > 0
+            ? "Presença Digital Ativa"
+            : null;
+        if (!storeRow.pix_key || activePrices.length === 0) {
+          strategicWeaknessToExploit = `${competitorName} em ${city} não possui catálogo transacional completo publicado nesta vitrine.`;
+        }
+      }
+    } else if (competitorId.startsWith("dir-")) {
+      const dirId = competitorId.slice("dir-".length);
+      const { data: dirRow } = await supabase
+        .from("directory_listings")
+        .select("id, website_url, contact_whatsapp, contact_phone, contact_email, rating, reviews_count, price_level")
+        .eq("id", dirId)
+        .maybeSingle();
+
+      if (dirRow) {
+        if (dirRow.website_url) channelsDetected.push("Site Institucional");
+        if (dirRow.contact_whatsapp) channelsDetected.push("WhatsApp Comercial");
+        if (dirRow.contact_phone) channelsDetected.push("Telefone Direto");
+        if (dirRow.contact_email) channelsDetected.push("E-mail Comercial");
+        if (Number(dirRow.reviews_count || 0) > 0) {
+          channelsDetected.push("Avaliações Registradas");
+          estimatedRating = typeof dirRow.rating === "number" ? Number(dirRow.rating) : null;
+        }
+        digitalMaturityScore = Math.min(100, channelsDetected.length * 20);
+        if (dirRow.price_level) {
+          publicPriceRange = `Faixa cadastrada: ${dirRow.price_level}`;
+        }
+        if (!dirRow.website_url && !dirRow.contact_whatsapp) {
+          strategicWeaknessToExploit = `${competitorName} (${category}) em ${city} não possui site nem WhatsApp verificados no diretório.`;
+        }
+      }
+    } else if (competitorId.startsWith("osm-")) {
+      channelsDetected.push("OpenStreetMap");
+      strategicWeaknessToExploit = `${competitorName} em ${city} não possui canais digitais ou avaliações cadastradas na plataforma.`;
+    }
+
+    if (!publicPriceRange && typeof estimatedTicketCents === "number" && estimatedTicketCents > 0) {
+      const ticketBrl = Math.round(estimatedTicketCents / 100);
+      publicPriceRange = `R$ ${ticketBrl}`;
+    }
 
     return {
       competitorId,
       competitorName,
-      communicationTone: tone,
-      publicPriceRange: `R$ ${Math.max(15, Math.round(ticketBrl * 0.85))} a R$ ${Math.round(ticketBrl * 1.25)}`,
-      estimatedRating: 4.3,
-      digitalMaturityScore: 62,
-      channelsDetected: ["Google Maps / Perfil Local", "WhatsApp Comercial", "Instagram Regional"],
-      strategicWeaknessToExploit: `Em ${city}, ${competitorName} opera sem checkout instantâneo integrado e sem precificação dinâmica em horários de vale.`,
+      communicationTone,
+      publicPriceRange,
+      estimatedRating,
+      digitalMaturityScore,
+      channelsDetected,
+      strategicWeaknessToExploit,
     };
   });
 
@@ -1426,27 +1484,41 @@ export const exportViabilityStudyDossier = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }): Promise<{ success: boolean; storagePath: string; publicUrl: string | null }> => {
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error("Não autorizado a exportar dossiê.");
+    }
     const { studyId, storeId, htmlContent } = data;
-    const supabase = getServerClient();
-    const folder = storeId || "workspace";
-    const storagePath = `${folder}/${studyId}.pdf`;
+    if (storeId) {
+      assertStoreAccess(identity, STAFF_ROLES, storeId);
+    }
 
-    try {
-      const bytes = new TextEncoder().encode(htmlContent);
-      await supabase.storage.from("viability-reports").upload(storagePath, bytes, {
+    const supabase = getServerClient();
+    const folder = storeId || `user-${identity.id}`;
+    const storagePath = `${folder}/${studyId}.pdf`;
+    const bytes = new TextEncoder().encode(htmlContent);
+
+    const { error: uploadError } = await supabase.storage
+      .from("viability-reports")
+      .upload(storagePath, bytes, {
         contentType: "application/pdf",
         upsert: true,
       });
-      const { data: pub } = supabase.storage.from("viability-reports").getPublicUrl(storagePath);
-      const publicUrl = pub?.publicUrl || null;
-      if (publicUrl) {
-        await supabase
-          .from("store_viability_studies")
-          .update({ report_pdf_url: publicUrl })
-          .eq("id", studyId);
-      }
-      return { success: true, storagePath, publicUrl };
-    } catch {
-      return { success: true, storagePath, publicUrl: null };
+
+    if (uploadError) {
+      throw new Error(`Falha ao enviar dossiê para storage: ${uploadError.message}`);
     }
+
+    const { data: pub } = supabase.storage.from("viability-reports").getPublicUrl(storagePath);
+    const publicUrl = pub?.publicUrl || null;
+    if (publicUrl) {
+      const { error: updateErr } = await supabase
+        .from("store_viability_studies")
+        .update({ report_pdf_url: publicUrl })
+        .eq("id", studyId);
+      if (updateErr) {
+        throw new Error(`Dossiê salvo, porém falhou ao vincular URL ao estudo: ${updateErr.message}`);
+      }
+    }
+    return { success: true, storagePath, publicUrl };
   });

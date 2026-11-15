@@ -22,9 +22,9 @@ describe("Resiliência End-to-End da Resolução de Páginas e Vitrines", () => 
     );
     // Não deve conter a trava document_type: "storefront"
     expect(paginasRouteSrc).not.toContain('document_type: "storefront"');
-    // Deve suportar omni_page_published e omni_page_draft
+    // Rota pública serve apenas páginas publicadas/canônicas e exclui rascunhos não publicados
     expect(paginasRouteSrc).toContain("omni_page_published");
-    expect(paginasRouteSrc).toContain("omni_page_draft");
+    expect(paginasRouteSrc).not.toContain("settings?.omni_page_draft");
   });
 
   it("getPublicExperienceDocumentBySlug suporta document_type opcional e omni_page_published", async () => {

@@ -93,7 +93,8 @@ export interface WoobaFlightSearchParams {
   departureDate: string; // YYYY-MM-DD
   returnDate?: string;    // YYYY-MM-DD
   adultsCount: number;
-  cabinClass?: "economy" | "premium_economy" | "business";
+  childrenCount?: number;
+  cabinClass?: "economy" | "premium_economy" | "business" | "first";
 }
 
 export interface WoobaFlightHoldParams {
@@ -143,8 +144,15 @@ export async function searchWoobaFlights(
       Destination: params.destinationIata.toUpperCase().trim(),
       DepartureDate: params.departureDate,
       ReturnDate: params.returnDate || null,
-      Passengers: { Adults: params.adultsCount, Children: 0, Infants: 0 },
-      Cabin: params.cabinClass === "business" ? "C" : params.cabinClass === "premium_economy" ? "W" : "Y",
+      Passengers: { Adults: params.adultsCount, Children: params.childrenCount ?? 0, Infants: 0 },
+      Cabin:
+        params.cabinClass === "first"
+          ? "F"
+          : params.cabinClass === "business"
+            ? "C"
+            : params.cabinClass === "premium_economy"
+              ? "W"
+              : "Y",
     },
   };
 

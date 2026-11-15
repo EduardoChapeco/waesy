@@ -1278,7 +1278,20 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                 onQuickSendMessage={onQuickSendMessage}
                 onOpenQuickComposerModal={onOpenQuickComposerModal}
                 onFunnelStageChange={async (leadId, nextStage) => {
-                  await updateCustomerFunnelStage({ data: { storeId, leadId, status: nextStage } });
+                  await updateCustomerFunnelStage({
+                    data: {
+                      storeId,
+                      leadId,
+                      stage: nextStage as
+                        | "new"
+                        | "contacted"
+                        | "qualified"
+                        | "proposal"
+                        | "negotiation"
+                        | "won"
+                        | "lost",
+                    },
+                  });
                   setData((prev: any) =>
                     prev
                       ? {

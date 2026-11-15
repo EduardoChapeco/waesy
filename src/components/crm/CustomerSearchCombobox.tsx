@@ -55,11 +55,13 @@ export function CustomerSearchCombobox({
         limit: 25,
       },
     });
-    const list: CrmCustomerRecord[] = Array.isArray((res as { customers?: CrmCustomerRecord[] })?.customers)
-      ? (res as { customers: CrmCustomerRecord[] }).customers
-      : Array.isArray(res)
-        ? (res as CrmCustomerRecord[])
-        : [];
+    const resObj = res as unknown as { customers?: CrmCustomerRecord[] } | CrmCustomerRecord[] | null;
+    const list: CrmCustomerRecord[] =
+      resObj && !Array.isArray(resObj) && Array.isArray(resObj.customers)
+        ? resObj.customers
+        : Array.isArray(resObj)
+          ? resObj
+          : [];
 
     return list.map((c) => {
       cacheRef.current.set(c.id, c);

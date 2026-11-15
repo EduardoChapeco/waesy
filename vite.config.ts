@@ -23,6 +23,22 @@ const clientServerCoreShim = fileURLToPath(
   new URL("./src/lib/client-start-server-core-shim.ts", import.meta.url),
 );
 
+const SSR_CLIENT_ONLY_COMPONENTS = [
+  { subpath: "components/builder/OmniEditor", barrel: "/components/builder/index.ts", rel: "./OmniEditor" },
+  { subpath: "components/tourism/promotional-flyer/travel-promo-flyer-modal" },
+  { subpath: "components/chat/manus-computer-drawer" },
+  { subpath: "components/simlab/SimLabQuickTestSheet" },
+  { subpath: "components/crm/UniversalCrmSpreadsheetImporterModal" },
+  { subpath: "components/studio/carousel-studio-editor", barrel: "/components/studio/index.ts", rel: "./carousel-studio-editor" },
+  { subpath: "components/chat/artifacts/ArtifactBuilderEditor", barrel: "/components/chat/artifacts/index.ts", rel: "./ArtifactBuilderEditor" },
+  { subpath: "components/chat/artifacts/ArtifactInteractiveMap", barrel: "/components/chat/artifacts/index.ts", rel: "./ArtifactInteractiveMap" },
+  { subpath: "components/commercial/lead-flight-grid-sheet" },
+  { subpath: "components/tourism/vouchers/operator-voucher-import-sheet" },
+  { subpath: "components/tourism/contract/new-travel-contract-sheet" },
+  { subpath: "components/tourism/group-tours/NewGroupTourWizard" },
+  { subpath: "components/commerce/supermarket/ProductCatalogPricingSheet", barrel: "/components/commerce/supermarket/index.ts", rel: "./ProductCatalogPricingSheet" },
+];
+
 const clientOnlyServerCoreGuard = {
   name: "waesy-client-only-server-core-guard",
   enforce: "pre" as const,
@@ -41,13 +57,14 @@ const clientOnlyServerCoreGuard = {
         return serverClientNoopShim;
       }
       const normalizedSource = source.replace(/\\/g, "/");
-      if (
-        normalizedSource === "@/components/builder/OmniEditor" ||
-        normalizedSource.endsWith("/components/builder/OmniEditor") ||
-        normalizedSource.endsWith("/components/builder/OmniEditor.tsx") ||
-        (normalizedSource === "./OmniEditor" &&
-          importer?.replace(/\\/g, "/").endsWith("/components/builder/index.ts"))
-      ) {
+      const normalizedImporter = importer?.replace(/\\/g, "/");
+      const matchesClientOnlyComponent = SSR_CLIENT_ONLY_COMPONENTS.some((entry) =>
+        normalizedSource === `@/${entry.subpath}` ||
+        normalizedSource.endsWith(`/${entry.subpath}`) ||
+        normalizedSource.endsWith(`/${entry.subpath}.tsx`) ||
+        (entry.rel && entry.barrel && normalizedSource === entry.rel && normalizedImporter?.endsWith(entry.barrel)),
+      );
+      if (matchesClientOnlyComponent) {
         return serverClientNoopShim;
       }
     }

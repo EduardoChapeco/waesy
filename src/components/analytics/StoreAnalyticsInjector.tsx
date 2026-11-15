@@ -138,8 +138,8 @@ export function StoreAnalyticsInjector({
     if (!document.getElementById(configScriptId)) {
       window.dataLayer = window.dataLayer || [];
       if (typeof window.gtag !== "function") {
-        window.gtag = function gtag() {
-          window.dataLayer!.push(arguments);
+        window.gtag = function gtag(...args: unknown[]) {
+          window.dataLayer!.push(args);
         };
       }
       const configScript = document.createElement("script");

@@ -225,35 +225,33 @@ export function WhatsAppTeamSectorsDrawer({
         enableCorporateTravelBot,
         departments,
       }
-      if (true) {
-        await saveWhatsAppGovernanceConfig({
-          data: {
-            ...(instanceId ? { instanceId } : {}),
-            agentPermissions: Object.values(agentPermissions),
-            departments: departments.map((d) => ({
-              id: d.id,
-              name: d.name,
-              description: d.aiSdrSkillPrompt || d.autoGreetingMessage,
-              color: d.colorToken,
-              instanceIds: instanceId ? [instanceId] : (d.whatsappInstanceId ? [d.whatsappInstanceId] : []),
-              assignedAgentIds: d.assignedAgentIds,
-              roundRobinEnabled: d.routingMode === 'round_robin',
-              aiSdrEnabled: d.aiSdrEnabled,
-              slaMinutes: 15, scheduleStart: d.scheduleStart || '08:00', scheduleEnd: d.scheduleEnd || '18:00', scheduleDays: d.scheduleDays || 'Seg a Sex', awayMessage: d.awayMessage || '', whatsappInstanceId: d.whatsappInstanceId || instanceId || '', aiTriageStages: d.aiTriageStages || [],
-            })),
-            permissions: {
-              onlyManagersCanViewQr,
-              onlyManagersCanDisconnect,
-              showAgentNamePrefixInMessages,
-              autoConvertIncomingToLead,
-              defaultLeadSource: 'WhatsApp Orgânico',
-              enableMobilityBookingBot,
-              enableCatalogSalesBot,
-              enableCorporateTravelBot,
-            },
+      await saveWhatsAppGovernanceConfig({
+        data: {
+          ...(instanceId ? { instanceId } : {}),
+          agentPermissions: Object.values(agentPermissions),
+          departments: departments.map((d) => ({
+            id: d.id,
+            name: d.name,
+            description: d.aiSdrSkillPrompt || d.autoGreetingMessage,
+            color: d.colorToken,
+            instanceIds: instanceId ? [instanceId] : (d.whatsappInstanceId ? [d.whatsappInstanceId] : []),
+            assignedAgentIds: d.assignedAgentIds,
+            roundRobinEnabled: d.routingMode === 'round_robin',
+            aiSdrEnabled: d.aiSdrEnabled,
+            slaMinutes: 15, scheduleStart: d.scheduleStart || '08:00', scheduleEnd: d.scheduleEnd || '18:00', scheduleDays: d.scheduleDays || 'Seg a Sex', awayMessage: d.awayMessage || '', whatsappInstanceId: d.whatsappInstanceId || instanceId || '', aiTriageStages: d.aiTriageStages || [],
+          })),
+          permissions: {
+            onlyManagersCanViewQr,
+            onlyManagersCanDisconnect,
+            showAgentNamePrefixInMessages,
+            autoConvertIncomingToLead,
+            defaultLeadSource: 'WhatsApp Orgânico',
+            enableMobilityBookingBot,
+            enableCatalogSalesBot,
+            enableCorporateTravelBot,
           },
-        })
-      }
+        },
+      })
       toast.success('Governança, setores e permissões do WhatsApp salvos.')
       onSaved?.(payload)
       onOpenChange(false)

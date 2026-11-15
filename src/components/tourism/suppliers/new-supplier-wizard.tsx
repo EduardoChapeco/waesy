@@ -102,7 +102,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId, initial
    await updateTravelSupplier({
      data: {
        id: initialSupplier.id,
-       ...payload,
+       patch: payload,
      },
    });
    toast.success('Fornecedor atualizado com sucesso!');

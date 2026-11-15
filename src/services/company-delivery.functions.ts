@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
 import { getServerClient } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { getDefaultCity } from "@/lib/brand.config";
@@ -134,16 +134,16 @@ export const saveCompanyDeliverySettings = createServerFn({ method: "POST" })
       motoboyInstructions = null,
     } = data ?? {};
     const supabase = getServerClient();
-    let targetStoreId: string | undefined = storeId;
-
-    if (!targetStoreId) {
-      const identity = await getServerIdentity().catch(() => null);
-      targetStoreId = (identity?.store_id || identity?.tenant_id) ?? undefined;
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para salvar configurações de entrega.");
     }
 
+    const targetStoreId = storeId || identity.store_id || identity.tenant_id;
     if (!targetStoreId) {
       throw new Error("Identidade de loja não localizada para salvar configurações.");
     }
+    assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
 
     const payload = {
       store_id: targetStoreId,
@@ -203,14 +203,15 @@ export const createDeliveryDispatch = createServerFn({ method: "POST" })
     } = data ?? {};
     const supabase = getServerClient();
     const identity = await getServerIdentity().catch(() => null);
-    let targetStoreId = storeId || identity?.store_id || identity?.tenant_id;
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para despachar entrega.");
+    }
 
+    const targetStoreId = storeId || identity.store_id || identity.tenant_id;
     if (!targetStoreId) {
       throw new Error("Identidade de loja não localizada para despachar entrega.");
     }
-    if (identity && targetStoreId !== identity.store_id && targetStoreId !== identity.tenant_id && !identity.isPlatformAdmin) {
-      throw new Error("Acesso não autorizado para esta organização.");
-    }
+    assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
 
     // Gerar token opaco e PIN de 4 dígitos
     const randomSuffix = Math.random().toString(36).substring(2, 10);
@@ -255,14 +256,15 @@ export const createDeliveryDispatch = createServerFn({ method: "POST" })
         magicLinkUrl: `/entrega/${token}`,
         confirmationPin,
       };
-    } catch {
-      return {
-        success: true,
-        dispatch: dispatchRecord,
-        magicLinkUrl: `/entrega/${token}`,
-        confirmationPin,
-        fallback: true,
-      };
+    } catch (err: any) {
+      logSystemError({
+        route: "company-delivery.createDeliveryDispatch",
+        contractName: "createDeliveryDispatch",
+        tableName: "classified_delivery_dispatches",
+        error: err,
+        payload: data,
+      });
+      throw new Error(err?.message || "Erro ao registrar despacho de entrega.");
     }
   });
 

@@ -3,8 +3,9 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState } from "@/components/state/states";
+import type { WorkspaceViewMode } from "@/services/workspace-view-preferences.functions";
 
-export type WorkspaceViewMode = "table" | "kanban" | "cards";
+export type { WorkspaceViewMode };
 
 export interface UniversalViewManagerProps<T> {
   /** Active view mode to display */
@@ -91,6 +92,7 @@ export function UniversalViewManager<T>({
         {currentView === "table" && <DefaultTableSkeleton />}
         {currentView === "kanban" && <DefaultKanbanSkeleton />}
         {currentView === "cards" && <DefaultCardsSkeleton />}
+        {currentView !== "table" && currentView !== "kanban" && currentView !== "cards" && <DefaultTableSkeleton />}
       </div>
     );
   }

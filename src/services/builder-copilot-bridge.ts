@@ -249,7 +249,7 @@ export function buildSocialPostPayload(title: string, userPrompt: string): {
   theme: "dark" | "light" | "brand" | "swiss" | "cyber" | "gourmet";
 } {
   const spec = extractCreativePostSpecFromPrompt(userPrompt, { headline: title });
-  const generatedCaption = `${spec.headline}\n\n${spec.subheadline}\n\n${spec.bullets.map((b) => `• ${b}`).join("\n")}\n\n${spec.ctaText}\n\n${spec.hashtags.join(" ")}`;
+  const generatedCaption = `${spec.headline.toUpperCase()}\n\n${spec.subheadline}\n\n${spec.bullets.map((b) => `• ${b}`).join("\n")}\n\n${spec.ctaText}\n\n${spec.hashtags.join(" ")}`;
   const lower = userPrompt.toLowerCase();
   const theme: "dark" | "light" | "brand" | "swiss" | "cyber" | "gourmet" =
     lower.includes("cyber") || lower.includes("tech")
@@ -280,7 +280,7 @@ export function buildSocialPostPayload(title: string, userPrompt: string): {
     ctaText: spec.ctaText,
     caption: generatedCaption,
     copyFeed: generatedCaption,
-    copyStory: `${spec.badge}: ${spec.headline}\n${spec.subheadline}\n${spec.ctaText}`,
+    copyStory: `ATENÇÃO • ${spec.badge}: ${spec.headline}\n${spec.subheadline}\n${spec.ctaText}`,
     hashtags: spec.hashtags,
     visualPrompt: "Design moderno, tipografia limpa estilo Apple, foco na proposta de valor, paleta editorial sem poluição visual.",
     callToAction: spec.ctaText,

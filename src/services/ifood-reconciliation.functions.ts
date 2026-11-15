@@ -229,11 +229,12 @@ export const reconcileExternalIFoodOrder = createServerFn({ method: "POST" })
     // 5. Se vinculado ao chat, registrar mensagem de sistema na conversa
     if (linkStatus === "AUTOMATICALLY_LINKED" && linkedChatId) {
       try {
-        await supabase.from("chat_messages").insert({
-          conversation_id: linkedChatId,
-          sender_type: "system",
-          content: `Pedido iFood N. ${order.displayId || order.id.slice(0, 5)} vinculado automaticamente ao seu atendimento. Status atual: ${order.orderType} · R$ ${(order.total.orderAmount).toFixed(2)}.`,
-          metadata: {
+        const { error: sysMsgError } = await supabase.from("chat_messages").insert({
+          thread_id: linkedChatId,
+          message_type: "system",
+          is_staff_reply: true,
+          message: `Pedido iFood N. ${order.displayId || order.id.slice(0, 5)} vinculado automaticamente ao seu atendimento. Status atual: ${order.orderType} · R$ ${(order.total.orderAmount).toFixed(2)}.`,
+          payload: {
             is_external_order: true,
             provider: "ifood",
             external_order_id: order.id,
@@ -241,6 +242,9 @@ export const reconcileExternalIFoodOrder = createServerFn({ method: "POST" })
             matched_reasons: bestMatch.matchedReasons,
           },
         });
+        if (sysMsgError) {
+          console.warn("[reconcileExternalIFoodOrder] Erro ao inserir mensagem no chat:", sysMsgError.message);
+        }
       } catch (err) {
         console.warn("[reconcileExternalIFoodOrder] Aviso ao inserir mensagem no chat:", err);
       }

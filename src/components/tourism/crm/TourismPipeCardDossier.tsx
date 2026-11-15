@@ -4548,14 +4548,14 @@ export function TourismPipeCardDossier({
               <p className="text-2xs text-muted-foreground leading-relaxed">
                 Escolha o template visual (Deck 16:9, Luxury Dark, Bento Grid ou Pré-Embarque), aplique a logo e cores da empresa, edite cada slide e baixe em PDF.
               </p>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() =>
-                    handleOpenUniversalDocStudio("presentation_deck", "apresentacao_comercial_169")
+                    openUnifiedDocumentStudio("presentation_deck", "apresentacao_comercial_169")
                   }
-                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                  className="h-11 min-h-11 text-2xs font-bold px-3 justify-start gap-2 cursor-pointer"
                 >
                   <FileText className="size-3.5 text-primary shrink-0" />
                   <span className="truncate">Deck Executivo 16:9</span>
@@ -4564,9 +4564,9 @@ export function TourismPipeCardDossier({
                   type="button"
                   variant="outline"
                   onClick={() =>
-                    handleOpenUniversalDocStudio("presentation_deck", "apresentacao_bento_169")
+                    openUnifiedDocumentStudio("presentation_deck", "apresentacao_bento_169")
                   }
-                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                  className="h-11 min-h-11 text-2xs font-bold px-3 justify-start gap-2 cursor-pointer"
                 >
                   <FileText className="size-3.5 text-primary shrink-0" />
                   <span className="truncate">Lâmina Bento Grid</span>
@@ -4575,9 +4575,9 @@ export function TourismPipeCardDossier({
                   type="button"
                   variant="outline"
                   onClick={() =>
-                    handleOpenUniversalDocStudio("presentation_deck", "apresentacao_luxo_dark_169")
+                    openUnifiedDocumentStudio("presentation_deck", "apresentacao_luxo_dark_169")
                   }
-                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                  className="h-11 min-h-11 text-2xs font-bold px-3 justify-start gap-2 cursor-pointer"
                 >
                   <FileText className="size-3.5 text-primary shrink-0" />
                   <span className="truncate">Deck Luxury Dark</span>
@@ -4586,9 +4586,9 @@ export function TourismPipeCardDossier({
                   type="button"
                   variant="outline"
                   onClick={() =>
-                    handleOpenUniversalDocStudio("presentation_deck", "guia_pre_embarque_169")
+                    openUnifiedDocumentStudio("presentation_deck", "guia_pre_embarque_169")
                   }
-                  className="h-11 min-h-11 text-2xs font-bold px-2.5 justify-start gap-1.5 cursor-pointer"
+                  className="h-11 min-h-11 text-2xs font-bold px-3 justify-start gap-2 cursor-pointer"
                 >
                   <FileText className="size-3.5 text-primary shrink-0" />
                   <span className="truncate">Guia Pré-Embarque</span>

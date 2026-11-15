@@ -1031,6 +1031,7 @@ export const searchPassHubLiveQuoteFn = createServerFn({ method: "POST" })
                     revalidate_required: true,
                     policy_status: "within_policy",
                     policy_violation_reasons: [],
+                    rules: {},
                     details: { package_name: pkgName, destination: safeDestCity, operator_slug: opSlug },
                   });
                   const includedItems: string[] = [];
@@ -1123,6 +1124,7 @@ export const searchPassHubLiveQuoteFn = createServerFn({ method: "POST" })
                   revalidate_required: false,
                   policy_status: "within_policy",
                   policy_violation_reasons: [],
+                  rules: {},
                   details: { hotel_name: hotelName, city: safeDestCity },
                 });
                 hotels.push({
@@ -1201,6 +1203,7 @@ export const searchPassHubLiveQuoteFn = createServerFn({ method: "POST" })
                   revalidate_required: true,
                   policy_status: "within_policy",
                   policy_violation_reasons: [],
+                  rules: {},
                   details: { flight_number: fAny.flight_number, origin: fAny.origin, destination: fAny.destination },
                 });
                 flights.push({

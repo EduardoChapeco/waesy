@@ -271,6 +271,7 @@ describe("Isolamento Estrito Admin Master vs. Workspace Lojista", () => {
     expect(allTools).not.toContain("/workspace/moderacao");
     expect(allTools).not.toContain("/workspace/master/influencers");
     expect(allTools).not.toContain("/workspace/design-system");
-    expect(allTools).not.toContain("/workspace/configuracoes/planos");
+    // /workspace/configuracoes/planos e pagina somente leitura/transparencia (sem self-service acima em planosRoute)
+    expect(allTools).toContain("/workspace/configuracoes/planos");
   });
 });

@@ -129,7 +129,13 @@ import { Link } from "@tanstack/react-router";
 import { TransferTicketDialog } from "@/components/chat/TransferTicketDialog";
 import { QuickRepliesMenu, type QuickReplyItem } from "@/components/chat/QuickRepliesMenu";
 import { ThreadTagsPicker, resolveTagPillClass } from "@/components/chat/ThreadTagsPicker";
-import { listChatQuickReplies, listStoreTagCatalog, updateThreadAiHandoffMode } from "@/services/chat.functions";
+import { SmartPhoneText } from "@/components/atendimento/SmartPhoneText";
+import {
+  listChatQuickReplies,
+  listStoreTagCatalog,
+  startStaffWhatsAppThread,
+  updateThreadAiHandoffMode,
+} from "@/services/chat.functions";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 import { directUploadMedia } from "@/lib/upload-helper";
 import {
@@ -438,6 +444,60 @@ export function AtendimentoChatWorkspace({
   // Estados para Limpar e Excluir Conversas Localmente (Sem afetar o WhatsApp do cliente)
   const [clearMessagesModalOpen, setClearMessagesModalOpen] = useState(false);
   const [isClearingMessages, setIsClearingMessages] = useState(false);
+
+  // Estados e handler para Nova Conversa WhatsApp & Telefones Clicaveis (EARS-WA-03)
+  const [newWhatsAppModalOpen, setNewWhatsAppModalOpen] = useState(false);
+  const [newWhatsAppPhone, setNewWhatsAppPhone] = useState("");
+  const [newWhatsAppName, setNewWhatsAppName] = useState("");
+  const [newWhatsAppInstanceId, setNewWhatsAppInstanceId] = useState<string>("");
+  const [newWhatsAppMessage, setNewWhatsAppMessage] = useState("");
+  const [isStartingWhatsAppThread, setIsStartingWhatsAppThread] = useState(false);
+
+  const handleStartWhatsAppThread = async (params: {
+    phone: string;
+    channelInstanceId?: string;
+    contactName?: string;
+    initialMessage?: string;
+  }) => {
+    if (!params.phone.trim()) {
+      toast.error("Informe o número de telefone com DDD.");
+      return;
+    }
+    setIsStartingWhatsAppThread(true);
+    try {
+      const res = await startStaffWhatsAppThread({
+        data: {
+          storeId: store?.id,
+          phone: params.phone.trim(),
+          contactName: params.contactName?.trim() || undefined,
+          channelInstanceId: params.channelInstanceId || undefined,
+          initialMessage: params.initialMessage?.trim() || undefined,
+        },
+      });
+      const threadsRes = await listChatThreads({
+        data: {
+          store_id: store?.id,
+          channel_instance_id: channelFilter === "all" ? undefined : channelFilter,
+        },
+      }).catch(() => null);
+      if (threadsRes?.threads) {
+        setThreads(threadsRes.threads);
+      }
+      if (res?.threadId) {
+        setActiveThreadId(res.threadId);
+        reloadActiveMessages(res.threadId);
+      }
+      setNewWhatsAppModalOpen(false);
+      setNewWhatsAppPhone("");
+      setNewWhatsAppName("");
+      setNewWhatsAppMessage("");
+      toast.success(`Conversa aberta com ${res?.phone || params.phone}`);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao iniciar conversa no WhatsApp.");
+    } finally {
+      setIsStartingWhatsAppThread(false);
+    }
+  };
 
   const handleClearThreadMessages = async () => {
     if (!activeThread?.id || !store?.id) return;
@@ -2055,6 +2115,17 @@ export function AtendimentoChatWorkspace({
                   type="button"
                   variant="outline"
                   size="icon"
+                  onClick={() => setNewWhatsAppModalOpen(true)}
+                  aria-label="Nova conversa WhatsApp"
+                  title="Nova conversa WhatsApp"
+                  className="size-11 min-w-11 min-h-11 rounded-lg text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <Plus className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
                   onClick={handleSyncWhatsApp}
                   disabled={isSyncingWhatsApp}
                   title="Sincronizar conversas do WhatsApp"
@@ -3111,14 +3182,30 @@ export function AtendimentoChatWorkspace({
                               ),
                           ) && (
                             <p className={cn("whitespace-pre-wrap break-words", isRevoked && "italic")}>
-                              {String(msg.message).startsWith("waesy-msg:")
-                                ? (msg.message_type === "image" ? "[Imagem]"
-                                  : msg.message_type === "video" ? "[Vídeo]"
-                                  : msg.message_type === "audio" ? "[Áudio]"
-                                  : msg.message_type === "document" ? "[Documento]"
-                                  : msg.message_type === "sticker" ? "[Figurinha]"
-                                  : "[Mensagem recebida]")
-                                : msg.message}
+                              {String(msg.message).startsWith("waesy-msg:") ? (
+                                msg.message_type === "image"
+                                  ? "[Imagem]"
+                                  : msg.message_type === "video"
+                                    ? "[Vídeo]"
+                                    : msg.message_type === "audio"
+                                      ? "[Áudio]"
+                                      : msg.message_type === "document"
+                                        ? "[Documento]"
+                                        : msg.message_type === "sticker"
+                                          ? "[Figurinha]"
+                                          : "[Mensagem recebida]"
+                              ) : (
+                                <SmartPhoneText
+                                  text={String(msg.message)}
+                                  instances={whatsappInstances}
+                                  onStartWhatsAppCall={(phoneE164, instanceId) =>
+                                    void handleStartWhatsAppThread({
+                                      phone: phoneE164,
+                                      channelInstanceId: instanceId,
+                                    })
+                                  }
+                                />
+                              )}
                             </p>
                           )}
                           {isStaff && msg.delivery_status === "failed" && msgErrorText && (
@@ -5109,6 +5196,106 @@ export function AtendimentoChatWorkspace({
           }
         }}
       />
+
+      {/* Modal Nova Conversa WhatsApp Manual (EARS-WA-03) */}
+      <Dialog open={newWhatsAppModalOpen} onOpenChange={setNewWhatsAppModalOpen}>
+        <DialogContent className="sm:max-w-md p-4 space-y-4">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Nova Conversa
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Informe o telefone com DDD para iniciar ou reabrir um atendimento via WhatsApp.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="wa-new-phone" className="text-xs font-semibold">
+                Telefone WhatsApp
+              </Label>
+              <Input
+                id="wa-new-phone"
+                value={newWhatsAppPhone}
+                onChange={(e) => setNewWhatsAppPhone(e.target.value)}
+                placeholder="Ex: (49) 99999-8888"
+                className="h-11 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="wa-new-name" className="text-xs font-semibold">
+                Nome do Contato (opcional)
+              </Label>
+              <Input
+                id="wa-new-name"
+                value={newWhatsAppName}
+                onChange={(e) => setNewWhatsAppName(e.target.value)}
+                placeholder="Ex: Ana Paula"
+                className="h-11 text-xs"
+              />
+            </div>
+            {whatsappInstances.length > 0 && (
+              <div className="space-y-1">
+                <Label htmlFor="wa-new-instance" className="text-xs font-semibold">
+                  Canal WhatsApp
+                </Label>
+                <select
+                  id="wa-new-instance"
+                  value={newWhatsAppInstanceId}
+                  onChange={(e) => setNewWhatsAppInstanceId(e.target.value)}
+                  className="w-full h-11 min-h-11 px-3 rounded-lg bg-muted/40 border border-border/60 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <option value="">Canal padrão da loja</option>
+                  {whatsappInstances.map((inst) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.display_name}
+                      {inst.display_phone_number ? ` (${inst.display_phone_number})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="space-y-1">
+              <Label htmlFor="wa-new-initial-msg" className="text-xs font-semibold">
+                Mensagem Inicial (opcional)
+              </Label>
+              <Textarea
+                id="wa-new-initial-msg"
+                value={newWhatsAppMessage}
+                onChange={(e) => setNewWhatsAppMessage(e.target.value)}
+                placeholder="Olá! Como podemos ajudar hoje?"
+                rows={3}
+                className="text-xs resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex flex-row items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setNewWhatsAppModalOpen(false)}
+              className="h-11 min-h-11 px-4 text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isStartingWhatsAppThread || !newWhatsAppPhone.trim()}
+              onClick={() =>
+                void handleStartWhatsAppThread({
+                  phone: newWhatsAppPhone,
+                  contactName: newWhatsAppName,
+                  channelInstanceId: newWhatsAppInstanceId || undefined,
+                  initialMessage: newWhatsAppMessage,
+                })
+              }
+              className="h-11 min-h-11 px-4 text-xs font-bold gap-2 cursor-pointer"
+            >
+              {isStartingWhatsAppThread && <Loader2 className="size-4 animate-spin" />}
+              <span>Iniciar Conversa</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Lightbox para Mídia / Imagens / Figurinhas Expandidas */}
       <Dialog open={Boolean(lightboxUrl)} onOpenChange={() => setLightboxUrl(null)}>

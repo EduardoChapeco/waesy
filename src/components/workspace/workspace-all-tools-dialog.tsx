@@ -244,6 +244,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "WhatsApp", path: "/workspace/atendimento/whatsapp", icon: Smartphone },
       { title: "Filas", path: "/workspace/atendimento/filas", icon: Layers },
       { title: "Atendentes", path: "/workspace/atendimento/atendentes", icon: Users },
+      { title: "Grupos", path: "/workspace/atendimento/grupos", icon: Users },
       { title: "Horários", path: "/workspace/atendimento/horarios", icon: Clock },
       { title: "Respostas", path: "/workspace/whatsapp/automacoes", icon: Zap },
       { title: "Notificações", path: "/workspace/notificacoes", icon: Bell },
@@ -389,6 +390,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     tools: [
       { title: "Preferências", path: "/workspace/configuracoes", icon: Settings },
       { title: "Empresa", path: "/workspace/configuracoes/loja", icon: Building2 },
+      { title: "Planos", path: "/workspace/configuracoes/planos", icon: Layers },
       { title: "Ativação", path: "/workspace/onboarding", icon: Layers },
       { title: "Revisão", path: "/workspace/onboarding/revisao", icon: Layers },
       { title: "Chaves", path: "/workspace/configuracoes/ai", icon: Zap },

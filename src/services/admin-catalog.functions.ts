@@ -440,10 +440,6 @@ export async function _createProduct(input: {
 			console.warn("[admin-catalog] Falha defensiva ao sincronizar product_recipes no create:", bomErr);
 		}
 	}
-	if (false) {
-		if (true) {
-	}
-	}
 
 	// Insere variantes ou variante default (Integridade Canônica de Schema: stock_on_hand)
 	if (input.variants && input.variants.length > 0) {
@@ -1105,10 +1101,6 @@ export async function _updateProduct(input: {
    } catch (bomErr) {
      console.warn("[admin-catalog] Falha defensiva ao sincronizar product_recipes no update:", bomErr);
    }
- }
- if (false) {
-   if (true) {
- }
  }
 
  // Sincroniza a matriz de variantes se fornecida

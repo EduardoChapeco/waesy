@@ -566,24 +566,27 @@ export const syncStoreWhatsAppGroups = createServerFn({ method: "POST" })
           const isLid = pJid.endsWith("@lid");
           const digits = isLid ? "" : pJid.replace(/@.*$/, "").replace(/\D/g, "");
           const role = p.admin === "superadmin" ? "superadmin" : p.admin === "admin" || p.isAdmin ? "admin" : "member";
-          await db
-            .from("whatsapp_group_members")
-            .upsert(
-              {
-                store_id: storeId,
-                group_id: dirRow.id,
-                instance_id: inst.id,
-                participant_jid: pJid,
-                phone_e164: digits.length >= 8 ? `+${digits}` : null,
-                phone_digits: digits.length >= 8 ? digits : null,
-                display_name: String(p.name || p.pushName || (digits ? `+${digits}` : "Participante")).trim(),
-                role,
-                is_company_admin: role !== "member",
-                last_seen_at: nowIso,
-              },
-              { onConflict: "group_id,participant_jid" },
-            )
-            .catch(() => null);
+          try {
+            await db
+              .from("whatsapp_group_members")
+              .upsert(
+                {
+                  store_id: storeId,
+                  group_id: dirRow.id,
+                  instance_id: inst.id,
+                  participant_jid: pJid,
+                  phone_e164: digits.length >= 8 ? `+${digits}` : null,
+                  phone_digits: digits.length >= 8 ? digits : null,
+                  display_name: String(p.name || p.pushName || (digits ? `+${digits}` : "Participante")).trim(),
+                  role,
+                  is_company_admin: role !== "member",
+                  last_seen_at: nowIso,
+                },
+                { onConflict: "group_id,participant_jid" },
+              );
+          } catch {
+            // Best-effort sync of group participants
+          }
           syncedMembers += 1;
         }
 
@@ -828,20 +831,23 @@ export const upsertGroupOverflowCampaign = createServerFn({ method: "POST" })
         console.warn("[whatsapp-groups] Aviso ao provisionar grupo inicial automatico:", seedErr?.message);
       }
     } else if (savedCampaign?.active_group_id && !data.id) {
-      await db
-        .from("whatsapp_group_campaign_pools")
-        .upsert(
-          {
-            store_id: storeId,
-            campaign_id: savedCampaign.id,
-            group_id: savedCampaign.active_group_id,
-            sequence_number: 1,
-            status: "active",
-            invite_url: savedCampaign.active_invite_url,
-          },
-          { onConflict: "campaign_id,group_id" },
-        )
-        .catch(() => null);
+      try {
+        await db
+          .from("whatsapp_group_campaign_pools")
+          .upsert(
+            {
+              store_id: storeId,
+              campaign_id: savedCampaign.id,
+              group_id: savedCampaign.active_group_id,
+              sequence_number: 1,
+              status: "active",
+              invite_url: savedCampaign.active_invite_url,
+            },
+            { onConflict: "campaign_id,group_id" },
+          );
+      } catch {
+        // Best-effort pool registration on initial campaign creation
+      }
     }
 
     return { campaign: savedCampaign as WhatsAppGroupCampaignDTO };

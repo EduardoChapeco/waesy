@@ -60,6 +60,7 @@ export interface CustomerSuccessSheetRowDTO {
  thread_id?: string | null;
  trip_id?: string | null;
  pnr_locator?: string | null;
+ operator_package_id?: string | null;
  operator_name?: string | null;
  assigned_agent_name?: string | null;
  steps: {
@@ -921,7 +922,7 @@ export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET"
         .limit(20),
       db
         .from("chat_threads")
-        .select("id, customer_id, guest_name, guest_phone, entity_id, assigned_to_profile_id, metadata, updated_at")
+        .select("id, customer_id, guest_name, primary_phone_e164, entity_id, assigned_to_profile_id, metadata, updated_at")
         .eq("store_id", data.store_id)
         .order("updated_at", { ascending: false })
         .limit(60),
@@ -975,7 +976,7 @@ export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET"
       if (th.customer_id && !threadByCustomerId.has(th.customer_id)) {
         threadByCustomerId.set(th.customer_id, th);
       }
-      const digits = String(th.guest_phone || th.entity_id || "").replace(/\D/g, "");
+      const digits = String(th.primary_phone_e164 || th.entity_id || "").replace(/\D/g, "");
       if (digits.length >= 8 && !threadByPhone.has(digits)) {
         threadByPhone.set(digits, th);
       }
@@ -1053,12 +1054,13 @@ export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET"
         status: tr.status,
         customer_id: tr.customer_id || null,
         customer_name: custName,
-        customer_phone: tr.client_whatsapp || prof?.phone || linkedThread?.guest_phone || null,
+        customer_phone: tr.client_whatsapp || prof?.phone || linkedThread?.primary_phone_e164 || null,
         customer_avatar_url: custAvatar,
         customer_trace_hash: custTrace,
         thread_id: linkedThread?.id || null,
         trip_id: tr.id,
         pnr_locator: primaryPnr,
+        operator_package_id: dossiers[0]?.operatorPackageId || tripFin.operator_package_id || null,
         operator_name: tr.operator_name || dossiers[0]?.operatorName || null,
         steps,
         completed_steps_count: completedCount,
@@ -1077,9 +1079,9 @@ export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET"
 
       const d = dossiers[0];
       const prof = th.customer_id ? profileMap.get(th.customer_id) : undefined;
-      const custName = meta.customer_profile_override?.full_name || prof?.full_name || th.guest_name || th.guest_phone || "Cliente em Atendimento";
+      const custName = meta.customer_profile_override?.full_name || prof?.full_name || th.guest_name || th.primary_phone_e164 || "Cliente em Atendimento";
       const custAvatar = meta.customer_profile_override?.avatar_url || prof?.avatar_url || meta.avatar_url || null;
-      const custTrace = shortHash("CLI", th.customer_id || th.guest_phone || th.id);
+      const custTrace = shortHash("CLI", th.customer_id || th.primary_phone_e164 || th.id);
       const entTrace = d.pnrLocator ? `#PNR-${String(d.pnrLocator).toUpperCase()}` : shortHash("TRP", d.id || th.id);
 
       const { steps, completedCount, progressPercent } = computeStepMetrics(meta.cs_onboarding_steps || {}, {
@@ -1104,12 +1106,13 @@ export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET"
         status: d.flightStatus || "confirmed",
         customer_id: th.customer_id || null,
         customer_name: custName,
-        customer_phone: th.guest_phone || prof?.phone || null,
+        customer_phone: th.primary_phone_e164 || prof?.phone || null,
         customer_avatar_url: custAvatar,
         customer_trace_hash: custTrace,
         thread_id: th.id,
         trip_id: null,
         pnr_locator: d.pnrLocator || null,
+        operator_package_id: d.operatorPackageId || null,
         operator_name: d.operatorName || null,
         steps,
         completed_steps_count: completedCount,
@@ -1159,7 +1162,7 @@ export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET"
         status: ord.status,
         customer_id: ord.customer_id || null,
         customer_name: custName,
-        customer_phone: prof?.phone || linkedThread?.guest_phone || null,
+        customer_phone: prof?.phone || linkedThread?.primary_phone_e164 || null,
         customer_avatar_url: custAvatar,
         customer_trace_hash: custTrace,
         thread_id: linkedThread?.id || null,
@@ -1202,7 +1205,7 @@ export const listCustomerSuccessOnboardingSheet = createServerFn({ method: "GET"
         status: ctr.status,
         customer_id: ctr.customer_id || null,
         customer_name: custName,
-        customer_phone: prof?.phone || linkedThread?.guest_phone || null,
+        customer_phone: prof?.phone || linkedThread?.primary_phone_e164 || null,
         customer_avatar_url: custAvatar,
         customer_trace_hash: custTrace,
         thread_id: linkedThread?.id || null,

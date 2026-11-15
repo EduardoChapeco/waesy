@@ -29,10 +29,12 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   generateDynamicTravelPresentation,
+  getPreBoardingMeetingFn,
+  respondToPreBoardingMeetingInviteFn,
   schedulePreBoardingMeetingFn,
+  type PreBoardingPresentationPage,
   type PreBoardingTripInput,
   type PresentationLocale,
-  type PresentationPageDTO,
 } from "@/services/travel-pre-boarding-and-commissions.functions";
 import { DocumentExportMenu } from "@/components/documents/DocumentExportMenu";
 import { exportStudioDocument } from "@/lib/documents/document-export";
@@ -40,7 +42,7 @@ import {
   BRAND_COLOR_PRESETS,
   resolveProposalCanvasTheme,
 } from "@/lib/tourism/proposal-theme-palettes";
-import { useAgency } from "@/contexts/AgencyContext";
+import { useWorkspaceStore } from "@/lib/store-context";
 import { resolveTenantDocumentIdentity } from "@/lib/documents/document-studio-catalog";
 
 const EMPTY_TRIP_INPUT: PreBoardingTripInput = {
@@ -88,16 +90,17 @@ export function PreBoardingPresentationStudio({
   brandColor?: string | null;
   visualVariant?: "editorial_deck" | "dark_luxury_deck" | "corporate_pitch_deck";
 }) {
-  const { currentAgency } = useAgency();
+  const { currentStore } = useWorkspaceStore();
   const tenantIdentity = useMemo(
     () =>
       resolveTenantDocumentIdentity({
-        agency: currentAgency,
+        agency: currentStore,
+        storeSettings: currentStore,
         overrideCompanyName: agencyName || initialTripInput?.agencyName,
         overrideLogoUrl: agencyLogoUrl,
         overrideBrandColor: brandColor,
       }),
-    [currentAgency, agencyName, initialTripInput?.agencyName, agencyLogoUrl, brandColor],
+    [currentStore, agencyName, initialTripInput?.agencyName, agencyLogoUrl, brandColor],
   );
 
   const [presentationMode, setPresentationMode] = useState<"pre_boarding_guide" | "commercial_quote">(
@@ -114,8 +117,8 @@ export function PreBoardingPresentationStudio({
   );
   const [logoFailed, setLogoFailed] = useState(false);
   const [isSlideEditorOpen, setIsSlideEditorOpen] = useState(!isPassengerPortal);
-  const [slideOverrides, setSlideOverrides] = useState<Record<number, Partial<PresentationPageDTO>>>({});
-  const [customSlides, setCustomSlides] = useState<PresentationPageDTO[]>([]);
+  const [slideOverrides, setSlideOverrides] = useState<Record<number, Partial<PreBoardingPresentationPage>>>({});
+  const [customSlides, setCustomSlides] = useState<PreBoardingPresentationPage[]>([]);
   const [deletedSlideNumbers, setDeletedSlideNumbers] = useState<number[]>([]);
 
   useEffect(() => {
@@ -145,16 +148,52 @@ export function PreBoardingPresentationStudio({
   const [customMealPlan, setCustomMealPlan] = useState(initialTripInput?.hotels?.[0]?.mealPlan || "");
 
   // Agendamento de reunião de pré-embarque
+  const [selectedTripId, setSelectedTripId] = useState(tripId || "");
+  const [presentationId, setPresentationId] = useState<string | null>(null);
   const [meetingModality, setMeetingModality] = useState<"online_video" | "in_person_agency">("online_video");
   const [slot1, setSlot1] = useState("");
   const [slot2, setSlot2] = useState("");
-  const [meetingLinkOrAddress, setMeetingLinkOrAddress] = useState("");
+  const [proposedSlots, setProposedSlots] = useState<string[]>([]);
+  const [meetingLinkOrAddress, setMeetingLinkOrAddress] = useState(agencyAddress || "");
   const [meetingStatus, setMeetingStatus] = useState<
-    "not_scheduled" | "proposed_by_agency" | "accepted_by_client"
+    "not_scheduled" | "proposed_by_agency" | "accepted_by_client" | "reschedule_requested" | "completed"
   >("not_scheduled");
   const [confirmedSlot, setConfirmedSlot] = useState<string | null>(null);
+  const [isSchedulingMeeting, setIsSchedulingMeeting] = useState(false);
+  const [isConfirmingSlot, setIsConfirmingSlot] = useState(false);
+
+  useEffect(() => {
+    setSelectedTripId(tripId || "");
+  }, [tripId]);
+
+  useEffect(() => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!selectedTripId || !uuidRegex.test(selectedTripId)) return;
+    let active = true;
+    getPreBoardingMeetingFn({ data: { tripId: selectedTripId } })
+      .then((res) => {
+        if (!active || !res?.found || !res.meeting) return;
+        setPresentationId(res.meeting.presentationId);
+        setMeetingStatus(res.meeting.meetingStatus);
+        setMeetingModality(res.meeting.modality);
+        setProposedSlots(res.meeting.proposedSlotsIso || []);
+        setConfirmedSlot(res.meeting.confirmedSlotIso);
+        if (res.meeting.meetingLinkOrAddress) {
+          setMeetingLinkOrAddress(res.meeting.meetingLinkOrAddress);
+        }
+      })
+      .catch(() => {
+        // Sem agenda prévia disponível para esta viagem ainda
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedTripId]);
 
   const handleLoadDepartureIntoStudio = (dep: any) => {
+    if (typeof dep?.id === "string" && dep.id) {
+      setSelectedTripId(dep.id);
+    }
     setCustomTitle(`Guia de Pré-Embarque — ${dep.destination || ""}`);
     setCustomDestination(dep.destination || "");
     setCustomPassengerName(dep.client_name || "");
@@ -264,7 +303,7 @@ export function PreBoardingPresentationStudio({
     [activeVisualStyle, selectedBrandColor, tenantIdentity.brandColor],
   );
 
-  const effectivePages = useMemo<PresentationPageDTO[]>(() => {
+  const effectivePages = useMemo<PreBoardingPresentationPage[]>(() => {
     const base = generated.pages
       .filter((pg) => !deletedSlideNumbers.includes(pg.pageNumber))
       .map((pg) => {
@@ -322,7 +361,7 @@ export function PreBoardingPresentationStudio({
 
   const currentSlide = effectivePages[activeSlideIndex] || effectivePages[0];
 
-  const handleUpdateCurrentSlide = (patch: Partial<PresentationPageDTO>) => {
+  const handleUpdateCurrentSlide = (patch: Partial<PreBoardingPresentationPage>) => {
     if (!currentSlide) return;
     const baseMatch = generated.pages.find(
       (pg) => pg.moduleKey === currentSlide.moduleKey && pg.pageNumber === currentSlide.pageNumber,
@@ -348,7 +387,7 @@ export function PreBoardingPresentationStudio({
 
   const handleAddCustomSlide = () => {
     const nextNum = effectivePages.length + 1;
-    const newSlide: PresentationPageDTO = {
+    const newSlide: PreBoardingPresentationPage = {
       pageNumber: nextNum,
       moduleKey: `custom_slide_${Date.now()}`,
       eyebrow: `${resolvedAgencyName} • Destaque Personalizado`,
@@ -418,24 +457,88 @@ export function PreBoardingPresentationStudio({
   };
 
   const handleScheduleMeeting = async () => {
+    const rawSlots = [slot1, slot2].map((s) => s.trim()).filter(Boolean);
+    if (rawSlots.length === 0) {
+      toast.error("Informe ao menos uma data e horário para propor a reunião de pré-embarque.");
+      return;
+    }
+
+    const locationOrUrl =
+      meetingLinkOrAddress.trim() ||
+      (meetingModality === "in_person_agency" ? (agencyAddress || "").trim() : "");
+
+    if (!locationOrUrl || locationOrUrl.length < 3) {
+      toast.error(
+        meetingModality === "online_video"
+          ? "Informe o link da videochamada (Google Meet ou Zoom)."
+          : "Informe o endereço presencial da agência para a reunião.",
+      );
+      return;
+    }
+
+    setIsSchedulingMeeting(true);
     try {
-      await schedulePreBoardingMeetingFn({
+      const isoSlots = rawSlots.map((raw) => {
+        const dt = new Date(raw);
+        if (Number.isNaN(dt.getTime())) {
+          throw new Error("Data ou horário inválido selecionado.");
+        }
+        return dt.toISOString();
+      });
+
+      const res = await schedulePreBoardingMeetingFn({
         data: {
-          tripId: tripId || "viagem",
+          presentationId: presentationId || undefined,
+          storeId: currentStore?.id || undefined,
+          tripId: selectedTripId || undefined,
+          presentationTitle: activeTripInput.tripTitle || undefined,
           clientName: activeTripInput.passengersNames[0] || "Passageiro",
           modality: meetingModality,
-          proposedSlotsIso: [slot1, slot2].filter(Boolean),
-          meetingLinkOrAddress,
-          agentName: activeTripInput.agencyName || "Consultor da Agência",
+          proposedSlotsIso: isoSlots,
+          meetingLinkOrAddress: locationOrUrl,
+          agentName: activeTripInput.agencyName || resolvedAgencyName,
         },
       });
+      setPresentationId(res.presentationId);
+      setProposedSlots(res.proposedSlotsIso);
       setMeetingStatus("proposed_by_agency");
       toast.success(
-        "Convite de Reunião de Pré-Embarque enviado para o Portal do Passageiro e WhatsApp!",
+        "Convite de Reunião de Pré-Embarque gravado e enviado para o Portal do Passageiro!",
       );
-    } catch {
-      setMeetingStatus("proposed_by_agency");
-      toast.success("Reunião de Pré-Embarque agendada e disponibilizada ao passageiro!");
+    } catch (err: any) {
+      toast.error(
+        err?.message || "Não foi possível gravar o agendamento da reunião de pré-embarque.",
+      );
+    } finally {
+      setIsSchedulingMeeting(false);
+    }
+  };
+
+  const handleConfirmPassengerSlot = async (slotIso: string) => {
+    if (!selectedTripId && !presentationId) {
+      toast.error("Convite de apresentação ainda não vinculado a esta viagem.");
+      return;
+    }
+    setIsConfirmingSlot(true);
+    try {
+      const res = await respondToPreBoardingMeetingInviteFn({
+        data: {
+          presentationId: presentationId || undefined,
+          tripId: selectedTripId || presentationId || "",
+          acceptedSlotIso: slotIso,
+          modality: meetingModality,
+        },
+      });
+      setPresentationId(res.presentationId);
+      setConfirmedSlot(res.confirmedSlotIso);
+      setMeetingStatus("accepted_by_client");
+      toast.success(
+        `Reunião de Pré-Embarque confirmada para ${new Date(res.confirmedSlotIso).toLocaleString("pt-BR")}!`,
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Não foi possível confirmar o horário selecionado.");
+    } finally {
+      setIsConfirmingSlot(false);
     }
   };
 
@@ -545,7 +648,7 @@ export function PreBoardingPresentationStudio({
             ))}
 
             {!isPassengerPortal && (
-              <div className="flex items-center gap-1.5 pl-2 border-l border-border">
+              <div className="flex items-center gap-2 pl-2 border-l border-border">
                 <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                   Cor da Marca:
                 </span>
@@ -790,7 +893,7 @@ export function PreBoardingPresentationStudio({
                     type="button"
                     variant={isSlideEditorOpen ? "secondary" : "outline"}
                     onClick={() => setIsSlideEditorOpen((v) => !v)}
-                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Edit3 className="size-3.5" />
                     <span>{isSlideEditorOpen ? "Ocultar Editor" : "Editar Slide"}</span>
@@ -799,7 +902,7 @@ export function PreBoardingPresentationStudio({
                     type="button"
                     variant="outline"
                     onClick={handleAddCustomSlide}
-                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-11 min-h-11 px-3 rounded-lg text-xs font-bold gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Plus className="size-3.5" />
                     <span>Novo Slide</span>
@@ -846,7 +949,7 @@ export function PreBoardingPresentationStudio({
                 markdownContent={deckMarkdown}
                 pageFormat="presentation-169"
                 label="Exportar"
-                variant="default"
+                variant="outline"
               />
             </div>
           </div>
@@ -874,7 +977,7 @@ export function PreBoardingPresentationStudio({
             <div className="p-5 bg-muted/20 border-b border-border space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Badge variant="default" className="text-2xs">
+                  <Badge variant="secondary" className="text-2xs">
                     Editor do Slide {currentSlide.pageNumber}
                   </Badge>
                   <span className="text-xs font-semibold text-foreground">
@@ -892,12 +995,12 @@ export function PreBoardingPresentationStudio({
                           label: "Novo Item",
                           value: "Destaque ou Valor",
                           practicalExplanation: "Explicação prática para o cliente.",
-                          badge: "Incluso",
+                          badge: "Incluso" as const,
                         },
                       ];
                       handleUpdateCurrentSlide({ cards: nextCards });
                     }}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-1.5"
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2"
                   >
                     <Plus className="size-3.5" />
                     <span>Adicionar Card</span>
@@ -906,7 +1009,7 @@ export function PreBoardingPresentationStudio({
                     type="button"
                     variant="outline"
                     onClick={handleDeleteCurrentSlide}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-1.5 text-destructive hover:text-destructive"
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="size-3.5" />
                     <span>Excluir Slide</span>
@@ -915,7 +1018,7 @@ export function PreBoardingPresentationStudio({
                     type="button"
                     variant="ghost"
                     onClick={handleResetSlides}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-1.5"
+                    className="h-11 min-h-11 px-3 text-xs font-semibold gap-2"
                   >
                     <RotateCcw className="size-3.5" />
                     <span>Restaurar Padrão</span>
@@ -971,7 +1074,7 @@ export function PreBoardingPresentationStudio({
                         <Input
                           value={card.label}
                           onChange={(e) => {
-                            const updated = currentSlide.cards.map((c, i) =>
+                            const updated = (currentSlide.cards || []).map((c, i) =>
                               i === cIdx ? { ...c, label: e.target.value } : c,
                             );
                             handleUpdateCurrentSlide({ cards: updated });
@@ -982,7 +1085,7 @@ export function PreBoardingPresentationStudio({
                         <Input
                           value={card.value}
                           onChange={(e) => {
-                            const updated = currentSlide.cards.map((c, i) =>
+                            const updated = (currentSlide.cards || []).map((c, i) =>
                               i === cIdx ? { ...c, value: e.target.value } : c,
                             );
                             handleUpdateCurrentSlide({ cards: updated });
@@ -996,7 +1099,7 @@ export function PreBoardingPresentationStudio({
                           size="icon"
                           aria-label="Remover card do slide"
                           onClick={() => {
-                            const updated = currentSlide.cards.filter((_, i) => i !== cIdx);
+                            const updated = (currentSlide.cards || []).filter((_, i) => i !== cIdx);
                             handleUpdateCurrentSlide({ cards: updated });
                           }}
                           className="size-11 shrink-0 text-muted-foreground hover:text-destructive"
@@ -1007,7 +1110,7 @@ export function PreBoardingPresentationStudio({
                       <Input
                         value={card.practicalExplanation}
                         onChange={(e) => {
-                          const updated = currentSlide.cards.map((c, i) =>
+                          const updated = (currentSlide.cards || []).map((c, i) =>
                             i === cIdx ? { ...c, practicalExplanation: e.target.value } : c,
                           );
                           handleUpdateCurrentSlide({ cards: updated });
@@ -1034,15 +1137,15 @@ export function PreBoardingPresentationStudio({
                 style={
                   {
                     "--dyn-bg": brandTheme.canvasBg,
-                    "--dyn-fg": brandTheme.canvasFg,
-                    "--dyn-bdr": brandTheme.surfaceBorder,
+                    "--dyn-fg": brandTheme.ink,
+                    "--dyn-bdr": brandTheme.border,
                   } as React.CSSProperties
                 }
               >
                 {/* Cabeçalho Institucional Brand Kit com Logo da Empresa em Todo Slide */}
                 <div
                   className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b waesy-dyn-bdr"
-                  style={{ "--dyn-bdr": brandTheme.surfaceBorder } as React.CSSProperties}
+                  style={{ "--dyn-bdr": brandTheme.border } as React.CSSProperties}
                 >
                   <div className="flex items-center gap-3">
                     {resolvedLogoUrl ? (
@@ -1050,7 +1153,7 @@ export function PreBoardingPresentationStudio({
                         src={resolvedLogoUrl}
                         alt={resolvedAgencyName}
                         onError={() => setLogoFailed(true)}
-                        className="h-11 max-w-36 object-contain rounded-md bg-white/90 px-2 py-1 border border-border/40 shrink-0"
+                        className="h-11 max-w-36 object-contain rounded-md bg-card px-2 py-1 border border-border/40 shrink-0"
                       />
                     ) : (
                       <div
@@ -1085,8 +1188,8 @@ export function PreBoardingPresentationStudio({
                       className="px-3 py-1 rounded-full text-2xs font-bold uppercase tracking-wider waesy-dyn-bg waesy-dyn-fg"
                       style={
                         {
-                          "--dyn-bg": brandTheme.brandSoftBg,
-                          "--dyn-fg": brandTheme.brandSoftFg,
+                          "--dyn-bg": brandTheme.brandSoft,
+                          "--dyn-fg": brandTheme.ink,
                         } as React.CSSProperties
                       }
                     >
@@ -1100,7 +1203,7 @@ export function PreBoardingPresentationStudio({
 
                 <div
                   className="space-y-2 border-b pb-4 waesy-dyn-bdr"
-                  style={{ "--dyn-bdr": brandTheme.surfaceBorder } as React.CSSProperties}
+                  style={{ "--dyn-bdr": brandTheme.border } as React.CSSProperties}
                 >
                   <h3 className="text-xl sm:text-2xl font-bold break-words leading-tight">
                     {slide.title}
@@ -1114,8 +1217,8 @@ export function PreBoardingPresentationStudio({
                   className="p-4 rounded-lg border text-sm leading-relaxed break-words waesy-dyn-bg waesy-dyn-bdr"
                   style={
                     {
-                      "--dyn-bg": brandTheme.surfaceBg,
-                      "--dyn-bdr": brandTheme.surfaceBorder,
+                      "--dyn-bg": brandTheme.surfaceCard,
+                      "--dyn-bdr": brandTheme.border,
                     } as React.CSSProperties
                   }
                 >
@@ -1235,7 +1338,7 @@ export function PreBoardingPresentationStudio({
                 {/* Rodapé Institucional do Slide */}
                 <div
                   className="pt-4 border-t flex flex-wrap items-center justify-between gap-2 text-2xs opacity-75 waesy-dyn-bdr"
-                  style={{ "--dyn-bdr": brandTheme.surfaceBorder } as React.CSSProperties}
+                  style={{ "--dyn-bdr": brandTheme.border } as React.CSSProperties}
                 >
                   <span>
                     {resolvedAgencyName} • {activeTripInput.tripTitle || "Apresentação Executiva"}
@@ -1264,9 +1367,11 @@ export function PreBoardingPresentationStudio({
                 variant={meetingStatus === "accepted_by_client" ? "secondary" : "outline"}
                 className="text-xs"
               >
-                {meetingStatus === "accepted_by_client"
-                  ? `Confirmada para ${confirmedSlot}`
-                  : "Horários Propostos pela Agência"}
+                {meetingStatus === "accepted_by_client" && confirmedSlot
+                  ? `Confirmada para ${new Date(confirmedSlot).toLocaleString("pt-BR")}`
+                  : meetingStatus === "proposed_by_agency"
+                    ? "Horários Propostos pela Agência"
+                    : "Aguardando Agendamento"}
               </Badge>
             </div>
             <h3 className="text-base font-bold text-foreground mt-1">
@@ -1314,59 +1419,79 @@ export function PreBoardingPresentationStudio({
               </div>
               <p className="text-xs text-muted-foreground break-words">
                 {meetingModality === "online_video"
-                  ? `Link da Sala: ${meetingLinkOrAddress}`
-                  : `Endereço: ${agencyAddress || `${resolvedAgencyName} — Atendimento Presencial com entrega da pasta física e vouchers.`}`}
+                  ? `Link da Sala: ${meetingLinkOrAddress || "A definir com o consultor"}`
+                  : `Endereço: ${meetingLinkOrAddress || agencyAddress || `${resolvedAgencyName} — Atendimento Presencial.`}`}
               </p>
             </div>
 
             <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-3">
               <span className="text-xs font-bold text-primary block">
-                2. Confirme um dos Horários Disponíveis na Agenda do seu Consultor
+                2. Confirme um dos Horários Propostos pelo seu Consultor
               </span>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { label: "25/11 às 19:00", iso: "25/11/2026 às 19:00" },
-                  { label: "26/11 às 14:30", iso: "26/11/2026 às 14:30" },
-                ].map((sl) => (
-                  <Button
-                    key={sl.iso}
-                    type="button"
-                    variant={confirmedSlot === sl.iso ? "default" : "outline"}
-                    onClick={() => {
-                      setConfirmedSlot(sl.iso);
-                      setMeetingStatus("accepted_by_client");
-                      toast.success(
-                        `Reunião de Pré-Embarque confirmada para ${sl.iso} (${
-                          meetingModality === "online_video" ? "Online Vídeo" : "Presencial na Agência"
-                        })! Agenda do consultor atualizada.`,
-                      );
-                    }}
-                    className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
-                  >
-                    <CheckCircle2 className="size-4" />
-                    <span>Aceitar {sl.label}</span>
-                  </Button>
-                ))}
-              </div>
+              {proposedSlots.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {proposedSlots.map((slotIso) => {
+                    const formattedLabel = new Date(slotIso).toLocaleString("pt-BR", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    });
+                    return (
+                      <Button
+                        key={slotIso}
+                        type="button"
+                        disabled={isConfirmingSlot}
+                        variant={confirmedSlot === slotIso ? "default" : "outline"}
+                        onClick={() => handleConfirmPassengerSlot(slotIso)}
+                        className="h-11 min-h-11 px-4 rounded-lg text-xs font-semibold gap-2 cursor-pointer"
+                      >
+                        <CheckCircle2 className="size-4" />
+                        <span>
+                          {isConfirmingSlot ? "Confirmando..." : `Aceitar ${formattedLabel}`}
+                        </span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Nenhum horário foi proposto pela agência até o momento. Solicite ao consultor.
+                </p>
+              )}
               {confirmedSlot && (
                 <p className="text-xs font-semibold text-success">
-                  Confirmado! Seu consultor já recebeu a confirmação na agenda para {confirmedSlot}.
+                  Confirmado! Agenda atualizada para {new Date(confirmedSlot).toLocaleString("pt-BR")}.
                 </p>
               )}
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Modalidade Sugerida</Label>
               <select
                 value={meetingModality}
-                onChange={(e) => setMeetingModality(e.target.value as any)}
-                className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs font-medium"
+                onChange={(e) => setMeetingModality(e.target.value as "online_video" | "in_person_agency")}
+                className="w-full h-11 px-3 rounded-lg border border-input bg-background text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <option value="online_video">Online por Vídeo (Google Meet / Zoom)</option>
                 <option value="in_person_agency">Presencial na Agência (Entrega de Pasta)</option>
               </select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">
+                {meetingModality === "online_video" ? "Link da Videochamada" : "Endereço da Agência"}
+              </Label>
+              <Input
+                type="text"
+                value={meetingLinkOrAddress}
+                onChange={(e) => setMeetingLinkOrAddress(e.target.value)}
+                placeholder={
+                  meetingModality === "online_video"
+                    ? "https://meet.google.com/..."
+                    : "Rua, número e complemento"
+                }
+                className="h-11 text-xs rounded-lg"
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-semibold">Opção de Horário 1</Label>
@@ -1388,11 +1513,14 @@ export function PreBoardingPresentationStudio({
             </div>
             <Button
               type="button"
+              disabled={isSchedulingMeeting}
               onClick={handleScheduleMeeting}
               className="h-11 min-h-11 px-4 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
               <Send className="size-4" />
-              <span>Enviar Convite ao Passageiro</span>
+              <span>
+                {isSchedulingMeeting ? "Salvando convite..." : "Enviar Convite ao Passageiro"}
+              </span>
             </Button>
           </div>
         )}

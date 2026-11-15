@@ -89,14 +89,28 @@ vi.mock("@/lib/supabase", () => ({
               return { data: rows, error: null };
             },
           }),
-          in: async (colIn: string, values: any[]) => {
-            const rows = (mockDb[table] || []).filter((r) => values.includes(r[colIn]));
-            return { data: rows, error: null };
+          in: (colIn: string, values: any[]) => {
+            const rows = (mockDb[table] || []).filter(
+              (r) => r[col1] === val1 && values.includes(r[colIn]),
+            );
+            return {
+              order: () => ({
+                limit: async (n: number) => ({ data: rows.slice(0, n), error: null }),
+              }),
+              then: (resolve: any, reject?: any) =>
+                Promise.resolve({ data: rows, error: null }).then(resolve, reject),
+            };
           },
         }),
-        in: async (colIn: string, values: any[]) => {
+        in: (colIn: string, values: any[]) => {
           const rows = (mockDb[table] || []).filter((r) => values.includes(r[colIn]));
-          return { data: rows, error: null };
+          return {
+            order: () => ({
+              limit: async (n: number) => ({ data: rows.slice(0, n), error: null }),
+            }),
+            then: (resolve: any, reject?: any) =>
+              Promise.resolve({ data: rows, error: null }).then(resolve, reject),
+          };
         },
       }),
       upsert: (record: any) => ({
@@ -127,7 +141,7 @@ vi.mock("@/lib/supabase", () => ({
 describe("BFF Server Functions: iFood Reconciliation & Central de Integrações", () => {
   beforeEach(() => {
     mockDb.integration_credentials = [];
-    mockDb.chat_conversations = [];
+    mockDb.chat_threads = [];
     mockDb.profiles = [];
     mockDb.chat_messages = [];
     mockDb.audit_logs = [];
@@ -223,8 +237,8 @@ describe("BFF Server Functions: iFood Reconciliation & Central de Integrações"
 
     mockDb.chat_messages.push({
       id: "msg-1",
-      conversation_id: MOCK_CONV_ID,
-      content: "Tem coca cola 2L gelada?",
+      thread_id: MOCK_CONV_ID,
+      message: "Tem coca cola 2L gelada?",
       created_at: "2026-10-29T19:32:00Z",
     });
 
@@ -263,19 +277,20 @@ describe("BFF Server Functions: iFood Reconciliation & Central de Integrações"
     expect(result.bestMatch?.chatConversationId).toBe(MOCK_CONV_ID);
     expect(result.bestMatch?.score).toBeGreaterThanOrEqual(80);
 
-    // Confirma que a mensagem de sistema foi gerada no chat
-    const sysMsg = mockDb.chat_messages.find((m) => m.sender_type === "system");
+    // Confirma que a mensagem de sistema foi gerada no chat com colunas reais de chat_messages
+    const sysMsg = mockDb.chat_messages.find((m) => m.message_type === "system");
     expect(sysMsg).toBeDefined();
-    expect(sysMsg?.content).toContain("Pedido iFood N. 888");
+    expect(sysMsg?.thread_id).toBe(MOCK_CONV_ID);
+    expect(sysMsg?.message).toContain("Pedido iFood N. 888");
   });
 
   it("recupera pedidos externos vinculados para a conversa de chat", async () => {
     mockDb.chat_messages.push({
       id: "msg-ext-1",
-      conversation_id: MOCK_CONV_ID,
-      sender_type: "system",
-      content: "Pedido iFood N. 888 vinculado automaticamente",
-      metadata: {
+      thread_id: MOCK_CONV_ID,
+      message_type: "system",
+      message: "Pedido iFood N. 888 vinculado automaticamente",
+      payload: {
         is_external_order: true,
         provider: "ifood",
         external_order_id: "ifood-order-888",

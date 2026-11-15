@@ -1210,7 +1210,8 @@ export function resolveKanbanStageSynonym(
 } {
   const normalizedRaw = normalizeKanbanStageSlug(rawStage);
   const nicheStages = getNicheKanbanStages(nicheOrStore);
-  const candidates = activeStages && activeStages.length > 0 ? activeStages : nicheStages;
+  const candidates: KanbanStageResolvable[] =
+    activeStages && activeStages.length > 0 ? activeStages : nicheStages;
 
   // 1. Exact stage_key match inside activeStages
   const exactActive = candidates.find((s) => getStageKeyFromInput(s) === normalizedRaw);

@@ -14,9 +14,14 @@ const mockAppointments: Record<string, any> = {};
 const mockCarts: Record<string, any> = {};
 const mockCartItems: Record<string, any[]> = {};
 const mockStores: Record<string, any> = {
-  "store-mercado-01": { id: "store-mercado-01", name: "Supermercado Central Chapecó", segment: "mercado" },
-  "store-moda-02": { id: "store-moda-02", name: "Boutique Elegance Moda", segment: "vestuario" },
-  "store-clinica-03": { id: "store-clinica-03", name: "Clínica Integrada de Saúde", segment: "saude" },
+  "store-mercado-01": { id: "store-mercado-01", name: "Supermercado Central Chapecó", is_active: true, settings: { segment: "mercado" } },
+  "store-moda-02": { id: "store-moda-02", name: "Boutique Elegance Moda", is_active: true, settings: { segment: "vestuario" } },
+  "store-clinica-03": { id: "store-clinica-03", name: "Clínica Integrada de Saúde", is_active: true, settings: { segment: "saude" } },
+};
+const mockProducts: Record<string, any> = {
+  "prod-leite-01": { id: "prod-leite-01", title: "Leite Integral 1L" },
+  "prod-cafe-02": { id: "prod-cafe-02", title: "Café Especial Torrado 500g" },
+  "prod-vestido-01": { id: "prod-vestido-01", title: "Vestido Midi Alfaiataria" },
 };
 
 vi.mock("@/lib/supabase", () => ({
@@ -33,6 +38,20 @@ vi.mock("@/lib/supabase", () => ({
               if (table === "carts") return { data: mockCarts[val] || null, error: null };
               return { data: null, error: null };
             },
+          }),
+          filter: (expr: string, _op: string, pattern: string) => ({
+            limit: () => ({
+              maybeSingle: async () => {
+                if (table === "stores" && col === "is_active" && val === true && expr === "settings->>segment") {
+                  const clean = String(pattern).replace(/%/g, "").toLowerCase();
+                  const found = Object.values(mockStores).find((s) =>
+                    String(s.settings?.segment || "").toLowerCase().includes(clean),
+                  );
+                  return { data: found || null, error: null };
+                }
+                return { data: null, error: null };
+              },
+            }),
           }),
           maybeSingle: async () => {
             if (table === "immutable_ledger_entries") {
@@ -67,12 +86,23 @@ vi.mock("@/lib/supabase", () => ({
             return resolve({ data: [], error: null });
           },
         }),
+        in: async (col: string, values: any[]) => {
+          if (table === "products" && col === "id") {
+            return {
+              data: values.map((v) => mockProducts[v]).filter(Boolean),
+              error: null,
+            };
+          }
+          return { data: [], error: null };
+        },
         ilike: (col: string, val: string) => ({
           limit: () => ({
             maybeSingle: async () => {
               if (table === "stores") {
                 const clean = val.replace(/%/g, "").toLowerCase();
-                const found = Object.values(mockStores).find((s) => s.segment.includes(clean));
+                const found = Object.values(mockStores).find((s) =>
+                  String(s.settings?.segment || "").toLowerCase().includes(clean),
+                );
                 return { data: found || null, error: null };
               }
               return { data: null, error: null };
@@ -191,19 +221,19 @@ describe("Prompt 22: O Chat como Aplicativo (Comércio, Serviços, Agenda, Orça
     mockCartItems[cartId] = [
       {
         id: "item-1",
-        product_id: "prod-leite-01",
-        quantity: 2,
-        unit_price_cents: 490,
-        total_price_cents: 980,
-        products: { title: "Leite Integral 1L" },
+        item_type: "product",
+        item_id: "prod-leite-01",
+        qty: 2,
+        price_snapshot_cents: 490,
+        product_variants: { product_id: "prod-leite-01", products: { title: "Leite Integral 1L" } },
       },
       {
         id: "item-2",
-        product_id: "prod-cafe-02",
-        quantity: 1,
-        unit_price_cents: 1890,
-        total_price_cents: 1890,
-        products: { title: "Café Especial Torrado 500g" },
+        item_type: "product",
+        item_id: "prod-cafe-02",
+        qty: 1,
+        price_snapshot_cents: 1890,
+        product_variants: { product_id: "prod-cafe-02", products: { title: "Café Especial Torrado 500g" } },
       },
     ];
 
@@ -257,11 +287,11 @@ describe("Prompt 22: O Chat como Aplicativo (Comércio, Serviços, Agenda, Orça
     mockCartItems[cartId] = [
       {
         id: "item-vest-1",
-        product_id: "prod-vestido-01",
-        quantity: 1,
-        unit_price_cents: 18990,
-        total_price_cents: 18990,
-        products: { title: "Vestido Midi Alfaiataria" },
+        item_type: "product",
+        item_id: "prod-vestido-01",
+        qty: 1,
+        price_snapshot_cents: 18990,
+        product_variants: { product_id: "prod-vestido-01", products: { title: "Vestido Midi Alfaiataria" } },
       },
     ];
 

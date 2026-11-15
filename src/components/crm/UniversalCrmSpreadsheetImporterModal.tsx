@@ -50,6 +50,7 @@ export function UniversalCrmSpreadsheetImporterModal({
   const [rawText, setRawText] = useState(SAMPLE_CRM_SPREADSHEET);
   const [operatorSlug, setOperatorSlug] = useState<InfoTravelOperatorSlug>("orinter");
   const [isSyncingOperator, setIsSyncingOperator] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const {
     data: infotravelStatus,
@@ -331,8 +332,9 @@ export function UniversalCrmSpreadsheetImporterModal({
             </Button>
             <Button
               type="button"
-              disabled={parsedResult.validRowsCount === 0}
+              disabled={isImporting || parsedResult.validRowsCount === 0}
               onClick={async () => {
+                setIsImporting(true);
                 try {
                   const res = await importUniversalCrmSpreadsheetBatchFn({
                     data: {
@@ -343,18 +345,24 @@ export function UniversalCrmSpreadsheetImporterModal({
                   toast.success(
                     `${res.importedCount} clientes gravados na Carteira CRM com limites de crédito e observações completas!`,
                   );
-                } catch {
-                  toast.success(
-                    `${parsedResult.validRowsCount} clientes importados na Carteira CRM com limites de crédito e observações completas!`,
+                  onImportedSuccess?.();
+                  onOpenChange(false);
+                } catch (err: any) {
+                  toast.error(
+                    err?.message || "Não foi possível gravar os clientes importados no CRM.",
                   );
+                } finally {
+                  setIsImporting(false);
                 }
-                onImportedSuccess?.();
-                onOpenChange(false);
               }}
               className="h-11 min-h-11 px-5 rounded-lg text-xs font-bold gap-2 cursor-pointer"
             >
               <CheckCircle2 className="size-4" />
-              <span>Importar {parsedResult.validRowsCount} Clientes para o CRM</span>
+              <span>
+                {isImporting
+                  ? "Importando clientes..."
+                  : `Importar ${parsedResult.validRowsCount} Clientes para o CRM`}
+              </span>
             </Button>
           </div>
         </div>

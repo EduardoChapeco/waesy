@@ -1884,7 +1884,7 @@ export const updateLeadStatus = createServerFn({ method: "POST" })
  .maybeSingle();
 
  const existingCf = ((existingLead?.custom_fields as Record<string, any>) || {});
- const mergedCf = {
+ const mergedCf: Record<string, any> = {
    ...existingCf,
    kanban_stage_key: resolved.matchedStageKey,
    kanban_stage_purpose: resolved.purpose,
@@ -3315,7 +3315,7 @@ export const persistLeadMove = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const existingCf = ((leadRow?.custom_fields as Record<string, any>) || {});
-    const mergedCf = {
+    const mergedCf: Record<string, any> = {
       ...existingCf,
       kanban_stage_key: resolved.matchedStageKey,
       kanban_stage_purpose: resolved.purpose,

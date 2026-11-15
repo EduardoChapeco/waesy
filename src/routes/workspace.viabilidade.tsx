@@ -153,10 +153,12 @@ export function WorkspaceViabilityPage() {
           competitorName: comp.name,
           category: comp.category || nicheSlug,
           city: activeStudy?.city || city,
-          estimatedTicketCents: comp.estimatedTicketCents || 5500,
+          estimatedTicketCents: comp.estimatedTicketCents ?? null,
         },
       });
       setWebAudits((prev) => ({ ...prev, [comp.id]: audit }));
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Falha ao inspecionar presença digital do concorrente.");
     } finally {
       setInspectingCompId(null);
     }
@@ -165,20 +167,26 @@ export function WorkspaceViabilityPage() {
   async function handleExportExecutivePdf() {
     if (!activeStudy) return;
     setIsExportingPdf(true);
+    setErrorMessage(null);
     try {
       const dossierEl = document.getElementById("waesy-viability-executive-dossier");
       const htmlContent = dossierEl ? dossierEl.innerHTML : activeStudy.executive_summary;
-      await exportViabilityStudyDossier({
+      const result = await exportViabilityStudyDossier({
         data: {
           studyId: activeStudy.id,
           storeId: store?.id || activeStudy.store_id || null,
           htmlContent,
         },
       });
-      setStatusBanner(`Dossiê Executivo armazenado em viability-reports/${store?.id || "workspace"}/${activeStudy.id}.pdf e pronto para impressão A4.`);
+      if (!result.success) {
+        throw new Error("Falha ao armazenar o Dossiê Executivo no repositório.");
+      }
+      setStatusBanner(`Dossiê Executivo armazenado em ${result.storagePath} e pronto para impressão A4.`);
       if (typeof window !== "undefined") {
         window.print();
       }
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Erro ao exportar o Dossiê Executivo em PDF.");
     } finally {
       setIsExportingPdf(false);
     }
@@ -1058,15 +1066,15 @@ export function WorkspaceViabilityPage() {
                               {comp.distanceKm.toFixed(2)} km
                             </td>
                             <td className="p-3 font-mono font-semibold text-foreground">
-                              {formatBrlFromCents(comp.estimatedTicketCents)}
+                              {comp.estimatedTicketCents ? formatBrlFromCents(comp.estimatedTicketCents) : "Não informado"}
                             </td>
                             <td className="p-3">
                               <Badge variant="outline" className="text-xs capitalize">
-                                {comp.pricePositioning}
+                                {comp.pricePositioning === "nao_informado" ? "Não avaliado" : comp.pricePositioning}
                               </Badge>
                             </td>
                             <td className="p-3 text-muted-foreground">
-                              {comp.strengths.join(" · ")}
+                              {comp.strengths.length > 0 ? comp.strengths.join(" · ") : "Sem diagnóstico registrado"}
                             </td>
                             <td className="p-3 text-foreground font-medium">
                               <div className="pt-2">
@@ -1084,17 +1092,34 @@ export function WorkspaceViabilityPage() {
                               {webAudits[comp.id] && (
                                 <div className="mt-2 p-3 rounded-lg border border-border bg-muted/30 space-y-1 text-xs">
                                   <div className="font-bold text-foreground">
-                                    Tom: {webAudits[comp.id].communicationTone} · Nota ~{webAudits[comp.id].estimatedRating}
+                                    {webAudits[comp.id].communicationTone
+                                      ? `Tom: ${webAudits[comp.id].communicationTone}`
+                                      : "Perfil Digital Verificado"}
+                                    {webAudits[comp.id].estimatedRating !== null
+                                      ? ` · Nota ${webAudits[comp.id].estimatedRating?.toFixed(1)}`
+                                      : " · Sem avaliações"}
                                   </div>
                                   <div className="text-muted-foreground font-mono">
-                                    Faixa Pública: {webAudits[comp.id].publicPriceRange} · Maturidade Digital: {webAudits[comp.id].digitalMaturityScore}/100
+                                    {webAudits[comp.id].publicPriceRange
+                                      ? `Faixa Pública: ${webAudits[comp.id].publicPriceRange}`
+                                      : "Faixa Pública: Não informada"}
+                                    {webAudits[comp.id].digitalMaturityScore !== null
+                                      ? ` · Presença Digital: ${webAudits[comp.id].digitalMaturityScore}/100`
+                                      : ""}
                                   </div>
-                                  <div className="text-foreground">
-                                    {webAudits[comp.id].strategicWeaknessToExploit}
-                                  </div>
+                                  {webAudits[comp.id].channelsDetected.length > 0 && (
+                                    <div className="text-muted-foreground">
+                                      Canais: {webAudits[comp.id].channelsDetected.join(", ")}
+                                    </div>
+                                  )}
+                                  {webAudits[comp.id].strategicWeaknessToExploit && (
+                                    <div className="text-foreground">
+                                      {webAudits[comp.id].strategicWeaknessToExploit}
+                                    </div>
+                                  )}
                                 </div>
                               )}
-                              {comp.weaknesses.join(" · ")}
+                              {comp.weaknesses.length > 0 ? comp.weaknesses.join(" · ") : null}
                             </td>
                           </tr>
                         ))}

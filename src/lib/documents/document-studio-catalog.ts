@@ -16,7 +16,7 @@ import type {
 } from "@/services/travel-proposal.functions";
 import {
   generateDynamicTravelPresentation,
-  type PresentationPageDTO,
+  type PreBoardingPresentationPage,
 } from "@/services/travel-pre-boarding-and-commissions.functions";
 import type { ProposalFontPresetId } from "@/lib/tourism/proposal-theme-palettes";
 
@@ -403,6 +403,9 @@ export function resolveTenantDocumentIdentity(input?: {
   brandKit?: Record<string, any> | null;
   companyProfile?: Record<string, any> | null;
   storeSettings?: Record<string, any> | null;
+  overrideCompanyName?: string | null;
+  overrideLogoUrl?: string | null;
+  overrideBrandColor?: string | null;
 }): TenantDocumentIdentity {
   const agency = input?.agency || null;
   const brandKit = input?.brandKit || null;
@@ -411,7 +414,8 @@ export function resolveTenantDocumentIdentity(input?: {
 
   const companyName =
     String(
-      profile?.company_name ||
+      input?.overrideCompanyName ||
+        profile?.company_name ||
         store?.name ||
         agency?.name ||
         profile?.trading_name ||
@@ -419,7 +423,7 @@ export function resolveTenantDocumentIdentity(input?: {
     ).trim() || "Organização Emissora";
 
   const tradingName = String(
-    profile?.trading_name || store?.name || agency?.name || companyName,
+    input?.overrideCompanyName || profile?.trading_name || store?.name || agency?.name || companyName,
   ).trim();
 
   const documentNumber = String(profile?.cnpj || store?.cnpj || "").trim();
@@ -434,11 +438,13 @@ export function resolveTenantDocumentIdentity(input?: {
   const email = String(profile?.email || store?.email || "").trim();
   const website = String(profile?.website || store?.website || "").trim();
   const logoUrl =
+    input?.overrideLogoUrl ||
     (brandKit?.logo_url as string | undefined) ||
     (agency?.logo_url as string | undefined) ||
     (store?.logo_url as string | undefined) ||
     null;
   const brandColor =
+    input?.overrideBrandColor ||
     (brandKit?.primary_color as string | undefined) ||
     (agency?.brand_color as string | undefined) ||
     null;
@@ -827,18 +833,22 @@ export function buildCommercialDocumentDataAdapter(
     subtotalCents: effectiveTotal,
     discountCents: 0,
     totalCents: effectiveTotal,
-    paymentConditions:
-      form.paymentConditions ||
-      `${form.installmentsCount || 1}x via ${form.paymentMethod || "A combinar"}`,
-    paymentMethods: [form.paymentMethod || "PIX / Cartão / Boleto"].filter(Boolean),
-    includedItems: includedList.length > 0 ? includedList : undefined,
-    excludedItems: excludedList.length > 0 ? excludedList : undefined,
-    notes: form.markdownBody || undefined,
+    paymentTerms: {
+      method: form.paymentMethod || "PIX / Cartão / Boleto",
+      installmentsCount: form.installmentsCount || 1,
+      installmentValueCents: Math.round(effectiveTotal / Math.max(1, form.installmentsCount || 1)),
+      notes:
+        form.paymentConditions ||
+        `${form.installmentsCount || 1}x via ${form.paymentMethod || "A combinar"}`,
+      pixKey: tenant.pixKey || undefined,
+      paymentInstructions: tenant.paymentInstructions || undefined,
+    },
+    legalNotes: form.markdownBody || undefined,
   };
 }
 
 function mapPresentationPageToEditableSlide(
-  page: PresentationPageDTO,
+  page: PreBoardingPresentationPage,
   index: number,
 ): EditablePresentationSlide {
   return {
@@ -1042,52 +1052,60 @@ export function buildInitialEditableSlides(
   );
 
   const generated = generateDynamicTravelPresentation({
+    presentationType: templateId === "guia_pre_embarque_169" ? "pre_boarding_guide" : "commercial_quote",
+    locale: "pt-BR",
     tripTitle:
       form.title ||
       (form.destination ? `Apresentação — ${form.destination}` : "Apresentação Executiva"),
-    destinationCity: form.destination || "Destino Selecionado",
-    destinationCountry: isInternational ? "Internacional" : "Brasil",
-    isInternational,
-    departureDate: form.startDate || new Date().toISOString().slice(0, 10),
-    returnDate: form.endDate || form.startDate || new Date().toISOString().slice(0, 10),
-    agencyName: tenant.companyName,
-    agencyPhone: tenant.phone || undefined,
-    agencyEmail: tenant.email || undefined,
-    agencyAddress: [tenant.address, tenant.cityState].filter(Boolean).join(" — ") || undefined,
-    passengers:
+    conceptSubtitle:
+      form.subtitle ||
+      `Preparado por ${tenant.companyName} especialmente para ${form.clientName || "você"}`,
+    travelerProfileType: "casal",
+    passengersNames:
       form.passengers.length > 0
-        ? form.passengers.map((p) => ({
-            fullName: p.name,
-            documentNumber: p.document,
-          }))
-        : [{ fullName: form.clientName || "Passageiro Titular", documentNumber: form.clientDocument }],
+        ? form.passengers.map((p) => p.name).filter(Boolean)
+        : [form.clientName || "Passageiro Titular"],
+    adultsCount: form.adultsCount || 1,
+    childrenCount: form.childrenCount || 0,
+    startDate: form.startDate || new Date().toISOString().slice(0, 10),
+    endDate: form.endDate || form.startDate || new Date().toISOString().slice(0, 10),
+    originCity: "Origem a definir",
+    destinations: [form.destination || "Destino Selecionado"],
+    countries: [isInternational ? "Internacional" : "Brasil"],
+    agencyName: tenant.companyName,
+    agencyEmergencyPhone: tenant.phone || tenant.email || "",
     flights: form.flightSummary
       ? [
           {
+            direction: "ida",
+            date: form.startDate || "2026-11-20",
             airline: "Companhia Aérea",
             flightNumber: "VOO-101",
             originIata: "ORIG",
             destinationIata: (form.destination || "DEST").slice(0, 3).toUpperCase(),
-            departureAt: `${form.startDate || "2026-11-20"}T08:00:00`,
-            arrivalAt: `${form.startDate || "2026-11-20"}T11:30:00`,
-            locator: form.protocolCode || "LOC123",
-            baggageAllowance: form.flightSummary,
+            departureTime: "08:00",
+            arrivalTime: "11:30",
+            durationText: "03h30",
+            sameTicket: true,
+            carryOnBagRule: form.flightSummary,
           },
         ]
       : [],
     hotels: form.hotelSummary
       ? [
           {
-            hotelName: form.hotelSummary,
+            name: form.hotelSummary,
+            city: form.destination || "Destino Principal",
             address: form.destination || "Localização Principal",
-            checkInAt: `${form.startDate || "2026-11-20"} 14:00`,
-            checkOutAt: `${form.endDate || form.startDate || "2026-11-25"} 12:00`,
-            roomType: "Categoria Selecionada",
+            checkInTime: "14:00",
+            checkOutTime: "12:00",
             mealPlan: "Conforme proposta",
-            confirmationCode: form.protocolCode || "HTL-OK",
           },
         ]
       : [],
+    hasReceptiveTransfer: false,
+    commercialPriceTotalCents: form.totalCents || undefined,
+    commercialPaymentConditions: form.paymentConditions || undefined,
   });
 
   const baseSlides = generated.pages.map((page, index) =>
@@ -1175,27 +1193,43 @@ export function buildTravelProposalDtoFromStudio(
           ? "dark-premium"
           : "landscape-presentation");
 
+  const nowIso = new Date().toISOString();
+  const totalCents = form.totalCents || 0;
+  const perPersonCents = Math.round(totalCents / totalGuests);
+  const installmentCount = Math.max(1, form.installmentsCount || 1);
+  const installmentValueCents = Math.round(Math.max(0, totalCents - (form.entryCents || 0)) / installmentCount);
+
   return {
     id: form.protocolCode || "studio-presentation",
-    slug: (form.protocolCode || "apresentacao").toLowerCase(),
+    quote_id: form.protocolCode || "studio-quote",
+    public_token: (form.protocolCode || "apresentacao").toLowerCase(),
     title: form.title || `Apresentação Comercial — ${form.destination || "Experiência"}`,
     subtitle:
       form.subtitle ||
       `Preparado por ${tenant.companyName} especialmente para ${form.clientName || "você"}`,
+    client_name: form.clientName || "Viajante",
+    client_whatsapp: form.clientPhone || "",
+    client_email: form.clientEmail || null,
+    client_document: form.clientDocument || null,
+    adults_count: form.adultsCount || totalGuests,
+    children_count: form.childrenCount || 0,
     destination_city: form.destination || "Destino Selecionado",
-    destination_country: "Brasil / Internacional",
-    departure_date: form.startDate || null,
-    return_date: form.endDate || null,
-    passengers_count: totalGuests,
+    travel_start_date: form.startDate || null,
+    travel_end_date: form.endDate || null,
     cover_image_url: null,
-    gallery_urls: [],
     agency_name: tenant.companyName,
     agency_logo_url: tenant.logoUrl,
-    agency_primary_color: cmsConfig.brandColor || tenant.brandColor || "",
+    agency_whatsapp: tenant.phone || null,
+    agency_phone: tenant.phone || null,
+    agency_email: tenant.email || null,
     template_theme: resolvedTheme,
     canvas_format: cmsConfig.format || templateMeta?.defaultFormat || "presentation-169",
-    canvas_bg: cmsConfig.canvasBg || "",
-    font_preset: cmsConfig.fontPreset || "editorial_serif",
+    custom_fields: {
+      canvas_bg_color: cmsConfig.canvasBg || undefined,
+      canvas_brand_color: cmsConfig.brandColor || tenant.brandColor || undefined,
+      canvas_font_preset: cmsConfig.fontPreset,
+      custom_per_person_cents: perPersonCents,
+    },
     status: "sent",
     valid_until: form.validUntilDate || null,
     special_notes:
@@ -1208,12 +1242,15 @@ export function buildTravelProposalDtoFromStudio(
             type: "outbound",
             airline: "Malha Aérea Selecionada",
             flight_number: form.protocolCode || "VOO-1",
-            departure_airport: "ORIG",
-            arrival_airport: (form.destination || "DEST").slice(0, 3).toUpperCase(),
-            departure_time: `${form.startDate || "2026-11-20"} 08:00`,
-            arrival_time: `${form.startDate || "2026-11-20"} 11:15`,
+            origin: "ORIG",
+            origin_iata: "ORIG",
+            destination: (form.destination || "DEST").slice(0, 3).toUpperCase(),
+            destination_iata: (form.destination || "DEST").slice(0, 3).toUpperCase(),
+            departure_date: form.startDate || "2026-11-20",
+            departure_time: "08:00",
+            arrival_time: "11:15",
             baggage: form.flightSummary,
-            flight_class: "Econômica / Executiva",
+            cabin_class: "Econômica / Executiva",
           },
         ]
       : [],
@@ -1221,37 +1258,39 @@ export function buildTravelProposalDtoFromStudio(
       ? [
           {
             id: "htl-1",
-            name: form.hotelSummary,
+            hotel_name: form.hotelSummary,
             stars: 5,
-            location: form.destination || "Localização Privilegiada",
-            check_in: form.startDate || "Check-in flexível",
-            check_out: form.endDate || "Check-out garantido",
-            nights: 5,
+            destination: form.destination || "Localização Privilegiada",
+            checkin_date: form.startDate || "Check-in flexível",
+            checkout_date: form.endDate || "Check-out garantido",
+            nights_count: 5,
             room_type: "Suíte Selecionada",
             board_basis: "Café da Manhã / All-Inclusive",
-            description: `Hospedagem curada pela equipe ${tenant.companyName} com localização estratégica e alto índice de satisfação.`,
-            photos: [],
+            images: [],
           },
         ]
       : [],
     itinerary: [
       {
-        day: 1,
+        day_number: 1,
         title: `Chegada e Recepção em ${form.destination || "Destino"}`,
         description:
           form.itineraryNotes ||
           "Embarque assistido, recepção no destino e acomodação com suporte integral da nossa equipe.",
-        meals_included: ["Café da manhã"],
+        included_meals: ["Café da manhã"],
       },
       {
-        day: 2,
+        day_number: 2,
         title: "Experiências Principais & Curadoria Local",
         description:
           includedList.slice(0, 3).join(" • ") ||
           "Programação personalizada conforme perfil dos viajantes, com flexibilidade e assistência.",
-        meals_included: ["Café da manhã"],
+        included_meals: ["Café da manhã"],
       },
     ],
+    transfers: [],
+    tours: [],
+    rooms: [],
     includes:
       includedList.length > 0
         ? includedList
@@ -1265,21 +1304,32 @@ export function buildTravelProposalDtoFromStudio(
         ? excludedList
         : ["Despesas de caráter estritamente pessoal", "Itens não mencionados como inclusos"],
     pricing: {
-      currency: "R$",
-      price_per_person: pricePerPersonReais,
-      total_price: totalPriceReais,
-      installments_max: form.installmentsCount || 10,
-      installment_value: Number(
-        (
-          Math.max(0, totalPriceReais - entryReais) / Math.max(1, form.installmentsCount || 1)
-        ).toFixed(2),
-      ),
-      pix_discount_percent: 5,
-      pix_total: Number((totalPriceReais * 0.95).toFixed(2)),
+      currency: "BRL",
+      base_price_cents: totalCents,
+      boarding_tax_cents: 0,
+      other_taxes_cents: 0,
+      discount_cents: 0,
+      total_price_cents: totalCents,
+      total_cents: totalCents,
+      installments_options: [
+        {
+          installments_count: installmentCount,
+          installment_value_cents: installmentValueCents,
+          method: form.paymentMethod || "Cartão / Boleto",
+          has_interest: false,
+        },
+      ],
       payment_terms:
         form.paymentConditions ||
         `Entrada + saldo em até ${form.installmentsCount || 10}x via ${form.paymentMethod || "PIX, Boleto ou Cartão"}.`,
+      custom_fields: {
+        custom_per_person_cents: perPersonCents,
+        price_per_person_reais: pricePerPersonReais,
+        total_price_reais: totalPriceReais,
+        entry_reais: entryReais,
+      },
     },
-    created_at: new Date().toISOString(),
+    created_at: nowIso,
+    updated_at: nowIso,
   };
 }

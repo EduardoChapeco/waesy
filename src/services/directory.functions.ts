@@ -59,7 +59,7 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
 
       let query = supabase
         .from("directory_listings")
-        .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type)")
+        .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type, claim_status)")
         .eq("status", "active")
         .order("is_verified", { ascending: false })
         .order("rating", { ascending: false })
@@ -89,7 +89,7 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
     if (!error && (!rows || rows.length === 0) && data?.city) {
       let fallbackQuery = supabase
         .from("directory_listings")
-        .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type)")
+        .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type, claim_status)")
         .eq("status", "active")
         .order("is_verified", { ascending: false })
         .order("rating", { ascending: false })
@@ -151,7 +151,7 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
             typeof row.working_hours === "string"
               ? row.working_hours
               : row.working_hours?.weekdays || null,
-          is_verified: !!row.is_verified || !!row.stores?.is_verified || !!storeSettings.is_verified,
+          is_verified: !!row.is_verified || row.stores?.claim_status === "verified" || !!storeSettings.is_verified,
           rating: Number(row.reviews_count || 0) > 0 && row.rating ? Number(row.rating) : 0,
           reviews_count: Number(row.reviews_count || 0),
           avatar_url: row.avatar_url || storeLogo,
@@ -207,7 +207,7 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  website_url: row.website_url,
  working_hours: typeof row.working_hours === "string" ? row.working_hours : (row.working_hours?.weekdays || null),
  is_verified: !!row.is_verified,
- rating: row.rating ? Number(row.rating) : 0,
+ rating: Number(row.reviews_count || 0) > 0 && row.rating ? Number(row.rating) : 0,
  reviews_count: Number(row.reviews_count || 0),
  avatar_url: row.avatar_url || storeLogo,
  banner_url: row.banner_url || storeSettings.bannerUrl || null,
@@ -228,6 +228,7 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
 
  if (storeRow) {
  const settings = (storeRow.settings ?? {}) as Record<string, any>;
+ const reviewCount = Number(storeRow.google_review_count || 0);
  return {
  id: storeRow.id,
  store_id: storeRow.id,
@@ -237,19 +238,19 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  description: storeRow.description || "",
  specialties: settings.specialties || [],
  address: storeRow.address ? `${storeRow.address}${storeRow.city ? ` — ${storeRow.city}${storeRow.state ? `, ${storeRow.state}` : ""}` : ""}` : (storeRow.city ? `${storeRow.city}${storeRow.state ? ` - ${storeRow.state}` : ""}` : null),
- latitude: storeRow.latitude,
- longitude: storeRow.longitude,
+ latitude: typeof settings.latitude === "number" ? settings.latitude : null,
+ longitude: typeof settings.longitude === "number" ? settings.longitude : null,
  contact_phone: storeRow.phone,
  contact_whatsapp: settings.whatsapp || null,
  contact_email: storeRow.email,
  website_url: null,
  working_hours: typeof settings.businessHours === "string" ? settings.businessHours : null,
- is_verified: Boolean(storeRow.is_verified),
- rating: storeRow.rating ? Number(storeRow.rating) : 0,
- reviews_count: Number(storeRow.reviews_count || 0),
+ is_verified: Boolean(settings.is_verified || storeRow.claim_status === "verified"),
+ rating: reviewCount > 0 && storeRow.google_rating ? Number(storeRow.google_rating) : 0,
+ reviews_count: reviewCount,
  avatar_url: storeRow.logo_url || settings.logoUrl || settings.logo_url,
  banner_url: storeRow.banner_url || settings.cover_url || settings.bannerUrl,
- status: storeRow.status || null,
+ status: storeRow.is_active ? "active" : "inactive",
  created_at: storeRow.created_at,
  } as DirectoryListingDTO;
  }

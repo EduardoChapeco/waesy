@@ -221,13 +221,14 @@ describe('Skill decompose-prd & Hierarchical DAG Engine', () => {
   });
 
   describe('Mermaid DAG & Traceability Generation', () => {
-    it('generates Mermaid graph with critical path styling', () => {
+    it('generates Mermaid graph with critical path styling', async () => {
+      const { TOKEN_HEX } = await import('@/lib/design-tokens');
       const criticalPath = ['TASK-DB-01', 'TASK-BFF-01', 'TASK-UI-01', 'TASK-TEST-01'];
       const mermaid = generateMermaidDag(sampleTasks, criticalPath);
       expect(mermaid).toContain('```mermaid');
       expect(mermaid).toContain('graph TD');
       expect(mermaid).toContain('TASK-DB-01 --> TASK-BFF-01');
-      expect(mermaid).toContain('classDef critical stroke:#e11d48');
+      expect(mermaid).toContain(`classDef critical stroke:${TOKEN_HEX.red600}`);
     });
 
     it('generates bidirectional traceability matrix', () => {

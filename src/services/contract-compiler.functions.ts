@@ -151,7 +151,13 @@ export const compileContractFromQuote = createServerFn({ method: "POST" })
       ]);
 
       const storeSettings = parseJsonSafe((storeRow as any)?.settings);
-      const nicheHint = (storeRow as any)?.primary_niche_id || storeSettings.niche_id || storeSettings.niche;
+      const nicheHint =
+        (storeRow as any)?.primary_niche_id ||
+        storeSettings.niche_id ||
+        storeSettings.niche ||
+        travelMeta.niche_id ||
+        travelMeta.niche ||
+        (storeRow as any)?.niche_id;
       const blueprint = getNicheContractBlueprint(nicheHint);
 
       // 2. Normaliza itens do orcamento / proposta

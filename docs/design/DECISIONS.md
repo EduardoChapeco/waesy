@@ -9789,3 +9789,28 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   5. **Evidências Coletadas:** `tsc --noEmit` escopado nos 13 arquivos (Exit `0`), 4 suítes Vitest (`43/43` testes aprovados incluindo `atendimento-chat-e2e-audit.test.ts`), `npm run build` (Exit `0`), `node scripts/lint-target.mjs` (`0` violações nos 12 arquivos de código do escopo), `check-circular-deps.mjs` e `check-bff-table-contracts.mjs`.
 - **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31, DESIGN.md e Design Lint DL-01..DL-32.
 - **Consequências:** Painel de Atendimento sincronizado de ponta a ponta com Ficha 360 funcional e fluxo universal de anexos por área de transferência ou arraste.
+
+---
+
+### DEC-498: Auditoria Forense E2E, Remediação Cross-Layer (Wave A/B/C), Blindagem Fail-Closed e Saneamento de Views Postgres (2026-11-14)
+- **Data (ISO):** 2026-11-14
+- **ID da Decisão:** DEC-498
+- **Contexto:** Auditoria integral ponta a ponta (`WAESY_FULL_E2E_AUDIT_LEDGER_2026-11-14.md`) confrontando specs (`SPEC-20261113-*`, `SPEC-20261114-*`), contratos BFF, schemas Postgres remotos (`jfuebqmltksyznovhlwa`) e superfícies UI antes de release em produção.
+- **Decisão Adotada:**
+  1. **Wave A/B (Build, Tipos & Design Lint):** Eliminação da importação fantasma `@/contexts/AgencyContext` em `PreBoardingPresentationStudio.tsx`, correção de tipos em `use-copilot-session.ts`, `builder-copilot-bridge.ts`, `contract-compiler.functions.ts`, `storage.functions.ts` (remoção de `createBucket`, validação estrita MIME e signed URL 3600s), `ifood-reconciliation.functions.ts` e zero violações em `lint:design` (`0` em 2288 arquivos).
+  2. **Wave C.1 (Código Morto, Navegação & `EARS-WA-03`):** Registro de shims Vite SSR/client em `scripts/dead-code-detector.mjs`, remoção de 3 componentes órfãos sem chamadores (`beta-explanation-modal.tsx`, `theme-selector.tsx`, `theme-toggle.tsx`), ligação de `<SmartPhoneText>` e diálogo real `"Nova Conversa"` (`startStaffWhatsAppThread`) em `AtendimentoChatWorkspace.tsx`, e alinhamento de `/workspace/configuracoes/planos` entre `admin-master-isolation.test.ts` e `workspace-all-tools-dialog.tsx`.
+  3. **Wave C.2 (`support-tickets` & Geomarketing Anti-Fake):** Correção de `chat_threads.guest_phone` -> `primary_phone_e164` em `support-tickets.functions.ts` e remoção de coordenadas determinísticas, preços sintéticos, estrelas hardcoded e retorno falso em `catch` em `geomarketing-cortex.functions.ts` e `workspace.viabilidade.tsx`.
+  4. **Wave C.3 (Integridade BFF, Auth Fail-Closed & Schemas Reais):** Imposição de autenticação + `assertStoreAccess(STAFF_ROLES)` e propagação real de falhas de banco em `company-delivery.functions.ts` (`saveCompanyDeliverySettings`, `createDeliveryDispatch`), `geomarketing-cortex.functions.ts` (`saveViabilityCanvasAndSwot`), `ads.functions.ts` (`upgradeStoreToWaesyMax`) e `travel-pre-boarding-and-commissions.functions.ts` (`schedulePreBoardingMeetingFn`, `respondToPreBoardingMeetingInviteFn`, `importUniversalCrmSpreadsheetBatchFn` + novo `getPreBoardingMeetingFn`); remoção de datas fake hardcoded e `catch { toast.success }` em `PreBoardingPresentationStudio.tsx` e `UniversalCrmSpreadsheetImporterModal.tsx`; alinhamento de `directory.functions.ts` às colunas reais de `stores` (`settings.latitude`, `claim_status`, `google_rating` condicional a `google_review_count > 0`, `is_active`) e suporte a `childrenCount` em `WoobaFlightSearchParams` (`travel-wooba-connector.service.ts`).
+  5. **Segurança Postgres (`supabase/migrations/20270419000000_fix_indexed_views_security_invoker.sql`):** Reaplicação de `security_invoker = true` e `GRANT SELECT` nas views `indexed_businesses`, `indexed_events`, `indexed_jobs` e `indexed_products`, zerando os `4 ERROR` (`security_definer_view`) no Supabase Security Advisor.
+- **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.25, B.31, B.33, Zero-Trust Multi-Tenant RLS e Anti-Falso-Positivo.
+- **Consequências:** Contrato estrito UI <-> BFF <-> DTO <-> Postgres restabelecido sem fallbacks silenciosos de sucesso fictício, pronto para suíte final Wave D e publicação em produção.
+
+### DEC-499: Saneamento do Orçamento do Cloudflare Worker SSR (< 25 MiB) & Nomenclatura Kebab-Case (2026-11-14)
+- **Data (ISO):** 2026-11-14
+- **ID da Decisão:** DEC-499
+- **Contexto:** Após a consolidação de módulos em `3f014ca5` (`_worker.js` atingiu 25.25 MB raw) e criação de `SmartPhoneText.test.tsx`, `npm run check:route-budget` e `npm run check:naming` bloquearam o gate final de build/CI.
+- **Decisão Adotada:**
+  1. Renomeado `src/components/atendimento/SmartPhoneText.test.tsx` para `src/components/atendimento/smart-phone-text.test.tsx` (kebab-case canônico S12).
+  2. Expandida a tabela `SSR_CLIENT_ONLY_COMPONENTS` em `vite.config.ts` e `src/lib/server-client-noop-shim.ts` para rotear 12 componentes interativos exclusivos de cliente (modais, drawers, sheets e editores canvas fechados por padrão na renderização inicial SSR: `TravelPromoFlyerModal`, `ManusComputerDrawer`, `SimLabQuickTestSheet`, `UniversalCrmSpreadsheetImporterModal`, `CarouselStudioEditor`, `ArtifactBuilderEditor`, `ArtifactInteractiveMap`, `LeadFlightGridSheet`, `OperatorVoucherImportSheet`, `NewTravelContractSheet`, `NewGroupTourWizard`, `ProductCatalogPricingSheet`) para o shim no-op durante o build SSR.
+- **Fundamentação Teórica:** AGENTS.md Regra B.9 (DoD), Plano 5 S12/S16 e limite operacional da Cloudflare Pages (25 MiB raw por asset e 10 MiB gzipped no Worker SSR).
+- **Consequências:** `dist/_worker.js/index.js` reduzido para 24.935 MiB raw (6.109 MiB gzip), aprovando `check:naming`, `check:route-budget` e toda a matriz de gates estáticos.

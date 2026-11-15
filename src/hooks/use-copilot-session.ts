@@ -81,6 +81,7 @@ function normalizeThreadItem(t: any): ChatThreadItem {
     projectId: t.project_id ?? t.projectId ?? t.metadata?.project_id ?? null,
     lastMessageSnippet: t.last_message_snippet ?? t.lastMessageSnippet,
     lastMessageAt: t.last_message_at ?? t.lastMessageAt ?? t.updated_at,
+    createdAt: t.created_at ?? t.createdAt,
     metadata: t.metadata || {},
     workingMemory: t.working_memory ?? t.workingMemory ?? {},
   };
@@ -249,8 +250,14 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
   const [quickToolMode, setQuickToolMode] = useState<CopilotQuickToolMode>(
     options.initialQuickToolMode || "default",
   );
+  const activeThreadRef = useRef<string>(activeThreadId);
+  const activeRunRef = useRef(0);
   const activeRunAbortRef = useRef<boolean>(false);
   const threadLoadSeqRef = useRef(0);
+
+  useEffect(() => {
+    activeThreadRef.current = activeThreadId;
+  }, [activeThreadId]);
 
   const activeThread = useMemo(
     () => threads.find((t) => t.id === activeThreadId) || null,
@@ -333,6 +340,10 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
   }, [isAuthenticated]);
 
   const handleSelectThread = useCallback((threadId: string) => {
+    activeThreadRef.current = threadId;
+    activeRunAbortRef.current = true;
+    activeRunRef.current += 1;
+    setIsSending(false);
     setActiveThreadId(threadId);
   }, []);
 
@@ -520,14 +531,20 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
           cleanText.slice(0, 48),
           { folderId: selectedFolderId, projectId: selectedProjectId },
         );
-        if (created?.id) targetThreadId = created.id;
+        if (created?.id) {
+          targetThreadId = created.id;
+          activeThreadRef.current = created.id;
+        }
       }
+
+      const requestThreadId = targetThreadId || fallbackId;
+      const runId = ++activeRunRef.current;
 
       const clientMsgId = crypto.randomUUID();
       const optimisticUserMsg: ChatMessageItem = {
         id: clientMsgId,
         clientMessageId: clientMsgId,
-        threadId: targetThreadId || fallbackId,
+        threadId: requestThreadId,
         senderName: "Você",
         senderId: options.userId || "guest",
         isStaffOrAI: false,
@@ -555,13 +572,19 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
             },
           });
 
-          if (activeRunAbortRef.current) return;
+          if (
+            activeRunAbortRef.current ||
+            activeRunRef.current !== runId ||
+            activeThreadRef.current !== requestThreadId
+          ) {
+            return;
+          }
 
           setMessages((prev) => [
             ...prev.map((m) => (m.id === clientMsgId ? { ...m, status: "delivered" as const } : m)),
             {
               id: crypto.randomUUID(),
-              threadId: targetThreadId || fallbackId,
+              threadId: requestThreadId,
               senderName: options.senderName || "Waesy Copilot",
               senderId: "copilot-ai",
               isStaffOrAI: true,
@@ -588,7 +611,7 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
 
         const res = await sendAiConversationMessage({
           data: {
-            threadId: targetThreadId,
+            threadId: requestThreadId,
             clientMessageId: clientMsgId,
             message: cleanText,
             replyToId,
@@ -600,7 +623,13 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
           },
         });
 
-        if (activeRunAbortRef.current) return;
+        if (
+          activeRunAbortRef.current ||
+          activeRunRef.current !== runId ||
+          activeThreadRef.current !== requestThreadId
+        ) {
+          return;
+        }
 
         setMessages((prev) => [
           ...prev.map((m) =>
@@ -610,7 +639,7 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
           ),
           {
             id: res.aiMessage.id,
-            threadId: targetThreadId,
+            threadId: requestThreadId,
             senderName: options.senderName || "Waesy Copilot",
             senderId: "copilot-ai",
             isStaffOrAI: true,
@@ -630,7 +659,7 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
 
         setThreads((prev) =>
           prev.map((t) =>
-            t.id === targetThreadId
+            t.id === requestThreadId
               ? {
                   ...t,
                   workingMemory: res.updatedWorkingMemory || t.workingMemory,
@@ -641,14 +670,20 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
           ),
         );
       } catch (err: any) {
-        if (!activeRunAbortRef.current) {
+        if (
+          !activeRunAbortRef.current &&
+          activeRunRef.current === runId &&
+          activeThreadRef.current === requestThreadId
+        ) {
           setMessages((prev) =>
             prev.map((m) => (m.id === clientMsgId ? { ...m, status: "failed" as const } : m)),
           );
           toast.error(err?.message || "Falha ao processar mensagem com o Copilot.");
         }
       } finally {
-        setIsSending(false);
+        if (activeRunRef.current === runId) {
+          setIsSending(false);
+        }
       }
     },
     [
@@ -671,10 +706,14 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
 
   const handleRetryMessage = useCallback(
     async (messageId: string) => {
-      const target = messages.find((m) => m.id === messageId);
-      if (!target || !target.text) return;
+      const failed = messages.find((m) => m.id === messageId);
+      if (!failed || !failed.text) return;
+      if (failed.fsmPhase && failed.fsmPhase !== "FAILED_RETRYABLE") {
+        toast.error("Esta execução não pode ser repetida automaticamente.");
+        return;
+      }
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
-      await handleSendMessage(target.text, target.attachments || []);
+      await handleSendMessage(failed.text, failed.attachments || []);
     },
     [handleSendMessage, messages],
   );
@@ -773,16 +812,25 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
   );
 
   const handleAssignThreadHierarchy = useCallback(
-    async (input: { threadId: string; folderId?: string | null; projectId?: string | null }) => {
+    async (
+      threadId: string,
+      hierarchy: { folderId?: string | null; projectId?: string | null },
+    ) => {
       try {
-        await assignThreadHierarchy({ data: input });
+        await assignThreadHierarchy({
+          data: {
+            threadId,
+            folderId: hierarchy.folderId ?? null,
+            projectId: hierarchy.projectId ?? null,
+          },
+        });
         setThreads((prev) =>
           prev.map((t) =>
-            t.id === input.threadId
+            t.id === threadId
               ? {
                   ...t,
-                  folder_id: input.folderId ?? null,
-                  project_id: input.projectId ?? null,
+                  folder_id: hierarchy.folderId ?? null,
+                  project_id: hierarchy.projectId ?? null,
                 }
               : t,
           ),
@@ -870,9 +918,9 @@ export function useCopilotSession(options: UseCopilotSessionOptions) {
       computeCopilotSessionTelemetry({
         messages,
         backgroundTasks,
-        threadCreatedAt: activeThread?.created_at,
+        threadCreatedAt: activeThread?.createdAt,
       }),
-    [activeThread?.created_at, backgroundTasks, messages],
+    [activeThread?.createdAt, backgroundTasks, messages],
   );
 
   const latestArtifact: ChatArtifactData | null = useMemo(() => {

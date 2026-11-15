@@ -10,7 +10,7 @@ import {
   correlateAndPersistInboundWhatsAppAttribution,
 } from "@/services/omnichannel-attribution.server";
 import { isBrokenOrMissingMediaUri } from "@/lib/whatsapp-media-utils";
-import { hydrateMediaFromEvolution } from "@/services/whatsapp-media.server";
+import { hydrateMediaFromEvolution, type EvolutionInstanceRecord } from "@/services/whatsapp-media.server";
 
 export type UnofficialWhatsAppProvider = "evolution_api" | "wasender_api";
 // Payloads de providers externos são deliberadamente dinâmicos; o boundary é validado pelos normalizadores.
@@ -580,7 +580,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       await hydrateMediaFromEvolution({
         db,
         storeId,
-        instance,
+        instance: instance as EvolutionInstanceRecord,
         threadId: thread.id,
         messageId: createdDeviceMsg.id,
         externalMessageId: message.externalMessageId,
@@ -661,7 +661,7 @@ export async function persistInboundMessage(db: ReturnType<typeof getServerClien
       await hydrateMediaFromEvolution({
         db,
         storeId,
-        instance,
+        instance: instance as EvolutionInstanceRecord,
         threadId: thread.id,
         messageId: insertedMessageId,
         externalMessageId: message.externalMessageId,

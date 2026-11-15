@@ -410,6 +410,7 @@ export default function WorkspaceTurismoCockpitPage() {
     meetings?: any[];
     trips?: any[];
     incidents?: any[];
+    proposals?: any[];
   } | null>(null);
   const [isLoading360, setIsLoading360] = useState(false);
 

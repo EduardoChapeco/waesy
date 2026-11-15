@@ -333,7 +333,7 @@ describe("WAEsy Fase 2 — Homologação End-to-End (20 Cenários Obrigatórios)
 
     const thread = activeDb.tables.chat_threads[0];
     expect(thread.guest_name).toBe("Marina Viajante");
-    expect(thread.guest_phone).toBe("+5549991112233");
+    expect(thread.primary_phone_e164).toBe("+5549991112233");
 
     const crmCustomer = activeDb.tables.customers_crm[0];
     expect(crmCustomer.full_name).toBe("Marina Viajante");

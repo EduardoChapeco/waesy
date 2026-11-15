@@ -200,19 +200,19 @@ export function KanbanColumnCustomizerModal({
               <select
                 onChange={(e) => {
                   const selectedKey = e.target.value;
-                  const nichePreset = allNichePresets.find((p) => p.niche === selectedKey);
+                  const nichePreset = allNichePresets.find((p) => p.nicheId === selectedKey);
                   if (nichePreset) {
                     setStages(
                       nichePreset.stages.map((st, idx) => ({
-                        stage_key: st.id,
+                        stage_key: st.stage_key,
                         title: st.title,
                         purpose: st.purpose,
-                        color: st.colorToken,
+                        color: st.color,
                         sort_order: idx,
                         is_visible: true,
                       }))
                     );
-                    toast.success(`Preset "${nichePreset.nicheLabel}" carregado!`);
+                    toast.success(`Preset "${nichePreset.label}" carregado!`);
                     return;
                   }
                   if (selectedKey && KANBAN_PRESETS_CATALOG[selectedKey]) {
@@ -225,8 +225,8 @@ export function KanbanColumnCustomizerModal({
               >
                 <option value="" disabled>Carregar modelo...</option>
                 {allNichePresets.map((p) => (
-                  <option key={p.niche} value={p.niche}>
-                    {p.nicheLabel} ({p.stages.length} etapas)
+                  <option key={p.nicheId} value={p.nicheId}>
+                    {p.label} ({p.stages.length} etapas)
                   </option>
                 ))}
               </select>

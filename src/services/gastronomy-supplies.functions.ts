@@ -854,34 +854,6 @@ export const createProductionOrder = createServerFn({ method: "POST" })
         notes: `Rendimento do lote ${batchCode} (${recipe.name})`,
       });
     }
-    if (false && data.targetSupplyId) {
-      const { data: targetSupply } = await supabase
-        .from("supplies")
-        .select("stock_on_hand")
-        .eq("id", data.targetSupplyId)
-        .eq("store_id", storeId)
-        .single();
-
-      const curTarget = Number(targetSupply?.stock_on_hand || 0);
-      const newTarget = curTarget + actualYield;
-
-      await supabase
-        .from("supplies")
-        .update({ stock_on_hand: newTarget, updated_at: now.toISOString() })
-        .eq("id", data.targetSupplyId)
-        .eq("store_id", storeId);
-
-      await supabase.from("supply_inventory_movements").insert({
-        store_id: storeId,
-        supply_id: data.targetSupplyId,
-        movement_type: "production_yield",
-        quantity_delta: actualYield,
-        balance_after: newTarget,
-        unit_cost_cents: Math.round(totalCostCents / actualYield),
-        reference_id: order.id,
-        notes: `Rendimento do lote ${batchCode} (${recipe.name})`,
-      });
-    }
 
     // 5. Registra automaticamente a etiqueta de validade pronta para impressão
     await supabase.from("expiration_labels").insert({
@@ -994,10 +966,6 @@ export const registerWaste = createServerFn({ method: "POST" })
         if (newStock <= 0) {
           await checkAndAutoPauseProductsBySupply(supabase, storeId, data.supplyId);
         }
-      }
-      if (false) {
-        const _unused = ({
-        });
       }
     }
 

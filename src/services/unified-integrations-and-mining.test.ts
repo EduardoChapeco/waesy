@@ -1,4 +1,41 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
+
+const mockChannelListings: Record<string, { external_listing_id: string; external_sku: string }> = {
+  "00000000-0000-0000-0000-000000000001:bling:prod-456": {
+    external_listing_id: "998877",
+    external_sku: "SKU-456",
+  },
+};
+
+function makeEmptyQueryChain(table: string, filters: Record<string, any> = {}): any {
+  const chain: any = {
+    select: () => chain,
+    eq: (col: string, val: any) => {
+      filters[col] = val;
+      return chain;
+    },
+    in: () => chain,
+    order: () => chain,
+    limit: () => chain,
+    maybeSingle: async () => {
+      if (table === "channel_listings") {
+        const key = `${filters.store_id}:${filters.channel}:${filters.product_id}`;
+        return { data: mockChannelListings[key] || null, error: null };
+      }
+      return { data: null, error: null };
+    },
+    single: async () => ({ data: null, error: null }),
+    then: (resolve: any, reject?: any) => Promise.resolve({ data: [], error: null }).then(resolve, reject),
+  };
+  return chain;
+}
+
+vi.mock("@/lib/supabase", () => ({
+  getServerClient: () => ({
+    from: (table: string) => makeEmptyQueryChain(table),
+  }),
+}));
+
 import { dispatchMarketplaceChannelSync } from "./marketplace-hub.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { convertPncpToExtractionResult } from "./mining/pncp-extractor";
@@ -46,6 +83,10 @@ describe("Pilar 2: Mineração, Crawlers e PNCP", () => {
 });
 
 describe("Pilar 3: Hub de Marketplaces (Padrão Outbox Transacional)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("deve marcar status 'unconfigured' quando o canal não possuir credenciais ativas (eliminação de mocks)", async () => {
     const res = await dispatchMarketplaceChannelSync({
       storeId: "00000000-0000-0000-0000-000000000001",
@@ -81,6 +122,13 @@ describe("Pilar 3: Hub de Marketplaces (Padrão Outbox Transacional)", () => {
   });
 
   it("deve despachar evento para a fila do canal quando houver credenciais ativas de produção", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ data: { id: 998877 } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
     const res = await dispatchMarketplaceChannelSync({
       storeId: "00000000-0000-0000-0000-000000000001",
       connectorId: "conn-test-03",
@@ -94,8 +142,24 @@ describe("Pilar 3: Hub de Marketplaces (Padrão Outbox Transacional)", () => {
       itemCount: 1,
     });
 
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0][0])).toContain("api.bling.com.br/Api/v3/estoques");
     expect(res.status).toBe("completed");
     expect(res.itemsProcessed).toBe(1);
-    expect(res.message).toContain("sincronização de stock processada no canal BLING");
+    expect(res.message).toContain("Bling ERP v3 (25 un)");
+
+    const unlinkedRes = await dispatchMarketplaceChannelSync({
+      storeId: "00000000-0000-0000-0000-000000000001",
+      connectorId: "conn-test-03",
+      platform: "bling",
+      syncType: "stock",
+      settings: {
+        api_key: "bling_live_token_12345",
+      },
+      productId: "prod-sem-vinculo",
+      newStockQty: 25,
+    });
+    expect(unlinkedRes.itemsProcessed).toBe(0);
+    expect(unlinkedRes.message).toContain("sem vínculo no Bling v3");
   });
 });

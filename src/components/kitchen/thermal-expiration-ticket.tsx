@@ -136,32 +136,6 @@ export function ThermalExpirationTicketModal({
             ))}
           </div>
           <DialogDescription className="text-xs text-muted-foreground">{templateMeta.subtitle}</DialogDescription>
-          {false && (<>
-            <div className="hidden"><div>
-              <button
-                type="button"
-                onClick={() => setPrintSize("58mm")}
-                className={`text-2xs font-mono font-bold px-2 py-1 rounded border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  printSize === "58mm" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border"
-                }`}
-              >
-                58mm
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintSize("80mm")}
-                className={`text-2xs font-mono font-bold px-2 py-1 rounded border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  printSize === "80mm" ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground border-border"
-                }`}
-              >
-                80mm
-              </button>
-            </div>
-          </div>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Conforme as normas sanitárias da Anvisa para alimentos preparados e manipulados.
-          </DialogDescription>
-          </>)}
         </DialogHeader>
 
         {/* ── Prévia do Ticket Térmico ── */}
@@ -207,12 +181,6 @@ export function ThermalExpirationTicketModal({
               </div>
               <p className="text-center text-3xs pt-1 text-muted-foreground uppercase">
                 {templateMeta.footerNote}
-              </p>
-              {false && (
-              <p className="text-center text-3xs pt-1 text-muted-foreground uppercase">
-                Consumir dentro do prazo de validade
-              </p>)}
-              <p>
               </p>
             </div>
           </div>

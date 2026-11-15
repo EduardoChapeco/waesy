@@ -57,6 +57,7 @@ export interface FlightSegmentDTO {
   baggage_included?: string | boolean;
   stops?: number;
   stops_count?: number;
+  price_cents?: number;
 }
 
 export interface HotelDTO {
@@ -79,6 +80,7 @@ export interface HotelDTO {
   address?: string;
   badges?: string[];
   amenities?: string[];
+  price_cents?: number;
 }
 
 export type HotelOptionDTO = HotelDTO;
@@ -221,6 +223,8 @@ export interface TravelProposalDTO {
   options?: TravelProposalOptionDTO[];
   ai_sales_advisor_enabled?: boolean;
   ai_sales_advisor_prompt?: string | null;
+  boarding_requirements?: string | null;
+  cancellation_policy?: string | null;
   special_notes?: string | null;
   access_pin?: string | null;
   has_access_pin?: boolean;

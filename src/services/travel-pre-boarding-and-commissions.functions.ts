@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { assertStoreAccess, getServerIdentity, STAFF_ROLES } from "@/lib/server-access";
 import { getAirportByIata } from "@/lib/data/airports-catalog";
 
 // ============================================================================
@@ -54,9 +55,16 @@ export type PreBoardingModuleKey =
   | "return_trip"
   | "emergency_contacts"
   | "agency_support"
-  | "closing";
+  | "closing"
+  | `custom_slide_${number}`;
 
-export type RequirementPriorityBadge = "OBRIGATÓRIO" | "RECOMENDADO" | "OPCIONAL" | "ATENÇÃO";
+export type RequirementPriorityBadge =
+  | "OBRIGATÓRIO"
+  | "RECOMENDADO"
+  | "OPCIONAL"
+  | "ATENÇÃO"
+  | "Incluso"
+  | "VIP";
 
 export interface PreBoardingSlideStep {
   stepNumber: number;
@@ -2182,14 +2190,85 @@ export function parseAndMapUniversalCrmSpreadsheet(
 // 5. SERVER FUNCTIONS BFF (AGENDAMENTO PRÉ-EMBARQUE & IMPORTAÇÃO CRM)
 // ============================================================================
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function normalizeSlotIso(raw: string): string {
+  const trimmed = raw.trim();
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Horário inválido informado: ${trimmed}`);
+  }
+  return parsed.toISOString();
+}
+
+const GetPreBoardingMeetingSchema = z.object({
+  presentationId: z.string().uuid().optional().nullable(),
+  tripId: z.string().uuid().optional().nullable(),
+});
+
+export const getPreBoardingMeetingFn = createServerFn({ method: "GET" })
+  .validator(GetPreBoardingMeetingSchema)
+  .handler(async ({ data }) => {
+    const { presentationId, tripId } = data ?? {};
+    if (!presentationId && !tripId) {
+      return { found: false as const, meeting: null };
+    }
+
+    const supabase = getServerClient();
+    let query = supabase
+      .from("travel_pre_boarding_presentations")
+      .select(
+        "id, store_id, trip_id, title, meeting_status, meeting_modality, proposed_slots, confirmed_slot_iso, meeting_link_or_address, agent_name, client_meeting_notes, updated_at",
+      )
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    if (presentationId) {
+      query = query.eq("id", presentationId);
+    } else if (tripId) {
+      query = query.eq("trip_id", tripId);
+    }
+
+    const { data: rows, error } = await query;
+    if (error) {
+      throw new Error(error.message || "Falha ao carregar agenda de pré-embarque.");
+    }
+
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    if (!row) {
+      return { found: false as const, meeting: null };
+    }
+
+    return {
+      found: true as const,
+      meeting: {
+        presentationId: row.id as string,
+        tripId: (row.trip_id as string | null) ?? null,
+        meetingStatus: row.meeting_status as
+          | "not_scheduled"
+          | "proposed_by_agency"
+          | "accepted_by_client"
+          | "reschedule_requested"
+          | "completed",
+        modality: row.meeting_modality as "online_video" | "in_person_agency",
+        proposedSlotsIso: Array.isArray(row.proposed_slots) ? (row.proposed_slots as string[]) : [],
+        confirmedSlotIso: (row.confirmed_slot_iso as string | null) ?? null,
+        meetingLinkOrAddress: (row.meeting_link_or_address as string | null) ?? "",
+        agentName: (row.agent_name as string | null) ?? "",
+      },
+    };
+  });
+
 const SchedulePreBoardingMeetingSchema = z.object({
-  presentationId: z.string().optional(),
-  tripId: z.string().min(1),
-  clientName: z.string().min(1),
+  presentationId: z.string().uuid().optional().nullable(),
+  storeId: z.string().uuid().optional().nullable(),
+  tripId: z.string().optional().nullable(),
+  presentationTitle: z.string().optional().nullable(),
+  clientName: z.string().min(1, "Informe o nome do passageiro"),
   modality: z.enum(["online_video", "in_person_agency"]),
-  proposedSlotsIso: z.array(z.string()).min(1),
-  meetingLinkOrAddress: z.string().min(1),
-  agentName: z.string().min(1),
+  proposedSlotsIso: z.array(z.string().min(1)).min(1, "Informe pelo menos um horário para a reunião"),
+  meetingLinkOrAddress: z.string().min(3, "Informe o link da videochamada ou endereço da agência"),
+  agentName: z.string().min(1, "Informe o nome do consultor responsável"),
 });
 
 export const schedulePreBoardingMeetingFn = createServerFn({ method: "POST" })
@@ -2197,7 +2276,9 @@ export const schedulePreBoardingMeetingFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const {
       presentationId,
+      storeId,
       tripId,
+      presentationTitle,
       clientName,
       modality,
       proposedSlotsIso,
@@ -2205,38 +2286,103 @@ export const schedulePreBoardingMeetingFn = createServerFn({ method: "POST" })
       agentName,
     } = data;
 
-    try {
-      const supabase = getServerClient();
-      if (presentationId) {
-        await supabase
-          .from("travel_pre_boarding_presentations")
-          .update({
-            meeting_status: "proposed_by_agency",
-            meeting_modality: modality,
-            proposed_slots: proposedSlotsIso,
-            meeting_link_or_address: meetingLinkOrAddress,
-            agent_name: agentName,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", presentationId);
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para agendar reunião de pré-embarque.");
+    }
+
+    const resolvedStoreId = storeId || identity.store_id || identity.tenant_id;
+    if (!resolvedStoreId) {
+      throw new Error("Organização não identificada para agendar reunião de pré-embarque.");
+    }
+    assertStoreAccess(identity, STAFF_ROLES, resolvedStoreId);
+
+    const normalizedSlots = proposedSlotsIso.map(normalizeSlotIso);
+    const validTripUuid = tripId && UUID_REGEX.test(tripId) ? tripId : null;
+    const nowIso = new Date().toISOString();
+    const supabase = getServerClient();
+
+    let targetPresentationId = presentationId || null;
+    if (!targetPresentationId && validTripUuid) {
+      const { data: existing, error: lookupErr } = await supabase
+        .from("travel_pre_boarding_presentations")
+        .select("id")
+        .eq("store_id", resolvedStoreId)
+        .eq("trip_id", validTripUuid)
+        .limit(1)
+        .maybeSingle();
+
+      if (lookupErr) {
+        throw new Error(lookupErr.message || "Falha ao consultar apresentação da viagem.");
       }
-    } catch {
-      // Resiliente mesmo sem tabela migrada localmente
+      targetPresentationId = existing?.id || null;
+    }
+
+    let persistedId: string;
+    if (targetPresentationId) {
+      const { data: updated, error: updateErr } = await supabase
+        .from("travel_pre_boarding_presentations")
+        .update({
+          meeting_status: "proposed_by_agency",
+          meeting_modality: modality,
+          proposed_slots: normalizedSlots,
+          meeting_link_or_address: meetingLinkOrAddress.trim(),
+          agent_name: agentName.trim(),
+          is_published_to_client: true,
+          updated_at: nowIso,
+        })
+        .eq("id", targetPresentationId)
+        .eq("store_id", resolvedStoreId)
+        .select("id")
+        .maybeSingle();
+
+      if (updateErr) {
+        throw new Error(updateErr.message || "Falha ao atualizar agendamento de pré-embarque.");
+      }
+      if (!updated?.id) {
+        throw new Error("Apresentação de pré-embarque não encontrada para esta agência.");
+      }
+      persistedId = updated.id;
+    } else {
+      const { data: inserted, error: insertErr } = await supabase
+        .from("travel_pre_boarding_presentations")
+        .insert({
+          store_id: resolvedStoreId,
+          trip_id: validTripUuid,
+          presentation_type: "pre_boarding_guide",
+          title: (presentationTitle || "").trim() || `Guia de Pré-Embarque — ${clientName.trim()}`,
+          is_published_to_client: true,
+          meeting_status: "proposed_by_agency",
+          meeting_modality: modality,
+          proposed_slots: normalizedSlots,
+          meeting_link_or_address: meetingLinkOrAddress.trim(),
+          agent_name: agentName.trim(),
+          updated_at: nowIso,
+        })
+        .select("id")
+        .single();
+
+      if (insertErr || !inserted?.id) {
+        throw new Error(insertErr?.message || "Falha ao gravar convite de reunião de pré-embarque.");
+      }
+      persistedId = inserted.id;
     }
 
     return {
-      success: true,
-      tripId,
+      success: true as const,
+      presentationId: persistedId,
+      tripId: validTripUuid || tripId || null,
       clientName,
       meetingStatus: "proposed_by_agency" as const,
       modality,
-      proposedSlotsIso,
-      meetingLinkOrAddress,
-      agentName,
+      proposedSlotsIso: normalizedSlots,
+      meetingLinkOrAddress: meetingLinkOrAddress.trim(),
+      agentName: agentName.trim(),
     };
   });
 
 const RespondPreBoardingMeetingSchema = z.object({
+  presentationId: z.string().uuid().optional().nullable(),
   tripId: z.string().min(1),
   acceptedSlotIso: z.string().min(1),
   modality: z.enum(["online_video", "in_person_agency"]),
@@ -2246,33 +2392,55 @@ const RespondPreBoardingMeetingSchema = z.object({
 export const respondToPreBoardingMeetingInviteFn = createServerFn({ method: "POST" })
   .validator(RespondPreBoardingMeetingSchema)
   .handler(async ({ data }) => {
-    const { tripId, acceptedSlotIso, modality, clientNotes } = data;
-    try {
-      const supabase = getServerClient();
-      await supabase
-        .from("travel_pre_boarding_presentations")
-        .update({
-          meeting_status: "accepted_by_client",
-          meeting_modality: modality,
-          confirmed_slot_iso: acceptedSlotIso,
-          client_meeting_notes: clientNotes || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("trip_id", tripId);
-    } catch {
-      // Resiliente
+    const { presentationId, tripId, acceptedSlotIso, modality, clientNotes } = data;
+    const confirmedIso = normalizeSlotIso(acceptedSlotIso);
+    const validTripUuid = UUID_REGEX.test(tripId) ? tripId : null;
+
+    if (!presentationId && !validTripUuid) {
+      throw new Error("Identificador da apresentação ou viagem inválido.");
+    }
+
+    const supabase = getServerClient();
+    let updateQuery = supabase
+      .from("travel_pre_boarding_presentations")
+      .update({
+        meeting_status: "accepted_by_client",
+        meeting_modality: modality,
+        confirmed_slot_iso: confirmedIso,
+        client_meeting_notes: clientNotes?.trim() || null,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (presentationId) {
+      updateQuery = updateQuery.eq("id", presentationId);
+    } else if (validTripUuid) {
+      updateQuery = updateQuery.eq("trip_id", validTripUuid);
+    }
+
+    const { data: updated, error } = await updateQuery
+      .eq("is_published_to_client", true)
+      .select("id")
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message || "Falha ao confirmar horário da reunião de pré-embarque.");
+    }
+    if (!updated?.id) {
+      throw new Error("Convite de reunião não encontrado ou não publicado para o viajante.");
     }
 
     return {
-      success: true,
+      success: true as const,
+      presentationId: updated.id,
       tripId,
       meetingStatus: "accepted_by_client" as const,
-      confirmedSlotIso: acceptedSlotIso,
+      confirmedSlotIso: confirmedIso,
       modality,
     };
   });
 
 const ImportUniversalCrmBatchSchema = z.object({
+  storeId: z.string().uuid().optional().nullable(),
   rawText: z.string().min(1),
   sourceType: z.enum(["spreadsheet_csv_xlsx", "infotravel_api_sync"]).default("spreadsheet_csv_xlsx"),
 });
@@ -2280,59 +2448,72 @@ const ImportUniversalCrmBatchSchema = z.object({
 export const importUniversalCrmSpreadsheetBatchFn = createServerFn({ method: "POST" })
   .validator(ImportUniversalCrmBatchSchema)
   .handler(async ({ data }) => {
-    const { rawText, sourceType } = data;
+    const { storeId, rawText, sourceType } = data;
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Autenticação obrigatória para importar clientes no CRM.");
+    }
+
+    const targetStoreId = storeId || identity.store_id || identity.tenant_id;
+    if (!targetStoreId) {
+      throw new Error("Identidade de loja não localizada para importação no CRM.");
+    }
+    assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
+
     const parsed = parseAndMapUniversalCrmSpreadsheet(rawText);
+    if (parsed.rows.length === 0) {
+      throw new Error("Nenhuma linha válida identificada na planilha para importação.");
+    }
 
-    let persistedCount = 0;
-    try {
-      const supabase = getServerClient();
-      const { getServerIdentity } = await import("@/lib/server-access");
-      const identity = await getServerIdentity();
+    const supabase = getServerClient();
+    const crmRows = parsed.rows.map((r) => ({
+      store_id: targetStoreId,
+      full_name: r.fullName,
+      kind: r.documentCpfCnpj && r.documentCpfCnpj.replace(/\D/g, "").length > 11 ? "company" : "individual",
+      document: r.documentCpfCnpj || null,
+      phone: r.phoneWhatsapp || null,
+      email: r.email || null,
+      city: r.city || null,
+      status: "active",
+      channel: sourceType === "infotravel_api_sync" ? "infotravel" : "import",
+      notes: [
+        r.operatorCreditLimitCents != null
+          ? `Limite Crédito Operadora: R$ ${(r.operatorCreditLimitCents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+          : null,
+        r.operatorCreditStatus ? `Status Financiamento: ${r.operatorCreditStatus}` : null,
+        r.structuredNotesFromUnmappedColumns || null,
+      ]
+        .filter(Boolean)
+        .join(" | "),
+    }));
 
-      if (identity?.store_id && parsed.rows.length > 0) {
-        const crmRows = parsed.rows.map((r) => ({
-          store_id: identity.store_id,
-          full_name: r.fullName,
-          kind: r.documentCpfCnpj && r.documentCpfCnpj.replace(/\D/g, "").length > 11 ? "company" : "individual",
-          document: r.documentCpfCnpj || null,
-          phone: r.phoneWhatsapp || null,
-          email: r.email || null,
-          city: r.city || null,
-          status: "active",
-          channel: sourceType === "infotravel_api_sync" ? "infotravel" : "import",
-          notes: [
-            r.operatorCreditLimitCents != null
-              ? `Limite Crédito Operadora: R$ ${(r.operatorCreditLimitCents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-              : null,
-            r.operatorCreditStatus ? `Status Financiamento: ${r.operatorCreditStatus}` : null,
-            r.structuredNotesFromUnmappedColumns || null,
-          ]
-            .filter(Boolean)
-            .join(" | "),
-        }));
+    const { data: inserted, error: crmErr } = await supabase
+      .from("customers_crm")
+      .insert(crmRows)
+      .select("id");
 
-        const { data: inserted } = await supabase
-          .from("customers_crm")
-          .insert(crmRows)
-          .select("id");
+    if (crmErr) {
+      throw new Error(crmErr.message || "Falha ao gravar clientes na carteira CRM.");
+    }
 
-        persistedCount = Array.isArray(inserted) ? inserted.length : parsed.rows.length;
+    const persistedCount = Array.isArray(inserted) ? inserted.length : 0;
 
-        await supabase.from("crm_universal_spreadsheet_import_batches").insert({
-          store_id: identity.store_id,
-          source_type: sourceType,
-          total_rows: parsed.totalRows,
-          imported_rows: persistedCount,
-          unmapped_columns_preserved: parsed.unmappedHeadersConvertedToNotes,
-        });
-      }
-    } catch {
-      persistedCount = parsed.validRowsCount;
+    const { error: batchErr } = await supabase.from("crm_universal_spreadsheet_import_batches").insert({
+      store_id: targetStoreId,
+      source_type: sourceType,
+      total_rows: parsed.totalRows,
+      imported_rows: persistedCount,
+      unmapped_columns_preserved: parsed.unmappedHeadersConvertedToNotes,
+      created_by: identity.id,
+    });
+
+    if (batchErr) {
+      throw new Error(batchErr.message || "Clientes inseridos, mas houve falha ao registrar lote de auditoria.");
     }
 
     return {
-      success: true,
-      importedCount: persistedCount || parsed.validRowsCount,
+      success: true as const,
+      importedCount: persistedCount,
       unmappedColumnsPreserved: parsed.unmappedHeadersConvertedToNotes,
     };
   });
