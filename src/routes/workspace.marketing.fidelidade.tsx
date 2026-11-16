@@ -233,13 +233,13 @@ export default function LoyaltyDashboardPage() {
  />
 
  <Tabs defaultValue="config" className="w-full">
- <TabsList className="bg-muted/60 p-1 rounded-lg mb-6">
- <TabsTrigger value="config" className="rounded-lg font-bold text-xs gap-2">
- <CreditCard className="size-4" />
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/60 p-1 rounded-lg mb-6 w-full sm:w-auto max-w-full min-w-0 h-11 min-h-11 sm:h-10 sm:min-h-10">
+ <TabsTrigger value="config" className="rounded-lg font-bold text-xs gap-2 shrink-0 whitespace-nowrap">
+ <CreditCard className="size-4 shrink-0" />
  Configurar Cartão e Wallet
  </TabsTrigger>
- <TabsTrigger value="customers" className="rounded-lg font-bold text-xs gap-2">
- <Users className="size-4" />
+ <TabsTrigger value="customers" className="rounded-lg font-bold text-xs gap-2 shrink-0 whitespace-nowrap">
+ <Users className="size-4 shrink-0" />
  Clientes & Selos ({customers.length})
  </TabsTrigger>
  </TabsList>

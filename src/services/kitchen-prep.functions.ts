@@ -224,7 +224,7 @@ export const getKitchenSlaTelemetry = createServerFn({ method: "GET" })
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const { data: orders, error } = await supabase
       .from("orders")
-      .select("id, status, created_at, updated_at, shipping_method, origin_type, items:order_items(id, title, quantity, price_cents)")
+      .select("id, status, created_at, updated_at, shipping_method, origin_type, items:order_items(id, product_title, qty, unit_price_cents, total_cents)")
       .eq("store_id", identity.store_id)
       .gte("created_at", fourteenDaysAgo)
       .neq("status", "cancelled");
@@ -278,11 +278,12 @@ export const getKitchenSlaTelemetry = createServerFn({ method: "GET" })
 
           // Atribui à estação predominante dos itens
           for (const item of (order.items || [])) {
-            const st = inferKitchenStation(item.title);
-            stationVolume[st].totalOrders += item.quantity || 1;
+            const st = inferKitchenStation((item as any).product_title || "Item");
+            const itemQty = Number((item as any).qty || 1);
+            stationVolume[st].totalOrders += itemQty;
             stationVolume[st].totalMinutes += durationMins;
             if (durationMins > slaTarget) {
-              stationVolume[st].delayedOrders += item.quantity || 1;
+              stationVolume[st].delayedOrders += itemQty;
             }
           }
         }

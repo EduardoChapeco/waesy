@@ -32,3 +32,32 @@ O usuário autentica em `/entrar` ou `/painel`, recebe confirmação visual de l
 
 6. **`t = 300ms` (Crash Adicional em Produção Identificado nos Logs do Supabase):**
    - Em `public.system_audit_logs`, 20 ocorrências de `TypeError: Cannot read properties of undefined (reading 'id')` em `/workspace/atendimento` (`src/routes/workspace.atendimento.index.tsx:1933`), causado pelo acesso a `activeThread.id` sem optional chaining dentro do JSX do `<Sheet>` quando nenhuma conversa está selecionada.
+
+---
+
+# Linha do Tempo Forense — Auditoria de Logs Produção, RPCs Quebradas, 404/406 e Schema Drift (2026-11-15)
+
+## 1. Sintomas Observados nos Logs (Supabase & Live Probe)
+- **Supabase `edge_logs` / `postgres_logs`:** `52405` requisições analisadas com `400 Bad Request` (`878`), `404 Not Found` (`43`) e `406 Not Acceptable` (`13`).
+- **`public.system_audit_logs` (2026-11-12 a 2026-11-15):** `37` ocorrências de `Error: Invariant failed` em `/workspace`, `/workspace/pedidos` e `/workspace/pedidos/frota` vindas do chunk `workspace.pedidos.gestor`, além de `TypeError: Cannot read properties of undefined (reading 'map')` em `/workspace/copilot` (`ArtifactCreativePost`).
+- **Probe ao vivo (`https://waesy.com.br`):** `/lojas` retornando HTTP `404`; `/api/cron/ai-jobs` e `/api/cron/ai-scheduled-tasks` retornando `404` no deploy anterior (`3d4859e1`); `/sitemap.xml` consultando 5 tabelas inexistentes no PostgreSQL.
+
+## 2. Causas-Raiz Isoladas e Verificadas no Banco Real (`information_schema` & `pg_proc`)
+1. **RPC e Queries de Caixa (`cash_registers` / `cash_register_entries`):**
+   - `public.close_cash_register` (Postgres) filtra `WHERE register_id = p_register_id` (coluna inexistente; real: `cash_register_id`) e atualiza `expected_balance_cents` / `final_balance_cents` (colunas inexistentes; reais: `expected_closing_balance_cents` / `actual_closing_balance_cents`).
+   - `src/services/dashboard.functions.ts:309` executa `.eq("register_id", activeRegister.id)` em `cash_register_entries`.
+   - `src/services/cash.functions.ts` modela `CashRegisterRow` e lê `expected_balance_cents` / `final_balance_cents` sem mapear `expected_closing_balance_cents` / `actual_closing_balance_cents`.
+2. **Schema Drift em `order_items`, `orders` e `events` (HTTP 400):**
+   - `order_items` possui `(id, order_id, variant_id, product_title, variant_sku, variant_attributes, image_url, qty, unit_price_cents, total_cents, created_at, item_type, item_id, selected_options, notes)`.
+   - `src/services/order.functions.ts:86,113,534`, `src/services/event-tickets.functions.ts:289`, `src/services/kitchen-prep.functions.ts:227` e `src/services/chat.functions.ts:2546` selecionam colunas inexistentes (`metadata`, `quantity`, `product_name`, `title`, `price_cents`) e/ou `user_id`/`total_amount_cents`/`payment_method` em `orders` ou `banner_image_url` em `events`.
+3. **Filtros UUID vs Slug sem Guarda em `directory_listings` e `stores` (Postgres `22P02` -> HTTP 400):**
+   - `src/services/directory.functions.ts:184,342`, `src/services/catalog.functions.ts:958` e `src/services/places-detail.functions.ts:116,189` aplicam `id.eq.<slug>` ou coluna inexistente `directory_listings.slug` quando o identificador não é UUID.
+4. **PostgREST `406 Not Acceptable` e Tabelas Mortas (`404`):**
+   - `src/services/events.functions.ts:1371` (`_getEventWithLots`) e `:806` usam `.single()` antes do fallback de classificados/lotes, gerando HTTP `406` quando `0` linhas retornam.
+   - `src/services/supermarket.functions.ts:119` consulta tabela inexistente `store_delivery_windows`.
+   - `src/routes/sitemap[.]xml.ts:70-71,123,126,128` consulta `travel_destinations`, `travel_hotels`, `mined_recipes`, `links_in_bio` e `store_raffles` (reais: `destinations`, `global_hotels`, `mined_raw_extractions`, `link_in_bio` + `stores(slug)`, `raffles`).
+5. **Rotas, Testes e Hardening de UI:**
+   - `src/components/commerce/ifood/IFoodRecentStoresRail.tsx:26` aponta `viewMoreTo = "/lojas"` (`404`; canônico: `"/diretorio"`).
+   - `src/services/__tests__/cross-tenant-rls-isolation.test.ts:88` envia `.eq('id', undefined)` quando sem pool Postgres.
+   - `src/components/chat/artifacts/ArtifactCreativePost.tsx:226,232` chama `.map()`/`.join()` em `effectiveBullets` e `hashtags` sem guarda contra `null`.
+   - `src/routes/workspace.pedidos.gestor.tsx` já foi isolada localmente (`GestorRoutePage` wrapper), eliminando o `Invariant failed` ativo em produção após redeploy.

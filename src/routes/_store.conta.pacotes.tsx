@@ -33,7 +33,7 @@ import { getAvailableSlots } from "@/services/booking.functions";
 import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/_store/conta/pacotes")({
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/_store/conta/pacotes")({
 
 function CustomerPassesPage() {
   const queryClient = useQueryClient();
-  const { isCompact } = useWindowSizeClass();
+  const { isCompact } = useEffectiveViewport();
 
   const [filterTab, setFilterTab] = useState<"todos" | "ativos" | "esgotados" | "expirados">("todos");
   const [selectedPass, setSelectedPass] = useState<CustomerPassEnrichedDTO | null>(null);

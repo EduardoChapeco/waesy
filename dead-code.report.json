@@ -1,12 +1,11 @@
 {
-  "timestamp": "2026-11-14T23:48:44.732Z",
-  "totalFiles": 2817,
-  "totalImported": 2162,
-  "discoveredUnreferencedCount": 66,
-  "intentionalUnreferencedCount": 66,
+  "timestamp": "2026-11-15T23:32:57.263Z",
+  "totalFiles": 2850,
+  "totalImported": 2186,
+  "discoveredUnreferencedCount": 65,
+  "intentionalUnreferencedCount": 65,
   "intentionalUnreferencedFiles": [
     "src/components/ad-engine/public/listing-empty-state.tsx",
-    "src/components/admin/builder/builder-canvas.tsx",
     "src/components/admin/builder/builder-inspector.tsx",
     "src/components/admin/builder/builder-layout-switcher-modal.tsx",
     "src/components/admin/builder/builder-left-panel.tsx",

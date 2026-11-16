@@ -137,7 +137,7 @@ export function VitrineMetamorphicBanner({
   liveBanners,
   className,
 }: VitrineMetamorphicBannerProps) {
-  const { isMobile, isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isMedium, isEditorCanvas } = useEffectiveViewport();
   const [activeIndex, setActiveIndex] = React.useState(0);
 
   const resolvedSlides = React.useMemo(() => {
@@ -215,8 +215,10 @@ export function VitrineMetamorphicBanner({
     const innerContent = (
       <div
         className={cn(
-          "relative w-full overflow-hidden bg-muted/40 border border-border/60",
-          aspectClass,
+          "relative w-full overflow-hidden border border-border/60",
+          videoSrc || mediaSrc
+            ? cn("bg-muted/40", aspectClass)
+            : "bg-card min-h-48 sm:min-h-60 flex flex-col justify-between p-5 sm:p-8",
           radiusClass,
         )}
       >
@@ -236,19 +238,22 @@ export function VitrineMetamorphicBanner({
             loading={idx === 0 ? "eager" : "lazy"}
             className="size-full object-cover transition-transform duration-200 motion-reduce:transition-none group-hover:scale-105"
           />
-        ) : (
-          <div className="size-full flex items-center justify-center bg-muted/50 p-6">
-            {!hasEditorialText && (
-              <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <ImageIcon className="size-8" />
-                <span className="text-xs font-medium">Mídia não enviada</span>
-              </div>
-            )}
+        ) : !hasEditorialText ? (
+          <div className={cn("size-full flex items-center justify-center bg-muted/50 p-6", aspectClass)}>
+            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+              <ImageIcon className="size-8" />
+              <span className="text-xs font-medium">Mídia não enviada</span>
+            </div>
           </div>
-        )}
+        ) : null}
 
-        {hasEditorialText && (
-          <div className="absolute inset-x-3 bottom-3 sm:inset-x-6 sm:bottom-6 flex items-end justify-between gap-4 pointer-events-none">
+        {hasEditorialText && (videoSrc || mediaSrc ? (
+          <div
+            className={cn(
+              "absolute flex items-end justify-between gap-4 pointer-events-none",
+              isMobile ? "inset-x-3 bottom-3" : "inset-x-6 bottom-6",
+            )}
+          >
             <div className="max-w-xl rounded-lg bg-card border border-border p-4 space-y-2 pointer-events-auto">
               {slide.badge && (
                 <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted text-foreground border border-border text-xs font-bold uppercase tracking-wider">
@@ -256,12 +261,22 @@ export function VitrineMetamorphicBanner({
                 </span>
               )}
               {slide.title && (
-                <h3 className="text-base sm:text-xl font-black tracking-tight text-foreground leading-tight break-words text-wrap">
+                <h3
+                  className={cn(
+                    "font-black tracking-tight text-foreground leading-tight break-words text-wrap",
+                    isMobile ? "text-base" : "text-xl",
+                  )}
+                >
                   {slide.title}
                 </h3>
               )}
               {slide.subtitle && (
-                <p className="text-xs sm:text-sm text-muted-foreground leading-snug line-clamp-2 break-words">
+                <p
+                  className={cn(
+                    "text-muted-foreground leading-snug line-clamp-2 break-words",
+                    isMobile ? "text-xs" : "text-sm",
+                  )}
+                >
                   {slide.subtitle}
                 </p>
               )}
@@ -275,7 +290,54 @@ export function VitrineMetamorphicBanner({
               )}
             </div>
           </div>
-        )}
+        ) : (
+          <div className="w-full flex flex-col justify-between gap-4">
+            <div className="flex items-start justify-between gap-3">
+              {slide.badge ? (
+                <span className="inline-flex items-center px-3 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider">
+                  {slide.badge}
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-3 py-1 rounded-md bg-muted text-muted-foreground text-xs font-semibold">
+                  Destaque
+                </span>
+              )}
+              <span className="size-9 rounded-lg bg-muted/60 border border-border/70 flex items-center justify-center text-muted-foreground shrink-0">
+                <ImageIcon className="size-4" />
+              </span>
+            </div>
+            <div className="max-w-2xl space-y-2">
+              {slide.title && (
+                <h3
+                  className={cn(
+                    "font-black tracking-tight text-foreground leading-tight break-words text-wrap",
+                    isMobile ? "text-lg" : "text-2xl",
+                  )}
+                >
+                  {slide.title}
+                </h3>
+              )}
+              {slide.subtitle && (
+                <p
+                  className={cn(
+                    "text-muted-foreground leading-relaxed break-words",
+                    isMobile ? "text-xs" : "text-sm",
+                  )}
+                >
+                  {slide.subtitle}
+                </p>
+              )}
+              {slide.ctaLabel && (
+                <div className="pt-2">
+                  <span className="inline-flex items-center justify-center gap-2 h-11 min-h-11 px-5 rounded-lg bg-primary text-primary-foreground text-xs font-bold">
+                    <span>{slide.ctaLabel}</span>
+                    <ArrowRight className="size-4 shrink-0" />
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     );
 
@@ -416,7 +478,7 @@ export function VitrineBentoTetris({
   tiles = [],
   className,
 }: VitrineBentoTetrisProps) {
-  const { isMobile, isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isMedium, isEditorCanvas } = useEffectiveViewport();
 
   if (!tiles || tiles.length === 0) {
     if (!isEditorCanvas) return null;
@@ -439,13 +501,15 @@ export function VitrineBentoTetris({
     ? mobileColumns === 1
       ? "grid-cols-1"
       : "grid-cols-2"
-    : isThreeTileHero
-      ? "grid-cols-2 sm:grid-cols-3"
-      : desktopColumns === 2
-        ? "grid-cols-2"
-        : desktopColumns === 3
-          ? "grid-cols-2 sm:grid-cols-3"
-          : "grid-cols-2 sm:grid-cols-4";
+    : isMedium
+      ? "grid-cols-2"
+      : isThreeTileHero
+        ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        : desktopColumns === 2
+          ? "grid-cols-1 md:grid-cols-2"
+          : desktopColumns === 3
+            ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4";
 
   return (
     <section
@@ -455,17 +519,17 @@ export function VitrineBentoTetris({
       {(sectionTitle || sectionSubtitle) && (
         <div className="space-y-1">
           {sectionTitle && (
-            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground break-words">
+            <h2 className={cn("font-bold tracking-tight text-foreground break-words", isMobile ? "text-lg" : "text-xl")}>
               {sectionTitle}
             </h2>
           )}
           {sectionSubtitle && (
-            <p className="text-xs sm:text-sm text-muted-foreground">{sectionSubtitle}</p>
+            <p className={cn("text-muted-foreground", isMobile ? "text-xs" : "text-sm")}>{sectionSubtitle}</p>
           )}
         </div>
       )}
 
-      <div className={cn("grid grid-flow-dense gap-3 sm:gap-4", gridColsClass)}>
+      <div className={cn("grid grid-flow-dense", isMobile ? "gap-3" : "gap-4", gridColsClass)}>
         {tiles.map((tile, idx) => {
           const mediaSrc = resolveBidirectionalMedia(
             {
@@ -484,15 +548,15 @@ export function VitrineBentoTetris({
                 ? "col-span-2"
                 : "col-span-1";
           } else if (isThreeTileHero) {
-            spanClass = idx === 0 ? "col-span-2 row-span-2 min-h-72" : "col-span-1 row-span-1 min-h-36";
+            spanClass = idx === 0 ? "col-span-1 md:col-span-2 row-span-2 min-h-72" : "col-span-1 row-span-1 min-h-36";
           } else {
             const x = tile.spanX ?? 1;
             const y = tile.spanY ?? 1;
             const colMap: Record<number, string> = {
               1: "col-span-1",
-              2: "col-span-2",
-              3: "col-span-3",
-              4: "col-span-4",
+              2: "col-span-1 md:col-span-2",
+              3: "col-span-1 md:col-span-2 lg:col-span-3",
+              4: "col-span-1 md:col-span-2 lg:col-span-4",
             };
             spanClass = `${colMap[Math.min(x, desktopColumns)] || "col-span-1"} ${
               y === 2 ? "row-span-2 min-h-72" : "row-span-1 min-h-40"
@@ -614,7 +678,7 @@ export function VitrineCouponStrip({
   dismissible = false,
   className,
 }: VitrineCouponStripProps) {
-  const { isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isEditorCanvas } = useEffectiveViewport();
   const [dismissed, setDismissed] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
 
@@ -635,7 +699,8 @@ export function VitrineCouponStrip({
     <section className={cn("w-full py-2", className)} aria-label={title || "Faixa promocional"}>
       <div
         className={cn(
-          "w-full rounded-lg border p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3",
+          "w-full rounded-lg border flex justify-between gap-3",
+          isMobile ? "p-3 flex-col items-stretch" : "p-4 flex-row items-center",
           variant === "highlight_bar"
             ? "bg-primary/10 border-primary/30"
             : variant === "coupon"
@@ -643,18 +708,18 @@ export function VitrineCouponStrip({
               : "bg-muted/50 border-border/70",
         )}
       >
-        <div className="flex items-start sm:items-center gap-3 min-w-0">
+        <div className={cn("flex gap-3 min-w-0 flex-1", isMobile ? "items-start" : "items-center")}>
           <div className="size-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
             {variant === "coupon" ? <Ticket className="size-5" /> : <LayoutGrid className="size-5" />}
           </div>
-          <div className="min-w-0 space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               {badge && (
                 <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider">
                   {badge}
                 </span>
               )}
-              <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight break-words">
+              <h3 className={cn("font-bold text-foreground leading-tight break-words", isMobile ? "text-sm" : "text-base")}>
                 {title || "Oferta ativa na vitrine"}
               </h3>
             </div>
@@ -664,7 +729,7 @@ export function VitrineCouponStrip({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className={cn("flex flex-wrap items-center gap-2", isMobile ? "w-full" : "shrink-0")}>
           {couponCode && (
             <button
               type="button"

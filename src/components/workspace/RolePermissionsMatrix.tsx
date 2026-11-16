@@ -247,7 +247,7 @@ export function RolePermissionsMatrix({ roleKey: initialRoleKey, roleName: initi
             <span>Matriz de Permissões por Cargo</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Defina o acesso visual e funcional por setor com comandos táteis em linha de 44px.
+            Defina o acesso de cada cargo por módulo e setor.
           </p>
         </div>
 

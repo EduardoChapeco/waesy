@@ -36,7 +36,7 @@ import {
   Smartphone,
   FileSignature,
   ClipboardList,
-  Sparkles,
+  BadgePercent,
 } from "lucide-react";
 import { formatBRL, cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
@@ -1346,7 +1346,7 @@ export const Customer360Sidebar: React.FC<Customer360SidebarProps> = ({
                   id: "quotes",
                   label: "Cotações",
                   count: quotes.length,
-                  icon: Sparkles,
+                  icon: BadgePercent,
                 },
                 {
                   id: "vertical",

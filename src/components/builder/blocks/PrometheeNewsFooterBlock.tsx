@@ -1,6 +1,7 @@
 import React from "react";
 import type { BaseSiteBlockProps, PrometheeNewsFooterBlockData } from "@/types/omni-builder";
 import { Logo } from "@/components/commerce/logo";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export interface PrometheeNewsFooterBlockProps extends BaseSiteBlockProps {
   data: PrometheeNewsFooterBlockData;
@@ -14,6 +15,7 @@ export function PrometheeNewsFooterBlock({
   data,
   isEditing = false,
 }: PrometheeNewsFooterBlockProps) {
+  const { isMobile } = useEffectiveViewport();
   const brandName = data?.brandName || "Waesy News";
   const tagline = data?.tagline || "Jornalismo regional independente";
   const links =
@@ -40,7 +42,7 @@ export function PrometheeNewsFooterBlock({
       className={`border-t border-border bg-background text-foreground py-8 ${className}`}
     >
       <div className="mx-auto max-w-6xl px-4 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className={isMobile ? "flex flex-col items-start justify-between gap-4" : "flex flex-row items-center justify-between gap-4"}>
           <div className="space-y-1">
             <span className="text-base font-black tracking-tight text-foreground block">
               {brandName}

@@ -116,12 +116,13 @@ function AdminOrdersPage() {
     }
     if (isGastro) {
       return [
-        { id: "kanban" as ViewMode, label: "Gestor Multicanal (Kanban)", icon: Kanban },
-        { id: "table" as ViewMode, label: "Tabela Analítica & Fiscal", icon: List },
+        { id: "kanban" as ViewMode, label: "Painel de Pedidos", icon: Kanban },
+        { id: "table" as ViewMode, label: "Lista e Notas Fiscais", icon: List },
       ];
     }
     if (isRetail) {
       return [
+        { id: "picking" as ViewMode, label: "Separação", icon: PackageCheck },
         { id: "table" as ViewMode, label: "Tabela de Vendas", icon: List },
       ];
     }
@@ -379,10 +380,10 @@ function AdminOrdersPage() {
       size="sm"
       className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 border-border bg-card hover:bg-muted"
      >
-      <Link to="/workspace/pedidos/expedicao">
-       <PackageCheck className="size-4 text-primary" />
-       <span>Central WMS</span>
-      </Link>
+       <Link to="/workspace/pedidos/expedicao">
+        <PackageCheck className="size-4 text-primary" />
+        <span>Separação e Envio</span>
+       </Link>
      </Button>
      <Button
       asChild
@@ -443,8 +444,10 @@ function AdminOrdersPage() {
       {/* ── MODO 0: GESTOR MULTICANAL COMPLETO (KANBAN / KDS / MOTOBOYS / ETIQUETAS / CONTRATOS) ── */}
       {viewMode === "kanban" ? (
         <KDSPage
+          embedded
           initialOrdersProp={orders}
           storeProp={store}
+          storeIdProp={store?.id ?? null}
           onOpenShippingLabel={(id) => setSelectedShippingLabelOrderId(id)}
           onGenerateContract={(id) => handleGenerateContract(id)}
         />
@@ -780,10 +783,10 @@ function AdminOrdersPage() {
     </div>
     <div>
      <h3 className="text-sm font-bold text-foreground">
-      Central Avançada de Expedição WMS Disponível
+      Central de Separação e Envio
      </h3>
      <p className="text-xs text-muted-foreground">
-      Separação por ondas, conferência por código de barras ótico, romaneios e impressão térmica ZPL/ESC-POS.
+      Lotes de separação, conferência por código de barras, romaneios e impressão térmica de etiquetas.
      </p>
     </div>
    </div>
@@ -793,7 +796,7 @@ function AdminOrdersPage() {
     className="h-11 min-h-11 sm:h-9 rounded-lg font-bold text-xs gap-2 bg-primary text-primary-foreground shrink-0 cursor-pointer"
    >
     <Link to="/workspace/pedidos/expedicao">
-     <span>Abrir Módulo WMS Completo</span>
+     <span>Abrir Separação e Envio</span>
      <ArrowRight className="size-4" />
     </Link>
    </Button>
@@ -997,32 +1000,33 @@ function AdminOrdersPage() {
  {viewMode === "table" ? (
  <div className="space-y-4">
  {/* Barra de Filtros e Busca */}
- <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg px-4 py-3">
+ <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card border border-border rounded-lg px-4 py-3 min-w-0">
  <Tabs
  defaultValue="all"
  value={statusTab}
  onValueChange={setStatusTab}
+ className="min-w-0 max-w-full"
  >
- <TabsList className="flex overflow-x-auto no-scrollbar h-11 min-h-11 p-1 bg-muted/60 rounded-xl">
- <TabsTrigger value="all" className="text-xs h-9 min-h-9 px-3 shrink-0 rounded-lg">
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 h-11 min-h-11 p-1 bg-muted/60 rounded-xl w-full max-w-full">
+ <TabsTrigger value="all" className="text-xs h-9 min-h-9 px-3 shrink-0 whitespace-nowrap rounded-lg">
  Todos ({orders.length})
  </TabsTrigger>
- <TabsTrigger value="awaiting" className="text-xs shrink-0">
+ <TabsTrigger value="awaiting" className="text-xs shrink-0 whitespace-nowrap">
  {isTourism ? "Reservas Pendentes" : "Aguardando Pagto"} ({newOrders.length})
  </TabsTrigger>
- <TabsTrigger value="processing" className="text-xs shrink-0">
+ <TabsTrigger value="processing" className="text-xs shrink-0 whitespace-nowrap">
  {isTourism ? "Em Emissão" : "Em Preparo / Pago"} ({processingOrders.length})
  </TabsTrigger>
- <TabsTrigger value="shipped" className="text-xs shrink-0">
+ <TabsTrigger value="shipped" className="text-xs shrink-0 whitespace-nowrap">
  {isTourism ? "Vouchers Prontos" : "Prontos / Em Rota"} ({readyOrders.length})
  </TabsTrigger>
- <TabsTrigger value="delivered" className="text-xs shrink-0">
+ <TabsTrigger value="delivered" className="text-xs shrink-0 whitespace-nowrap">
  {isTourism ? "Viagens Concluídas" : "Entregues"} ({completedOrders.length})
  </TabsTrigger>
  </TabsList>
  </Tabs>
 
- <div className="flex items-center gap-2 w-full sm:w-auto">
+ <div className="flex items-center gap-2 w-full lg:w-auto min-w-0">
               {/* Select visível apenas no Desktop */}
               <select
                 value={channelFilter}

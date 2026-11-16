@@ -279,7 +279,7 @@ export default function WorkspaceMarketingSocialPage() {
             {/* Imagem Padrão de Compartilhamento */}
             <div className="space-y-2 pt-2 border-t border-border/30">
               <Label className="text-xs font-medium text-foreground">
-                Imagem Padrão de Compartilhamento (Fallback 1200x630px)
+                Imagem Padrão de Compartilhamento (1200x630px)
               </Label>
               <div className="max-w-md">
                 <ImageUpload

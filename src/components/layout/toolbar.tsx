@@ -70,9 +70,9 @@ export const Toolbar = forwardRef<HTMLDivElement, ToolbarProps>(
           </div>
 
           {(filters || actions) && (
-            <div className="flex items-center gap-2 flex-wrap sm:shrink-0 justify-between sm:justify-end">
-              {filters && <div className="flex items-center gap-2">{filters}</div>}
-              {actions && <div className="flex items-center gap-2">{actions}</div>}
+            <div className="flex items-center gap-2 flex-wrap min-w-0 max-w-full justify-between sm:justify-end">
+              {filters && <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">{filters}</div>}
+              {actions && <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">{actions}</div>}
             </div>
           )}
         </div>

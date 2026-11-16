@@ -224,7 +224,7 @@ export const NICHE_MANIFEST_REGISTRY: Record<NicheId, NicheManifest> = {
     id: "gastronomy",
     label: "Gastronomia & Restaurantes",
     description: "Operação culinária de salão, balcão e delivery com KDS de cozinha, mesas, comanda e insumos.",
-    activeModules: ["catalog", "orders", "kds", "tables", "reservations", "crm", "financial", "tasks", "inventory", "support", "marketing", "affiliates", "couriers", "simlab"],
+    activeModules: ["catalog", "orders", "kds", "tables", "reservations", "crm", "contracts", "financial", "tasks", "inventory", "support", "marketing", "affiliates", "couriers", "simlab"],
     nomenclature: {
       itemSingular: "Prato / Lanche",
       itemPlural: "Pratos & Bebidas",

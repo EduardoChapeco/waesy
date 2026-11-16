@@ -745,3 +745,73 @@ export const toggleUserSkillActivation = createServerFn({ method: "POST" })
 
     return { ok: true, skillSlug: data.skillSlug, isActive: data.isActive };
   });
+
+export const listEffectiveSkillsForCopilot = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid().optional().nullable() }).optional())
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    const { listEffectiveSkillsForUser } = await import("./copilot-skill-policy");
+    const skills = await listEffectiveSkillsForUser({
+      userId: identity?.id || null,
+      storeId: data?.storeId || (identity as any)?.store_id || null,
+    });
+    return { skills };
+  });
+
+export const createCustomAiSkill = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional().nullable(),
+      name: z.string().trim().min(3).max(80),
+      description: z.string().trim().min(8).max(500),
+      category: z.string().trim().min(2).max(40).default("operacional"),
+      icon: z.string().trim().min(2).max(40).default("Brain"),
+      allowedTools: z.array(z.string().trim().min(2).max(80)).max(30).default([]),
+      systemInstructions: z.string().trim().min(10).max(4000),
+      modelPreference: z.string().trim().max(80).optional().nullable(),
+      riskTier: z.enum(["READ", "WRITE", "EXTERNAL_WRITE", "FINANCIAL"]).default("READ"),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Autenticação obrigatória para criar skills customizadas.");
+    const { createCustomSkillForUser } = await import("./copilot-skill-policy");
+    return createCustomSkillForUser({
+      identity,
+      input: {
+        ...data,
+        storeId: data.storeId || (identity as any).store_id || null,
+      },
+    });
+  });
+
+export const updateCustomAiSkill = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      skillId: z.string().uuid(),
+      storeId: z.string().uuid().optional().nullable(),
+      name: z.string().trim().min(3).max(80).optional(),
+      description: z.string().trim().min(8).max(500).optional(),
+      category: z.string().trim().min(2).max(40).optional(),
+      icon: z.string().trim().min(2).max(40).optional(),
+      allowedTools: z.array(z.string().trim().min(2).max(80)).max(30).optional(),
+      systemInstructions: z.string().trim().min(10).max(4000).optional(),
+      modelPreference: z.string().trim().max(80).optional().nullable(),
+      isActive: z.boolean().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Autenticação obrigatória para editar skills customizadas.");
+    const { updateCustomSkillForUser } = await import("./copilot-skill-policy");
+    return updateCustomSkillForUser({ identity, input: data });
+  });
+
+export const deleteCustomAiSkill = createServerFn({ method: "POST" })
+  .validator(z.object({ skillId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Autenticação obrigatória para remover skills customizadas.");
+    const { deleteCustomSkillForUser } = await import("./copilot-skill-policy");
+    return deleteCustomSkillForUser({ identity, skillId: data.skillId });
+  });

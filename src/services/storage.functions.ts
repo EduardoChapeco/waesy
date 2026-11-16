@@ -33,6 +33,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "audio/aac",
   "application/pdf",
   "text/plain",
+  "text/markdown",
+  "text/x-markdown",
   "text/csv",
   "text/rtf",
   "application/rtf",

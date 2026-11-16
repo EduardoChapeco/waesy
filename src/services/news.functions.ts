@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import { decryptSecret } from "@/lib/crypto-vault.server";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { resolveCityNewsCover } from "@/lib/news/city-editorial-images";
@@ -494,7 +495,7 @@ export const createArticle = createServerFn({ method: "POST" })
       storeInfo?.is_platform_root ||
       storeInfo?.is_press_consortium ||
       storeInfo?.press_accreditation_status === "approved" ||
-      identity.role === "admin";
+      isPlatformAdminIdentity(identity);
 
     if (!isAuthorized) {
       throw new Error(

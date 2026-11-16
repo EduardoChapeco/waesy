@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitOmniPageLeadFn } from "@/services/builder.functions";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export interface InteractiveLeadQuizFlowProps {
   id: string;
@@ -33,6 +34,7 @@ export const InteractiveLeadQuizFlow: React.FC<InteractiveLeadQuizFlowProps> = (
   pageSlug,
   onLeadSubmit,
 }) => {
+  const { isMobile } = useEffectiveViewport();
   const steps = data.steps || [];
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, { optionId: string; optionLabel: string; question: string }>>({});
@@ -196,8 +198,8 @@ export const InteractiveLeadQuizFlow: React.FC<InteractiveLeadQuizFlowProps> = (
       aria-label={data.title || "Quiz Interativo de Diagnóstico"}
       className={`relative w-full ${paddingYClasses} border-b border-border/40 ${className}`}
     >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`p-6 sm:p-10 bg-card border border-border/70 ${radiusClass}`}>
+      <div className={isMobile ? "max-w-3xl mx-auto px-3" : "max-w-3xl mx-auto px-6 lg:px-8"}>
+        <div className={`${isMobile ? "p-5" : "p-10"} bg-card border border-border/70 ${radiusClass}`}>
           {/* Header */}
           <div className="text-center max-w-xl mx-auto mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-2xs font-bold uppercase tracking-wider mb-3">
@@ -373,7 +375,7 @@ export const InteractiveLeadQuizFlow: React.FC<InteractiveLeadQuizFlowProps> = (
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={isMobile ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-4"}>
                 <div>
                   <label htmlFor={`${id}-lead-phone`} className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
                     WhatsApp / Telefone

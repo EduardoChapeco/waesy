@@ -604,11 +604,94 @@ export function resolveBrandContextFromHost(host?: string | null): BrandVertical
   return BRAND_VERTICALS_REGISTRY.waesy;
 }
 
+function normalizeTierId(rawTier?: string | null): SubscriptionTierId {
+  const clean = String(rawTier || "starter").trim().toLowerCase();
+  if (clean === "professional" || clean === "pro") return "pro";
+  if (clean === "enterprise" || clean === "waesy_max") return "enterprise";
+  return "starter";
+}
+
+const SKU_CAPABILITY_MODULES: Record<string, string[]> = {
+  waesy_salon_beauty: ["reservations", "catalog", "orders", "crm", "financial", "contracts"],
+  waesy_barbershop: ["reservations", "catalog", "orders", "crm", "financial"],
+  waesy_health_clinic: ["reservations", "catalog", "orders", "crm", "financial", "copilot"],
+  waesy_gastro_delivery: ["catalog", "orders", "kds", "tables", "inventory", "couriers", "crm", "financial"],
+  waesy_automotive_workshop: ["catalog", "orders", "service_orders", "vehicles", "inventory", "crm", "financial"],
+  waesy_tourism_pro: ["catalog", "orders", "quotes", "proposals", "boarding", "fleet", "contracts", "crm", "financial", "copilot"],
+  waesy_real_estate: ["catalog", "orders", "real_estate", "contracts", "crm", "financial"],
+  waesy_retail_commerce: ["catalog", "orders", "inventory", "crm", "financial"],
+  waesy_legal_office: ["catalog", "legal", "contracts", "proposals", "tasks", "crm", "financial"],
+  waesy_bundle_pro: ["catalog", "orders", "kds", "tables", "reservations", "crm", "proposals", "quotes", "boarding", "fleet", "contracts", "financial", "tasks", "inventory", "hr", "copilot"],
+};
+
+const GROUP_ID_TO_CANONICAL_MODULE: Record<string, string> = {
+  "overview": "__core__",
+  "settings": "__core__",
+  "master-tasks": "__core__",
+  "support-desk": "__core__",
+  "crm-clients": "crm",
+  "master-inbox": "crm",
+  "whatsapp-automations": "crm",
+  "commercial-sales": "orders",
+  "b2b-procurement": "quotes",
+  "contracts-global": "contracts",
+  "marketing": "marketing",
+  "intelligence-squads": "tasks",
+  "finance": "financial",
+  "fiscal-accounting": "financial",
+  "team-rh": "hr",
+  "tourism-crm": "proposals",
+  "tourism-commercial": "quotes",
+  "tourism-contracts": "contracts",
+  "tourism-operations": "proposals",
+  "tourism-trips": "proposals",
+  "tourism-boarding": "boarding",
+  "tourism-catalog": "quotes",
+  "tourism-marketing": "marketing",
+  "tourism-finance": "financial",
+  "gastro-catalog": "catalog",
+  "gastro-orders": "orders",
+  "retail-catalog": "catalog",
+  "retail-sales": "orders",
+  "services-agenda": "reservations",
+  "services-catalog": "catalog",
+  "services-supplies": "reservations",
+  "automotive-workshop": "service_orders",
+  "vehicles": "vehicles",
+  "tech-repair": "service_orders",
+  "tech-catalog": "catalog",
+  "accounting": "financial",
+  "legal": "legal",
+  "legal-catalog": "legal",
+  "legal-deadlines": "legal",
+  "real-estate": "real_estate",
+  "property-inspections": "real_estate",
+  "events-tickets": "catalog",
+  "events-catalog": "catalog",
+  "logistics-events": "orders",
+  "jobs": "crm",
+  "jobs-catalog": "catalog",
+  "supermarket": "catalog",
+  "pharmacy": "catalog",
+  "wholesale": "orders",
+  "rental-events": "reservations",
+  "pet": "catalog",
+  "news": "marketing",
+  "education": "catalog",
+  "logistics-local-delivery": "orders",
+  "logistics-expedition": "orders",
+  "logistics-supermarket": "orders",
+  "logistics-operations": "orders",
+  "fleet-operations": "fleet",
+  "governance-audit": "contracts",
+  "donations-captacao": "financial",
+};
+
 /**
  * Retorna a lista unificada de módulos permitidos para um plano (Tier) e marca vertical.
  */
 export function getTierModules(tier?: string | null, brandId?: string | null): string[] {
-  const normalizedTier = (tier?.trim().toLowerCase() || "enterprise") as SubscriptionTierId;
+  const normalizedTier = normalizeTierId(tier);
   const tierConfig = SUBSCRIPTION_TIERS_REGISTRY[normalizedTier] ?? SUBSCRIPTION_TIERS_REGISTRY.enterprise;
   const brandConfig = getBrandVerticalById(brandId);
 
@@ -621,26 +704,39 @@ export function getTierModules(tier?: string | null, brandId?: string | null): s
 
 /**
  * Verifica deterministicamente se uma loja possui permissão para acessar determinado módulo.
- * Respeita o plano contratado (`subscription_tier`), módulos extras (`enabled_modules`) e retrocompatibilidade.
+ * Respeita o plano contratado (`subscription_tier`), SKU vertical, módulos extras (`enabled_modules`) e retrocompatibilidade.
  */
 export function canAccessModule(
   store: StoreEntitlementInput | null | undefined,
   moduleKey: string,
 ): boolean {
   if (!moduleKey) return true;
-  if (!store) return true;
+  if (!store) return false;
+
+  const rawAny = store as Record<string, any>;
+  if (rawAny.is_platform_root === true) {
+    return true;
+  }
+  if (
+    rawAny.is_active === false ||
+    (rawAny.approval_status && rawAny.approval_status !== "approved") ||
+    rawAny.subscription_status === "cancelled" ||
+    rawAny.subscription_status === "past_due"
+  ) {
+    return false;
+  }
 
   const settings = store.settings ?? {};
-  const effectiveTier = (
-    store.subscription_tier ||
-    settings.subscription_tier ||
-    settings.subscriptionTier ||
-    "enterprise"
-  )
-    .toString()
-    .toLowerCase() as SubscriptionTierId;
+  const effectiveTier = normalizeTierId(
+    (store.subscription_tier ||
+      rawAny.plan_tier ||
+      settings.subscription_tier ||
+      settings.plan_tier ||
+      settings.subscriptionTier ||
+      "starter") as string,
+  );
 
-  const tierConfig = SUBSCRIPTION_TIERS_REGISTRY[effectiveTier] ?? SUBSCRIPTION_TIERS_REGISTRY.enterprise;
+  const tierConfig = SUBSCRIPTION_TIERS_REGISTRY[effectiveTier] ?? SUBSCRIPTION_TIERS_REGISTRY.starter;
   if (tierConfig.allowsAllModules) {
     return true;
   }
@@ -656,7 +752,41 @@ export function canAccessModule(
     return true;
   }
 
+  const skuKey = String(rawAny.vertical_sku || settings.vertical_sku || "").toLowerCase();
+  const skuModules = SKU_CAPABILITY_MODULES[skuKey] || [];
+  if (skuModules.includes(normalizedKey)) {
+    return true;
+  }
+
   return tierConfig.includedModules.includes(normalizedKey);
+}
+
+/**
+ * Avalia se um grupo de navegação do Workspace deve permanecer visível para a loja.
+ * Evita ocultamento acidental de grupos estruturais (overview/ajustes) ou módulos cobertos pelo SKU vertical.
+ */
+export function canAccessWorkspaceGroup(
+  store: StoreEntitlementInput | null | undefined,
+  groupId: string,
+): boolean {
+  if (!store) return false;
+  const rawAny = store as Record<string, any>;
+  if (rawAny.is_platform_root === true) return true;
+  if (
+    rawAny.is_active === false ||
+    (rawAny.approval_status && rawAny.approval_status !== "approved") ||
+    rawAny.subscription_status === "cancelled" ||
+    rawAny.subscription_status === "past_due"
+  ) {
+    return false;
+  }
+
+  const normalizedGroup = String(groupId || "").trim().toLowerCase();
+  const mappedModule = GROUP_ID_TO_CANONICAL_MODULE[normalizedGroup] || normalizedGroup;
+  if (mappedModule === "__core__") {
+    return true;
+  }
+  return canAccessModule(store, mappedModule) || canAccessModule(store, normalizedGroup);
 }
 
 /**

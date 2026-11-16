@@ -195,8 +195,18 @@ function auditContentIntegrity(blocks: OmniBlockInstance[], findings: TemplateAu
       if (items.length === 0) addFinding(findings, "CONTENT_FAQ_EMPTY", "content", "error", `blocks[${index}].config.items`, "Adicione respostas verificadas para este negócio ou remova a seção antes de publicar.");
     }
     if (block.type === "contact_form_direct") {
+      const captureChannel = typeof block.config?.captureChannel === "string" ? block.config.captureChannel : "";
       const whatsappDigits = typeof block.config?.whatsappNumber === "string" ? block.config.whatsappNumber.replace(/\D/g, "") : "";
-      if (!/^\d{10,15}$/.test(whatsappDigits)) addFinding(findings, "CONTENT_FORM_DESTINATION_MISSING", "content", "error", `blocks[${index}].config.whatsappNumber`, "Configure um destino WhatsApp válido; este bloco ainda não envia leads por e-mail/CRM.");
+      if (captureChannel !== "crm" && !/^\d{10,15}$/.test(whatsappDigits)) {
+        addFinding(
+          findings,
+          "CONTENT_FORM_DESTINATION_MISSING",
+          "content",
+          "error",
+          `blocks[${index}].config.whatsappNumber`,
+          "Configure um destino WhatsApp válido ou habilite a captura direta via CRM.",
+        );
+      }
     }
     if (["pricing_tables_clean", "pricing_three_tiers"].includes(block.type)) {
       const tiers = Array.isArray(block.config?.tiers) ? block.config.tiers : [];

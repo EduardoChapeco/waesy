@@ -40,6 +40,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -950,14 +952,15 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  </div>
 
+ <TooltipProvider delayDuration={120}>
  <Tabs
    value={activeTab}
    onValueChange={setActiveTab}
-   className="flex-1 flex flex-col sm:flex-row overflow-hidden"
+   className="flex-1 flex flex-col sm:flex-row overflow-hidden min-w-0"
  >
    <TabsList
      aria-label="Seções do Editor de Proposta"
-     className="waesy-tab-strip flex flex-row sm:flex-col w-full sm:w-20 shrink-0 h-auto justify-start overflow-x-auto sm:overflow-y-auto no-scrollbar gap-1 p-2 sm:py-3 rounded-none border-b sm:border-b-0 sm:border-r border-border/60 bg-muted/30"
+     className="waesy-tab-strip flex flex-row sm:flex-col w-full sm:w-14 shrink-0 h-auto justify-start overflow-x-auto sm:overflow-y-auto no-scrollbar gap-1 p-2 sm:py-3 sm:px-1 rounded-none border-b sm:border-b-0 sm:border-r border-sidebar-border bg-rail"
    >
      {[
        { id: "design", label: "Design", icon: LayoutTemplate },
@@ -977,7 +980,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
                    : "Itens",
          icon: Building2,
        },
-       ...(nicheCopy.showAviationAndHotelTerms ? [{ id: "rodoviario", label: "Rodov.", icon: Bus }] : []),
+       ...(nicheCopy.showAviationAndHotelTerms ? [{ id: "rodoviario", label: "Rodoviário", icon: Bus }] : []),
        { id: "roteiro", label: nicheCopy.showAviationAndHotelTerms ? "Roteiro" : "Etapas", icon: Calendar },
        { id: "servicos", label: nicheCopy.showAviationAndHotelTerms ? "Serviços" : "Extras", icon: Compass },
        { id: "inclusoes", label: "Inclusões", icon: CheckCircle },
@@ -985,15 +988,35 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
        { id: "preco", label: "Preço", icon: DollarSign },
      ].map((item) => {
        const NavIcon = item.icon;
+       const isActive = activeTab === item.id;
        return (
-         <TabsTrigger
-           key={item.id}
-           value={item.id}
-           className="min-h-11 min-w-14 sm:w-full flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-lg text-2xs font-bold leading-tight shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-         >
-           <NavIcon className="size-4 shrink-0" />
-           <span className="truncate max-w-full">{item.label}</span>
-         </TabsTrigger>
+         <Tooltip key={item.id}>
+           <TooltipTrigger asChild>
+             <TabsTrigger
+               value={item.id}
+               aria-label={item.label}
+               className={cn(
+                 "h-11 min-h-11 px-3 sm:px-0 sm:size-11 sm:min-w-11 sm:min-h-11 rounded-xl flex items-center justify-center gap-2 shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-rail-active data-[state=active]:text-foreground data-[state=active]:shadow-none",
+                 isActive
+                   ? "bg-rail-active text-foreground"
+                   : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
+               )}
+             >
+               <StatefulNavIcon
+                 icon={NavIcon}
+                 active={isActive}
+                 size={20}
+                 className="size-4 sm:size-5 shrink-0"
+               />
+               <span className="text-xs font-semibold sm:sr-only whitespace-nowrap">
+                 {item.label}
+               </span>
+             </TabsTrigger>
+           </TooltipTrigger>
+           <TooltipContent side="right" sideOffset={8} className="hidden sm:block">
+             {item.label}
+           </TooltipContent>
+         </Tooltip>
        );
      })}
    </TabsList>
@@ -3778,6 +3801,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </TabsContent>
    </div>
  </Tabs>
+ </TooltipProvider>
  </div>
  );
 }

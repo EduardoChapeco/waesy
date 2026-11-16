@@ -75,6 +75,7 @@ import {
 import { formatDateTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { ErrorState } from "@/components/state/states";
+import { UserGovernanceModal } from "@/components/admin/user-governance-modal";
 
 export const Route = createFileRoute("/admin-master/usuarios")({
   head: () => ({
@@ -140,6 +141,7 @@ function AdminUsuariosPage() {
   const [durationDays, setDurationDays] = useState<number>(7);
   const [isApplyingSanction, setIsApplyingSanction] = useState(false);
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
+  const [govModalUser, setGovModalUser] = useState<any | null>(null);
 
   // Reivindicação Soberana de Handle & Proteção de Marca
   const [isReclaimModalOpen, setIsReclaimModalOpen] = useState(false);
@@ -703,6 +705,16 @@ function AdminUsuariosPage() {
                     >
                       <AtSign className="size-4" />
                       Reivindicar @
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-11 min-h-11 px-3 text-xs font-bold gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-primary"
+                      onClick={() => setGovModalUser(u)}
+                    >
+                      <Key className="size-4" />
+                      Plano e Módulos
                     </Button>
 
                     <Button
@@ -1520,6 +1532,15 @@ function AdminUsuariosPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <UserGovernanceModal
+        open={Boolean(govModalUser)}
+        onOpenChange={(open) => {
+          if (!open) setGovModalUser(null);
+        }}
+        user={govModalUser}
+        onSaved={() => router.invalidate()}
+      />
     </div>
   );
 }

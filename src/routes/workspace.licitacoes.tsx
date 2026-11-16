@@ -233,11 +233,11 @@ export default function WorkspaceTendersPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
-          <TabsTrigger value="oportunidades" className="text-xs">
+        <TabsList className="waesy-tab-strip items-center justify-start gap-2 w-full sm:w-auto max-w-full min-w-0 p-1 rounded-lg h-11 min-h-11 sm:h-10 sm:min-h-10">
+          <TabsTrigger value="oportunidades" className="text-xs shrink-0 whitespace-nowrap">
             Oportunidades em Aberto
           </TabsTrigger>
-          <TabsTrigger value="alertas" className="text-xs">
+          <TabsTrigger value="alertas" className="text-xs shrink-0 whitespace-nowrap">
             Filtros e Radar de Alertas
           </TabsTrigger>
         </TabsList>

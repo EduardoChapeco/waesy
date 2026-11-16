@@ -37,6 +37,7 @@ export interface AISquadDefinitionDTO {
     agent_slug: string;
     step_order: number;
     handoff_rule: string;
+    parallel_group?: string;
     agent: AIAgentDefinitionDTO;
   }>;
 }
@@ -254,6 +255,39 @@ export const CANONICAL_SQUADS: Record<string, AISquadDefinitionDTO> = {
       }
     ],
   },
+  deep_research_squad: {
+    id: "squad_research_04",
+    slug: "deep_research_squad",
+    name: "Squad de Pesquisa Paralela & Síntese",
+    description: "Pesquisa concorrente multi-ângulo com síntese executiva consolidada",
+    goal: "Executar análises paralelas de mercado, conteúdo e compliance com veracidade",
+    arbitration_policy: "supervisor_veto",
+    max_execution_steps: 3,
+    max_cost_budget_usd: 0.03,
+    max_timeout_seconds: 90,
+    members: [
+      {
+        agent_slug: "sdr_agent",
+        step_order: 1,
+        parallel_group: "parallel_analysis",
+        handoff_rule: "Analisar público, dor comercial e oportunidades de conversão",
+        agent: CANONICAL_AGENTS.sdr_agent,
+      },
+      {
+        agent_slug: "content_strategist",
+        step_order: 1,
+        parallel_group: "parallel_analysis",
+        handoff_rule: "Mapear ângulos de posicionamento e oferta competitiva em paralelo",
+        agent: CANONICAL_AGENTS.content_strategist,
+      },
+      {
+        agent_slug: "quality_compliance_auditor",
+        step_order: 2,
+        handoff_rule: "Consolidar pareceres paralelos e auditar veracidade factual",
+        agent: CANONICAL_AGENTS.quality_compliance_auditor,
+      },
+    ],
+  },
 };
 
 // ============================================================
@@ -280,18 +314,15 @@ export async function runSquadGraphExecution(
   let currentContext = { ...initialInput.context, initialPrompt: initialInput.prompt };
   let lastWorkCompleted: Record<string, any> = {};
 
-  for (let i = 0; i < squad.members.length; i++) {
-    const member = squad.members[i];
-    const agent = member.agent;
-    stepsCompleted++;
-
-    // 1. Verificação do Supervisor: Orçamento e Teto de Custo
+  let i = 0;
+  while (i < squad.members.length) {
+    // Verifica orçamento antes de iniciar o próximo estágio ou lote paralelo
     if (accumulatedCost >= squad.max_cost_budget_usd) {
       return {
         runId,
         squadSlug,
         status: "halted_by_supervisor",
-        stepsCompleted: stepsCompleted - 1,
+        stepsCompleted,
         totalTokens: accumulatedTokens,
         totalCostUsd: Number(accumulatedCost.toFixed(6)),
         durationMs: Date.now() - startTime,
@@ -301,9 +332,26 @@ export async function runSquadGraphExecution(
       };
     }
 
-    // 2. Construção do Contrato de Handoff para o Agente
-    const handoffObjective = `Etapa ${member.step_order}: ${agent.goal}`;
-    const agentPrompt = `
+    const head = squad.members[i];
+    const batch: typeof squad.members = [head];
+    if (head.parallel_group) {
+      while (
+        i + batch.length < squad.members.length &&
+        squad.members[i + batch.length].parallel_group === head.parallel_group
+      ) {
+        batch.push(squad.members[i + batch.length]);
+      }
+    }
+
+    const fromSlug = i === 0 ? "user" : squad.members[i - 1].agent.slug;
+    const contextSnapshot = { ...currentContext };
+    const priorWorkSnapshot = lastWorkCompleted;
+
+    const settled = await Promise.allSettled(
+      batch.map(async (member) => {
+        const agent = member.agent;
+        const handoffObjective = `Etapa ${member.step_order}: ${agent.goal}`;
+        const agentPrompt = `
 [OBJETIVO DO SEU PAPEL: ${agent.name}]
 ${agent.goal}
 
@@ -311,7 +359,7 @@ ${agent.goal}
 ${agent.system_instruction}
 
 [DADOS RECEBIDOS DO HANDOFF ANTERIOR]
-${JSON.stringify({ context: currentContext, workSoFar: lastWorkCompleted }, null, 2)}
+${JSON.stringify({ context: contextSnapshot, workSoFar: priorWorkSnapshot }, null, 2)}
 
 [CRITÉRIOS DE ACEITE OBRIGATÓRIOS]
 ${agent.acceptance_criteria.join("\n")}
@@ -322,42 +370,82 @@ ${member.handoff_rule}
 Por favor, execute seu papel e entregue o resultado estruturado.
 `.trim();
 
-    // 3. Execução Mandatória via Porta Única (Prompt 02)
-    const stepStart = Date.now();
-    const gatewayRes = await executeAiCoreGateway({
-      task: "geracao_texto",
-      prompt: agentPrompt,
-      systemPrompt: agent.system_instruction,
-      module: `ai-squad:${squadSlug}:${agent.slug}`,
-      authContext,
-    });
+        const stepStart = Date.now();
+        const gatewayRes = await executeAiCoreGateway({
+          task: "geracao_texto",
+          prompt: agentPrompt,
+          systemPrompt: agent.system_instruction,
+          module: `ai-squad:${squadSlug}:${agent.slug}`,
+          authContext,
+        });
+        const stepLatency = Date.now() - stepStart;
+        return { member, handoffObjective, gatewayRes, stepLatency };
+      }),
+    );
 
-    const stepLatency = Date.now() - stepStart;
-    accumulatedCost += gatewayRes.metadata.costUsd;
-    accumulatedTokens += gatewayRes.metadata.usage.totalTokens;
+    const parallelOutputs: Array<Record<string, any>> = [];
+    for (let bIdx = 0; bIdx < settled.length; bIdx++) {
+      const outcome = settled[bIdx];
+      const member = batch[bIdx];
+      stepsCompleted++;
+      if (outcome.status === "fulfilled") {
+        const { handoffObjective, gatewayRes, stepLatency } = outcome.value;
+        accumulatedCost += gatewayRes.metadata.costUsd;
+        accumulatedTokens += gatewayRes.metadata.usage.totalTokens;
+        const stepOutput = {
+          agentSlug: member.agent.slug,
+          agentName: member.agent.name,
+          role: member.agent.role_label,
+          output: gatewayRes.result.text,
+        };
+        parallelOutputs.push(stepOutput);
+        currentContext = {
+          ...currentContext,
+          [`step_${member.step_order}_${member.agent.slug}_output`]: gatewayRes.result.text,
+        };
+        const nextMember = squad.members[i + batch.length];
+        handoffs.push({
+          stepIndex: member.step_order,
+          fromAgent: fromSlug,
+          toAgent: member.agent.slug,
+          objective: handoffObjective,
+          contextPassed: { step: member.step_order, role: member.agent.role_label, parallelGroup: member.parallel_group || null },
+          workCompleted: stepOutput,
+          workRemaining: !nextMember ? "Nenhum (concluído)" : `Próximo: ${nextMember.agent.name}`,
+          costUsd: gatewayRes.metadata.costUsd,
+          latencyMs: stepLatency,
+          acceptanceVerified: true,
+        });
+      } else {
+        const errMsg = outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason);
+        handoffs.push({
+          stepIndex: member.step_order,
+          fromAgent: fromSlug,
+          toAgent: member.agent.slug,
+          objective: `Etapa ${member.step_order}: ${member.agent.goal}`,
+          contextPassed: { step: member.step_order, parallelGroup: member.parallel_group || null },
+          workCompleted: { agentSlug: member.agent.slug, error: errMsg },
+          workRemaining: "Falha isolada neste agente",
+          costUsd: 0,
+          latencyMs: 0,
+          acceptanceVerified: false,
+        });
+      }
+    }
 
-    // 4. Registro Estruturado do Handoff
-    const stepOutput = {
-      agentSlug: agent.slug,
-      agentName: agent.name,
-      role: agent.role_label,
-      output: gatewayRes.result.text,
-    };
-    lastWorkCompleted = stepOutput;
-    currentContext = { ...currentContext, [`step_${member.step_order}_output`]: gatewayRes.result.text };
+    if (parallelOutputs.length === 1) {
+      lastWorkCompleted = parallelOutputs[0];
+    } else if (parallelOutputs.length > 1) {
+      lastWorkCompleted = {
+        agentSlug: batch.map((b) => b.agent.slug).join("+"),
+        agentName: batch.map((b) => b.agent.name).join(" + "),
+        role: "Execução Paralela",
+        output: parallelOutputs.map((o) => `### ${o.agentName}\n${o.output}`).join("\n\n"),
+        parallelOutputs,
+      };
+    }
 
-    handoffs.push({
-      stepIndex: member.step_order,
-      fromAgent: i === 0 ? "user" : squad.members[i - 1].agent.slug,
-      toAgent: agent.slug,
-      objective: handoffObjective,
-      contextPassed: { step: member.step_order, role: agent.role_label },
-      workCompleted: stepOutput,
-      workRemaining: i === squad.members.length - 1 ? "Nenhum (concluído)" : `Próximo: ${squad.members[i + 1].agent.name}`,
-      costUsd: gatewayRes.metadata.costUsd,
-      latencyMs: stepLatency,
-      acceptanceVerified: true,
-    });
+    i += batch.length;
   }
 
   const supabase = getServerClient();

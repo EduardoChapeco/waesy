@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitOmniPageLeadFn } from "@/services/builder.functions";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export interface InteractiveQuoteCalculatorProps {
   id: string;
@@ -33,6 +34,7 @@ export const InteractiveQuoteCalculator: React.FC<InteractiveQuoteCalculatorProp
   pageSlug,
   onLeadSubmit,
 }) => {
+  const { isMobile, isMedium } = useEffectiveViewport();
   const minUnits = Math.max(1, data.minUnits ?? 1);
   const maxUnits = Math.max(minUnits, data.maxUnits ?? 50);
   const defaultUnits = Math.min(maxUnits, Math.max(minUnits, data.defaultUnits ?? 5));
@@ -205,8 +207,8 @@ export const InteractiveQuoteCalculator: React.FC<InteractiveQuoteCalculatorProp
       style={customStyle}
       className={`relative w-full ${paddingYClasses} border-b border-border/40 ${className}`}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`p-6 sm:p-10 bg-card border border-border/70 ${radiusClass}`}>
+      <div className={isMobile ? "max-w-4xl mx-auto px-3" : "max-w-4xl mx-auto px-6 lg:px-8"}>
+        <div className={`${isMobile ? "p-5" : "p-10"} bg-card border border-border/70 ${radiusClass}`}>
           {/* Cabeçalho */}
           <div className="text-center max-w-xl mx-auto mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
@@ -223,9 +225,9 @@ export const InteractiveQuoteCalculator: React.FC<InteractiveQuoteCalculatorProp
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className={isMobile || isMedium ? "grid grid-cols-1 gap-6" : "grid grid-cols-1 lg:grid-cols-12 gap-8"}>
             {/* Controles de Parâmetros e Opções */}
-            <div className="lg:col-span-7 flex flex-col gap-6">
+            <div className={isMobile || isMedium ? "col-span-1 flex flex-col gap-6" : "col-span-1 lg:col-span-7 flex flex-col gap-6"}>
               {/* Seletor de Quantidade */}
               <div className="p-5 rounded-lg border border-border/60 bg-muted/20 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
@@ -339,7 +341,7 @@ export const InteractiveQuoteCalculator: React.FC<InteractiveQuoteCalculatorProp
             </div>
 
             {/* Painel do Total & Formulário de Envio */}
-            <div className="lg:col-span-5 flex flex-col gap-5">
+            <div className={isMobile || isMedium ? "col-span-1 flex flex-col gap-5" : "col-span-1 lg:col-span-5 flex flex-col gap-5"}>
               <div className="p-6 rounded-lg border border-primary/20 bg-primary/5 flex flex-col gap-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Estimativa da Cotação
@@ -394,7 +396,7 @@ export const InteractiveQuoteCalculator: React.FC<InteractiveQuoteCalculatorProp
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className={isMobile ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
                     <div>
                       <label htmlFor={phoneId} className="block text-xs font-semibold text-foreground mb-1">
                         WhatsApp / Celular

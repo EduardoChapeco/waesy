@@ -24,6 +24,9 @@ import {
   EyeOff,
   Image as ImageIcon,
   Check,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { MediaUploader } from "@/components/admin/builder/MediaUploader";
+import { ColorPicker } from "@/components/admin/builder/ColorPicker";
 import type {
   OmniBlockInstance,
   OmniBlockStyling,
@@ -229,8 +233,7 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
       {/* ── 2. Abas de Categorias do Inspetor (Padrão Wix Studio) ── */}
       <nav
         aria-label="Categorias do Inspetor"
-        /* design-lint-ignore DL-30 reason:"Barra horizontal de abas do inspetor com rolagem por toque" expiry:"2027-12-31" */
-        className="flex items-center p-1 bg-muted/40 border-b border-border/60 overflow-x-auto no-scrollbar gap-1"
+        className="waesy-tab-strip items-center p-1 bg-muted/40 border-b border-border/60 gap-1"
       >
         {tabs
           .filter((t) => t.enabled)
@@ -243,7 +246,7 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-2xs font-bold transition-colors whitespace-nowrap min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "shrink-0 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-2xs font-bold transition-colors whitespace-nowrap min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   isActive
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
@@ -677,61 +680,170 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
               </div>
             </div>
 
-            {/* Cores Customizadas Controladas (Hex Opcional com Reset) */}
+            {/* Paleta Independente da Seção (Desacoplada do Waesy System) */}
             <div className="space-y-3 pt-2 border-t border-border/40">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-foreground">Cores Customizadas da Seção</Label>
-                {(styling.backgroundColor || styling.textColor) && (
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs font-bold text-foreground">Paleta da Seção</Label>
+                {(styling.backgroundColor ||
+                  styling.textColor ||
+                  styling.accentColor ||
+                  styling.backgroundGradient ||
+                  styling.textAlign ||
+                  styling.fontFamily) && (
                   <button
                     type="button"
                     onClick={() =>
-                      onUpdateStyling({ backgroundColor: undefined, textColor: undefined })
+                      onUpdateStyling({
+                        backgroundColor: undefined,
+                        textColor: undefined,
+                        accentColor: undefined,
+                        backgroundGradient: undefined,
+                        textAlign: undefined,
+                        fontFamily: undefined,
+                      })
                     }
-                    className="h-11 min-h-11 px-3 rounded-lg text-2xs font-bold text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="h-11 min-h-11 px-3 rounded-lg text-2xs font-bold text-primary hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Restaurar Tema
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground font-semibold">Fundo</span>
-                  <Input
-                    type="text"
-                    value={
-                      styling.backgroundColor && !styling.backgroundColor.startsWith("bg-")
-                        ? styling.backgroundColor
-                        : ""
-                    }
-                    onChange={(e) =>
-                      onUpdateStyling({ backgroundColor: e.target.value.trim() || undefined })
-                    }
-                    placeholder="Padrão do tema"
-                    className="h-11 min-h-11 text-xs rounded-xl font-mono"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-2xs text-muted-foreground font-semibold">Texto</span>
-                  <Input
-                    type="text"
-                    value={
-                      styling.textColor && !styling.textColor.startsWith("text-")
-                        ? styling.textColor
-                        : ""
-                    }
-                    onChange={(e) =>
-                      onUpdateStyling({ textColor: e.target.value.trim() || undefined })
-                    }
-                    placeholder="Padrão do tema"
-                    className="h-11 min-h-11 text-xs rounded-xl font-mono"
-                  />
+
+              <div className="space-y-3">
+                <ColorPicker
+                  label="Fundo da Seção"
+                  value={
+                    styling.backgroundColor && !styling.backgroundColor.startsWith("bg-")
+                      ? styling.backgroundColor
+                      : ""
+                  }
+                  onChange={(next) =>
+                    onUpdateStyling({
+                      backgroundColor: next.trim() || undefined,
+                      surfacePreset: undefined,
+                    })
+                  }
+                />
+                <ColorPicker
+                  label="Cor do Texto"
+                  value={
+                    styling.textColor && !styling.textColor.startsWith("text-")
+                      ? styling.textColor
+                      : ""
+                  }
+                  onChange={(next) =>
+                    onUpdateStyling({ textColor: next.trim() || undefined })
+                  }
+                />
+                <ColorPicker
+                  label="Cor de Destaque & CTA"
+                  value={styling.accentColor || ""}
+                  onChange={(next) =>
+                    onUpdateStyling({ accentColor: next.trim() || undefined })
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Gradiente & Atmosfera da Seção */}
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <Label className="text-xs font-bold text-foreground">Gradiente de Fundo</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "none", label: "Sólido" },
+                  { id: "soft", label: "Suave" },
+                  { id: "vivid", label: "Destaque" },
+                  { id: "dark_scrim", label: "Contraste" },
+                ].map((grad) => {
+                  const isActive = (styling.backgroundGradient || "none") === grad.id;
+                  return (
+                    <button
+                      key={grad.id}
+                      type="button"
+                      onClick={() =>
+                        onUpdateStyling({
+                          backgroundGradient: grad.id === "none" ? undefined : grad.id,
+                        })
+                      }
+                      className={cn(
+                        "h-11 min-h-11 px-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                        isActive
+                          ? "border-primary text-primary bg-primary/10"
+                          : "border-border/60 text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      <span>{grad.label}</span>
+                      {isActive && <Check className="size-3.5" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tipografia & Alinhamento Independentes da Seção */}
+            <div className="space-y-3 pt-2 border-t border-border/40">
+              <div className="space-y-2">
+                <Label htmlFor="inspector-section-font" className="text-xs font-bold text-foreground">
+                  Tipografia da Seção
+                </Label>
+                <select
+                  id="inspector-section-font"
+                  value={styling.fontFamily || "inherit"}
+                  onChange={(e) =>
+                    onUpdateStyling({
+                      fontFamily: e.target.value === "inherit" ? undefined : e.target.value,
+                    })
+                  }
+                  className="w-full h-11 min-h-11 rounded-xl border border-border bg-background px-3 text-xs font-medium text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <option value="inherit">Herdar do Tema do Site</option>
+                  <option value="Inter, sans-serif">Inter (Clean Sans)</option>
+                  <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+                  <option value="'Space Grotesk', sans-serif">Space Grotesk (Geométrica)</option>
+                  <option value="'Playfair Display', Georgia, serif">Playfair Display (Editorial)</option>
+                  <option value="'JetBrains Mono', monospace">JetBrains Mono (Técnica)</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-foreground">Alinhamento do Conteúdo</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {(
+                    [
+                      { id: "left", label: "Esq.", Icon: AlignLeft },
+                      { id: "center", label: "Centro", Icon: AlignCenter },
+                      { id: "right", label: "Dir.", Icon: AlignRight },
+                    ] as const
+                  ).map((align) => {
+                    const isActive = styling.textAlign === align.id;
+                    return (
+                      <button
+                        key={align.id}
+                        type="button"
+                        onClick={() =>
+                          onUpdateStyling({
+                            textAlign: isActive ? undefined : align.id,
+                          })
+                        }
+                        className={cn(
+                          "h-11 min-h-11 px-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          isActive
+                            ? "border-primary text-primary bg-primary/10"
+                            : "border-border/60 text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        <align.Icon className="size-3.5 shrink-0" />
+                        <span>{align.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            {/* Sombra de Overlay */}
+            {/* Sombra & Borda da Seção */}
             <div className="space-y-2 pt-2 border-t border-border/40">
-              <Label className="text-xs font-bold text-foreground">Elevação & Sombra</Label>
+              <Label className="text-xs font-bold text-foreground">Elevação & Borda</Label>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { id: "none", label: "Sem Sombra (Plano)" },
@@ -742,7 +854,7 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
                     type="button"
                     onClick={() => onUpdateStyling({ shadow: s.id as any })}
                     className={cn(
-                      "h-11 min-h-11 px-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "h-11 min-h-11 px-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       (styling.shadow || "none") === s.id
                         ? "border-primary text-primary bg-primary/10"
                         : "border-border/60 text-muted-foreground hover:bg-muted",
@@ -753,6 +865,19 @@ export const UniversalBlockInspector: React.FC<UniversalBlockInspectorProps> = (
                   </button>
                 ))}
               </div>
+              <button
+                type="button"
+                onClick={() => onUpdateStyling({ border: !styling.border })}
+                className={cn(
+                  "w-full h-11 min-h-11 px-3 rounded-xl border text-xs font-bold flex items-center justify-between transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  styling.border
+                    ? "border-primary text-primary bg-primary/10"
+                    : "border-border/60 text-muted-foreground hover:bg-muted",
+                )}
+              >
+                <span>Borda Delimitadora</span>
+                {styling.border && <Check className="size-3.5" />}
+              </button>
             </div>
           </div>
         )}

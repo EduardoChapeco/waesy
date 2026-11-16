@@ -36,9 +36,13 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/criar-negocio")({
  head: () => ({ meta: [{ title: "Cadastrar Novo Negócio | Waesy" }] }),
- validateSearch: (search: Record<string, unknown>): { segment?: string; modo?: "expresso" | "avancado" } => {
+ validateSearch: (
+   search: Record<string, unknown>,
+ ): { segment?: string; vertical?: string; sku?: string; modo?: "expresso" | "avancado" } => {
  return {
  segment: (search.segment as string) || undefined,
+ vertical: (search.vertical as string) || undefined,
+ sku: (search.sku as string) || undefined,
  modo: (search.modo as "expresso" | "avancado") || "expresso",
  };
  },
@@ -142,7 +146,23 @@ function CriarNegocioPage() {
  const search = Route.useSearch();
  const defaultMode = SYSTEM_FLAGS.ADVANCED_ONBOARDING_DEFAULT ? "avancado" : "expresso";
  const [mode, setMode] = useState<"expresso" | "avancado">((search as any)?.modo || defaultMode);
- const initialSegment = search?.segment || "";
+ const pendingVertical = (() => {
+   if (search?.vertical || search?.segment || search?.sku) {
+     return {
+       vertical: search.vertical,
+       segment: search.segment,
+       sku: search.sku,
+     };
+   }
+   if (typeof window !== "undefined") {
+     try {
+       const raw = sessionStorage.getItem("waesy_pending_vertical_onboarding");
+       if (raw) return JSON.parse(raw) as { vertical?: string; segment?: string; sku?: string };
+     } catch {}
+   }
+   return {};
+ })();
+ const initialSegment = search?.segment || (pendingVertical as any)?.niche || pendingVertical?.segment || "";
  const foundInitial = BUSINESS_SEGMENTS.find((s) => s.id === initialSegment);
 
  const { location: masterLoc } = useMasterLocation();
@@ -329,6 +349,8 @@ function CriarNegocioPage() {
  data: {
  name: name.trim(),
  type: selectedSegment.id as any,
+ verticalSku: search.sku || pendingVertical.sku || undefined,
+ brandOrigin: search.vertical || pendingVertical.vertical || undefined,
  document: docNumber ? docNumber.trim() : undefined,
  city: locationData.city || detectedCity || "Sua Cidade",
  state: locationData.state || detectedState || "",
@@ -419,7 +441,15 @@ function CriarNegocioPage() {
   {mode === "expresso" ? (
   <FastCompanyOnboarding
   userId={session?.user?.id}
+  initialVertical={search.vertical || pendingVertical.vertical}
+  initialSegment={initialSegment || undefined}
+  initialSku={search.sku || pendingVertical.sku}
   onSuccess={async (storeId) => {
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.removeItem("waesy_pending_vertical_onboarding");
+      } catch {}
+    }
     setClientContextCookies({ context: "store", storeId });
     await setTenantContext({ data: { store_id: storeId } }).catch((err) => {
       console.warn("[criar-negocio] Falha não bloqueante ao sincronizar tenant SSR:", err);

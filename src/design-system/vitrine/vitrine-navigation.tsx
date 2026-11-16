@@ -350,15 +350,15 @@ export function VitrineButtonsDock({
 
   const midpoint = Math.ceil(resolvedItems.length / 2);
 
-  // design-lint-ignore DL-29 reason:"Grade compacta 4x2 mobile canônica iFood (Invariante B.32)" expiry:"2027-12-31"
-  const mobileGridMap: Record<number, string> = { 2: "grid-cols-2", 3: "grid-cols-1 sm:grid-cols-3", 4: "grid-cols-2 sm:grid-cols-4" };
+  // design-lint-ignore DL-29 reason:"Grade compacta 3-4 colunas para atalhos iFood no mobile (AGENTS.md B.32)" expiry:"2027-12-31"
+  const mobileGridMap: Record<number, string> = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" };
   const gridColsClass = isMobile
-    ? mobileGridMap[mobileColumns] || "grid-cols-2 sm:grid-cols-4"
+    ? mobileGridMap[mobileColumns] || mobileGridMap[4]
     : desktopColumns === 4
-      ? "grid-cols-2 sm:grid-cols-4"
+      ? "grid-cols-2 md:grid-cols-4"
       : desktopColumns === 6
-        ? "grid-cols-2 sm:grid-cols-6"
-        : "grid-cols-2 sm:grid-cols-8";
+        ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-6"
+        : "grid-cols-2 sm:grid-cols-4 lg:grid-cols-8";
 
   return (
     <section
@@ -368,7 +368,7 @@ export function VitrineButtonsDock({
       {(sectionTitle || sectionSubtitle) && (
         <div className="space-y-1">
           {sectionTitle && (
-            <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground break-words">
+            <h2 className={cn("font-bold tracking-tight text-foreground break-words", isMobile ? "text-base" : "text-lg")}>
               {sectionTitle}
             </h2>
           )}
@@ -380,12 +380,15 @@ export function VitrineButtonsDock({
 
       {/* MODO 1: NOOR DOCK (Carrossel Horizontal Contínuo de Squircles / Círculos) */}
       {activeLayout === "noor_dock" && (
-        <div className="carousel flex flex-nowrap items-start gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-1 snap-x snap-mandatory">
+        <div className={cn("carousel flex flex-nowrap items-start overflow-x-auto no-scrollbar py-1 snap-x snap-mandatory", isMobile ? "gap-3" : "gap-4")}>
           {resolvedItems.map((item, idx) =>
             wrapInteractive(
               item,
               idx,
-              "snap-start shrink-0 w-20 sm:w-24 min-h-11 flex flex-col items-center text-center gap-2 p-1 rounded-lg",
+              cn(
+                "snap-start shrink-0 min-h-11 flex flex-col items-center text-center gap-2 p-1 rounded-lg",
+                isMobile ? "w-20" : "w-24",
+              ),
               <>
                 <div className="relative">
                   <div

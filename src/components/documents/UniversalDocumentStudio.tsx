@@ -54,6 +54,7 @@ import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templa
 import { generateQrCodeDataUri } from "@/lib/qr-code";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import type { TravelVoucherDTO } from "@/types/travel-vouchers";
 import {
   DOCUMENT_MERGE_TAGS,
@@ -905,45 +906,45 @@ export function UniversalDocumentStudio({
               )}
             >
               <StudioSidebar width={440} className="w-full lg:flex">
-                {/* Sidebar Sub-Navigation */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 border-b border-border p-2 bg-muted/30">
+                {/* Sidebar Sub-Navigation (Matte Rail Language + Solid Active Icon) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 border-b border-sidebar-border p-2 bg-rail">
                   <button
                     type="button"
                     onClick={() => setSidebarTab("fields")}
                     className={cn(
-                      "h-11 min-h-11 rounded-md px-2 text-xs font-semibold flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "h-11 min-h-11 rounded-xl px-2 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       sidebarTab === "fields"
-                        ? "bg-card text-foreground border border-border"
-                        : "text-muted-foreground hover:text-foreground",
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
                     )}
                   >
-                    <FileText className="size-4 shrink-0" />
+                    <StatefulNavIcon icon={FileText} active={sidebarTab === "fields"} size={16} className="size-4 shrink-0" />
                     <span>Campos</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setSidebarTab("visual")}
                     className={cn(
-                      "h-11 min-h-11 rounded-md px-2 text-xs font-semibold flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "h-11 min-h-11 rounded-xl px-2 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       sidebarTab === "visual"
-                        ? "bg-card text-foreground border border-border"
-                        : "text-muted-foreground hover:text-foreground",
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
                     )}
                   >
-                    <Palette className="size-4 shrink-0" />
+                    <StatefulNavIcon icon={Palette} active={sidebarTab === "visual"} size={16} className="size-4 shrink-0" />
                     <span>Visual CMS</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setSidebarTab("identity")}
                     className={cn(
-                      "h-11 min-h-11 rounded-md px-2 text-xs font-semibold flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "h-11 min-h-11 rounded-xl px-2 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       sidebarTab === "identity"
-                        ? "bg-card text-foreground border border-border"
-                        : "text-muted-foreground hover:text-foreground",
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
                     )}
                   >
-                    <Building2 className="size-4 shrink-0" />
+                    <StatefulNavIcon icon={Building2} active={sidebarTab === "identity"} size={16} className="size-4 shrink-0" />
                     <span>Emissor</span>
                   </button>
                 </div>

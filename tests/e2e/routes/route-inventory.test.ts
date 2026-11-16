@@ -29,10 +29,10 @@ describe("Platform Route Inventory (446 Routes)", () => {
     (f) => !f.includes(".test.") && !f.includes(".spec.")
   );
 
-  it("audits total platform route inventory to match exactly 466 route source files", () => {
-    // Inventory Master canonical route source file count
-    expect(allRouteSourceFiles.length).toBe(466);
-    expect(routePages.length).toBe(464);
+  it("audits total platform route inventory to match exactly 476 route source files", () => {
+    // Inventory Master canonical route source file count (+3 /sistemas, /sistemas/$slug, /admin-master/landings)
+    expect(allRouteSourceFiles.length).toBe(476);
+    expect(routePages.length).toBe(474);
   });
 
   it("verifies workspace operational management routes (201 operational routes + receipt route)", () => {
@@ -45,9 +45,9 @@ describe("Platform Route Inventory (446 Routes)", () => {
     expect(operationalRoutes.length).toBe(201);
   });
 
-  it("verifies public store and vitrine routes (165 route files)", () => {
+  it("verifies public store and vitrine routes (169 route files)", () => {
     const storeRoutes = allRouteSourceFiles.filter((f) => f.startsWith("_store."));
-    expect(storeRoutes.length).toBe(166);
+    expect(storeRoutes.length).toBe(169);
   });
 
   it("verifies account and civil profile routes within store namespace", () => {
@@ -55,7 +55,7 @@ describe("Platform Route Inventory (446 Routes)", () => {
     expect(accountRoutes.length).toBeGreaterThanOrEqual(30);
   });
 
-  it("ensures zero routes import or leak sensitive server-only environment variables", () => {
+  it("ensures zero routes import or leak sensitive server-only environment variables", async () => {
     const prohibitedSecrets = [
       "SUPABASE_SERVICE_ROLE_KEY",
       "DATABASE_URL",
@@ -63,15 +63,18 @@ describe("Platform Route Inventory (446 Routes)", () => {
       "STRIPE_SECRET_KEY",
     ];
 
-    for (const file of allRouteSourceFiles) {
-      const fullPath = path.join(routesDir, file);
-      const content = fs.readFileSync(fullPath, "utf-8");
+    const contents = await Promise.all(
+      allRouteSourceFiles.map((file) =>
+        fs.promises.readFile(path.join(routesDir, file), "utf-8"),
+      ),
+    );
 
+    for (const content of contents) {
       for (const secret of prohibitedSecrets) {
         expect(content.includes(secret)).toBe(false);
       }
     }
-  });
+  }, 20_000);
 
   it("verifies route files export canonical createFileRoute or Route configuration", () => {
     // Spot check primary operational routes

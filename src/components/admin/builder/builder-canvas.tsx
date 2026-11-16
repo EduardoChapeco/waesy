@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ExperienceRenderer } from "@/components/commerce/experience-renderer";
 import { BuilderFloatingActionBar } from "./builder-floating-action-bar";
+import { getDocumentThemeContainerProps } from "@/lib/builder/block-data-resolver";
 
 export type ViewportMode = "desktop" | "tablet" | "mobile" | "story";
 
@@ -53,6 +54,14 @@ export function BuilderCanvas({
  };
 
  const selectedNode = selectedNodeId ? findNodeById(selectedNodeId, treeNodes) : null;
+ const { style: isolatedCanvasStyle, isolationScheme } = getDocumentThemeContainerProps(
+   themeConfig,
+   {
+     forceIsolate: Boolean(
+       themeConfig?.backgroundColor || themeConfig?.primaryColor || themeConfig?.textColor,
+     ),
+   },
+ );
 
  return (
  <main
@@ -99,12 +108,9 @@ export function BuilderCanvas({
 
  {/* Viewport Retangular Reto 1:1 com a Web Real */}
  <div
- className="@container flex-1 overflow-y-auto overflow-x-hidden w-full h-full flex flex-col bg-background no-scrollbar transition-colors"
- style={{
- backgroundColor: themeConfig?.backgroundColor || undefined,
- color: themeConfig?.textColor || undefined,
- fontFamily: themeConfig?.bodyFont || undefined,
- }}
+ data-builder-canvas-isolated={isolationScheme}
+ className="@container flex-1 overflow-y-auto overflow-x-hidden w-full h-full flex flex-col bg-background text-foreground no-scrollbar transition-colors"
+ style={isolatedCanvasStyle}
  >
  {nodesCount === 0 ? (
  <div className="flex-1 flex flex-col items-center justify-center min-h-120 text-muted-foreground gap-3 p-8 text-center animate-in fade-in duration-200">
@@ -171,12 +177,9 @@ export function BuilderCanvas({
 
  {/* Viewport Interno Mobile */}
  <div
- className="@container flex-1 overflow-y-auto overflow-x-hidden w-full flex flex-col bg-background no-scrollbar transition-colors"
- style={{
- backgroundColor: themeConfig?.backgroundColor || undefined,
- color: themeConfig?.textColor || undefined,
- fontFamily: themeConfig?.bodyFont || undefined,
- }}
+ data-builder-canvas-isolated={isolationScheme}
+ className="@container flex-1 overflow-y-auto overflow-x-hidden w-full flex flex-col bg-background text-foreground no-scrollbar transition-colors"
+ style={isolatedCanvasStyle}
  >
  {nodesCount === 0 ? (
  <div className="flex-1 flex flex-col items-center justify-center min-h-100 text-muted-foreground gap-3 p-6 text-center animate-in fade-in duration-200">
@@ -229,7 +232,11 @@ export function BuilderCanvas({
  <span>360 × 640 px</span>
  </div>
 
- <div className="@container flex-1 overflow-y-auto overflow-x-hidden w-full flex flex-col bg-background no-scrollbar">
+ <div
+ data-builder-canvas-isolated={isolationScheme}
+ style={isolatedCanvasStyle}
+ className="@container flex-1 overflow-y-auto overflow-x-hidden w-full flex flex-col bg-background text-foreground no-scrollbar transition-colors"
+ >
  {nodesCount === 0 ? (
  <div className="flex-1 flex flex-col items-center justify-center min-h-80 text-muted-foreground gap-3 p-6 text-center animate-in fade-in duration-200">
  <LayoutTemplate className="size-7 text-muted-foreground/60" />

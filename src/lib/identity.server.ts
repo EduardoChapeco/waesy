@@ -195,7 +195,7 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
     try {
       const profilePromise = serverClient
         .from("profiles")
-        .select("id, full_name, username, avatar_url, role, phone, cpf")
+        .select("id, full_name, username, avatar_url, role, phone, cpf, approval_status, user_plan_tier, enabled_modules, disabled_modules")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -284,7 +284,7 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
           const { data: storesList, error: storesErr } = await serverClient
             .from("stores")
             .select(
-              "id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url",
+              "id, name, slug, email, phone, cnpj, address, city, state, zip_code, settings, logo_url, is_active, is_platform_root, approval_status, plan_tier, subscription_tier, subscription_status, vertical_sku, enabled_modules",
             )
             .in("id", storeIds);
 
@@ -310,6 +310,14 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
                 category: settings.category || settings.segment || null,
                 city: s.city || null,
                 state: s.state || null,
+                is_active: s.is_active !== false,
+                is_platform_root: Boolean(s.is_platform_root),
+                approval_status: s.approval_status || (s.is_active === false ? "suspended" : "approved"),
+                plan_tier: s.plan_tier || settings.plan_tier || "free",
+                subscription_tier: s.subscription_tier || settings.subscription_tier || "starter",
+                subscription_status: s.subscription_status || "active",
+                vertical_sku: s.vertical_sku || null,
+                enabled_modules: s.enabled_modules || [],
                 settings: settings,
               });
             }

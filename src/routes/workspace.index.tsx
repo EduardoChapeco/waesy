@@ -308,7 +308,7 @@ export default function WorkspaceDashboardPage() {
   const subStatus = activeStore?.subscription_status || activeStore?.settings?.subscription_status;
 
   return (
-    <div className="w-full space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+    <div className="w-full min-w-0 space-y-4 sm:space-y-6 animate-in fade-in duration-200">
       {(subStatus === "past_due" || subStatus === "trialing") && (
         <div className="rounded-lg border border-border bg-card p-3 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="text-xs text-foreground">
@@ -332,13 +332,13 @@ export default function WorkspaceDashboardPage() {
         </div>
       )}
       {/* ── 1. Top Header com Identificação do Negócio ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-card">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground/80">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-card min-w-0">
+        <div className="space-y-1 min-w-0 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-semibold text-muted-foreground/80 truncate">
               {activeStore?.name || "Meu Espaço"}
             </span>
-            <Badge variant="outline" className="text-xs py-0 px-2 bg-muted font-semibold">
+            <Badge variant="outline" className="text-xs py-0 px-2 bg-muted font-semibold shrink-0">
               {semantics.name}
             </Badge>
           </div>
@@ -348,13 +348,13 @@ export default function WorkspaceDashboardPage() {
         </div>
 
         {/* Quick Top Actions Contextuais */}
-        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
+        <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">
           {/* Chave de Operação Instantânea "Loja Aberta / Pausada" */}
           <button
             type="button"
             onClick={handleToggleStoreStatus}
             disabled={isTogglingStatus}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-transparent hover:bg-muted text-foreground transition-colors cursor-pointer h-11 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-transparent hover:bg-muted text-foreground transition-colors cursor-pointer h-11 min-h-11 shrink-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Status Operacional"
           >
             {isTogglingStatus ? (
@@ -371,20 +371,20 @@ export default function WorkspaceDashboardPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsShareModalOpen(true)}
-            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/40 hover:bg-muted/50 h-11 min-h-11"
+            className="rounded-lg text-xs font-semibold gap-2 cursor-pointer border-border/40 hover:bg-muted/50 h-11 min-h-11 shrink-0 whitespace-nowrap"
           >
             <QrCode className="size-3.5 text-primary" />
             <span>Divulgar</span>
           </Button>
 
-          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold border-border/40 hover:bg-muted/50 h-11 min-h-11">
+          <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold border-border/40 hover:bg-muted/50 h-11 min-h-11 shrink-0 whitespace-nowrap">
             <Link to="/workspace/lojas">
               Trocar Loja
             </Link>
           </Button>
 
           {activeStore?.slug && (
-            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold gap-2 border-border/40 hover:bg-muted/50 h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring">
+            <Button asChild size="sm" variant="outline" className="rounded-lg text-xs font-semibold gap-2 border-border/40 hover:bg-muted/50 h-11 min-h-11 shrink-0 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-ring">
               <Link to="/diretorio/$id" params={{ id: activeStore.slug }} target="_blank">
                 <Store className="size-3.5 text-primary" />
                 <span>Vitrine Pública</span>
@@ -393,7 +393,7 @@ export default function WorkspaceDashboardPage() {
             </Button>
           )}
 
-          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring">
+          <Button asChild size="sm" variant="ghost" className="rounded-lg text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 h-11 min-h-11 shrink-0 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-ring">
             <Link to="/workspace/marketing/vitrine">
               <Layers className="size-3.5" />
               <span>Editar Vitrine</span>
@@ -402,13 +402,13 @@ export default function WorkspaceDashboardPage() {
 
           {/* Ação Primária Única da Tela */}
           {semantics.primaryQuickAction ? (
-            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none h-11 min-h-11 px-4">
+            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none h-11 min-h-11 px-4 shrink-0 whitespace-nowrap">
               <Link to={semantics.primaryQuickAction.path as any}>
                 {semantics.primaryQuickAction.label}
               </Link>
             </Button>
           ) : (
-            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none h-11 min-h-11 px-4">
+            <Button asChild size="sm" className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground shadow-none h-11 min-h-11 px-4 shrink-0 whitespace-nowrap">
               <Link to="/workspace/pdv">
                 PDV
               </Link>

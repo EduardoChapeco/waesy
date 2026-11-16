@@ -71,10 +71,12 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<PlaceDetailDTO | null> => {
     const supabase = getAnonServerClient();
     const cleanSlug = data.slug.trim().toLowerCase();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanSlug);
+    const safeSearchName = cleanSlug.replace(/[%(),.]/g, " ").replace(/-/g, " ").trim();
 
     // 1. Tentar localizar na tabela de diretório físico ou stores
-    // Busca em directory_listings primeiro
-    const { data: dirItem } = await supabase
+    // Busca em directory_listings primeiro (evitando erro 22P02 de UUID quando cleanSlug for slug)
+    let dirQuery = supabase
       .from("directory_listings")
       .select(
         `
@@ -112,10 +114,17 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
         )
       `
       )
-      .eq("status", "active")
-      .or(`id.eq.${cleanSlug},business_name.ilike.%${cleanSlug}%`)
-      .limit(1)
-      .maybeSingle();
+      .eq("status", "active");
+
+    if (isUuid) {
+      dirQuery = dirQuery.or(`id.eq.${cleanSlug},store_id.eq.${cleanSlug}`);
+    } else if (safeSearchName) {
+      dirQuery = dirQuery.ilike("business_name", `%${safeSearchName}%`);
+    } else {
+      dirQuery = dirQuery.eq("business_name", cleanSlug);
+    }
+
+    const { data: dirItem } = await dirQuery.limit(1).maybeSingle();
 
     let storeId: string | null = null;
     let placeDetail: PlaceDetailDTO | null = null;
@@ -175,7 +184,7 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
       };
     } else {
       // 2. Tentar na tabela stores diretamente (estabelecimentos cadastrados como store)
-      const { data: storeItem } = await supabase
+      let storeQuery = supabase
         .from("stores")
         .select(
           `
@@ -185,10 +194,11 @@ export const getPlaceDetailBySlugFn = createServerFn({ method: "GET" })
           settings,
           created_at
         `
-        )
-        .or(`slug.eq.${cleanSlug},id.eq.${cleanSlug}`)
-        .limit(1)
-        .maybeSingle();
+        );
+      storeQuery = isUuid
+        ? storeQuery.or(`slug.eq.${cleanSlug},id.eq.${cleanSlug}`)
+        : storeQuery.eq("slug", cleanSlug);
+      const { data: storeItem } = await storeQuery.limit(1).maybeSingle();
 
       if (storeItem) {
         storeId = storeItem.id;

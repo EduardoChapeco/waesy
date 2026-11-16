@@ -418,27 +418,27 @@ export function GastronomyPantryHub({
 
       {/* ── Navegação de Abas do Módulo ── */}
       <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-3">
-          <TabsList className="bg-muted/50 p-1 rounded-lg">
-            <TabsTrigger value="supplies" className="gap-2 text-xs font-bold rounded-lg cursor-pointer">
-              <Boxes className="size-3.5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-3 min-w-0">
+          <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/50 p-1 rounded-lg w-full sm:w-auto max-w-full min-w-0 h-11 min-h-11 sm:h-10 sm:min-h-10">
+            <TabsTrigger value="supplies" className="gap-2 text-xs font-bold rounded-lg cursor-pointer shrink-0 whitespace-nowrap">
+              <Boxes className="size-3.5 shrink-0" />
               <span>{hubTerms.suppliesTab}</span>
             </TabsTrigger>
-            <TabsTrigger value="recipes" className="gap-2 text-xs font-bold rounded-lg cursor-pointer">
-              <ChefHat className="size-3.5" />
+            <TabsTrigger value="recipes" className="gap-2 text-xs font-bold rounded-lg cursor-pointer shrink-0 whitespace-nowrap">
+              <ChefHat className="size-3.5 shrink-0" />
               <span>{hubTerms.recipesTab}</span>
             </TabsTrigger>
-            <TabsTrigger value="waste" className="gap-2 text-xs font-bold rounded-lg cursor-pointer">
-              <TrendingDown className="size-3.5" />
+            <TabsTrigger value="waste" className="gap-2 text-xs font-bold rounded-lg cursor-pointer shrink-0 whitespace-nowrap">
+              <TrendingDown className="size-3.5 shrink-0" />
               <span>Desperdício & Perdas</span>
             </TabsTrigger>
-            <TabsTrigger value="labels" className="gap-2 text-xs font-bold rounded-lg cursor-pointer">
-              <Printer className="size-3.5" />
+            <TabsTrigger value="labels" className="gap-2 text-xs font-bold rounded-lg cursor-pointer shrink-0 whitespace-nowrap">
+              <Printer className="size-3.5 shrink-0" />
               <span>Etiquetas de Validade</span>
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-2">
+          <div className="waesy-tab-strip items-center gap-2 shrink-0 max-w-full">
             {activeTab === "supplies" && (
               <Button
                 size="sm"

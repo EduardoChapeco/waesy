@@ -36,7 +36,7 @@ import { CorporateVollConciergeView } from "@/components/tourism/corporate-voll-
 import { WeekendIdeasRail } from "@/components/tourism/weekend-ideas-rail";
 import { CarRentalShowcaseRail } from "@/components/tourism/CarRentalOfferCard";
 import { GlobalTripCompanionWidget } from "@/components/tourism/traveler/GlobalTripCompanionWidget";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
@@ -250,7 +250,7 @@ function TourismMasterPage() {
     );
   }
 
-  const { isCompact } = useWindowSizeClass();
+  const { isCompact } = useEffectiveViewport();
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6 pb-24 px-0 sm:px-4">

@@ -255,8 +255,7 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  <div className="flex items-start gap-3 p-3 bg-muted/40 text-foreground rounded-lg text-sm mt-4">
  <AlertCircle className="h-5 w-5 shrink-0 mt-1 text-muted-foreground" />
  <p>
- A transação de expedição está protegida via RLS/RPC. O servidor exige integridade
- total antes de permitir o despacho.
+ Confira todos os itens da lista para liberar o despacho.
  </p>
  </div>
  )}

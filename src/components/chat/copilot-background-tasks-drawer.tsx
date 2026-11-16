@@ -46,6 +46,7 @@ export interface CopilotBackgroundTasksDrawerProps {
   tasks?: BackgroundTaskItem[];
   onCancelTask?: (taskId: string) => void;
   onRefresh?: () => void;
+  onOpenComputer?: () => void;
   className?: string;
 }
 
@@ -55,6 +56,7 @@ export function CopilotBackgroundTasksDrawer({
   tasks = [],
   onCancelTask,
   onRefresh,
+  onOpenComputer,
   className,
 }: CopilotBackgroundTasksDrawerProps) {
   const [activeTab, setActiveTab] = useState<"running" | "completed">("running");
@@ -220,7 +222,7 @@ export function CopilotBackgroundTasksDrawer({
                       </div>
                       <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary transition-colors duration-200 duration-300 rounded-full"
+                          className="h-full bg-primary transition-colors duration-200 rounded-full"
                           style={{ width: `${task.progress_percent}%` }}
                         />
                       </div>
@@ -310,33 +312,47 @@ export function CopilotBackgroundTasksDrawer({
             </Button>
           </div>
 
-          {/* Área Central: Terminal e Visualizador de Ações */}
+          {/* Área Central: Telemetria Real Persistida da Tarefa */}
           <div className="flex-1 p-4 bg-muted/20 overflow-y-auto font-mono text-xs space-y-3">
-            <div className="rounded-xl bg-card border border-border/40 p-4 space-y-2">
-              <div className="flex items-center justify-between text-2xs text-muted-foreground border-b border-border/20 pb-2">
-                <span>Ambiente: Sandbox Isolado Waesy</span>
-                <span>Worker: Node 20 / headless</span>
+            <div className="rounded-xl bg-card border border-border/40 p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-2xs text-muted-foreground border-b border-border/20 pb-2">
+                <span>ID: {selectedTask?.id || "—"}</span>
+                <span>Tipo: {selectedTask?.task_type || "worker"}</span>
+                <span>Estado: {selectedTask?.status || "queued"}</span>
               </div>
               <div className="space-y-2 text-xs text-foreground">
-                <p className="text-muted-foreground">&gt; [00:01] Inicializando plano de execução MECE...</p>
-                <p className="text-muted-foreground">&gt; [00:02] Conectando ao catalogador de dados públicos...</p>
+                <p className="text-muted-foreground">
+                  Iniciada em: {selectedTask?.created_at ? new Date(selectedTask.created_at).toLocaleString("pt-BR") : "—"}
+                </p>
+                {selectedTask?.heartbeat_at && (
+                  <p className="text-muted-foreground">
+                    Último heartbeat: {new Date(selectedTask.heartbeat_at).toLocaleString("pt-BR")}
+                  </p>
+                )}
                 <p className="text-primary font-semibold">
-                  &gt; [00:03] {selectedTask?.current_step || "Executando instruções..."}
+                  Etapa atual: {selectedTask?.current_step || "Aguardando atualização do worker..."}
                 </p>
                 <p className="text-emerald-600 dark:text-emerald-400">
-                  &gt; [00:04] Progresso registrado: {selectedTask?.progress_percent || 0}%
+                  Progresso persistido: {selectedTask?.progress_percent ?? 0}%
                 </p>
               </div>
-            </div>
-
-            <div className="rounded-xl border border-dashed border-border/60 p-6 text-center space-y-2 bg-card">
-              <Terminal className="size-8 mx-auto text-muted-foreground/40" />
-              <h4 className="text-xs font-bold text-foreground">
-                Navegador e Ações Automatizadas
-              </h4>
-              <p className="text-2xs text-muted-foreground max-w-md mx-auto">
-                O agente está operando em sandbox restrito sem acesso a credenciais locais do seu dispositivo.
-              </p>
+              {onOpenComputer && (
+                <div className="pt-2 border-t border-border/20">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setLiveSandboxOpen(false);
+                      onOpenChange(false);
+                      onOpenComputer();
+                    }}
+                    className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold gap-2 font-sans cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Terminal className="size-4" />
+                    <span>Abrir Computador Completo</span>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </SheetContent>

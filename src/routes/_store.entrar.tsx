@@ -10,6 +10,7 @@ import { signInWithPassword, signUpWithPassword, signInWithOAuth, getUserSession
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { LegalTermsSheet } from "@/components/legal/legal-terms-sheet";
 import { normalizeInternalReturnPath } from "@/lib/return-path";
+import { AuthSplitExperienceShell } from "@/components/auth/auth-split-shell";
 import { GoogleLogo } from "@phosphor-icons/react";
 
 function formatAuthSearchError(code?: string): string | null {
@@ -519,75 +520,66 @@ function StepByStepAuthPage() {
  }
  };
 
- const desktopBg = brand?.login_bg_desktop_url || brand?.login_split_image_url || "";
- const tabletBg = brand?.login_bg_tablet_url || desktopBg || "";
- const mobileBg = brand?.login_bg_mobile_url || tabletBg || "";
- const hasCustomBg = Boolean(desktopBg || tabletBg || mobileBg);
-
  const isRegisterMode = view.startsWith("register");
  const isForgotMode = view === "forgot-password";
  const isPortalMode = view.startsWith("portal");
 
+ const currentStep = isForgotMode
+ ? undefined
+ : isRegisterMode
+ ? view === "register-step1"
+ ? 1
+ : view === "register-step2"
+ ? 2
+ : 3
+ : isPortalMode
+ ? view === "portal-step1"
+ ? 1
+ : view === "portal-step2"
+ ? 2
+ : 3
+ : view === "login-step1"
+ ? 1
+ : 2;
+ const totalSteps = isForgotMode ? undefined : isRegisterMode || isPortalMode ? 3 : 2;
+ const stepAccent = isPortalMode ? ("warning" as const) : ("primary" as const);
+
+ const handleHeaderBack =
+ view === "login-step2"
+ ? () => setView("login-step1")
+ : view === "register-step2"
+ ? () => setView("register-step1")
+ : view === "register-step3"
+ ? () => setView("register-step2")
+ : view === "portal-step2"
+ ? () => setView("portal-step1")
+ : view === "portal-step3"
+ ? () => setView("portal-step2")
+ : view === "forgot-password"
+ ? () => setView("login-step1")
+ : undefined;
+
  return (
- <main
- role="main"
- aria-label="Autenticação Waesy"
- className="min-h-dvh w-full relative select-none flex flex-col justify-between p-4 sm:p-6 md:p-8 pt-safe pb-safe bg-background text-foreground overflow-x-hidden"
+ <>
+ <AuthSplitExperienceShell
+ brand={brand}
+ step={currentStep}
+ totalSteps={totalSteps}
+ stepAccent={stepAccent}
+ onBack={handleHeaderBack}
+ backHref="/"
+ subtitle="Acesso Unificado Waesy"
+ desktopHeadline="Conecte sua conta ao ecossistema Waesy."
+ desktopDescription="Entre para acompanhar compras, classificados, entregas, reservas ou administrar sua empresa no Workspace Pro."
+ desktopHighlights={[
+ { title: "Login Único entre Apps", detail: "Mesma sessão segura entre Hub Waesy, Marketplace, Classificados, Waesy Go e Pro." },
+ { title: "Entrada por Etapas", detail: "Validação progressiva de identificador e senha com proteção anti-fraude." },
+ ]}
  >
- {/* ── 1. Background com Mídia Responsiva (Apenas se cadastrado no Master) ── */}
- {hasCustomBg ? (
- <picture className="fixed inset-0 size-full pointer-events-none z-0">
- {desktopBg && <source media="(min-width: 1024px)" srcSet={desktopBg} />}
- {tabletBg && <source media="(min-width: 768px)" srcSet={tabletBg} />}
- <img
- src={mobileBg || tabletBg || desktopBg}
- alt="Fundo"
- className="size-full object-cover opacity-25 filter blur-xs"
- />
- </picture>
- ) : (
- <div className="fixed inset-0 size-full pointer-events-none z-0 bg-muted/10" />
- )}
-
- {/* Overlay Sólido Discreto */}
- <div className="fixed inset-0 bg-background/90 z-1 pointer-events-none" />
-
- {/* ── 2. Top Header Minimalista ── */}
- <header className="relative z-10 flex items-center justify-between w-full max-w-5xl mx-auto">
- <Link
- to="/"
- className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-card border border-border text-foreground hover:border-foreground transition-colors min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
- >
- <span className="bg-primary text-primary-foreground font-semibold text-xs px-2 py-1 rounded-lg tracking-wider uppercase">
- {brand?.platform_name && brand.platform_name !== "Waesy" ? brand.platform_name : "Waesy"}
- </span>
- </Link>
-
- <Link
- to="/"
- aria-label="Voltar ao início"
- className="size-11 min-h-11 min-w-11 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
- >
- <ArrowLeft className="size-5" />
- </Link>
- </header>
-
- {/* ── 3. Card Centralizado: Experiência em Etapas (Step-by-Step) ── */}
- <div className="relative z-10 w-full max-w-md mx-auto my-auto py-6">
- <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-overlay text-foreground animate-in fade-in zoom-in-95 duration-300 motion-reduce:animate-none">
- 
- {/* Logo / Glifo Superior */}
- <div className="flex justify-center mb-4">
- {brand?.logo_url ? (
- <img src={brand.logo_url} alt="Logo" className="h-10 w-auto object-contain" />
- ) : (
- <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-semibold text-xl">{brand?.platform_name?.charAt(0) || "W"}</div>
- )}
- </div>
-
- {/* Título & Subtítulo Dinâmicos */}
- <div className="text-center space-y-1 mb-6">
- <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+ <div className="space-y-6">
+ {/* Cabeçalho do Formulário */}
+ <div className="space-y-1 text-left">
+ <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
  {isForgotMode
  ? "Recuperar Acesso"
  : isRegisterMode
@@ -596,43 +588,19 @@ function StepByStepAuthPage() {
  ? "Portal Comercial"
  : "Entrar"}
  </h1>
- <p className="text-xs text-muted-foreground">
+ <p className="text-xs sm:text-sm text-muted-foreground">
  {isForgotMode
  ? "Digite seu e-mail para receber as instruções"
  : isRegisterMode
- ? "Cadastre-se para continuar"
+ ? "Cadastre-se passo a passo para continuar"
  : isPortalMode
  ? view === "portal-step1"
  ? "Digite o @ da sua empresa ou loja"
  : view === "portal-step2"
  ? `Acessando o portal @${portalSlug}`
- : `Confirme sua senha`
+ : "Confirme sua senha"
  : "Acesse sua conta para continuar"}
  </p>
-
- {/* Indicador Minimalista de Progresso em Etapas */}
- {!isForgotMode && (
- <div className="flex items-center justify-center gap-2 pt-3">
- {isRegisterMode ? (
- <>
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "register-step1" ? "w-6 bg-primary" : "w-2 bg-muted"}`} />
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "register-step2" ? "w-6 bg-primary" : "w-2 bg-muted"}`} />
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "register-step3" ? "w-6 bg-primary" : "w-2 bg-muted"}`} />
- </>
- ) : isPortalMode ? (
- <>
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step1" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step2" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "portal-step3" ? "w-6 bg-warning" : "w-2 bg-muted"}`} />
- </>
- ) : (
- <>
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "login-step1" ? "w-6 bg-primary" : "w-2 bg-muted"}`} />
- <div className={`h-2 rounded-full transition-colors duration-300 motion-reduce:transition-none ${view === "login-step2" ? "w-6 bg-primary" : "w-2 bg-muted"}`} />
- </>
- )}
- </div>
- )}
  </div>
 
  {authErrorMessage && (
@@ -690,7 +658,7 @@ function StepByStepAuthPage() {
  <div className="w-full border-t border-border/40" />
  </div>
  <div className="relative flex justify-center text-xs uppercase font-semibold tracking-wider">
- <span className="bg-card px-2 text-muted-foreground">ou</span>
+ <span className="bg-background px-2 text-muted-foreground">ou</span>
  </div>
  </div>
 
@@ -962,7 +930,7 @@ function StepByStepAuthPage() {
  <div className="w-full border-t border-border/60" />
  </div>
  <div className="relative flex justify-center text-xs uppercase font-semibold tracking-wider">
- <span className="bg-card px-2 text-muted-foreground">Ou crie com</span>
+ <span className="bg-background px-2 text-muted-foreground">Ou crie com</span>
  </div>
  </div>
 
@@ -1163,14 +1131,14 @@ function StepByStepAuthPage() {
  )}
  </div>
  )}
- </div>
- </div>
+  </div>
+ </AuthSplitExperienceShell>
 
  {/* ── 4. Card Flutuante PWA / App (somente quando navegador emite beforeinstallprompt) ── */}
  {showPwaBanner && deferredInstallPrompt && (
  <aside
  aria-label="Instalar aplicativo Waesy"
- className="fixed bottom-4 right-4 z-40 max-w-xs w-full bg-card border border-border shadow-overlay rounded-2xl p-4 animate-in slide-in-from-bottom-4 duration-300 hidden sm:block"
+ className="fixed bottom-4 right-4 z-40 max-w-xs w-full bg-card border border-border shadow-overlay rounded-2xl p-4 hidden sm:block"
  >
  <div className="flex items-start justify-between gap-2">
  <div className="flex items-center gap-3">
@@ -1219,7 +1187,7 @@ function StepByStepAuthPage() {
  onOpenChange={setIsTermsSheetOpen}
  initialSlug="termos"
  />
- </main>
+ </>
  );
 }
 

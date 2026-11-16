@@ -34,12 +34,12 @@ export function StudioToolbar({
 }: StudioToolbarProps) {
   return (
     <HeaderPortal>
-      <div className="flex w-full items-center justify-between px-2 gap-4">
+      <div className="flex w-full items-center justify-between px-2 gap-3 min-w-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <Link
             to={backTo as any}
             params={backParams as any}
-            className="flex size-11 min-h-11 sm:size-9 sm:min-h-9 items-center justify-center rounded-lg border border-border/70 glass text-foreground/70 hover:glass-dark hover:text-foreground transition-colors shrink-0 cursor-pointer"
+            className="flex size-11 min-h-11 sm:size-9 sm:min-h-9 items-center justify-center rounded-lg border border-border/70 glass text-foreground/70 hover:glass-dark hover:text-foreground transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -82,7 +82,7 @@ export function StudioToolbar({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">{children}</div>
+        <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full shrink-0">{children}</div>
       </div>
     </HeaderPortal>
   );

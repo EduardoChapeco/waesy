@@ -689,7 +689,7 @@ function WorkspaceConfiguracoesContent({
 
  {/* ── 2. Abas de Governança Nichadas ── */}
  <Tabs defaultValue="geral" className="w-full space-y-6">
- <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar snap-x bg-muted/60 p-1 rounded-xl w-full gap-1">
+ <TabsList className="waesy-tab-strip items-center justify-start snap-x bg-muted/60 p-1 rounded-xl w-full gap-1 max-w-full min-w-0">
  <TabsTrigger value="geral" className="rounded-xl text-xs font-semibold px-4 py-2 shrink-0 snap-start whitespace-nowrap min-h-11 flex items-center justify-center cursor-pointer">
  Vitrine
  </TabsTrigger>

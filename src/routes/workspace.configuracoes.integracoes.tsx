@@ -1821,14 +1821,17 @@ function UnifiedIntegrationsHubPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
+              { id: "ifood", name: "iFood Merchant", desc: "Delivery gastronômico e mercado local", color: "bg-red-500/10 text-red-600 border-red-500/30" },
+              { id: "99food", name: "99Food", desc: "Integração para restaurantes parceiros", color: "bg-warning/10 text-warning-strong border-warning/30" },
+              { id: "tridelivery", name: "TriDelivery", desc: "Pedidos e cardápio integrados no TriDelivery", color: "bg-warning/10 text-warning-strong border-warning/30" },
+              { id: "amoofertas", name: "Amo Ofertas", desc: "Pedidos e vitrine regional Amo Ofertas", color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" },
+              { id: "amodelivery", name: "Amo Delivery", desc: "Integração direta de pedidos Amo Delivery", color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" },
+              { id: "rappi", name: "Rappi", desc: "Entregas sob demanda e conveniência", color: "bg-rose-500/10 text-rose-600 border-rose-500/30" },
+              { id: "aiqfome", name: "aiqfome", desc: "App de delivery de restaurantes e cidades do interior", color: "bg-purple-500/10 text-purple-600 border-purple-500/30" },
               { id: "mercadolivre", name: "Mercado Livre", desc: "Maior e-commerce da América Latina", color: "bg-warning/10 text-warning-strong border-warning/30" },
               { id: "shopee", name: "Shopee", desc: "Vendas ágeis e frete com cupons", color: "bg-orange-500/10 text-orange-600 border-orange-500/30" },
-              { id: "ifood", name: "iFood Merchant", desc: "Delivery gastronômico e mercado local", color: "bg-red-500/10 text-red-600 border-red-500/30" },
               { id: "magalu", name: "Magazine Luiza", desc: "Marketplace integrado ao ecossistema Magalu", color: "bg-blue-500/10 text-blue-600 border-blue-500/30" },
               { id: "amazon", name: "Amazon Brasil", desc: "Catálogo unificado e alcance nacional", color: "bg-warning/10 text-warning-strong border-warning/30" },
-              { id: "shein", name: "Shein Marketplace", desc: "Moda e vestuário de alta rotação", color: "bg-purple-500/10 text-purple-600 border-purple-500/30" },
-              { id: "rappi", name: "Rappi", desc: "Entregas sob demanda e conveniência", color: "bg-rose-500/10 text-rose-600 border-rose-500/30" },
-              { id: "99food", name: "99Food", desc: "Integração para restaurantes parceiros", color: "bg-warning/10 text-warning-strong border-warning/30" },
             ].map((mkt) => {
               const conn = marketplaceConnectors.find((c: MarketplaceConnectorDTO) => c.platform === mkt.id);
               const isConnected = conn && conn.status === "connected";

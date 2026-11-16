@@ -306,7 +306,7 @@ async function _getDashboardData(targetStoreId?: string | null): Promise<Dashboa
  const { data: entries } = await db
  .from("cash_register_entries")
  .select("amount_cents")
- .eq("register_id", activeRegister.id);
+ .eq("cash_register_id", activeRegister.id);
 
  const initial = activeRegister.initial_balance_cents ?? 0;
  const entriesTotal = (entries ?? []).reduce((acc, curr) => acc + (curr.amount_cents ?? 0), 0);

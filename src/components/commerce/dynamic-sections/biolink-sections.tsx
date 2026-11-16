@@ -8,25 +8,38 @@ import { cn } from "@/lib/utils";
 export interface BiolinkProfileProps {
  avatarUrl?: string;
  name?: string;
+ displayName?: string;
  handle?: string;
  bio?: string;
  isVerified?: boolean;
+ verified?: boolean;
 }
 
 export function BiolinkProfileSection({
  avatarUrl = "",
- name = "Studio Maria & Co.",
+ name,
+ displayName,
  handle = "@studiomaria",
  bio = "Arquitetura de interiores, consultoria e projetos autorais. Transformando espaços em refúgios.",
- isVerified = true,
+ isVerified,
+ verified,
 }: BiolinkProfileProps) {
+ const resolvedName = name || displayName || "Studio Maria & Co.";
+ const resolvedVerified = isVerified ?? verified ?? true;
+ const cleanAvatar = typeof avatarUrl === "string" ? avatarUrl.trim() : "";
+ const initial = resolvedName.trim().charAt(0).toUpperCase() || "W";
+
  return (
  <section className="py-6 flex flex-col items-center text-center max-w-md mx-auto px-4 space-y-3 select-none">
  <div className="relative">
- <div className="size-24 rounded-full overflow-hidden border-2 border-primary/20 bg-muted ">
- <img src={avatarUrl} alt={name} className="size-full object-cover" />
+ <div className="size-24 rounded-full overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center text-xl font-bold text-primary">
+ {cleanAvatar ? (
+ <img src={cleanAvatar} alt={resolvedName} className="size-full object-cover" />
+ ) : (
+ <span>{initial}</span>
+ )}
  </div>
- {isVerified && (
+ {resolvedVerified && (
  <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-1 rounded-full ">
  <CheckCircle2 className="size-3.5 fill-current" />
  </div>
@@ -35,7 +48,7 @@ export function BiolinkProfileSection({
 
  <div className="space-y-1">
  <h1 className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
- <span>{name}</span>
+ <span>{resolvedName}</span>
  </h1>
  <span className="text-xs font-mono text-muted-foreground block">{handle}</span>
  <p className="text-xs text-muted-foreground leading-relaxed pt-1 max-w-xs mx-auto">

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-06T14:58:00-03:00",
+  "updated_at": "2026-11-15T21:06:00-03:00",
   "entries": [
     {
       "id": "BRK-20261106-01",
@@ -78,6 +78,71 @@
       "effort": 2,
       "score": 15.0,
       "status": "resolvido"
+    },
+    {
+      "id": "BRK-20261115-01",
+      "class": "B4",
+      "checkpoint": "D2-3",
+      "file": "supabase/migrations/20270519000000_fix_close_cash_register_rpc.sql",
+      "root_cause": "RPC close_cash_register consulta register_id em cash_register_entries (real: cash_register_id) e atualiza expected_balance_cents/final_balance_cents em cash_registers (reais: expected_closing_balance_cents/actual_closing_balance_cents); dashboard.functions.ts:309 e cash.functions.ts espelham o mesmo drift de schema.",
+      "impact": 5,
+      "reach": 4,
+      "confidence": 5,
+      "effort": 2,
+      "score": 14.5,
+      "status": "aberto"
+    },
+    {
+      "id": "BRK-20261115-02",
+      "class": "B4",
+      "checkpoint": "D2-2",
+      "file": "src/services/order.functions.ts:86,113,534",
+      "root_cause": "Consultas em order_items, orders e events solicitando colunas inexistentes (metadata, quantity, product_name, title, price_cents; orders.user_id/total_amount_cents/payment_method; events.banner_image_url) em order.functions.ts, event-tickets.functions.ts, kitchen-prep.functions.ts e chat.functions.ts.",
+      "impact": 5,
+      "reach": 5,
+      "confidence": 5,
+      "effort": 2,
+      "score": 15.0,
+      "status": "aberto"
+    },
+    {
+      "id": "BRK-20261115-03",
+      "class": "B3",
+      "checkpoint": "D2-4",
+      "file": "src/services/directory.functions.ts:184,342",
+      "root_cause": "Filtros id.eq.<slug> e slug.eq.<slug> aplicados diretamente em colunas uuid/inexistentes de directory_listings e stores (directory.functions.ts, catalog.functions.ts:958, places-detail.functions.ts:116,189), causando Postgres 22P02 HTTP 400; _getEventWithLots/ticket_lots usando .single() (406) e teste RLS enviando id=eq.undefined.",
+      "impact": 4,
+      "reach": 5,
+      "confidence": 5,
+      "effort": 2,
+      "score": 14.5,
+      "status": "aberto"
+    },
+    {
+      "id": "BRK-20261115-04",
+      "class": "B3",
+      "checkpoint": "D1-5",
+      "file": "src/routes/sitemap[.]xml.ts:70-128",
+      "root_cause": "Consultas a tabelas inexistentes (store_delivery_windows em supermarket.functions.ts; travel_destinations, travel_hotels, mined_recipes, links_in_bio, store_raffles em sitemap[.]xml.ts) e rota padrão 404 (/lojas) em IFoodRecentStoresRail.tsx:26.",
+      "impact": 4,
+      "reach": 5,
+      "confidence": 5,
+      "effort": 1,
+      "score": 28.0,
+      "status": "aberto"
+    },
+    {
+      "id": "BRK-20261115-05",
+      "class": "B1",
+      "checkpoint": "D3-3",
+      "file": "src/components/chat/artifacts/ArtifactCreativePost.tsx:226-232",
+      "root_cause": "Acesso a effectiveBullets.map e hashtags.join sem guarda de Array quando payloads da IA trazem null (causa provável do crash Cannot read properties of undefined/null reading 'map' em /workspace/copilot); e deploy pendente do isolamento de KDSPage/GestorRoutePage e /api/cron/* em produção.",
+      "impact": 5,
+      "reach": 4,
+      "confidence": 4,
+      "effort": 1,
+      "score": 25.0,
+      "status": "aberto"
     }
   ]
 }

@@ -165,7 +165,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
   const isFeedActive =
     pathname.startsWith("/feed") || pathname.startsWith("/mural");
   const isExploreActive =
-    pathname.startsWith("/explorar");
+    pathname.startsWith("/explorer") || pathname.startsWith("/explorar");
   const isCommunitiesActive =
     pathname.startsWith("/comunidades") || pathname.startsWith("/c/");
   const isPurchasesActive =
@@ -528,7 +528,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
 
                   {/* TAB 3: EXPLORAR */}
                   <Link
-                    to="/explorar"
+                    to="/explorer"
                     aria-label="Explorar"
                     className={cn(
                       "h-12 min-h-11 rounded-lg flex flex-col items-center justify-center gap-1 transition-colors active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",

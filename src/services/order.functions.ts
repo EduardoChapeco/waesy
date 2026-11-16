@@ -83,7 +83,7 @@ export async function _listOrders(
   `
   id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, customer_snapshot, created_at, shipping_method,
   shipping_address, channel_origin, origin_channel, cost_breakdown, prep_started_at, ready_at, table_identifier, notes, custom_fields,
-  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options )
+  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options, variant_attributes )
   `,
   )
   .eq("store_id", store_id)
@@ -110,7 +110,7 @@ export async function _getOrderById(orderId: string, store_id: string) {
  id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
  customer_snapshot, created_at, shipping_method, shipping_address, channel_origin, origin_channel, cost_breakdown, notes, custom_fields,
  shipped_at, delivered_at,
- order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options ),
+ order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options, variant_attributes ),
  shipments ( id, tracking_code, carrier_name, tracking_url, status, shipped_at, delivered_at )
  `,
  )
@@ -531,7 +531,7 @@ export const getCustomerOrder = createServerFn({ method: "GET" })
         customer_snapshot, shipping_method, shipping_address, store_id,
         cancelled_at, cancellation_reason, created_at, updated_at,
         stores:store_id ( id, name, slug, logo_url, phone ),
-        order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, image_url, selected_options, notes, metadata ),
+        order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, image_url, selected_options, variant_attributes, notes ),
         payments ( id, method, status, amount_cents, receipt_url, receipt_status )
         `,
       )
@@ -1855,7 +1855,7 @@ export const getGastronomyReports = createServerFn({ method: "GET" }).handler(
  channelBreakdown.table++;
  } else if (
  o.channel_origin &&
- ["mercadolivre", "ifood", "amazon", "magalu", "99food", "marketplace"].includes(o.channel_origin)
+ ["mercadolivre", "ifood", "amazon", "magalu", "shopee", "99food", "rappi", "tridelivery", "amoofertas", "amodelivery", "aiqfome", "marketplace"].includes(o.channel_origin)
  ) {
  channelBreakdown.marketplace++;
  } else if (o.shipping_method === "delivery") {

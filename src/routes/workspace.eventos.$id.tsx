@@ -331,7 +331,7 @@ function SubPainelEventoPage() {
 
  {/* Abas do Sub-Painel Recursivo (Invariante B.39: Linha Única Horizontal Contínua) */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
- <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar gap-1 border-b border-border/40 pb-px mb-6 bg-transparent h-auto w-full justify-start rounded-none">
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 border-b border-border/40 pb-px mb-6 bg-transparent h-auto w-full rounded-none max-w-full min-w-0">
  <TabsTrigger value="ingressos" className="text-xs font-semibold gap-2 py-2 px-3 shrink-0 whitespace-nowrap rounded-t-lg data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer">
  <Ticket className="size-3.5" />
  Lotes ({lots.length})

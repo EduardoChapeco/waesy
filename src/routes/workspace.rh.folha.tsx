@@ -764,9 +764,9 @@ function HrPayrollPage() {
       />
 
       {/* ── BARRA DE SELEÇÃO DE COMPETÊNCIA & ABAS SOBERANAS ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-3 rounded-lg border border-border">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-3 rounded-lg border border-border min-w-0">
         {/* Seletor de Competência */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Calendar className="size-4 text-primary shrink-0" />
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Competência:</span>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
@@ -782,12 +782,12 @@ function HrPayrollPage() {
           </Select>
         </div>
 
-        {/* Abas */}
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 overflow-x-auto scroll-area">
+        {/* Abas com scroll horizontal interno */}
+        <div className="waesy-tab-strip items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 min-w-0 max-w-full">
           <button
             type="button"
             onClick={() => setActiveTab("folha")}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "folha"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -798,7 +798,7 @@ function HrPayrollPage() {
           <button
             type="button"
             onClick={() => setActiveTab("colaboradores")}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "colaboradores"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
@@ -809,7 +809,7 @@ function HrPayrollPage() {
           <button
             type="button"
             onClick={() => setActiveTab("simulador")}
-            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
               activeTab === "simulador"
                 ? "bg-background text-foreground shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"

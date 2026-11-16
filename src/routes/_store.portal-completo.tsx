@@ -162,16 +162,16 @@ function PortalCompletoPage() {
             {pageData?.subtitle || "Sistemas de PDV, catálogo digital, logística de entregas e turismo integrados ao seu perfil comercial."}
           </p>
 
-          <div className="flex items-center justify-center gap-3 pt-1">
-            <Button asChild size="sm" className="h-10 px-5 rounded-lg font-bold text-xs gap-2  bg-foreground text-background hover:bg-foreground/90 min-h-11 sm:min-h-0">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+            <Button asChild variant="outline" className="h-11 min-h-11 px-5 rounded-xl font-semibold text-xs gap-2">
               <a href="#waitlist">
                 <span>Solicitar Demonstração</span>
                 <ArrowRight className="size-3.5" />
               </a>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-10 px-4 rounded-lg font-semibold text-xs border-border/70 min-h-11 sm:min-h-0">
-              <Link to="/conta/empresa">
-                <span>Voltar ao Painel</span>
+            <Button asChild variant="outline" className="h-11 min-h-11 px-4 rounded-xl font-semibold text-xs">
+              <Link to="/painel">
+                <span>Entrar no Painel Pro</span>
               </Link>
             </Button>
           </div>
@@ -204,7 +204,7 @@ function PortalCompletoPage() {
             {modules.map((mod: any) => (
               <div
                 key={mod.id}
-                className="bg-card rounded-lg p-5 border border-border/60 shadow-2xs flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-colors duration-200"
+                className="bg-card rounded-2xl p-5 border border-border flex flex-col justify-between space-y-4 hover:border-foreground/30 transition-colors duration-200"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -236,7 +236,7 @@ function PortalCompletoPage() {
         </section>
 
         {/* Informação de Sincronização Contida */}
-        <section className="bg-card rounded-lg p-5 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+        <section className="bg-card rounded-2xl p-5 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Layers className="size-5" />
@@ -267,7 +267,7 @@ function PortalCompletoPage() {
           </div>
 
           {isSubmitted ? (
-            <div className="bg-card rounded-lg p-8 border border-emerald-500/30 shadow-2xs text-center space-y-3">
+            <div className="bg-card rounded-2xl p-8 border border-emerald-500/30 text-center space-y-3">
               <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
                 <Check className="size-6" />
               </div>
@@ -276,7 +276,7 @@ function PortalCompletoPage() {
                 Nossa equipe entrará em contato via WhatsApp para agendar a demonstração exclusiva e liberar seu acesso prioritário.
               </p>
               <div className="pt-2">
-                <Button asChild variant="outline" size="sm" className="h-10 rounded-lg text-xs min-h-11 sm:min-h-0">
+                <Button asChild variant="outline" className="h-11 min-h-11 rounded-xl text-xs">
                   <Link to="/conta/empresa">
                     Voltar ao Meu Painel da Empresa
                   </Link>
@@ -284,7 +284,7 @@ function PortalCompletoPage() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-card rounded-lg p-6 border border-border/60 shadow-2xs space-y-4">
+            <form onSubmit={handleSubmit} className="bg-card rounded-2xl p-6 border border-border space-y-4">
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-foreground">Nome Comercial da Empresa *</Label>
                 <Input

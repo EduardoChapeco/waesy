@@ -196,7 +196,7 @@ export const getPlatformStoresList = createServerFn({ method: "GET" }).handler(a
  const [storesRes, membersRes, instancesRes] = await Promise.all([
     db
       .from("stores")
-      .select("id, name, slug, is_active, is_platform_root, created_at, settings, plan_tier, subscription_tier, subscription_status, trial_ends_at, billing_cycle, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, quota_overrides")
+      .select("id, name, slug, is_active, is_platform_root, approval_status, approval_notes, created_at, settings, plan_tier, subscription_tier, subscription_status, trial_ends_at, billing_cycle, vertical_sku, primary_niche_id, enabled_niches, enabled_modules, quota_overrides")
       .order("created_at", { ascending: false }),
    db
      .from("workspace_members")
@@ -986,6 +986,9 @@ export const getPublicBrandSettings = createServerFn({ method: "GET" }).handler(
         accent_color: brandRow.accent_color || TOKEN_HEX.accentDefault,
         secondary_color: brandRow.secondary_color || TOKEN_HEX.accentHover,
         theme_style: brandRow.theme_style || "azure_minimal",
+        root_experience_mode: brandRow.root_experience_mode || "landing_vendas",
+        require_company_approval: Boolean(brandRow.require_company_approval),
+        require_user_approval: Boolean(brandRow.require_user_approval),
       };
     }
 

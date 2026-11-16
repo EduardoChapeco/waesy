@@ -71,16 +71,18 @@ describe("M9 — Waesy Copilot Estúdio Canva, Dual-Sidebar & E2E Intent/Money C
       'Super ofertas para você aproveitar e garantir sua viagem com descontos exclusivos por tempo limitado...) confira as oferta.. foramto story (algo como all inclusive por menos de 5mil por pessoa]';
 
     expect(isExplicitCreationOrBuilderPrompt(promptUser)).toBe(true);
-    expect(isExplicitCreationOrBuilderPrompt("algo all inclusive por menos de 5mil por pessoa", {
-      last_intent: "creative_post",
-    })).toBe(true);
+    expect(
+      isExplicitCreationOrBuilderPrompt("Tem pacote disponível em Gramado?", {
+        last_intent: "creative_post",
+      }),
+    ).toBe(false);
 
     expect(detectIntent(promptUser)).toBe("creative_post");
     expect(
-      detectIntent("algo all inclusive por menos de 5mil por pessoa", {
+      detectIntent("Tem pacote disponível em Gramado?", {
         last_intent: "creative_post",
       }),
-    ).toBe("creative_post");
+    ).not.toBe("creative_post");
 
     const spec = extractCreativePostSpecFromPrompt(promptUser, {}, {}, { city: "São Miguel do Oeste" });
     expect(spec.format).toBe("story");
@@ -297,8 +299,11 @@ describe("M9 — Waesy Copilot Estúdio Canva, Dual-Sidebar & E2E Intent/Money C
 
     expect(viewSource).not.toMatch(/formatMoney\([^)]*\/\s*100/);
     expect(bffSource).not.toMatch(/formatMoney\([^)]*\/\s*100/);
-    expect(bffSource).toContain("isCreationOrBuilderIntent");
-    expect(bffSource).toContain('updatedMemory.last_intent = "creative_post"');
-    expect(bffSource).toContain("!isCreationOrBuilderIntent && platformSearch");
+    expect(bffSource).toContain("isExplicitCreationOrBuilderPrompt(userPrompt, workingMemory)");
+    expect(bffSource).toContain("delete updatedMemory.last_intent");
+    expect(bffSource).toContain(
+      '!["creative_post", "create_ad", "ads_campaign", "presentation_deck", "website_builder", "interactive_map", "financial_report", "generate_dashboard"].includes(intent)',
+    );
+    expect(bffSource).toContain("runCopilotReactOrchestrator");
   });
 });

@@ -4,11 +4,8 @@ import {
   Clock,
   Play,
   Plus,
-  CheckCircle2,
-  AlertCircle,
-  RotateCw,
-  SlidersHorizontal,
-  ChevronRight,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +23,8 @@ import { toast } from "sonner";
 import {
   listAiScheduledTasks,
   createAiScheduledTask,
+  updateAiScheduledTask,
+  deleteAiScheduledTask,
   toggleAiScheduledTask,
   triggerScheduledTaskRun,
 } from "@/services/ai-scheduled-tasks.functions";
@@ -64,9 +63,10 @@ export function CopilotScheduledTasksView({
   const [taskList, setTaskList] = useState<ScheduledTaskItem[]>(tasks);
   const [isLoadingTasks, setIsLoadingTasks] = useState<boolean>(tasks.length === 0);
   const [isCreatingModal, setIsCreatingModal] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newPrompt, setNewPrompt] = useState("");
-  const [newSchedule, setNewSchedule] = useState("0 8 * * 1");
+  const [newSchedule, setNewSchedule] = useState("0 8 * * 1-5");
   const [runningTaskId, setRunningTaskId] = useState<string | null>(null);
 
   const loadTasksFromServer = useCallback(async () => {
@@ -145,27 +145,73 @@ export function CopilotScheduledTasksView({
           )
       : taskList;
 
-  const handleCreateTask = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setEditingTaskId(null);
+    setNewTitle("");
+    setNewPrompt("");
+    setNewSchedule("0 8 * * 1-5");
+    setIsCreatingModal(true);
+  };
+
+  const openEditModal = (task: ScheduledTaskItem) => {
+    setEditingTaskId(task.id);
+    setNewTitle(task.title);
+    setNewPrompt(task.prompt);
+    setNewSchedule(task.cron_expression || "0 8 * * 1-5");
+    setIsCreatingModal(true);
+  };
+
+  const handleDeleteTask = async (task: ScheduledTaskItem) => {
+    const snapshot = taskList;
+    setTaskList((prev) => prev.filter((item) => item.id !== task.id));
+    try {
+      await deleteAiScheduledTask({ data: { taskId: task.id } });
+      toast.success(`Automação "${task.title}" excluída.`);
+      onRefresh?.();
+    } catch (err: any) {
+      setTaskList(snapshot);
+      toast.error(err?.message || "Erro ao excluir tarefa agendada.");
+    }
+  };
+
+  const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newPrompt.trim()) return;
 
     try {
-      const created = await createAiScheduledTask({
-        data: {
-          title: newTitle.trim(),
-          prompt: newPrompt.trim(),
-          cronExpression: newSchedule,
-        },
-      });
-      if (created?.id) {
-        setTaskList((prev) => [created as any, ...prev]);
-        toast.success("Nova tarefa agendada criada com sucesso!");
-        setIsCreatingModal(false);
-        setNewTitle("");
-        setNewPrompt("");
+      if (editingTaskId) {
+        const updated = await updateAiScheduledTask({
+          data: {
+            taskId: editingTaskId,
+            title: newTitle.trim(),
+            prompt: newPrompt.trim(),
+            cronExpression: newSchedule,
+          },
+        });
+        setTaskList((prev) =>
+          prev.map((t) => (t.id === editingTaskId ? { ...t, ...(updated as any) } : t))
+        );
+        toast.success("Automação atualizada.");
+      } else {
+        const created = await createAiScheduledTask({
+          data: {
+            title: newTitle.trim(),
+            prompt: newPrompt.trim(),
+            cronExpression: newSchedule,
+          },
+        });
+        if (created?.id) {
+          setTaskList((prev) => [created as any, ...prev]);
+          toast.success("Nova tarefa agendada criada.");
+        }
       }
+      setIsCreatingModal(false);
+      setEditingTaskId(null);
+      setNewTitle("");
+      setNewPrompt("");
+      onRefresh?.();
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao agendar tarefa de IA.");
+      toast.error(err?.message || "Erro ao salvar tarefa agendada.");
     }
   };
 
@@ -191,7 +237,7 @@ export function CopilotScheduledTasksView({
           type="button"
           variant="default"
           size="sm"
-          onClick={() => setIsCreatingModal(true)}
+          onClick={openCreateModal}
           className="h-11 min-h-11 px-4 text-xs font-semibold rounded-xl gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
         >
           <Plus className="size-4" />
@@ -291,8 +337,32 @@ export function CopilotScheduledTasksView({
                 </p>
               </div>
 
-              {/* Controles: Switch de Ativação e Botão de Teste Imediato */}
-              <div className="flex items-center gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/20 justify-end">
+              {/* Controles: Editar, Excluir, Teste Imediato e Switch */}
+              <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/20 justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => openEditModal(task)}
+                  aria-label={`Editar ${task.title}`}
+                  title="Editar automação"
+                  className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                >
+                  <Pencil className="size-4" />
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => void handleDeleteTask(task)}
+                  aria-label={`Excluir ${task.title}`}
+                  title="Excluir automação"
+                  className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+
                 <Button
                   type="button"
                   variant="outline"
@@ -319,19 +389,25 @@ export function CopilotScheduledTasksView({
         </div>
       )}
 
-      {/* ── Modal de Criação de Automação ── */}
-      <Dialog open={isCreatingModal} onOpenChange={setIsCreatingModal}>
+      {/* ── Modal de Criação / Edição de Automação ── */}
+      <Dialog
+        open={isCreatingModal}
+        onOpenChange={(open) => {
+          setIsCreatingModal(open);
+          if (!open) setEditingTaskId(null);
+        }}
+      >
         <DialogContent className="max-w-lg rounded-2xl p-6 bg-card border-border/60">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground">
-              Nova Tarefa Agendada
+              {editingTaskId ? "Editar Tarefa Agendada" : "Nova Tarefa Agendada"}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Defina a instrução em linguagem natural e a frequência de execução.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateTask} className="space-y-4 pt-2">
+          <form onSubmit={handleSaveTask} className="space-y-4 pt-2">
             <div>
               <label className="text-xs font-semibold text-foreground mb-1 block">
                 Título da Rotina
@@ -379,7 +455,10 @@ export function CopilotScheduledTasksView({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsCreatingModal(false)}
+                onClick={() => {
+                  setIsCreatingModal(false);
+                  setEditingTaskId(null);
+                }}
                 className="h-11 min-h-11 px-4 text-xs font-semibold rounded-xl"
               >
                 Cancelar
@@ -389,7 +468,7 @@ export function CopilotScheduledTasksView({
                 variant="outline"
                 className="h-11 min-h-11 px-5 text-xs font-semibold rounded-xl"
               >
-                Criar Automação
+                {editingTaskId ? "Salvar Alterações" : "Criar Automação"}
               </Button>
             </div>
           </form>

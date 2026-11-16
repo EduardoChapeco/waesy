@@ -803,7 +803,7 @@ async function _issueFastLeadRsvpTicket(input: z.infer<typeof fastLeadRsvpSchema
       .select("id, event_id, name, price_cents, capacity, sold_count, status")
       .eq("id", input.lotId)
       .eq("event_id", event.id)
-      .single();
+      .maybeSingle();
     lot = foundLot;
   }
 
@@ -1368,7 +1368,7 @@ async function _getEventWithLots(eventId: string) {
  .select("*")
  .eq("id", eventId)
  .eq("status", "published")
- .single();
+ .maybeSingle();
 
     if (!eventError && event) {
       const [{ data: lots }, { data: relations }, { data: partners }, { data: subpanels }, { data: products }, { data: surveys }] = await Promise.all([

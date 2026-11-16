@@ -11,10 +11,7 @@ import { getUserSession } from "@/services/auth.functions";
 import { useCopilotSession } from "@/hooks/use-copilot-session";
 import { ManusComputerDrawer } from "@/components/chat/manus-computer-drawer";
 import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
-import {
-  CopilotBackgroundTasksDrawer,
-  type BackgroundTaskItem,
-} from "@/components/chat/copilot-background-tasks-drawer";
+import type { BackgroundTaskItem } from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
 import { Maximize2, ArrowLeft } from "lucide-react";
 
@@ -110,7 +107,6 @@ function WorkspaceCopilotPage() {
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [computerDrawerOpen, setComputerDrawerOpen] = useState(false);
   const [telemetrySheetOpen, setTelemetrySheetOpen] = useState(false);
-  const [backgroundTasksOpen, setBackgroundTasksOpen] = useState(false);
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
@@ -209,7 +205,11 @@ function WorkspaceCopilotPage() {
         onSelectFolder={copilot.setSelectedFolderId}
         onSelectProject={copilot.setSelectedProjectId}
         onCreateFolder={copilot.handleCreateFolder}
+        onRenameFolder={copilot.handleRenameFolder}
+        onDeleteFolder={copilot.handleDeleteFolder}
         onCreateProject={copilot.handleCreateProject}
+        onUpdateProject={copilot.handleUpdateProject}
+        onDeleteProject={copilot.handleDeleteProject}
         onAssignThreadHierarchy={copilot.handleAssignThreadHierarchy}
         projectFiles={copilot.projectFiles}
         isLoadingProjectFiles={copilot.isLoadingProjectFiles}
@@ -224,9 +224,14 @@ function WorkspaceCopilotPage() {
         onQuickToolModeChange={copilot.setQuickToolMode}
         onOpenComputer={() => setComputerDrawerOpen(true)}
         computerStepsCount={copilot.computerSteps.length}
+        executionPlan={copilot.executionPlan}
+        isExecutionPaused={copilot.isExecutionPaused}
+        onPauseExecution={copilot.handlePauseExecution}
+        onResumeExecution={copilot.handleResumeExecution}
         onOpenTelemetry={() => setTelemetrySheetOpen(true)}
         extraHeaderActions={extraHeaderActions}
         contextAccessLabel={activeStoreId ? "Workspace conectado" : "Acesso completo"}
+        storeId={activeStoreId || undefined}
         isSending={copilot.isSending}
         isStreaming={copilot.isSending}
         currentUserProfileId={effectiveUserId || undefined}
@@ -237,18 +242,27 @@ function WorkspaceCopilotPage() {
         onOpenChange={setComputerDrawerOpen}
         taskTitle={copilot.activeThread?.title || "Sessão Ativa"}
         steps={copilot.computerSteps}
+        plan={copilot.executionPlan}
+        vfsFiles={copilot.vfsFiles}
+        liveBrowserFrame={copilot.liveBrowserFrame}
+        onCancelExecution={copilot.handleCancelActiveRun}
+        onPauseExecution={copilot.handlePauseExecution}
+        onResumeExecution={copilot.handleResumeExecution}
+        onTakeControl={copilot.handleTakeBrowserControl}
+        executionStatus={
+          copilot.isExecutionPaused
+            ? "paused"
+            : copilot.isSending
+              ? "running"
+              : copilot.computerSteps.length > 0
+                ? "completed"
+                : "idle"
+        }
       />
       <ManusTaskTelemetrySheet
         open={telemetrySheetOpen}
         onOpenChange={setTelemetrySheetOpen}
         {...copilot.telemetrySummary}
-      />
-      <CopilotBackgroundTasksDrawer
-        open={backgroundTasksOpen}
-        onOpenChange={setBackgroundTasksOpen}
-        tasks={copilot.backgroundTasks}
-        onCancelTask={copilot.handleCancelBackgroundTask}
-        onRefresh={copilot.refreshBackgroundTasks}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { ContractWorkspaceStudio } from "@/components/contracts/contract-workspace-studio";
 import { ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, Lock, Save, PenTool, Settings2, FileText, UserCheck, Layers, Copy, Folder, Bell, Eye, Calendar, ExternalLink, QrCode, Loader2 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -20,6 +21,23 @@ import { ContractAuditManifest } from "@/components/contracts/contract-audit-man
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
 import { autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
 
+function ContractEditorStudioRoute() {
+  const contract = Route.useLoaderData();
+
+  if (!contract || !contract.id) {
+    return (
+      <div className="max-w-md mx-auto py-20 text-center space-y-4">
+        <p className="text-sm text-muted-foreground">Contrato não encontrado.</p>
+        <Button asChild variant="outline" size="sm" className="rounded-lg h-11 min-h-11 sm:h-9 sm:min-h-0">
+          <Link to="/workspace/contratos">Voltar</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return <ContractWorkspaceStudio mode="edit" initialContract={contract} />;
+}
+
 export const Route = createFileRoute("/workspace/contratos/$id/editor")({
   head: () => ({ meta: [{ title: "Editor de Contrato | Workspace Waesy" }] }),
   loader: async ({ params }) => {
@@ -30,7 +48,7 @@ export const Route = createFileRoute("/workspace/contratos/$id/editor")({
       return null as any;
     }
   },
-  component: ContractEditorPage,
+  component: ContractEditorStudioRoute,
 });
 
 const SIGNER_COLORS = [

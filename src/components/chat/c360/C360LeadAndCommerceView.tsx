@@ -11,7 +11,7 @@ import {
   Circle,
   Plus,
   FileText,
-  Sparkles,
+  BadgePercent,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -393,8 +393,8 @@ function QuotesList({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="size-3.5 text-primary" />
-          CotaÃ§Ãµes & Propostas ({quotes.length})
+          <BadgePercent className="size-3.5 text-primary" />
+          Cotações & Propostas ({quotes.length})
         </span>
         <Button
           type="button"

@@ -2543,7 +2543,7 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
  id, store_id, customer_id, guest_name, guest_email, status, subject,
  department, order_id, created_at, updated_at,
  store:stores(id, name, slug, phone, settings),
- order:orders(id, status, total_amount_cents, payment_method, created_at, items:order_items(product_name, quantity, price_cents))
+ order:orders(id, status, total_cents, shipping_method, created_at, payments(method, status), items:order_items(id, product_title, qty, unit_price_cents, total_cents))
  `)
  .eq("id", threadId)
  .single();
@@ -2568,10 +2568,29 @@ export const getCustomerChatThread = createServerFn({ method: "GET" })
  db.from("store_support_tickets").select("*").eq("thread_id", threadId).order("created_at", { ascending: false }),
  ]);
 
+ const rawOrder: any = Array.isArray(thread.order) ? thread.order[0] : thread.order;
+ const mappedOrder = rawOrder
+ ? {
+ id: rawOrder.id,
+ status: rawOrder.status,
+ total_amount_cents: rawOrder.total_cents ?? 0,
+ payment_method: Array.isArray(rawOrder.payments)
+ ? rawOrder.payments[0]?.method || rawOrder.shipping_method || undefined
+ : rawOrder.payments?.method || rawOrder.shipping_method || undefined,
+ created_at: rawOrder.created_at,
+ items: (rawOrder.items || []).map((it: any) => ({
+ product_name: it.product_title || "Item",
+ quantity: it.qty ?? 1,
+ price_cents: it.unit_price_cents ?? 0,
+ })),
+ }
+ : null;
+
  return {
  thread: {
  ...thread,
  store: mappedStore,
+ order: mappedOrder,
  },
  messages: (messagesRes.data || []).map((m: any) => ({
  id: m.id,

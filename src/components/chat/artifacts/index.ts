@@ -6,3 +6,5 @@ export * from "./ArtifactBuilderEditor";
 export * from "./ArtifactDashboard";
 export * from "./ArtifactInteractiveMap";
 export * from "./ArtifactCreativePost";
+export * from "./ArtifactWebPreview";
+export * from "./artifact-code-sandbox";

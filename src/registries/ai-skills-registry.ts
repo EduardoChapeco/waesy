@@ -12,6 +12,7 @@ export interface AiSkillDefinition {
   slug: string;
   name: string;
   description: string;
+  category?: string;
   version: string;
   isOfficial: boolean;
   status: "active" | "deprecated" | "experimental";

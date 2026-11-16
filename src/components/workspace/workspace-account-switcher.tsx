@@ -64,10 +64,10 @@ export function WorkspaceAccountSwitcher({
         <button
           type="button"
           disabled={isSwitching}
-          className="flex w-full items-center justify-between h-11 min-h-11 px-3 rounded-xl bg-transparent hover:bg-rail-hover transition-colors text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex w-full items-center justify-between h-11 min-h-11 px-2 rounded-xl bg-transparent hover:bg-rail-hover transition-colors text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           title={`Espaço de Trabalho: ${activeStore?.name || "Meu Negócio"}`}
         >
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex flex-1 items-center gap-2 min-w-0">
             {activeStore?.logo_url ? (
               <img
                 src={activeStore.logo_url}
@@ -79,7 +79,7 @@ export function WorkspaceAccountSwitcher({
                 <Store className="size-4" />
               </div>
             )}
-            <div className="min-w-0">
+            <div className="flex-1 min-w-0">
               <h2 className="text-xs font-bold text-foreground truncate leading-tight">
                 {activeStore?.name || "Meu Negócio"}
               </h2>
@@ -89,7 +89,7 @@ export function WorkspaceAccountSwitcher({
               </p>
             </div>
           </div>
-          <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 ml-2 group-hover:text-foreground transition-colors" />
+          <ChevronsUpDown className="size-3.5 text-muted-foreground shrink-0 ml-1 group-hover:text-foreground transition-colors" />
         </button>
       </PopoverTrigger>
 

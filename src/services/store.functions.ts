@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, assertOwnerAccess, requireAdmin } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import type { Weekday, TimeInterval, DaySchedule, WeeklySchedule as WorkingHours } from "@/lib/business-hours";
 export type { Weekday, TimeInterval, DaySchedule, WorkingHours };
 
@@ -301,7 +302,7 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  ...(canMutateNicheAndModules && segment ? { segment, type: segment, niche: segment } : {}),
  ...(canMutateNicheAndModules && type && !segment ? { type, segment: type, niche: type } : {}),
  ...(canMutateNicheAndModules && niche && !segment && !type ? { niche, segment: niche, type: niche } : {}),
- ...(canMutateNicheAndModules && enabled_modules !== undefined ? { enabled_modules } : {}),
+ ...(isPlatformAdminCaller && enabled_modules !== undefined ? { enabled_modules } : {}),
  ...(wholesale_enabled !== undefined ? { wholesale_enabled } : {}),
  ...(payment_processing_mode !== undefined ? { payment_processing_mode } : {}),
  logoUrl,
@@ -350,7 +351,7 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
    ...columns,
    ...(logoUrl !== undefined ? { logo_url: logoUrl || null } : {}),
    ...(bannerUrl !== undefined ? { banner_url: bannerUrl || null } : {}),
-   ...(canMutateNicheAndModules && enabled_modules !== undefined ? { enabled_modules } : {}),
+   ...(isPlatformAdminCaller && enabled_modules !== undefined ? { enabled_modules } : {}),
    settings,
  })
  .eq("id", identity.store_id);
@@ -603,10 +604,30 @@ export async function _savePublicProfile(data: z.infer<typeof savePublicProfileS
 
  const currentSettings = (currentStore?.settings || {}) as Record<string, any>;
  const { description, phone, address, business_hours, logo_url, settings: extraSettings } = data;
+ const sanitizedExtraSettings = { ...(extraSettings || {}) };
+ const RESERVED_GOVERNANCE_KEYS = [
+   "plan_tier",
+   "subscription_tier",
+   "vertical_sku",
+   "subscription_status",
+   "active_modules",
+   "enabled_modules",
+   "disabled_modules",
+   "blocked_due_to_debt",
+   "is_verified",
+   "approval_status",
+   "quota_overrides",
+   "is_platform_root",
+   "waesy_marketplace_enabled",
+   "publish_to_marketplace",
+ ];
+ for (const k of RESERVED_GOVERNANCE_KEYS) {
+   delete sanitizedExtraSettings[k];
+ }
 
  const mergedSettings = {
  ...currentSettings,
- ...(extraSettings || {}),
+ ...sanitizedExtraSettings,
  ...(logo_url !== undefined ? { logoUrl: logo_url, logo_url } : {}),
  ...(business_hours !== undefined ? { working_hours: business_hours, businessHours: business_hours } : {}),
  };
@@ -1405,13 +1426,16 @@ export const updateStoreProfileFn = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const db = getServerClient();
 
-    // Autorização: Usuário deve ter papel de gestão no storeId ou no perfil
-    const isOwnerOrAdmin =
+    // Autorização Zero-Trust: usuário deve pertencer explicitamente à loja alvo (ou ser Admin Master)
+    const isMaster = isPlatformAdminIdentity(identity);
+    const hasScopedStoreAccess =
       identity.store_id === data.storeId ||
-      identity.role === "admin" ||
-      identity.role === "owner";
+      (Array.isArray(identity.memberships) &&
+        identity.memberships.some(
+          (m) => m.store_id === data.storeId && ["owner", "admin", "manager", "proprietario"].includes((m.role || "").toLowerCase()),
+        ));
 
-    if (!isOwnerOrAdmin) {
+    if (!isMaster && !hasScopedStoreAccess) {
       const { data: membership } = await db
         .from("workspace_members")
         .select("role")

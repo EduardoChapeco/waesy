@@ -99,7 +99,7 @@ export function UnsplashAssetPicker({
           Buscar no Unsplash
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl">
+      <DialogContent size="xl" className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Escolher imagem do Unsplash</DialogTitle>
           <DialogDescription>

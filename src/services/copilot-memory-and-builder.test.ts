@@ -95,16 +95,29 @@ describe("Bridge dos 5 Builders do Workspace", () => {
     expect(["dark", "light", "brand", "swiss", "cyber", "gourmet"]).toContain(post.theme);
   });
 
-  it("gera dossiê de turismo com cronograma e código Pix BACEN EMV válido", () => {
-    const itinerary = buildTravelItineraryPayload(
+  it("gera roteiro de turismo sem Pix fictício por padrão e emite BRCode válido quando há dados da loja", () => {
+    const cleanItinerary = buildTravelItineraryPayload(
       "Roteiro Serra Catarinense",
       "Monte um roteiro para a Serra Catarinense (Urubici) em novembro",
     );
-    expect(itinerary.destination).toContain("Serra Catarinense");
-    expect(itinerary.days.length).toBe(3);
-    expect(itinerary.days[0].activities.length).toBeGreaterThan(0);
-    expect(itinerary.pixCode).toMatch(/^000201/); // Padrão BACEN BRCode EMV
-    expect(itinerary.pixCode).toContain("6304"); // Campo CRC-16 obrigatório
+    expect(cleanItinerary.destination).toContain("Serra Catarinense");
+    expect(cleanItinerary.days.length).toBe(3);
+    expect(cleanItinerary.days[0].activities.length).toBeGreaterThan(0);
+    expect(cleanItinerary.pixCode).toBeNull();
+    expect(cleanItinerary.estimatedBudgetCents).toBeNull();
+
+    const billedItinerary = buildTravelItineraryPayload(
+      "Roteiro Serra Catarinense",
+      "Monte um roteiro para a Serra Catarinense (Urubici) em novembro",
+      {
+        pixKey: "financeiro@agenciarealm.com.br",
+        merchantName: "AGENCIA REAL",
+        merchantCity: "FLORIANOPOLIS",
+        estimatedBudgetCents: 185000,
+      },
+    );
+    expect(billedItinerary.pixCode).toMatch(/^000201/);
+    expect(billedItinerary.pixCode).toContain("6304");
   });
 
   it("executa createBuilderArtifactFromCopilot transformando em ChatArtifactData", async () => {

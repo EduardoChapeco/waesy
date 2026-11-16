@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import {
   VerifiedAddressSchema,
   VerifiedSupportChannelSchema,
@@ -232,8 +233,8 @@ export const auditStoreCompliance = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    if (!identity || !["master", "platform_admin", "admin"].includes(identity.role)) {
-      throw new Error("Ação restrita aos auditores de conformidade do Waesy.");
+    if (!isPlatformAdminIdentity(identity)) {
+      throw new Error("Ação restrita ao Administrador Master Global.");
     }
 
     let status: MarketplaceComplianceStatus = "PENDING";

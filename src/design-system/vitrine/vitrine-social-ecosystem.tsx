@@ -161,7 +161,7 @@ export function VitrineSocialStream({
   livePosts,
   className,
 }: VitrineSocialStreamProps) {
-  const { isMobile, isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isMedium, isEditorCanvas } = useEffectiveViewport();
 
   const resolvedPosts = React.useMemo(() => {
     if (dataSource === "store_posts") {
@@ -370,7 +370,7 @@ export function VitrineSocialStream({
           {resolvedPosts.map((post, idx) => renderPostCard(post, idx, false))}
         </div>
       ) : desktopLayout === "grid_3col" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className={cn("grid gap-4", isMedium ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3")}>
           {resolvedPosts.map((post, idx) => renderPostCard(post, idx, true))}
         </div>
       ) : (
@@ -574,7 +574,7 @@ export function VitrineEcosystemRail({
   liveHotpages,
   className,
 }: VitrineEcosystemRailProps) {
-  const { isMobile, isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isMedium, isEditorCanvas } = useEffectiveViewport();
 
   const resolvedItems = React.useMemo(() => {
     if (dataSource === "live" || dataSource === "live_ecosystem") {
@@ -795,11 +795,11 @@ export function VitrineEcosystemRail({
           </div>
         )
       ) : desktopLayout === "grid_3col" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className={cn("grid gap-4", isMedium ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3")}>
           {resolvedItems.map((item, idx) => renderEcosystemCard(item, idx))}
         </div>
       ) : desktopLayout === "grid_4col" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className={cn("grid gap-4", isMedium ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-4")}>
           {resolvedItems.map((item, idx) => renderEcosystemCard(item, idx))}
         </div>
       ) : (

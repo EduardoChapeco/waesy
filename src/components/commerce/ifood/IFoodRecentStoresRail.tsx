@@ -23,7 +23,7 @@ export type RecentStoresRailProps = IFoodRecentStoresRailProps;
 
 export function IFoodRecentStoresRail({
   title = "Últimas lojas",
-  viewMoreTo = "/lojas",
+  viewMoreTo = "/diretorio",
   stores,
   className,
 }: IFoodRecentStoresRailProps) {

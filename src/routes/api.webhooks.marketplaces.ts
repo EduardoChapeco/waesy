@@ -68,6 +68,29 @@ function extractProviderWebhookMeta(platform: string, rawBody: any, url: URL, he
     eventId = rawBody?.ref || rawBody?.id || rawBody?.chave_nfe || undefined;
     topic = rawBody?.status || rawBody?.situacao || undefined;
     resourceId = rawBody?.ref || rawBody?.chave_nfe || undefined;
+  } else if (platform === "99food" || platform === "rappi" || platform === "tridelivery" || platform === "amodelivery" || platform === "amoofertas" || platform === "aiqfome") {
+    eventId =
+      rawBody?.event_id ||
+      rawBody?.eventId ||
+      rawBody?.id ||
+      headers.get("x-webhook-id") ||
+      headers.get("x-request-id") ||
+      undefined;
+    topic = rawBody?.event_type || rawBody?.event || rawBody?.topic || rawBody?.status || undefined;
+    resourceId =
+      rawBody?.order_id ||
+      rawBody?.orderId ||
+      rawBody?.data?.order_id ||
+      rawBody?.data?.id ||
+      rawBody?.resourceId ||
+      undefined;
+    externalAccountId =
+      rawBody?.store_id ||
+      rawBody?.merchant_id ||
+      rawBody?.restaurant_id ||
+      rawBody?.shop_id ||
+      undefined;
+    if (externalAccountId !== undefined) externalAccountId = String(externalAccountId);
   } else {
     eventId = rawBody?.id || rawBody?.eventId || undefined;
     topic = rawBody?.topic || rawBody?.event_type || undefined;
@@ -149,6 +172,11 @@ function verifyHmacSignature(params: {
       headers.get("x-shopee-signature") ||
       headers.get("x-bling-signature") ||
       headers.get("x-magalu-signature") ||
+      headers.get("x-99food-signature") ||
+      headers.get("x-rappi-signature") ||
+      headers.get("x-tridelivery-signature") ||
+      headers.get("x-aiqfome-signature") ||
+      headers.get("x-amo-signature") ||
       headers.get("x-webhook-signature") ||
       headers.get("x-waesy-signature");
 
@@ -197,6 +225,12 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
           if (platformParam === "ifood" && process.env.IFOOD_CLIENT_SECRET) {
             candidateSecrets.push(process.env.IFOOD_CLIENT_SECRET);
           }
+          if (platformParam === "bling" && process.env.BLING_CLIENT_SECRET) {
+            candidateSecrets.push(process.env.BLING_CLIENT_SECRET);
+          }
+          if (platformParam === "magalu" && process.env.MAGALU_CLIENT_SECRET) {
+            candidateSecrets.push(process.env.MAGALU_CLIENT_SECRET);
+          }
 
           let connectorQuery = supabase
             .from("marketplace_connectors")
@@ -222,6 +256,8 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
                 safeDecryptSecret(topCreds.webhook_secret),
                 safeDecryptSecret(creds.webhook_secret),
                 safeDecryptSecret(creds.client_secret),
+                safeDecryptSecret(creds.api_secret),
+                safeDecryptSecret(creds.api_key),
                 safeDecryptSecret(creds.partner_key),
               ].filter((s): s is string => typeof s === "string" && s.trim().length > 0);
               candidateSecrets.push(...foundSecrets);
@@ -242,6 +278,10 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
             candidateSecrets.push(safeDecryptSecret(masterInt.ifood_client_secret));
           } else if (platformParam === "shopee" && masterInt.shopee_partner_key) {
             candidateSecrets.push(safeDecryptSecret(masterInt.shopee_partner_key));
+          } else if (platformParam === "bling" && masterInt.bling_client_secret) {
+            candidateSecrets.push(safeDecryptSecret(masterInt.bling_client_secret));
+          } else if (platformParam === "magalu" && masterInt.magalu_client_secret) {
+            candidateSecrets.push(safeDecryptSecret(masterInt.magalu_client_secret));
           }
 
           const verification = verifyHmacSignature({
@@ -259,6 +299,20 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
               JSON.stringify({ status: "unauthorized", error: verification.reason || "HMAC signature mismatch" }),
               {
                 status: verification.missingSecret ? 503 : 401,
+                headers: { "Content-Type": "application/json" },
+              }
+            );
+          }
+
+          if (!storeIdParam) {
+            console.warn(`[marketplaces-webhook] Tenant não resolvido para webhook (${platformParam}).`);
+            return new Response(
+              JSON.stringify({
+                status: "bad_request",
+                error: "store_id ausente e conta externa não vinculada a nenhum lojista.",
+              }),
+              {
+                status: 400,
                 headers: { "Content-Type": "application/json" },
               }
             );

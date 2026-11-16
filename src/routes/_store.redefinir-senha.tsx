@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { updatePassword, getUserSession } from "@/services/auth.functions";
-import { Lock, CheckCircle2, ShieldCheck, ShieldAlert, ArrowRight, Mail } from "lucide-react";
-import { NativeMobileHeader } from "@/components/navigation";
+import { getPublicBrandSettings } from "@/services/master.functions";
+import { CheckCircle2, ShieldAlert } from "lucide-react";
+import { AuthSplitExperienceShell } from "@/components/auth/auth-split-shell";
 
 export const Route = createFileRoute("/_store/redefinir-senha")({
  head: () => ({
@@ -16,18 +17,21 @@ export const Route = createFileRoute("/_store/redefinir-senha")({
  }),
  loader: async () => {
  try {
- const session = await getUserSession();
+ const [session, brand] = await Promise.all([
+ getUserSession().catch(() => null),
+ getPublicBrandSettings().catch(() => null),
+ ]);
  const hasActiveSession = Boolean(session?.user?.id);
- return { hasActiveSession };
+ return { hasActiveSession, brand };
  } catch {
- return { hasActiveSession: false };
+ return { hasActiveSession: false, brand: null };
  }
  },
  component: ResetPasswordPage,
 });
 
 function ResetPasswordPage() {
- const { hasActiveSession } = ((Route.useLoaderData?.() as any) || {});
+ const { hasActiveSession, brand } = ((Route.useLoaderData?.() as any) || {});
  const navigate = useNavigate();
  const [password, setPassword] = useState("");
  const [confirmPassword, setConfirmPassword] = useState("");
@@ -63,39 +67,40 @@ function ResetPasswordPage() {
  };
 
  return (
-    <div className="w-full">
-      <NativeMobileHeader
-        title="Redefinir Senha"
-        fallbackHref="/entrar"
-      />
-      <div className="min-h-screen flex items-center justify-center px-4 py-8 md:py-12">
- <div className="w-full max-w-md bg-card border border-border/60 rounded-lg p-6 sm:p-8 shadow-xs">
+ <AuthSplitExperienceShell
+ brand={brand}
+ backHref="/entrar"
+ subtitle="Segurança da Conta"
+ desktopHeadline="Defina sua nova credencial de acesso."
+ desktopDescription="Use uma senha forte para proteger suas operações no Workspace e nas compras da cidade."
+ >
+ <div className="space-y-6">
  {success ? (
- <div className="text-center space-y-4 py-2">
- <div className="size-12 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
+ <div className="text-left space-y-4 py-2">
+ <div className="size-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
  <CheckCircle2 className="size-6" />
  </div>
  <div className="space-y-1">
- <h2 className="text-lg font-bold text-foreground">Senha Atualizada</h2>
- <p className="text-xs text-muted-foreground">
+ <h1 className="text-2xl font-bold text-foreground">Senha Atualizada</h1>
+ <p className="text-xs sm:text-sm text-muted-foreground">
  Sua credencial de acesso foi alterada com sucesso.
  </p>
  </div>
  <Button
  asChild
- className="w-full h-11 rounded-lg bg-foreground text-background font-bold text-xs hover:opacity-90"
+ className="w-full h-11 min-h-11 rounded-xl font-semibold text-xs"
  >
  <Link to="/entrar">Ir para o Login</Link>
  </Button>
  </div>
  ) : !hasActiveSession ? (
- <div className="text-center space-y-4 py-2">
- <div className="size-12 rounded-lg bg-warning/10 text-warning-strong  mx-auto flex items-center justify-center">
+ <div className="text-left space-y-4 py-2">
+ <div className="size-12 rounded-xl bg-warning/10 text-warning-strong flex items-center justify-center">
  <ShieldAlert className="size-6" />
  </div>
  <div className="space-y-1">
- <h2 className="text-lg font-bold text-foreground">Link Expirado ou Inválido</h2>
- <p className="text-xs text-muted-foreground">
+ <h1 className="text-2xl font-bold text-foreground">Link Expirado ou Inválido</h1>
+ <p className="text-xs sm:text-sm text-muted-foreground">
  Solicite um novo link de redefinição para o seu e-mail.
  </p>
  </div>
@@ -103,14 +108,14 @@ function ResetPasswordPage() {
  <div className="pt-2 space-y-2">
  <Button
  asChild
- className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:opacity-90"
+ className="w-full h-11 min-h-11 rounded-xl font-semibold text-xs"
  >
  <Link to="/recuperar-senha">Solicitar Novo Link</Link>
  </Button>
  <Button
  asChild
- variant="ghost"
- className="w-full h-11 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
+ variant="outline"
+ className="w-full h-11 min-h-11 rounded-xl text-xs font-semibold"
  >
  <Link to="/entrar">Voltar ao Login</Link>
  </Button>
@@ -118,9 +123,9 @@ function ResetPasswordPage() {
  </div>
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4">
- <div className="space-y-1 text-center mb-2">
- <h1 className="text-xl font-bold text-foreground tracking-tight">Criar Nova Senha</h1>
- <p className="text-xs text-muted-foreground">
+ <div className="space-y-1 text-left mb-2">
+ <h1 className="text-2xl font-semibold text-foreground tracking-tight">Criar Nova Senha</h1>
+ <p className="text-xs sm:text-sm text-muted-foreground">
  Digite sua nova senha de acesso.
  </p>
  </div>
@@ -133,7 +138,7 @@ function ResetPasswordPage() {
  placeholder="Mínimo 6 caracteres"
  value={password}
  onChange={(e) => setPassword(e.target.value)}
- className="h-11 rounded-lg bg-muted/30 text-xs"
+ className="h-11 rounded-xl bg-muted/30 text-base md:text-sm"
  required
  />
  </div>
@@ -145,7 +150,7 @@ function ResetPasswordPage() {
  placeholder="Repita a nova senha"
  value={confirmPassword}
  onChange={(e) => setConfirmPassword(e.target.value)}
- className="h-11 rounded-lg bg-muted/30 text-xs"
+ className="h-11 rounded-xl bg-muted/30 text-base md:text-sm"
  required
  />
  </div>
@@ -154,14 +159,13 @@ function ResetPasswordPage() {
  <Button
  type="submit"
  disabled={isLoading}
- className="w-full h-11 rounded-lg bg-foreground text-background font-bold text-xs hover:opacity-90 transition-opacity mt-2"
+ className="w-full h-11 min-h-11 rounded-xl font-semibold text-xs mt-2"
  >
  {isLoading ? "Salvando..." : "Salvar Nova Senha"}
  </Button>
  </form>
  )}
  </div>
- </div>
- </div>
+ </AuthSplitExperienceShell>
  );
 }

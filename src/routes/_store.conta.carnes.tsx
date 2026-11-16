@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CreditCard, CheckCircle2, Clock, AlertCircle, Upload, FileText, Building2, Calendar, DollarSign, Copy, ChevronRight, ShieldCheck, TrendingDown, Info, Check, ExternalLink, FileCheck, MessageSquare, Smartphone, ShoppingBag, HelpCircle } from "lucide-react";
 import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { NativeMobileHeader } from "@/components/navigation";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -59,7 +59,7 @@ function ClientCarnesPage() {
 
   const carnes = data?.carnes || [];
   const metrics = data?.metrics;
-  const { isCompact } = useWindowSizeClass();
+  const { isCompact } = useEffectiveViewport();
 
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "overdue" | "settled">("all");
   const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
@@ -609,7 +609,7 @@ function ClientCarnesPage() {
                             </div>
                             {isPaid && (
                               <div className="text-xs text-emerald-600 flex items-center gap-1 justify-end">
-                                <ShieldCheck className="h-3 w-3" /> No Ledger
+                                <ShieldCheck className="h-3 w-3" /> Confirmado
                               </div>
                             )}
                           </div>

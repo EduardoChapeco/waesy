@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 
 export interface SystemOnboardingStep {
   id: string;
@@ -69,10 +70,7 @@ export const listAllSystemOnboardingSteps = createServerFn({ method: "GET" }).ha
   const db = getServerClient();
   const identity = await getServerIdentity();
 
-  const isPlatformAdmin =
-    identity?.role === "platform_admin" ||
-    identity?.role === "master" ||
-    identity?.role === "superadmin";
+  const isPlatformAdmin = isPlatformAdminIdentity(identity);
 
   if (!isPlatformAdmin) {
     return [];
@@ -109,10 +107,7 @@ export const saveSystemOnboardingStep = createServerFn({ method: "POST" })
     const db = getServerClient();
     const identity = await getServerIdentity();
 
-    const isPlatformAdmin =
-      identity?.role === "platform_admin" ||
-      identity?.role === "master" ||
-      identity?.role === "superadmin";
+    const isPlatformAdmin = isPlatformAdminIdentity(identity);
 
     if (!isPlatformAdmin) {
       throw new Error("Apenas administradores master podem gerenciar os passos de onboarding.");
@@ -157,10 +152,7 @@ export const deleteSystemOnboardingStep = createServerFn({ method: "POST" })
     const db = getServerClient();
     const identity = await getServerIdentity();
 
-    const isPlatformAdmin =
-      identity?.role === "platform_admin" ||
-      identity?.role === "master" ||
-      identity?.role === "superadmin";
+    const isPlatformAdmin = isPlatformAdminIdentity(identity);
 
     if (!isPlatformAdmin) {
       throw new Error("Apenas administradores master podem remover passos de onboarding.");

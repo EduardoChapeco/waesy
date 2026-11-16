@@ -10,10 +10,11 @@ import {
   FileText,
   Globe,
   MapPin,
-  Sparkles,
+  Palette,
   Square,
   Paperclip,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -59,6 +60,8 @@ export interface ChatComposerProps {
   onAttachFile?: () => void;
   quickToolMode?: import("@/types/chat").CopilotQuickToolMode;
   onQuickToolModeChange?: (mode: import("@/types/chat").CopilotQuickToolMode) => void;
+  prefillPrompt?: string | null;
+  onPrefillConsumed?: () => void;
   contextSummary?: string;
   showQuickTools?: boolean;
   className?: string;
@@ -84,6 +87,8 @@ export function ChatComposer({
   onAttachFile,
   quickToolMode = "default",
   onQuickToolModeChange,
+  prefillPrompt,
+  onPrefillConsumed,
   contextSummary = "Acesso completo",
   showQuickTools = true,
   className,
@@ -94,9 +99,30 @@ export function ChatComposer({
   const [attachError, setAttachError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+
+  useEffect(() => {
+    if (typeof prefillPrompt === "string" && prefillPrompt.trim().length > 0) {
+      setText(prefillPrompt);
+      onPrefillConsumed?.();
+      requestAnimationFrame(() => textareaRef.current?.focus());
+    }
+  }, [prefillPrompt, onPrefillConsumed]);
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
 
   // Auto-resize textarea ao digitar
   useEffect(() => {
@@ -201,8 +227,97 @@ export function ChatComposer({
     }
   };
 
-  const toggleRecording = () => {
-    setIsRecording((prev) => !prev);
+  const toggleRecording = async () => {
+    if (isRecording) {
+      const recorder = mediaRecorderRef.current;
+      if (recorder && recorder.state !== "inactive") {
+        recorder.stop();
+      } else {
+        mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+        setIsRecording(false);
+      }
+      return;
+    }
+
+    if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      toast.error("Microfone ou MediaRecorder não suportado neste navegador.");
+      return;
+    }
+
+    try {
+      setAttachError(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      audioChunksRef.current = [];
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        setIsRecording(false);
+        mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        audioChunksRef.current = [];
+        if (audioBlob.size === 0) return;
+
+        setIsTranscribing(true);
+        try {
+          const formData = new FormData();
+          formData.append("file", audioBlob, "ditado.webm");
+          formData.append("language", "pt");
+          const res = await fetch("/api/ai/transcribe", {
+            method: "POST",
+            credentials: "same-origin",
+            body: formData,
+          });
+          const data = (await res.json().catch(() => ({}))) as {
+            text?: string;
+            error?: string;
+          };
+          if (!res.ok) {
+            const errMsg = data.error || "Falha ao transcrever o áudio.";
+            setAttachError(errMsg);
+            toast.error(errMsg);
+            return;
+          }
+          if (data.text) {
+            setText((prev) => `${prev ? `${prev.trim()} ` : ""}${data.text}`);
+            requestAnimationFrame(() => textareaRef.current?.focus());
+          } else {
+            toast.info("Nenhuma fala detectada no áudio gravado.");
+          }
+        } catch (err: any) {
+          const errMsg = err?.message || "Erro de rede ao transcrever áudio.";
+          setAttachError(errMsg);
+          toast.error(errMsg);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    } catch (err: any) {
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+      setIsRecording(false);
+      const msg =
+        err?.name === "NotAllowedError"
+          ? "Permissão de microfone negada no navegador."
+          : err?.message || "Não foi possível acessar o microfone.";
+      setAttachError(msg);
+      toast.error(msg);
+    }
   };
 
   const formatTimer = (seconds: number) => {
@@ -309,11 +424,16 @@ export function ChatComposer({
               <Button
                 type="button"
                 variant="ghost"
-                onClick={toggleRecording}
+                onClick={() => void toggleRecording()}
                 className="min-h-11 px-3 text-xs text-destructive hover:bg-destructive/10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Parar
+                Parar e transcrever
               </Button>
+            </div>
+          ) : isTranscribing ? (
+            <div className="flex items-center gap-2 w-full min-h-11 px-1 text-xs text-muted-foreground">
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none text-primary shrink-0" />
+              <span>Transcrevendo áudio via Whisper...</span>
             </div>
           ) : (
             <textarea
@@ -385,7 +505,7 @@ export function ChatComposer({
                       onClick={() => selectQuickMode("creative_post")}
                       className="min-h-11 gap-2 cursor-pointer"
                     >
-                      <Sparkles className="size-4 text-muted-foreground" />
+                      <Palette className="size-4 text-muted-foreground" />
                       <span>Post criativo</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>

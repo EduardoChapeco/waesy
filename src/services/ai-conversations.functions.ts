@@ -6,17 +6,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
 import { inspectPromptSecurity, buildSandboxedPromptPayload } from "@/lib/ai/prompt-shield";
-import { formatMoney } from "@/lib/money";
-import { extractCreativePostSpecFromPrompt } from "@/lib/builder/canva-post-templates";
+import { CANONICAL_ARTIFACT_TYPES, normalizeArtifactType } from "@/lib/ai/artifact-contract";
 import { executeAiCoreGateway } from "./ai-core-gateway.functions";
 import {
   executeAutonomousCopilotTask,
   fragmentAndOptimizePrompt,
   needsCityClarification,
 } from "./autonomous-copilot-orchestrator";
-import { harvestAndPersistPlaces } from "./mining/places-harvester";
 import { resolveActiveCity, normalizeActiveCity } from "@/lib/city-helper";
 import { executeMcpToolCall } from "./mcp-server.functions";
 import { MCP_TOOL_REGISTRY } from "@/registries/mcp-tool-registry";
@@ -46,11 +44,6 @@ import {
   extractAndSaveFactsFromConversation,
   storeSemanticMemoryChunk,
 } from "./copilot-memory.functions";
-import {
-  createBuilderArtifactFromCopilot,
-  buildTravelItineraryPayload,
-  detectBuilderDocType,
-} from "./builder-copilot-bridge";
 import { retrieveRelevantProjectKnowledgeContext } from "./copilot-projects.functions";
 import {
   listActiveExternalMcpToolsForUser,
@@ -58,6 +51,17 @@ import {
 } from "./mcp-connectors.functions";
 import { getActiveSkillSlugsForUser } from "./ai-skills-router.functions";
 import { runSquadGraphExecution } from "./ai-agent-squad-orchestrator.functions";
+import { runCopilotReactOrchestrator } from "./copilot-react-orchestrator";
+import {
+  controlCopilotExecution,
+  loadCopilotExecutionForContinue,
+} from "./copilot-execution-persistence";
+import type {
+  AiCopilotContext,
+  AiExecutionResult,
+  AiToolExecutionRecord,
+} from "@/lib/ai/copilot-types";
+export type { AiCopilotContext, AiExecutionResult, AiToolExecutionRecord } from "@/lib/ai/copilot-types";
 
 // ============================================================
 // Schemas de Validação
@@ -95,18 +99,7 @@ export const saveAiArtifactSchema = z.object({
   threadId: z.string().uuid(),
   messageId: z.string().uuid().optional(),
   storeId: z.string().uuid().optional(),
-  artifactType: z.enum([
-    "document",
-    "spreadsheet",
-    "presentation",
-    "landing_page",
-    "proposal",
-    "image",
-    "dashboard",
-    "map_view",
-    "creative_post",
-    "social_post",
-  ]),
+  artifactType: z.enum(CANONICAL_ARTIFACT_TYPES),
   title: z.string().min(2),
   version: z.number().int().positive().default(1),
   data: z.record(z.any()).default({}),
@@ -212,28 +205,6 @@ export interface AiConversationThreadDTO {
   updated_at: string;
   last_message_snippet?: string;
   last_message_at?: string;
-}
-
-export interface AiExecutionResult {
-  responseMessage: string;
-  activitySteps: AIActivityStep[];
-  executionId?: string;
-  toolCalls?: AiToolExecutionRecord[];
-  artifact?: ChatArtifactData;
-  structuredPayload?: Record<string, any>;
-  sources?: ChatSourceItem[];
-  updatedMemory: Record<string, any>;
-  fsmPhase?: CopilotFsmPhase;
-  fsmState?: CopilotFsmExecutionState;
-}
-
-export interface AiToolExecutionRecord {
-  tool: string;
-  arguments: Record<string, any>;
-  status: "success" | "error";
-  durationMs: number;
-  resultSummary?: string;
-  executedAt: string;
 }
 
 // ============================================================
@@ -559,23 +530,6 @@ export function resolveAiPipelineSteps(
 // Motor Assíncrono Avançado de Execução ReAct com Tool-Calling Real
 // ============================================================
 
-export interface AiCopilotContext {
-  threadId?: string;
-  userId?: string;
-  storeId?: string;
-  folderId?: string | null;
-  projectId?: string | null;
-  projectKnowledgeContext?: string;
-  quickToolMode?: CopilotQuickToolMode;
-  userLat?: number;
-  userLng?: number;
-  city?: string;
-  state?: string;
-  signal?: AbortSignal;
-  /** URLs (storage) dos anexos enviados pelo usuário nesta mensagem. */
-  attachments?: string[];
-}
-
 export interface ResolvedCopilotAttachments {
   images: Array<{ mimeType: string; base64: string }>;
   textBlocks: string[];
@@ -862,20 +816,10 @@ export function isExplicitCreationOrBuilderPrompt(
   ) {
     return true;
   }
-  const prevIntent = String(workingMemory?.last_intent || "").toLowerCase();
-  if (
-    (prevIntent === "creative_post" || prevIntent === "create_ad") &&
-    (/\b(oferta|desconto|confira|garanta|aproveit|menos\s+de|por\s+pessoa|all\s*inclusive|story|feed|legenda|t[íi]tulo|cta)\b/i.test(
-      lower,
-    ) ||
-      text.includes('"'))
-  ) {
-    return true;
-  }
   return false;
 }
 
-export function detectIntent(text: string, workingMemory?: Record<string, any>): string {
+export function detectIntent(text: string, _workingMemory?: Record<string, any>): string {
   const lower = text.toLowerCase();
   if (
     lower.includes("dashboard") ||
@@ -895,12 +839,7 @@ export function detectIntent(text: string, workingMemory?: Record<string, any>):
     lower.includes("instagram") ||
     lower.includes("social media") ||
     lower.includes("foramto") ||
-    /\bformato\s+(?:story|stories|feed|retrato|quadrado|1:1|9:16|4:5)\b/i.test(lower) ||
-    ((workingMemory?.last_intent === "creative_post" || workingMemory?.last_intent === "create_ad") &&
-      (/\b(oferta|desconto|confira|garanta|aproveit|menos\s+de|por\s+pessoa|all\s*inclusive|legenda|t[íi]tulo|cta)\b/i.test(
-        lower,
-      ) ||
-        text.includes('"')))
+    /\bformato\s+(?:story|stories|feed|retrato|quadrado|1:1|9:16|4:5)\b/i.test(lower)
   ) {
     return "creative_post";
   }
@@ -1010,41 +949,6 @@ export function detectIntent(text: string, workingMemory?: Record<string, any>):
     return "search_catalog";
   }
   return "general_chat";
-}
-
-function extractSearchTerm(text: string): string {
-  const clean = text
-    .replace(
-      /(onde\s+fica|onde\s+tem|tem\s+alguma|tem\s+algum|procuro|gostaria\s+de|quais\s+os\s+melhores|quais\s+os|qual\s+o\s+melhor|melhores|perto\s+de\s+mim|na\s+minha\s+cidade|em\s+[a-zà-ÿ\s-]+$)/gi,
-      "",
-    )
-    .replace(/\b(mostrar|abrir|ver|exibir|gerar)?\s*(no\s+)?mapas?\b\s*(de|da|do|dos|das)?/gi, "")
-    .replace(/^[\s,:-]+|[\s,:-]+$/g, "")
-    .trim();
-  if (!clean && /\bmapas?\b/i.test(text)) {
-    return "";
-  }
-  return clean.slice(0, 40) || text.trim();
-}
-
-function derivePlaceOpenStatus(workingHours: unknown): boolean | null {
-  if (!workingHours || typeof workingHours !== "object") return null;
-  const value = workingHours as Record<string, any>;
-  if (typeof value.is_open === "boolean") return value.is_open;
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const today = value[days[new Date().getDay()]] || value[days[new Date().getDay()].slice(0, 3)];
-  if (!today || typeof today !== "object") return null;
-  if (today.closed === true || today.is_closed === true) return false;
-  const open = String(today.open || today.opens || "");
-  const close = String(today.close || today.closes || "");
-  if (!/^\d{1,2}:\d{2}$/.test(open) || !/^\d{1,2}:\d{2}$/.test(close)) return null;
-  const now = new Date();
-  const current = now.getHours() * 60 + now.getMinutes();
-  const toMinutes = (time: string) => {
-    const [h, m] = time.split(":").map(Number);
-    return h * 60 + m;
-  };
-  return current >= toMinutes(open) && current <= toMinutes(close);
 }
 
 /** Impede que provider, crawler ou RPC externo bloqueie o request do chat. */
@@ -1163,24 +1067,35 @@ export async function executeAiCopilotPipeline(
     let platformSearch: InternalSearchResult | null = null;
     if (!isExplicitCreationOrBuilderPrompt(userPrompt, workingMemory) && shouldSearchPlatform(userPrompt)) {
       const searchStart = Date.now();
+      const searchStepId = `step-platform-search-${searchStart}`;
+      const startedAtIso = new Date(searchStart).toISOString();
       fsm.transition("RUNNING", "Executando a busca soberana da plataforma");
       fsm.transition("WAITING_TOOL", "Consultando o catálogo soberano da plataforma");
-      platformSearch = await searchPlatformForCopilot(db, userPrompt);
-      steps.push({
-        id: `step-platform-search-${searchStart}`,
+      const searchRunningStep: AIActivityStep = {
+        id: searchStepId,
         type: "search",
         label: "Central de Descoberta Local",
-        detail:
-          platformSearch.cards.length > 0
-            ? `${platformSearch.cards.length} resultado(s) encontrado(s) no sistema`
-            : "Nenhum resultado local encontrado no momento",
-        status: "completed",
+        detail: "Consultando registros verificados na plataforma",
+        status: "running",
         fsmPhase: "WAITING_TOOL",
-        startedAt: new Date(searchStart).toISOString(),
+        startedAt: startedAtIso,
+      };
+      await context.onEvent?.({ type: "step_started", step: searchRunningStep });
+      platformSearch = await searchPlatformForCopilot(db, userPrompt);
+      const searchDetail =
+        platformSearch.cards.length > 0
+          ? `${platformSearch.cards.length} resultado(s) encontrado(s) no sistema`
+          : "Nenhum resultado local encontrado no momento";
+      const searchCompletedStep: AIActivityStep = {
+        ...searchRunningStep,
+        detail: searchDetail,
+        status: "completed",
         completedAt: new Date().toISOString(),
         durationMs: Date.now() - searchStart,
         tokensUsed: 0,
-      });
+      };
+      steps.push(searchCompletedStep);
+      await context.onEvent?.({ type: "step_completed", step: searchCompletedStep });
 
       if (platformSearch.cards.length > 0) {
         updatedMemory.last_platform_search = {
@@ -1222,9 +1137,12 @@ export async function executeAiCopilotPipeline(
         ])
       : [[] as string[], [] as Awaited<ReturnType<typeof listActiveExternalMcpToolsForUser>>];
 
-    // Executa o Gateway de IA Soberano se houver modelo ativo no pool (com Prompt Sandboxing)
+    // Executa o Gateway de IA Soberano no Estágio 1 apenas no modo síncrono;
+    // no modo streamReact o orquestrador ReAct executa planejamento multi-step e streaming real.
+    const skipStage1Gateway = Boolean(context.streamReact && context.onEvent);
     let gatewayResponse: any = null;
-    try {
+    if (!skipStage1Gateway) {
+      try {
       const [longTermMemory, projectKnowledgeBlock] = await Promise.all([
         context.userId
           ? assembleLongTermContext({
@@ -1389,11 +1307,12 @@ Responda SEMPRE em formato JSON com os campos:
           }
         }
       }
-    } catch (gwErr) {
-      console.warn(
-        "[AI-COPILOT] Falha ou ausência de chave no gateway, executando dispatcher determinístico:",
-        gwErr,
-      );
+      } catch (gwErr) {
+        console.warn(
+          "[AI-COPILOT] Falha ou ausência de chave no gateway, executando dispatcher determinístico:",
+          gwErr,
+        );
+      }
     }
 
     const forcedQuickIntent =
@@ -1424,21 +1343,35 @@ Responda SEMPRE em formato JSON com os campos:
         ? deterministicIntent
         : gatewayIntent || deterministicIntent);
     const toolArgs = gatewayResponse?.tool_args || {};
-    const isCreationOrBuilderIntent = [
-      "creative_post",
-      "create_ad",
-      "ads_campaign",
-      "presentation_deck",
-      "website_builder",
-      "financial_report",
-      "commercial_proposal",
-      "generate_dashboard",
-    ].includes(intent);
 
-    // ── 0. Orquestrador autônomo de mineração e copilot (planilhas, leads, CNPJ, processos CNJ, builder) ──
+    // Se é retomada de checkpoint durável, delega diretamente ao orquestrador ReAct
+    if (context.continueExecutionId) {
+      const resumedOutcome = await runCopilotReactOrchestrator({
+        userPrompt,
+        workingMemory: updatedMemory,
+        context,
+        resolvedAttachments,
+        recentMessages: context.recentMessages,
+        precomputedStage1: {
+          intent: forcedQuickIntent,
+          gatewayResponse: null,
+          platformSearch,
+          singleCallMode: false,
+        },
+        onEvent: context.onEvent,
+      });
+      return {
+        ...resumedOutcome,
+        sources: resumedOutcome.sources || [],
+        updatedMemory: { ...updatedMemory, ...(resumedOutcome.updatedMemory || {}) },
+      };
+    }
+
+    // ── 0. Orquestrador autônomo de mineração e copilot (leads, CNPJ, processos CNJ, biolink/ficha) ──
     const isAutonomousOrMiningRequest =
-      !["creative_post", "create_ad", "ads_campaign", "presentation_deck", "website_builder", "interactive_map"].includes(intent) &&
-      (/\b(minerar|minere|minera[çc][ãa]o|planilha|tabela|exportar leads|extrair leads|prospec[çc][ãa]o|prospectar|sdr|bdr|ficha t[eé]cnica|criar biolink|montar biolink)\b/i.test(
+      !["creative_post", "create_ad", "ads_campaign", "presentation_deck", "website_builder", "interactive_map", "financial_report", "generate_dashboard"].includes(intent) &&
+      context.quickToolMode !== "website_builder" &&
+      (/\b(minerar|minere|minera[çc][ãa]o|exportar leads|extrair leads|prospec[çc][ãa]o|prospectar|sdr|bdr|ficha t[eé]cnica|criar biolink|montar biolink)\b/i.test(
         userPrompt,
       ) ||
         /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/.test(userPrompt) ||
@@ -1453,7 +1386,7 @@ Responda SEMPRE em formato JSON com os campos:
       fsm.transition("NEEDS_CLARIFICATION", "Recorte municipal ausente no prompt e no contexto");
       return {
         responseMessage:
-          'Informe a cidade para a busca (ex.: "em Chapecó") ou ative sua localização.',
+          'Informe a cidade desejada para a busca (ex.: "em Florianopolis") ou ative sua localizacao.',
         activitySteps: steps,
         sources: [],
         updatedMemory,
@@ -1472,7 +1405,19 @@ Responda SEMPRE em formato JSON com os campos:
     let responseMessage = gatewayResponse?.message || "";
 
     if (isAutonomousOrMiningRequest) {
+      const miningStart = Date.now();
+      const miningStepId = `step-mining-${miningStart}`;
       fsm.transition("WAITING_TOOL", "Executando mineração autônoma de dados");
+      const miningRunningStep: AIActivityStep = {
+        id: miningStepId,
+        type: "tool",
+        label: "Mineração Autônoma & Inteligência Territorial",
+        detail: `Executando extração verificada (${context.city || "região ativa"})`,
+        status: "running",
+        fsmPhase: "WAITING_TOOL",
+        startedAt: new Date(miningStart).toISOString(),
+      };
+      await context.onEvent?.({ type: "step_started", step: miningRunningStep });
       try {
         const copilotResult = await executeAutonomousCopilotTask(userPrompt, {
           threadId: context.threadId,
@@ -1513,6 +1458,10 @@ Responda SEMPRE em formato JSON com os campos:
               ],
             };
           }
+          await context.onEvent?.({
+            type: "artifact_ready",
+            artifact: artifact as unknown as Record<string, unknown>,
+          });
         }
 
         updatedMemory.last_mining_task = copilotResult.domain;
@@ -1526,15 +1475,47 @@ Responda SEMPRE em formato JSON com os campos:
         } else {
           fsm.recordFailure(copilotResult.error || "Falha na mineração autônoma");
         }
+        await context.onEvent?.({
+          type: "step_completed",
+          step: {
+            ...miningRunningStep,
+            status: copilotResult.success ? "completed" : "failed",
+            detail: copilotResult.summaryMessage.slice(0, 140),
+            completedAt: new Date().toISOString(),
+            durationMs: Date.now() - miningStart,
+          },
+        });
       } catch (autoErr: any) {
         console.warn("[COPILOT-AUTONOMOUS-BOUNDARY] Falha na mineração capturada:", autoErr);
         fsm.recordFailure(autoErr);
         responseMessage = `Tivemos uma oscilação rápida ao buscar esses dados externos. Suas preferências foram salvas com segurança e você pode tentar novamente em instantes.`;
+        await context.onEvent?.({
+          type: "step_completed",
+          step: {
+            ...miningRunningStep,
+            status: "failed",
+            detail: String(autoErr?.message || "Falha na mineração").slice(0, 140),
+            completedAt: new Date().toISOString(),
+            durationMs: Date.now() - miningStart,
+          },
+        });
+      }
+
+      if (structuredPayload) {
+        await context.onEvent?.({
+          type: "structured",
+          source: "platform",
+          payload: structuredPayload as Record<string, unknown>,
+        });
+      }
+      if (responseMessage) {
+        await context.onEvent?.({ type: "delta", text: responseMessage, final: true });
       }
 
       return {
         responseMessage,
         activitySteps: steps,
+        executionId,
         artifact,
         structuredPayload,
         updatedMemory,
@@ -1544,14 +1525,19 @@ Responda SEMPRE em formato JSON com os campos:
     }
 
     // ── 0.05 Orquestração de Squads (Manus Fragmentation) ──
+    const isExplicitSlashSquad = /^\/squad\b/i.test(userPrompt.trim());
     const squadTriggerMatch =
-      /\/squad\b|\b(executar|acionar|orquestrar)\s+squad\b|\b(sales_squad|publishing_squad|finance_squad)\b|\bhandoff\s+multi-?agente|\bequipe\s+de\s+agentes/i.test(
-        userPrompt,
-      );
+      isExplicitSlashSquad ||
+      (!context.streamReact &&
+        /\b(executar|acionar|orquestrar)\s+squad\b|\b(sales_squad|publishing_squad|finance_squad)\b|\bhandoff\s+multi-?agente|\bequipe\s+de\s+agentes/i.test(
+          userPrompt,
+        ));
     const isSquadSkillEnabled =
       activeSkillSlugs.length === 0 || activeSkillSlugs.includes("squad_orchestrator");
 
     if (squadTriggerMatch && isSquadSkillEnabled) {
+      const squadStart = Date.now();
+      const squadStepId = `step-squad-${squadStart}`;
       fsm.transition("WAITING_TOOL", "Fragmentando demanda entre agentes especialistas do Squad");
       const chosenSquadSlug = /\bfinance_squad\b|\b(pix|comprovante|concilia|faturamento|caixa)\b/i.test(
         userPrompt,
@@ -1562,6 +1548,17 @@ Responda SEMPRE em formato JSON com os campos:
             )
           ? "publishing_squad"
           : "sales_squad";
+
+      const squadRunningStep: AIActivityStep = {
+        id: squadStepId,
+        type: "skill",
+        label: `Squad ${chosenSquadSlug}`,
+        detail: "Executando handoff supervisionado entre especialistas",
+        status: "running",
+        fsmPhase: "WAITING_TOOL",
+        startedAt: new Date(squadStart).toISOString(),
+      };
+      await context.onEvent?.({ type: "step_started", step: squadRunningStep });
 
       try {
         const squadRun = await runSquadGraphExecution(
@@ -1576,7 +1573,7 @@ Responda SEMPRE em formato JSON com os campos:
         );
 
         for (const h of squadRun.handoffs) {
-          steps.push({
+          const stepObj: AIActivityStep = {
             id: `step-squad-${chosenSquadSlug}-${h.stepIndex}-${Date.now()}`,
             type: "skill",
             label: `${h.toAgent} (Etapa ${h.stepIndex})`,
@@ -1586,7 +1583,9 @@ Responda SEMPRE em formato JSON com os campos:
             startedAt: new Date().toISOString(),
             completedAt: new Date().toISOString(),
             durationMs: h.latencyMs,
-          });
+          };
+          steps.push(stepObj);
+          await context.onEvent?.({ type: "step_completed", step: stepObj });
         }
 
         const finalText =
@@ -1611,6 +1610,23 @@ Responda SEMPRE em formato JSON com os campos:
             content: finalText,
           },
         };
+        await context.onEvent?.({
+          type: "artifact_ready",
+          artifact: artifact as unknown as Record<string, unknown>,
+        });
+        await context.onEvent?.({
+          type: "step_completed",
+          step: {
+            ...squadRunningStep,
+            status: "completed",
+            detail: `${squadRun.stepsCompleted} etapa(s) concluída(s)`,
+            completedAt: new Date().toISOString(),
+            durationMs: Date.now() - squadStart,
+          },
+        });
+        if (finalText) {
+          await context.onEvent?.({ type: "delta", text: finalText, final: true });
+        }
 
         if (canTransitionCopilotPhase(fsm.currentPhase, "PARTIAL_RESULT")) {
           fsm.transition("PARTIAL_RESULT", `Squad ${chosenSquadSlug} concluiu ${squadRun.stepsCompleted} etapas`);
@@ -1636,8 +1652,20 @@ Responda SEMPRE em formato JSON com os campos:
         };
       } catch (squadErr: any) {
         fsm.recordFailure(squadErr);
+        const failText = `Não foi possível concluir a orquestração do squad "${chosenSquadSlug}": ${String(squadErr?.message || "Erro interno").slice(0, 120)}`;
+        await context.onEvent?.({
+          type: "step_completed",
+          step: {
+            ...squadRunningStep,
+            status: "failed",
+            detail: String(squadErr?.message || "Erro interno").slice(0, 120),
+            completedAt: new Date().toISOString(),
+            durationMs: Date.now() - squadStart,
+          },
+        });
+        await context.onEvent?.({ type: "delta", text: failText, final: true });
         return {
-          responseMessage: `Não foi possível concluir a orquestração do squad "${chosenSquadSlug}": ${String(squadErr?.message || "Erro interno").slice(0, 120)}`,
+          responseMessage: failText,
           activitySteps: steps,
           updatedMemory,
           fsmPhase: fsm.currentPhase,
@@ -1781,1272 +1809,56 @@ Responda SEMPRE em formato JSON com os campos:
       };
     }
 
-    // ── 1. Estabelecimentos & Places / Mapas Interativos ──
-    if (
-      intent === "search_places" ||
-      intent === "interactive_map" ||
-      (!isCreationOrBuilderIntent &&
-        (promptLower.includes("onde fica") ||
-          promptLower.includes("onde tem") ||
-          promptLower.includes("perto") ||
-          promptLower.includes("mapa") ||
-          promptLower.includes("cafeteria") ||
-          promptLower.includes("restaurante") ||
-          promptLower.includes("empresa") ||
-          promptLower.includes("loja") ||
-          promptLower.includes("hotel") ||
-          promptLower.includes("hotéis") ||
-          promptLower.includes("hoteis") ||
-          promptLower.includes("pousada") ||
-          promptLower.includes("pousadas") ||
-          promptLower.includes("hospedagem")))
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-places-${stepStart}`,
-        type: "tool",
-        label:
-          gatewayResponse?.step_label ||
-          (intent === "interactive_map" ? "Mapa Geográfico Local" : "Busca de Estabelecimentos"),
-        detail:
-          gatewayResponse?.step_detail ||
-          "Buscando estabelecimentos ativos e preservando coordenadas geográficas",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 160).toISOString(),
-        durationMs: 160,
-        tokensUsed: 120,
-      });
-
-      const rawTerm = toolArgs.query || extractSearchTerm(promptLower);
-      const term = rawTerm && !/^mapas?$/i.test(rawTerm) ? rawTerm : "";
-      let query = db
-        .from("directory_listings")
-        .select(
-          "id, store_id, business_name, category, description, address, latitude, longitude, contact_phone, contact_whatsapp, working_hours, is_verified, rating, avatar_url, banner_url, status",
-        )
-        .eq("status", "active")
-        .limit(6);
-
-      if (term) {
-        query = query.or(
-          `business_name.ilike.%${term}%,category.ilike.%${term}%,description.ilike.%${term}%`,
-        );
-      }
-
-      let { data: listings } = await query;
-
-      // Se a base local não possui resultados para esse termo (ex.: hotéis em Chapecó), consulta o harvester georreferenciado
-      if ((!listings || listings.length === 0) && term) {
-        try {
-          const harvestRes = await harvestAndPersistPlaces({
-            query: term,
-            city: context.city || "Chapecó",
-            state: context.state || "SC",
-            storeId: context.storeId,
-          });
-          if (harvestRes.places && harvestRes.places.length > 0) {
-            const { data: freshListings } = await query;
-            if (freshListings && freshListings.length > 0) {
-              listings = freshListings;
-            }
+    // ── Orquestrador ReAct Unificado (Tools, Browser, Memória Hierárquica & Ativos) ──
+    const reactOutcome = await runCopilotReactOrchestrator({
+      userPrompt,
+      workingMemory: updatedMemory,
+      context,
+      resolvedAttachments,
+      recentMessages: context.recentMessages,
+      precomputedStage1: skipStage1Gateway
+        ? {
+            intent: forcedQuickIntent,
+            gatewayResponse: null,
+            platformSearch,
+            singleCallMode: false,
           }
-        } catch (hErr) {
-          console.warn("[search_places] Harvester de apoio falhou de forma não-bloqueante:", hErr);
-        }
-      }
-
-      const places = (listings && listings.length > 0 ? listings : []).map((l: any) => {
-        let dist = null;
-        if (context.userLat && context.userLng && l.latitude && l.longitude) {
-          dist = calculateHaversineDistance(
-            context.userLat,
-            context.userLng,
-            l.latitude,
-            l.longitude,
-          );
-        }
-        return {
-          id: l.id,
-          store_id: l.store_id,
-          name: l.business_name || "Estabelecimento Local",
-          category: l.category || "Comércio & Serviços",
-          address: l.address || "Endereço no centro",
-          distance_km: dist,
-          is_open: derivePlaceOpenStatus(l.working_hours),
-          rating: typeof l.rating === "number" ? l.rating : null,
-          contact_whatsapp: l.contact_whatsapp,
-          contact_phone: l.contact_phone,
-          avatar_url: l.avatar_url || l.banner_url,
-          latitude: typeof l.latitude === "number" ? l.latitude : null,
-          longitude: typeof l.longitude === "number" ? l.longitude : null,
-        };
-      });
-
-      if (places.length > 0) {
-        structuredPayload = {
-          blocks: [
-            {
-              type: "places_carousel",
-              data: {
-                title: "Estabelecimentos Encontrados",
-                places,
-              },
-            },
-          ],
-        };
-
-        const mapCity = context.city || "Chapecó";
-        const mapState = context.state || "SC";
-        artifact = {
-          id: crypto.randomUUID(),
-          type: "map_view",
-          title: `Guia Local: ${term ? term.charAt(0).toUpperCase() + term.slice(1) : "Estabelecimentos"}`,
-          version: 1,
-          totalVersions: 1,
-          authorName: persona.name,
-          authorRole: persona.role,
-          previewSummary: `${places.length} locais verificados em ${mapCity} com rotas e contato.`,
-          data: {
-            title: `Guia de Estabelecimentos: ${term || "Locais"}`,
-            city: mapCity,
-            state: mapState,
-            places: places.map((p: any) => ({
-              id: p.id,
-              name: p.name,
-              category: p.category,
-              address: p.address,
-              city: mapCity,
-              state: mapState,
-              phone: p.contact_phone || undefined,
-              whatsapp: p.contact_whatsapp || undefined,
-              lat: typeof p.latitude === "number" ? p.latitude : (context.userLat ?? -27.1004),
-              lng: typeof p.longitude === "number" ? p.longitude : (context.userLng ?? -52.6152),
-              verified: true,
-              source: "Diretório Oficial Waesy",
-            })),
+        : {
+            intent,
+            gatewayResponse,
+            platformSearch,
+            singleCallMode: true,
           },
-        };
+      onEvent: context.onEvent,
+    });
 
-        places.slice(0, 6).forEach((p: any) => {
-          sources.push({
-            id: `place-${p.id}`,
-            title: p.name,
-            kind: "place",
-            detail: [p.category, p.address].filter(Boolean).join(" · "),
-            url: p.store_id ? `/empresa/${p.store_id}` : "/places",
-          });
-        });
-      }
-
-      if (!responseMessage) {
-        responseMessage =
-          places.length > 0
-            ? `Localizei ${places.length} opções recomendadas em ${context.city || "sua região"}. Você pode conferir os detalhes e entrar em contato direto:`
-            : `Não encontrei estabelecimentos cadastrados para "${term}" em ${context.city || "sua região"} no momento. Você pode refinar o termo de busca ou explorar o diretório do Places.`;
-      }
-
-      updatedMemory.last_places_query = term;
+    executionId = reactOutcome.executionId || executionId;
+    if (Array.isArray(reactOutcome.activitySteps) && reactOutcome.activitySteps.length > 0) {
+      steps.push(...reactOutcome.activitySteps);
     }
-    // ── 2. Mobilidade & Corridas / Entregas ──
-    else if (
-      intent === "estimate_mobility" ||
-      (!isCreationOrBuilderIntent &&
-        (promptLower.includes("corrida") ||
-          promptLower.includes("motorista") ||
-          promptLower.includes("uber") ||
-          promptLower.includes("moto passageiro") ||
-          promptLower.includes("chamar carro") ||
-          promptLower.includes("frete")))
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-mobility-${stepStart}`,
-        type: "tool",
-        label: gatewayResponse?.step_label || "Estimativa de Trajeto e Corrida",
-        detail:
-          gatewayResponse?.step_detail ||
-          "Calculando opções de moto, carro e entrega com base na distância",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 180).toISOString(),
-        durationMs: 180,
-        tokensUsed: 140,
-      });
-
-      const origin = toolArgs.origin_address || "Centro, Praça Central";
-      const dest = toolArgs.destination_address || "Bairro Efapi / Região Universitária";
-      const distanceKm = toolArgs.distance_km || 4.2;
-
-      const quotes = [
-        {
-          service_type: "ride_moto",
-          label: "Moto Passageiro",
-          description: "Mais rápido no trânsito local",
-          estimated_price_cents: Math.max(700, Math.round(400 + distanceKm * 180)),
-          duration_minutes: Math.max(6, Math.round(distanceKm * 2)),
-        },
-        {
-          service_type: "ride_car",
-          label: "Carro Privado",
-          description: "Conforto para até 4 passageiros",
-          estimated_price_cents: Math.max(1200, Math.round(600 + distanceKm * 280)),
-          duration_minutes: Math.max(9, Math.round(distanceKm * 2.8)),
-        },
-        {
-          service_type: "delivery_express",
-          label: "Entrega Flash",
-          description: "Para envelopes e pequenas encomendas",
-          estimated_price_cents: Math.max(900, Math.round(500 + distanceKm * 220)),
-          duration_minutes: Math.max(8, Math.round(distanceKm * 2.2)),
-        },
-      ];
-
-      structuredPayload = {
-        blocks: [
-          {
-            type: "mobility_quote",
-            data: {
-              origin_address: origin,
-              destination_address: dest,
-              distance_km: distanceKm,
-              quotes,
-            },
-          },
-        ],
-      };
-
-      if (!responseMessage) {
-        responseMessage = `Calculei as opções de transporte para a rota de ${origin} até ${dest} (${distanceKm} km). Selecione o modal desejado para chamar o motorista:`;
-      }
-
-      updatedMemory.last_mobility_origin = origin;
-      updatedMemory.last_mobility_dest = dest;
+    if (Array.isArray(reactOutcome.toolCalls) && reactOutcome.toolCalls.length > 0) {
+      toolCalls.push(...reactOutcome.toolCalls);
     }
-    // ── 3. Pacotes de Viagem & Turismo ──
-    else if (
-      intent === "travel_itinerary" ||
-      (!isCreationOrBuilderIntent &&
-        (promptLower.includes("viagem") ||
-          promptLower.includes("turismo") ||
-          promptLower.includes("roteiro") ||
-          promptLower.includes("pacote") ||
-          promptLower.includes("oktober")))
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-travel-${stepStart}`,
-        type: "skill",
-        label: gatewayResponse?.step_label || "Roteiro de Viagem & Turismo",
-        detail:
-          gatewayResponse?.step_detail ||
-          "Organizando atrações, passeios e estimativa de hospedagem",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 350).toISOString(),
-        durationMs: 350,
-        tokensUsed: 310,
-      });
-
-      let destination = toolArgs.destination;
-      if (!destination) {
-        if (/oktober\s*fest|blumenau/i.test(userPrompt)) {
-          destination = "Oktoberfest (Blumenau - SC)";
-        } else {
-          const destMatch = userPrompt.match(
-            /(?:para|em|de|pra|conhecer|visitar)\s+([A-ZÀ-ÿ][a-zà-ÿ]+(?:\s+[A-ZÀ-ÿ][a-zà-ÿ]+)*)/i,
-          );
-          destination = destMatch
-            ? destMatch[1]
-            : context.city
-              ? `${context.city} e Região`
-              : "Destino Solicitado";
-        }
-      }
-
-      let days = toolArgs.days;
-      if (!Array.isArray(days) || days.length === 0) {
-        if (/oktober/i.test(destination) || /blumenau/i.test(destination)) {
-          days = [
-            {
-              day: 1,
-              title: "Chegada e Vila Germânica",
-              activities: [
-                "Check-in na hospedagem em Blumenau",
-                "Passeio pelos pavilhões da Vila Germânica",
-                "Jantar típico com gastronomia germânica e chopp artesanal",
-              ],
-            },
-            {
-              day: 2,
-              title: "Desfile Típico e Pavilhões",
-              activities: [
-                "Desfile folclórico na Rua XV de Novembro",
-                "Apresentações musicais e culturais tradicionais",
-                "Noite festiva nos pavilhões principais da Oktoberfest",
-              ],
-            },
-            {
-              day: 3,
-              title: "Centro Histórico e Retorno",
-              activities: [
-                "Visita ao Museu da Cerveja e Parque Ramiro Ruediger",
-                "Compras de lembranças e trajes típicos",
-                "Check-out e retorno com tranquilidade",
-              ],
-            },
-          ];
-        } else {
-          days = [
-            {
-              day: 1,
-              title: `Chegada em ${destination}`,
-              activities: [
-                "Check-in e acomodação",
-                "Passeio de reconhecimento pelo centro histórico e arredores",
-                "Jantar com culinária regional típica",
-              ],
-            },
-            {
-              day: 2,
-              title: "Experiências e Atrações Principais",
-              activities: [
-                "Visita aos principais pontos turísticos e culturais",
-                "Passeios guiados ou ecoturismo na região",
-                "Momento livre para compras e gastronomia",
-              ],
-            },
-            {
-              day: 3,
-              title: "Despedida e Retorno",
-              activities: [
-                "Últimas compras de produtos e artesanato local",
-                "Almoço de despedida",
-                "Check-out e transfer de retorno",
-              ],
-            },
-          ];
-        }
-      }
-
-      const travelBuilderResult = await createBuilderArtifactFromCopilot({
-        userPrompt,
-        docType: "travel_itinerary",
-        title: `Roteiro Turístico: ${destination}`,
-        storeId: context.storeId,
-        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
-        sessionId: context.threadId,
-      }).catch(() => null);
-
-      if (travelBuilderResult) {
-        artifact = travelBuilderResult.chatArtifact;
-        const p = travelBuilderResult.payload;
-        structuredPayload = {
-          blocks: [
-            {
-              type: "travel_itinerary",
-              data: {
-                destination: p.destination || destination,
-                duration_days: p.daysCount || days.length,
-                passengers_count: toolArgs.passengers_count || 2,
-                hotel_category: toolArgs.hotel_category || "Pousada de Charme com Café",
-                flights_included: Boolean(toolArgs.flights_included),
-                estimated_budget_cents: p.estimatedBudgetCents || 245000,
-                pix_code: p.pixCode,
-                days: p.days || days,
-              },
-            },
-          ],
-        };
-        if (!responseMessage) {
-          responseMessage = `Montei um roteiro personalizado para ${p.destination || destination}! Estruturei a programação dia a dia, a hospedagem selecionada e gerei o código Pix pronto para pagamento com validação imediata da reserva no painel lateral:`;
-        }
-      } else {
-        structuredPayload = {
-          blocks: [
-            {
-              type: "travel_itinerary",
-              data: {
-                destination,
-                duration_days: days.length,
-                passengers_count: toolArgs.passengers_count || 2,
-                hotel_category: toolArgs.hotel_category || "Hotel Selecionado com Café",
-                flights_included: Boolean(toolArgs.flights_included),
-                estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
-                days,
-              },
-            },
-          ],
-        };
-
-        artifact = {
-          id: crypto.randomUUID(),
-          type: "proposal",
-          title: `Roteiro Turístico: ${destination}`,
-          version: 1,
-          authorName: "Assessor de Turismo Local",
-          authorRole: "Especialista em Experiências",
-          previewSummary: `Itinerário personalizado para ${destination} com passeios, hospedagem e estimativa de investimento.`,
-          data: {
-            destination,
-            daysCount: days.length,
-            estimated_budget_cents: toolArgs.estimated_budget_cents || 249000,
-          },
-        };
-
-        if (!responseMessage) {
-          responseMessage = `Preparei um roteiro especial para ${destination}! Veja abaixo a programação detalhada e as sugestões de passeios para aproveitar ao máximo a sua experiência:`;
-        }
-      }
-
-      updatedMemory.last_travel_destination = destination;
+    if (reactOutcome.artifact) {
+      artifact = reactOutcome.artifact;
     }
-    // ── 4. Assessoria & Triagem Jurídica ──
-    else if (
-      intent === "legal_triage" ||
-      (!isCreationOrBuilderIntent &&
-        (promptLower.includes("advogado") ||
-          promptLower.includes("processo") ||
-          promptLower.includes("demitido") ||
-          promptLower.includes("jurídic") ||
-          promptLower.includes("direito") ||
-          promptLower.includes("indenização")))
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-legal-${stepStart}`,
-        type: "skill",
-        label: gatewayResponse?.step_label || "Triagem e Análise Jurídica",
-        detail:
-          gatewayResponse?.step_detail ||
-          "Identificando área do direito, direitos pertinentes e documentação recomendada",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 290).toISOString(),
-        durationMs: 290,
-        tokensUsed: 260,
-      });
-
-      const legalArea =
-        toolArgs.legal_area ||
-        (promptLower.includes("demit") || promptLower.includes("trabalh")
-          ? "Direito Trabalhista"
-          : promptLower.includes("compra") || promptLower.includes("defeito")
-            ? "Direito do Consumidor"
-            : "Direito Cível");
-      const keyFacts = toolArgs.key_facts || [
-        "Relato inicial registrado com data de ocorrência e envolvidos",
-        "Possível violação de prazos e direitos garantidos por lei",
-        "Necessidade de análise documental comprobatória por advogado",
-      ];
-
-      structuredPayload = {
-        blocks: [
-          {
-            type: "legal_triage",
-            data: {
-              title: `Triagem Preliminar — ${legalArea}`,
-              legal_area: legalArea,
-              urgency:
-                promptLower.includes("urgente") || promptLower.includes("prazo")
-                  ? "urgent"
-                  : "normal",
-              key_facts: keyFacts,
-              required_documents: [
-                "Documento com foto (RG/CNH)",
-                "Comprovante de residência",
-                "Contratos, recibos ou conversas que comprovem o fato",
-              ],
-              description: userPrompt,
-            },
-          },
-        ],
-      };
-
-      if (!responseMessage) {
-        responseMessage = `Efetuei a triagem preliminar do caso na área de ${legalArea}. A demanda pode ser encaminhada de forma segura para os advogados cadastrados e credenciados da sua comarca:`;
-      }
-
-      updatedMemory.last_legal_area = legalArea;
+    if (reactOutcome.structuredPayload) {
+      structuredPayload = reactOutcome.structuredPayload;
     }
-    // ── 5. Criação de Anúncios, Artes & Marketing ──
-    else if (
-      intent === "create_ad" ||
-      intent === "creative_post" ||
-      intent === "ads_campaign" ||
-      promptLower.includes("anúncio") ||
-      promptLower.includes("anuncio") ||
-      promptLower.includes("arte") ||
-      promptLower.includes("post") ||
-      promptLower.includes("carrossel") ||
-      promptLower.includes("story") ||
-      promptLower.includes("stories") ||
-      promptLower.includes("reels") ||
-      promptLower.includes("banner") ||
-      promptLower.includes("propaganda")
-    ) {
-      const stepStart = Date.now();
-      const postSpec = extractCreativePostSpecFromPrompt(userPrompt, toolArgs, workingMemory, {
-        city: context.city,
-      });
-      const formatLabel =
-        postSpec.format === "story"
-          ? "Story (9:16)"
-          : postSpec.format === "portrait"
-            ? "Retrato (4:5)"
-            : postSpec.format === "landscape"
-              ? "Slide (16:9)"
-              : "Feed (1:1)";
-      const generatedCaption = `${postSpec.headline}\n\n${postSpec.subheadline}\n\n${postSpec.bullets.map((b) => `• ${b}`).join("\n")}\n\n${postSpec.ctaText}\n\n${postSpec.hashtags.join(" ")}`;
-
-      steps.push({
-        id: `step-creative-${stepStart}`,
-        type: "tool",
-        label: gatewayResponse?.step_label || "Estúdio Canva & Peça Criativa",
-        detail:
-          gatewayResponse?.step_detail ||
-          `Estruturando arte ${formatLabel} (${postSpec.aspectRatio}) com copy e chamada para ação`,
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 240).toISOString(),
-        durationMs: 240,
-        tokensUsed: 215,
-      });
-
-      const socialBuilderResult = await createBuilderArtifactFromCopilot({
-        userPrompt,
-        docType: "social_post",
-        title: postSpec.headline,
-        storeId: context.storeId,
-        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
-        sessionId: context.threadId,
-      }).catch(() => null);
-
-      if (socialBuilderResult) {
-        const existingData = (socialBuilderResult.chatArtifact.data || {}) as Record<string, any>;
-        artifact = {
-          ...socialBuilderResult.chatArtifact,
-          data: {
-            ...postSpec,
-            ...existingData,
-            format: existingData.format || postSpec.format,
-            aspectRatio: existingData.aspectRatio || postSpec.aspectRatio,
-            archetype: existingData.archetype || postSpec.archetype,
-            themeId: existingData.themeId || postSpec.themeId,
-            offerPrice: existingData.offerPrice || postSpec.offerPrice,
-            installments: existingData.installments || postSpec.installments,
-            storeName: existingData.storeName || postSpec.brandName,
-            locationLabel: existingData.locationLabel || postSpec.locationLabel,
-            caption: existingData.caption || generatedCaption,
-          },
-        };
-      } else {
-        artifact = {
-          id: crypto.randomUUID(),
-          type: "creative_post",
-          title: postSpec.headline,
-          version: 1,
-          totalVersions: 1,
-          authorName: persona.name,
-          authorRole: persona.role,
-          previewSummary: `Peça ${formatLabel} (${postSpec.aspectRatio}) gerada em tempo real no Estúdio Canva Waesy.`,
-          data: {
-            format: postSpec.format,
-            aspectRatio: postSpec.aspectRatio,
-            archetype: postSpec.archetype,
-            themeId: postSpec.themeId,
-            badge: postSpec.badge,
-            headline: postSpec.headline,
-            subheadline: postSpec.subheadline,
-            offerBadge: postSpec.offerBadge,
-            offerPrice: postSpec.offerPrice,
-            installments: postSpec.installments,
-            bullets: postSpec.bullets,
-            ctaText: postSpec.ctaText,
-            storeName: postSpec.brandName,
-            locationLabel: postSpec.locationLabel,
-            caption: generatedCaption,
-            copyFeed: generatedCaption,
-            copyStory: generatedCaption,
-            hashtags: postSpec.hashtags,
-          },
-        };
-      }
-
-      const artifactData = (artifact.data || {}) as Record<string, any>;
-      structuredPayload = {
-        blocks: [
-          {
-            type: "creative_ad_preview",
-            data: {
-              artifact_id: artifact.id,
-              title: artifact.title || postSpec.headline,
-              headline: artifactData.headline || postSpec.headline,
-              subheadline: artifactData.subheadline || postSpec.subheadline,
-              body_text: artifactData.subheadline || postSpec.subheadline,
-              badge: artifactData.badge || postSpec.badge,
-              offer_badge: artifactData.offerBadge || postSpec.offerBadge,
-              offer_price: artifactData.offerPrice || postSpec.offerPrice,
-              installments: artifactData.installments || postSpec.installments,
-              bullets: Array.isArray(artifactData.bullets) ? artifactData.bullets : postSpec.bullets,
-              cta_label: artifactData.ctaText || postSpec.ctaText,
-              store_name: artifactData.storeName || postSpec.brandName,
-              location_label: artifactData.locationLabel || postSpec.locationLabel,
-              format: artifactData.format || postSpec.format,
-              aspect_ratio: artifactData.aspectRatio || postSpec.aspectRatio,
-              archetype: artifactData.archetype || postSpec.archetype,
-              theme_id: artifactData.themeId || postSpec.themeId,
-              caption: artifactData.caption || generatedCaption,
-              hashtags: Array.isArray(artifactData.hashtags)
-                ? artifactData.hashtags
-                : postSpec.hashtags,
-            },
-          },
-        ],
-      };
-
-      if (!responseMessage) {
-        responseMessage =
-          `Criei a arte no formato ${formatLabel} (${postSpec.aspectRatio}) "${artifact.title || postSpec.headline}" em tempo real no Estúdio Canva. A peça já está renderizada abaixo e aberta no painel lateral para personalizar cores, textos e exportar em PNG, PDF ou HTML.`;
-      }
-
-      updatedMemory.last_creative_topic = artifact.title || postSpec.headline;
-      updatedMemory.last_creative_format = postSpec.format;
-      updatedMemory.last_intent = "creative_post";
-    }
-    // ── 6. Compras, Produtos & Delivery ──
-    else if (
-      intent === "search_catalog" ||
-      (!isCreationOrBuilderIntent &&
-        (promptLower.includes("comprar") ||
-          promptLower.includes("pizza") ||
-          promptLower.includes("cardápio") ||
-          promptLower.includes("pedido") ||
-          promptLower.includes("lanche")))
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-food-${stepStart}`,
-        type: "tool",
-        label: gatewayResponse?.step_label || "Consulta ao Catálogo de Produtos",
-        detail:
-          gatewayResponse?.step_detail ||
-          "Consultando estoque e opções de personalização do cardápio local",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 190).toISOString(),
-        durationMs: 190,
-        tokensUsed: 170,
-      });
-
-      const term = toolArgs.query || extractSearchTerm(promptLower);
-      let prodQuery = db
-        .from("products")
-        .select("id, store_id, title, description, price_cents, product_media(url, sort_order)")
-        .in("status", ["active", "published"])
-        .limit(4);
-
-      if (context.storeId) {
-        prodQuery = prodQuery.eq("store_id", context.storeId);
-      }
-      if (term) {
-        prodQuery = prodQuery.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
-      }
-
-      const { data: prods } = await prodQuery;
-
-      if (prods && prods.length > 0) {
-        const mainProd = prods[0] as any;
-        const mainMedia = Array.isArray(mainProd.product_media)
-          ? [...mainProd.product_media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-          : [];
-        structuredPayload = {
-          blocks: [
-            {
-              type: "food_modifier_selector",
-              data: {
-                product: {
-                  id: mainProd.id,
-                  store_id: mainProd.store_id || null,
-                  title: mainProd.title,
-                  description: mainProd.description,
-                  price_cents: mainProd.price_cents,
-                  image_url: mainMedia[0]?.url || null,
-                },
-                modifier_groups: [
-                  {
-                    id: "grp-size",
-                    title: "Opção / Tamanho",
-                    required: true,
-                    max: 1,
-                    options: [
-                      { id: "opt-padrao", name: "Padrão", price_cents: 0 },
-                      {
-                        id: "opt-especial",
-                        name: "Especial",
-                        price_cents: Math.round(mainProd.price_cents * 0.25),
-                      },
-                    ],
-                  },
-                  {
-                    id: "grp-extra",
-                    title: "Complementos",
-                    required: false,
-                    max: 2,
-                    options: [
-                      { id: "opt-extra-1", name: "Adicional Especial", price_cents: 400 },
-                      { id: "opt-extra-2", name: "Embalagem para Presente", price_cents: 300 },
-                    ],
-                  },
-                ],
-              },
-            },
-          ],
-        };
-
-        if (!responseMessage) {
-          responseMessage = `Localizei "${mainProd.title}" no catálogo ativo. Você pode personalizar as opções antes de adicionar ao seu pedido:`;
-        }
-
-        updatedMemory.last_food_query = mainProd.title;
-      } else {
-        if (!responseMessage) {
-          responseMessage =
-            "Nenhum produto correspondente foi encontrado no catálogo ativo no momento. Você pode navegar pelos departamentos ou buscar por outro termo.";
+    if (Array.isArray(reactOutcome.sources) && reactOutcome.sources.length > 0) {
+      const seenReactSrcIds = new Set(sources.map((s) => s.id));
+      for (const s of reactOutcome.sources) {
+        if (!seenReactSrcIds.has(s.id)) {
+          seenReactSrcIds.add(s.id);
+          sources.push(s);
         }
       }
     }
-    // ── 7. Proposta Comercial Formal ──
-    else if (
-      intent === "commercial_proposal" ||
-      promptLower.includes("proposta") ||
-      promptLower.includes("orçamento")
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-proposal-${stepStart}`,
-        type: "skill",
-        label: gatewayResponse?.step_label || "Estruturação de Proposta Comercial",
-        detail:
-          gatewayResponse?.step_detail ||
-          "Organizando escopo, etapas de entrega e condições comerciais",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 310).toISOString(),
-        durationMs: 310,
-        tokensUsed: 260,
-      });
-
-      const extractedTitle =
-        toolArgs.title ||
-        (userPrompt.length > 8
-          ? `Proposta: ${userPrompt.slice(0, 50)}`
-          : "Proposta Comercial de Prestação de Serviços");
-      const totalCents = toolArgs.total_cents || 450000;
-      const milestones = toolArgs.milestones || [
-        "Diagnóstico inicial e alinhamento de escopo",
-        "Execução técnica e implantação",
-        "Homologação e validação com o cliente",
-        "Entrega final e encerramento",
-      ];
-
-      const docBuilderResult = await createBuilderArtifactFromCopilot({
-        userPrompt,
-        docType: "document",
-        title: extractedTitle,
-        storeId: context.storeId,
-        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
-        sessionId: context.threadId,
-      }).catch(() => null);
-
-      if (docBuilderResult) {
-        artifact = docBuilderResult.chatArtifact;
-      } else {
-        artifact = {
-          id: crypto.randomUUID(),
-          type: "proposal",
-          title: extractedTitle,
-          version: 1,
-          totalVersions: 1,
-          authorName: "Assessor Comercial Local",
-          authorRole: "Consultoria Executiva",
-          previewSummary: `Proposta estruturada com cronograma em ${milestones.length} etapas e investimento total de ${formatMoney(totalCents)}.`,
-          data: {
-            total_cents: totalCents,
-            currency: "BRL",
-            validity_days: 15,
-            milestones,
-            terms: "Condições de pagamento: 50% na aprovação e 50% na conclusão das entregas.",
-          },
-        };
-      }
-
-      structuredPayload = {
-        blocks: [
-          {
-            type: "proposal_card",
-            data: {
-              proposalId: artifact.id,
-              title: extractedTitle,
-              totalCents,
-              currency: "BRL",
-              validUntil: new Date(Date.now() + 15 * 86400000).toISOString(),
-              milestones,
-            },
-          },
-        ],
-      };
-
-      if (!responseMessage) {
-        responseMessage = `Elaborei a proposta comercial "${extractedTitle}" com valor total de ${formatMoney(totalCents)}. O documento está anexado ao lado, pronto para você visualizar e exportar.`;
-      }
-
-      updatedMemory.last_proposal_created = new Date().toISOString();
+    if (reactOutcome.responseMessage) {
+      responseMessage = reactOutcome.responseMessage;
     }
-    // ── 7.1 Apresentação Executiva & Slides Apple HIG ──
-    else if (
-      intent === "presentation_deck" ||
-      promptLower.includes("apresentação") ||
-      promptLower.includes("apresentacao") ||
-      promptLower.includes("slide") ||
-      promptLower.includes("pitch") ||
-      promptLower.includes("deck")
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-presentation-${stepStart}`,
-        type: "tool",
-        label: "Geração de Apresentação Executiva",
-        detail: "Estruturando slides temáticos e narrativa visual",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 260).toISOString(),
-        durationMs: 260,
-        tokensUsed: 220,
-      });
-
-      const slideTitle = toolArgs.title || (userPrompt.length > 8 ? userPrompt.slice(0, 50) : "Apresentação Executiva");
-      const deckBuilderResult = await createBuilderArtifactFromCopilot({
-        userPrompt,
-        docType: "presentation",
-        title: slideTitle,
-        storeId: context.storeId,
-        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
-        sessionId: context.threadId,
-      }).catch(() => null);
-
-      if (deckBuilderResult) {
-        artifact = deckBuilderResult.chatArtifact;
-      }
-
-      if (!responseMessage) {
-        responseMessage = `Estruturei a apresentação "${slideTitle}" com slides modernos no padrão Apple Minimal. A prévia já está aberta no painel lateral:`;
-      }
-    }
-    // ── 7.2 Website Canvas & Landing Page ──
-    else if (
-      intent === "website_builder" ||
-      promptLower.includes("landing page") ||
-      promptLower.includes("criar site") ||
-      promptLower.includes("fazer site") ||
-      promptLower.includes("montar site") ||
-      promptLower.includes("meu site") ||
-      promptLower.includes("página web") ||
-      promptLower.includes("pagina web") ||
-      /\bsite\b/i.test(promptLower)
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-site-${stepStart}`,
-        type: "tool",
-        label: "Criação de Página de Apresentação",
-        detail: "Organizando seções de destaque, catálogo e canais de contato",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 280).toISOString(),
-        durationMs: 280,
-        tokensUsed: 240,
-      });
-
-      const siteTitle = toolArgs.title || "Landing Page do Estabelecimento";
-      const siteBuilderResult = await createBuilderArtifactFromCopilot({
-        userPrompt,
-        docType: "website",
-        title: siteTitle,
-        storeId: context.storeId,
-        authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
-        sessionId: context.threadId,
-      }).catch(() => null);
-
-      if (siteBuilderResult) {
-        artifact = siteBuilderResult.chatArtifact;
-        sources.push({
-          id: `builder-${siteBuilderResult.documentId || siteBuilderResult.chatArtifact.id}`,
-          title: siteBuilderResult.chatArtifact.title || siteTitle,
-          kind: "builder",
-          detail: "Site editável no Builder Waesy",
-          url: siteBuilderResult.documentId
-            ? `/workspace/builder?doc=${siteBuilderResult.documentId}`
-            : "/workspace/builder",
-        });
-      }
-
-      if (!responseMessage) {
-        responseMessage = `Projetei a landing page "${siteTitle}" com layout adaptativo, seções estratégicas de conversão e botões de contato. Veja a prévia ao lado:`;
-      }
-    }
-    // ── 8. Relatório Financeiro & Planilha de Caixa ──
-    else if (
-      intent === "financial_report" ||
-      intent === "generate_dashboard" ||
-      promptLower.includes("dashboard") ||
-      promptLower.includes("kpi") ||
-      promptLower.includes("indicador") ||
-      promptLower.includes("planilha") ||
-      promptLower.includes("tabela") ||
-      promptLower.includes("métricas") ||
-      promptLower.includes("metrica") ||
-      promptLower.includes("caixa")
-    ) {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-finance-${stepStart}`,
-        type: "tool",
-        label: gatewayResponse?.step_label || "Fechamento de Caixa do Dia",
-        detail:
-          gatewayResponse?.step_detail ||
-          "Consultando demonstrativo e transações registradas do período",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 220).toISOString(),
-        durationMs: 220,
-        tokensUsed: 180,
-      });
-
-      let ordersCount = 0;
-      let totalRevenueCents = 0;
-      if (context.storeId) {
-        const { data: orders } = await db
-          .from("store_orders")
-          .select("id, total_amount_cents, payment_status, created_at")
-          .eq("store_id", context.storeId)
-          .limit(50);
-
-        if (orders && orders.length > 0) {
-          ordersCount = orders.length;
-          totalRevenueCents = orders.reduce(
-            (sum: number, o: any) => sum + (o.total_amount_cents || 0),
-            0,
-          );
-        }
-      }
-
-      const rows =
-        ordersCount > 0
-          ? [
-              [
-                "Pedidos Faturados",
-                String(ordersCount),
-                formatMoney(totalRevenueCents),
-                "Concluído",
-              ],
-              [
-                "Ticket Médio",
-                String(ordersCount),
-                formatMoney(Math.round(totalRevenueCents / (ordersCount || 1))),
-                "Calculado",
-              ],
-            ]
-          : [
-              ["Receitas Balcão", "0", "R$ 0,00", "Aguardando Vendas"],
-              ["Delivery Online", "0", "R$ 0,00", "Sem Pedidos"],
-              ["Serviços Locais", "0", "R$ 0,00", "Sem Lançamentos"],
-            ];
-
-      const isDashboardRequest =
-        intent === "generate_dashboard" ||
-        promptLower.includes("dashboard") ||
-        promptLower.includes("kpi") ||
-        promptLower.includes("indicador");
-
-      if (isDashboardRequest) {
-        artifact = {
-          id: crypto.randomUUID(),
-          type: "dashboard",
-          title: "Painel de Indicadores Executivos",
-          version: 1,
-          totalVersions: 1,
-          authorName: persona.name,
-          authorRole: persona.role,
-          previewSummary: `Visão consolidada: ${formatMoney(totalRevenueCents)} faturados em ${ordersCount} pedido(s) processado(s).`,
-          data: {
-            kpis: [
-              {
-                id: "kpi-revenue",
-                label: "Receita Confirmada",
-                value: formatMoney(totalRevenueCents),
-                changePercent: ordersCount > 0 ? 14.8 : 0,
-                periodLabel: "vs. mês anterior",
-                trend: ordersCount > 0 ? "up" : "neutral",
-                category: "Financeiro",
-              },
-              {
-                id: "kpi-orders",
-                label: "Volume de Pedidos",
-                value: ordersCount,
-                changePercent: ordersCount > 0 ? 8.2 : 0,
-                periodLabel: "pedidos liquidados",
-                trend: ordersCount > 0 ? "up" : "neutral",
-                category: "Operacional",
-              },
-              {
-                id: "kpi-ticket",
-                label: "Ticket Médio",
-                value: formatMoney(ordersCount > 0 ? Math.round(totalRevenueCents / ordersCount) : 0),
-                changePercent: ordersCount > 0 ? 4.1 : 0,
-                periodLabel: "por transação",
-                trend: ordersCount > 0 ? "up" : "neutral",
-                category: "Comercial",
-              },
-              {
-                id: "kpi-clients",
-                label: "Novos Clientes",
-                value: Math.max(ordersCount > 0 ? 1 : 0, Math.round(ordersCount * 0.7)),
-                changePercent: ordersCount > 0 ? 11.5 : 0,
-                periodLabel: "conversões ativas",
-                trend: ordersCount > 0 ? "up" : "neutral",
-                category: "Clientes",
-              },
-            ],
-            breakdowns: [
-              {
-                label: "Balcão & Vendas Presenciais",
-                value: Math.round((totalRevenueCents / 100) * 0.55),
-                percentage: 55,
-              },
-              {
-                label: "Pedidos Online & Delivery",
-                value: Math.round((totalRevenueCents / 100) * 0.35),
-                percentage: 35,
-              },
-              {
-                label: "Serviços & Reservas",
-                value: Math.round((totalRevenueCents / 100) * 0.1),
-                percentage: 10,
-              },
-            ],
-            recentActivities: [
-              {
-                id: "act-1",
-                description: "Fechamento consolidado de vendas do período",
-                timestamp: "Hoje, 18:30",
-                status: "liquidado",
-                amount: formatMoney(totalRevenueCents),
-              },
-              {
-                id: "act-2",
-                description: "Reconciliação de pedidos da loja",
-                timestamp: "Hoje, 12:15",
-                status: "processado",
-                amount: `${ordersCount} pedido(s)`,
-              },
-            ],
-            alerts:
-              ordersCount === 0
-                ? [
-                    "Nenhum pedido registrado no caixa neste ciclo. Registre vendas ou lance produtos para movimentar o painel.",
-                  ]
-                : undefined,
-          },
-        };
-
-        if (!responseMessage) {
-          responseMessage =
-            "Gerei o dashboard executivo com os indicadores operacionais e financeiros em tempo real. Você pode acompanhar os KPIs no painel lateral:";
-        }
-      } else {
-        const sheetBuilderResult = await createBuilderArtifactFromCopilot({
-          userPrompt,
-          docType: "spreadsheet",
-          title: "Demonstrativo Financeiro do Caixa",
-          storeId: context.storeId,
-          authorProfileId: context.userId || "00000000-0000-0000-0000-000000000001",
-          sessionId: context.threadId,
-        }).catch(() => null);
-
-        if (sheetBuilderResult) {
-          artifact = sheetBuilderResult.chatArtifact;
-        } else {
-          artifact = {
-            id: crypto.randomUUID(),
-            type: "spreadsheet",
-            title: "Demonstrativo Financeiro do Caixa",
-            version: 1,
-            totalVersions: 1,
-            authorName: persona.name,
-            authorRole: persona.role,
-            previewSummary: `Demonstrativo contábil com ${rows.length} linhas de registro e status de liquidação.`,
-            data: {
-              rows: rows.length,
-              columns: 4,
-              headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
-              dataRows: rows,
-              format: "tabular",
-            },
-          };
-        }
-      }
-
-      structuredPayload = {
-        blocks: [
-          {
-            type: "table",
-            data: {
-              title: "Demonstrativo Consolidado de Caixa",
-              headers: ["Categoria", "Qtd", "Valor (BRL)", "Status"],
-              rows,
-            },
-          },
-        ],
-      };
-
-      if (!responseMessage) {
-        responseMessage =
-          "Gerei a planilha consolidada de caixa com os dados reais do período. Você pode visualizá-la no painel ou baixar o arquivo CSV.";
-      }
-
-      updatedMemory.last_report_generated = new Date().toISOString();
-    }
-    // ── 9. Conversa Geral & Orientação do Ecossistema ──
-    else {
-      const stepStart = Date.now();
-      steps.push({
-        id: `step-general-${stepStart}`,
-        type: "model",
-        label: "Orientação do Assessor Local",
-        detail: "Organizando orientações com base no seu atendimento",
-        status: "completed",
-        startedAt: new Date(stepStart).toISOString(),
-        completedAt: new Date(stepStart + 150).toISOString(),
-        durationMs: 150,
-        tokensUsed: 95,
-      });
-
-      if (!responseMessage) {
-        if (platformSearch && platformSearch.cards.length > 0) {
-          const sampleNames = platformSearch.cards.slice(0, 3).map((c) => `"${c.title}"`).join(", ");
-          responseMessage = `Encontrei ótimas opções no ecossistema Waesy para "${platformSearch.query}", incluindo ${sampleNames}. Dê uma olhada nos detalhes e ações rápidas abaixo:`;
-        } else {
-          responseMessage =
-            gatewayResponse?.message ||
-            "Olá! Sou o seu Assessor Local. Posso apoiar você a encontrar estabelecimentos comerciais, consultar eventos e notícias da região, conferir produtos locais ou estimar corridas e fretes. Como posso te apoiar agora?";
-        }
-      }
-
-      updatedMemory.last_interaction_topic = userPrompt.slice(0, 40);
-    }
-
-    if (!isCreationOrBuilderIntent && platformSearch && platformSearch.cards.length > 0) {
-      const carouselBlock = {
-        type: "card_carousel",
-        data: {
-          title: "Opções no Waesy",
-          source: "platform",
-          query: platformSearch.query,
-          items: platformSearch.cards.map((card) => ({
-            id: card.id,
-            title: card.title,
-            subtitle: [card.kind, card.subtitle, card.location].filter(Boolean).join(" · "),
-            description: card.description,
-            location: card.location,
-            image_url: card.image_url,
-            price_cents: card.price_cents,
-            source_table: card.source_table,
-            source_id: card.source_id,
-            action: card.action,
-          })),
-        },
-      };
-
-      if (!structuredPayload) {
-        structuredPayload = { blocks: [carouselBlock] };
-      } else if (Array.isArray(structuredPayload.blocks)) {
-        if (!structuredPayload.blocks.some((b: any) => b.type === "card_carousel")) {
-          structuredPayload.blocks.push(carouselBlock);
-        }
-      }
-    }
-
-    // ── Estágio 4: Síntese Analítica IA sobre Registros Recuperados (@synthesizer) ──
-    if (hasAttachments || !gatewayResponse?.message || (structuredPayload?.blocks && structuredPayload.blocks.length > 0 && intent !== "general_chat")) {
-      try {
-        const { executeUnifiedAiCall } = await import("./api-orchestrator.functions");
-        const attachmentContext = attachmentPromptBlock;
-
-        const retrievedSummary = JSON.stringify({
-          intent,
-          city: context.city || "Chapecó",
-          state: context.state || "SC",
-          platformCards: isCreationOrBuilderIntent
-            ? []
-            : (platformSearch?.cards || []).slice(0, 6).map((c) => ({
-                kind: c.kind,
-                title: c.title,
-                subtitle: c.subtitle,
-                location: c.location,
-                price_cents: c.price_cents,
-              })),
-          toolBlocks: (structuredPayload?.blocks || []).slice(0, 3),
-          artifactTitle: artifact?.title,
-        }).slice(0, 4000);
-
-        const synthStart = Date.now();
-        const aiSynth = await executeUnifiedAiCall({
-          feature: `copilot_stage4_synthesis_${intent}`,
-          taskType: resolvedAttachments.images.length > 0 ? "vision" : "chat",
-          images: resolvedAttachments.images.length > 0 ? resolvedAttachments.images : undefined,
-          temperature: 0.35,
-          maxTokens: 900,
-          storeId: context.storeId || undefined,
-          ownerId: context.userId || undefined,
-          systemPrompt: [
-            "Você é o Assessor Executivo Local do Waesy Copilot.",
-            "Analise o pedido do usuário e os registros reais recuperados do banco de dados da plataforma.",
-            "Redija uma resposta analítica, calorosa, consultiva e inteligente em português do Brasil (2 a 4 parágrafos curtos ou tópicos objetivos).",
-            "Mencione os nomes reais, valores, endereços ou destaques encontrados e oriente o próximo passo prático.",
-            "Se a intenção for criação de peça criativa, apresentação, documento, planilha ou site (creative_post, create_ad, presentation_deck, commercial_proposal, website_builder), apresente fielmente o formato solicitado (ex: Story 9:16 ou Feed 1:1), título, oferta e legenda gerada, orientando ajustes em tempo real no painel lateral e exportação.",
-            "REGRA ESTRITA: Baseie-se exclusivamente nos dados fornecidos, nunca invente registros inexistentes e nunca utilize emojis ou jargões técnicos.",
-          ].join("\n"),
-          userPrompt: `Pedido do usuário: "${userPrompt}"\nDados reais recuperados pela plataforma:\n${retrievedSummary}${attachmentContext ? `\n\nAnexos enviados pelo usuário:\n${attachmentContext}` : ""}`,
-        });
-
-        if (aiSynth?.text && aiSynth.text.trim().length > 25) {
-          responseMessage = aiSynth.text.trim();
-          steps.push({
-            id: `step-synth-${synthStart}`,
-            type: "model",
-            label: "Síntese Consultiva IA (@synthesizer)",
-            detail: `Análise contextual elaborada via ${aiSynth.provider}/${aiSynth.model}`,
-            status: "completed",
-            startedAt: new Date(synthStart).toISOString(),
-            completedAt: new Date().toISOString(),
-            durationMs: Date.now() - synthStart,
-            tokensUsed: 160,
-          });
-        }
-      } catch {
-        // Preserva responseMessage já construído caso o pool de IA esteja inacessível no ambiente de teste
-      }
-    }
-
-    if (!responseMessage) {
-      if (platformSearch && platformSearch.cards.length > 0) {
-        responseMessage = `Encontrei ótimas opções no Waesy para você aproveitar "${platformSearch.query}". Confira os destaques abaixo:`;
-      } else {
-        responseMessage =
-          "Olá! Sou o seu Assessor Local. Como posso apoiar você hoje?";
-      }
-    }
+    Object.assign(updatedMemory, reactOutcome.updatedMemory || {});
+    delete updatedMemory.last_intent;
 
     if (!fsm.isFailure && !fsm.isTerminal) {
       if (canTransitionCopilotPhase(fsm.currentPhase, "VALIDATING")) {
@@ -3089,12 +1901,17 @@ Responda SEMPRE em formato JSON com os campos:
       responseMessage,
       activitySteps: steps,
       executionId,
+      toolCalls,
       artifact,
       structuredPayload,
       sources,
       updatedMemory,
       fsmPhase: fsm.currentPhase,
       fsmState: fsm.snapshot,
+      plan: reactOutcome.plan,
+      vfsFiles: reactOutcome.vfsFiles,
+      liveBrowserFrame: reactOutcome.liveBrowserFrame,
+      checkpoint: reactOutcome.checkpoint,
     };
   } catch (pipelineErr: any) {
     console.error("[COPILOT-PIPELINE-BOUNDARY] Erro capturado na esteira:", pipelineErr);
@@ -3137,13 +1954,13 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
       // 1. Tentar ler prioritariamente do domínio canônico isolado ai_threads (com fallback caso migration de pastas/projetos ainda não tenha sido aplicada)
       const selectWithHierarchy = `
           id, domain_type, title, workspace_id, user_id,
-          folder_id, project_id,
+          folder_id, project_id, archived,
           status, pinned, metadata, working_memory, created_at, updated_at,
           last_message_snippet, last_message_at
         `;
       const selectBase = `
           id, domain_type, title, workspace_id, user_id,
-          status, pinned, metadata, working_memory, created_at, updated_at,
+          archived, status, pinned, metadata, working_memory, created_at, updated_at,
           last_message_snippet, last_message_at
         `;
 
@@ -3154,7 +1971,7 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
         .order("pinned", { ascending: false })
         .order("updated_at", { ascending: false });
 
-      if (aiThreadsRes.error && /folder_id|project_id|42703/i.test(aiThreadsRes.error.message || "")) {
+      if (aiThreadsRes.error && /folder_id|project_id|archived|42703/i.test(aiThreadsRes.error.message || "")) {
         aiThreadsRes = await db
           .from("ai_threads")
           .select(selectBase)
@@ -3169,13 +1986,14 @@ export const listAiConversationThreads = createServerFn({ method: "GET" }).handl
       if (!aiError && aiThreads) {
         return aiThreads.map((t: any) => ({
           id: t.id,
-          type: (t.domain_type === "workspace" ? "project" : "ai_assistant") as any,
+          type: (t.domain_type === "workspace" || t.project_id ? "project" : "ai_assistant") as any,
           title: t.title || "Conversa Copilot",
           store_id: t.workspace_id,
           customer_id: t.user_id,
           folder_id: t.folder_id ?? t.metadata?.folder_id ?? null,
           project_id: t.project_id ?? t.metadata?.project_id ?? null,
-          status: t.status || "open",
+          status: t.archived || t.status === "archived" ? "archived" : (t.status || "open"),
+          archived: Boolean(t.archived || t.status === "archived"),
           is_pinned: Boolean(t.pinned),
           metadata: t.metadata || {},
           working_memory: t.working_memory || {},
@@ -3362,7 +2180,7 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
     if (aiThread) {
       if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
         if (aiThread.workspace_id) {
-          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+          assertStoreAccess(identity, STAFF_ROLES, aiThread.workspace_id);
         } else {
           throw new Error("Sem permissão para acessar esta conversa");
         }
@@ -3482,20 +2300,57 @@ export const getAiConversationThread = createServerFn({ method: "GET" })
 // 4. Enviar Mensagem com Trilha de Atividade e Geração de Artefato
 // ============================================================
 
-export const sendAiConversationMessage = createServerFn({ method: "POST" })
-  .validator(sendAiMessageSchema)
-  .handler(async ({ data }) => {
-    const db = getServerClient();
-    const identity = await getServerIdentity().catch(() => null);
+export interface CopilotExchangeExecutionResult {
+  userMessageId: string;
+  aiMessage: {
+    id: string;
+    threadId?: string;
+    executionId?: string;
+    text: string;
+    activitySteps: AIActivityStep[];
+    artifact: ChatArtifactData | null | undefined;
+    structuredPayload: any;
+    sources?: ChatSourceItem[];
+    createdAt: string;
+    status: string;
+    fsmPhase?: CopilotFsmPhase;
+    fsmState?: CopilotFsmExecutionState;
+    toolCalls?: AiToolExecutionRecord[];
+  };
+  updatedWorkingMemory: Record<string, any>;
+}
 
-    if (!identity?.id) {
-      throw new Error("Usuário não autenticado");
+export type PreparedCopilotExchange =
+  | {
+      alreadyPersisted: CopilotExchangeExecutionResult;
+      db: ReturnType<typeof getServerClient>;
     }
+  | {
+      alreadyPersisted?: undefined;
+      db: ReturnType<typeof getServerClient>;
+      isAiThread: boolean;
+      resolvedWorkingMemory: Record<string, any>;
+      resolvedStoreId: string | null;
+      resolvedFolderId: string | null;
+      resolvedProjectId: string | null;
+      userMsg: { id: string; created_at: string };
+      recentMessages: Array<{ role: "user" | "assistant"; content: string }>;
+    };
 
-    // 1. Obter thread para contexto e memória de trabalho (Canônico ai_threads com fallback)
-    let aiThreadRes = await db
-      .from("ai_threads")
-      .select("id, user_id, workspace_id, folder_id, project_id, metadata, working_memory, title, domain_type")
+export async function prepareCopilotExchangeContext(
+  data: z.infer<typeof sendAiMessageSchema>,
+  identity: Awaited<ReturnType<typeof getServerIdentity>>,
+): Promise<PreparedCopilotExchange> {
+  const db = getServerClient();
+
+  if (!identity?.id) {
+    throw new Error("Usuário não autenticado");
+  }
+
+  // 1. Obter thread para contexto e memória de trabalho (Canônico ai_threads com fallback)
+  let aiThreadRes = await db
+    .from("ai_threads")
+    .select("id, user_id, workspace_id, folder_id, project_id, metadata, working_memory, title, domain_type")
       .eq("id", data.threadId)
       .maybeSingle();
 
@@ -3518,7 +2373,7 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
     if (aiThread) {
       if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
         if (aiThread.workspace_id) {
-          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+          assertStoreAccess(identity, STAFF_ROLES, aiThread.workspace_id);
         } else {
           throw new Error("Sem permissão para acessar esta conversa");
         }
@@ -3551,22 +2406,26 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
 
           if (existingAi) {
             return {
-              userMessageId: existingUser.id,
-              aiMessage: {
-                id: existingAi.id,
-                threadId: data.threadId,
-                executionId: existingAi.structured_payload?.executionId,
-                text: existingAi.content,
-                activitySteps: existingAi.activity_steps || existingAi.structured_payload?.activitySteps || [],
-                artifact: existingAi.structured_payload?.artifact || null,
-                structuredPayload: existingAi.structured_payload?.structuredBlocks || null,
-                createdAt: existingAi.created_at,
-                status: existingAi.status || "delivered",
-                fsmPhase: existingAi.fsm_phase || existingAi.structured_payload?.fsmPhase,
-                fsmState: existingAi.fsm_state || existingAi.structured_payload?.fsmState,
-                toolCalls: existingAi.tool_calls || existingAi.structured_payload?.toolCalls || [],
+              db,
+              alreadyPersisted: {
+                userMessageId: existingUser.id,
+                aiMessage: {
+                  id: existingAi.id,
+                  threadId: data.threadId,
+                  executionId: existingAi.structured_payload?.executionId,
+                  text: existingAi.content,
+                  activitySteps: existingAi.activity_steps || existingAi.structured_payload?.activitySteps || [],
+                  artifact: existingAi.structured_payload?.artifact || null,
+                  structuredPayload: existingAi.structured_payload?.structuredBlocks || null,
+                  sources: existingAi.structured_payload?.sources || [],
+                  createdAt: existingAi.created_at,
+                  status: existingAi.status || "delivered",
+                  fsmPhase: existingAi.fsm_phase || existingAi.structured_payload?.fsmPhase,
+                  fsmState: existingAi.fsm_state || existingAi.structured_payload?.fsmState,
+                  toolCalls: existingAi.tool_calls || existingAi.structured_payload?.toolCalls || [],
+                },
+                updatedWorkingMemory: aiThread.working_memory || {},
               },
-              updatedWorkingMemory: aiThread.working_memory || {},
             };
           }
 
@@ -3619,22 +2478,26 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
                 .maybeSingle();
               if (winnerAi) {
                 return {
-                  userMessageId: winner.id,
-                  aiMessage: {
-                    id: winnerAi.id,
-                    threadId: data.threadId,
-                    executionId: winnerAi.structured_payload?.executionId,
-                    text: winnerAi.content,
-                    activitySteps: winnerAi.activity_steps || winnerAi.structured_payload?.activitySteps || [],
-                    artifact: winnerAi.structured_payload?.artifact || null,
-                    structuredPayload: winnerAi.structured_payload?.structuredBlocks || null,
-                    createdAt: winnerAi.created_at,
-                    status: winnerAi.status || "delivered",
-                    fsmPhase: winnerAi.fsm_phase || winnerAi.structured_payload?.fsmPhase,
-                    fsmState: winnerAi.fsm_state || winnerAi.structured_payload?.fsmState,
-                    toolCalls: winnerAi.tool_calls || winnerAi.structured_payload?.toolCalls || [],
+                  db,
+                  alreadyPersisted: {
+                    userMessageId: winner.id,
+                    aiMessage: {
+                      id: winnerAi.id,
+                      threadId: data.threadId,
+                      executionId: winnerAi.structured_payload?.executionId,
+                      text: winnerAi.content,
+                      activitySteps: winnerAi.activity_steps || winnerAi.structured_payload?.activitySteps || [],
+                      artifact: winnerAi.structured_payload?.artifact || null,
+                      structuredPayload: winnerAi.structured_payload?.structuredBlocks || null,
+                      sources: winnerAi.structured_payload?.sources || [],
+                      createdAt: winnerAi.created_at,
+                      status: winnerAi.status || "delivered",
+                      fsmPhase: winnerAi.fsm_phase || winnerAi.structured_payload?.fsmPhase,
+                      fsmState: winnerAi.fsm_state || winnerAi.structured_payload?.fsmState,
+                      toolCalls: winnerAi.tool_calls || winnerAi.structured_payload?.toolCalls || [],
+                    },
+                    updatedWorkingMemory: aiThread.working_memory || {},
                   },
-                  updatedWorkingMemory: aiThread.working_memory || {},
                 };
               }
               if (winner.status === "sending") {
@@ -3693,9 +2556,12 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
 
           if (existingAi) {
             return {
-              userMessageId: existingUser.id,
-              aiMessage: mapPersistedAiMessage(existingAi, data.threadId),
-              updatedWorkingMemory: thread.working_memory || {},
+              db,
+              alreadyPersisted: {
+                userMessageId: existingUser.id,
+                aiMessage: mapPersistedAiMessage(existingAi, data.threadId),
+                updatedWorkingMemory: thread.working_memory || {},
+              },
             };
           }
 
@@ -3750,9 +2616,12 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
                 .maybeSingle();
               if (winnerAi) {
                 return {
-                  userMessageId: winner.id,
-                  aiMessage: mapPersistedAiMessage(winnerAi, data.threadId),
-                  updatedWorkingMemory: thread.working_memory || {},
+                  db,
+                  alreadyPersisted: {
+                    userMessageId: winner.id,
+                    aiMessage: mapPersistedAiMessage(winnerAi, data.threadId),
+                    updatedWorkingMemory: thread.working_memory || {},
+                  },
                 };
               }
               if (winner.status === "sending") {
@@ -3769,23 +2638,210 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
       }
     }
 
+    if (!userMsg) {
+      throw new Error("Falha ao registrar ou localizar mensagem do usuário");
+    }
+
+    let recentMessages: Array<{ role: "user" | "assistant"; content: string }> = [];
+    try {
+      if (isAiThread) {
+        const { data: histRows } = await db
+          .from("ai_messages")
+          .select("id, role, content, created_at")
+          .eq("thread_id", data.threadId)
+          .neq("id", userMsg.id)
+          .in("role", ["user", "assistant"])
+          .order("created_at", { ascending: false })
+          .limit(20);
+        if (Array.isArray(histRows) && histRows.length > 0) {
+          recentMessages = [...histRows]
+            .reverse()
+            .filter((r: any) => typeof r?.content === "string" && r.content.trim().length > 0)
+            .map((r: any) => ({
+              role: (r.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
+              content: String(r.content).slice(0, 4000),
+            }));
+        }
+      } else {
+        const { data: legRows } = await db
+          .from("chat_messages")
+          .select("id, is_staff_reply, message, created_at")
+          .eq("thread_id", data.threadId)
+          .neq("id", userMsg.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+        if (Array.isArray(legRows) && legRows.length > 0) {
+          recentMessages = [...legRows]
+            .reverse()
+            .filter((r: any) => typeof r?.message === "string" && r.message.trim().length > 0)
+            .map((r: any) => ({
+              role: (r.is_staff_reply ? "assistant" : "user") as "user" | "assistant",
+              content: String(r.message).slice(0, 4000),
+            }));
+        }
+      }
+    } catch {
+      recentMessages = [];
+    }
+
+    return {
+      db,
+      isAiThread,
+      resolvedWorkingMemory,
+      resolvedStoreId,
+      resolvedFolderId,
+      resolvedProjectId,
+      userMsg,
+      recentMessages,
+    };
+}
+
+export async function finalizeCopilotExchange(params: {
+  db: ReturnType<typeof getServerClient>;
+  data: z.infer<typeof sendAiMessageSchema>;
+  identityId: string;
+  isAiThread: boolean;
+  resolvedStoreId: string | null;
+  userMsg: { id: string; created_at: string };
+  execution: AiExecutionResult;
+}): Promise<CopilotExchangeExecutionResult> {
+  const { db, data, identityId, isAiThread, resolvedStoreId, userMsg, execution } = params;
+  // 4–6. Finalizar o exchange em uma única transação no Postgres.
+  // A RPC cria o artefato, a resposta da IA, atualiza o status da mensagem
+  // do usuário e a memória da thread; qualquer falha faz rollback do conjunto.
+  const aiStatus =
+    execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL"
+      ? "failed"
+      : "delivered";
+  const messageType =
+    execution.structuredPayload || execution.artifact ? "structured_blocks" : "text";
+  const aiPayload = {
+    executionId: execution.executionId,
+    activitySteps: execution.activitySteps,
+    toolCalls: execution.toolCalls || [],
+    artifact: execution.artifact,
+    structuredBlocks: execution.structuredPayload,
+    sources: execution.sources || [],
+    plan: execution.plan || [],
+    vfsFiles: execution.vfsFiles || [],
+    liveBrowserFrame: execution.liveBrowserFrame || null,
+    clientMessageId: data.clientMessageId || null,
+    userMessageId: userMsg.id,
+    replyToId: data.replyToId || null,
+    fsmPhase: execution.fsmPhase,
+    fsmState: execution.fsmState,
+  };
+  const { data: persistedExchange, error: exchangeError } = await db.rpc(
+    "persist_ai_conversation_exchange_atomic",
+    {
+      p_thread_id: data.threadId,
+      p_user_message_id: userMsg.id,
+      p_sender_id: identityId,
+      p_user_status: aiStatus,
+      p_ai_message: execution.responseMessage,
+      p_ai_message_type: messageType,
+      p_ai_payload: aiPayload,
+      p_ai_status: aiStatus,
+      p_updated_memory: execution.updatedMemory,
+      p_artifact: execution.artifact || null,
+      p_store_id: resolvedStoreId,
+    },
+  );
+
+  if (exchangeError || !persistedExchange) {
+    throw new Error(
+      `Falha ao finalizar exchange do Copilot: ${exchangeError?.message || "resultado vazio"}`,
+    );
+  }
+
+  const persistedArtifactId = (persistedExchange as { artifact_id?: string | null }).artifact_id;
+  if (execution.artifact && persistedArtifactId) {
+    execution.artifact.id = persistedArtifactId;
+  }
+  const persistedAiMessageId = (persistedExchange as { ai_message_id?: string }).ai_message_id;
+  const persistedAiCreatedAt = (persistedExchange as { ai_created_at?: string }).ai_created_at;
+
+  if (isAiThread) {
+    await db
+      .from("ai_threads")
+      .update({
+        last_message_snippet: execution.responseMessage?.slice(0, 140) || "",
+        last_message_at: persistedAiCreatedAt || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        working_memory: execution.updatedMemory,
+      })
+      .eq("id", data.threadId);
+  }
+
+  // 🧠 Motor Autônomo Estilo Manus AI: Aprendizado contínuo & Memória episódica
+  extractAndSaveFactsFromConversation({
+    profileId: identityId,
+    userPrompt: data.message,
+    threadId: data.threadId,
+  }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao extrair fatos:", err));
+
+  storeSemanticMemoryChunk({
+    sessionId: data.threadId,
+    profileId: identityId,
+    contentChunk: `Usuário: ${data.message}\nCopilot: ${execution.responseMessage}`,
+    importanceScore: execution.artifact ? 0.8 : 0.5,
+  }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao gravar memória semântica:", err));
+
+  return {
+    userMessageId: userMsg.id,
+    aiMessage: {
+      id: persistedAiMessageId || crypto.randomUUID(),
+      threadId: data.threadId,
+      text: execution.responseMessage,
+      activitySteps: execution.activitySteps,
+      executionId: execution.executionId,
+      artifact: execution.artifact,
+      structuredPayload: execution.structuredPayload,
+      sources: execution.sources || [],
+      createdAt: persistedAiCreatedAt || new Date().toISOString(),
+      status:
+        execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL"
+          ? "failed"
+          : "delivered",
+      fsmPhase: execution.fsmPhase,
+      fsmState: execution.fsmState,
+      toolCalls: execution.toolCalls || [],
+    },
+    updatedWorkingMemory: execution.updatedMemory,
+  };
+}
+
+export const sendAiConversationMessage = createServerFn({ method: "POST" })
+  .validator(sendAiMessageSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    const prepared = await prepareCopilotExchangeContext(data, identity);
+    if ("alreadyPersisted" in prepared && prepared.alreadyPersisted) {
+      return prepared.alreadyPersisted;
+    }
+
     // 3. Execução do pipeline de IA ReAct com chamada de ferramentas reais (com Error Boundary)
     let execution: AiExecutionResult;
     const copilotAbortController = new AbortController();
     try {
       execution = await withCopilotTimeout(
-        executeAiCopilotPipeline(data.message, resolvedWorkingMemory, {
+        executeAiCopilotPipeline(data.message, prepared.resolvedWorkingMemory, {
           threadId: data.threadId,
           userId: identity.id,
-          storeId: resolvedStoreId || undefined,
-          folderId: resolvedFolderId,
-          projectId: resolvedProjectId,
+          storeId: prepared.resolvedStoreId || undefined,
+          folderId: prepared.resolvedFolderId,
+          projectId: prepared.resolvedProjectId,
           quickToolMode: data.quickToolMode,
           userLat: data.userLat,
           userLng: data.userLng,
           city: normalizeActiveCity(data.city) ?? resolveActiveCity(),
           signal: copilotAbortController.signal,
           attachments: data.attachments || [],
+          recentMessages: prepared.recentMessages,
         }),
         45_000,
         copilotAbortController,
@@ -3810,114 +2866,20 @@ export const sendAiConversationMessage = createServerFn({ method: "POST" })
             completedAt: new Date().toISOString(),
           },
         ],
-        updatedMemory: resolvedWorkingMemory,
+        updatedMemory: prepared.resolvedWorkingMemory,
         fsmPhase: "FAILED_RETRYABLE",
       };
     }
 
-    if (!userMsg) {
-      throw new Error("Falha ao registrar ou localizar mensagem do usuário");
-    }
-
-    // 4–6. Finalizar o exchange em uma única transação no Postgres.
-    // A RPC cria o artefato, a resposta da IA, atualiza o status da mensagem
-    // do usuário e a memória da thread; qualquer falha faz rollback do conjunto.
-    const aiStatus =
-      execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL"
-        ? "failed"
-        : "delivered";
-    const messageType =
-      execution.structuredPayload || execution.artifact ? "structured_blocks" : "text";
-    const aiPayload = {
-      executionId: execution.executionId,
-      activitySteps: execution.activitySteps,
-      toolCalls: execution.toolCalls || [],
-      artifact: execution.artifact,
-      structuredBlocks: execution.structuredPayload,
-      sources: execution.sources || [],
-      clientMessageId: data.clientMessageId || null,
-      userMessageId: userMsg.id,
-      replyToId: data.replyToId || null,
-      fsmPhase: execution.fsmPhase,
-      fsmState: execution.fsmState,
-    };
-    const { data: persistedExchange, error: exchangeError } = await db.rpc(
-      "persist_ai_conversation_exchange_atomic",
-      {
-        p_thread_id: data.threadId,
-        p_user_message_id: userMsg.id,
-        p_sender_id: identity.id,
-        p_user_status: aiStatus,
-        p_ai_message: execution.responseMessage,
-        p_ai_message_type: messageType,
-        p_ai_payload: aiPayload,
-        p_ai_status: aiStatus,
-        p_updated_memory: execution.updatedMemory,
-        p_artifact: execution.artifact || null,
-        p_store_id: resolvedStoreId,
-      },
-    );
-
-    if (exchangeError || !persistedExchange) {
-      throw new Error(
-        `Falha ao finalizar exchange do Copilot: ${exchangeError?.message || "resultado vazio"}`,
-      );
-    }
-
-    const persistedArtifactId = (persistedExchange as { artifact_id?: string | null }).artifact_id;
-    if (execution.artifact && persistedArtifactId) {
-      execution.artifact.id = persistedArtifactId;
-    }
-    const persistedAiMessageId = (persistedExchange as { ai_message_id?: string }).ai_message_id;
-    const persistedAiCreatedAt = (persistedExchange as { ai_created_at?: string }).ai_created_at;
-
-    if (isAiThread) {
-      await db
-        .from("ai_threads")
-        .update({
-          last_message_snippet: execution.responseMessage?.slice(0, 140) || "",
-          last_message_at: persistedAiCreatedAt || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          working_memory: execution.updatedMemory,
-        })
-        .eq("id", data.threadId);
-    }
-
-    // 🧠 Motor Autônomo Estilo Manus AI: Aprendizado contínuo & Memória episódica
-    extractAndSaveFactsFromConversation({
-      profileId: identity.id,
-      userPrompt: data.message,
-      threadId: data.threadId,
-    }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao extrair fatos:", err));
-
-    storeSemanticMemoryChunk({
-      sessionId: data.threadId,
-      profileId: identity.id,
-      contentChunk: `Usuário: ${data.message}\nCopilot: ${execution.responseMessage}`,
-      importanceScore: execution.artifact ? 0.8 : 0.5,
-    }).catch((err) => console.warn("[COPILOT-LEARNING] Falha ao gravar memória semântica:", err));
-
-    return {
-      userMessageId: userMsg.id,
-      aiMessage: {
-        id: persistedAiMessageId || crypto.randomUUID(),
-        text: execution.responseMessage,
-        activitySteps: execution.activitySteps,
-        executionId: execution.executionId,
-        artifact: execution.artifact,
-        structuredPayload: execution.structuredPayload,
-        sources: execution.sources || [],
-        createdAt: persistedAiCreatedAt || new Date().toISOString(),
-        status:
-          execution.fsmPhase === "FAILED_RETRYABLE" || execution.fsmPhase === "FAILED_FINAL"
-            ? "failed"
-            : "delivered",
-        fsmPhase: execution.fsmPhase,
-        fsmState: execution.fsmState,
-        toolCalls: execution.toolCalls || [],
-      },
-      updatedWorkingMemory: execution.updatedMemory,
-    };
+    return finalizeCopilotExchange({
+      db: prepared.db,
+      data,
+      identityId: identity.id,
+      isAiThread: prepared.isAiThread,
+      resolvedStoreId: prepared.resolvedStoreId,
+      userMsg: prepared.userMsg,
+      execution,
+    });
   });
 
 // ============================================================
@@ -3943,7 +2905,7 @@ export const saveAiChatArtifact = createServerFn({ method: "POST" })
     if (aiThread) {
       if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
         if (aiThread.workspace_id) {
-          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
+          assertStoreAccess(identity, STAFF_ROLES, aiThread.workspace_id);
         } else {
           throw new Error("Sem permissão para salvar artefato nesta conversa");
         }
@@ -3956,7 +2918,7 @@ export const saveAiChatArtifact = createServerFn({ method: "POST" })
           workspace_id: aiThread.workspace_id || data.storeId || null,
           thread_id: data.threadId,
           message_id: data.messageId || null,
-          artifact_type: data.artifactType,
+          artifact_type: normalizeArtifactType(data.artifactType),
           title: data.title,
           current_version: data.version || 1,
           data: data.data || {},
@@ -4016,6 +2978,20 @@ export const saveAiChatArtifact = createServerFn({ method: "POST" })
     return artifact;
   });
 
+function assertCanMutateAiThread(
+  aiThread: { user_id?: string | null; workspace_id?: string | null },
+  identity: { id?: string | null; role: string; store_id?: string | null; memberships?: any[] },
+  actionLabel: string,
+) {
+  if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
+    if (aiThread.workspace_id) {
+      assertStoreAccess(identity as any, STAFF_ROLES, aiThread.workspace_id);
+    } else {
+      throw new Error(`Sem permissão para ${actionLabel} esta conversa`);
+    }
+  }
+}
+
 // ============================================================
 // 6. Fixar / Desafixar Thread
 // ============================================================
@@ -4037,13 +3013,7 @@ export const toggleAiThreadPinned = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (aiThread) {
-      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
-        if (aiThread.workspace_id) {
-          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
-        } else {
-          throw new Error("Sem permissão para alterar esta conversa");
-        }
-      }
+      assertCanMutateAiThread(aiThread, identity, "alterar");
       const { error: aiErr } = await db
         .from("ai_threads")
         .update({ pinned: data.isPinned, updated_at: new Date().toISOString() })
@@ -4085,13 +3055,7 @@ export const toggleAiThreadArchived = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (aiThread) {
-      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
-        if (aiThread.workspace_id) {
-          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
-        } else {
-          throw new Error("Sem permissão para alterar esta conversa");
-        }
-      }
+      assertCanMutateAiThread(aiThread, identity, "alterar");
       const { error: aiErr } = await db
         .from("ai_threads")
         .update({
@@ -4147,18 +3111,18 @@ export const deleteAiConversationThread = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (aiThread) {
-      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
-        if (aiThread.workspace_id) {
-          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
-        } else {
-          throw new Error("Sem permissão para excluir esta conversa");
-        }
-      }
+      assertCanMutateAiThread(aiThread, identity, "excluir");
       await db.from("ai_messages").delete().eq("thread_id", data.threadId);
       await db.from("ai_artifacts").delete().eq("thread_id", data.threadId);
       await db.from("ai_tasks").update({ thread_id: null }).eq("thread_id", data.threadId);
-      const { error } = await db.from("ai_threads").delete().eq("id", data.threadId);
-      if (error) throw new Error("Falha ao excluir conversa");
+      await db.from("copilot_executions").update({ thread_id: null }).eq("thread_id", data.threadId);
+      const { data: deletedAiThread, error } = await db
+        .from("ai_threads")
+        .delete()
+        .eq("id", data.threadId)
+        .select("id")
+        .maybeSingle();
+      if (error || !deletedAiThread) throw new Error("Falha ao excluir conversa");
       return { success: true };
     }
 
@@ -4176,9 +3140,14 @@ export const deleteAiConversationThread = createServerFn({ method: "POST" })
 
     await db.from("chat_messages").delete().eq("thread_id", data.threadId);
     await db.from("chat_artifacts").delete().eq("thread_id", data.threadId);
-    const { error } = await db.from("chat_threads").delete().eq("id", data.threadId);
+    const { data: deletedLegacyThread, error } = await db
+      .from("chat_threads")
+      .delete()
+      .eq("id", data.threadId)
+      .select("id")
+      .maybeSingle();
 
-    if (error) {
+    if (error || !deletedLegacyThread) {
       throw new Error("Falha ao excluir conversa");
     }
 
@@ -4211,13 +3180,7 @@ export const renameAiConversationThread = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (aiThread) {
-      if (aiThread.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
-        if (aiThread.workspace_id) {
-          assertStoreAccess({ ...identity, store_id: aiThread.workspace_id });
-        } else {
-          throw new Error("Sem permissão para renomear esta conversa");
-        }
-      }
+      assertCanMutateAiThread(aiThread, identity, "renomear");
       const { error } = await db
         .from("ai_threads")
         .update({ title: data.title, updated_at: new Date().toISOString() })
@@ -4696,6 +3659,121 @@ export const uploadCopilotMultimodalAttachment = createServerFn({ method: "POST"
         linesCount,
         uploadedAt: new Date().toISOString(),
       },
+    };
+  });
+
+// ============================================================
+// 11. Controle Humano de Execuções Duráveis & Retomada
+// ============================================================
+
+export async function finalizeResumedCopilotExchange(params: {
+  threadId: string;
+  userId: string;
+  storeId: string | null;
+  clientMessageId?: string;
+  userPrompt: string;
+  execution: AiExecutionResult;
+}) {
+  const db = getServerClient();
+  const { data: thread } = await db
+    .from("ai_threads")
+    .select("id")
+    .eq("id", params.threadId)
+    .maybeSingle();
+  const isAiThread = Boolean(thread?.id);
+
+  let userMsg: { id: string; created_at: string } | null = null;
+  if (isAiThread) {
+    const { data: latestUser } = await db
+      .from("ai_messages")
+      .select("id, created_at")
+      .eq("thread_id", params.threadId)
+      .eq("role", "user")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (latestUser?.id) userMsg = latestUser;
+  } else {
+    const { data: latestLegacy } = await db
+      .from("chat_messages")
+      .select("id, created_at")
+      .eq("thread_id", params.threadId)
+      .eq("is_staff_reply", false)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (latestLegacy?.id) userMsg = latestLegacy;
+  }
+
+  if (!userMsg) {
+    userMsg = { id: crypto.randomUUID(), created_at: new Date().toISOString() };
+  }
+
+  return finalizeCopilotExchange({
+    db,
+    data: {
+      threadId: params.threadId,
+      message: params.userPrompt,
+      clientMessageId: params.clientMessageId,
+      attachments: [],
+    },
+    identityId: params.userId,
+    isAiThread,
+    resolvedStoreId: params.storeId,
+    userMsg,
+    execution: params.execution,
+  });
+}
+
+const controlCopilotExecutionSchema = z.object({
+  executionId: z.string().uuid(),
+  action: z.enum(["pause", "resume", "inject_guidance", "cancel"]),
+  guidance: z.string().max(2000).optional(),
+});
+
+export const controlCopilotExecutionFn = createServerFn({ method: "POST" })
+  .validator(controlCopilotExecutionSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Autenticação necessária para controlar execução do Copilot.");
+    }
+    const res = await controlCopilotExecution({
+      executionId: data.executionId,
+      userId: identity.id,
+      storeId: identity.store_id || undefined,
+      action: data.action,
+      guidance: data.guidance,
+    });
+    return {
+      success: res.success,
+      status: res.status,
+      state: res.state as Record<string, any>,
+    };
+  });
+
+export const getCopilotExecutionStateFn = createServerFn({ method: "GET" })
+  .validator(z.object({ executionId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      throw new Error("Autenticação necessária.");
+    }
+    const loaded = await loadCopilotExecutionForContinue({
+      executionId: data.executionId,
+      userId: identity.id,
+      storeId: identity.store_id || undefined,
+    });
+    if (!loaded) {
+      throw new Error("Execução não encontrada ou acesso negado.");
+    }
+    return {
+      executionId: loaded.execution.id,
+      status: loaded.execution.status,
+      currentPhase: loaded.execution.current_phase,
+      plan: Array.isArray(loaded.execution.plan) ? loaded.execution.plan : [],
+      state: loaded.execution.state || {},
+      steps: loaded.steps,
     };
   });
 

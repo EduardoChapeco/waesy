@@ -22,7 +22,7 @@ export const Route = createFileRoute("/sitemap-empresas.xml")({
               .limit(10000),
             db
               .from("directory_listings")
-              .select("id, store_id, stores(slug), updated_at")
+              .select("id, store_id, stores:stores!directory_listings_store_id_fkey(slug), updated_at")
               .order("updated_at", { ascending: false })
               .limit(10000),
           ]);

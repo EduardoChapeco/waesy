@@ -19,7 +19,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
   styling,
   className = "",
 }) => {
-  const { isMobile } = useEffectiveViewport();
+  const { isMobile, isMedium } = useEffectiveViewport();
   const sectionStyle = getSectionStyle(styling, isMobile);
 
   const slides = Array.isArray(data?.slides) && data.slides.length > 0 ? data.slides : [];
@@ -78,16 +78,18 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
           className={
             isMobile
               ? "grid grid-cols-1 gap-6 items-center min-h-80 py-4"
-              : "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-96 lg:min-h-128"
+              : isMedium
+                ? "grid grid-cols-1 gap-8 items-center py-6"
+                : "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-128"
           }
         >
           {/* Lado Esquerdo: Conteúdo Editorial do Slide */}
           <div
             key={currentIndex}
             className={
-              isMobile
+              isMobile || isMedium
                 ? "col-span-1 flex flex-col items-start text-left z-10 animate-in fade-in duration-300"
-                : "lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300"
+                : "col-span-1 lg:col-span-7 flex flex-col items-start text-left z-10 animate-in fade-in duration-300"
             }
           >
             {/* Badge de Contexto do Slide */}
@@ -147,7 +149,7 @@ export const HeroInteractiveCarousel: React.FC<HeroInteractiveCarouselProps> = (
           </div>
 
           {/* Lado Direito: Visual Imersivo & Card Flutuante */}
-          <div className="lg:col-span-5 relative w-full flex items-center justify-center">
+          <div className={isMobile || isMedium ? "col-span-1 relative w-full flex items-center justify-center" : "col-span-1 lg:col-span-5 relative w-full flex items-center justify-center"}>
             <div className="relative w-full aspect-4/3 sm:aspect-16/10 lg:aspect-4/3 rounded-lg sm:rounded-lg overflow-hidden border border-border/60 bg-muted/30 shadow-xs">
               {currentSlide.imageUrl ? (
                 <img

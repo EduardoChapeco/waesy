@@ -9,8 +9,12 @@ export type ChannelSource =
   | "magalu"
   | "magazine_luiza"
   | "99food"
+  | "tridelivery"
+  | "amoofertas"
   | "amodelivery"
   | "amo_delivery"
+  | "aiqfome"
+  | "rappi"
   | "classifieds"
   | "classificados"
   | "online_store"
@@ -75,11 +79,32 @@ export function getChannelInfo(source?: string | null): ChannelInfo {
       badgeClass: "text-blue-600 dark:text-blue-400",
     };
   }
-  if (norm.includes("99food")) {
+  if (norm.includes("99food") || norm.includes("99_food")) {
     return {
       id: "99food",
       label: "99Food",
       badgeClass: "text-warning-strong ",
+    };
+  }
+  if (norm.includes("tridelivery") || norm.includes("tri_delivery")) {
+    return {
+      id: "tridelivery",
+      label: "TriDelivery",
+      badgeClass: "text-warning-strong",
+    };
+  }
+  if (norm.includes("amoofertas") || norm.includes("amo_ofertas")) {
+    return {
+      id: "amoofertas",
+      label: "Amo Ofertas",
+      badgeClass: "text-emerald-600 dark:text-emerald-400",
+    };
+  }
+  if (norm.includes("aiqfome")) {
+    return {
+      id: "aiqfome",
+      label: "aiqfome",
+      badgeClass: "text-purple-600 dark:text-purple-400",
     };
   }
   if (norm.includes("amodelivery") || norm.includes("amo_delivery")) {
@@ -103,18 +128,18 @@ export function getChannelInfo(source?: string | null): ChannelInfo {
       badgeClass: "text-emerald-600 dark:text-emerald-400",
     };
   }
-  if (norm.includes("waesy_app") || norm.includes("app")) {
-    return {
-      id: "waesy_app",
-      label: "App Waesy",
-      badgeClass: "text-primary",
-    };
-  }
   if (norm.includes("rappi")) {
     return {
       id: "rappi",
       label: "Rappi",
       badgeClass: "text-orange-600 dark:text-orange-400",
+    };
+  }
+  if (norm.includes("waesy_app") || norm === "app" || norm.includes("app_waesy")) {
+    return {
+      id: "waesy_app",
+      label: "App Waesy",
+      badgeClass: "text-primary",
     };
   }
   if (norm.includes("direct_link")) {

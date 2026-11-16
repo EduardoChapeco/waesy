@@ -8,7 +8,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, requirePlatformAdmin } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, requirePlatformAdmin } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import { getRequest } from "@tanstack/start-server-core";
 import { extractClientIp } from "@/lib/rate-limiter";
 
@@ -220,7 +221,11 @@ export const listLedgerEntries = createServerFn({ method: "GET" })
     const identity = await getServerIdentity();
     if (!identity?.id) throw new Error("Não autenticado");
 
-    const isSuper = identity.role === "admin" || identity.role === "superadmin";
+    const isSuper = isPlatformAdminIdentity(identity);
+
+    if (input.storeId && !isSuper) {
+      assertStoreAccess(identity, undefined, input.storeId);
+    }
 
     let query = supabase
       .from("financial_immutable_ledger")

@@ -659,10 +659,10 @@ function AdminMasterMarcaPage() {
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Backgrounds da Tela de Login
+ Imagens da Tela de Login Split
  </h2>
  <p className="text-2xs text-muted-foreground">
- Imagens recortadas na proporção exata de cada dispositivo para tela cheia fluida sem distorção.
+ No Desktop a imagem ocupa o painel direito do login dividido; no Tablet/Mobile exibe interface nativa passo a passo limpa.
  </p>
  </div>
  </div>
@@ -1094,67 +1094,63 @@ function AdminMasterMarcaPage() {
 
  {/* Canvas da Tela de Login */}
  <div
- className={`relative rounded-lg overflow-hidden bg-foreground mx-auto transition-colors duration-200 ${
+ className={`relative rounded-lg overflow-hidden border border-border bg-background mx-auto transition-colors duration-200 ${
  loginBreakpoint === "desktop"
- ? "aspect-video w-full"
+ ? "aspect-video w-full grid grid-cols-2"
  : loginBreakpoint === "tablet"
- ? "aspect-banner-classic w-full"
- : "aspect-post-moment max-h-80 w-44"
+ ? "aspect-banner-classic w-full grid grid-cols-2"
+ : "aspect-post-moment max-h-80 w-44 flex flex-col justify-between p-3"
  }`}
  >
- {/* Imagem de Fundo Real */}
- {loginBreakpoint === "desktop" && loginBgDesktopUrl ? (
+ {loginBreakpoint === "mobile" ? (
+ <>
+ <div className="flex items-center justify-between border-b border-border/50 pb-2">
+ <span className="text-3xs font-bold text-foreground">{platformName || "WAESY"}</span>
+ <span className="text-3xs font-mono text-muted-foreground">1/2</span>
+ </div>
+ <div className="space-y-2 my-auto">
+ <p className="text-2xs font-bold text-foreground">Entrar</p>
+ <div className="h-6 rounded-md bg-muted px-2 flex items-center text-3xs text-muted-foreground">
+ E-mail ou usuário...
+ </div>
+ <div className="h-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center text-3xs font-semibold">
+ Prosseguir
+ </div>
+ </div>
+ <div className="text-3xs text-muted-foreground text-center">Mobile Nativo</div>
+ </>
+ ) : (
+ <>
+ <div className="bg-background p-3 flex flex-col justify-between border-r border-border/50">
+ <span className="text-3xs font-bold text-foreground">{platformName || "WAESY"}</span>
+ <div className="space-y-2 my-auto">
+ <p className="text-2xs font-bold text-foreground">Entrar</p>
+ <div className="h-6 rounded-md bg-muted px-2 flex items-center justify-between text-3xs text-muted-foreground">
+ <span>seu@email.com</span>
+ <ArrowRight className="size-2.5 text-foreground" />
+ </div>
+ <div className="h-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center text-3xs font-semibold">
+ Prosseguir
+ </div>
+ </div>
+ <span className="text-3xs text-muted-foreground">Login à Esquerda</span>
+ </div>
+
+ <div className="relative bg-muted overflow-hidden flex items-end p-2">
+ {(loginBreakpoint === "desktop" ? loginBgDesktopUrl : loginBgTabletUrl || loginBgDesktopUrl) ? (
  <img
- src={loginBgDesktopUrl}
- alt="Desktop Login"
+ src={(loginBreakpoint === "desktop" ? loginBgDesktopUrl : loginBgTabletUrl || loginBgDesktopUrl)!}
+ alt="Painel Direito Login"
  className="absolute inset-0 size-full object-cover"
  />
- ) : loginBreakpoint === "tablet" && (loginBgTabletUrl || loginBgDesktopUrl) ? (
- <img
- src={loginBgTabletUrl || loginBgDesktopUrl!}
- alt="Tablet Login"
- className="absolute inset-0 size-full object-cover"
- />
- ) : loginBreakpoint === "mobile" && (loginBgMobileUrl || loginBgTabletUrl || loginBgDesktopUrl) ? (
- <img
- src={loginBgMobileUrl || loginBgTabletUrl || loginBgDesktopUrl!}
- alt="Mobile Login"
- className="absolute inset-0 size-full object-cover"
- />
-                ) : (
-                  <div className="absolute inset-0 size-full bg-muted flex items-center justify-center p-4">
-                    <span className="text-2xs text-muted-foreground text-center">
-                      Background padrão ativo (Envie uma foto para customizar)
-                    </span>
-                  </div>
-                )}
-
-                {/* Overlay Escuro Sólido Sutil */}
-                <div className="absolute inset-0 bg-neutral-950/40" />
-
-                {/* Topo do Login */}
-                <div className="absolute top-2 left-2 right-2 flex items-center justify-between z-10">
-                  <div className="px-2 py-1 rounded-lg bg-card border border-border text-foreground text-3xs font-bold">
-                    {platformName || "WAESY"}
-                  </div>
-                  <div className="px-2 py-1 rounded-lg bg-card border border-border text-muted-foreground text-3xs">
-                    Voltar
-                  </div>
-                </div>
-
-                {/* Card de Autenticação no Canto */}
-                <div className="absolute bottom-2 right-2 left-2 sm:left-auto sm:w-56 p-3 rounded-lg bg-card border border-border z-10 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xs font-bold text-foreground">Acessar Conta</span>
-                    <Badge className="bg-primary text-primary-foreground text-3xs px-2 py-1">
-                      {platformName || "Waesy"}
-                    </Badge>
-                  </div>
-                  <div className="h-6 rounded-md bg-muted px-2 flex items-center justify-between text-3xs text-muted-foreground">
-                    <span>E-mail ou CPF...</span>
-                    <ArrowRight className="size-2.5 text-foreground" />
-                  </div>
-                </div>
+ ) : (
+ <span className="m-auto text-3xs text-muted-foreground text-center">
+ Imagem Direita (envie foto)
+ </span>
+ )}
+ </div>
+ </>
+ )}
  </div>
  </TabsContent>
 

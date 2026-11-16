@@ -6,14 +6,12 @@ import {
   createAiConversationThread,
 } from "@/services/ai-conversations.functions";
 import { listUserDurableAiTasks } from "@/services/ai-tasks-durability.functions";
+import { listCopilotHierarchy } from "@/services/copilot-projects.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { useCopilotSession } from "@/hooks/use-copilot-session";
 import { ManusComputerDrawer } from "@/components/chat/manus-computer-drawer";
 import { ManusTaskTelemetrySheet } from "@/components/chat/manus-task-telemetry-sheet";
-import {
-  CopilotBackgroundTasksDrawer,
-  type BackgroundTaskItem,
-} from "@/components/chat/copilot-background-tasks-drawer";
+import type { BackgroundTaskItem } from "@/components/chat/copilot-background-tasks-drawer";
 import { Button } from "@/components/ui/button";
 import { Share2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -45,6 +43,9 @@ export const Route = createFileRoute("/_store/copilot")({
 
       let resolvedThreads = threads || [];
       const effectiveUserId = session?.id || session?.user?.id || null;
+      const initialHierarchy = effectiveUserId
+        ? await listCopilotHierarchy().catch(() => ({ folders: [], projects: [] }))
+        : { folders: [], projects: [] };
 
       // Se o usuário está logado e não possui nenhuma thread, cria a primeira thread oficial no Supabase
       if (effectiveUserId && resolvedThreads.length === 0) {
@@ -69,24 +70,38 @@ export const Route = createFileRoute("/_store/copilot")({
       return {
         session,
         initialThreads: resolvedThreads,
+        initialFolders: initialHierarchy.folders || [],
+        initialProjects: initialHierarchy.projects || [],
         initialTasks: (initialTasks || []) as BackgroundTaskItem[],
         initialLoadError: threadLoadError && Boolean(effectiveUserId),
       };
     } catch {
-      return { session: null, initialThreads: [], initialTasks: [], initialLoadError: false };
+      return {
+        session: null,
+        initialThreads: [],
+        initialFolders: [],
+        initialProjects: [],
+        initialTasks: [],
+        initialLoadError: false,
+      };
     }
   },
   component: CopilotPage,
 });
 
 function CopilotPage() {
-  const { session, initialThreads, initialTasks } = Route.useLoaderData();
+  const {
+    session,
+    initialThreads,
+    initialFolders,
+    initialProjects,
+    initialTasks,
+  } = Route.useLoaderData();
   const effectiveUserId = session?.id || session?.user?.id || null;
   const navigate = useNavigate();
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [isComputerOpen, setIsComputerOpen] = useState(false);
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
-  const [isBackgroundTasksOpen, setIsBackgroundTasksOpen] = useState(false);
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "geolocation" in navigator) {
@@ -103,6 +118,8 @@ function CopilotPage() {
   const copilot = useCopilotSession({
     mode: "concierge",
     initialThreads: (initialThreads || []) as any,
+    initialFolders: initialFolders || [],
+    initialProjects: initialProjects || [],
     initialTasks: initialTasks || [],
     defaultFallbackThreadId: DEFAULT_GUEST_THREAD_ID,
     defaultFallbackTitle: "Assessor Local",
@@ -169,6 +186,26 @@ function CopilotPage() {
         onTogglePinThread={copilot.handleTogglePinThread}
         onToggleArchiveThread={copilot.handleToggleArchiveThread}
         onStructuredAction={copilot.handleStructuredAction}
+        folders={copilot.folders}
+        projects={copilot.projects}
+        selectedFolderId={copilot.selectedFolderId}
+        selectedProjectId={copilot.selectedProjectId}
+        onSelectFolder={copilot.setSelectedFolderId}
+        onSelectProject={copilot.setSelectedProjectId}
+        onCreateFolder={effectiveUserId ? copilot.handleCreateFolder : undefined}
+        onRenameFolder={effectiveUserId ? copilot.handleRenameFolder : undefined}
+        onDeleteFolder={effectiveUserId ? copilot.handleDeleteFolder : undefined}
+        onCreateProject={effectiveUserId ? copilot.handleCreateProject : undefined}
+        onUpdateProject={effectiveUserId ? copilot.handleUpdateProject : undefined}
+        onDeleteProject={effectiveUserId ? copilot.handleDeleteProject : undefined}
+        onAssignThreadHierarchy={effectiveUserId ? copilot.handleAssignThreadHierarchy : undefined}
+        projectFiles={copilot.projectFiles}
+        isLoadingProjectFiles={copilot.isLoadingProjectFiles}
+        onUploadProjectFile={effectiveUserId ? copilot.handleUploadProjectFile : undefined}
+        onDeleteProjectFile={effectiveUserId ? copilot.handleDeleteProjectFile : undefined}
+        onUpdateProjectInstructions={
+          effectiveUserId ? copilot.handleUpdateProjectInstructions : undefined
+        }
         sources={copilot.aggregatedSources}
         backgroundTasks={copilot.backgroundTasks}
         onCancelBackgroundTask={copilot.handleCancelBackgroundTask}
@@ -177,6 +214,10 @@ function CopilotPage() {
         onQuickToolModeChange={copilot.setQuickToolMode}
         onOpenComputer={() => setIsComputerOpen(true)}
         computerStepsCount={copilot.computerSteps.length}
+        executionPlan={copilot.executionPlan}
+        isExecutionPaused={copilot.isExecutionPaused}
+        onPauseExecution={copilot.handlePauseExecution}
+        onResumeExecution={copilot.handleResumeExecution}
         onOpenTelemetry={() => setIsTelemetryOpen(true)}
         extraHeaderActions={extraHeaderActions}
         contextAccessLabel="Concierge Local"
@@ -191,20 +232,28 @@ function CopilotPage() {
         onOpenChange={setIsComputerOpen}
         taskTitle={copilot.activeThread?.title || "Sessão Ativa"}
         steps={copilot.computerSteps}
+        plan={copilot.executionPlan}
+        vfsFiles={copilot.vfsFiles}
+        liveBrowserFrame={copilot.liveBrowserFrame}
+        onCancelExecution={copilot.handleCancelActiveRun}
+        onPauseExecution={copilot.handlePauseExecution}
+        onResumeExecution={copilot.handleResumeExecution}
+        onTakeControl={copilot.handleTakeBrowserControl}
+        executionStatus={
+          copilot.isExecutionPaused
+            ? "paused"
+            : copilot.isSending
+              ? "running"
+              : copilot.computerSteps.length > 0
+                ? "completed"
+                : "idle"
+        }
       />
 
       <ManusTaskTelemetrySheet
         open={isTelemetryOpen}
         onOpenChange={setIsTelemetryOpen}
         {...copilot.telemetrySummary}
-      />
-
-      <CopilotBackgroundTasksDrawer
-        open={isBackgroundTasksOpen}
-        onOpenChange={setIsBackgroundTasksOpen}
-        tasks={copilot.backgroundTasks}
-        onCancelTask={copilot.handleCancelBackgroundTask}
-        onRefresh={copilot.refreshBackgroundTasks}
       />
     </div>
   );

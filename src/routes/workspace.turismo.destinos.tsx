@@ -827,30 +827,30 @@ export default function WorkspaceDestinationsPage() {
  className="flex-1 flex flex-col overflow-hidden"
  >
  {/* design-lint-ignore DL-30 reason:"Horizontal tab rail inside studio sheet" expiry:"2028-12-31" */}
- <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-card overflow-x-auto scroll-area-carousel no-scrollbar ">
- <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-6 h-9 rounded-lg p-1 bg-muted/50">
- <TabsTrigger value="identificacao" className="text-xs font-bold rounded-lg gap-2 py-1">
- <MapPin className="size-3.5" />
+ <div className="px-4 sm:px-5 pt-3 pb-2 border-b border-border/60 bg-card min-w-0">
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 w-full h-11 min-h-11 rounded-lg p-1 bg-muted/50">
+ <TabsTrigger value="identificacao" className="text-xs font-bold rounded-lg gap-2 py-1 shrink-0 whitespace-nowrap">
+ <MapPin className="size-3.5 shrink-0" />
  <span>1. Localização</span>
  </TabsTrigger>
- <TabsTrigger value="midias" className="text-xs font-bold rounded-lg gap-2 py-1">
- <ImageIcon className="size-3.5" />
+ <TabsTrigger value="midias" className="text-xs font-bold rounded-lg gap-2 py-1 shrink-0 whitespace-nowrap">
+ <ImageIcon className="size-3.5 shrink-0" />
  <span>2. Mídias</span>
  </TabsTrigger>
- <TabsTrigger value="secoes" className="text-xs font-bold rounded-lg gap-2 py-1">
- <Layers className="size-3.5" />
+ <TabsTrigger value="secoes" className="text-xs font-bold rounded-lg gap-2 py-1 shrink-0 whitespace-nowrap">
+ <Layers className="size-3.5 shrink-0" />
  <span>3. Seções CMS ({sections.length})</span>
  </TabsTrigger>
- <TabsTrigger value="avaliacoes" className="text-xs font-bold rounded-lg gap-2 py-1">
- <Award className="size-3.5" />
+ <TabsTrigger value="avaliacoes" className="text-xs font-bold rounded-lg gap-2 py-1 shrink-0 whitespace-nowrap">
+ <Award className="size-3.5 shrink-0" />
  <span>4. Avaliações ({reviews.length})</span>
  </TabsTrigger>
- <TabsTrigger value="tags" className="text-xs font-bold rounded-lg gap-2 py-1">
- <Tag className="size-3.5" />
+ <TabsTrigger value="tags" className="text-xs font-bold rounded-lg gap-2 py-1 shrink-0 whitespace-nowrap">
+ <Tag className="size-3.5 shrink-0" />
  <span>5. Tags e SEO</span>
  </TabsTrigger>
- <TabsTrigger value="preview" className="text-xs font-bold rounded-lg gap-2 py-1">
- <Eye className="size-3.5" />
+ <TabsTrigger value="preview" className="text-xs font-bold rounded-lg gap-2 py-1 shrink-0 whitespace-nowrap">
+ <Eye className="size-3.5 shrink-0" />
  <span>6. Live Preview</span>
  </TabsTrigger>
  </TabsList>

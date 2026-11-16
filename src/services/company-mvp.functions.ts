@@ -19,6 +19,8 @@ export const FastRegisterCompanySchema = z.object({
   niche: z.string().optional(),
   primary_niche_id: z.string().optional(),
   vertical_sku: z.string().optional(),
+  brand_origin: z.string().optional(),
+  waesy_marketplace_enabled: z.boolean().optional(),
   phone: z.string().min(8, "Telefone/WhatsApp de atendimento é obrigatório"),
   email: z.string().optional(),
   city: z.string().min(2, "Cidade é obrigatória"),
@@ -119,6 +121,11 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
         ? (requestedSku as keyof typeof VERTICAL_PLAN_CATALOG)
         : nicheSpec.defaultVerticalSku;
     const verticalPlan = VERTICAL_PLAN_CATALOG[resolvedSku];
+    const resolvedBrandOrigin = String(data.brand_origin || "waesy").trim().toLowerCase() || "waesy";
+    const resolvedMarketplaceOptIn =
+      typeof data.waesy_marketplace_enabled === "boolean"
+        ? data.waesy_marketplace_enabled
+        : resolvedBrandOrigin === "waesy" || resolvedBrandOrigin === "waesy_studio";
     const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
 
     // 1.2 Formatar Endereço Estruturado Completo
@@ -177,6 +184,9 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       banner_url: data.bannerUrl || null,
       primary_niche_id: resolvedNiche,
       enabled_niches: [resolvedNiche],
+      brand_origin: resolvedBrandOrigin,
+      waesy_marketplace_enabled: resolvedMarketplaceOptIn,
+      publish_to_marketplace: resolvedMarketplaceOptIn,
       vertical_sku: verticalPlan.sku,
       plan_tier: verticalPlan.baseTier,
       subscription_tier: verticalPlan.baseTier,

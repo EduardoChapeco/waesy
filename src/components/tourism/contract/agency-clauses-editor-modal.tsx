@@ -238,19 +238,19 @@ export function AgencyClausesEditorModal({
  </SheetHeader>
 
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="flex-1 flex flex-col overflow-hidden">
- <div className="px-6 pt-3 border-b border-border/40 bg-muted/20 flex items-center justify-between">
- <TabsList className="bg-muted/60 p-1 rounded-lg h-9">
- <TabsTrigger value="editor" className="text-xs font-bold rounded-lg gap-2">
- <FileText className="size-3.5" />
+ <div className="px-4 sm:px-6 pt-3 pb-2 border-b border-border/40 bg-muted/20 flex flex-wrap items-center justify-between gap-2 min-w-0">
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/60 p-1 rounded-lg h-11 min-h-11 sm:h-9 sm:min-h-9 max-w-full min-w-0">
+ <TabsTrigger value="editor" className="text-xs font-bold rounded-lg gap-2 shrink-0 whitespace-nowrap">
+ <FileText className="size-3.5 shrink-0" />
  <span>Editor de Cláusulas ({clauses.length})</span>
  </TabsTrigger>
- <TabsTrigger value="import" className="text-xs font-bold rounded-lg gap-2">
- <FileUp className="size-3.5" />
+ <TabsTrigger value="import" className="text-xs font-bold rounded-lg gap-2 shrink-0 whitespace-nowrap">
+ <FileUp className="size-3.5 shrink-0" />
  <span>Colar Minuta Própria</span>
  </TabsTrigger>
  </TabsList>
 
- <div className="flex items-center gap-2">
+ <div className="flex items-center gap-2 shrink-0">
  <Button
  type="button"
  variant="ghost"

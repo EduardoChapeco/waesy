@@ -26,6 +26,16 @@ export const setTenantContext = createServerFn({ method: "POST" })
     const adminDb = getServerClient();
     const isProd = process.env.NODE_ENV === "production";
 
+    const { resolveCanonicalCookieDomain } = await import("@/lib/auth-cookie-sanitizer");
+    let cookieDomain: string | undefined;
+    try {
+      const core: any = await import("@tanstack/start-server-core");
+      const reqHost = core?.getRequestHeader?.("host") || "";
+      cookieDomain = resolveCanonicalCookieDomain(reqHost);
+    } catch {
+      cookieDomain = undefined;
+    }
+
     const writeContextCookie = (name: string, value: string, maxAge: number) => {
       try {
         setCookie(name, value, {
@@ -34,12 +44,13 @@ export const setTenantContext = createServerFn({ method: "POST" })
           httpOnly: false,
           secure: isProd,
           sameSite: "lax",
+          ...(cookieDomain ? { domain: cookieDomain } : {}),
         });
       } catch {
         try {
           resHeaders?.append(
             "Set-Cookie",
-            `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${isProd ? "; Secure" : ""}`,
+            `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${cookieDomain ? `; Domain=${cookieDomain}` : ""}${isProd ? "; Secure" : ""}`,
           );
         } catch {
           // Ignorado se header já foi enviado
@@ -214,7 +225,20 @@ export const createStore = createServerFn({ method: "POST" })
       created_via: "create_store_direct",
     };
 
-    // 4. Criar Loja vinculando context_profile_id e is_active = true
+    // 3.5 Checar flag global do Admin Master de aprovacao previa de empresas
+    let requiresApproval = false;
+    try {
+      const { data: brandGovernance } = await adminDb
+        .from("platform_brand_settings")
+        .select("require_company_approval")
+        .limit(1)
+        .maybeSingle();
+      requiresApproval = Boolean(brandGovernance?.require_company_approval && !identity?.isPlatformAdmin);
+    } catch {
+      requiresApproval = false;
+    }
+
+    // 4. Criar Loja vinculando context_profile_id e governanca de aprovacao Master
     const storePayload = {
       organization_id: org.id,
       name: data.name,
@@ -229,7 +253,8 @@ export const createStore = createServerFn({ method: "POST" })
       banner_url: data.bannerUrl || null,
       settings,
       context_profile_id: userId,
-      is_active: true,
+      is_active: !requiresApproval,
+      approval_status: requiresApproval ? "pending" : "approved",
     };
 
     const { data: store, error: storeError } = await adminDb

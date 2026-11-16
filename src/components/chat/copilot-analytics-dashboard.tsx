@@ -194,20 +194,20 @@ export function CopilotAnalyticsDashboard({ className }: CopilotAnalyticsDashboa
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-4">
+          <div className="rounded-2xl border border-border/40 bg-card p-4 sm:p-6 space-y-4">
             <h3 className="text-sm font-bold text-foreground">
               Execuções Recentes Persistidas
             </h3>
-            <div className="space-y-3">
+            <div className="divide-y divide-border/40">
               {data.recentExecutions.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground py-2">
                   Nenhuma execução recente registrada.
                 </p>
               ) : (
                 data.recentExecutions.map((exec) => (
                   <div
                     key={exec.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-border/40 bg-muted/20"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3 first:pt-0 last:pb-0"
                   >
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-foreground truncate">

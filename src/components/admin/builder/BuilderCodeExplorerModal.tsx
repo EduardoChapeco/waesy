@@ -9,7 +9,6 @@
 import * as React from "react";
 import { useState, useMemo } from "react";
 import {
-  X,
   FileCode,
   Folder,
   FolderOpen,
@@ -76,9 +75,9 @@ export function BuilderCodeExplorerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-overlay">
+      <DialogContent size="full" className="sm:max-w-5xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-overlay">
         {/* Header Superior */}
-        <DialogHeader className="h-14 px-4 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
+        <DialogHeader className="h-auto min-h-14 py-3 px-4 pr-14 border-b border-border/80 flex flex-row flex-wrap items-center justify-between gap-3 flex-none bg-card select-none">
           <div className="flex items-center gap-3">
             <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
               <Terminal className="size-4" />
@@ -116,16 +115,6 @@ export function BuilderCodeExplorerModal({
             >
               <Download className="size-3.5" />
               <span>Exportar Projeto</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              <X className="size-4" />
             </Button>
           </div>
         </DialogHeader>

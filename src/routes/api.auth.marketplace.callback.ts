@@ -1,12 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getServerClient } from "@/lib/supabase";
 import { decryptSecret, encryptSecret } from "@/lib/crypto-vault.server";
+import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import {
   decodeMarketplaceOAuthState,
   exchangeMarketplaceOAuthCode,
 } from "@/lib/marketplace-api-client";
 
 import type {} from "@tanstack/react-start";
+
+const DEFAULT_MARKETPLACE_RETURN_PATH = "/workspace/integracoes/marketplaces";
+
+export function resolveSafeMarketplaceReturnPath(rawPath?: string | null): string {
+  if (typeof rawPath !== "string") return DEFAULT_MARKETPLACE_RETURN_PATH;
+  const trimmed = rawPath.trim();
+  if (
+    !trimmed ||
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("/\\") ||
+    trimmed.includes("://") ||
+    /[\r\n\0]/.test(trimmed)
+  ) {
+    return DEFAULT_MARKETPLACE_RETURN_PATH;
+  }
+  return trimmed;
+}
 
 function safeDecrypt(val: unknown): string {
   if (typeof val !== "string" || !val.trim()) return "";
@@ -32,16 +51,14 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
           const shopIdParam = url.searchParams.get("shop_id") || undefined;
 
           const decodedState = decodeMarketplaceOAuthState(stateRaw);
-          const storeId = decodedState?.storeId || url.searchParams.get("store_id") || null;
+          const storeId = decodedState?.storeId || null;
           const platform = (
             decodedState?.platform ||
             url.searchParams.get("platform") ||
             "mercadolivre"
           ).toLowerCase();
 
-          if (decodedState?.returnPath && decodedState.returnPath.startsWith("/")) {
-            returnPath = decodedState.returnPath;
-          }
+          returnPath = resolveSafeMarketplaceReturnPath(decodedState?.returnPath);
 
           if (error) {
             console.warn(`[oauth:callback] Provedor ${platform} retornou erro:`, error, errorDescription);
@@ -53,9 +70,29 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
 
           if (!code || !storeId) {
             const redirectUrl = new URL(returnPath, url.origin);
-            redirectUrl.searchParams.set("error", "Código de autorização ou identificador de loja ausente.");
+            redirectUrl.searchParams.set(
+              "error",
+              stateRaw && !decodedState?.storeId
+                ? "Parâmetro state OAuth inválido ou expirado. Tente reconectar a partir do painel."
+                : "Código de autorização ou identificador de loja ausente.",
+            );
             redirectUrl.searchParams.set("platform", platform);
             return Response.redirect(redirectUrl.toString(), 302);
+          }
+
+          const callerIdentity = await getServerIdentity().catch(() => null);
+          if (callerIdentity?.id) {
+            try {
+              assertStoreAccess(callerIdentity, ["owner", "admin", "manager"], storeId);
+            } catch (accessErr: any) {
+              const redirectUrl = new URL(returnPath, url.origin);
+              redirectUrl.searchParams.set(
+                "error",
+                accessErr?.message || "Acesso negado para vincular integração desta loja.",
+              );
+              redirectUrl.searchParams.set("platform", platform);
+              return Response.redirect(redirectUrl.toString(), 302);
+            }
           }
 
           const supabase = getServerClient();
@@ -101,10 +138,12 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
               "",
             bling:
               safeDecrypt(storeCreds.client_id) ||
+              safeDecrypt(masterIntegrations.bling_client_id) ||
               process.env.BLING_CLIENT_ID ||
               "",
             magalu:
               safeDecrypt(storeCreds.client_id) ||
+              safeDecrypt(masterIntegrations.magalu_client_id) ||
               process.env.MAGALU_CLIENT_ID ||
               "",
           };
@@ -128,10 +167,12 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
               "",
             bling:
               safeDecrypt(storeCreds.client_secret) ||
+              safeDecrypt(masterIntegrations.bling_client_secret) ||
               process.env.BLING_CLIENT_SECRET ||
               "",
             magalu:
               safeDecrypt(storeCreds.client_secret) ||
+              safeDecrypt(masterIntegrations.magalu_client_secret) ||
               process.env.MAGALU_CLIENT_SECRET ||
               "",
           };

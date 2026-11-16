@@ -61,7 +61,7 @@ export const CanonicalShell = React.forwardRef<HTMLDivElement, CanonicalShellPro
         {header && <header className="w-full border-b border-border bg-background sticky top-0 z-30">{header}</header>}
         <div className="flex-1 flex w-full">
           {rail && <aside className="hidden lg:block shrink-0 border-r border-border bg-sidebar">{rail}</aside>}
-          <main className={cn('flex-1 w-full', bottomBar && 'pb-20')}>{children}</main>
+          <main className={cn('main-container-query flex-1 min-w-0 w-full', bottomBar && 'pb-20')}>{children}</main>
         </div>
         {bottomBar && <div className="sticky bottom-0 z-30 w-full">{bottomBar}</div>}
       </div>
@@ -88,12 +88,12 @@ export const CanonicalSection = React.forwardRef<HTMLElement, CanonicalSectionPr
         {...props}
       >
         {(title || action) && (
-          <div className="flex items-center justify-between gap-4">
-            <div>
+          <div className="flex flex-wrap items-center justify-between gap-4 min-w-0">
+            <div className="min-w-0">
               {title && <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>}
               {description && <p className="text-sm text-muted-foreground">{description}</p>}
             </div>
-            {action && <div className="shrink-0">{action}</div>}
+            {action && <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full shrink-0">{action}</div>}
           </div>
         )}
         {children}
@@ -198,11 +198,11 @@ export const CanonicalToolbar = React.forwardRef<HTMLDivElement, CanonicalToolba
         )}
         {...props}
       >
-        <div className="flex flex-1 items-center gap-2">
-          {search && <div className="flex-1 max-w-sm">{search}</div>}
-          {filters && <div className="flex items-center gap-2">{filters}</div>}
+        <div className="flex flex-wrap flex-1 min-w-0 items-center gap-2">
+          {search && <div className="flex-1 min-w-44 max-w-sm">{search}</div>}
+          {filters && <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">{filters}</div>}
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full shrink-0">{actions}</div>}
       </div>
     );
   }
@@ -277,8 +277,8 @@ export const CanonicalSplit = React.forwardRef<HTMLDivElement, CanonicalSplitPro
         className={cn('w-full flex flex-col lg:flex-row gap-6 items-start', className)}
         {...props}
       >
-        <div className={cn('w-full space-y-6', leftWidth)}>{leftPane}</div>
-        <div className={cn('w-full space-y-6 sticky top-4', rightWidth)}>{rightPane}</div>
+        <div className={cn('w-full min-w-0 space-y-6', leftWidth)}>{leftPane}</div>
+        <div className={cn('w-full min-w-0 space-y-6 sticky top-4', rightWidth)}>{rightPane}</div>
       </div>
     );
   }

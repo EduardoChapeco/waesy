@@ -44,21 +44,51 @@ export const Route = createFileRoute("/workspace/pedidos/gestor")({
       return { initialOrders: [], storeId: null, store: null };
     }
   },
- component: KDSPage,
+ component: GestorRoutePage,
 });
+
+function GestorRoutePage() {
+  const loaderData = (Route.useLoaderData() as any) || {};
+  return (
+    <KDSPage
+      initialOrdersProp={loaderData.initialOrders}
+      storeProp={loaderData.store}
+      storeIdProp={loaderData.storeId}
+    />
+  );
+}
 
 function playOrderChime() {
   playNewOrderAlert();
 }
 
-export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onGenerateContract }: { initialOrdersProp?: any[]; storeProp?: any; onOpenShippingLabel?: (orderId: string) => void; onGenerateContract?: (orderId: string) => void } = {}) {
+export function KDSPage({
+  initialOrdersProp,
+  storeProp,
+  storeIdProp,
+  embedded = false,
+  onOpenShippingLabel,
+  onGenerateContract,
+}: {
+  initialOrdersProp?: any[];
+  storeProp?: any;
+  storeIdProp?: string | null;
+  embedded?: boolean;
+  onOpenShippingLabel?: (orderId: string) => void;
+  onGenerateContract?: (orderId: string) => void;
+} = {}) {
   const { isCompact: isMobile } = useWindowSizeClass();
   const router = useRouter();
-  const loaderData = (Route.useLoaderData() as any) || {};
-  const initialOrders = initialOrdersProp ?? loaderData.initialOrders ?? [];
-  const storeId = loaderData.storeId || null;
-  const store = storeProp ?? loaderData.store ?? null;
+  const initialOrders = initialOrdersProp ?? [];
+  const store = storeProp ?? null;
+  const storeId = storeIdProp ?? store?.id ?? null;
   const [orders, setOrders] = useState<any[]>(initialOrders);
+
+  useEffect(() => {
+    if (Array.isArray(initialOrdersProp)) {
+      setOrders(initialOrdersProp);
+    }
+  }, [initialOrdersProp]);
  const [viewMode, setViewMode] = useState<"kanban" | "live_dashboard">("kanban");
  const [alertModalOpen, setAlertModalOpen] = useState(false);
  const [isFullscreen, setIsFullscreen] = useState(false);
@@ -92,22 +122,41 @@ export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onG
  }, [orders]);
 
  const getChannelInfo = (order: any) => {
- if (order.channel_origin === "ifood") {
- return { label: "iFood", color: "bg-destructive/10 text-destructive border-destructive/30" };
- }
- if (order.channel_origin === "whatsapp") {
- return { label: "WhatsApp", color: "bg-success/10 text-success border-success/30" };
- }
- if (order.origin_type === "table" || order.table_identifier) {
- return {
- label: `Mesa ${order.table_identifier || ""}`,
- color: "bg-info/10 text-info border-info/30",
- };
- }
- if (order.origin_type === "counter" || order.shipping_method === "pickup") {
- return { label: "Balcão", color: "bg-warning/10 text-warning-strong border-warning/30" };
- }
- return { label: "Cardápio Próprio", color: "bg-primary/10 text-primary border-primary/30" };
+  const ch = String(order.channel_origin || order.origin_channel || "").toLowerCase();
+  if (ch === "ifood") {
+    return { label: "iFood", color: "bg-destructive/10 text-destructive border-destructive/30" };
+  }
+  if (ch === "99food") {
+    return { label: "99Food", color: "bg-warning/10 text-warning-strong border-warning/30" };
+  }
+  if (ch === "tridelivery") {
+    return { label: "TriDelivery", color: "bg-warning/10 text-warning-strong border-warning/30" };
+  }
+  if (ch === "amoofertas") {
+    return { label: "Amo Ofertas", color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" };
+  }
+  if (ch === "amodelivery") {
+    return { label: "Amo Delivery", color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" };
+  }
+  if (ch === "rappi") {
+    return { label: "Rappi", color: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30" };
+  }
+  if (ch === "aiqfome") {
+    return { label: "aiqfome", color: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30" };
+  }
+  if (ch === "whatsapp") {
+    return { label: "WhatsApp", color: "bg-success/10 text-success border-success/30" };
+  }
+  if (order.origin_type === "table" || order.table_identifier) {
+    return {
+      label: `Mesa ${order.table_identifier || ""}`,
+      color: "bg-info/10 text-info border-info/30",
+    };
+  }
+  if (order.origin_type === "counter" || order.shipping_method === "pickup") {
+    return { label: "Balcão", color: "bg-warning/10 text-warning-strong border-warning/30" };
+  }
+  return { label: "Cardápio Próprio", color: "bg-primary/10 text-primary border-primary/30" };
  };
 
  const delayedOrders = useMemo(() => {
@@ -407,7 +456,7 @@ export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onG
  toolDescription="O painel KDS (Kitchen Display System) em tempo real, com divisão de praças e tempos de cocção, é projetado especificamente para restaurantes e delivery de alimentação."
  store={store}
  >
- <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen overflow-hidden text-foreground">
+ <div className={embedded && !isFullscreen ? "bg-card rounded-xl border border-border/80 flex flex-col overflow-hidden text-foreground" : "fixed inset-0 z-50 bg-background flex flex-col h-screen overflow-hidden text-foreground"}>
  {/* Estilos de Impressão (Bobina 80mm) */}
  <style>{`
  @media print {
@@ -437,7 +486,7 @@ export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onG
  {/* Topbar */}
  <header className="flex-none h-16 bg-card px-4 flex items-center justify-between no-print">
  <div className="flex items-center gap-4">
- {!isFullscreen && (
+ {!isFullscreen && !embedded && (
  <Button variant="ghost" size="icon" asChild>
  <Link to="/workspace/pedidos">
  <ArrowLeft className="size-5" />
@@ -451,7 +500,7 @@ export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onG
  Balcão e Atendimento
  </Badge>
  </div>
- <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+ <p suppressHydrationWarning className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
  <Clock className="size-3" /> Atualizado em {new Date().toLocaleTimeString()}
  </p>
  </div>
@@ -560,6 +609,12 @@ export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onG
  {[
  { id: "all", label: "Todos os Canais" },
  { id: "ifood", label: "iFood" },
+ { id: "99food", label: "99Food" },
+ { id: "tridelivery", label: "TriDelivery" },
+ { id: "amoofertas", label: "Amo Ofertas" },
+ { id: "amodelivery", label: "Amo Delivery" },
+ { id: "rappi", label: "Rappi" },
+ { id: "aiqfome", label: "aiqfome" },
  { id: "whatsapp", label: "WhatsApp" },
  { id: "web", label: "Cardápio Próprio" },
  { id: "delivery", label: "Delivery" },
@@ -953,12 +1008,18 @@ export function KDSPage({ initialOrdersProp, storeProp, onOpenShippingLabel, onG
 
  // 3. Filtro por canal
  if (channelFilter !== "all") {
+ const orderChannel = String(o.channel_origin || o.origin_channel || "").toLowerCase();
  if (channelFilter === "counter") {
  const isCounter = o.origin_type === "counter" || o.origin_type === "table" || o.shipping_method === "pickup" || o.table_identifier;
  if (!isCounter) return false;
  } else if (channelFilter === "delivery") {
  if (o.shipping_method !== "delivery") return false;
- } else if (o.channel_origin !== channelFilter) {
+ } else if (channelFilter === "web") {
+ const isOwnMenu =
+ !orderChannel ||
+ ["web", "waesy_app", "vitrine_online", "direct_link"].includes(orderChannel);
+ if (!isOwnMenu || o.origin_type === "counter" || o.origin_type === "table") return false;
+ } else if (orderChannel !== channelFilter) {
  return false;
  }
  }

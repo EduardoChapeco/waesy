@@ -37,6 +37,7 @@ import {
   updateStoreVerticalSubscription,
   toggleStoreModuleAddon,
 } from "@/services/store-modules.functions";
+import { adminSetCompanyApprovalFn } from "@/services/vertical-subsystems.functions";
 import { ErrorState } from "@/components/state/states";
 import { MultiBrandEcosystemGovernanceCard } from "@/components/workspace/multi-brand-ecosystem-governance-card";
 import { toast } from "sonner";
@@ -167,6 +168,26 @@ function MasterLojasPage() {
  s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
  s.slug.toLowerCase().includes(searchTerm.toLowerCase()),
  );
+
+  const handleApprovalChange = async (
+    storeId: string,
+    approvalStatus: "approved" | "pending" | "suspended" | "rejected",
+  ) => {
+    setLoadingId(storeId);
+    try {
+      await adminSetCompanyApprovalFn({ data: { storeId, approvalStatus } });
+      toast.success(
+        approvalStatus === "approved"
+          ? "Empresa aprovada e módulos liberados."
+          : "Empresa ocultada/suspensa pelo Admin Master.",
+      );
+      router.invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
  const handleToggleStore = async (storeId: string, currentStatus: boolean) => {
  if (
@@ -322,17 +343,32 @@ function MasterLojasPage() {
  </td>
  <td className="px-5 py-4">
  <Badge
- variant={store.is_active ? "default" : "destructive"}
+ variant={store.is_active && store.approval_status !== "pending" ? "default" : "destructive"}
  className={cn(
  "text-2xs font-medium px-2 py-1",
- store.is_active ? "bg-emerald-600/90 text-foreground" : ""
+ store.is_active && store.approval_status !== "pending" ? "bg-emerald-600/90 text-foreground" : ""
  )}
  >
- {store.is_active ? "Ativa" : "Bloqueada"}
+ {store.approval_status === "pending"
+   ? "Pendente Aprovação"
+   : store.is_active
+   ? "Aprovada / Ativa"
+   : "Suspensa / Oculta"}
  </Badge>
  </td>
  <td className="px-5 py-4 text-right">
  <div className="flex items-center justify-end gap-2">
+ {(!store.is_active || store.approval_status === "pending") && (
+ <Button
+ size="sm"
+ variant="outline"
+ className="h-7 px-3 rounded-lg text-xs font-medium text-emerald-600 border-emerald-600/40 hover:bg-emerald-600/10 focus-visible:ring-2 focus-visible:ring-primary"
+ disabled={loadingId === store.id}
+ onClick={() => handleApprovalChange(store.id, "approved")}
+ >
+ Aprovar
+ </Button>
+ )}
  <Button
  size="sm"
  variant="outline"

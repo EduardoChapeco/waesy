@@ -69,13 +69,12 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
   const userAvatar = session?.avatarUrl || session?.avatar_url || userMeta?.avatar_url || session?.user?.avatar_url || session?.profile?.avatar_url || "";
   const userInitial = userName.charAt(0).toUpperCase();
   const isPlatformAdmin =
+    session?.isPlatformAdmin === true ||
     session?.role === "platform_admin" ||
     session?.role === "master" ||
-    session?.role === "admin" ||
-    session?.user?.role === "platform_admin" ||
-    userMeta?.role === "platform_admin" ||
-    userMeta?.role === "master" ||
-    userMeta?.role === "admin";
+    session?.role === "superadmin" ||
+    session?.user?.app_metadata?.role === "platform_admin" ||
+    Boolean(session?.user?.app_metadata?.is_master);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

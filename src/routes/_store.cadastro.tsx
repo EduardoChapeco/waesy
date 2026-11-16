@@ -11,8 +11,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { signUpWithPassword, signInWithOAuth, getUserSession } from "@/services/auth.functions";
+import { getPublicBrandSettings } from "@/services/master.functions";
 import { ClientRegisterSchema, type RegisterForm } from "@/lib/contracts/auth.schema";
 import { LegalTermsSheet } from "@/components/legal/legal-terms-sheet";
+import { AuthSplitExperienceShell } from "@/components/auth/auth-split-shell";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/cadastro")({
@@ -25,15 +27,25 @@ export const Route = createFileRoute("/_store/cadastro")({
  error: typeof search.error === "string" ? search.error : undefined,
  };
  },
+ loader: async () => {
+ try {
+ const brand = await getPublicBrandSettings().catch(() => null);
+ return { brand };
+ } catch {
+ return { brand: null };
+ }
+ },
  component: RegisterPage,
 });
 
 function RegisterPage() {
+ const { brand } = ((Route.useLoaderData?.() as any) || {});
  const navigate = useNavigate();
  const router = useRouter();
  const search = Route.useSearch();
  const returnUrl = search.returnUrl ?? "/";
  const errorParam = search.error;
+ const [step, setStep] = useState<1 | 2 | 3>(1);
  const [showPassword, setShowPassword] = useState(false);
  const [isTermsOpen, setIsTermsOpen] = useState(false);
  const [termsSlug, setTermsSlug] = useState("termos");
@@ -110,212 +122,276 @@ function RegisterPage() {
  }
  };
 
+ const handleNextStep1 = async () => {
+ const valid = await form.trigger("email");
+ if (valid) setStep(2);
+ };
+
+ const handleNextStep2 = async () => {
+ const valid = await form.trigger("fullName");
+ if (valid) setStep(3);
+ };
+
   return (
-    <div className="min-h-dvh w-full flex flex-col lg:flex-row bg-background pt-safe pb-safe p-4 sm:p-6 lg:p-0">
-      {/* ── Left Side: Minimal Brand Screen (Desktop) ────────── */}
-      <div className="relative hidden lg:flex lg:w-9/20 bg-muted border-r border-border text-foreground flex-col justify-between p-12 overflow-hidden">
-        <div className="relative z-10 flex flex-col h-full justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tight">
-            <span className="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-sm font-semibold">Waesy</span>
-          </Link>
-          <div className="max-w-md">
-            <h2 className="text-3xl font-bold tracking-tight leading-tight">
-              O Sistema Operacional do seu Negócio.
-            </h2>
+    <AuthSplitExperienceShell
+      brand={brand}
+      step={step}
+      totalSteps={3}
+      backHref="/"
+      onBack={step > 1 ? () => setStep((s) => (s === 3 ? 2 : 1)) : undefined}
+      subtitle="Novo Cadastro Waesy"
+      desktopHeadline="Crie sua conta em poucos passos."
+      desktopDescription="Comece a comprar, anunciar classificados, acompanhar pedidos e abrir seu negócio local em um único ambiente."
+      desktopHighlights={[
+        { title: "Cadastro Guiado por Etapas", detail: "Fluxo progressivo sem sobrecarga visual no celular ou no computador." },
+        { title: "Sessão Única Multi-Apps", detail: "Entre uma vez e navegue entre Hub, Marketplace, Notícias e Waesy Go." },
+      ]}
+      footerSlot={
+        <Link
+          to="/entrar"
+          search={{ returnUrl }}
+          className="min-h-11 inline-flex items-center text-primary font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2"
+        >
+          Já tem conta? Entrar
+        </Link>
+      }
+    >
+      <div className="space-y-6">
+        <div className="flex items-center justify-between gap-2">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+              Crie seu perfil
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {step === 1
+                ? "Comece informando seu e-mail ou conectando com Google."
+                : step === 2
+                ? "Informe como você deseja ser identificado na cidade."
+                : "Defina sua senha segura e confirme os termos LGPD."}
+            </p>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1 bg-muted/60 p-1 rounded-lg text-xs shrink-0">
+            <Link
+              to="/entrar"
+              search={{ returnUrl }}
+              className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground font-medium transition-colors"
+            >
+              Entrar
+            </Link>
+            <span className="px-3 py-2 rounded-md bg-background font-bold text-foreground">
+              Cadastrar
+            </span>
           </div>
         </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {step === 1 && (
+              <div className="space-y-4">
+                {isGoogleAuthEnabled && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOAuth("google")}
+                    className="w-full h-11 min-h-11 rounded-xl font-semibold gap-2 text-sm"
+                  >
+                    <GoogleLogo className="size-4" weight="bold" />
+                    Continuar com Google
+                  </Button>
+                )}
+
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border/60" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase font-semibold tracking-wider">
+                    <span className="bg-background px-2 text-muted-foreground">ou use seu e-mail</span>
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        E-mail
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="seu.email@exemplo.com"
+                          autoComplete="email"
+                          className="h-11 rounded-xl border-border bg-card/50 text-base md:text-sm focus-visible:ring-primary/20"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs font-semibold" />
+                    </FormItem>
+                  )}
+                />
+
+                <Button
+                  type="button"
+                  onClick={handleNextStep1}
+                  className="w-full h-11 min-h-11 rounded-xl font-semibold gap-2 text-sm"
+                >
+                  <span>Prosseguir</span>
+                  <ArrowRight className="size-4" />
+                </Button>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Nome Completo
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Seu nome"
+                          autoComplete="name"
+                          className="h-11 rounded-xl border-border bg-card/50 text-base md:text-sm focus-visible:ring-primary/20"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs font-semibold" />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(1)}
+                    className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold gap-2 shrink-0"
+                  >
+                    <ArrowLeft className="size-4" />
+                    <span>Voltar</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleNextStep2}
+                    className="flex-1 h-11 min-h-11 rounded-xl font-semibold gap-2 text-sm"
+                  >
+                    <span>Continuar</span>
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Senha (mínimo 6 caracteres)
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            autoComplete="new-password"
+                            className="h-11 rounded-xl border-border bg-card/50 text-base md:text-sm pr-12 focus-visible:ring-primary/20"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
+                          >
+                            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-xs font-semibold" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
+                  control={form.control}
+                  name="isConsentLgpd"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-3 space-y-0 pt-2">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="leading-none">
+                        <FormLabel className="text-xs text-muted-foreground font-normal leading-normal cursor-pointer select-none">
+                          Concordo com os{" "}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTermsSlug("termos");
+                              setIsTermsOpen(true);
+                            }}
+                            className="text-foreground font-semibold hover:underline cursor-pointer"
+                          >
+                            Termos de Uso
+                          </button>{" "}
+                          e{" "}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTermsSlug("privacidade");
+                              setIsTermsOpen(true);
+                            }}
+                            className="text-foreground font-semibold hover:underline cursor-pointer"
+                          >
+                            Política de Privacidade (LGPD)
+                          </button>
+                          .
+                        </FormLabel>
+                        <FormMessage className="text-xs font-semibold mt-1" />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(2)}
+                    className="h-11 min-h-11 px-4 rounded-xl text-xs font-semibold gap-2 shrink-0"
+                  >
+                    <ArrowLeft className="size-4" />
+                    <span>Voltar</span>
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 h-11 min-h-11 rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting ? "Criando..." : "Criar Conta"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </form>
+        </Form>
+
+        <LegalTermsSheet
+          isOpen={isTermsOpen}
+          onOpenChange={setIsTermsOpen}
+          initialSlug={termsSlug}
+          onAccept={() => form.setValue("isConsentLgpd", true, { shouldValidate: true })}
+        />
       </div>
-
-      {/* ── Right Side: Clean Register Form ────────── */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-16">
-        <div className="w-full max-w-md space-y-8">
-          {/* Mobile Back / Breadcrumb */}
-          <div className="flex items-center justify-between">
-            <Link
-              to="/"
-              className="size-11 min-h-11 min-w-11 rounded-lg bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Voltar para o início"
-            >
- <ArrowLeft className="size-4" />
- </Link>
- <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg text-xs">
- <Link
- to="/entrar"
- search={{ returnUrl }}
- className="px-3 py-1 rounded-lg text-muted-foreground hover:text-foreground font-medium transition-colors"
- >
- Entrar
- </Link>
- <span className="px-3 py-1 rounded-lg bg-background font-bold text-foreground ">
- Cadastrar
- </span>
- </div>
- </div>
-
- {/* Header Title */}
- <div className="space-y-1">
- <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
- Crie seu perfil
- </h1>
- </div>
-
- {/* Form */}
- {isGoogleAuthEnabled && (<Button type="button" variant="outline" onClick={() => handleOAuth("google")} className="w-full h-11 min-h-11 rounded-lg font-semibold gap-2 text-sm"><GoogleLogo className="size-4" weight="bold" />Continuar com Google</Button>)} <Form {...form}>
- <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
- <FormField
- control={form.control}
- name="fullName"
- render={({ field }) => (
- <FormItem>
- <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
- Nome Completo
- </FormLabel>
- <FormControl>
- <Input
- placeholder="Seu nome"
- autoComplete="name"
- className="h-11 rounded-lg border-border bg-card/50 text-base md:text-sm focus-visible:ring-primary/20"
- {...field}
- />
- </FormControl>
- <FormMessage className="text-xs font-semibold" />
- </FormItem>
- )}
- />
-
- <FormField
- control={form.control}
- name="email"
- render={({ field }) => (
- <FormItem>
- <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
- E-mail
- </FormLabel>
- <FormControl>
- <Input
- type="email"
- placeholder="seu.email@exemplo.com"
- autoComplete="email"
- className="h-11 rounded-lg border-border bg-card/50 text-base md:text-sm focus-visible:ring-primary/20"
- {...field}
- />
- </FormControl>
- <FormMessage className="text-xs font-semibold" />
- </FormItem>
- )}
- />
-
- <FormField
- control={form.control}
- name="password"
- render={({ field }) => (
- <FormItem>
- <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
- Senha (mínimo 6 caracteres)
- </FormLabel>
- <FormControl>
- <div className="relative">
- <Input
- type={showPassword ? "text" : "password"}
- placeholder="••••••••"
- autoComplete="new-password"
- className="h-11 rounded-lg border-border bg-card/50 text-base md:text-sm pr-12 focus-visible:ring-primary/20"
- {...field}
- />
- <button
- type="button"
- onClick={() => setShowPassword(!showPassword)}
- className="absolute right-0 top-1/2 -translate-y-1/2 size-11 min-h-11 min-w-11 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
- aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
- >
- {showPassword ? (
- <EyeOff className="size-4" />
- ) : (
- <Eye className="size-4" />
- )}
- </button>
- </div>
- </FormControl>
- <FormMessage className="text-xs font-semibold" />
- </FormItem>
- )}
- />
-
- <FormField /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
- control={form.control}
- name="isConsentLgpd"
- render={({ field }) => (
- <FormItem className="flex items-center gap-3 space-y-0 pt-2">
- <FormControl>
- <Checkbox
- checked={field.value}
- onCheckedChange={field.onChange}
- />
- </FormControl>
- <div className="leading-none">
- <FormLabel className="text-xs text-muted-foreground font-normal leading-normal cursor-pointer select-none">
- Concordo com os{" "}
- <button
- type="button"
- onClick={() => {
- setTermsSlug("termos");
- setIsTermsOpen(true);
- }}
- className="text-foreground font-semibold hover:underline cursor-pointer"
- >
- Termos de Uso
- </button>{" "}
- e{" "}
- <button
- type="button"
- onClick={() => {
- setTermsSlug("privacidade");
- setIsTermsOpen(true);
- }}
- className="text-foreground font-semibold hover:underline cursor-pointer"
- >
- Política de Privacidade (LGPD)
- </button>
- .
- </FormLabel>
- <FormMessage className="text-xs font-semibold mt-1" />
- </div>
- </FormItem>
- )}
- />
-
- <Button
- type="submit"
- size="lg"
- className="w-full h-11 min-h-11 rounded-lg font-bold bg-primary text-primary-foreground gap-2 text-sm mt-2"
- disabled={form.formState.isSubmitting}
- >
- {form.formState.isSubmitting ? "Criando..." : "Criar Conta"}
- </Button>
- </form>
- </Form>
-
- {/* Footer Call to Action */}
- <div className="text-center text-xs text-muted-foreground pt-4 ">
- Já possui uma conta?{" "}
- <Link
- to="/entrar"
- search={{ returnUrl }}
- className="text-primary font-bold hover:underline"
- >
- Fazer login
- </Link>
- </div>
- </div>
- </div>
-
- {/* Sheet de Termos Oficiais & LGPD */}
- <LegalTermsSheet
- isOpen={isTermsOpen}
- onOpenChange={setIsTermsOpen}
- initialSlug={termsSlug}
- onAccept={() => form.setValue("isConsentLgpd", true, { shouldValidate: true })}
- />
- </div>
- );
+    </AuthSplitExperienceShell>
+  );
 }

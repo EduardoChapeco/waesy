@@ -9,7 +9,8 @@ export interface ManifestSignerInfo {
   email?: string | null;
   phone?: string | null;
   role: string;
-  status: "pending" | "signed";
+  status: "pending" | "viewed" | "signed";
+  viewedAt?: string | null;
   signedAt?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
@@ -153,10 +154,13 @@ export function ContractAuditManifest({
                 className="p-4 rounded-lg border border-border/70 bg-card hover:bg-muted/20 transition-colors duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs"
               >
                 <div className="space-y-1 min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-bold text-foreground text-sm truncate">{signer.name}</span>
-                    <Badge variant={isSigned ? "default" : "secondary"} className="text-2xs h-5">
-                      {isSigned ? "Assinado" : "Pendente"}
+                    <Badge
+                      variant={isSigned ? "default" : signer.status === "viewed" ? "outline" : "secondary"}
+                      className="text-2xs h-5"
+                    >
+                      {isSigned ? "Assinado" : signer.status === "viewed" ? "Visualizado" : "Pendente"}
                     </Badge>
                     <span className="text-2xs text-muted-foreground capitalize">
                       ({signer.role === "witness" ? "Testemunha" : "Parte"})
@@ -166,6 +170,7 @@ export function ContractAuditManifest({
                   <p className="text-muted-foreground text-2xs">
                     {signer.document ? `CPF/Doc: ${signer.document} · ` : ""}
                     {signer.email || signer.phone || "Contato verificado"}
+                    {!isSigned && signer.viewedAt ? ` · Aberto em ${formatDate(signer.viewedAt)}` : ""}
                   </p>
 
                   {isSigned && (

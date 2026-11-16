@@ -12,7 +12,7 @@
  * ============================================================================
  */
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *):not([data-builder-canvas-isolated="light"], [data-builder-canvas-isolated="light"] *), &:where([data-builder-canvas-isolated="dark"], [data-builder-canvas-isolated="dark"] *));
 
 /* Window-size utilities: the product expands at 840px, not Tailwind's lg (1024px). */
 .waesy-expanded-flex.waesy-expanded-flex {
@@ -59,16 +59,98 @@
   bottom: max(calc(env(safe-area-inset-bottom) + 8px), 8px);
 }
 
-.waesy-tab-strip {
+@layer components {
+  .waesy-tab-strip {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .waesy-tab-strip::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Container-aware toolbar proporcional (anti-sobreposição sob sidebars duplas ou pré-visualização mobile) */
+.waesy-toolbar-container {
+  container-type: inline-size;
+  container-name: waesy-toolbar;
+  min-width: 0;
+  width: 100%;
+}
+
+.waesy-toolbar-tier2 {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.waesy-toolbar-search {
+  width: 100%;
+  min-width: 0;
+}
+
+.waesy-toolbar-filters {
   display: flex;
   flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
 
-.waesy-tab-strip::-webkit-scrollbar {
+.waesy-toolbar-filters::-webkit-scrollbar {
   display: none;
+}
+
+.waesy-toolbar-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.waesy-toolbar-actions::-webkit-scrollbar {
+  display: none;
+}
+
+@container waesy-toolbar (min-width: 560px) {
+  .waesy-toolbar-tier2 {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .waesy-toolbar-search {
+    flex: 1 1 14rem;
+    min-width: 12rem;
+    max-width: 20rem;
+  }
+
+  .waesy-toolbar-filters {
+    flex: 1 1 auto;
+  }
+
+  .waesy-toolbar-actions {
+    flex: 0 1 auto;
+    margin-left: auto;
+  }
 }
 
 .waesy-bottom-nav-grid {

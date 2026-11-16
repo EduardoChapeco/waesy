@@ -5,6 +5,7 @@ import { usePrometheePortalController } from "@/components/news/promethee-portal
 import { PrometheeLocationSheet } from "@/components/news/promethee-location-sheet";
 import { PrometheeExploreSearchModal } from "@/components/news/promethee-explore-search-modal";
 import { getStoredLocation } from "@/components/location/location-master-pill";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export function PrometheeWireframeDomeLogo({ className = "size-8" }: { className?: string }) {
   return (
@@ -55,6 +56,7 @@ export function PrometheeNewsHeaderBlock({
   data,
   isEditing = false,
 }: PrometheeNewsHeaderBlockProps) {
+  const { isMobile } = useEffectiveViewport();
   const portal = usePrometheePortalController();
   const mastheadTitle = data?.brandName || data?.mastheadTitle || "Waesynews";
   const allCitiesLabel = data?.allCitiesLabel || "Todas as Cidades";
@@ -116,10 +118,10 @@ export function PrometheeNewsHeaderBlock({
               aria-label={`Filtrar cidade: ${activeCityLabel}`}
             >
               <MapPin className="size-4 text-foreground shrink-0" />
-              <span className="hidden sm:inline max-w-36 overflow-hidden whitespace-nowrap">
+              <span className={isMobile ? "hidden" : "inline max-w-36 overflow-hidden whitespace-nowrap"}>
                 {activeCityLabel}
               </span>
-              <ChevronDown className="hidden sm:inline size-3 text-muted-foreground" />
+              <ChevronDown className={isMobile ? "hidden" : "inline size-3 text-muted-foreground"} />
             </button>
           )}
 
@@ -151,7 +153,7 @@ export function PrometheeNewsHeaderBlock({
               onClick={(e) => {
                 if (isEditing) e.preventDefault();
               }}
-              className="hidden md:inline-flex h-11 min-h-11 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90 items-center justify-center text-xs font-bold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className={`${isMobile ? "hidden" : "inline-flex"} h-11 min-h-11 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90 items-center justify-center text-xs font-bold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               {data.actionLabel}
             </a>

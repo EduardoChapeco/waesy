@@ -24,6 +24,7 @@ import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { EmptyState, ErrorState } from "@/components/state/states";
 import { buildEntityTraceHash, CustomerIdentityTagPill } from "@/lib/entity-trace-hash";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/crm")({
@@ -284,56 +285,60 @@ export default function WorkspaceCrmPage() {
       </div>
 
       {/* ── Sub-Navegação Silenciosa: Clientes vs Funil vs Personas vs WhatsApp ── */}
-      <div className="flex items-center gap-1 border-b border-border/40 pb-2 overflow-x-auto scroll-area no-scrollbar">
+      <div className="waesy-tab-strip items-center gap-1 border-b border-border/40 pb-2">
         <button
           type="button"
           onClick={() => setActiveTab("clientes")}
-          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          aria-pressed={activeTab === "clientes"}
+          className={`h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "clientes"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-rail-active text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
           }`}
         >
-          <Users className="size-3.5" />
+          <StatefulNavIcon icon={Users} active={activeTab === "clientes"} size={16} className="size-4 shrink-0" />
           <span>Clientes</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("funil")}
-          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          aria-pressed={activeTab === "funil"}
+          className={`h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "funil"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-rail-active text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
           }`}
         >
-          <Kanban className="size-3.5" />
+          <StatefulNavIcon icon={Kanban} active={activeTab === "funil"} size={16} className="size-4 shrink-0" />
           <span>Funil de Vendas</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("personas")}
-          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          aria-pressed={activeTab === "personas"}
+          className={`h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "personas"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-rail-active text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
           }`}
         >
-          <Brain className="size-3.5" />
+          <StatefulNavIcon icon={Brain} active={activeTab === "personas"} size={16} className="size-4 shrink-0" />
           <span>Personas</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("whatsapp")}
-          className={`h-11 min-h-11 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+          aria-pressed={activeTab === "whatsapp"}
+          className={`h-11 min-h-11 px-3 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
             activeTab === "whatsapp"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-rail-active text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-rail-hover"
           }`}
         >
-          <MessageCircle className="size-3.5" />
+          <StatefulNavIcon icon={MessageCircle} active={activeTab === "whatsapp"} size={16} className="size-4 shrink-0" />
           <span>Leads WhatsApp</span>
         </button>
       </div>

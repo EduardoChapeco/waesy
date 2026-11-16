@@ -9,6 +9,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
+import { renderToStaticMarkup } from "react-dom/server";
 
 // Mock createServerFn from @tanstack/react-start at top level for node environment
 vi.mock("@tanstack/react-start", () => ({
@@ -28,8 +31,14 @@ import {
   isBlockWithinSchedule,
   getBlockDeviceVisibilityClass,
   shouldApplyCustomDocumentTheme,
+  getDocumentThemeCanvasStyle,
+  pickContrastForeground,
   type BuilderRuntimeDatasets,
 } from "@/lib/builder/block-data-resolver";
+import { BuilderViewportProvider, useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
+import { VitrineCouponStrip } from "@/design-system/vitrine/vitrine-banners";
+import { BuilderViewportFrame } from "./BuilderViewportFrame";
+import { getSectionStyle } from "./utils";
 
 import {
   getSiteBlockById,
@@ -272,6 +281,125 @@ describe("Omni Builder Executive Remediation & Architectural Verification Suite"
       // Must NOT contain freeform canvas absolute positioning attributes like x, y, zIndex, widthPx
       expect((doc.blocks[0] as any).x).toBeUndefined();
       expect((doc.blocks[0] as any).y).toBeUndefined();
+    });
+  });
+
+  // =========================================================================
+  // 4. VIEWPORT ISOLATION, DESIGN INDEPENDENCE & RUNTIME FIXES
+  // =========================================================================
+  describe("4. Viewport Isolation, Independent Design Tokens & Runtime Contracts", () => {
+    it("isolates Tablet & Mobile viewports inside BuilderViewportProvider and avoids VitrineCouponStrip horizontal crush", () => {
+      function TabletProbe() {
+        const vp = useEffectiveViewport();
+        return <span data-size={vp.sizeClass} data-medium={String(vp.isMedium)} data-mobile={String(vp.isMobile)} />;
+      }
+
+      const tabletHtml = renderToStaticMarkup(
+        <BuilderViewportProvider viewport="tablet" isEditorCanvas>
+          <TabletProbe />
+        </BuilderViewportProvider>,
+      );
+      expect(tabletHtml).toContain('data-size="medium"');
+      expect(tabletHtml).toContain('data-medium="true"');
+      expect(tabletHtml).toContain('data-mobile="false"');
+
+      const couponHtml = renderToStaticMarkup(
+        <BuilderViewportProvider viewport="mobile" isEditorCanvas>
+          <VitrineCouponStrip
+            title="Use o cupom na finalização"
+            subtitle="Válido para pedidos diretos na vitrine."
+            couponCode="PEDID010"
+            ctaLabel="Ir ao Cardápio"
+          />
+        </BuilderViewportProvider>,
+      );
+      expect(couponHtml).toContain("flex-col items-stretch");
+      expect(couponHtml).not.toContain("sm:flex-row");
+    });
+
+    it("renders sectionToolbarSlot outside the scaled viewport scrollport in BuilderViewportFrame", () => {
+      const html = renderToStaticMarkup(
+        <BuilderViewportFrame
+          viewport="mobile"
+          onChangeViewport={() => {}}
+          sectionToolbarSlot={<button type="button">Planilha</button>}
+        >
+          <div>Conteúdo</div>
+        </BuilderViewportFrame>,
+      );
+      const slotPos = html.indexOf('data-testid="builder-section-toolbar-slot"');
+      const shellPos = html.indexOf('data-testid="builder-viewport-shell"');
+      expect(slotPos).toBeGreaterThan(-1);
+      expect(shellPos).toBeGreaterThan(-1);
+      expect(slotPos).toBeLessThan(shellPos);
+      expect(html).toContain("App Nativo");
+    });
+
+    it("computes contrast-safe foreground & complete theme isolation for documents and sections", () => {
+      // design-lint-ignore DL-01 reason:"Asserção de cálculo de luminância WCAG para cores de marca no Builder" expiry:"2027-12-31"
+      expect(pickContrastForeground("#0f172a")).toBe("#ffffff");
+      // design-lint-ignore DL-01 reason:"Asserção de cálculo de luminância WCAG para cores de marca no Builder" expiry:"2027-12-31"
+      expect(pickContrastForeground("#fde047")).toBe("#09090b");
+
+      const docStyle = getDocumentThemeCanvasStyle(
+        {
+          // design-lint-ignore DL-01 reason:"Teste de isolamento de cor primária customizada do tema do site" expiry:"2027-12-31"
+          primaryColor: "#eab308",
+          // design-lint-ignore DL-01 reason:"Teste de fundo escuro isolado" expiry:"2027-12-31"
+          backgroundColor: "#0f172a",
+          // design-lint-ignore DL-01 reason:"Teste de texto claro isolado" expiry:"2027-12-31"
+          textColor: "#f8fafc",
+          bodyFont: "'Space Grotesk', sans-serif",
+          borderRadius: "2xl",
+          customThemeEnabled: true,
+        },
+        { forceIsolate: true },
+      ) as Record<string, string>;
+
+      expect(docStyle["--primary-foreground"]).toBe("#09090b");
+      expect(docStyle["--font-sans"]).toBe("'Space Grotesk', sans-serif");
+      expect(docStyle["--radius"]).toBe("1.5rem");
+
+      const section = getSectionStyle(
+        {
+          // design-lint-ignore DL-01 reason:"Teste de autonomia visual de seção escura sem cor explícita de texto" expiry:"2027-12-31"
+          backgroundColor: "#111827",
+          // design-lint-ignore DL-01 reason:"Teste de cor CTA de destaque independente por seção" expiry:"2027-12-31"
+          accentColor: "#2563eb",
+          backgroundGradient: "soft",
+          textAlign: "center",
+          fontFamily: "'Playfair Display', Georgia, serif",
+        },
+        true,
+      );
+      expect(section.className).toContain("text-center");
+      expect((section.style as Record<string, string>)["--foreground"]).toBe("#ffffff");
+      expect((section.style as Record<string, string>)["--primary"]).toBe("#2563eb");
+      expect((section.style as Record<string, string>)["--primary-foreground"]).toBe("#ffffff");
+      expect(section.style.fontFamily).toBe("'Playfair Display', Georgia, serif");
+      expect(section.style.backgroundImage).toContain("linear-gradient");
+    });
+
+    it("prevents modal width crushing, double close buttons, and /workspace/pedidos Invariant failed crash", () => {
+      const root = process.cwd();
+      const modalFiles = [
+        "src/components/admin/builder/BuilderCodeExplorerModal.tsx",
+        "src/components/admin/builder/OmniAppMarketModal.tsx",
+        "src/components/admin/builder/PhotoStudioModal.tsx",
+        "src/components/admin/builder/BuilderWixStudioPanels.tsx",
+      ];
+      for (const rel of modalFiles) {
+        const src = fs.readFileSync(path.resolve(root, rel), "utf8");
+        expect(src, `${rel} deve declarar size="full"`).toContain('size="full"');
+      }
+
+      const gestorSrc = fs.readFileSync(
+        path.resolve(root, "src/routes/workspace.pedidos.gestor.tsx"),
+        "utf8",
+      );
+      const kdsFnIdx = gestorSrc.indexOf("export function KDSPage");
+      expect(kdsFnIdx).toBeGreaterThan(-1);
+      expect(gestorSrc.slice(kdsFnIdx)).not.toContain("Route.useLoaderData()");
     });
   });
 });

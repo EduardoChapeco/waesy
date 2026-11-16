@@ -1154,7 +1154,7 @@ export const getMomentsMap = createServerFn({ method: "GET" })
  // 2. Negócios do diretório
  const directoryQuery = db
  .from("directory_listings")
- .select("id, category, contact_phone, store_id, stores(name, settings)")
+ .select("id, category, contact_phone, store_id, stores:stores!directory_listings_store_id_fkey(name, settings)")
  .eq("status", "active")
  .limit(40);
 

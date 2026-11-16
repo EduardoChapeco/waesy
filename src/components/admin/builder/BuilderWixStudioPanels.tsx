@@ -259,16 +259,16 @@ export function WixVisualSitemapModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-6xl max-h-screen p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border">
-        <DialogHeader className="h-14 px-6 border-b border-border flex flex-row items-center justify-between flex-none bg-muted/20">
-          <div className="flex items-center gap-3">
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+      <DialogContent size="full" className="sm:max-w-6xl w-full max-h-screen p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border">
+        <DialogHeader className="h-auto min-h-14 py-3 px-6 pr-14 border-b border-border flex flex-row flex-wrap items-center justify-between gap-3 flex-none bg-muted/20">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <LayoutGrid className="size-4" />
             </div>
-            <div>
-              <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+            <div className="min-w-0">
+              <DialogTitle className="text-sm font-bold text-foreground flex flex-wrap items-center gap-2">
                 <span>Mapa Visual do Site (Visual Sitemap) & SEO / GEO</span>
-                <Badge variant="outline" className="text-xs font-semibold">
+                <Badge variant="outline" className="text-xs font-semibold shrink-0">
                   Wix Studio Parity
                 </Badge>
               </DialogTitle>
@@ -278,7 +278,7 @@ export function WixVisualSitemapModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button
               type="button"
               size="sm"
@@ -295,15 +295,6 @@ export function WixVisualSitemapModal({
             >
               <Plus className="size-4" />
               <span>Nova Página</span>
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <X className="size-4" />
             </Button>
           </div>
         </DialogHeader>
@@ -1449,16 +1440,16 @@ export function WixCmsCollectionManagerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-7xl w-full max-h-sheet p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border">
-        <DialogHeader className="h-16 px-6 border-b border-border flex flex-row items-center justify-between flex-none bg-muted/20">
-          <div className="flex items-center gap-3">
-            <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+      <DialogContent size="full" className="sm:max-w-7xl w-full max-h-sheet p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border">
+        <DialogHeader className="h-auto min-h-16 py-3 px-6 pr-14 border-b border-border flex flex-row flex-wrap items-center justify-between gap-3 flex-none bg-muted/20">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <TableIcon className="size-5" />
             </div>
-            <div>
-              <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-                <span>Planilha Editável In-Page (Wix Sheet Mode) & Coleções CMS</span>
-                <Badge variant="outline" className="text-xs font-mono">
+            <div className="min-w-0">
+              <DialogTitle className="text-sm font-bold text-foreground flex flex-wrap items-center gap-2">
+                <span>Planilha CMS & Coleções Globais</span>
+                <Badge variant="outline" className="text-xs font-mono shrink-0">
                   {sheetScope === "active_block"
                     ? `${blockRows.length} itens na seção`
                     : `${activeCmsCol ? activeCmsCol.items.length : liveNativeCounts.products} registros`}
@@ -1470,25 +1461,25 @@ export function WixCmsCollectionManagerModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <div className="flex items-center rounded-lg border border-border bg-background p-1">
               <button
                 type="button"
                 onClick={() => setSheetScope("active_block")}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-md text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "h-11 min-h-11 px-3 rounded-md text-xs font-bold transition-colors whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   sheetScope === "active_block"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                Seção / Bloco da Página ({blockRows.length})
+                Seção / Bloco ({blockRows.length})
               </button>
               <button
                 type="button"
                 onClick={() => setSheetScope("cms_collections")}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-md text-xs font-bold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "h-11 min-h-11 px-3 rounded-md text-xs font-bold transition-colors whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   sheetScope === "cms_collections"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground",
@@ -1507,16 +1498,6 @@ export function WixCmsCollectionManagerModal({
             >
               <Sliders className="size-3.5" />
               <span>Colunas</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <X className="size-4" />
             </Button>
           </div>
         </DialogHeader>

@@ -150,6 +150,13 @@ export function GlobalMenuHub({
   ];
 
   const ecosystemItems = [
+    { label: "Explorar Cidade", icon: Compass, onClick: () => handleNavigate("/explorer") },
+    { label: "Waesy Marketplace", icon: ShoppingBag, onClick: () => handleNavigate("/marketplace") },
+    { label: "Classificados Regionais", icon: Tag, onClick: () => handleNavigate("/classificados") },
+    { label: "Notícias Locais", icon: FileText, onClick: () => handleNavigate("/noticias") },
+    { label: "Mobilidade Waesy Go", icon: Car, onClick: () => handleNavigate("/mobilidade") },
+    { label: "Waesy Copilot IA", icon: MessageCircle, onClick: () => handleNavigate("/workspace/copilot") },
+    { label: "Waesy Talk CRM", icon: MessageCircle, onClick: () => handleNavigate("/workspace/atendimento") },
     { label: "Turismo", icon: Compass, onClick: () => handleNavigate("/turismo") },
     { label: "Empregos", icon: Briefcase, onClick: () => handleNavigate("/empregos") },
     { label: "Agenda", icon: CalendarDays, onClick: () => handleNavigate("/agenda") },

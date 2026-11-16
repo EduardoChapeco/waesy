@@ -226,41 +226,41 @@ function AIConfigurationPage() {
  {/* Card de Quotas de IA & Arquitetura Dual (V141) */}
  <div className="p-5 rounded-lg border border-border/60 bg-card shadow-2xs space-y-4">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
- <div>
- <div className="flex items-center gap-2">
- <span className="text-sm font-bold text-foreground">
- Cotas Mensais de IA & Arquitetura Dual
- </span>
- {quota?.planTier === "WAESY_MAX" ? (
- <Badge variant="default" className="text-xs font-mono gap-1">
- <Zap className="size-3" />
- Waesy Max
- </Badge>
- ) : (
- <Badge variant="secondary" className="text-xs font-mono">
- Modo Rápido MVP
- </Badge>
- )}
- </div>
- <p className="text-xs text-muted-foreground mt-1">
- {quota?.planTier === "WAESY_MAX"
- ? "Franquia expandida de 200 chamadas mensais com inteligência profunda multissetorial."
- : "Franquia essencial de 10 chamadas mensais para operações de catálogo e anúncios."}
- </p>
- </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-foreground">
+                Cotas Mensais de IA
+              </span>
+              {quota?.planTier === "WAESY_MAX" ? (
+                <Badge variant="default" className="text-xs font-mono gap-1">
+                  <Zap className="size-3" />
+                  Waesy Max
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="text-xs font-mono">
+                  Plano Essencial
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {quota?.planTier === "WAESY_MAX"
+                ? "Franquia expandida de 200 chamadas mensais para geração de conteúdo."
+                : "Franquia essencial de 10 chamadas mensais para catálogo e anúncios."}
+            </p>
+          </div>
 
- <div className="flex items-center gap-2">
- {quota?.hasByokConfigured ? (
- <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-xs font-mono gap-1">
- <Zap className="size-3" />
- BYOK Ativo ({quota.byokProvider})
- </Badge>
- ) : (
- <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
- Fallback BYOK Inativo
- </Badge>
- )}
- </div>
+          <div className="flex items-center gap-2">
+            {quota?.hasByokConfigured ? (
+              <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-xs font-mono gap-1">
+                <Zap className="size-3" />
+                Chave Própria Ativa ({quota.byokProvider})
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
+                Chave Própria Inativa
+              </Badge>
+            )}
+          </div>
  </div>
 
  {loadingQuota ? (

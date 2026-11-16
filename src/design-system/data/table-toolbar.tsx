@@ -66,16 +66,16 @@ export function TableToolbar({
           </div>
         )}
 
-        {/* Filter Chips */}
+        {/* Filter Chips (faixa rolável horizontal universal em mobile e desktop) */}
         {filterChips && filterChips.length > 0 && !hasSelection && (
-          <div className="hidden sm:flex items-center gap-2 overflow-x-auto scroll-area-carousel scrollbar-none">
+          <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">
             {filterChips.map((chip) => (
               <button
                 key={chip.id}
                 type="button"
                 onClick={() => onToggleFilter?.(chip.id)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer",
+                  "inline-flex items-center gap-2 px-3 py-2 h-11 min-h-11 sm:h-9 sm:min-h-9 rounded-lg text-xs font-medium shrink-0 whitespace-nowrap transition-colors cursor-pointer",
                   chip.active
                     ? "bg-primary text-primary-foreground font-semibold"
                     : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -92,16 +92,16 @@ export function TableToolbar({
       </div>
 
       {/* Actions (Bulk or Standard) */}
-      <div className="flex items-center gap-2 shrink-0 justify-end">
+      <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">
         {hasSelection ? (
           <>
             {onBulkExport && (
               <button
                 type="button"
                 onClick={onBulkExport}
-                className="inline-flex items-center gap-2 min-h-10 px-3 py-2 rounded-lg border border-border/80 bg-background text-xs font-semibold text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border/80 bg-background text-xs font-semibold text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-9 shrink-0 whitespace-nowrap"
               >
-                <Download className="size-3.5" />
+                <Download className="size-3.5 shrink-0" />
                 <span>Exportar</span>
               </button>
             )}
@@ -109,9 +109,9 @@ export function TableToolbar({
               <button
                 type="button"
                 onClick={onBulkDelete}
-                className="inline-flex items-center gap-2 min-h-10 px-3 py-2 rounded-lg bg-destructive text-destructive-foreground text-xs font-semibold hover:bg-destructive/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive text-destructive-foreground text-xs font-semibold hover:bg-destructive/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-9 shrink-0 whitespace-nowrap"
               >
-                <Trash2 className="size-3.5" />
+                <Trash2 className="size-3.5 shrink-0" />
                 <span>Excluir</span>
               </button>
             )}
@@ -124,9 +124,9 @@ export function TableToolbar({
                 onClick={onRefresh}
                 title="Atualizar lista"
                 aria-label="Atualizar lista"
-                className="size-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer min-h-11 sm:min-h-0 min-w-11 sm:min-w-0"
+                className="size-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shrink-0"
               >
-                <RefreshCw className="size-4" />
+                <RefreshCw className="size-4 shrink-0" />
               </button>
             )}
             {customActions}

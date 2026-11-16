@@ -633,7 +633,7 @@ function CustomerDetailPage() {
 
       {/* ── 2. Abas de Detalhamento 360° ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex items-center justify-start h-11 w-full gap-2 mb-6 p-1 bg-muted/50 rounded-lg overflow-x-auto no-scrollbar whitespace-nowrap">
+        <TabsList className="waesy-tab-strip items-center justify-start h-11 min-h-11 w-full gap-2 mb-6 p-1 bg-muted/50 rounded-lg whitespace-nowrap">
           <TabsTrigger value="timeline" className="text-xs font-semibold gap-2 shrink-0 px-3 py-2 rounded-lg min-h-9 whitespace-nowrap cursor-pointer">
             <History className="size-3.5" />
             <span>Timeline</span>

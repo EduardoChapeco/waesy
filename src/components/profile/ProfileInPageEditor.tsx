@@ -622,30 +622,30 @@ export function ProfileInPageEditor({
 
           {/* ── 2. Régua Horizontal Canônica de Abas (B.39) ── */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <div className="tab-list flex items-center overflow-x-auto no-scrollbar pb-1">
-              <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
+            <div className="waesy-tab-strip tab-list items-center pb-1 min-w-0 max-w-full">
+              <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap justify-start min-w-0">
                 <TabsTrigger
                   value="identidade"
-                  className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  <User className="size-3.5" strokeWidth={1.75} />
+                  <User className="size-3.5 shrink-0" strokeWidth={1.75} />
                   <span>Identidade</span>
                 </TabsTrigger>
 
                 {isBrandPersonaView ? (
                   <TabsTrigger
                     value="vitrine"
-                    className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
                   >
-                    <ShoppingBag className="size-3.5" strokeWidth={1.75} />
+                    <ShoppingBag className="size-3.5 shrink-0" strokeWidth={1.75} />
                     <span>Vitrine</span>
                   </TabsTrigger>
                 ) : (
                   <TabsTrigger
                     value="curriculo"
-                    className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
                   >
-                    <Briefcase className="size-3.5" strokeWidth={1.75} />
+                    <Briefcase className="size-3.5 shrink-0" strokeWidth={1.75} />
                     <span>Currículo</span>
                   </TabsTrigger>
                 )}

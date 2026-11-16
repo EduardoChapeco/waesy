@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitOmniPageLeadFn } from "@/services/builder.functions";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export interface ContactFormDirectProps {
   id: string;
@@ -34,6 +35,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
   activeSubstate,
   onLeadSubmit,
 }) => {
+  const { isMobile } = useEffectiveViewport();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -134,8 +136,8 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
       style={customStyle}
       className={`relative w-full ${paddingYClasses} border-b border-border/40 ${className}`}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`p-8 sm:p-12 bg-card border border-border/70 ${radiusClass}`}>
+      <div className={isMobile ? "max-w-4xl mx-auto px-3" : "max-w-4xl mx-auto px-6 lg:px-8"}>
+        <div className={`${isMobile ? "p-5" : "p-10"} bg-card border border-border/70 ${radiusClass}`}>
           {/* Cabeçalho */}
           <div className="text-center max-w-xl mx-auto mb-8">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mb-2">
@@ -191,7 +193,7 @@ export const ContactFormDirect: React.FC<ContactFormDirectProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={isMobile ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-4"}>
                 {data.showPhoneField !== false && (
                   <div>
                     <label htmlFor={`${id}-phone`} className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">

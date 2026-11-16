@@ -1,12 +1,15 @@
-import React, { useState, useRef } from "react";
-import { FileText, Trash2, Copy, Layers, Calendar, User, Hash, CheckSquare, PenTool, Upload, ArrowRight, RefreshCw, Info } from "lucide-react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { FileText, Trash2, Copy, Layers, Calendar, User, Hash, CheckSquare, PenTool, Upload, ArrowRight, RefreshCw, Info, ExternalLink, GripHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getDocumentThemeCanvasStyle } from "@/lib/builder/block-data-resolver";
 import { TOKEN_HEX } from "@/lib/design-tokens";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { type SignatureFieldDTO } from "@/services/contracts.functions";
+import { ContractMarkdownRenderer } from "@/components/contracts/contract-markdown-renderer";
+import { paginateContractMarkdown } from "@/lib/contracts/document-file-parser";
 
 export interface SignerVisualInfo {
   index: number;
@@ -28,10 +31,17 @@ interface SignaturePositionerCanvasProps {
   onChangeFile?: () => void;
   onMergeFile?: () => void;
   documentTitle?: string;
+  contentMarkdown?: string;
+  sourceFileSignedUrl?: string | null;
+  sourceFileMime?: string | null;
+  sourceFileName?: string | null;
+  hideSidePanel?: boolean;
+  selectedSignerIndex?: number;
+  onSelectedSignerIndexChange?: (idx: number) => void;
   readOnly?: boolean;
 }
 
-const FIELD_TAGS = [
+export const FIELD_TAGS = [
   { type: "signature" as const, label: "Assinatura", icon: PenTool, defaultW: 24, defaultH: 8 },
   { type: "initials" as const, label: "Rubrica", icon: Layers, defaultW: 16, defaultH: 6 },
   { type: "name" as const, label: "Nome", icon: User, defaultW: 28, defaultH: 5 },
@@ -51,16 +61,98 @@ export function SignaturePositionerCanvas({
   onChangeFile,
   onMergeFile,
   documentTitle,
+  contentMarkdown,
+  sourceFileSignedUrl,
+  sourceFileMime,
+  sourceFileName,
+  hideSidePanel = false,
+  selectedSignerIndex,
+  onSelectedSignerIndexChange,
   readOnly = false,
 }: SignaturePositionerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeSignerIndex, setActiveSignerIndex] = useState<number>(0);
+  const fieldsRef = useRef(fields);
+  fieldsRef.current = fields;
+
+  const [internalSignerIndex, setInternalSignerIndex] = useState<number>(0);
+  const activeSignerIndex =
+    selectedSignerIndex !== undefined ? selectedSignerIndex : internalSignerIndex;
+  const setActiveSignerIndex = (idx: number) => {
+    if (onSelectedSignerIndexChange) onSelectedSignerIndexChange(idx);
+    else setInternalSignerIndex(idx);
+  };
+
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
+  const [dragState, setDragState] = useState<{
+    mode: "drag" | "resize";
+    fieldId: string;
+    startClientX: number;
+    startClientY: number;
+    origX: number;
+    origY: number;
+    origW: number;
+    origH: number;
+  } | null>(null);
 
   // Modal de repetição de campo
   const [repeatModalOpen, setRepeatModalOpen] = useState(false);
   const [pendingFieldToRepeat, setPendingFieldToRepeat] = useState<SignatureFieldDTO | null>(null);
   const [repeatOption, setRepeatOption] = useState<"page" | "all" | "all_except_last">("page");
+
+  const paginatedPages = useMemo(
+    () => paginateContractMarkdown(contentMarkdown || ""),
+    [contentMarkdown],
+  );
+  const effectivePageCount = Math.max(pageCount, paginatedPages.length, 1);
+
+  const isPdfSource = Boolean(
+    sourceFileSignedUrl &&
+      (sourceFileMime?.toLowerCase().includes("pdf") ||
+        sourceFileName?.toLowerCase().endsWith(".pdf")),
+  );
+  const isImageSource = Boolean(
+    sourceFileSignedUrl && sourceFileMime?.toLowerCase().startsWith("image/"),
+  );
+
+  useEffect(() => {
+    if (!dragState || readOnly) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const deltaXPct = ((e.clientX - dragState.startClientX) / rect.width) * 100;
+      const deltaYPct = ((e.clientY - dragState.startClientY) / rect.height) * 100;
+
+      const updated = fieldsRef.current.map((f) => {
+        if (f.id !== dragState.fieldId) return f;
+        if (dragState.mode === "drag") {
+          const nextX = Math.max(2, Math.min(98 - f.width, Number((dragState.origX + deltaXPct).toFixed(2))));
+          const nextY = Math.max(4, Math.min(95 - f.height, Number((dragState.origY + deltaYPct).toFixed(2))));
+          return { ...f, x: nextX, y: nextY };
+        }
+        const nextW = Math.max(10, Math.min(75, Number((dragState.origW + deltaXPct).toFixed(2))));
+        const nextH = Math.max(4, Math.min(30, Number((dragState.origH + deltaYPct).toFixed(2))));
+        return { ...f, width: nextW, height: nextH };
+      });
+      onFieldsChange(updated);
+    };
+
+    const handlePointerUp = () => {
+      setDragState(null);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, [dragState, onFieldsChange, readOnly]);
 
   const currentSigner = signers[activeSignerIndex] || signers[0] || {
     index: 0,
@@ -159,7 +251,18 @@ export function SignaturePositionerCanvas({
         </div>
 
         {/* Seletor de Páginas */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {sourceFileSignedUrl && (
+            <a
+              href={sourceFileSignedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 h-11 sm:h-8 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ExternalLink className="size-3.5" />
+              <span>Abrir original</span>
+            </a>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -171,14 +274,14 @@ export function SignaturePositionerCanvas({
             Anterior
           </Button>
           <span className="text-xs font-semibold px-2 py-1 bg-muted rounded-md text-foreground">
-            Pág. {currentPage} de {pageCount}
+            Pág. {currentPage} de {effectivePageCount}
           </span>
           <Button
             type="button"
             variant="outline"
             size="sm"
             className="h-8 px-3 rounded-lg text-xs min-h-11 sm:min-h-0"
-            disabled={currentPage >= pageCount}
+            disabled={currentPage >= effectivePageCount}
             onClick={() => onPageChange(currentPage + 1)}
           >
             Próxima
@@ -187,9 +290,9 @@ export function SignaturePositionerCanvas({
       </div>
 
       {/* Grid Central: Barra Lateral de Signatários + Canvas do Documento */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Barra Lateral de Signatários & Tags */}
-        <aside className="w-full md:w-80 border-b md:border-b-0 md:border-r border-border/70 bg-muted/20 p-4 space-y-5 overflow-y-auto">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
+        {!hideSidePanel && (
+          <aside className="w-full md:w-80 border-b md:border-b-0 md:border-r border-border/70 bg-muted/20 p-4 space-y-5 overflow-y-auto">
           <div>
             <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-3 block">
               1. Escolha quem vai assinar
@@ -256,97 +359,180 @@ export function SignaturePositionerCanvas({
               <span>Dica de Posicionamento</span>
             </div>
             <p className="leading-relaxed">
-              Você pode repetir o campo de <strong>Rubrica</strong> em todas as páginas com 1 toque.
+              Arraste os campos sobre a folha para posicionar ou use as setas do teclado para ajuste fino.
             </p>
           </div>
         </aside>
+        )}
 
-        {/* Canvas de Visualização do Documento */}
-        <main className="flex-1 bg-muted/40 p-4 md:p-8 flex items-center justify-center overflow-auto">
-          {/* Folha A4 Representativa */}
+        {/* Canvas de Visualização do Documento A4 Real */}
+        <main className="flex-1 bg-muted/40 p-4 md:p-8 flex items-start justify-center overflow-auto">
           <div
             ref={containerRef}
-            className="relative w-full max-w-175 aspect-a4-portrait bg-card text-card-foreground rounded-lg  border border-border/80 p-8 flex flex-col justify-between overflow-hidden"
+            data-builder-canvas-isolated="light"
+            style={getDocumentThemeCanvasStyle({ backgroundColor: TOKEN_HEX.white }, { forceIsolate: true })}
+            className="relative w-full max-w-175 aspect-a4-portrait bg-background text-foreground rounded-lg border border-border/80 flex flex-col justify-between overflow-hidden shrink-0"
           >
-            {/* Header Simulado da Página */}
-            <div className="border-b border-border/40 pb-3 flex items-center justify-between text-2xs text-muted-foreground">
-              <span className="font-semibold uppercase tracking-wider">{documentTitle || "INSTRUMENTO PARTICULAR"}</span>
-              <span>Página {currentPage}</span>
+            {/* Header da Folha A4 */}
+            <div className="px-8 pt-6 pb-3 border-b border-border/40 flex items-center justify-between text-xs text-muted-foreground relative z-10 bg-background/95">
+              <span className="font-semibold uppercase tracking-wider truncate">
+                {sourceFileName || documentTitle || "INSTRUMENTO CONTRATUAL"}
+              </span>
+              <span className="shrink-0">Página {currentPage}</span>
             </div>
 
-            {/* Corpo Representativo / Guia de Linhas */}
-            <div className="space-y-3 py-6 text-xs text-muted-foreground/80 leading-relaxed font-serif">
-              <div className="h-2.5 bg-muted/70 rounded-full w-3/4" />
-              <div className="h-2.5 bg-muted/60 rounded-full w-full" />
-              <div className="h-2.5 bg-muted/60 rounded-full w-11/12" />
-              <div className="h-2.5 bg-muted/60 rounded-full w-4/5" />
-              <div className="h-2.5 bg-muted/70 rounded-full w-full" />
-              <div className="h-2.5 bg-muted/50 rounded-full w-2/3" />
-              <div className="my-6 border-t border-dashed border-border/50" />
-              <div className="h-2.5 bg-muted/60 rounded-full w-full" />
-              <div className="h-2.5 bg-muted/70 rounded-full w-5/6" />
-              <div className="h-2.5 bg-muted/60 rounded-full w-full" />
-              <div className="h-2.5 bg-muted/50 rounded-full w-1/2" />
+            {/* Conteúdo Real da Folha: PDF Nativo, Imagem Digitalizada ou Minuta Renderizada */}
+            <div className="relative flex-1 overflow-hidden">
+              {isPdfSource && sourceFileSignedUrl ? (
+                <iframe
+                  key={`${sourceFileSignedUrl}#page=${currentPage}`}
+                  src={`${sourceFileSignedUrl}#page=${currentPage}&toolbar=0&navpanes=0&view=FitH`}
+                  title={sourceFileName || documentTitle || "Documento PDF"}
+                  className="w-full h-full border-0 pointer-events-none"
+                />
+              ) : isImageSource && sourceFileSignedUrl ? (
+                <div className="w-full h-full p-6 flex items-center justify-center">
+                  <img
+                    src={sourceFileSignedUrl}
+                    alt={sourceFileName || documentTitle || "Documento anexado"}
+                    className="max-w-full max-h-full object-contain pointer-events-none"
+                  />
+                </div>
+              ) : (paginatedPages[currentPage - 1] || "").trim().length > 0 ? (
+                <div className="h-full px-8 py-6 overflow-hidden pointer-events-none">
+                  <ContractMarkdownRenderer content={paginatedPages[currentPage - 1]} />
+                </div>
+              ) : (
+                <div className="h-full px-8 py-12 flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+                  <FileText className="size-8 opacity-40" />
+                  <p className="text-sm font-medium text-foreground">Página em branco</p>
+                  <p className="text-xs max-w-sm">
+                    Redija as cláusulas na aba Documento ou envie um arquivo PDF, Word (.docx) ou Markdown para preencher esta folha A4.
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Bounding Boxes Renderizados Sobre a Folha */}
+            {/* Bounding Boxes Arrastáveis & Redimensionáveis Sobre a Folha */}
             {visibleFields.map((field) => {
               const signer = signers.find((s) => s.index === field.signerIndex) || currentSigner;
               const isSelected = selectedFieldId === field.id;
 
               return (
                 <div
-    key={field.id}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        setSelectedFieldId(field.id);
-      }
-    }}
-    onClick={() => setSelectedFieldId(field.id)}
-    style={{
+                  key={field.id}
+                  role="button"
+                  tabIndex={0}
+                  onPointerDown={(e) => {
+                    setSelectedFieldId(field.id);
+                    if (readOnly) return;
+                    e.preventDefault();
+                    setDragState({
+                      mode: "drag",
+                      fieldId: field.id,
+                      startClientX: e.clientX,
+                      startClientY: e.clientY,
+                      origX: field.x,
+                      origY: field.y,
+                      origW: field.width,
+                      origH: field.height,
+                    });
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedFieldId(field.id);
+                      return;
+                    }
+                    if (readOnly) return;
+                    if (e.key === "Delete" || e.key === "Backspace") {
+                      e.preventDefault();
+                      handleDeleteField(field.id);
+                      return;
+                    }
+                    const step = e.shiftKey ? 5 : 1;
+                    let nextX = field.x;
+                    let nextY = field.y;
+                    if (e.key === "ArrowLeft") nextX = Math.max(2, field.x - step);
+                    else if (e.key === "ArrowRight") nextX = Math.min(98 - field.width, field.x + step);
+                    else if (e.key === "ArrowUp") nextY = Math.max(4, field.y - step);
+                    else if (e.key === "ArrowDown") nextY = Math.min(95 - field.height, field.y + step);
+                    else return;
+                    e.preventDefault();
+                    onFieldsChange(
+                      fields.map((item) => (item.id === field.id ? { ...item, x: nextX, y: nextY } : item)),
+                    );
+                  }}
+                  onClick={() => setSelectedFieldId(field.id)}
+                  style={{
                     left: `${field.x}%`,
                     top: `${field.y}%`,
                     width: `${field.width}%`,
                     height: `${field.height}%`,
-                    borderColor: signer.colorCode || "var(--color-blue-600)",
+                    borderColor: signer.colorCode || TOKEN_HEX.blue600,
                   }}
-                  className={`absolute border-2 rounded-lg flex items-center justify-between px-2 cursor-move transition-colors duration-200 bg-card/95 shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    isSelected ? "ring-2 ring-primary/40 " : "hover:border-primary"
+                  className={`absolute z-20 border-2 rounded-lg flex items-center justify-between px-2 transition-colors duration-150 bg-card/95 shadow-xs touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"
+                  } ${
+                    isSelected ? "ring-2 ring-primary/50" : "hover:border-primary"
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 pointer-events-none">
                     <span
-                      className="size-2 rounded-full shrink-0 waesy-dyn-bg"
-                      style={{ "--dyn-bg": signer.colorCode } as React.CSSProperties}
+                      className="size-2.5 rounded-full shrink-0 waesy-dyn-bg"
+                      style={{ "--dyn-bg": signer.colorCode || TOKEN_HEX.blue600 } as React.CSSProperties}
                     />
-                    <span className="text-2xs font-bold truncate text-foreground">
+                    <span className="text-xs font-semibold truncate text-foreground">
                       {field.label || field.type}
                     </span>
                   </div>
 
                   {!readOnly && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteField(field.id);
-                      }}
-                      className="text-muted-foreground hover:text-destructive p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Trash2 className="size-3" />
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        aria-label={`Remover campo ${field.label || field.type}`}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteField(field.id);
+                        }}
+                        className="text-muted-foreground hover:text-destructive p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                      <span
+                        role="separator"
+                        aria-label="Redimensionar campo"
+                        onPointerDown={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setSelectedFieldId(field.id);
+                          setDragState({
+                            mode: "resize",
+                            fieldId: field.id,
+                            startClientX: e.clientX,
+                            startClientY: e.clientY,
+                            origX: field.x,
+                            origY: field.y,
+                            origW: field.width,
+                            origH: field.height,
+                          });
+                        }}
+                        className="cursor-nwse-resize text-muted-foreground hover:text-primary p-1"
+                      >
+                        <GripHorizontal className="size-3" />
+                      </span>
+                    </div>
                   )}
                 </div>
               );
             })}
 
-            {/* Rodapé Simulado com Autenticação Eletrônica */}
-            <div className="border-t border-border/40 pt-3 flex items-center justify-between text-2xs text-muted-foreground">
-              <span className="truncate">Autenticação Digital Waesy Platform · SHA-256</span>
-              <span>Pág. {currentPage}/{pageCount}</span>
+            {/* Rodapé A4 com Autenticação Eletrônica */}
+            <div className="px-8 py-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground relative z-10 bg-background/95">
+              <span className="truncate">Autenticação Digital Waesy · SHA-256</span>
+              <span>Pág. {currentPage}/{effectivePageCount}</span>
             </div>
           </div>
         </main>

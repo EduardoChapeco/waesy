@@ -952,12 +952,27 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  let { data: store, error } = await query.maybeSingle();
 
  if (error || !store) {
- const { data: dirListing } = await db
- .from("directory_listings")
- .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, logo_url, banner_url, settings)")
- .or(isUuid ? `id.eq.${storeIdToUse},store_id.eq.${storeIdToUse}` : `slug.eq.${storeIdToUse},id.eq.${storeIdToUse}`)
- .limit(1)
- .maybeSingle();
+ let dirListing: any = null;
+ if (isUuid) {
+   const { data: foundByUuid } = await db
+     .from("directory_listings")
+     .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, logo_url, banner_url, settings)")
+     .or(`id.eq.${storeIdToUse},store_id.eq.${storeIdToUse}`)
+     .limit(1)
+     .maybeSingle();
+   dirListing = foundByUuid;
+ } else {
+   const cleanNameTerm = storeIdToUse.replace(/[^a-zA-Z0-9\s-]/g, "").replace(/-/g, " ").trim();
+   if (cleanNameTerm.length >= 2) {
+     const { data: foundByName } = await db
+       .from("directory_listings")
+       .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, logo_url, banner_url, settings)")
+       .ilike("business_name", `%${cleanNameTerm}%`)
+       .limit(1)
+       .maybeSingle();
+     dirListing = foundByName;
+   }
+ }
 
  if (dirListing) {
     const dirSettings = (dirListing.stores?.settings ?? {}) as Record<string, any>;

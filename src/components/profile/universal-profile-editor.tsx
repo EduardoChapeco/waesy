@@ -144,12 +144,12 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
       </div>
 
       {/* ── 2. Tabs Contextuais por Persona (Rótulos Simples e Não Compostos) ── */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="px-4 sm:px-8 pt-3 border-b border-border/40">
-          <TabsList className="bg-transparent h-10 p-0 gap-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-w-0">
+        <div className="px-4 sm:px-8 pt-3 border-b border-border/40 min-w-0">
+          <TabsList className="waesy-tab-strip items-center justify-start bg-transparent h-11 min-h-11 sm:h-10 p-0 gap-6 w-full max-w-full">
             <TabsTrigger
               value="identity"
-              className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
+              className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
             >
               Identidade
             </TabsTrigger>
@@ -157,7 +157,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
             {formData.personaType === "company" && (
               <TabsTrigger
                 value="company_details"
-                className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
+                className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
               >
                 Empresa
               </TabsTrigger>
@@ -166,7 +166,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
             {formData.personaType === "creator" && (
               <TabsTrigger
                 value="creator_details"
-                className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
+                className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
               >
                 Mídia Kit
               </TabsTrigger>
@@ -174,7 +174,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
 
             <TabsTrigger
               value="links"
-              className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
+              className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
             >
               Contato
             </TabsTrigger>

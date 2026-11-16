@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { SidebarSimple } from "@phosphor-icons/react";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import {
   Search,
   Pin,
@@ -40,7 +42,9 @@ import {
   LayoutTemplate,
   Presentation,
   FileSpreadsheet,
-  Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Home,
 } from "lucide-react";
 import {
   CANVA_TEMPLATE_CATEGORIES,
@@ -53,6 +57,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +65,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { useWindowSizeClass } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -69,10 +81,16 @@ import { ChatArtifactCard, type ChatArtifactData } from "./chat-artifact-card";
 import { ChatComposer, type QuotedMessage } from "./chat-composer";
 import { StructuredMessageView, type AIChatAction } from "./structured-message-view";
 import { CopilotMessageRenderer } from "./copilot-message-renderer";
-import { CopilotArtifactPanel } from "./copilot-artifact-panel";
+import { COPILOT_ARTIFACT_TYPE_LABELS, CopilotArtifactPanel } from "./copilot-artifact-panel";
 import type { CopilotFsmPhase, CopilotFsmExecutionState } from "@/types/copilot-fsm";
-import type { ChatSourceItem, CopilotQuickToolMode } from "@/types/chat";
+import type {
+  ChatSourceItem,
+  CopilotQuickToolMode,
+  ExecutionPlanStep,
+} from "@/types/chat";
+import { ManusExecutionPlanBar } from "./manus-execution-plan-bar";
 import { CopilotSkillsCenter } from "./copilot-skills-center";
+import { CopilotMemorySettingsSheet } from "./copilot-memory-settings-sheet";
 import {
   CopilotBackgroundTasksDrawer,
   type BackgroundTaskItem,
@@ -165,10 +183,22 @@ export interface AIChatShellProps {
   onSelectFolder?: (folderId: string | null) => void;
   onSelectProject?: (projectId: string | null) => void;
   onCreateFolder?: (name: string) => Promise<void> | void;
+  onRenameFolder?: (folderId: string, name: string) => Promise<void> | void;
+  onDeleteFolder?: (folderId: string) => Promise<void> | void;
   onCreateProject?: (payload: {
     title: string;
     folderId?: string | null;
   }) => Promise<unknown> | void;
+  onUpdateProject?: (
+    projectId: string,
+    patch: {
+      title?: string;
+      description?: string | null;
+      systemInstructions?: string | null;
+      folderId?: string | null;
+    },
+  ) => Promise<void> | void;
+  onDeleteProject?: (projectId: string) => Promise<void> | void;
   onAssignThreadHierarchy?: (
     threadId: string,
     hierarchy: { folderId?: string | null; projectId?: string | null },
@@ -186,9 +216,14 @@ export interface AIChatShellProps {
   onQuickToolModeChange?: (mode: CopilotQuickToolMode) => void;
   onOpenComputer?: () => void;
   computerStepsCount?: number;
+  executionPlan?: ExecutionPlanStep[];
+  isExecutionPaused?: boolean;
+  onPauseExecution?: () => void;
+  onResumeExecution?: (guidance?: string) => void;
   onOpenTelemetry?: () => void;
   extraHeaderActions?: React.ReactNode;
   contextAccessLabel?: string;
+  storeId?: string | null;
   isSending?: boolean;
   isStreaming?: boolean;
   currentUserProfileId?: string;
@@ -218,6 +253,7 @@ const MEMORY_KEY_LABELS: Record<string, string> = {
 };
 
 const MEMORY_VALUE_LABELS: Record<string, string> = {
+  ...COPILOT_ARTIFACT_TYPE_LABELS,
   lodging_tourism: "Hospedagem & Turismo",
   food_service: "Gastronomia & Delivery",
   beauty_wellness: "Beleza & Bem-Estar",
@@ -287,7 +323,11 @@ export function AIChatShell({
   onSelectFolder,
   onSelectProject,
   onCreateFolder,
+  onRenameFolder,
+  onDeleteFolder,
   onCreateProject,
+  onUpdateProject,
+  onDeleteProject,
   onAssignThreadHierarchy,
   projectFiles = [],
   isLoadingProjectFiles = false,
@@ -302,9 +342,14 @@ export function AIChatShell({
   onQuickToolModeChange,
   onOpenComputer,
   computerStepsCount = 0,
+  executionPlan = [],
+  isExecutionPaused = false,
+  onPauseExecution,
+  onResumeExecution,
   onOpenTelemetry,
   extraHeaderActions,
   contextAccessLabel = "Acesso completo",
+  storeId,
   isSending = false,
   isStreaming = false,
   currentUserProfileId: _currentUserProfileId,
@@ -331,10 +376,22 @@ export function AIChatShell({
   const [inspectorTab, setInspectorTab] = useState<"summary" | "knowledge">("summary");
   const [renamingThreadId, setRenamingThreadId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
+  const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
+  const [folderRenameDraft, setFolderRenameDraft] = useState("");
+  const [editingProject, setEditingProject] = useState<CopilotProjectDTO | null>(null);
+  const [projectTitleDraft, setProjectTitleDraft] = useState("");
+  const [projectDescDraft, setProjectDescDraft] = useState("");
+  const [projectFolderDraft, setProjectFolderDraft] = useState<string>("");
+  const [movingThread, setMovingThread] = useState<ChatThreadItem | null>(null);
+  const [moveFolderDraft, setMoveFolderDraft] = useState<string>("");
+  const [moveProjectDraft, setMoveProjectDraft] = useState<string>("");
   const [replyTo, setReplyTo] = useState<QuotedMessage | null>(null);
   const [showMobileChat, setShowMobileChat] = useState<boolean>(Boolean(activeThreadId));
+  const [showDesktopSidebar, setShowDesktopSidebar] = useState<boolean>(true);
   const [showContextPanel, setShowContextPanel] = useState<boolean>(false);
   const [showDesktopContextPanel, setShowDesktopContextPanel] = useState<boolean>(true);
+  const [memorySheetOpen, setMemorySheetOpen] = useState<boolean>(false);
+  const [composerPrefill, setComposerPrefill] = useState<string | null>(null);
   const [activeArtifact, setActiveArtifact] = useState<ChatArtifactData | null>(null);
   const [internalFolderId, setInternalFolderId] = useState<string | null>(null);
   const [internalProjectId, setInternalProjectId] = useState<string | null>(null);
@@ -344,6 +401,100 @@ export function AIChatShell({
   const seenArtifactIdsRef = useRef<Set<string>>(new Set());
   const wasSendingRef = useRef(false);
   const prevActiveThreadRef = useRef<string | undefined>(activeThreadId);
+
+  const canManagePowerModules = mode === "workspace" || Boolean(_currentUserProfileId);
+  const moduleNavItems = [
+    {
+      id: "chats",
+      label: "Chats",
+      icon: MessageSquare,
+      isActive: sidebarSection === "chats" && viewMode === "chat",
+      action: () => {
+        setSidebarSection("chats");
+        setViewMode("chat");
+        if (!showDesktopSidebar) setShowDesktopSidebar(true);
+      },
+    },
+    {
+      id: "studio",
+      label: "Canva Studio",
+      icon: Palette,
+      isActive: sidebarSection === "studio",
+      action: () => {
+        setSidebarSection("studio");
+        setViewMode("chat");
+        if (!showDesktopSidebar) setShowDesktopSidebar(true);
+        if (isCompact) setShowMobileChat(false);
+      },
+    },
+    {
+      id: "builders",
+      label: "Builders",
+      icon: Layers,
+      isActive: sidebarSection === "builders",
+      action: () => {
+        setSidebarSection("builders");
+        setViewMode("chat");
+        if (!showDesktopSidebar) setShowDesktopSidebar(true);
+        if (isCompact) setShowMobileChat(false);
+      },
+    },
+    {
+      id: "skills",
+      label: "Skills",
+      icon: Zap,
+      isActive: viewMode === "skills",
+      action: () => {
+        setSidebarSection("chats");
+        setViewMode("skills");
+        if (isCompact) setShowMobileChat(true);
+      },
+    },
+    {
+      id: "tasks",
+      label: "Tarefas",
+      icon: Clock,
+      isActive: tasksDrawerOpen,
+      action: () => setTasksDrawerOpen(true),
+    },
+    ...(canManagePowerModules
+      ? [
+          {
+            id: "schedule",
+            label: "Agenda",
+            icon: Calendar,
+            isActive: viewMode === "schedule",
+            action: () => {
+              setSidebarSection("chats");
+              setViewMode("schedule");
+              if (isCompact) setShowMobileChat(true);
+            },
+          },
+          {
+            id: "connectors",
+            label: "Apps",
+            icon: Link2,
+            isActive: viewMode === "connectors",
+            action: () => {
+              setSidebarSection("chats");
+              setViewMode("connectors");
+              if (isCompact) setShowMobileChat(true);
+            },
+          },
+          {
+            id: "analytics",
+            label: "Métricas",
+            icon: TrendingUp,
+            isActive: viewMode === "analytics",
+            action: () => {
+              setSidebarSection("chats");
+              setViewMode("analytics");
+              if (isCompact) setShowMobileChat(true);
+            },
+          },
+        ]
+      : []),
+  ];
 
   const activeFolderFilter =
     selectedFolderId !== undefined ? selectedFolderId : internalFolderId;
@@ -473,6 +624,7 @@ export function AIChatShell({
     setActiveArtifact(studioArtifact);
     setShowDesktopContextPanel(true);
     setShowContextPanel(false);
+    setShowMobileChat(true);
     onQuickToolModeChange?.("creative_post");
   };
 
@@ -529,6 +681,8 @@ export function AIChatShell({
     setActiveArtifact(nextArtifact);
     setShowDesktopContextPanel(true);
     setShowContextPanel(false);
+    setShowMobileChat(true);
+    setShowMobileChat(true);
     onQuickToolModeChange?.("creative_post");
   };
 
@@ -536,36 +690,50 @@ export function AIChatShell({
     builderKind: "creative_post" | "presentation" | "document" | "spreadsheet" | "website_builder",
   ) => {
     setViewMode("chat");
+    setShowMobileChat(true);
     if (builderKind === "creative_post") {
       setSidebarSection("studio");
       handleApplyCanvaTemplate(CANVA_STUDIO_TEMPLATES[0]);
       return;
     }
     if (builderKind === "presentation") {
-      const slideTpl =
-        CANVA_STUDIO_TEMPLATES.find((t) => t.aspectRatio === "16:9") ||
-        CANVA_STUDIO_TEMPLATES[0];
-      handleApplyCanvaTemplate({ ...slideTpl, aspectRatio: "16:9", archetype: "presentation" });
+      onQuickToolModeChange?.("document");
+      setActiveArtifact({
+        id: "builder-presentation-draft",
+        type: "presentation",
+        title: "Nova Apresentação",
+        version: 1,
+        authorName: "Builder Slides Waesy",
+        authorRole: "Deck Multi-Slide",
+        previewSummary: "Envie o tema no chat para gerar os slides completos com exportação PDF.",
+        data: {
+          docType: "presentation",
+          slides: [
+            { title: "Capa Executiva", subtitle: "Estrutura inicial pronta para geração assistida" },
+          ],
+        },
+      });
+      setComposerPrefill("Crie uma apresentação profissional de 6 slides sobre: ");
+      setShowDesktopContextPanel(true);
+      setShowContextPanel(false);
       return;
     }
     if (builderKind === "document") {
       onQuickToolModeChange?.("document");
       setActiveArtifact({
-        id: "builder-doc-preview",
+        id: "builder-doc-draft",
         type: "document",
-        title: "Documento & Proposta Executiva",
+        title: "Novo Documento",
         version: 1,
         authorName: "Builder Documentos Waesy",
-        authorRole: "Estrutura em Tempo Real",
-        previewSummary: "Editor estruturado com blocos, cronograma e exportação PDF.",
+        authorRole: "Rascunho Interativo",
+        previewSummary: "Envie os dados ou briefing no chat para gerar o documento oficial.",
         data: {
           docType: "document",
-          sections: [
-            { title: "Objetivo & Escopo", content: "Descreva no chat o cliente, serviço e prazos para gerar automaticamente a proposta completa." },
-            { title: "Condições Comerciais", content: "Valores, parcelamento e entrega imediata." },
-          ],
+          sections: [],
         },
       });
+      setComposerPrefill("Elabore um documento ou proposta comercial para: ");
       setShowDesktopContextPanel(true);
       setShowContextPanel(false);
       return;
@@ -573,43 +741,42 @@ export function AIChatShell({
     if (builderKind === "spreadsheet") {
       onQuickToolModeChange?.("document");
       setActiveArtifact({
-        id: "builder-sheet-preview",
+        id: "builder-sheet-draft",
         type: "spreadsheet",
-        title: "Planilha Financeira & Operacional",
+        title: "Nova Planilha",
         version: 1,
         authorName: "Builder Planilhas Waesy",
-        authorRole: "Análise Tabular CSV",
-        previewSummary: "Visualização tabular em tempo real pronta para edição e download CSV.",
+        authorRole: "Tabela Editável",
+        previewSummary: "Planilha pronta para preencher no editor ou gerar via Copilot.",
         data: {
-          headers: ["Item / Canal", "Quantidade", "Receita / Valor", "Status"],
+          headers: ["Coluna A", "Coluna B", "Coluna C", "Total"],
           dataRows: [
-            ["Vendas Diretas", "12", "R$ 4.800,00", "Ativo"],
-            ["Campanhas Canva", "8", "R$ 3.200,00", "Em Destaque"],
+            ["", "", "", "=SUM(B1:C1)"],
+            ["", "", "", "=SUM(B2:C2)"],
           ],
         },
       });
+      setComposerPrefill("Monte uma planilha estruturada com cálculos para: ");
       setShowDesktopContextPanel(true);
       setShowContextPanel(false);
       return;
     }
     onQuickToolModeChange?.("website_builder");
     setActiveArtifact({
-      id: "builder-site-preview",
-      type: "website",
-      title: "Landing Page & Site Conversacional",
+      id: "builder-site-draft",
+      type: "web_app",
+      title: "Novo Site / Web App",
       version: 1,
       authorName: "Builder Web Waesy",
-      authorRole: "Estrutura de Alta Conversão",
-      previewSummary: "Descreva o negócio no chat para gerar seções reais de Hero, Ofertas e WhatsApp.",
+      authorRole: "Sandbox HTML ao Vivo",
+      previewSummary: "Descreva seu negócio ou objetivo no chat para compilar o site ao vivo.",
       data: {
         docType: "website",
-        headline: "Página Comercial de Alta Conversão",
-        sections: [
-          { title: "Hero Principal", content: "Chamada persuasiva + CTA WhatsApp" },
-          { title: "Benefícios & Prova Social", content: "Diferenciais locais com visual limpo" },
-        ],
+        sections: [],
+        files: {},
       },
     });
+    setComposerPrefill("Crie um site completo e responsivo para: ");
     setShowDesktopContextPanel(true);
     setShowContextPanel(false);
   };
@@ -728,6 +895,325 @@ export function AIChatShell({
     navigator.clipboard?.writeText(text);
   };
 
+  const openMoveThreadModal = (thread: ChatThreadItem) => {
+    setMovingThread(thread);
+    setMoveFolderDraft(
+      (thread.folderId ?? (thread.metadata?.folder_id as string | undefined) ?? "") as string,
+    );
+    setMoveProjectDraft(
+      (thread.projectId ?? (thread.metadata?.project_id as string | undefined) ?? "") as string,
+    );
+  };
+
+  const renderThreadInspector = (isSheet: boolean) => {
+    if (!activeThread) {
+      if (activeProject && onUploadProjectFile && onDeleteProjectFile) {
+        return (
+          <CopilotProjectKnowledgePanel
+            project={activeProject}
+            files={projectFiles}
+            isLoadingFiles={isLoadingProjectFiles}
+            onUploadFile={onUploadProjectFile}
+            onDeleteFile={onDeleteProjectFile}
+            onUpdateInstructions={onUpdateProjectInstructions}
+          />
+        );
+      }
+      return (
+        <div
+          className={cn(
+            "p-6 text-center text-muted-foreground space-y-2",
+            !isSheet && "rounded-2xl bg-card border border-border/60",
+          )}
+        >
+          <Brain className="size-7 text-muted-foreground/40 mx-auto" />
+          <p className="text-xs font-medium text-foreground">Fontes & Resultados</p>
+          <p className="text-2xs">Selecione uma conversa para visualizar fontes e entregas.</p>
+        </div>
+      );
+    }
+
+    const selectId = isSheet
+      ? "copilot-thread-project-select-mobile"
+      : "copilot-thread-project-select-desktop";
+    const artifactMessages = messages.filter((m) => Boolean(m.artifact));
+    const workingEntries = activeThread.workingMemory
+      ? Object.entries(activeThread.workingMemory).filter(
+          ([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"),
+        )
+      : [];
+
+    return (
+      <div
+        className={cn(
+          "space-y-4",
+          isSheet
+            ? "pb-safe pb-4"
+            : "rounded-2xl bg-card border border-border/60 p-4",
+        )}
+      >
+        {/* Cabeçalho unificado do inspetor */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="text-xs font-semibold text-foreground truncate">
+              {activeProject ? activeProject.title : "waesy"}
+            </h3>
+            <p className="text-2xs text-muted-foreground truncate">
+              {THREAD_TYPE_LABELS[activeThread.type] || activeThread.type}
+            </p>
+          </div>
+          {activeProject && onUploadProjectFile && onDeleteProjectFile && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() =>
+                setInspectorTab((prev) => (prev === "summary" ? "knowledge" : "summary"))
+              }
+              className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+            >
+              {inspectorTab === "knowledge" ? "Resumo" : "Base e regras"}
+            </Button>
+          )}
+        </div>
+
+        {inspectorTab === "knowledge" && activeProject && onUploadProjectFile && onDeleteProjectFile ? (
+          <CopilotProjectKnowledgePanel
+            project={activeProject}
+            files={projectFiles}
+            isLoadingFiles={isLoadingProjectFiles}
+            onUploadFile={onUploadProjectFile}
+            onDeleteFile={onDeleteProjectFile}
+            onUpdateInstructions={onUpdateProjectInstructions}
+          />
+        ) : (
+          <>
+            {/* Vínculo Hierárquico (Desktop e Mobile) */}
+            {onAssignThreadHierarchy &&
+              (projects.length > 0 || folders.length > 0) &&
+              activeThread.id !== "00000000-0000-0000-0000-000000000001" &&
+              activeThread.id !== "00000000-0000-0000-0000-000000000002" && (
+                <div className="space-y-2 pb-3 border-b border-border/40">
+                  <label
+                    htmlFor={selectId}
+                    className="text-2xs font-medium text-muted-foreground block"
+                  >
+                    Projeto vinculado
+                  </label>
+                  <select
+                    id={selectId}
+                    value={activeThreadProjectId || ""}
+                    onChange={(e) => {
+                      const nextProjId = e.target.value || null;
+                      const targetProj = projects.find((p) => p.id === nextProjId);
+                      void onAssignThreadHierarchy(activeThread.id, {
+                        projectId: nextProjId,
+                        folderId:
+                          targetProj?.folder_id ??
+                          activeThread.folderId ??
+                          (activeThread.metadata?.folder_id as string | undefined) ??
+                          null,
+                      });
+                    }}
+                    className="h-11 min-h-11 w-full rounded-xl border border-border/60 bg-background px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="">Conversa avulsa</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+            {/* Alterações */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span className="flex items-center gap-2 font-medium text-foreground">
+                <FileText className="size-4 text-muted-foreground" />
+                <span>Alterações</span>
+              </span>
+              <span className="font-mono text-2xs">{artifactMessages.length}</span>
+            </div>
+
+            {/* Resultados */}
+            <div className="space-y-2 border-t border-border/40 pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground">Resultados</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    onQuickToolModeChange?.("document");
+                    if (isSheet) setShowContextPanel(false);
+                  }}
+                  className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  title="Criar um conteúdo"
+                  aria-label="Criar um conteúdo"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+
+              {artifactMessages.length > 0 ? (
+                <div className="space-y-2">
+                  {artifactMessages.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveArtifact(m.artifact!);
+                        if (isSheet) setShowContextPanel(false);
+                      }}
+                      className="w-full min-h-11 text-left px-3 py-2 rounded-xl border border-border/50 bg-background hover:bg-muted/40 transition-colors text-xs space-y-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-foreground truncate">
+                          {m.artifact!.title}
+                        </span>
+                        <span className="text-2xs text-muted-foreground font-mono shrink-0">
+                          v{m.artifact!.version}
+                        </span>
+                      </div>
+                      <span className="text-2xs text-muted-foreground block truncate">
+                        {MEMORY_VALUE_LABELS[m.artifact!.type] || m.artifact!.type}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    onQuickToolModeChange?.("website_builder");
+                    if (isSheet) setShowContextPanel(false);
+                  }}
+                  className="w-full h-11 min-h-11 px-3 justify-start rounded-xl text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Criar um conteúdo
+                </Button>
+              )}
+            </div>
+
+            {/* Fontes */}
+            <div className="space-y-2 border-t border-border/40 pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground">Fontes</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setInspectorTab("knowledge")}
+                  className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  title="Gerenciar fontes do projeto"
+                  aria-label="Gerenciar fontes"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+
+              {(() => {
+                const combinedSources: ChatSourceItem[] = [
+                  ...sources,
+                  ...projectFiles
+                    .filter((f) => !sources.some((s) => s.id === f.id))
+                    .map((f) => ({
+                      id: f.id,
+                      title: f.filename,
+                      kind: "project_file" as const,
+                      detail: f.excerpt || f.file_type,
+                      url: f.file_url || undefined,
+                    })),
+                  ...messages.flatMap((m) => m.sources || []),
+                ];
+                const unique = combinedSources.filter(
+                  (item, idx, arr) => arr.findIndex((x) => x.id === item.id) === idx,
+                );
+                const visible = showAllSources ? unique : unique.slice(0, 4);
+
+                if (unique.length === 0) {
+                  return (
+                    <p className="text-2xs text-muted-foreground">
+                      Nenhuma fonte vinculada ainda.
+                    </p>
+                  );
+                }
+
+                return (
+                  <div className="space-y-1">
+                    {visible.map((src) =>
+                      src.url ? (
+                        <a
+                          key={src.id}
+                          href={src.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="min-h-11 px-3 py-2 rounded-xl hover:bg-muted/40 flex items-center justify-between gap-2 text-xs text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <span className="truncate">{src.title}</span>
+                          <ExternalLink className="size-3.5 text-muted-foreground shrink-0" />
+                        </a>
+                      ) : (
+                        <div
+                          key={src.id}
+                          className="px-3 py-2 rounded-xl bg-background/60 border border-border/40 text-xs text-muted-foreground truncate"
+                          title={src.detail || src.title}
+                        >
+                          {src.title}
+                        </div>
+                      ),
+                    )}
+                    {unique.length > 4 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setShowAllSources((prev) => !prev)}
+                        className="w-full h-11 min-h-11 px-3 justify-start rounded-xl text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {showAllSources ? "Ver menos" : `Ver tudo (${unique.length})`}
+                      </Button>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Contexto ativo compacto */}
+            {workingEntries.length > 0 && (
+              <div className="space-y-2 border-t border-border/40 pt-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-2xs font-medium text-muted-foreground">
+                    Memória ativa
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMemorySheetOpen(true)}
+                    className="min-h-11 px-2 text-2xs font-medium text-primary hover:underline cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Gerenciar
+                  </button>
+                </div>
+                <div className="space-y-1 text-2xs">
+                  {workingEntries.slice(0, isSheet ? 6 : 4).map(([k, v]) => (
+                    <div key={k} className="flex justify-between gap-2">
+                      <span className="text-muted-foreground truncate capitalize">
+                        {formatWorkingMemoryLabel(k)}:
+                      </span>
+                      <span className="font-medium text-foreground truncate">
+                        {formatWorkingMemoryValue(v)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       className={cn(
@@ -735,121 +1221,110 @@ export function AIChatShell({
         className
       )}
     >
-      {/* ── COLUNA 1A: RAIL PRINCIPAL DE MÓDULOS (Chat, Canva, Builders, Skills, Tarefas) ── */}
-      <nav
-        aria-label="Módulos principais do Copilot"
-        className="w-16 hidden md:flex flex-col items-center py-3 px-2 gap-2 border-r border-border/40 bg-sidebar/60 shrink-0 overflow-y-auto no-scrollbar"
-      >
-        {[
-          {
-            id: "chats",
-            label: "Chats",
-            icon: MessageSquare,
-            action: () => {
-              setSidebarSection("chats");
-              setViewMode("chat");
-            },
-          },
-          {
-            id: "studio",
-            label: "Canva",
-            icon: Palette,
-            action: () => {
-              setSidebarSection("studio");
-              setViewMode("chat");
-            },
-          },
-          {
-            id: "builders",
-            label: "Builders",
-            icon: Layers,
-            action: () => {
-              setSidebarSection("builders");
-              setViewMode("chat");
-            },
-          },
-          {
-            id: "skills",
-            label: "Skills",
-            icon: Zap,
-            action: () => {
-              setSidebarSection("chats");
-              setViewMode("skills");
-            },
-          },
-          {
-            id: "tasks",
-            label: "Tarefas",
-            icon: Clock,
-            action: () => setTasksDrawerOpen(true),
-          },
-          ...(mode === "workspace"
-            ? [
-                {
-                  id: "schedule",
-                  label: "Agenda",
-                  icon: Calendar,
-                  action: () => {
-                    setSidebarSection("chats");
-                    setViewMode("schedule");
-                  },
-                },
-                {
-                  id: "connectors",
-                  label: "Apps",
-                  icon: Link2,
-                  action: () => {
-                    setSidebarSection("chats");
-                    setViewMode("connectors");
-                  },
-                },
-                {
-                  id: "analytics",
-                  label: "Métricas",
-                  icon: TrendingUp,
-                  action: () => {
-                    setSidebarSection("chats");
-                    setViewMode("analytics");
-                  },
-                },
-              ]
-            : []),
-        ].map((mod) => {
-          const Icon = mod.icon;
-          const isModuleActive =
-            (mod.id === "chats" && sidebarSection === "chats" && viewMode === "chat") ||
-            (mod.id === "studio" && sidebarSection === "studio") ||
-            (mod.id === "builders" && sidebarSection === "builders") ||
-            (mod.id === "skills" && viewMode === "skills") ||
-            (mod.id === "schedule" && viewMode === "schedule") ||
-            (mod.id === "connectors" && viewMode === "connectors") ||
-            (mod.id === "analytics" && viewMode === "analytics");
-          return (
-            <button
-              key={mod.id}
-              type="button"
-              onClick={mod.action}
-              aria-current={isModuleActive ? "page" : undefined}
-              className={cn(
-                "w-full min-h-11 py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-1 text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                isModuleActive
-                  ? "bg-background text-foreground border border-border/60 font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              )}
-              title={mod.label}
-            >
-              <Icon className="size-4 shrink-0" />
-              <span className="truncate max-w-full leading-none">{mod.label}</span>
-            </button>
-          );
-        })}
-      </nav>
+      {/* ── COLUNA 1A: RAIL PRINCIPAL DE MÓDULOS (Trilho Matte Canônico 56px — Ícones Sólidos quando Ativos + Tooltip) ── */}
+      <TooltipProvider delayDuration={120}>
+        <nav
+          aria-label="Módulos principais do Copilot"
+          className="w-14 bg-rail border-r border-sidebar-border hidden md:flex flex-col items-center justify-between py-3 px-1 shrink-0 h-full overflow-y-auto no-scrollbar select-none"
+        >
+          <div className="flex flex-col items-center gap-1 w-full">
+            <div className="h-11 flex items-center justify-center shrink-0 mb-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setShowDesktopSidebar((prev) => !prev)}
+                    aria-label={showDesktopSidebar ? "Recolher submenu" : "Expandir submenu"}
+                    className={cn(
+                      "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      showDesktopSidebar
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
+                    )}
+                  >
+                    <SidebarSimple
+                      weight={showDesktopSidebar ? "fill" : "regular"}
+                      size={20}
+                      className="size-5 shrink-0"
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  {showDesktopSidebar ? "Recolher menu" : "Expandir menu"}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
+            <div className="flex flex-col items-center gap-1 w-full">
+              {moduleNavItems.map((mod) => {
+                const Icon = mod.icon;
+                const isModuleActive = mod.isActive;
+                return (
+                  <Tooltip key={mod.id}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={mod.action}
+                        aria-label={mod.label}
+                        aria-current={isModuleActive ? "page" : undefined}
+                        className={cn(
+                          "size-11 min-w-11 min-h-11 rounded-xl relative flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          isModuleActive
+                            ? "bg-rail-active text-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
+                        )}
+                      >
+                        <StatefulNavIcon
+                          icon={Icon}
+                          active={isModuleActive}
+                          size={20}
+                          className="size-5 shrink-0"
+                        />
+                        <span className="sr-only">{mod.label}</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>
+                      {mod.label}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </div>
+
+          {mode === "workspace" && (
+            <div className="w-full pt-2 border-t border-sidebar-border flex flex-col items-center gap-1 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <a
+                    href={mobileFallbackHref || "/workspace"}
+                    aria-label="Voltar ao Workspace"
+                    className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <StatefulNavIcon icon={Home} active={false} size={20} className="size-5 shrink-0" />
+                    <span className="sr-only">Voltar ao Workspace</span>
+                  </a>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  Voltar ao Workspace
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
+        </nav>
+      </TooltipProvider>
 
       {/* ── COLUNA 1B: SIDEBAR CONTEXTUAL (Pastas/Chats, Estúdio Canva ou Builders) ── */}
       <aside
         className={cn(
           "w-full sm:w-72 md:w-72 border-r border-border/40 bg-sidebar/40 flex-col shrink-0 transition-colors",
-          showMobileChat ? "hidden md:flex" : "flex"
+          showMobileChat
+            ? showDesktopSidebar
+              ? "hidden md:flex"
+              : "hidden"
+            : showDesktopSidebar
+              ? "flex"
+              : "flex md:hidden"
         )}
       >
         {/* Cabeçalho Nativo Mobile */}
@@ -862,33 +1337,25 @@ export function AIChatShell({
           />
         </div>
 
-        {/* Barra de Módulos no Mobile (< 768px) */}
+        {/* Barra de Módulos no Mobile (< 768px) — paridade total com o trilho desktop */}
         <div className="flex md:hidden items-center gap-1 overflow-x-auto waesy-tab-strip px-3 py-2 border-b border-border/40 bg-sidebar/50 shrink-0">
-          {[
-            { id: "chats", label: "Chats", icon: MessageSquare, onPress: () => { setSidebarSection("chats"); setViewMode("chat"); } },
-            { id: "studio", label: "Canva Studio", icon: Palette, onPress: () => { setSidebarSection("studio"); setViewMode("chat"); } },
-            { id: "builders", label: "Builders", icon: Layers, onPress: () => { setSidebarSection("builders"); setViewMode("chat"); } },
-            { id: "skills", label: "Skills", icon: Zap, onPress: () => setViewMode("skills") },
-          ].map((tab) => {
+          {moduleNavItems.map((tab) => {
             const TabIcon = tab.icon;
-            const active =
-              (tab.id === "chats" && sidebarSection === "chats" && viewMode === "chat") ||
-              (tab.id === "studio" && sidebarSection === "studio") ||
-              (tab.id === "builders" && sidebarSection === "builders") ||
-              (tab.id === "skills" && viewMode === "skills");
+            const active = tab.isActive;
             return (
               <button
                 key={tab.id}
                 type="button"
-                onClick={tab.onPress}
+                onClick={tab.action}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "h-11 min-h-11 px-3 rounded-xl text-xs font-medium flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   active
-                    ? "bg-background text-foreground border border-border/60 font-semibold"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    ? "bg-rail-active text-foreground font-semibold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
                 )}
               >
-                <TabIcon className="size-3.5 shrink-0" />
+                <StatefulNavIcon icon={TabIcon} active={active} size={16} className="size-4 shrink-0" />
                 <span>{tab.label}</span>
               </button>
             );
@@ -1048,12 +1515,12 @@ export function AIChatShell({
             </div>
           )}
 
-          {/* Filtros discretos */}
-          <div className="flex items-center flex-wrap gap-1 pt-1">
+          {/* Filtros discretos em faixa horizontal rolável (zero quebra irregular em 2 linhas) */}
+          <div className="waesy-tab-strip items-center gap-1 pt-1 min-w-0 max-w-full">
             {[
               { id: "all", label: "Todas" },
               { id: "direct", label: "Chats" },
-              ...(mode === "workspace" ? [{ id: "projects", label: "Projetos" }] : []),
+              ...((canManagePowerModules || projects.length > 0) ? [{ id: "projects", label: "Projetos" }] : []),
               { id: "archived", label: "Arquivo" },
             ].map((tab) => (
               <Button
@@ -1062,7 +1529,7 @@ export function AIChatShell({
                 variant="ghost"
                 onClick={() => setFilterTab(tab.id as any)}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-xl text-xs font-medium whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "h-11 min-h-11 px-3 rounded-xl text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   filterTab === tab.id
                     ? "bg-muted text-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
@@ -1123,6 +1590,7 @@ export function AIChatShell({
                     }}
                     onTogglePin={onTogglePinThread}
                     onToggleArchive={onToggleArchiveThread}
+                    onStartMove={onAssignThreadHierarchy ? () => openMoveThreadModal(thread) : undefined}
                     onDelete={onDeleteThread}
                   />
                 ))}
@@ -1165,55 +1633,257 @@ export function AIChatShell({
                       >
                         Todas
                       </Button>
-                      {folders.map((folder) => (
-                        <Button
-                          key={folder.id}
-                          type="button"
-                          variant="ghost"
-                          onClick={() => {
-                            const nextFolder = activeFolderFilter === folder.id ? null : folder.id;
-                            handleFolderSelect(nextFolder);
-                            handleProjectSelect(null);
-                          }}
-                          className={cn(
-                            "h-11 min-h-11 px-3 rounded-xl text-xs whitespace-nowrap gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            activeFolderFilter === folder.id
-                              ? "bg-muted text-foreground font-medium"
-                              : "text-muted-foreground hover:text-foreground",
-                          )}
-                        >
-                          <Folder className="size-3.5" />
-                          <span>{folder.name}</span>
-                        </Button>
-                      ))}
+                      {folders.map((folder) =>
+                        renamingFolderId === folder.id ? (
+                          <form
+                            key={folder.id}
+                            onSubmit={async (e) => {
+                              e.preventDefault();
+                              const clean = folderRenameDraft.trim();
+                              if (onRenameFolder && clean.length >= 2) {
+                                await onRenameFolder(folder.id, clean);
+                              }
+                              setRenamingFolderId(null);
+                            }}
+                            className="flex items-center gap-1"
+                          >
+                            <Input
+                              value={folderRenameDraft}
+                              onChange={(e) => setFolderRenameDraft(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Escape") setRenamingFolderId(null);
+                              }}
+                              className="h-11 min-h-11 w-32 text-xs rounded-xl bg-background"
+                              autoFocus
+                            />
+                            <Button
+                              type="submit"
+                              variant="secondary"
+                              size="icon"
+                              className="size-11 min-h-11 min-w-11 rounded-xl shrink-0"
+                              aria-label="Salvar nome da pasta"
+                            >
+                              <Check className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setRenamingFolderId(null)}
+                              className="size-11 min-h-11 min-w-11 rounded-xl shrink-0"
+                              aria-label="Cancelar edição da pasta"
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          </form>
+                        ) : (
+                          <div
+                            key={folder.id}
+                            className={cn(
+                              "inline-flex items-center rounded-xl transition-colors",
+                              activeFolderFilter === folder.id
+                                ? "bg-muted text-foreground font-medium"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                            )}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextFolder = activeFolderFilter === folder.id ? null : folder.id;
+                                handleFolderSelect(nextFolder);
+                                handleProjectSelect(null);
+                              }}
+                              className="h-11 min-h-11 pl-3 pr-2 flex items-center gap-2 text-xs whitespace-nowrap cursor-pointer rounded-l-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <Folder className="size-3.5 shrink-0" />
+                              <span>{folder.name}</span>
+                            </button>
+                            {(onCreateThread || onCreateProject || onRenameFolder || onDeleteFolder) && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-11 min-h-11 min-w-11 rounded-r-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    aria-label={`Opções da pasta ${folder.name}`}
+                                  >
+                                    <MoreHorizontal className="size-3.5" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                                  {onCreateThread && (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setViewMode("chat");
+                                        handleFolderSelect(folder.id);
+                                        handleProjectSelect(null);
+                                        onCreateThread("ai_assistant", `Chat · ${folder.name}`, {
+                                          folderId: folder.id,
+                                          projectId: null,
+                                        });
+                                        setShowMobileChat(true);
+                                      }}
+                                      className="min-h-11 gap-2 cursor-pointer"
+                                    >
+                                      <SquarePen className="size-4 text-muted-foreground" />
+                                      <span>Novo chat na pasta</span>
+                                    </DropdownMenuItem>
+                                  )}
+                                  {onCreateProject && (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        handleFolderSelect(folder.id);
+                                        setCreationMode("project");
+                                        setCreationDraft("");
+                                      }}
+                                      className="min-h-11 gap-2 cursor-pointer"
+                                    >
+                                      <FolderPlus className="size-4 text-muted-foreground" />
+                                      <span>Novo projeto na pasta</span>
+                                    </DropdownMenuItem>
+                                  )}
+                                  {onRenameFolder && (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setRenamingFolderId(folder.id);
+                                        setFolderRenameDraft(folder.name);
+                                      }}
+                                      className="min-h-11 gap-2 cursor-pointer"
+                                    >
+                                      <Pencil className="size-4 text-muted-foreground" />
+                                      <span>Renomear pasta</span>
+                                    </DropdownMenuItem>
+                                  )}
+                                  {onDeleteFolder && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        onClick={() => void onDeleteFolder(folder.id)}
+                                        className="min-h-11 gap-2 cursor-pointer text-destructive focus:text-destructive"
+                                      >
+                                        <Trash2 className="size-4" />
+                                        <span>Excluir pasta</span>
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                        ),
+                      )}
                     </div>
                   )}
 
                   {(showAllProjects ? visibleProjects : visibleProjects.slice(0, 5)).map((proj) => (
-                    <Button
+                    <div
                       key={proj.id}
-                      type="button"
-                      variant="ghost"
-                      onClick={() =>
-                        handleProjectSelect(activeProjectFilter === proj.id ? null : proj.id)
-                      }
                       className={cn(
-                        "w-full h-11 min-h-11 px-3 rounded-xl text-xs font-medium justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "flex items-center rounded-xl transition-colors group",
                         activeProjectFilter === proj.id
                           ? "bg-muted text-foreground"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
                       )}
                     >
-                      <span className="flex items-center gap-2 min-w-0">
-                        <FolderKanban className="size-3.5 shrink-0" />
-                        <span className="truncate">{proj.title}</span>
-                      </span>
-                      {typeof proj.file_count === "number" && proj.file_count > 0 && (
-                        <span className="text-2xs opacity-75 font-mono shrink-0">
-                          {proj.file_count}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleProjectSelect(activeProjectFilter === proj.id ? null : proj.id)
+                        }
+                        className="flex-1 min-w-0 h-11 min-h-11 px-3 rounded-xl text-xs font-medium flex items-center justify-between gap-2 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <span className="flex items-center gap-2 min-w-0">
+                          <FolderKanban className="size-3.5 shrink-0" />
+                          <span className="truncate">{proj.title}</span>
                         </span>
+                        {typeof proj.file_count === "number" && proj.file_count > 0 && (
+                          <span className="text-2xs opacity-75 font-mono shrink-0">
+                            {proj.file_count}
+                          </span>
+                        )}
+                      </button>
+
+                      {(onCreateThread || onUpdateProject || onDeleteProject) && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className={cn(
+                                "size-11 min-h-11 min-w-11 shrink-0 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                activeProjectFilter === proj.id && "md:opacity-100",
+                              )}
+                              aria-label={`Opções do projeto ${proj.title}`}
+                            >
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52 bg-card border-border">
+                            {onCreateThread && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setViewMode("chat");
+                                  handleProjectSelect(proj.id);
+                                  onCreateThread("project", `Chat · ${proj.title}`, {
+                                    folderId: proj.folder_id ?? null,
+                                    projectId: proj.id,
+                                  });
+                                  setShowMobileChat(true);
+                                }}
+                                className="min-h-11 gap-2 cursor-pointer"
+                              >
+                                <SquarePen className="size-4 text-muted-foreground" />
+                                <span>Novo chat no projeto</span>
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => {
+                                handleProjectSelect(proj.id);
+                                setInspectorTab("knowledge");
+                                if (isCompact) {
+                                  setShowContextPanel(true);
+                                  setShowMobileChat(true);
+                                } else {
+                                  setShowDesktopContextPanel(true);
+                                }
+                              }}
+                              className="min-h-11 gap-2 cursor-pointer"
+                            >
+                              <Brain className="size-4 text-muted-foreground" />
+                              <span>Base e instruções</span>
+                            </DropdownMenuItem>
+                            {onUpdateProject && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setEditingProject(proj);
+                                  setProjectTitleDraft(proj.title);
+                                  setProjectDescDraft(proj.description || "");
+                                  setProjectFolderDraft(proj.folder_id || "");
+                                }}
+                                className="min-h-11 gap-2 cursor-pointer"
+                              >
+                                <Pencil className="size-4 text-muted-foreground" />
+                                <span>Editar projeto</span>
+                              </DropdownMenuItem>
+                            )}
+                            {onDeleteProject && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => void onDeleteProject(proj.id)}
+                                  className="min-h-11 gap-2 cursor-pointer text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="size-4" />
+                                  <span>Excluir projeto</span>
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
-                    </Button>
+                    </div>
                   ))}
 
                   {visibleProjects.length > 5 && (
@@ -1271,6 +1941,7 @@ export function AIChatShell({
                   }}
                   onTogglePin={onTogglePinThread}
                   onToggleArchive={onToggleArchiveThread}
+                  onStartMove={onAssignThreadHierarchy ? () => openMoveThreadModal(thread) : undefined}
                   onDelete={onDeleteThread}
                 />
               ))
@@ -1300,6 +1971,21 @@ export function AIChatShell({
               aria-label="Voltar para a lista de conversas"
             >
               <ChevronLeft className="size-5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowDesktopSidebar((prev) => !prev)}
+              className="hidden md:inline-flex size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              title={showDesktopSidebar ? "Recolher barra lateral" : "Expandir barra lateral"}
+              aria-label={showDesktopSidebar ? "Recolher barra lateral" : "Expandir barra lateral"}
+            >
+              {showDesktopSidebar ? (
+                <PanelLeftClose className="size-4" />
+              ) : (
+                <PanelLeftOpen className="size-4" />
+              )}
             </Button>
 
             {viewMode !== "chat" ? (
@@ -1375,7 +2061,7 @@ export function AIChatShell({
                   <Clock className="size-4 text-muted-foreground" />
                   <span>Tarefas em segundo plano</span>
                 </DropdownMenuItem>
-                {mode === "workspace" && (
+                {canManagePowerModules && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setViewMode("schedule")} className="min-h-11 gap-2 cursor-pointer">
@@ -1431,6 +2117,18 @@ export function AIChatShell({
               type="button"
               variant="ghost"
               size="icon"
+              onClick={() => setMemorySheetOpen(true)}
+              className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              title="Memória e Voz da Marca"
+              aria-label="Configurar memória e voz da marca"
+            >
+              <Brain className="size-4" />
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 if (isCompact) {
                   setShowContextPanel((prev) => !prev);
@@ -1456,9 +2154,13 @@ export function AIChatShell({
         {viewMode === "skills" ? (
           <div className="flex-1 overflow-y-auto no-scrollbar">
             <CopilotSkillsCenter
+              onTestSkillInChat={(promptText) => {
+                setViewMode("chat");
+                setComposerPrefill(promptText);
+              }}
               onSelectSkill={(skill) => {
                 setViewMode("chat");
-                void onSendMessage(`Executar habilidade ${skill.name}: ${skill.description}`);
+                setComposerPrefill(`Executar habilidade ${skill.name}: ${skill.description}`);
               }}
             />
           </div>
@@ -1476,24 +2178,71 @@ export function AIChatShell({
           </div>
         ) : activeThread ? (
           <>
-            {/* Linha do Tempo Editorial + Minimapa Discreto */}
-            <div className="relative flex-1 min-h-0 flex">
-              {messages.length > 1 && (
-                <div
-                  aria-hidden="true"
-                  className="hidden xl:flex flex-col justify-center gap-2 pl-3 pr-1 select-none shrink-0"
-                >
-                  {messages.slice(-16).map((m) => (
-                    <span
-                      key={`tick-${m.id}`}
-                      className={cn(
-                        "h-0.5 rounded-full transition-colors",
-                        m.isStaffOrAI ? "w-2 bg-muted-foreground/30" : "w-3 bg-primary/50"
-                      )}
-                    />
-                  ))}
+            {activeProject && (
+              <div className="px-3 sm:px-6 py-2 border-b border-border/40 bg-muted/20 flex items-center justify-between gap-2 shrink-0">
+                <div className="flex items-center gap-2 min-w-0 text-xs">
+                  <FolderKanban className="size-3.5 text-muted-foreground shrink-0" />
+                  <span className="font-medium text-foreground truncate">{activeProject.title}</span>
+                  {activeProject.system_instructions && (
+                    <span className="hidden sm:inline text-2xs text-muted-foreground truncate">
+                      · Com instruções ativas
+                    </span>
+                  )}
                 </div>
-              )}
+                <div className="flex items-center gap-1 shrink-0">
+                  {onUploadProjectFile && onDeleteProjectFile && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setInspectorTab("knowledge");
+                        if (isCompact) {
+                          setShowContextPanel(true);
+                        } else {
+                          setShowDesktopContextPanel(true);
+                        }
+                      }}
+                      className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Base e regras
+                    </Button>
+                  )}
+                  {onUpdateProject && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setEditingProject(activeProject);
+                        setProjectTitleDraft(activeProject.title);
+                        setProjectDescDraft(activeProject.description || "");
+                        setProjectFolderDraft(activeProject.folder_id || "");
+                      }}
+                      className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      title="Editar projeto"
+                      aria-label={`Editar projeto ${activeProject.title}`}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                  )}
+                  {activeProjectFilter === activeProject.id && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleProjectSelect(null)}
+                      className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      title="Remover filtro de projeto"
+                      aria-label="Remover filtro de projeto"
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* Linha do Tempo Editorial */}
+            <div className="relative flex-1 min-h-0 flex">
 
               <div
                 role="log"
@@ -1688,6 +2437,20 @@ export function AIChatShell({
               </div>
             </div>
 
+            {Array.isArray(executionPlan) && executionPlan.length > 0 && (
+              <div className="px-3 sm:px-6 pb-2 shrink-0">
+                <div className="max-w-3xl mx-auto">
+                  <ManusExecutionPlanBar
+                    plan={executionPlan}
+                    isRunning={isSending}
+                    isPaused={isExecutionPaused}
+                    onPause={onPauseExecution}
+                    onResume={onResumeExecution}
+                  />
+                </div>
+              </div>
+            )}
+
             <ChatComposer
               onSendMessage={onSendMessage}
               onUploadFile={onUploadAttachment}
@@ -1695,6 +2458,8 @@ export function AIChatShell({
               onCancelRun={onCancelActiveRun}
               quickToolMode={quickToolMode}
               onQuickToolModeChange={onQuickToolModeChange}
+              prefillPrompt={composerPrefill}
+              onPrefillConsumed={() => setComposerPrefill(null)}
               contextSummary={contextAccessLabel}
               replyTo={replyTo}
               onCancelReply={() => setReplyTo(null)}
@@ -1707,303 +2472,77 @@ export function AIChatShell({
               <Bot className="size-6" />
             </div>
             <h2 className="text-base font-semibold text-foreground">
-              Nenhuma conversa selecionada
+              {activeProject ? activeProject.title : "Nenhuma conversa selecionada"}
             </h2>
             <p className="text-xs max-w-sm">
-              Escolha uma conversa na barra lateral ou inicie um novo chat com o Copilot.
+              {activeProject
+                ? "Inicie uma conversa neste projeto ou gerencie a base de conhecimento e instruções."
+                : "Escolha uma conversa na barra lateral ou inicie um novo chat com o Copilot."}
             </p>
-            {onCreateThread && (
-              <Button
-                type="button"
-                onClick={() => onCreateThread(mode === "workspace" ? "project" : "ai_assistant", "Novo chat")}
-                className="h-11 min-h-11 px-4 rounded-xl text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Iniciar novo chat
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {onCreateThread && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setViewMode("chat");
+                    onCreateThread(
+                      activeProjectFilter ? "project" : mode === "workspace" ? "project" : "ai_assistant",
+                      activeProject ? `Chat · ${activeProject.title}` : "Novo chat",
+                      {
+                        folderId: activeFolderFilter,
+                        projectId: activeProjectFilter,
+                      },
+                    );
+                    setShowMobileChat(true);
+                  }}
+                  className="h-11 min-h-11 px-4 rounded-xl text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Iniciar novo chat
+                </Button>
+              )}
+              {activeProject && onUploadProjectFile && onDeleteProjectFile && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setInspectorTab("knowledge");
+                    if (isCompact) {
+                      setShowContextPanel(true);
+                    } else {
+                      setShowDesktopContextPanel(true);
+                    }
+                  }}
+                  className="h-11 min-h-11 px-4 rounded-xl text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Base e regras
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </main>
 
       {/* ── COLUNA 3: PAINEL DIREITO SQUIRCLE (Alterações / Resultados / Fontes + Artefato Split-Screen) ── */}
       {(showDesktopContextPanel || Boolean(activeArtifact)) && (
-      <aside className="w-80 xl:w-88 border-l border-border/40 bg-background p-3 space-y-3 overflow-y-auto hidden md:flex flex-col shrink-0 no-scrollbar">
-        {activeArtifact ? (
-          <ArtifactViewerContent
-            artifact={activeArtifact}
-            onClose={() => setActiveArtifact(null)}
-            onSave={(updated) => setActiveArtifact(updated)}
-          />
-        ) : activeThread ? (
-          <div className="rounded-2xl bg-card border border-border/60 p-4 space-y-4">
-            {/* Cabeçalho do Cartão */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="text-xs font-semibold text-foreground truncate">
-                  {activeProject ? activeProject.title : "waesy"}
-                </h3>
-                <p className="text-2xs text-muted-foreground truncate">
-                  {THREAD_TYPE_LABELS[activeThread.type] || activeThread.type}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() =>
-                  setInspectorTab((prev) => (prev === "summary" ? "knowledge" : "summary"))
-                }
-                className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
-                title="Alternar resumo e base do projeto"
-                aria-label="Alternar resumo e base do projeto"
-              >
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </div>
-
-            {inspectorTab === "knowledge" && activeProject && onUploadProjectFile && onDeleteProjectFile ? (
-              <CopilotProjectKnowledgePanel
-                project={activeProject}
-                files={projectFiles}
-                isLoadingFiles={isLoadingProjectFiles}
-                onUploadFile={onUploadProjectFile}
-                onDeleteFile={onDeleteProjectFile}
-                onUpdateInstructions={onUpdateProjectInstructions}
-              />
-            ) : (
-              <>
-                {/* Vínculo Hierárquico */}
-                {onAssignThreadHierarchy && (projects.length > 0 || folders.length > 0) && activeThread.id !== "00000000-0000-0000-0000-000000000001" && (
-                  <div className="space-y-2 pb-2 border-b border-border/40">
-                    <label
-                      htmlFor="copilot-thread-project-select"
-                      className="text-2xs font-medium text-muted-foreground block"
-                    >
-                      Projeto
-                    </label>
-                    <select
-                      id="copilot-thread-project-select"
-                      value={activeThreadProjectId || ""}
-                      onChange={(e) => {
-                        const nextProjId = e.target.value || null;
-                        const targetProj = projects.find((p) => p.id === nextProjId);
-                        onAssignThreadHierarchy(activeThread.id, {
-                          projectId: nextProjId,
-                          folderId:
-                            targetProj?.folder_id ??
-                            activeThread.folderId ??
-                            (activeThread.metadata?.folder_id as string | undefined) ??
-                            null,
-                        });
-                      }}
-                      className="h-11 min-h-11 w-full rounded-xl border border-border/60 bg-background px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <option value="">Conversa avulsa</option>
-                      {projects.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* Alterações */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-2 font-medium text-foreground">
-                    <FileText className="size-4 text-muted-foreground" />
-                    <span>Alterações</span>
-                  </span>
-                  <span className="font-mono text-2xs">
-                    {messages.filter((m) => Boolean(m.artifact)).length}
-                  </span>
-                </div>
-
-                {/* Resultados */}
-                <div className="space-y-2 border-t border-border/40 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">Resultados</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        onQuickToolModeChange?.("document");
-                      }}
-                      className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Criar um conteúdo"
-                      aria-label="Criar um conteúdo"
-                    >
-                      <Plus className="size-4" />
-                    </Button>
-                  </div>
-
-                  {messages.some((m) => Boolean(m.artifact)) ? (
-                    <div className="space-y-2">
-                      {messages
-                        .filter((m) => Boolean(m.artifact))
-                        .map((m) => (
-                          <button
-                            key={m.id}
-                            type="button"
-                            onClick={() => setActiveArtifact(m.artifact!)}
-                            className="w-full min-h-11 text-left px-3 py-2 rounded-xl border border-border/50 bg-background hover:bg-muted/40 transition-colors text-xs space-y-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-medium text-foreground truncate">
-                                {m.artifact!.title}
-                              </span>
-                              <span className="text-2xs text-muted-foreground font-mono shrink-0">
-                                v{m.artifact!.version}
-                              </span>
-                            </div>
-                            <span className="text-2xs text-muted-foreground block truncate">
-                              {MEMORY_VALUE_LABELS[m.artifact!.type] || m.artifact!.type}
-                            </span>
-                          </button>
-                        ))}
-                    </div>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => onQuickToolModeChange?.("website_builder")}
-                      className="w-full h-11 min-h-11 px-3 justify-start rounded-xl text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      Criar um conteúdo
-                    </Button>
-                  )}
-                </div>
-
-                {/* Fontes */}
-                <div className="space-y-2 border-t border-border/40 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">Fontes</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setInspectorTab("knowledge")}
-                      className="size-11 min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      title="Gerenciar fontes do projeto"
-                      aria-label="Gerenciar fontes"
-                    >
-                      <Plus className="size-4" />
-                    </Button>
-                  </div>
-
-                  {(() => {
-                    const combinedSources: ChatSourceItem[] = [
-                      ...sources,
-                      ...projectFiles
-                        .filter((f) => !sources.some((s) => s.id === f.id))
-                        .map((f) => ({
-                          id: f.id,
-                          title: f.filename,
-                          kind: "project_file" as const,
-                          detail: f.excerpt || f.file_type,
-                          url: f.file_url || undefined,
-                        })),
-                      ...messages.flatMap((m) => m.sources || []),
-                    ];
-                    const unique = combinedSources.filter(
-                      (item, idx, arr) => arr.findIndex((x) => x.id === item.id) === idx,
-                    );
-                    const visible = showAllSources ? unique : unique.slice(0, 4);
-
-                    if (unique.length === 0) {
-                      return (
-                        <p className="text-2xs text-muted-foreground">
-                          Nenhuma fonte vinculada ainda.
-                        </p>
-                      );
-                    }
-
-                    return (
-                      <div className="space-y-1">
-                        {visible.map((src) =>
-                          src.url ? (
-                            <a
-                              key={src.id}
-                              href={src.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="min-h-11 px-3 py-2 rounded-xl hover:bg-muted/40 flex items-center justify-between gap-2 text-xs text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            >
-                              <span className="truncate">{src.title}</span>
-                              <ExternalLink className="size-3.5 text-muted-foreground shrink-0" />
-                            </a>
-                          ) : (
-                            <div
-                              key={src.id}
-                              className="px-3 py-2 rounded-xl bg-background/60 border border-border/40 text-xs text-muted-foreground truncate"
-                              title={src.detail || src.title}
-                            >
-                              {src.title}
-                            </div>
-                          ),
-                        )}
-                        {unique.length > 4 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => setShowAllSources((prev) => !prev)}
-                            className="w-full h-11 min-h-11 px-3 justify-start rounded-xl text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            {showAllSources ? "Ver menos" : `Ver tudo (${unique.length})`}
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Contexto ativo compacto */}
-                {activeThread.workingMemory &&
-                  Object.entries(activeThread.workingMemory).filter(
-                    ([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"),
-                  ).length > 0 && (
-                    <div className="space-y-2 border-t border-border/40 pt-3">
-                      <span className="text-2xs font-medium text-muted-foreground">
-                        Memória ativa
-                      </span>
-                      <div className="space-y-1 text-2xs">
-                        {Object.entries(activeThread.workingMemory)
-                          .filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"))
-                          .slice(0, 4)
-                          .map(([k, v]) => (
-                            <div key={k} className="flex justify-between gap-2">
-                              <span className="text-muted-foreground truncate capitalize">
-                                {formatWorkingMemoryLabel(k)}:
-                              </span>
-                              <span className="font-medium text-foreground truncate">
-                                {formatWorkingMemoryValue(v)}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-              </>
-            )}
-          </div>
-        ) : activeProject && onUploadProjectFile && onDeleteProjectFile ? (
-          <CopilotProjectKnowledgePanel
-            project={activeProject}
-            files={projectFiles}
-            isLoadingFiles={isLoadingProjectFiles}
-            onUploadFile={onUploadProjectFile}
-            onDeleteFile={onDeleteProjectFile}
-            onUpdateInstructions={onUpdateProjectInstructions}
-          />
-        ) : (
-          <div className="rounded-2xl bg-card border border-border/60 p-6 text-center text-muted-foreground space-y-2">
-            <Brain className="size-7 text-muted-foreground/40 mx-auto" />
-            <p className="text-xs font-medium text-foreground">Fontes & Resultados</p>
-            <p className="text-2xs">Selecione uma conversa para visualizar fontes e entregas.</p>
-          </div>
-        )}
-      </aside>
+        <aside
+          className={cn(
+            "border-l border-border/40 bg-background p-3 space-y-3 overflow-y-auto hidden md:flex flex-col shrink-0 no-scrollbar transition-colors",
+            activeArtifact ? "w-96 md:w-1/2 xl:w-1/2 max-w-3xl" : "w-80 xl:w-88",
+          )}
+        >
+          {activeArtifact ? (
+            <ArtifactViewerContent
+              artifact={activeArtifact}
+              onClose={() => setActiveArtifact(null)}
+              onSave={(updated) => setActiveArtifact(updated)}
+              onRequestFix={(promptText) => {
+                void onSendMessage(promptText);
+              }}
+            />
+          ) : (
+            renderThreadInspector(false)
+          )}
+        </aside>
       )}
 
       {/* ── PAINEL / SHEET DE ARTEFATO RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
@@ -2019,6 +2558,10 @@ export function AIChatShell({
               artifact={activeArtifact}
               onClose={() => setActiveArtifact(null)}
               onSave={(updated) => setActiveArtifact(updated)}
+              onRequestFix={(promptText) => {
+                setActiveArtifact(null);
+                void onSendMessage(promptText);
+              }}
             />
           )}
         </SheetContent>
@@ -2026,119 +2569,16 @@ export function AIChatShell({
 
       {/* ── PAINEL / SHEET DE CONTEXTO E MEMÓRIA RESPONSIVO EM DISPOSITIVOS MÓVEIS (< 840px / isCompact) ── */}
       <Sheet
-        open={Boolean(showContextPanel && isCompact && activeThread && !activeArtifact)}
+        open={Boolean(showContextPanel && isCompact && (activeThread || activeProject) && !activeArtifact)}
         onOpenChange={(open) => {
           setShowContextPanel(open);
         }}
       >
         <SheetContent side="bottom" className="h-5/6 p-4 pt-safe-modal pb-safe overflow-y-auto bg-card border-border rounded-t-xl no-scrollbar">
-          {activeThread && (
-            <div className="space-y-4 pb-safe pb-4">
-              <div className="flex items-center justify-between border-b border-border/40 pb-2">
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                  <Brain className="size-4 text-primary" />
-                  <span>Contexto & Conhecimento</span>
-                </h3>
-              </div>
-
-              {activeProject && onUploadProjectFile && onDeleteProjectFile && (
-                <CopilotProjectKnowledgePanel
-                  project={activeProject}
-                  files={projectFiles}
-                  isLoadingFiles={isLoadingProjectFiles}
-                  onUploadFile={onUploadProjectFile}
-                  onDeleteFile={onDeleteProjectFile}
-                  onUpdateInstructions={onUpdateProjectInstructions}
-                />
-              )}
-
-              {/* Dados do Projeto ou Thread */}
-              <div className="space-y-2">
-                <span className="text-2xs font-semibold text-muted-foreground uppercase">
-                  Tipo de Conversa
-                </span>
-                <Badge variant="outline" className="text-xs font-medium border-border/60">
-                  {THREAD_TYPE_LABELS[activeThread.type] || activeThread.type}
-                </Badge>
-              </div>
-
-              {/* Contexto e Preferências da Conversa */}
-              <div className="space-y-2">
-                <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
-                  <Brain className="size-3 text-primary" />
-                  <span>Contexto da Conversa</span>
-                </span>
-                {activeThread.workingMemory &&
-                Object.entries(activeThread.workingMemory).filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp")).length > 0 ? (
-                  <div className="rounded-lg border border-border/40 bg-muted/20 p-2 space-y-2 text-xs">
-                    {Object.entries(activeThread.workingMemory)
-                      .filter(([k]) => !k.startsWith("last_tokens") && !k.startsWith("last_mcp"))
-                      .map(([k, v]) => {
-                        const _legacyLabel =
-                          k === "last_places_query" ? "Última busca" :
-                          k === "last_travel_destination" ? "Destino" :
-                          k === "last_creative_topic" ? "Tema criativo" :
-                          k === "last_creative_topic" ? "Tema criativo" : k;
-                      const friendlyLabel = formatWorkingMemoryLabel(k);
-                        return (
-                          <div key={k} className="flex justify-between gap-2">
-                            <span className="text-muted-foreground truncate capitalize">{friendlyLabel}:</span>
-                            <span className="font-medium text-foreground truncate">
-                              {formatWorkingMemoryValue(v)}
-                            </span>
-                          </div>
-                        );
-                      })}
-                  </div>
-                ) : (
-                  <p className="text-2xs text-muted-foreground">
-                    Nenhum contexto adicional registrado.
-                  </p>
-                )}
-              </div>
-
-              {/* Artefatos Gerados nesta Conversa */}
-              <div className="space-y-2">
-                <span className="text-2xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
-                  <FileText className="size-3 text-primary" />
-                  <span>Artefatos Produzidos</span>
-                </span>
-                <div className="space-y-2">
-                  {messages
-                    .filter((m) => Boolean(m.artifact))
-                    .map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => {
-                          setActiveArtifact(m.artifact!);
-                        }}
-                        className="w-full text-left p-3 rounded-lg border border-border/40 bg-card hover:border-border transition-colors text-xs space-y-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-foreground truncate">
-                            {m.artifact!.title}
-                          </span>
-                          <Badge variant="outline" className="text-2xs font-mono h-4">
-                            v{m.artifact!.version}
-                          </Badge>
-                        </div>
-                        <span className="text-2xs text-muted-foreground block">
-                          {MEMORY_VALUE_LABELS[m.artifact!.type] || m.artifact!.type}
-                        </span>
-                      </button>
-                    ))}
-                  {messages.filter((m) => Boolean(m.artifact)).length === 0 && (
-                    <p className="text-2xs text-muted-foreground">
-                      Nenhum documento ou planilha gerada ainda.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {renderThreadInspector(true)}
         </SheetContent>
       </Sheet>
+
       {/* ── GAVETA DE TAREFAS EM SEGUNDO PLANO E LIVE SANDBOX ── */}
       <CopilotBackgroundTasksDrawer
         open={tasksDrawerOpen}
@@ -2146,7 +2586,227 @@ export function AIChatShell({
         tasks={backgroundTasks}
         onCancelTask={onCancelBackgroundTask}
         onRefresh={onRefreshBackgroundTasks}
+        onOpenComputer={onOpenComputer}
       />
+
+      {/* ── CONFIGURAÇÕES DE MEMÓRIA HIERÁRQUICA & VOZ DA MARCA ── */}
+      <CopilotMemorySettingsSheet
+        open={memorySheetOpen}
+        onOpenChange={setMemorySheetOpen}
+        storeId={storeId || undefined}
+      />
+
+      {/* ── DIALOG DE EDIÇÃO DE PROJETO (NOME, PASTA, DESCRIÇÃO) ── */}
+      <Dialog
+        open={Boolean(editingProject)}
+        onOpenChange={(open) => {
+          if (!open) setEditingProject(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md pt-safe-modal bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Editar projeto</DialogTitle>
+            <DialogDescription>
+              Atualize nome, pasta e descrição deste projeto.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!editingProject || !onUpdateProject) return;
+              const cleanTitle = projectTitleDraft.trim();
+              if (cleanTitle.length < 2) return;
+              await onUpdateProject(editingProject.id, {
+                title: cleanTitle,
+                description: projectDescDraft.trim() || null,
+                folderId: projectFolderDraft || null,
+              });
+              setEditingProject(null);
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <label
+                htmlFor="copilot-edit-project-title"
+                className="text-xs font-medium text-foreground block"
+              >
+                Nome do projeto
+              </label>
+              <Input
+                id="copilot-edit-project-title"
+                value={projectTitleDraft}
+                onChange={(e) => setProjectTitleDraft(e.target.value)}
+                className="h-11 min-h-11 rounded-xl bg-background text-sm"
+                required
+                minLength={2}
+                maxLength={120}
+              />
+            </div>
+
+            {folders.length > 0 && (
+              <div className="space-y-2">
+                <label
+                  htmlFor="copilot-edit-project-folder"
+                  className="text-xs font-medium text-foreground block"
+                >
+                  Pasta
+                </label>
+                <select
+                  id="copilot-edit-project-folder"
+                  value={projectFolderDraft}
+                  onChange={(e) => setProjectFolderDraft(e.target.value)}
+                  className="h-11 min-h-11 w-full rounded-xl border border-border/60 bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Sem pasta</option>
+                  {folders.map((folder) => (
+                    <option key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label
+                htmlFor="copilot-edit-project-desc"
+                className="text-xs font-medium text-foreground block"
+              >
+                Descrição
+              </label>
+              <textarea
+                id="copilot-edit-project-desc"
+                value={projectDescDraft}
+                onChange={(e) => setProjectDescDraft(e.target.value)}
+                rows={3}
+                className="w-full min-h-24 rounded-xl border border-border/60 bg-background p-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="Contexto resumido ou objetivo do projeto..."
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditingProject(null)}
+                className="h-11 min-h-11 px-4 rounded-xl text-xs font-medium"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={projectTitleDraft.trim().length < 2}
+                className="h-11 min-h-11 px-4 rounded-xl text-xs font-medium"
+              >
+                Salvar alterações
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── DIALOG DE MOVIMENTAÇÃO DE CONVERSA (PASTA / PROJETO) ── */}
+      <Dialog
+        open={Boolean(movingThread)}
+        onOpenChange={(open) => {
+          if (!open) setMovingThread(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md pt-safe-modal bg-card border-border">
+          <DialogHeader>
+            <DialogTitle>Organizar conversa</DialogTitle>
+            <DialogDescription>
+              Vincule esta conversa a uma pasta ou projeto existente.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!movingThread || !onAssignThreadHierarchy) return;
+              const selectedProj = projects.find((p) => p.id === moveProjectDraft);
+              const resolvedFolder = moveFolderDraft || selectedProj?.folder_id || null;
+              await onAssignThreadHierarchy(movingThread.id, {
+                folderId: resolvedFolder,
+                projectId: moveProjectDraft || null,
+              });
+              setMovingThread(null);
+            }}
+            className="space-y-4"
+          >
+            {folders.length > 0 && (
+              <div className="space-y-2">
+                <label
+                  htmlFor="copilot-move-thread-folder"
+                  className="text-xs font-medium text-foreground block"
+                >
+                  Pasta
+                </label>
+                <select
+                  id="copilot-move-thread-folder"
+                  value={moveFolderDraft}
+                  onChange={(e) => setMoveFolderDraft(e.target.value)}
+                  className="h-11 min-h-11 w-full rounded-xl border border-border/60 bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Sem pasta</option>
+                  {folders.map((folder) => (
+                    <option key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label
+                htmlFor="copilot-move-thread-project"
+                className="text-xs font-medium text-foreground block"
+              >
+                Projeto
+              </label>
+              <select
+                id="copilot-move-thread-project"
+                value={moveProjectDraft}
+                onChange={(e) => {
+                  const nextProjId = e.target.value;
+                  setMoveProjectDraft(nextProjId);
+                  const projObj = projects.find((p) => p.id === nextProjId);
+                  if (projObj?.folder_id) {
+                    setMoveFolderDraft(projObj.folder_id);
+                  }
+                }}
+                className="h-11 min-h-11 w-full rounded-xl border border-border/60 bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">Conversa avulsa</option>
+                {projects.map((proj) => (
+                  <option key={proj.id} value={proj.id}>
+                    {proj.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMovingThread(null)}
+                className="h-11 min-h-11 px-4 rounded-xl text-xs font-medium"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="secondary"
+                className="h-11 min-h-11 px-4 rounded-xl text-xs font-medium"
+              >
+                Aplicar vínculo
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -2205,12 +2865,21 @@ function ArtifactViewerContent({
   artifact,
   onClose,
   onSave,
+  onRequestFix,
 }: {
   artifact: ChatArtifactData;
   onClose: () => void;
   onSave?: (updated: ChatArtifactData) => void;
+  onRequestFix?: (prompt: string) => void;
 }) {
-  return <CopilotArtifactPanel artifact={artifact} onClose={onClose} onSave={onSave} />;
+  return (
+    <CopilotArtifactPanel
+      artifact={artifact}
+      onClose={onClose}
+      onSave={onSave}
+      onRequestFix={onRequestFix}
+    />
+  );
 }
 
 function ThreadListItem({
@@ -2225,6 +2894,7 @@ function ThreadListItem({
   onClick,
   onTogglePin,
   onToggleArchive,
+  onStartMove,
   onDelete,
 }: {
   thread: ChatThreadItem;
@@ -2238,6 +2908,7 @@ function ThreadListItem({
   onClick: () => void;
   onTogglePin?: (id: string) => void;
   onToggleArchive?: (id: string) => void;
+  onStartMove?: () => void;
   onDelete?: (id: string) => void;
 }) {
   if (isRenaming) {
@@ -2258,12 +2929,22 @@ function ThreadListItem({
           className="h-11 min-h-11 text-xs flex-1 rounded-xl bg-background"
           autoFocus
         />
-        <Button type="submit" size="icon" className="size-11 min-h-11 min-w-11 rounded-xl shrink-0" aria-label="Salvar nome">
+        <Button
+          type="submit"
+          variant="secondary"
+          size="icon"
+          className="size-11 min-h-11 min-w-11 rounded-xl shrink-0"
+          aria-label="Salvar nome"
+        >
           <Check className="size-4" />
         </Button>
       </form>
     );
   }
+
+  const isLocalFallbackSentinel =
+    thread.id === "00000000-0000-0000-0000-000000000001" ||
+    thread.id === "00000000-0000-0000-0000-000000000002";
 
   return (
     <div
@@ -2294,21 +2975,24 @@ function ThreadListItem({
         ) : null}
       </button>
 
-      {(onStartRename || onTogglePin || onToggleArchive || onDelete) && (
+      {(onStartRename || onTogglePin || onToggleArchive || onStartMove || (onDelete && !isLocalFallbackSentinel)) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-11 min-h-11 min-w-11 shrink-0 rounded-xl opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className={cn(
+                "size-11 min-h-11 min-w-11 shrink-0 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isActive && "md:opacity-100",
+              )}
               title="Opções da conversa"
               aria-label={`Opções de ${thread.title}`}
             >
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44 bg-card border-border">
+          <DropdownMenuContent align="end" className="w-48 bg-card border-border">
             {onStartRename && (
               <DropdownMenuItem onClick={onStartRename} className="min-h-11 gap-2 cursor-pointer">
                 <Pencil className="size-4 text-muted-foreground" />
@@ -2321,13 +3005,19 @@ function ThreadListItem({
                 <span>{thread.isPinned ? "Desafixar" : "Fixar"}</span>
               </DropdownMenuItem>
             )}
+            {onStartMove && !isLocalFallbackSentinel && (
+              <DropdownMenuItem onClick={onStartMove} className="min-h-11 gap-2 cursor-pointer">
+                <Folder className="size-4 text-muted-foreground" />
+                <span>Mover para projeto</span>
+              </DropdownMenuItem>
+            )}
             {onToggleArchive && (
               <DropdownMenuItem onClick={() => onToggleArchive(thread.id)} className="min-h-11 gap-2 cursor-pointer">
                 <Archive className="size-4 text-muted-foreground" />
                 <span>{thread.isArchived ? "Restaurar" : "Arquivar"}</span>
               </DropdownMenuItem>
             )}
-            {onDelete && thread.id !== "00000000-0000-0000-0000-000000000001" && (
+            {onDelete && !isLocalFallbackSentinel && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -2371,7 +3061,7 @@ function CanvaStudioSidebarSection({
       <div className="p-3 border-b border-border/40 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <Sparkles className="size-4 text-primary shrink-0" />
+            <Palette className="size-4 text-primary shrink-0" />
             <span className="text-xs font-semibold text-foreground truncate">
               Estúdio Canva
             </span>

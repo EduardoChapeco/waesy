@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getIdentity } from "./identity.functions";
+import { getServerIdentity, requirePlatformAdmin } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
 
 export const getPortalCompletoContent = createServerFn({ method: "GET" })
@@ -84,11 +84,8 @@ export const UpdatePortalCompletoContentSchema = z.object({
 export const updatePortalCompletoContent = createServerFn({ method: "POST" })
   .validator(UpdatePortalCompletoContentSchema)
   .handler(async ({ data }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id || !["admin", "master", "system_admin"].includes(identity.role || "")) {
-      throw new Error("Acesso negado. Apenas administradores podem atualizar esta página.");
-    }
 
     const { data: updated, error } = await supabase
       .from("portal_completo_settings")
@@ -112,11 +109,8 @@ export const updatePortalCompletoContent = createServerFn({ method: "POST" })
 
 export const listWorkspaceWaitlist = createServerFn({ method: "GET" })
   .handler(async () => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id || !["admin", "master", "system_admin"].includes(identity.role || "")) {
-      throw new Error("Acesso negado.");
-    }
 
     const { data, error } = await supabase
       .from("workspace_pro_waitlist")
@@ -139,11 +133,8 @@ export const MigrateCompanyToFullWorkspaceSchema = z.object({
 export const migrateCompanyToFullWorkspace = createServerFn({ method: "POST" })
   .validator(MigrateCompanyToFullWorkspaceSchema)
   .handler(async ({ data }) => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const identity = await getIdentity();
-    if (!identity?.id || !["admin", "master", "system_admin"].includes(identity.role || "")) {
-      throw new Error("Acesso negado.");
-    }
 
     // 1. Marcar status da waitlist como migrated
     await supabase
@@ -185,7 +176,7 @@ export const registerWorkspaceProWaitlist = createServerFn({ method: "POST" })
   .validator(RegisterWorkspaceProWaitlistSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity().catch(() => null);
+    const identity = await getServerIdentity().catch(() => null);
 
     const record = {
       store_id: identity?.store_id || identity?.tenant_id || null,

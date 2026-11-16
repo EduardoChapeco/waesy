@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, isRedirect } from "@tanstack/react-router";
 import { getNavigationMenus, getPublicStoreSettings } from "@/services/cms.functions";
 import { getPublicBrandSettings } from "@/services/master.functions";
+import { getHostVerticalSubsystemLandingFn } from "@/services/vertical-landings.functions";
 import { getCart, getGlobalCarts } from "@/services/cart.functions";
 import { getActiveGlobalPopups } from "@/services/builder.functions";
 import { getUserSession, syncSessionToCookies } from "@/services/auth.functions";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_store")({
   staleTime: 15_000,
  loader: async () => {
  try {
- const [menusRes, storeRes, brandRes, carts, globalCarts, popupsRes, sessionRes] = await Promise.all([
+ const [menusRes, storeRes, brandRes, carts, globalCarts, popupsRes, sessionRes, hostVerticalRes] = await Promise.all([
  getNavigationMenus().catch(() => []),
  getPublicStoreSettings().catch(() => null),
  getPublicBrandSettings().catch(() => null),
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_store")({
  getGlobalCarts().catch(() => []),
  getActiveGlobalPopups().catch(() => []),
  getUserSession().catch(() => null),
+ getHostVerticalSubsystemLandingFn().catch(() => null),
  ]);
   // Zero-Trust Civil Root para SSR da Vitrine Pública:
   // A vitrine pública opera sob identidade civil pessoal, impedindo vazamento de store_id residual
@@ -40,6 +42,7 @@ export const Route = createFileRoute("/_store")({
  globalCarts: globalCarts || [],
  popups: popupsRes || [],
  session: sanitizedSession,
+ hostVertical: hostVerticalRes || null,
  };
  } catch {
  return {
@@ -121,7 +124,7 @@ function StoreRouteError({ error }: { error: unknown }) {
 }
 
 function StoreLayout() {
- const { store, brand, carts, globalCarts, popups, session } = ((Route.useLoaderData?.() as any) || {});
+ const { store, brand, carts, globalCarts, popups, session, hostVertical } = ((Route.useLoaderData?.() as any) || {});
  const { initCart } = useCartContext();
  const [activeSession, setActiveSession] = useState<any>(session || null);
 
@@ -278,12 +281,14 @@ function StoreLayout() {
  ],
  };
 
+ const verticalLanding = hostVertical?.landing || null;
  const brandSettings = {
- logo_url: brand?.logo_url || storeData?.logoUrl || storeData?.settings?.logoUrl || null,
+ logo_url: verticalLanding?.logo_url || brand?.logo_url || storeData?.logoUrl || storeData?.settings?.logoUrl || null,
  favicon_url: brand?.favicon_url || storeData?.faviconUrl || storeData?.settings?.faviconUrl || null,
  show_logo: brand?.show_logo !== false && storeData?.settings?.show_logo !== false,
  show_name: brand?.show_name !== false && storeData?.settings?.show_name !== false,
- platform_name: brand?.platform_name || storeData?.name || "Waesy",
+ platform_name: verticalLanding?.display_name || brand?.platform_name || storeData?.name || "Waesy",
+ root_experience_mode: verticalLanding ? "landing_vendas" : (brand?.root_experience_mode || "landing_vendas"),
  };
 
   // FASE 1 (V99): isMarketingLanding removido — a LP de captação

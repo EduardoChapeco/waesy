@@ -174,17 +174,37 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  .handler(async ({ data: { listingId } }) => {
  const supabase = getServerClient();
 
- // 1. Tenta buscar em directory_listings por ID ou store_id
-  let query = supabase.from("directory_listings").select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings)");
+ // 1. Tenta buscar em directory_listings por ID/store_id (apenas se UUID válido) ou via stores.slug
+ const baseSelect = "*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings)";
  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(listingId);
 
- if (isUuid) {
- query = query.or(`id.eq.${listingId},store_id.eq.${listingId}`);
- } else {
- query = query.eq("id", listingId);
- }
+ let row: any = null;
+ let preloadedStoreRow: any = null;
 
- const { data: row } = await query.maybeSingle();
+ if (isUuid) {
+ const { data } = await supabase
+ .from("directory_listings")
+ .select(baseSelect)
+ .or(`id.eq.${listingId},store_id.eq.${listingId}`)
+ .maybeSingle();
+ row = data;
+ } else {
+ const { data: storeBySlug } = await supabase
+ .from("stores")
+ .select("*")
+ .eq("slug", listingId)
+ .maybeSingle();
+ preloadedStoreRow = storeBySlug;
+
+ if (storeBySlug?.id) {
+ const { data } = await supabase
+ .from("directory_listings")
+ .select(baseSelect)
+ .eq("store_id", storeBySlug.id)
+ .maybeSingle();
+ row = data;
+ }
+ }
 
  if (row) {
  const storeSettings = (row.stores?.settings as any) || {};
@@ -217,6 +237,8 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  }
 
  // 2. Fallback resiliente: busca na tabela stores por ID ou Slug para garantir 0% de quebras ou 404s
+ let storeRow = preloadedStoreRow;
+ if (!storeRow) {
  let storeQuery = supabase.from("stores").select("*");
  if (isUuid) {
  storeQuery = storeQuery.eq("id", listingId);
@@ -224,7 +246,9 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  storeQuery = storeQuery.eq("slug", listingId);
  }
 
- const { data: storeRow } = await storeQuery.maybeSingle();
+ const { data } = await storeQuery.maybeSingle();
+ storeRow = data;
+ }
 
  if (storeRow) {
  const settings = (storeRow.settings ?? {}) as Record<string, any>;
@@ -333,16 +357,34 @@ export const updateDirectoryListingFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
 
-    // 1. Localizar o registro em directory_listings
+    // 1. Localizar o registro em directory_listings (sem passar slug não-UUID para coluna id)
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.id);
-    let query = supabase.from("directory_listings").select("*");
-    if (isUuid) {
-      query = query.or(`id.eq.${data.id},store_id.eq.${data.id}`);
-    } else {
-      query = query.eq("id", data.id);
-    }
+    let listing: any = null;
+    let resolvedStoreIdBySlug: string | null = null;
 
-    const { data: listing } = await query.maybeSingle();
+    if (isUuid) {
+      const { data: foundListing } = await supabase
+        .from("directory_listings")
+        .select("*")
+        .or(`id.eq.${data.id},store_id.eq.${data.id}`)
+        .maybeSingle();
+      listing = foundListing;
+    } else {
+      const { data: storeBySlug } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("slug", data.id)
+        .maybeSingle();
+      resolvedStoreIdBySlug = storeBySlug?.id || null;
+      if (resolvedStoreIdBySlug) {
+        const { data: foundListing } = await supabase
+          .from("directory_listings")
+          .select("*")
+          .eq("store_id", resolvedStoreIdBySlug)
+          .maybeSingle();
+        listing = foundListing;
+      }
+    }
 
     const updatePayload: Record<string, any> = {};
     if (data.businessName !== undefined) updatePayload.business_name = data.businessName.trim();
@@ -370,7 +412,7 @@ export const updateDirectoryListingFn = createServerFn({ method: "POST" })
     }
 
     // 2. Se houver vínculo com a tabela stores, sincronizar atomicamente
-    const targetStoreId = listing?.store_id || (isUuid ? data.id : null);
+    const targetStoreId = listing?.store_id || (isUuid ? data.id : resolvedStoreIdBySlug);
     if (targetStoreId) {
       const { data: storeRow } = await supabase
         .from("stores")

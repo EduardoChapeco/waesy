@@ -5,8 +5,10 @@ import {
   resolveCleanMobileTitle,
   checkHasCustomPageMobileHeader,
   isFullBleedStoreRoute,
+  isEditorialMarketingRoute,
 } from "@/lib/navigation-registry";
 import { TopBar } from "./top-bar";
+import { PublicLandingHeader } from "./public-landing-header";
 import { ContextSidebar } from "./context-sidebar";
 import { MobileNav } from "./mobile-nav";
 import { CartSheet } from "@/components/commerce/cart-sheet";
@@ -30,10 +32,11 @@ export interface AppShellProps {
  brandSettings?: {
  logo_url?: string | null;
  favicon_url?: string | null;
- show_logo?: boolean;
- show_name?: boolean;
- platform_name?: string;
- } | null;
+    show_logo?: boolean;
+    show_name?: boolean;
+    platform_name?: string;
+    root_experience_mode?: string | null;
+  } | null;
 }
 
 export function AppShell({ children, session, brandSettings }: AppShellProps) {
@@ -59,6 +62,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.startsWith("/cadastro") ||
     location.pathname.startsWith("/cadastroantecipado") ||
     location.pathname.startsWith("/recuperar-senha") ||
+    location.pathname.startsWith("/redefinir-senha") ||
     location.pathname.startsWith("/f/") ||
     location.pathname.startsWith("/m/") ||
     location.pathname.startsWith("/assinar/") ||
@@ -69,6 +73,37 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     return (
       <div className="min-h-dvh w-full bg-background text-foreground flex flex-col overflow-x-clip">
         {children}
+      </div>
+    );
+  }
+
+  const searchStr =
+    (location as any)?.searchStr ||
+    (typeof window !== "undefined" ? window.location.search : "");
+  const isEditorialMarketingPage = isEditorialMarketingRoute(
+    location.pathname,
+    brandSettings?.root_experience_mode,
+    searchStr,
+  );
+
+  if (isEditorialMarketingPage) {
+    return (
+      <div className="min-h-dvh w-full max-w-full bg-background text-foreground font-sans antialiased flex flex-col overflow-x-clip">
+        <PublicLandingHeader
+          brandName={brandSettings?.platform_name}
+          logoUrl={brandSettings?.logo_url}
+          showLogo={brandSettings?.show_logo}
+          showName={brandSettings?.show_name}
+          session={session}
+        />
+        <main ref={mainRef} className="flex-1 w-full min-w-0">
+          {children}
+        </main>
+        <OfflineIndicator />
+        <PWAInstallBanner
+          storeName={brandSettings?.platform_name || "Waesy"}
+          storeLogoUrl={brandSettings?.favicon_url || brandSettings?.logo_url || undefined}
+        />
       </div>
     );
   }

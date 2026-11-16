@@ -47,6 +47,7 @@ export interface ContextSidebarProps {
 // ── 1. Módulos Principais Comunitários (Rótulos Diretos, Sem Títulos Compostos) ──
 const MAIN_EXPLORER_ITEMS = [
   { to: "/", label: "Início", icon: House, exact: true },
+  { to: "/explorer", label: "Explorar", icon: Compass, exact: true },
   { to: "/marketplace", label: "Marketplace", icon: Storefront, exact: true, isMarketplace: true },
   { to: "/diretorio", label: "Places", isPlacesBadge: true, icon: Compass, exact: true },
   { to: "/classificados", label: "Classificados", icon: Tag, exact: true, isLucide: true },

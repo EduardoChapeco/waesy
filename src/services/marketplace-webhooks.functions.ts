@@ -24,7 +24,10 @@ export const inboundWebhookPayloadSchema = z.object({
     "magalu",
     "rappi",
     "amodelivery",
+    "amoofertas",
     "99food",
+    "tridelivery",
+    "aiqfome",
     "focus_nfe",
     "nuvem_fiscal",
     "melhorenvio",
@@ -139,6 +142,16 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
       external_order_id: input.externalOrderId,
     };
 
+    const FOOD_DELIVERY_PLATFORMS = new Set([
+      "ifood",
+      "99food",
+      "rappi",
+      "tridelivery",
+      "amodelivery",
+      "amoofertas",
+      "aiqfome",
+    ]);
+    const normalizedPlatformKey = input.platform.toLowerCase();
     const originChannelMap: Record<string, string> = {
       mercadolivre: "mercadolivre",
       ml: "mercadolivre",
@@ -148,12 +161,21 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
       amazon: "amazon",
       rappi: "rappi",
       amodelivery: "amodelivery",
+      amo_delivery: "amodelivery",
+      amoofertas: "amoofertas",
+      amo_ofertas: "amoofertas",
       "99food": "99food",
+      tridelivery: "tridelivery",
+      tri_delivery: "tridelivery",
+      aiqfome: "aiqfome",
       pos: "pdv",
       pdv: "pdv",
       whatsapp: "whatsapp",
     };
-    const resolvedOriginChannel = originChannelMap[input.platform.toLowerCase()] || "waesy_app";
+    const resolvedOriginChannel = originChannelMap[normalizedPlatformKey] || "waesy_app";
+    const resolvedShippingMethod = FOOD_DELIVERY_PLATFORMS.has(normalizedPlatformKey)
+      ? "delivery"
+      : "provider";
     const netPayoutCents = input.netPayoutCents || (input.totalAmountCents - (input.marketplaceFeeCents || 0));
 
     const { data: createdOrder, error: orderErr } = await supabase
@@ -162,8 +184,8 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
         store_id: input.storeId,
         customer_id: null,
         status: orderStatus as any,
-        origin_type: "marketplace",
-        channel_origin: input.platform,
+        origin_type: "ecommerce",
+        channel_origin: normalizedPlatformKey,
         origin_channel: resolvedOriginChannel,
         subtotal_cents: subtotalCents,
         shipping_cents: input.shippingCostCents,
@@ -179,7 +201,7 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
           net_payout_cents: netPayoutCents,
           channel: resolvedOriginChannel,
         },
-        shipping_method: input.platform === "ifood" ? "iFood Delivery" : "Mercado Envios / Transportadora",
+        shipping_method: resolvedShippingMethod,
         shipping_address: input.shippingAddress || null,
         customer_snapshot: customerSnapshot,
         items_snapshot: sanitizedItems,
@@ -370,6 +392,13 @@ async function routeWebhookPlatformEvent(
       return { handled: true, orderId: await processMercadoLivreEvent(resourceId, payload, storeId) };
     case "ifood":
       return { handled: true, orderId: await processIfoodEvent(resourceId, payload, storeId) };
+    case "99food":
+    case "rappi":
+    case "tridelivery":
+    case "amodelivery":
+    case "amoofertas":
+    case "aiqfome":
+      return { handled: true, orderId: await processFoodDeliveryWebhookEvent(platform, resourceId, payload, storeId) };
     case "shopee":
       return { handled: true, orderId: await processShopeeEvent(resourceId, payload, storeId) };
     case "amazon":
@@ -897,6 +926,158 @@ async function processIfoodEvent(resourceId?: string, payload: any = {}, storeId
     } catch (cashErr) {
       console.warn("[webhooks:ifood] Falha ao registrar caixa:", cashErr);
     }
+  }
+
+  return masterOrderId;
+}
+
+const DEFAULT_FOOD_COMMISSION_RATE: Record<string, number> = {
+  "99food": 0.14,
+  rappi: 0.18,
+  tridelivery: 0.1,
+  amodelivery: 0.08,
+  amoofertas: 0.08,
+  aiqfome: 0.12,
+};
+
+function parseFoodCents(raw: unknown): number {
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    return Number.isInteger(raw) && Math.abs(raw) >= 100 ? raw : Math.round(raw * 100);
+  }
+  if (typeof raw === "string") {
+    const parsed = Number(raw.replace(",", "."));
+    if (Number.isFinite(parsed)) return Math.round(parsed * 100);
+  }
+  return 0;
+}
+
+/**
+ * Processa webhooks reais das plataformas de delivery brasileiras
+ * (99Food, Rappi, TriDelivery, Amo Delivery, Amo Ofertas e aiqfome),
+ * gravando em `marketplace_external_orders` e sincronizando atomicamente com `public.orders`.
+ */
+async function processFoodDeliveryWebhookEvent(
+  platform: string,
+  resourceId?: string,
+  payload: any = {},
+  storeId?: string
+): Promise<string | null> {
+  const supabase = getServerClient();
+  const dataObj = payload?.data && typeof payload.data === "object" ? payload.data : payload || {};
+  const externalOrderId = String(
+    resourceId ||
+      dataObj.order_id ||
+      dataObj.orderId ||
+      dataObj.code ||
+      dataObj.id ||
+      payload.order_id ||
+      payload.orderId ||
+      ""
+  ).trim();
+  if (!externalOrderId) return null;
+
+  const targetStoreId = storeId || dataObj.store_id || payload.store_id;
+  if (!targetStoreId) return null;
+
+  const rawStatus = String(
+    dataObj.status || dataObj.event_type || dataObj.event || payload.topic || payload.status || "confirmed"
+  ).toLowerCase();
+
+  let normalizedStatus = "processing";
+  if (rawStatus.includes("cancel") || rawStatus.includes("reject")) normalizedStatus = "cancelled";
+  else if (rawStatus.includes("deliver") || rawStatus.includes("conclud")) normalizedStatus = "delivered";
+  else if (rawStatus.includes("dispatch") || rawStatus.includes("transit") || rawStatus.includes("shipped")) normalizedStatus = "shipped";
+  else if (rawStatus.includes("ready")) normalizedStatus = "ready_for_pickup";
+  else if (rawStatus.includes("paid") || rawStatus.includes("confirm") || rawStatus.includes("accept")) normalizedStatus = "paid";
+  else if (rawStatus.includes("creat") || rawStatus.includes("plac") || rawStatus.includes("pending")) normalizedStatus = "created";
+
+  const rawItems = Array.isArray(dataObj.items)
+    ? dataObj.items
+    : Array.isArray(payload.items)
+      ? payload.items
+      : [];
+
+  const items = rawItems.map((it: any) => ({
+    title: String(it.name || it.title || it.product_name || `Item ${platform.toUpperCase()}`),
+    quantity: Math.max(1, Number(it.quantity || it.qty || 1)),
+    unit_price_cents:
+      it.unit_price_cents !== undefined
+        ? Number(it.unit_price_cents)
+        : parseFoodCents(it.unit_price ?? it.price ?? it.total_price ?? 0),
+    sku: it.sku || it.external_code || it.id ? String(it.sku || it.external_code || it.id) : undefined,
+  }));
+
+  const itemsTotalCents = items.reduce((acc: number, it: any) => acc + it.unit_price_cents * it.quantity, 0);
+  const totalAmountCents =
+    dataObj.total_amount_cents !== undefined
+      ? Number(dataObj.total_amount_cents)
+      : dataObj.total_cents !== undefined
+        ? Number(dataObj.total_cents)
+        : parseFoodCents(dataObj.total ?? dataObj.total_amount ?? dataObj.order_total) || itemsTotalCents;
+
+  const shippingCostCents =
+    dataObj.delivery_fee_cents !== undefined
+      ? Number(dataObj.delivery_fee_cents)
+      : dataObj.shipping_cost_cents !== undefined
+        ? Number(dataObj.shipping_cost_cents)
+        : parseFoodCents(dataObj.delivery_fee ?? dataObj.shipping_fee ?? 0);
+
+  const feeRate = DEFAULT_FOOD_COMMISSION_RATE[platform] ?? 0.12;
+  const feeCents =
+    dataObj.marketplace_fee_cents !== undefined
+      ? Number(dataObj.marketplace_fee_cents)
+      : Math.round(totalAmountCents * feeRate);
+  const netCents = Math.max(0, totalAmountCents - feeCents - shippingCostCents);
+
+  const buyerObj = dataObj.customer || dataObj.buyer || {};
+  const buyerName = String(dataObj.buyer_name || buyerObj.name || `Cliente ${platform.toUpperCase()}`);
+  const buyerPhone = String(dataObj.buyer_phone || buyerObj.phone || buyerObj.whatsapp || "");
+  const buyerDocument = String(dataObj.buyer_document || buyerObj.document || buyerObj.cpf || "");
+  const rawAddr = dataObj.delivery_address || dataObj.shipping_address || buyerObj.address || {};
+  const shippingAddress =
+    typeof rawAddr === "object" && rawAddr !== null ? rawAddr : { formatted: String(rawAddr || "") };
+
+  await supabase.from("marketplace_external_orders").upsert(
+    {
+      store_id: targetStoreId,
+      platform,
+      external_order_id: externalOrderId,
+      external_status: normalizedStatus,
+      buyer_name: buyerName,
+      buyer_phone: buyerPhone || null,
+      buyer_document: buyerDocument || null,
+      shipping_address: shippingAddress,
+      subtotal_cents: Math.max(0, totalAmountCents - shippingCostCents),
+      shipping_cost_cents: shippingCostCents,
+      marketplace_fee_cents: feeCents,
+      net_payout_cents: netCents,
+      total_amount_cents: totalAmountCents,
+      shipping_method: "delivery",
+      items,
+      raw_payload: payload,
+      imported_at: new Date().toISOString(),
+    },
+    { onConflict: "store_id,platform,external_order_id" }
+  );
+
+  const masterOrderId = await syncOrderToMaster({
+    storeId: targetStoreId,
+    platform,
+    externalOrderId,
+    externalStatus: normalizedStatus,
+    buyerName,
+    buyerPhone,
+    buyerDocument,
+    shippingAddress,
+    totalAmountCents,
+    shippingCostCents,
+    marketplaceFeeCents: feeCents,
+    netPayoutCents: netCents,
+    items,
+  });
+
+  if (!masterOrderId) {
+    throw new Error(`Falha ao sincronizar pedido ${platform.toUpperCase()} #${externalOrderId} para orders.`);
   }
 
   return masterOrderId;

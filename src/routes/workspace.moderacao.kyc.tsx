@@ -59,17 +59,17 @@ function KycAuditPage() {
 
  return (
  <div className="space-y-6 w-full">
- <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
- <div>
+ <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4 min-w-0">
+ <div className="min-w-0">
  <h1 className="text-2xl font-bold flex items-center gap-2">
- <ShieldCheck size={28} className="text-emerald-600" /> Auditoria KYC e Identidade
+ <ShieldCheck size={28} className="text-emerald-600 shrink-0" /> Auditoria KYC e Identidade
  </h1>
  <p className="text-muted-foreground text-sm">Central de averiguação de selos oficiais (Identity Vault).</p>
  </div>
- <div className="flex items-center gap-2">
- <Filter size={16} className="text-muted-foreground" />
+ <div className="waesy-tab-strip items-center gap-2 shrink-0 max-w-full">
+ <Filter size={16} className="text-muted-foreground shrink-0" />
  <Select value={statusFilter} onValueChange={setStatusFilter}>
- <SelectTrigger className="w-45">
+ <SelectTrigger className="w-45 h-11 min-h-11 sm:h-9 sm:min-h-9 shrink-0">
  <SelectValue placeholder="Filtrar por Status" />
  </SelectTrigger>
  <SelectContent>

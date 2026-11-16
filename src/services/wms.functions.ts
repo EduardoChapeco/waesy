@@ -174,17 +174,58 @@ export const createPickingBatch = createServerFn({ method: "POST" })
  throw new Error("Erro ao criar lote de picking: " + (batchErr?.message || ""));
  }
 
- // 2. Iniciar sessões de picking para cada pedido e vincular ao lote
+ // 2. Iniciar sessões de conferência para cada pedido e vincular ao lote
  let totalItems = 0;
+ let sessionsCreated = 0;
+ const sessionErrors: string[] = [];
  for (const orderId of data.orderIds) {
  try {
- const { data: sessionId } = await db.rpc("start_wms_picking", {
+ const { count: existingItemsCount } = await db
+ .from("order_items")
+ .select("*", { count: "exact", head: true })
+ .eq("order_id", orderId);
+
+ if (!existingItemsCount || existingItemsCount === 0) {
+ const { data: ordRow } = await db
+ .from("orders")
+ .select("id, items_snapshot")
+ .eq("id", orderId)
+ .eq("store_id", identity.store_id)
+ .maybeSingle();
+
+ const snapshotItems = Array.isArray(ordRow?.items_snapshot) ? ordRow.items_snapshot : [];
+ if (snapshotItems.length > 0) {
+ const rowsToInsert = snapshotItems.map((it: any, idx: number) => {
+ const qty = Math.max(1, Number(it.qty || it.quantity || 1));
+ const unitPriceCents = Math.round(Number(it.unit_price_cents || it.price_cents || 0));
+ return {
+ order_id: orderId,
+ variant_id: it.variant_id || it.variantId || null,
+ product_title: String(it.product_title || it.title || it.name || `Item ${idx + 1}`),
+ variant_sku: String(it.variant_sku || it.sku || it.external_sku || `SKU-${idx + 1}`),
+ qty,
+ unit_price_cents: unitPriceCents,
+ total_cents: Math.round(Number(it.total_cents || unitPriceCents * qty)),
+ };
+ });
+ await db.from("order_items").insert(rowsToInsert);
+ }
+ }
+
+ const { data: sessionId, error: rpcErr } = await db.rpc("start_wms_picking", {
  p_order_id: orderId,
  p_operator_id: data.operatorId || identity.id,
  p_store_id: identity.store_id,
  });
 
+ if (rpcErr) {
+ sessionErrors.push(rpcErr.message);
+ console.warn(`[WMS] Erro ao criar sessão para pedido ${orderId}:`, rpcErr.message);
+ continue;
+ }
+
  if (sessionId) {
+ sessionsCreated += 1;
  await db
  .from("wms_picking_sessions")
  .update({ batch_id: batch.id })
@@ -198,8 +239,18 @@ export const createPickingBatch = createServerFn({ method: "POST" })
  totalItems += count || 0;
  }
  } catch (err) {
+ const msg = err instanceof Error ? err.message : String(err);
+ sessionErrors.push(msg);
  console.warn(`[WMS] Aviso ao criar sessão para pedido ${orderId}:`, err);
  }
+ }
+
+ if (sessionsCreated === 0) {
+ await db.from("wms_picking_batches").delete().eq("id", batch.id);
+ throw new Error(
+ sessionErrors[0] ||
+ "Nenhum pedido selecionado possui itens válidos para iniciar separação.",
+ );
  }
 
  // 3. Atualizar total de itens no lote
@@ -227,7 +278,9 @@ export const listPickingBatches = createServerFn({ method: "GET" })
 
  let query = db
  .from("wms_picking_batches")
- .select("*, sessions:wms_picking_sessions(id, order_id, status, items:wms_picking_items(id, qty_expected, qty_picked, barcode, order_item:order_items(id, title, product_id, products(name, sku, ean, weight_kg, width_cm, height_cm, length_cm, attributes))))")
+ .select(
+ "*, sessions:wms_picking_sessions(id, order_id, status, items:wms_picking_items(id, qty_expected, qty_picked, barcode, order_item:order_items(id, product_title, variant_sku, variant_attributes, variant_id, item_id, product_variants:variant_id(sku, barcode, weight_kg, width_cm, height_cm, length_cm, products:product_id(name, sku, ean, weight_kg, width_cm, height_cm, length_cm, attributes)))))",
+ )
  .eq("store_id", identity.store_id)
  .order("created_at", { ascending: false });
 
@@ -252,10 +305,12 @@ export const scanBarcodePickItem = createServerFn({ method: "POST" })
  await assertStoreAccess(identity, ["owner", "admin", "manager", "logistics", "stock"]);
  const db = getServerClient();
 
- // 1. Buscar itens pendentes da sessão com metadados de embalagem e WMS do produto
+ // 1. Buscar itens pendentes da sessão com metadados de embalagem e separação do produto
  const { data: items, error } = await db
  .from("wms_picking_items")
- .select("*, order_item:order_items(id, product_id, title, metadata, products(name, sku, ean, weight_kg, width_cm, height_cm, length_cm, attributes))")
+ .select(
+ "*, order_item:order_items(id, variant_id, product_title, variant_sku, variant_attributes, product_variants:variant_id(sku, barcode, weight_kg, width_cm, height_cm, length_cm, products:product_id(name, sku, ean, weight_kg, width_cm, height_cm, length_cm, attributes)))",
+ )
  .eq("session_id", data.sessionId);
 
  if (error || !items || items.length === 0) {
@@ -265,9 +320,26 @@ export const scanBarcodePickItem = createServerFn({ method: "POST" })
  // 2. Localizar item correspondente ao código de barras, EAN ou SKU
  const cleanBarcode = data.barcode.trim();
  const matchedItem = items.find((item: any) => {
- const prod = item.order_item?.products || {};
- const ean = item.barcode || prod.ean || prod.sku || item.order_item?.metadata?.barcode || item.order_item?.metadata?.ean;
- return ean === cleanBarcode || prod.sku === cleanBarcode || item.order_item_id === cleanBarcode;
+ const variant = item.order_item?.product_variants || {};
+ const prod = variant.products || {};
+ const attrs = item.order_item?.variant_attributes || {};
+ const ean =
+ item.barcode ||
+ variant.barcode ||
+ prod.ean ||
+ variant.sku ||
+ item.order_item?.variant_sku ||
+ prod.sku ||
+ attrs.barcode ||
+ attrs.ean;
+ return (
+ ean === cleanBarcode ||
+ prod.sku === cleanBarcode ||
+ variant.sku === cleanBarcode ||
+ item.order_item?.variant_sku === cleanBarcode ||
+ item.order_item_id === cleanBarcode ||
+ item.id === cleanBarcode
+ );
  });
 
  if (!matchedItem) {
@@ -275,7 +347,7 @@ export const scanBarcodePickItem = createServerFn({ method: "POST" })
  }
 
  if (matchedItem.qty_picked >= matchedItem.qty_expected) {
- throw new Error(`Quantidade total do item "${matchedItem.order_item?.title}" já foi completamente separada.`);
+ throw new Error(`Quantidade total do item "${matchedItem.order_item?.product_title}" já foi completamente separada.`);
  }
 
  // 3. Incrementar separação
@@ -286,12 +358,12 @@ export const scanBarcodePickItem = createServerFn({ method: "POST" })
  .eq("id", matchedItem.id);
 
  const isFullyPicked = newPicked >= matchedItem.qty_expected;
- const prod = matchedItem.order_item?.products || {};
+ const prod = matchedItem.order_item?.product_variants?.products || {};
  const logistics = (prod.attributes as any)?.logistics || {};
 
  return {
  status: "success",
- matchedItemTitle: matchedItem.order_item?.title || prod.name,
+ matchedItemTitle: matchedItem.order_item?.product_title || prod.name || "Item",
  qtyPicked: newPicked,
  qtyExpected: matchedItem.qty_expected,
  isItemComplete: isFullyPicked,
@@ -316,33 +388,66 @@ export const generateShippingManifest = createServerFn({ method: "POST" })
  await assertStoreAccess(identity, ["owner", "admin", "manager", "logistics"]);
  const db = getServerClient();
 
- // Buscar pedidos
- const { data: orders, error } = await db
+ // Buscar pedidos internos e externos vinculados
+ const [{ data: storeInfo }, { data: orders, error }] = await Promise.all([
+ db
+ .from("stores")
+ .select("name, cnpj_cpf")
+ .eq("id", identity.store_id)
+ .maybeSingle(),
+ db
  .from("orders")
  .select("id, order_number, customer_snapshot, shipping_address, total_cents")
  .in("id", data.orderIds)
- .eq("store_id", identity.store_id);
+ .eq("store_id", identity.store_id),
+ ]);
 
- if (error || !orders) {
- throw new Error("Erro ao buscar pedidos para o romaneio: " + (error?.message || ""));
+ if (error) {
+ throw new Error("Erro ao buscar pedidos para o romaneio: " + error.message);
  }
 
+ const matchedOrderIds = new Set((orders || []).map((o: any) => o.id));
+ const missingIds = data.orderIds.filter((id) => !matchedOrderIds.has(id));
+ let externalOrders: any[] = [];
+ if (missingIds.length > 0) {
+ const { data: extRows } = await db
+ .from("marketplace_external_orders")
+ .select("id, external_order_id, buyer_name, buyer_email, shipping_address, total_amount_cents")
+ .in("id", missingIds)
+ .eq("store_id", identity.store_id);
+ externalOrders = extRows || [];
+ }
+
+ const mappedOrders = [
+ ...(orders || []).map((o: any) => ({
+ orderId: o.id,
+ orderCode: o.order_number || o.id.slice(0, 8),
+ customerName: o.customer_snapshot?.name || o.customer_snapshot?.email || "Cliente",
+ address: o.shipping_address,
+ totalCents: Number(o.total_cents || 0),
+ })),
+ ...externalOrders.map((ext: any) => ({
+ orderId: ext.id,
+ orderCode: ext.external_order_id || ext.id.slice(0, 8),
+ customerName: ext.buyer_name || ext.buyer_email || "Cliente",
+ address: ext.shipping_address,
+ totalCents: Number(ext.total_amount_cents || 0),
+ })),
+ ];
+
  const manifestCode = "ROM-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + Math.floor(1000 + Math.random() * 9000);
- const totalOrders = orders.length;
- const totalVolumeValueCents = orders.reduce((acc: number, o: any) => acc + (o.total_cents || 0), 0);
+ const totalOrders = mappedOrders.length;
+ const totalVolumeValueCents = mappedOrders.reduce((acc, o) => acc + o.totalCents, 0);
 
  return {
  status: "success",
  manifestCode,
  carrierName: data.carrierName,
+ storeName: storeInfo?.name || null,
+ storeDocument: storeInfo?.cnpj_cpf || null,
  generatedAt: new Date().toISOString(),
  totalOrders,
  totalVolumeValueCents,
- orders: orders.map((o: any) => ({
- orderId: o.id,
- orderCode: o.order_number || o.id.slice(0, 8),
- customerName: o.customer_snapshot?.name || o.customer_snapshot?.email || "Cliente",
- address: o.shipping_address,
- })),
+ orders: mappedOrders,
  };
  });

@@ -288,14 +288,23 @@ export function buildSocialPostPayload(title: string, userPrompt: string): {
   };
 }
 
-export function buildTravelItineraryPayload(title: string, userPrompt: string): {
+export function buildTravelItineraryPayload(
+  title: string,
+  userPrompt: string,
+  billingOptions?: {
+    pixKey?: string | null;
+    merchantName?: string | null;
+    merchantCity?: string | null;
+    estimatedBudgetCents?: number | null;
+  },
+): {
   destination: string;
   daysCount: number;
-  estimatedBudgetCents: number;
-  merchantName: string;
-  merchantCity: string;
-  pixKey: string;
-  pixCode: string;
+  estimatedBudgetCents: number | null;
+  merchantName: string | null;
+  merchantCity: string | null;
+  pixKey: string | null;
+  pixCode: string | null;
   days: Array<{ day: number; title: string; activities: string[] }>;
 } {
   const lower = userPrompt.toLowerCase();
@@ -309,7 +318,10 @@ export function buildTravelItineraryPayload(title: string, userPrompt: string): 
       : "Roteiro Regional e Ecoturismo";
 
   const daysCount = 3;
-  const estimatedBudgetCents = 245000; // R$ 2.450,00
+  const estimatedBudgetCents: number | null =
+    typeof billingOptions?.estimatedBudgetCents === "number" && billingOptions.estimatedBudgetCents > 0
+      ? billingOptions.estimatedBudgetCents
+      : null;
 
   const days = isSerra
     ? [
@@ -370,18 +382,20 @@ export function buildTravelItineraryPayload(title: string, userPrompt: string): 
         },
       ];
 
-  const merchantName = "WAESY TURISMO";
-  const merchantCity = "CHAPECO";
-  const pixKey = "financeiro@waesy.com.br";
+  const merchantName = billingOptions?.merchantName?.trim() || null;
+  const merchantCity = billingOptions?.merchantCity?.trim() || null;
+  const pixKey = billingOptions?.pixKey?.trim() || null;
 
-  // Gera o código Pix BACEN EMV padrão oficial com CRC-16
-  const pixCode = generatePixBrCode({
-    pixKey,
-    amountCents: estimatedBudgetCents,
-    merchantName,
-    merchantCity,
-    description: `Roteiro: ${destination.slice(0, 20)}`,
-  });
+  const pixCode =
+    pixKey && estimatedBudgetCents && merchantName && merchantCity
+      ? generatePixBrCode({
+          pixKey,
+          amountCents: estimatedBudgetCents,
+          merchantName,
+          merchantCity,
+          description: `Roteiro: ${destination.slice(0, 20)}`,
+        })
+      : null;
 
   return {
     destination,
@@ -431,7 +445,13 @@ export async function createOrUpdateBuilderDocument(params: {
       .single();
 
     if (error || !data || !data.id) {
-      // Se a tabela ainda não estiver migrada em ambiente local de teste, retorna objeto mock funcional
+      const msg = error?.message || "Resposta vazia do banco";
+      const isUnitTestFallbackAllowed =
+        process.env.VITEST === "true" &&
+        params.metadata?.strictDbPersistence !== true;
+      if (!isUnitTestFallbackAllowed) {
+        throw new Error(`Falha ao persistir documento no builder: ${msg}`);
+      }
       return {
         id: crypto.randomUUID(),
         storeId: params.storeId || null,
@@ -443,7 +463,7 @@ export async function createOrUpdateBuilderDocument(params: {
         contentSchema: params.contentSchema,
         isPublic: params.isPublic ?? false,
         publicToken,
-        metadata: params.metadata || {},
+        metadata: { ...(params.metadata || {}), persisted: false },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -466,7 +486,13 @@ export async function createOrUpdateBuilderDocument(params: {
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
-  } catch {
+  } catch (err) {
+    const isUnitTestFallbackAllowed =
+      process.env.VITEST === "true" &&
+      params.metadata?.strictDbPersistence !== true;
+    if (!isUnitTestFallbackAllowed) {
+      throw err instanceof Error ? err : new Error("Falha ao salvar documento no builder");
+    }
     return {
       id: crypto.randomUUID(),
       storeId: params.storeId || null,
@@ -478,7 +504,7 @@ export async function createOrUpdateBuilderDocument(params: {
       contentSchema: params.contentSchema,
       isPublic: params.isPublic ?? false,
       publicToken,
-      metadata: params.metadata || {},
+      metadata: { ...(params.metadata || {}), persisted: false },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -560,7 +586,9 @@ export async function createBuilderArtifactFromCopilot(params: {
     }
     case "travel_itinerary": {
       payload = buildTravelItineraryPayload(title, params.userPrompt);
-      summaryMessage = `Elaborei o dossiê completo de viagem para ${payload.destination} com roteiro detalhado por dia e código Pix pronto para pagamento.`;
+      summaryMessage = payload.pixCode
+        ? `Elaborei o roteiro completo de viagem para ${payload.destination} com programacao por dia e Pix gerado.`
+        : `Elaborei o roteiro completo de viagem para ${payload.destination} com programacao detalhada por dia no painel lateral.`;
       break;
     }
     case "document":

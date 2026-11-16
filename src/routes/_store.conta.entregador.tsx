@@ -794,7 +794,7 @@ function CourierDriverHubPage() {
 
       {/* ── 4. AS 5 ABAS OPERACIONAIS CANÔNICAS (WAESY GO — Invariante B.39) ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar w-full justify-start h-auto min-h-11 bg-muted/60 p-1 rounded-lg gap-1">
+        <TabsList className="waesy-tab-strip items-center justify-start w-full min-h-11 h-auto bg-muted/60 p-1 rounded-lg gap-1 max-w-full min-w-0">
           <TabsTrigger value="radar" className="shrink-0 px-4 text-xs font-semibold rounded-md h-11 min-h-11">
             Radar Chamados
           </TabsTrigger>

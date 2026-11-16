@@ -653,10 +653,22 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  // 4. Provisiona explicitamente o perfil. O banco não possui mais trigger de
  // criação automática e nenhum cadastro recebe organização, loja ou membership.
  if (createdUserId) {
+ let requireUserApproval = false;
+ try {
+   const { data: approvalSetting } = await adminDb
+     .from("platform_brand_settings")
+     .select("require_user_approval")
+     .limit(1)
+     .maybeSingle();
+   requireUserApproval = Boolean(approvalSetting?.require_user_approval);
+ } catch {
+   requireUserApproval = false;
+ }
  const profilePayload = {
    id: createdUserId,
    full_name: fullName || email.split("@")[0],
    role: "customer" as const,
+   approval_status: requireUserApproval ? ("pending" as const) : ("approved" as const),
    is_consent_lgpd: isConsentLgpd ?? true,
    ...(cleanCpf ? { cpf: cleanCpf } : {}),
    ...(cleanPhone ? { phone: cleanPhone } : {}),

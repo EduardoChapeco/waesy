@@ -1,4 +1,4 @@
-import type { AIActivityStep } from "@/types/chat";
+import type { AIActivityStep, ExecutionPlanStep } from "@/types/chat";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, getSSRClient } from "@/lib/server-access";
 
@@ -33,6 +33,10 @@ function toPersistedStep(step: AIActivityStep, executionId: string, sequenceNo: 
     cost_usd: step.costUsd ?? null,
     role: step.role ?? null,
     parent_task_id: step.parentTaskId ?? null,
+    ...(step.browserUrl ? { browser_url: step.browserUrl } : {}),
+    ...(step.screenshotUrl ? { screenshot_url: step.screenshotUrl } : {}),
+    ...(step.driver ? { driver: step.driver } : {}),
+    ...(step.toolLogs && step.toolLogs.length > 0 ? { tool_logs: step.toolLogs } : {}),
   };
 }
 
@@ -110,4 +114,167 @@ export async function resumeCopilotExecution(executionId: string): Promise<{ exe
   }
   await getServerClient().from("copilot_executions").update({ resume_count: Number(execution.resume_count || 0) + 1, status: "running", updated_at: new Date().toISOString() }).eq("id", executionId).throwOnError();
   return { execution: execution ?? null, steps: steps ?? [] };
+}
+
+export async function saveCopilotExecutionCheckpoint(input: {
+  executionId: string;
+  taskId?: string;
+  plan?: ExecutionPlanStep[];
+  state?: Record<string, unknown>;
+  status?: PersistedExecutionStatus;
+  currentPhase?: string;
+  progressPercent?: number;
+  currentStepLabel?: string;
+}): Promise<void> {
+  try {
+    await pendingExecutionWrites.get(input.executionId);
+  } finally {
+    pendingExecutionWrites.delete(input.executionId);
+  }
+  const db = getServerClient();
+  const nowIso = new Date().toISOString();
+  const patch: Record<string, unknown> = { updated_at: nowIso };
+  if (input.plan) patch.plan = input.plan;
+  if (input.state) patch.state = input.state;
+  if (input.status) patch.status = input.status;
+  if (input.currentPhase) patch.current_phase = input.currentPhase;
+
+  await db.from("copilot_executions").update(patch).eq("id", input.executionId).throwOnError();
+
+  if (input.taskId) {
+    const taskPatch: Record<string, unknown> = {
+      heartbeat_at: nowIso,
+      updated_at: nowIso,
+    };
+    if (typeof input.progressPercent === "number") {
+      taskPatch.progress_percent = Math.min(100, Math.max(0, Math.round(input.progressPercent)));
+    }
+    if (input.currentStepLabel) {
+      taskPatch.current_step = input.currentStepLabel.slice(0, 240);
+    }
+    if (input.status === "paused") taskPatch.status = "waiting_user";
+    else if (input.status === "cancelled") taskPatch.status = "cancelled";
+    else if (input.status === "completed") {
+      taskPatch.status = "completed";
+      taskPatch.completed_at = nowIso;
+    } else if (input.status === "running") {
+      taskPatch.status = "running";
+    }
+    await db.from("ai_tasks").update(taskPatch).eq("id", input.taskId);
+  }
+}
+
+export async function loadCopilotExecutionForContinue(input: {
+  executionId: string;
+  userId?: string;
+  storeId?: string | null;
+  allowWorkerBypass?: boolean;
+}): Promise<{ execution: Record<string, any>; steps: Record<string, any>[] } | null> {
+  const db = getServerClient();
+  const { data: execution, error } = await db
+    .from("copilot_executions")
+    .select("*")
+    .eq("id", input.executionId)
+    .maybeSingle();
+  if (error || !execution) return null;
+
+  if (!input.allowWorkerBypass) {
+    if (!input.userId) return null;
+    const isOwner = execution.user_id === input.userId;
+    const isSameStore =
+      Boolean(input.storeId) && execution.store_id === input.storeId;
+    if (!isOwner && !isSameStore) {
+      return null;
+    }
+  }
+
+  const { data: steps } = await db
+    .from("copilot_execution_steps")
+    .select("*")
+    .eq("execution_id", input.executionId)
+    .order("sequence_no", { ascending: true });
+
+  return {
+    execution,
+    steps: Array.isArray(steps) ? steps : [],
+  };
+}
+
+export async function controlCopilotExecution(input: {
+  executionId: string;
+  userId: string;
+  storeId?: string | null;
+  action: "pause" | "resume" | "inject_guidance" | "cancel";
+  guidance?: string;
+}): Promise<{ success: boolean; status: string; state: Record<string, unknown> }> {
+  const loaded = await loadCopilotExecutionForContinue({
+    executionId: input.executionId,
+    userId: input.userId,
+    storeId: input.storeId,
+  });
+  if (!loaded) {
+    throw new Error("Execução do Copilot não encontrada ou acesso negado.");
+  }
+
+  const execution = loaded.execution;
+  const currentState =
+    execution.state && typeof execution.state === "object"
+      ? { ...(execution.state as Record<string, unknown>) }
+      : {};
+
+  const nowIso = new Date().toISOString();
+  let nextStatus: PersistedExecutionStatus = execution.status || "running";
+  let nextPhase = String(execution.current_phase || "RUNNING");
+
+  if (input.action === "pause") {
+    currentState.pauseRequested = true;
+    currentState.autoResume = false;
+    nextStatus = "paused";
+    nextPhase = "WAITING_APPROVAL";
+  } else if (input.action === "resume") {
+    currentState.pauseRequested = false;
+    currentState.autoResume = true;
+    if (input.guidance?.trim()) {
+      currentState.userGuidance = input.guidance.trim().slice(0, 2000);
+    }
+    nextStatus = "paused";
+    nextPhase = "PARTIAL_RESULT";
+  } else if (input.action === "inject_guidance") {
+    if (!input.guidance?.trim()) {
+      throw new Error("Informe a instrução ou confirmação antes de enviar ao agente.");
+    }
+    currentState.userGuidance = input.guidance.trim().slice(0, 2000);
+    currentState.pauseRequested = false;
+    currentState.autoResume = true;
+    nextStatus = "paused";
+    nextPhase = "PARTIAL_RESULT";
+  } else if (input.action === "cancel") {
+    currentState.pauseRequested = true;
+    currentState.autoResume = false;
+    nextStatus = "cancelled";
+    nextPhase = "CANCELLED";
+  }
+
+  await saveCopilotExecutionCheckpoint({
+    executionId: input.executionId,
+    taskId: execution.task_id || input.executionId,
+    status: nextStatus,
+    currentPhase: nextPhase,
+    state: currentState,
+    currentStepLabel:
+      input.action === "pause"
+        ? "Pausado pelo usuário"
+        : input.action === "cancel"
+          ? "Cancelado pelo usuário"
+          : "Retomada solicitada com orientação",
+  });
+
+  if (nextStatus === "cancelled") {
+    await getServerClient()
+      .from("copilot_executions")
+      .update({ completed_at: nowIso })
+      .eq("id", input.executionId);
+  }
+
+  return { success: true, status: nextStatus, state: currentState };
 }

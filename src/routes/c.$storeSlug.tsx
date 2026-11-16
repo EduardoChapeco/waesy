@@ -309,7 +309,7 @@ function CommunityAndPortalWhitelabelPage() {
             onValueChange={setActiveMainTab}
             className="w-full space-y-4"
           >
-            <TabsList className="flex flex-nowrap overflow-x-auto no-scrollbar w-full justify-start h-auto gap-2 bg-transparent p-0 pb-1">
+            <TabsList className="waesy-tab-strip items-center justify-start w-full h-auto gap-2 bg-transparent p-0 pb-1">
               <TabsTrigger
                 value="feed"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-11 h-11 px-4 rounded-xl text-xs font-bold border border-border/60 bg-card gap-2 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"

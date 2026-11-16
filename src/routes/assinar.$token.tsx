@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { FileSignature, ShieldCheck, CheckCircle2, Lock, Hash, AlertCircle, Loader2, ArrowRight, FileText, Calendar, Camera, RefreshCcw, ExternalLink } from "lucide-react";
+import { FileSignature, ShieldCheck, CheckCircle2, Lock, Hash, AlertCircle, Loader2, ArrowRight, FileText, Calendar, Camera, RefreshCcw, ExternalLink, Download } from "lucide-react";
 import { toast } from "sonner";
 import { ContractMarkdownRenderer } from "@/components/contracts/contract-markdown-renderer";
 
@@ -11,6 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { SignatureCanvasPad } from "@/components/contracts/signature-canvas-pad";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
+import { downloadSignedContractPackagePdf } from "@/lib/contracts/contract-pdf-download";
+import { formatContractStatusLabel } from "@/lib/contracts/contract-vault-rules";
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/assinar/$token")({
@@ -66,6 +68,7 @@ function SignContractPage() {
   const [isUploadingSelfie, setIsUploadingSelfie] = useState(false);
   const [selfieUploaded, setSelfieUploaded] = useState(false);
   const [faceImageUrl, setFaceImageUrl] = useState<string>("");
+  const [facialBiometricsHash, setFacialBiometricsHash] = useState<string>("");
 
   const openCamera = useCallback(async () => {
     try {
@@ -106,6 +109,7 @@ function SignContractPage() {
     setSelfieDataUrl("");
     setSelfieUploaded(false);
     setFaceImageUrl("");
+    setFacialBiometricsHash("");
     openCamera();
   }, [openCamera]);
 
@@ -114,25 +118,21 @@ function SignContractPage() {
     setIsUploadingSelfie(true);
     try {
       const res = await fetch(selfieDataUrl);
-      const blob = await res.blob();
-      const filename = `selfie_${Date.now()}.jpg`;
-      const formData = new FormData();
-      formData.append("file", blob, filename);
-      formData.append("bucket", "identity-vault");
-      const uploadRes = await fetch("/api/upload-media", { method: "POST", body: formData });
-      if (uploadRes.ok) {
-        const json = await uploadRes.json();
-        const url = json?.url || json?.publicUrl || "";
-        setFaceImageUrl(url);
-        setSelfieUploaded(true);
-        toast.success("Selfie capturada com sucesso!");
-      } else {
-        setSelfieUploaded(true);
-        toast.success("Selfie capturada com sucesso!");
+      const buffer = await res.arrayBuffer();
+      if (!buffer || buffer.byteLength === 0) {
+        throw new Error("A imagem capturada está vazia.");
       }
-    } catch {
+      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+      const hashHex = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      setFacialBiometricsHash(hashHex);
       setSelfieUploaded(true);
-      toast.warning("Selfie registrada localmente. A assinatura prosseguirá normalmente.");
+      toast.success("Biometria facial validada e selada com hash SHA-256.");
+    } catch (err: any) {
+      setSelfieUploaded(false);
+      setFacialBiometricsHash("");
+      toast.error(err?.message || "Não foi possível validar a selfie capturada. Tente novamente.");
     } finally {
       setIsUploadingSelfie(false);
     }
@@ -183,6 +183,11 @@ function SignContractPage() {
     const screenRes = typeof window !== "undefined" ? `${window.innerWidth}x${window.innerHeight}` : undefined;
     const tz = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined;
 
+    if (envelope?.require_facial_biometrics && (!selfieUploaded || !facialBiometricsHash)) {
+      toast.error("Este documento exige validação biométrica facial antes de assinar.");
+      return;
+    }
+
     if (saveSignatureToProfile && signatureImage) {
       saveUserSignature({ data: { signatureImageBase64: signatureImage } }).catch(() => {});
     }
@@ -193,6 +198,7 @@ function SignContractPage() {
         consent: true,
         signatureImageBase64: signatureImage || undefined,
         faceImageUrl: faceImageUrl || undefined,
+        facialBiometricsHash: facialBiometricsHash || undefined,
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "Browser",
         screenResolution: screenRes,
         timezone: tz,
@@ -252,14 +258,53 @@ function SignContractPage() {
 
         {/* Visualizador do Conteúdo do Contrato (Leitura Fluida Mobile/Desktop) */}
         <div className="bg-card border border-border/80 rounded-lg p-5 sm:p-8 space-y-4 shadow-2xs">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-2 border-b border-border/60">
-            Termos e Cláusulas Contratuais
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/60">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Termos e Cláusulas Contratuais
+            </h2>
+            {version?.sourceFileSignedUrl && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-11 min-h-11 sm:h-8 sm:min-h-0 rounded-lg text-xs gap-2"
+              >
+                <a
+                  href={version.sourceFileSignedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="size-3.5" />
+                  <span>Abrir Original</span>
+                </a>
+              </Button>
+            )}
+          </div>
 
-          <ContractMarkdownRenderer
-            content={version?.content_markdown || ""}
-            className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-138 overflow-y-auto rounded-lg p-4 sm:p-6 bg-muted/10 font-serif"
-          />
+          {version?.sourceFileSignedUrl && (
+            <div className="space-y-2">
+              {version?.source_file_mime?.startsWith("image/") ? (
+                <img
+                  src={version.sourceFileSignedUrl}
+                  alt={version.source_file_name || contract?.title || "Documento"}
+                  className="w-full max-h-128 object-contain rounded-lg border border-border/60 bg-background"
+                />
+              ) : (
+                <iframe
+                  title={version.source_file_name || contract?.title || "Documento Original"}
+                  src={version.sourceFileSignedUrl}
+                  className="w-full h-96 sm:h-128 rounded-lg border border-border/60 bg-background"
+                />
+              )}
+            </div>
+          )}
+
+          {(version?.content_markdown?.trim() || !version?.sourceFileSignedUrl) && (
+            <ContractMarkdownRenderer
+              content={version?.content_markdown || ""}
+              className="text-xs sm:text-sm text-foreground/90 leading-relaxed max-h-138 overflow-y-auto rounded-lg p-4 sm:p-6 bg-muted/10 font-serif"
+            />
+          )}
         </div>
 
         {/* SE JÁ FOI ASSINADO: EXIBE PROTOCOLO COMPLETO E LINK DE VERIFICAÇÃO */}
@@ -273,14 +318,54 @@ function SignContractPage() {
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
                 A conclusão global depende de todas as assinaturas exigidas. Consulte o certificado público para acompanhar o estado do contrato.
               </p>
-              {contract?.verification_code && (
-                <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 mt-2 h-10 px-5 min-h-11 sm:min-h-0">
-                  <Link to="/verify/document/$code" params={{ code: contract.verification_code }}>
-                    <span>Ver Certificado Público de Autenticidade</span>
-                    <ArrowRight className="size-3.5" />
-                  </Link>
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    void downloadSignedContractPackagePdf({
+                      title: contract?.title || version?.title || "Minuta de Contrato",
+                      categoryLabel: contract?.category || "Contrato",
+                      statusLabel: formatContractStatusLabel(
+                        typeof signMutation.data === "object" && signMutation.data && "completed" in signMutation.data && signMutation.data.completed
+                          ? "completed"
+                          : "partially_signed",
+                      ),
+                      contentMarkdown: version?.content_markdown || "",
+                      verificationCode: contract?.verification_code || null,
+                      hashSha256: version?.hash_sha256 || null,
+                      sealedAt: version?.sealed_at || null,
+                      sourceFileSignedUrl: version?.sourceFileSignedUrl || null,
+                      sourceFileName: version?.source_file_name || null,
+                      signers: [
+                        {
+                          name: envelope.signer_name || "Signatário",
+                          email: envelope.signer_email || null,
+                          phone: envelope.signer_phone || null,
+                          role: envelope.signer_role || "party",
+                          status: "signed",
+                          viewedAt: envelope.viewed_at || null,
+                          signedAt: new Date().toISOString(),
+                          signatureImageUrl: signatureImage || undefined,
+                        },
+                      ],
+                    })
+                  }
+                  className="rounded-lg text-xs font-semibold gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-4"
+                >
+                  <Download className="size-3.5" />
+                  <span>Baixar Comprovante PDF</span>
                 </Button>
-              )}
+                {contract?.verification_code && (
+                  <Button asChild size="sm" className="rounded-lg text-xs font-bold gap-2 h-11 min-h-11 sm:h-9 sm:min-h-0 px-5">
+                    <Link to="/verify/document/$code" params={{ code: contract.verification_code }}>
+                      <span>Ver Certificado Público de Autenticidade</span>
+                      <ArrowRight className="size-3.5" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Folha de Rosto / Protocolo de Auditoria */}

@@ -371,6 +371,10 @@ describe("Wave C.3 — Integridade BFF, Auth Fail-Closed e Anti-Falso-Positivo",
     expect(dir?.longitude).toBe(-52.6);
     expect(dir?.status).toBe("active");
 
+    await expect(upgradeStoreToWaesyMax()).rejects.toThrow(/Admin Master Global/i);
+
+    mockState.identity.role = "platform_admin";
+    mockState.identity.isPlatformAdmin = true;
     mockState.responses["stores:update"] = {
       data: null,
       error: { message: "plan_tier update failed" },

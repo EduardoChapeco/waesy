@@ -62,6 +62,7 @@ import {
   normalizeDateOnlyInput,
   parseDateOnlyParts,
 } from "@/lib/datetime";
+import { Route as LeadPortalRoute } from "@/routes/m.lead.$leadId";
 
 describe("M10 — Timezone Date-Only Safety, Portal /m/lead/$leadId & Document Upload E2E", () => {
   it("preserva datas civis YYYY-MM-DD sem deslocamento de -1 dia em fusos negativos (BRT -03:00)", () => {
@@ -86,7 +87,7 @@ describe("M10 — Timezone Date-Only Safety, Portal /m/lead/$leadId & Document U
     expect(calculateAgeFromDateOnly("2000-09-25", new Date("2027-09-24T15:00:00Z"))).toBe(26);
   });
 
-  it("renderiza /m/lead/$leadId com datas editáveis corretas (25/09/2027 a 29/09/2027), upload de documentos e barra fixa sem sobreposição", async () => {
+  it("renderiza /m/lead/$leadId com datas editáveis corretas (25/09/2027 a 29/09/2027), upload de documentos e barra fixa sem sobreposição", () => {
     mockLoaderData["/m/lead/$leadId"] = {
       loadError: null,
       leadData: {
@@ -130,8 +131,7 @@ describe("M10 — Timezone Date-Only Safety, Portal /m/lead/$leadId & Document U
       },
     };
 
-    const mod = await import("@/routes/m.lead.$leadId");
-    const Comp = (mod.Route as any).component;
+    const Comp = (LeadPortalRoute as any).component;
     const html = renderToStaticMarkup(React.createElement(Comp));
 
     expect(html).toContain("Excelência Tour São Miguel do Oeste");
@@ -151,14 +151,13 @@ describe("M10 — Timezone Date-Only Safety, Portal /m/lead/$leadId & Document U
     expect(html).toContain("Enviar Preferências à Agência");
   });
 
-  it("renderiza ErrorState recuperável quando o loader do portal /m/lead retorna falha", async () => {
+  it("renderiza ErrorState recuperável quando o loader do portal /m/lead retorna falha", () => {
     mockLoaderData["/m/lead/$leadId"] = {
       leadData: null,
       loadError: "Formulário de viagem não encontrado ou expirado.",
     };
 
-    const mod = await import("@/routes/m.lead.$leadId");
-    const Comp = (mod.Route as any).component;
+    const Comp = (LeadPortalRoute as any).component;
     const html = renderToStaticMarkup(React.createElement(Comp));
 
     expect(html).toContain("Formulário Indisponível");

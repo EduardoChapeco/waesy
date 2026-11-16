@@ -17,7 +17,7 @@ import {
   createMerchantGiftCardProduct,
 } from "@/services/giftcard.functions";
 import { formatWz, brlCentsToWz, wzToBrlCentsReference } from "@/lib/wz-quote-engine";
-import { Search, Plus, Gift, CheckCircle, XCircle, Copy, ExternalLink, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Search, Plus, Gift, CheckCircle, XCircle, Copy, ExternalLink, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/marketing/gift-cards")({
   head: () => ({ meta: [{ title: "Vale-Presentes | Workspace Waesy" }] }),
@@ -109,19 +109,15 @@ function NewGiftCardDrawer({
             onClick={handleCreate}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Emitindo no Ledger..." : "Emitir e Ativar Vale"}
+            {isSubmitting ? "Emitindo vale..." : "Emitir e Ativar Vale"}
           </Button>
         </div>
       }
     >
       <div className="py-2 space-y-4 text-xs">
-        {/* Aviso de Isolamento Econômico Obrigatório */}
-        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-start gap-2 text-warning-strong ">
-          <AlertTriangle className="size-4 shrink-0 mt-1" />
-          <p className="leading-tight">
-            <strong>Invariante de Financiamento:</strong> Este vale é restrito a compras nesta loja. Vales de cortesia não geram recebíveis em dinheiro nem obrigações de repasse por parte da Waesy.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Este vale é válido exclusivamente para compras nesta loja e não é conversível em dinheiro.
+        </p>
 
         <div className="space-y-2">
           <Label className="text-xs font-bold">Valor do Vale ($WZ)</Label>

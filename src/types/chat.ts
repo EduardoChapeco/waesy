@@ -25,6 +25,22 @@ export type AIActivityStepStatus =
 
 export type SubagentRole = "@planner" | "@investigator" | "@harvester" | "@critic" | string;
 
+export interface ExecutionPlanStep {
+  id: string;
+  title: string;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  notes?: string;
+}
+
+export interface WorkspaceVfsFileEntry {
+  path: string;
+  content: string;
+  language: string;
+  updatedAt: string;
+  sizeBytes: number;
+  version: number;
+}
+
 export interface AIActivityStep {
   id: string;
   type: AIActivityStepType;
@@ -39,6 +55,15 @@ export interface AIActivityStep {
   costUsd?: number;
   role?: SubagentRole;
   parentTaskId?: string;
+  browserUrl?: string;
+  screenshotUrl?: string;
+  liveViewerUrl?: string;
+  driver?: string;
+  terminalOutput?: string;
+  fileDiff?: string;
+  fileName?: string;
+  fileOriginal?: string;
+  toolLogs?: Array<Record<string, any>>;
 }
 
 export type ChatArtifactType =
@@ -48,6 +73,9 @@ export type ChatArtifactType =
   | "landing_page"
   | "proposal"
   | "image"
+  | "video"
+  | "omnibuilder"
+  | "code"
   | "itinerary"
   | "travel_itinerary"
   | "chart"
@@ -60,7 +88,13 @@ export type ChatArtifactType =
   | "social_post"
   | "dashboard"
   | "map_view"
-  | "creative_post";
+  | "creative_post"
+  | "carousel"
+  | "motion_video"
+  | "simlab_report"
+  | "business_plan"
+  | "web_app"
+  | "schedule_plan";
 
 export type CopilotQuickToolMode =
   | "default"

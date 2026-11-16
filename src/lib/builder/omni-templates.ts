@@ -94,6 +94,94 @@ export function resolveTemplateTheme(
       borderRadius: "xl",
       customThemeEnabled: true,
     },
+    template_waesy_super_vitrine: {
+      primaryColor: `${h}111827`,
+      backgroundColor: `${h}f8fafc`,
+      textColor: `${h}09090b`,
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    template_classifieds_portal_vitrine: {
+      primaryColor: `${h}0f766e`,
+      backgroundColor: `${h}f8fafc`,
+      textColor: `${h}0f172a`,
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
+    template_social_creator_store: {
+      primaryColor: `${h}e11d48`,
+      backgroundColor: `${h}fff1f2`,
+      textColor: `${h}18181b`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    template_gastronomy: {
+      primaryColor: `${h}b91c1c`,
+      backgroundColor: `${h}fffaf5`,
+      textColor: `${h}1c1917`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
+    template_creators: {
+      primaryColor: `${h}4f46e5`,
+      backgroundColor: `${h}ffffff`,
+      textColor: `${h}09090b`,
+      fontFamily: "Space Grotesk, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
+    template_services_wellness: {
+      primaryColor: `${h}7c3aed`,
+      backgroundColor: `${h}faf5ff`,
+      textColor: `${h}1e1b4b`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    template_creator_biolink: {
+      primaryColor: `${h}18181b`,
+      backgroundColor: `${h}fefce8`,
+      textColor: `${h}18181b`,
+      fontFamily: "Space Grotesk, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    template_editorial_news: {
+      primaryColor: `${h}b91c1c`,
+      backgroundColor: `${h}faf8f5`,
+      textColor: `${h}0f172a`,
+      fontFamily: "Inter, sans-serif",
+      borderRadius: "lg",
+      customThemeEnabled: true,
+    },
+    pilot_gastronomy_orders: {
+      primaryColor: `${h}c2410c`,
+      backgroundColor: `${h}fff7ed`,
+      textColor: `${h}1c1917`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
+    pilot_wellness_booking: {
+      primaryColor: `${h}0f766e`,
+      backgroundColor: `${h}f0fdfa`,
+      textColor: `${h}134e4a`,
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      borderRadius: "2xl",
+      customThemeEnabled: true,
+    },
+    pilot_creator_course_enrollment: {
+      primaryColor: `${h}4338ca`,
+      backgroundColor: `${h}eef2ff`,
+      textColor: `${h}1e1b4b`,
+      fontFamily: "Space Grotesk, sans-serif",
+      borderRadius: "xl",
+      customThemeEnabled: true,
+    },
   };
 
   if (presets[templateId]) {
@@ -111,16 +199,19 @@ export function resolveTemplateTheme(
     };
   }
 
-  return (
-    existingTheme || {
-      primaryColor: `${h}09090b`,
-      backgroundColor: `${h}ffffff`,
-      textColor: `${h}09090b`,
-      fontFamily: "Inter, sans-serif",
-      borderRadius: "xl",
-      customThemeEnabled: true,
-    }
-  );
+  return existingTheme
+    ? {
+        ...existingTheme,
+        customThemeEnabled: true,
+      }
+    : {
+        primaryColor: `${h}09090b`,
+        backgroundColor: `${h}ffffff`,
+        textColor: `${h}09090b`,
+        fontFamily: "Inter, sans-serif",
+        borderRadius: "xl",
+        customThemeEnabled: true,
+      };
 }
 
 export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
@@ -1198,6 +1289,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
     badge: "Turismo",
     blocks: [
       {
+        sectionAnchorId: "topo",
         type: "hero_minimal_split",
         config: {
           badgeText: "ROTEIROS 2027 • TEMPORADA ABERTA",
@@ -1220,6 +1312,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "destinos",
         type: "media_gallery_mosaic",
         config: {
           title: "Destinos & Experiências Inspiradoras",
@@ -1254,6 +1347,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "pacotes",
         type: "pricing_three_tiers",
         config: {
           title: "Pacotes em Destaque",
@@ -1266,6 +1360,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               description: "3 Dias e 2 Noites em chalé com lareira e café colonial.",
               features: ["Transporte Executivo Ida/Volta", "Hospedagem com Café da Manhã", "Guia Regional Cadastur", "Seguro Viagem Completo"],
               ctaLabel: "Reservar Vaga",
+              ctaHref: "#cotacao",
             },
             {
               id: "tier-2",
@@ -1276,6 +1371,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               description: "7 Dias em Resort All-Inclusive beira-mar com voos inclusos.",
               features: ["Aéreo Ida e Volta com Bagagem", "Resort All-Inclusive", "Transfer Aeroporto/Hotel", "Passeio de Barco Incluso"],
               ctaLabel: "Garantir Pacote",
+              ctaHref: "#cotacao",
             },
             {
               id: "tier-3",
@@ -1284,11 +1380,13 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               description: "12 Dias conhecendo Paris, Roma e Madri com guia em português.",
               features: ["Passagens Aéreas Internacionais", "Hotéis 4 Estrelas Centrais", "Trens de Alta Velocidade", "City Tours Exclusivos"],
               ctaLabel: "Consultar Datas",
+              ctaHref: "#cotacao",
             },
           ],
         },
       },
       {
+        sectionAnchorId: "cotacao",
         type: "contact_form_direct",
         config: {
           title: "Solicite Sua Lâmina Personalizada de Viagem",
@@ -1310,6 +1408,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
     badge: "Infoprodutos",
     blocks: [
       {
+        sectionAnchorId: "topo",
         type: "hero_minimal_split",
         config: {
           badgeText: "NOVA TURMA ABERTA • VAGAS LIMITADAS",
@@ -1331,6 +1430,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "metodologia",
         type: "bento_asymmetric_4",
         config: {
           sectionTitle: "O Que Você Vai Conquistar Dentro do Treinamento",
@@ -1368,6 +1468,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "planos",
         type: "pricing_three_tiers",
         config: {
           title: "Escolha Seu Nível de Acesso",
@@ -1380,6 +1481,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               description: "Ideal para quem quer aprender no próprio ritmo.",
               features: ["Acesso a todas as aulas gravadas", "Materiais de apoio e planilhas", "Certificado de conclusão", "1 Ano de Acesso"],
               ctaLabel: "Entrar no Essencial",
+              ctaHref: "#inscricao",
             },
             {
               id: "pro",
@@ -1390,11 +1492,13 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               description: "Para quem busca aceleração rápida com acompanhamento próximo.",
               features: ["Tudo do plano Essencial", "Encontros quinzenais pelo Zoom", "Grupo exclusivo de networking", "Revisão individual de projetos"],
               ctaLabel: "Garantir Vaga na Mentoria",
+              ctaHref: "#inscricao",
             },
           ],
         },
       },
       {
+        sectionAnchorId: "duvidas",
         type: "faq_clean_accordion",
         config: {
           title: "Perguntas Frequentes",
@@ -1411,6 +1515,20 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               answer: "Se por qualquer motivo você achar que o treinamento não é para você, basta solicitar o reembolso em 1 clique e devolveremos seu valor integral.",
             },
           ],
+        },
+      },
+      {
+        sectionAnchorId: "inscricao",
+        type: "contact_form_direct",
+        config: {
+          title: "Finalize Sua Inscrição ou Tire Dúvidas",
+          subtitle: "Informe seu melhor contato para receber o link oficial de matrícula e bônus da turma.",
+          submitButtonText: "Solicitar Acesso Oficial",
+          whatsappNumber: "5511999998888",
+          captureChannel: "crm",
+          showPhoneField: true,
+          showMessageField: true,
+          successMessage: "Solicitação recebida! Nossa equipe enviará os detalhes da sua vaga.",
         },
       },
     ],
@@ -1446,6 +1564,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "galeria",
         type: "media_gallery_mosaic",
         config: {
           title: "Portfólio de Residências Selecionadas",
@@ -1517,12 +1636,15 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "contato",
         type: "contact_form_direct",
         config: {
           title: "Agende sua Visita Exclusiva",
           subtitle: "Preencha seus dados para receber a ficha técnica detalhada dos imóveis.",
           submitButtonText: "Solicitar Apresentação VIP",
+          whatsappNumber: "5511999998888",
           whatsappRedirect: true,
+          captureChannel: "crm",
         },
       },
     ],
@@ -1558,6 +1680,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "servicos",
         type: "bento_asymmetric_4",
         config: {
           sectionTitle: "Protocolos Clínicos em Destaque",
@@ -1639,12 +1762,15 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "contato",
         type: "contact_form_direct",
         config: {
           title: "Reserve seu Horário com Exclusividade",
           subtitle: "Nossa equipe entrará em contato via WhatsApp para confirmar a melhor data.",
           submitButtonText: "Solicitar Agendamento",
+          whatsappNumber: "5511999998888",
           whatsappRedirect: true,
+          captureChannel: "crm",
         },
       },
     ],
@@ -1670,7 +1796,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
           title: "Lucas Silva — Direção Criativa & Estratégia Digital",
           subtitle: "Podcaster, ensaísta e produtor de conteúdo. Acompanhe meus lançamentos, projetos autorais e comunidade fechada.",
           primaryCta: {
-            label: "️ Ouvir Último Episódio do Podcast",
+            label: "Ouvir Último Episódio do Podcast",
             href: "https://spotify.com",
           },
           secondaryCta: {
@@ -1768,6 +1894,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
           title: "Receba Minhas Cartas Semanais (VIP)",
           subtitle: "Assine a newsletter para receber insights sobre negócios criativos, novidades e convites para encontros fechados.",
           submitButtonText: "Inscrever-se Gratuitamente",
+          captureChannel: "crm",
           showPhoneField: false,
           showMessageField: false,
           successMessage: "Inscrição confirmada com sucesso! Verifique sua caixa de entrada.",
@@ -1949,6 +2076,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "cardapio",
         type: "media_gallery_mosaic",
         config: {
           title: "Cardápio Visual — Os Favoritos da Cozinha",
@@ -1983,6 +2111,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
         },
       },
       {
+        sectionAnchorId: "combos",
         type: "pricing_three_tiers",
         config: {
           title: "Combos Promocionais com Desconto Especial",
@@ -2000,6 +2129,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
                 "1x Molho da Casa Grátis",
               ],
               ctaLabel: "Pedir Combo Solo",
+              ctaHref: "#pedido",
             },
             {
               id: "combo-2",
@@ -2015,6 +2145,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
                 "2x Molhos Especiais da Cozinha",
               ],
               ctaLabel: "Garantir Combo Casal",
+              ctaHref: "#pedido",
             },
             {
               id: "combo-3",
@@ -2028,11 +2159,13 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
                 "1x Refrigerante 2L Incluso",
               ],
               ctaLabel: "Pedir Box Família",
+              ctaHref: "#pedido",
             },
           ],
         },
       },
       {
+        sectionAnchorId: "pedido",
         type: "contact_form_direct",
         config: {
           title: "Fazer Pedido Imediato pelo WhatsApp",
@@ -2127,11 +2260,11 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
             {
               id: "prom_ad_1",
               format: "banner",
-              sponsorName: "Espaco Publicitario Regional ? ADS",
+              sponsorName: "Espaco Publicitario Regional · ADS",
               headline: "Posicione sua marca em destaque no feed editorial de maior leitura da regiao",
               description: "Formatos nativos Promethee, banners horizontais e patrocinio de editorias por cidade.",
               ctaLabel: "Anunciar no Portal",
-              ctaHref: "#",
+              ctaHref: "#redacao",
               imageUrl: "",
             },
           ],
@@ -2188,6 +2321,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               features: ["Formato desktop e mobile responsivo", "Link direto com rastreio de cliques", "Relatorio mensal de impressoes"],
               isPopular: false,
               ctaLabel: "Anunciar no Topo",
+              ctaHref: "#redacao",
             },
             {
               id: "ad-tier-2",
@@ -2198,6 +2332,7 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               features: ["Destaque no carrossel de plantao", "Transformacao em carrossel social", "Selo de Conteudo Patrocinado", "Indexacao de busca"],
               isPopular: true,
               ctaLabel: "Contratar Pauta",
+              ctaHref: "#redacao",
             },
             {
               id: "ad-tier-3",
@@ -2207,11 +2342,13 @@ export const NICHE_TEMPLATE_MATRIX: NicheTemplateDefinition[] = [
               features: ["Assinatura no cabecalho da editoria", "Card nativo ADS no feed", "Banners laterais exclusivos", "Metricas em tempo real"],
               isPopular: false,
               ctaLabel: "Ser Patrocinador Master",
+              ctaHref: "#redacao",
             },
           ],
         },
       },
       {
+        sectionAnchorId: "redacao",
         type: "contact_form_direct",
         config: {
           title: "Redacao, Pauta Cidada e Anunciantes",

@@ -128,7 +128,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
           recipient_name, recipient_email, recipient_tax_id, checkin_at, created_at,
           cancellation_reason, cancelled_at, transferred_at,
           event:events!tickets_event_id_fkey(
-            id, title, event_date, end_date, location, cover_image, banner_image_url,
+            id, title, event_date, end_date, location, cover_image, banner_url,
             store:stores!events_store_id_fkey(id, name, phone, slug)
           ),
           lot:ticket_lots!tickets_lot_id_fkey(
@@ -172,7 +172,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
             status: isUsed ? "used" : isCancelled ? "cancelled" : t.status === "valid" ? "completed" : t.status,
             qrHash: t.qr_hash || t.human_code || `W-${t.id.slice(0, 8).toUpperCase()}`,
             humanCode: t.human_code || `W-TKT-${t.id.slice(0, 8).toUpperCase()}`,
-            coverUrl: event.cover_image || event.banner_image_url || null,
+            coverUrl: event.cover_image || event.banner_url || null,
             isUsed,
             accessCode: t.human_code || t.id.slice(0, 8).toUpperCase(),
             createdAt: t.created_at,
@@ -286,9 +286,9 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
         .from("orders")
         .select(`
           id, status, created_at, total_cents,
-          order_items(id, item_type, product_title, quantity, unit_price_cents, metadata)
+          order_items(id, item_type, product_title, qty, unit_price_cents, selected_options, variant_attributes, notes)
         `)
-        .eq("user_id", user.id)
+        .eq("customer_id", user.id)
         .order("created_at", { ascending: false });
 
       if (orders) {
@@ -304,7 +304,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
             const ticketId = item.id || order.id;
             if (ticketsMap.has(ticketId)) continue;
 
-            const meta = item.metadata || {};
+            const meta = (item.selected_options || item.variant_attributes || {}) as Record<string, any>;
             const isCancelled = order.status === "cancelled" || order.status === "returned";
             const isUsed = meta.is_used === true || order.status === "delivered";
 
@@ -315,7 +315,7 @@ export const listCustomerEventTickets = createServerFn({ method: "GET" }).handle
               eventDate: meta.event_date || null,
               eventLocation: meta.event_location || meta.venue || null,
               lotName: meta.lot_name || meta.batch || "Ingresso Comprado",
-              quantity: item.quantity || 1,
+              quantity: item.qty || 1,
               priceCents: order.total_cents,
               status: isUsed ? "used" : isCancelled ? "cancelled" : order.status === "paid" ? "completed" : order.status,
               qrHash: meta.qr_hash || meta.qr_code || `W${order.id.slice(0, 8).toUpperCase()}`,
@@ -369,7 +369,7 @@ export const getEventTicketDetails = createServerFn({ method: "GET" })
         recipient_name, recipient_email, recipient_tax_id, checkin_at, created_at,
         cancellation_reason, cancelled_at, transferred_at,
         event:events!tickets_event_id_fkey(
-          id, title, description, event_date, end_date, location, cover_image, banner_image_url,
+          id, title, description, event_date, end_date, location, cover_image, banner_url,
           store:stores!events_store_id_fkey(id, name, phone, slug, logo_url)
         ),
         lot:ticket_lots!tickets_lot_id_fkey(
@@ -407,7 +407,7 @@ export const getEventTicketDetails = createServerFn({ method: "GET" })
           eventEndDate: event.end_date || null,
           eventLocation: event.location || null,
           eventAddress: event.location || null,
-          coverUrl: event.cover_image || event.banner_image_url || null,
+          coverUrl: event.cover_image || event.banner_url || null,
           lotName: lot.name || "Lote Geral",
           priceCents: lot.price_cents || 0,
           status: ticket.status,

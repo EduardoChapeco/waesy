@@ -14,7 +14,7 @@ import { listStorePudoPackages, checkInPudoPackage, deliverPudoPackageToCustomer
 import { playCashRegisterSound, playMessageChime } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/logistica/pudo")({
-  head: () => ({ meta: [{ title: "Ponto de Retirada (PUDO) e Logística Reversa | Workspace" }] }),
+  head: () => ({ meta: [{ title: "Pontos de Retirada e Devoluções | Workspace" }] }),
   loader: async () => {
     try {
       const packages = await listStorePudoPackages().catch(() => []);
@@ -136,7 +136,7 @@ function WorkspacePudoLogisticsPage() {
     }
 
     if (!defaultLocationId) {
-      toast.error("Local PUDO padrão não configurado para esta loja.");
+      toast.error("Ponto de retirada padrão não configurado para esta loja.");
       return;
     }
 
@@ -164,7 +164,7 @@ function WorkspacePudoLogisticsPage() {
       };
       setPackages((prev: any) => [newPkg, ...prev]);
       playMessageChime();
-      toast.success("Pacote registrado com sucesso no ponto PUDO!");
+      toast.success("Pacote registrado no ponto de coleta.");
       setIsCheckInModalOpen(false);
       setTrackingCode("");
       setSenderName("");
@@ -524,7 +524,7 @@ function WorkspacePudoLogisticsPage() {
         <DialogContent className="sm:max-w-md sm:p-6 rounded-lg bg-card">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
-              Registrar Entrada de Pacote PUDO
+              Registrar Entrada de Pacote
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Dê entrada em um volume recebido para retirada temporária no seu estabelecimento.

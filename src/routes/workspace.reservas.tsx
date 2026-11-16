@@ -31,8 +31,13 @@ export const Route = createFileRoute("/workspace/reservas")({
  return { store: null };
  }
  },
- component: TableReservationsPage,
+ component: ReservationsRoutePage,
 });
+
+function ReservationsRoutePage() {
+ const { store: loaderStore } = ((Route.useLoaderData?.() as any) || {});
+ return <TableReservationsPage storeProp={loaderStore} />;
+}
 
 // ─── Tipos ─────────────────────────────────────────────────────────────
 type TableStatus = "free" | "reserved" | "seated" | "pending";
@@ -82,8 +87,7 @@ const TABLE_STATUS_STYLE: Record<TableStatus, {
 };
 
 export default function TableReservationsPage({ embedded = false, storeProp }: { embedded?: boolean; storeProp?: any } = {}) {
- const { store: loaderStore } = ((Route.useLoaderData?.() as any) || {});
- const store = storeProp ?? loaderStore;
+ const store = storeProp ?? null;
  // store resolved from storeProp ?? loaderStore
  const navigate = useNavigate();
  const queryClient = useQueryClient();
@@ -444,14 +448,14 @@ export default function TableReservationsPage({ embedded = false, storeProp }: {
  {/* Vista: Lista de Reservas */}
  {activeView === "list" && (
  <Tabs value={listFilter} onValueChange={(v: any) => setListFilter(v)} className="w-full">
- <TabsList className="bg-muted/60 p-1 rounded-lg mb-4">
- <TabsTrigger value="upcoming" className="rounded-lg font-bold text-xs gap-2">
- <Clock className="size-3.5" /> Próximas
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/60 p-1 rounded-lg mb-4 w-full sm:w-auto max-w-full min-w-0 h-11 min-h-11 sm:h-10 sm:min-h-10">
+ <TabsTrigger value="upcoming" className="rounded-lg font-bold text-xs gap-2 shrink-0 whitespace-nowrap">
+ <Clock className="size-3.5 shrink-0" /> Próximas
  </TabsTrigger>
- <TabsTrigger value="past" className="rounded-lg font-bold text-xs gap-2">
- <CalendarDays className="size-3.5" /> Passadas
+ <TabsTrigger value="past" className="rounded-lg font-bold text-xs gap-2 shrink-0 whitespace-nowrap">
+ <CalendarDays className="size-3.5 shrink-0" /> Passadas
  </TabsTrigger>
- <TabsTrigger value="all" className="rounded-lg font-bold text-xs gap-2">
+ <TabsTrigger value="all" className="rounded-lg font-bold text-xs gap-2 shrink-0 whitespace-nowrap">
  Todas
  </TabsTrigger>
  </TabsList>

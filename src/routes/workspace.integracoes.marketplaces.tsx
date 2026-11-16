@@ -42,14 +42,16 @@ import { listStoreWebhookEvents, reprocessWebhookEvent, retryStoreFailedWebhooks
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
+import { getStoreSettings } from "@/services/store.functions";
+import { getNicheSemantics } from "@/lib/niche-semantics";
 
 export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
   head: () => ({
-    meta: [{ title: "Marketplaces | Workspace Waesy" }],
+    meta: [{ title: "Integrações e Canais | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
-      const [connectors, financialSummary, mappings, syncLogs, webhookEvents, externalOrders, locations] = await Promise.all([
+      const [connectors, financialSummary, mappings, syncLogs, webhookEvents, externalOrders, locations, storeSettings] = await Promise.all([
         listMarketplaceConnectors().catch(() => []),
         getMarketplaceFinancialSummary().catch(() => []),
         listProductMarketplaceMappings().catch(() => []),
@@ -57,6 +59,7 @@ export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
         listStoreWebhookEvents({ data: { status: "all", limit: 20 } }).catch(() => []),
         listMarketplaceExternalOrders().catch(() => []),
         listInventoryLocations().catch(() => []),
+        getStoreSettings().catch(() => null),
       ]);
       return {
         initialConnectors: connectors,
@@ -66,6 +69,7 @@ export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
         initialWebhookEvents: webhookEvents,
         initialExternalOrders: externalOrders,
         initialLocations: locations,
+        initialStore: storeSettings,
       };
     } catch (err) {
       console.error("[loader:workspace.integracoes.marketplaces] error:", err);
@@ -77,6 +81,7 @@ export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
         initialWebhookEvents: [],
         initialExternalOrders: [],
         initialLocations: [],
+        initialStore: null,
       };
     }
   },
@@ -245,6 +250,48 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     ],
   },
   {
+    platform: "99food",
+    name: "99Food",
+    category: "food",
+    icon: Utensils,
+    color: "bg-muted text-foreground border border-border/60",
+    docUrl: "https://food.99app.com/",
+    badgeLabel: "Open API / Webhooks",
+    credentialFields: [
+      { key: "client_id", label: "App ID / Loja ID 99Food", placeholder: "12345678", required: true },
+      { key: "api_key", label: "API Key / Token", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "webhook_secret", label: "Webhook Secret (HMAC)", placeholder: "xxxxxxxxxxxxxxxx", type: "password" },
+    ],
+  },
+  {
+    platform: "tridelivery",
+    name: "TriDelivery",
+    category: "food",
+    icon: Utensils,
+    color: "bg-muted text-foreground border border-border/60",
+    docUrl: "https://tridelivery.com.br/",
+    badgeLabel: "Delivery Regional",
+    credentialFields: [
+      { key: "api_key", label: "Token API TriDelivery", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "merchant_id", label: "ID da Loja no TriDelivery", placeholder: "12345" },
+      { key: "webhook_secret", label: "Webhook Secret (HMAC)", placeholder: "xxxxxxxxxxxxxxxx", type: "password" },
+    ],
+  },
+  {
+    platform: "amoofertas",
+    name: "Amo Ofertas",
+    category: "food",
+    icon: Utensils,
+    color: "bg-muted text-foreground border border-border/60",
+    docUrl: "https://amoofertas.com.br/",
+    badgeLabel: "App Delivery Brasil",
+    credentialFields: [
+      { key: "api_key", label: "Token API Amo Ofertas", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "merchant_id", label: "ID do Estabelecimento", placeholder: "12345" },
+      { key: "webhook_secret", label: "Webhook Secret (HMAC)", placeholder: "xxxxxxxxxxxxxxxx", type: "password" },
+    ],
+  },
+  {
     platform: "amodelivery",
     name: "Amo Delivery",
     category: "food",
@@ -255,6 +302,22 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     credentialFields: [
       { key: "api_key", label: "API Key", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
       { key: "restaurant_id", label: "ID do Restaurante", placeholder: "12345" },
+      { key: "webhook_secret", label: "Webhook Secret (HMAC)", placeholder: "xxxxxxxxxxxxxxxx", type: "password" },
+    ],
+  },
+  {
+    platform: "aiqfome",
+    name: "aiqfome",
+    category: "food",
+    icon: Utensils,
+    color: "bg-muted text-foreground border border-border/60",
+    docUrl: "https://aiqfome.com/",
+    badgeLabel: "Open API Delivery",
+    credentialFields: [
+      { key: "client_id", label: "Client ID aiqfome", placeholder: "xxxxxxxx-xxxx-xxxx", required: true },
+      { key: "client_secret", label: "Client Secret", placeholder: "xxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "store_id", label: "ID da Loja aiqfome", placeholder: "12345" },
+      { key: "webhook_secret", label: "Webhook Secret (HMAC)", placeholder: "xxxxxxxxxxxxxxxx", type: "password" },
     ],
   },
   {
@@ -282,13 +345,18 @@ function MarketplaceHubPage() {
     initialWebhookEvents,
     initialExternalOrders,
     initialLocations,
+    initialStore,
   } = Route.useLoaderData();
 
+  const semantics = getNicheSemantics(initialStore);
+  const isFoodVertical = semantics.nicheId === "gastronomy";
   const queryClient = useQueryClient();
 
   // Navigation tabs
   const [mainView, setMainView] = useState<"connectors" | "orders" | "mapping" | "questions" | "warehouses" | "audit">("connectors");
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "ecommerce" | "food" | "logistics">("all");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "ecommerce" | "food" | "logistics">(
+    isFoodVertical ? "food" : "all"
+  );
 
   // Modal states
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformMeta | null>(null);
@@ -539,26 +607,28 @@ function MarketplaceHubPage() {
       {/* Header Canônico */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
-          eyebrow="Ecossistema Omnicanal"
-          title="Hub de Marketplaces"
-          description="Gestão unificada: conectores oficiais, mapeamento de SKUs, estoque ativo e conciliação de webhooks."
+          eyebrow="Canais Conectados"
+          title={isFoodVertical ? "Canais de Delivery" : "Central de Canais"}
+          description={
+            isFoodVertical
+              ? "Conecte iFood, 99Food, TriDelivery, Amo Ofertas, Rappi e aiqfome direto ao seu Gestor de Pedidos."
+              : "Conecte marketplaces, cardápios e canais de venda para receber pedidos e atualizar estoque."
+          }
         />
         <div className="flex items-center gap-2">
-          
-          <Button asChild variant="outline" className="h-11 sm:h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-medium cursor-pointer">
+          <Button asChild variant="outline" className="h-11 sm:min-h-11 sm:h-9 px-4 rounded-lg text-xs font-medium cursor-pointer">
             <Link to="/workspace/fiscal/nfe">
-              Módulo Fiscal (NF-e)
+              Notas Fiscais
             </Link>
           </Button>
-          <Button asChild className="h-11 sm:h-11 min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold bg-primary text-primary-foreground cursor-pointer">
-            <Link to="/workspace/pedidos/expedicao">
-              Expedição WMS
+          <Button asChild className="h-11 sm:min-h-11 sm:h-9 px-4 rounded-lg text-xs font-semibold bg-primary text-primary-foreground cursor-pointer">
+            <Link to={isFoodVertical ? "/workspace/pedidos" : "/workspace/pedidos/expedicao"}>
+              {isFoodVertical ? "Gestor de Pedidos" : "Separação e Envio"}
             </Link>
           </Button>
         </div>
       </div>
 
-      {/* V143 Truth Engine: Silent Empty State quando nenhum marketplace está conectado */}
       {totalConnected === 0 && (
         <div className="rounded-lg border border-border/70 bg-card p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -566,15 +636,21 @@ function MarketplaceHubPage() {
               <Utensils className="size-6" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-foreground">iFood e Marketplaces não conectados</h3>
+              <h3 className="text-base font-bold text-foreground">
+                {isFoodVertical ? "Nenhum canal de delivery conectado" : "Nenhum canal externo conectado"}
+              </h3>
               <p className="text-xs text-muted-foreground">
-                Zero vendas externas registradas ({formatMoney(0)}). Conecte sua chave de API oficial para sincronizar pedidos reais.
+                Nenhuma venda externa registrada ({formatMoney(0)}). Conecte sua chave de API para receber pedidos automaticamente.
               </p>
             </div>
           </div>
           <Button
             size="sm"
-            onClick={() => handleOpenConfig(PLATFORMS_CATALOG[1])}
+            onClick={() =>
+              handleOpenConfig(
+                PLATFORMS_CATALOG.find((p) => p.platform === (isFoodVertical ? "ifood" : "mercadolivre")) || PLATFORMS_CATALOG[1]
+              )
+            }
             className="h-11 rounded-lg text-xs font-bold px-5 shrink-0"
           >
             Ativar Integração
@@ -1387,7 +1463,7 @@ function MarketplaceHubPage() {
                 <Input
                   readOnly
                   value={(() => {
-                    const activeStoreId = connectors[0]?.store_id || "";
+                    const activeStoreId = initialStore?.id || connectors[0]?.store_id || "";
                     const qs = `platform=${selectedPlatform?.platform || "mercadolivre"}${activeStoreId ? `&store_id=${activeStoreId}` : ""}`;
                     return typeof window !== "undefined"
                       ? `${window.location.origin}/api/webhooks/marketplaces?${qs}`
@@ -1400,7 +1476,7 @@ function MarketplaceHubPage() {
                   variant="outline"
                   className="h-11 min-h-11 px-3 cursor-pointer"
                   onClick={() => {
-                    const activeStoreId = connectors[0]?.store_id || "";
+                    const activeStoreId = initialStore?.id || connectors[0]?.store_id || "";
                     const qs = `platform=${selectedPlatform?.platform || "mercadolivre"}${activeStoreId ? `&store_id=${activeStoreId}` : ""}`;
                     const url = `${window.location.origin}/api/webhooks/marketplaces?${qs}`;
                     navigator.clipboard.writeText(url);
@@ -1469,8 +1545,14 @@ function MarketplaceHubPage() {
                 onChange={(e) => setMappingPlatform(e.target.value as any)}
                 className="w-full h-11 min-h-11 px-3 rounded-lg border border-input bg-background text-xs"
               >
-                <option value="mercadolivre">Mercado Livre</option>
                 <option value="ifood">iFood</option>
+                <option value="99food">99Food</option>
+                <option value="tridelivery">TriDelivery</option>
+                <option value="amoofertas">Amo Ofertas</option>
+                <option value="amodelivery">Amo Delivery</option>
+                <option value="rappi">Rappi</option>
+                <option value="aiqfome">aiqfome</option>
+                <option value="mercadolivre">Mercado Livre</option>
                 <option value="shopee">Shopee</option>
                 <option value="amazon">Amazon Brasil</option>
                 <option value="magalu">Magazine Luiza</option>

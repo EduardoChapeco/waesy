@@ -7,6 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 
 // ============================================================
 // Tipos e Schemas
@@ -336,7 +337,7 @@ export const listCourierApplicationsForAudit = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }): Promise<CourierApplicationDTO[]> => {
     const identity = await getServerIdentity();
-    if (!identity || !["admin", "master", "platform_admin"].includes(identity.role)) {
+    if (!isPlatformAdminIdentity(identity)) {
       throw new Error("Acesso restrito à governança master.");
     }
 
@@ -375,7 +376,7 @@ export const auditCourierApplication = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    if (!identity || !["admin", "master", "platform_admin"].includes(identity.role)) {
+    if (!isPlatformAdminIdentity(identity)) {
       throw new Error("Acesso restrito à governança master.");
     }
 

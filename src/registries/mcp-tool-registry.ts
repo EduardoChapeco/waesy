@@ -16,6 +16,15 @@ import {
   executeDiagnoseAdAccountsHealthMcp,
   executeIngestAdConversionEventMcp,
 } from "@/services/ads.functions";
+import type { WorkspaceVfsFileEntry } from "@/types/chat";
+import {
+  vfsListFiles,
+  vfsPatchFile,
+  vfsReadFile,
+  vfsWriteFile,
+  type WorkspaceVfsMap,
+} from "@/lib/ai/workspace-vfs";
+import { executeSafeComputeSandbox } from "@/lib/ai/safe-compute-sandbox";
 
 export type McpToolAccessTier = "public" | "store_staff" | "admin_only";
 
@@ -35,8 +44,10 @@ export type McpModuleType =
   | "integrations"
   | "support"
   | "simulation"
+  | "mining"
   | "governance"
-  | "crm";
+  | "crm"
+  | "workspace";
 
 export interface McpExecutionContext {
   supabase: any;
@@ -48,6 +59,9 @@ export interface McpExecutionContext {
     [key: string]: any;
   } | null;
   authToken?: string;
+  signal?: AbortSignal;
+  vfsFiles?: WorkspaceVfsMap;
+  onVfsMutation?: (file: WorkspaceVfsFileEntry, originalContent: string) => Promise<void> | void;
 }
 
 export interface McpToolRegistryEntry<TInput = any, TOutput = any> {
@@ -2585,6 +2599,736 @@ export const MCP_TOOL_REGISTRY: Record<string, McpToolRegistryEntry> = {
         targetStage: args.stage,
         conversionValue,
         telemetry: result,
+      };
+    },
+  },
+
+  // ── 10. SIMLABS 4.0 & MINERAÇÃO DE DADOS ──────────────────────────────────
+  simlab_run_batch_simulation: {
+    name: "simlab_run_batch_simulation",
+    module: "simulation",
+    description:
+      "Executa simulação de mercado SimLabs 4.0 em lote com personas sintéticas para validar oferta, preço ou campanha.",
+    tier: "store_staff",
+    requiredScope: "marketing:write",
+    permission: { action: "create", resource: "marketing" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      title: z.string().min(2).max(160),
+      objective: z.string().min(5).max(1200),
+      municipalityFilter: z.string().max(120).optional(),
+      sampleSize: z.number().int().min(3).max(30).default(10),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja" },
+        title: { type: "string", description: "Título do experimento SimLab" },
+        objective: { type: "string", description: "Oferta, preço ou hipótese a testar" },
+        municipalityFilter: { type: "string", description: "Cidade/UF alvo opcional" },
+        sampleSize: { type: "number", description: "Quantidade de personas (3 a 30)" },
+      },
+      required: ["storeId", "title", "objective"],
+    },
+    handler: async (ctx, args) => {
+      const targetStoreId = ctx.storeId || args.storeId;
+      const { executeCreateSimLabExperiment, executeSimLabBatchSimulation } = await import(
+        "@/services/simlab.functions"
+      );
+      const { experiment } = await executeCreateSimLabExperiment({
+        storeId: targetStoreId,
+        title: args.title,
+        objective: args.objective,
+        municipalityFilter: args.municipalityFilter || "Nacional",
+        stimulusPayload: {
+          title: args.title,
+          description: args.objective,
+          municipality_filter: args.municipalityFilter || "Nacional",
+        },
+        sampleSize: Math.min(Math.max(Number(args.sampleSize) || 10, 3), 30),
+      });
+      const batchResult = await executeSimLabBatchSimulation({
+        experimentId: experiment.id,
+        storeId: targetStoreId,
+      });
+      return {
+        experimentId: experiment.id,
+        title: experiment.title,
+        responsesCount: batchResult.responsesCount,
+        synthesis: batchResult.synthesis,
+        sampleReactions: batchResult.responses.slice(0, 6).map((r) => ({
+          archetypeCode: r.archetype_code,
+          displayName: r.archetype?.display_name || "Perfil sintético",
+          reaction: r.verbatim_reaction,
+          objection: r.primary_barrier_objection || null,
+        })),
+      };
+    },
+  },
+
+  simlab_generate_seven_sins_copy: {
+    name: "simlab_generate_seven_sins_copy",
+    module: "simulation",
+    description:
+      "Gera copy persuasiva sob um dos 7 gatilhos psicológicos (Seven Sins) vinculada a um produto real da loja.",
+    tier: "store_staff",
+    requiredScope: "marketing:write",
+    permission: { action: "create", resource: "marketing" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      sin: z.enum(["orgulho", "ganancia", "luxuria", "inveja", "gula", "ira", "preguica"]),
+      productId: z.string().uuid().optional(),
+      productNameFallback: z.string().min(2).max(160).optional(),
+      targetChannel: z
+        .enum(["whatsapp", "instagram_ad", "push_notification", "storefront_banner"])
+        .default("instagram_ad"),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja" },
+        sin: { type: "string", description: "Gatilho: orgulho, ganancia, luxuria, inveja, gula, ira, preguica" },
+        productId: { type: "string", description: "UUID opcional do produto" },
+        productNameFallback: { type: "string", description: "Nome do produto se sem UUID" },
+        targetChannel: { type: "string", description: "Canal: whatsapp, instagram_ad, push_notification, storefront_banner" },
+      },
+      required: ["storeId", "sin"],
+    },
+    handler: async (ctx, args) => {
+      const targetStoreId = ctx.storeId || args.storeId;
+      const { generateSevenSinCopyLogic } = await import("@/services/seven-sins-simlab.functions");
+      return generateSevenSinCopyLogic({
+        storeId: targetStoreId,
+        sin: args.sin,
+        productId: args.productId,
+        productNameFallback: args.productNameFallback,
+        targetChannel: args.targetChannel || "instagram_ad",
+      });
+    },
+  },
+
+  mining_scrape_url: {
+    name: "mining_scrape_url",
+    module: "mining",
+    description:
+      "Extrai conteúdo limpo em Markdown/HTML de uma URL pública externa validada contra SSRF usando React Mining.",
+    tier: "store_staff",
+    requiredScope: "marketing:read",
+    permission: { action: "read", resource: "marketing" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      url: z.string().url(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja solicitante" },
+        url: { type: "string", description: "URL pública HTTP/HTTPS a extrair" },
+      },
+      required: ["storeId", "url"],
+    },
+    handler: async (_ctx, args) => {
+      const { assertSafeUrl } = await import("@/services/onboarding-pipeline.server");
+      const safe = assertSafeUrl(args.url);
+      const { scrapeUrlWithReact } = await import("@/services/mining/react-mining-adapter");
+      const res = await scrapeUrlWithReact(safe.toString());
+      return {
+        url: safe.toString(),
+        success: res.success,
+        provider: res.provider,
+        quality: res.react.quality,
+        iterations: res.react.iterations,
+        markdownExcerpt: String(res.markdown || "").slice(0, 6000),
+        error: res.error || null,
+      };
+    },
+  },
+
+  mining_query_mined_catalog: {
+    name: "mining_query_mined_catalog",
+    module: "mining",
+    description:
+      "Consulta dados já minerados na base regional (notícias, vagas de emprego, eventos ou empresas indexadas).",
+    tier: "public",
+    requiredScope: "public:read",
+    permission: { action: "read", resource: "content" },
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      source: z.enum(["news", "jobs", "events", "places"]).default("places"),
+      query: z.string().max(120).optional(),
+      city: z.string().max(120).optional(),
+      limit: z.number().int().min(1).max(20).default(10),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        source: { type: "string", description: "Fonte: news, jobs, events, places" },
+        query: { type: "string", description: "Termo de busca opcional" },
+        city: { type: "string", description: "Cidade opcional" },
+        limit: { type: "number", description: "Limite de itens (1 a 20)" },
+      },
+      required: [],
+    },
+    handler: async (ctx, args) => {
+      const limit = Math.min(Math.max(Number(args.limit) || 10, 1), 20);
+      const q = String(args.query || "").trim();
+      if (args.source === "news") {
+        let query = ctx.supabase
+          .from("mined_articles")
+          .select("id, title, slug, category, city, summary, published_at")
+          .order("published_at", { ascending: false })
+          .limit(limit);
+        if (q) query = query.ilike("title", `%${q}%`);
+        if (args.city) query = query.ilike("city", `%${args.city}%`);
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        return { source: "news", total: data?.length || 0, items: data || [] };
+      }
+      if (args.source === "jobs") {
+        let query = ctx.supabase
+          .from("jobs_catalog")
+          .select("id, title, company_name, city, state, salary_display, employment_type, created_at")
+          .order("created_at", { ascending: false })
+          .limit(limit);
+        if (q) query = query.ilike("title", `%${q}%`);
+        if (args.city) query = query.ilike("city", `%${args.city}%`);
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        return { source: "jobs", total: data?.length || 0, items: data || [] };
+      }
+      if (args.source === "events") {
+        let query = ctx.supabase
+          .from("events")
+          .select("id, title, slug, city, state, start_date, venue_name")
+          .order("start_date", { ascending: true })
+          .limit(limit);
+        if (q) query = query.ilike("title", `%${q}%`);
+        if (args.city) query = query.ilike("city", `%${args.city}%`);
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        return { source: "events", total: data?.length || 0, items: data || [] };
+      }
+      let query = ctx.supabase
+        .from("scraped_businesses")
+        .select("id, name, category, city, state, address, phone, website")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (q) query = query.ilike("name", `%${q}%`);
+      if (args.city) query = query.ilike("city", `%${args.city}%`);
+      const { data, error } = await query;
+      if (error) throw new Error(error.message);
+      return { source: "places", total: data?.length || 0, items: data || [] };
+    },
+  },
+
+  mining_run_local_places_harvest: {
+    name: "mining_run_local_places_harvest",
+    module: "mining",
+    description:
+      "Executa mineração sob demanda de empresas locais ou licitações PNCP para uma cidade e persiste no banco.",
+    tier: "store_staff",
+    requiredScope: "marketing:write",
+    permission: { action: "create", resource: "marketing" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      storeId: z.string().uuid(),
+      mode: z.enum(["places", "pncp"]).default("places"),
+      city: z.string().min(2).max(120),
+      state: z.string().length(2).optional(),
+      categories: z.array(z.string().min(2)).max(4).optional(),
+      query: z.string().max(120).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        storeId: { type: "string", description: "UUID da loja solicitante" },
+        mode: { type: "string", description: "places ou pncp" },
+        city: { type: "string", description: "Cidade alvo" },
+        state: { type: "string", description: "UF (2 letras)" },
+        categories: { type: "array", description: "Categorias (até 4) para places" },
+        query: { type: "string", description: "Termo opcional para PNCP" },
+      },
+      required: ["storeId", "city"],
+    },
+    handler: async (_ctx, args) => {
+      if (args.mode === "pncp") {
+        const { harvestAndPersistPncpTenders } = await import("@/services/mining/pncp-harvester");
+        return harvestAndPersistPncpTenders({
+          municipio: args.city,
+          uf: args.state,
+          query: args.query,
+        });
+      }
+      const { harvestLocalPlaces } = await import("@/services/mining/places-harvester");
+      return harvestLocalPlaces({
+        city: args.city,
+        state: args.state,
+        categories: args.categories?.slice(0, 3),
+      });
+    },
+  },
+  copilot_autonomous_prospecting: {
+    name: "copilot_autonomous_prospecting",
+    module: "mining",
+    description:
+      "Executa mineração e prospecção autônoma B2B/territorial (leads por cidade, CNPJ na Receita Federal, processos CNJ ou pesquisa de mercado) com geração automática de planilha/dossiê.",
+    tier: "store_staff",
+    requiredScope: "marketing:write",
+    permission: { action: "create", resource: "marketing" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      prompt: z.string().min(4).max(1500),
+      city: z.string().max(120).optional(),
+      state: z.string().length(2).optional(),
+      storeId: z.string().uuid().optional(),
+      threadId: z.string().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        prompt: { type: "string", description: "Pedido detalhado de prospecção, CNPJ ou CNJ" },
+        city: { type: "string", description: "Cidade alvo para recorte geográfico" },
+        state: { type: "string", description: "UF (2 letras)" },
+        storeId: { type: "string", description: "UUID da loja" },
+      },
+      required: ["prompt"],
+    },
+    handler: async (ctx, args) => {
+      const { executeAutonomousCopilotTask } = await import(
+        "@/services/autonomous-copilot-orchestrator"
+      );
+      return executeAutonomousCopilotTask(args.prompt, {
+        threadId: args.threadId,
+        storeId: args.storeId || ctx.storeId,
+        activeCity: args.city,
+        activeState: args.state,
+      });
+    },
+  },
+  squad_orchestrator_run: {
+    name: "squad_orchestrator_run",
+    module: "marketing",
+    description:
+      "Aciona um squad multi-agente com handoff supervisionado (sales_squad para qualificação SDR e proposta; publishing_squad para campanha e revisão editorial; finance_squad para OCR e conciliação).",
+    tier: "store_staff",
+    requiredScope: "marketing:write",
+    permission: { action: "create", resource: "marketing" },
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      squadSlug: z.enum(["sales_squad", "publishing_squad", "finance_squad"]).default("sales_squad"),
+      prompt: z.string().min(4).max(4000),
+      city: z.string().max(120).optional(),
+      storeId: z.string().uuid().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        squadSlug: {
+          type: "string",
+          description: "sales_squad, publishing_squad ou finance_squad",
+        },
+        prompt: { type: "string", description: "Briefing e objetivo da missão multi-agente" },
+        city: { type: "string", description: "Cidade de contexto" },
+        storeId: { type: "string", description: "UUID da loja" },
+      },
+      required: ["prompt"],
+    },
+    handler: async (ctx, args) => {
+      const { runSquadGraphExecution } = await import(
+        "@/services/ai-agent-squad-orchestrator.functions"
+      );
+      return runSquadGraphExecution(
+        args.squadSlug || "sales_squad",
+        {
+          prompt: args.prompt,
+          context: {
+            city: args.city,
+            storeId: args.storeId || ctx.storeId,
+          },
+        },
+        {
+          userId: ctx.identity?.id || undefined,
+          storeId: args.storeId || ctx.storeId,
+        },
+      );
+    },
+  },
+  connector_github_ops: {
+    name: "connector_github_ops",
+    module: "integrations",
+    description:
+      "Lista repositórios, lê arquivo ou envia arquivos para repositório no GitHub usando token cifrado em Conectores.",
+    tier: "public",
+    requiredScope: "integrations:write",
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      action: z.string(),
+      repoName: z.string().optional(),
+      filePath: z.string().optional(),
+      files: z.record(z.string()).optional(),
+      isPrivate: z.boolean().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: { type: "string", description: "list_repos | get_file | push_files" },
+        repoName: { type: "string", description: "Nome ou owner/repo" },
+        filePath: { type: "string", description: "Caminho do arquivo (get_file)" },
+        files: { type: "object", description: "Mapa path -> conteúdo (push_files)" },
+        isPrivate: { type: "boolean", description: "Repositório privado ao criar (default true)" },
+      },
+      required: ["action"],
+    },
+    handler: async (ctx, args) => {
+      if (!ctx.identity?.id) {
+        throw new Error("Autenticação obrigatória para operar o conector GitHub.");
+      }
+      const { getDecryptedConnectorCredentialsForUser, extractConnectorToken } = await import(
+        "@/services/ai-connectors-secrets.server"
+      );
+      if (args.action === "push_files") {
+        const { runDeployFilesToGitHubForUser } = await import("@/services/copilot-deploy.functions");
+        return runDeployFilesToGitHubForUser(ctx.identity.id, {
+          repoName: String(args.repoName || "waesy-copilot-app"),
+          isPrivate: args.isPrivate !== false,
+          branch: "main",
+          files: (args.files && typeof args.files === "object" ? args.files : {}) as Record<string, string>,
+        });
+      }
+      const record = await getDecryptedConnectorCredentialsForUser(ctx.identity.id, "github");
+      const token = record ? extractConnectorToken(record.credentials) : "";
+      if (!token) {
+        throw new Error("Conector GitHub não conectado. Peça ao usuário para configurar em Conectores & MCP.");
+      }
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "Waesy-Copilot-Agent/1.0",
+      };
+      if (args.action === "get_file" && args.repoName && args.filePath) {
+        const res = await fetch(
+          `https://api.github.com/repos/${String(args.repoName)}/contents/${encodeURIComponent(String(args.filePath))}`,
+          { headers },
+        );
+        if (!res.ok) throw new Error(`GitHub HTTP ${res.status}`);
+        const json = (await res.json()) as { content?: string; encoding?: string; html_url?: string };
+        const decoded =
+          json.encoding === "base64" && json.content
+            ? Buffer.from(json.content, "base64").toString("utf8").slice(0, 8000)
+            : "";
+        return { path: args.filePath, url: json.html_url || null, content: decoded };
+      }
+      const reposRes = await fetch("https://api.github.com/user/repos?per_page=15&sort=updated", { headers });
+      if (!reposRes.ok) throw new Error(`GitHub HTTP ${reposRes.status}`);
+      const repos = (await reposRes.json()) as Array<{ full_name: string; html_url: string; private: boolean }>;
+      return {
+        repositories: repos.map((r) => ({
+          fullName: r.full_name,
+          url: r.html_url,
+          isPrivate: r.private,
+        })),
+      };
+    },
+  },
+  connector_vercel_deploy: {
+    name: "connector_vercel_deploy",
+    module: "integrations",
+    description:
+      "Publica arquivos HTML/web diretamente na Vercel via API v13 usando o token cifrado do usuário.",
+    tier: "public",
+    requiredScope: "integrations:write",
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      projectName: z.string(),
+      files: z.record(z.string()),
+      target: z.string().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectName: { type: "string", description: "Slug minúsculo do projeto na Vercel" },
+        files: { type: "object", description: "Mapa path -> conteúdo" },
+        target: { type: "string", description: "production | preview" },
+      },
+      required: ["projectName", "files"],
+    },
+    handler: async (ctx, args) => {
+      if (!ctx.identity?.id) {
+        throw new Error("Autenticação obrigatória para publicar na Vercel.");
+      }
+      const { runDeployFilesToVercelForUser } = await import("@/services/copilot-deploy.functions");
+      return runDeployFilesToVercelForUser(ctx.identity.id, {
+        projectName: String(args.projectName)
+          .toLowerCase()
+          .replace(/[^a-z0-9-]+/g, "-")
+          .slice(0, 64),
+        target: args.target === "preview" ? "preview" : "production",
+        files: (args.files && typeof args.files === "object" ? args.files : {}) as Record<string, string>,
+      });
+    },
+  },
+  connector_notion_ops: {
+    name: "connector_notion_ops",
+    module: "integrations",
+    description: "Pesquisa páginas/bancos no Notion conectado pelo usuário via API oficial Notion.",
+    tier: "public",
+    requiredScope: "integrations:read",
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      query: z.string(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Termo de busca no Notion" },
+      },
+      required: ["query"],
+    },
+    handler: async (ctx, args) => {
+      if (!ctx.identity?.id) {
+        throw new Error("Autenticação obrigatória para consultar o Notion.");
+      }
+      const { getDecryptedConnectorCredentialsForUser, extractConnectorToken } = await import(
+        "@/services/ai-connectors-secrets.server"
+      );
+      const record = await getDecryptedConnectorCredentialsForUser(ctx.identity.id, "notion");
+      const token = record ? extractConnectorToken(record.credentials) : "";
+      if (!token) {
+        throw new Error("Conector Notion não conectado ou sem Internal Integration Token.");
+      }
+      const res = await fetch("https://api.notion.com/v1/search", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Notion-Version": "2022-06-28",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: String(args.query || ""), page_size: 8 }),
+      });
+      if (!res.ok) throw new Error(`Notion HTTP ${res.status}`);
+      const json = (await res.json()) as { results?: Array<{ id: string; object: string; url?: string }> };
+      return {
+        results: (json.results || []).map((item) => ({
+          id: item.id,
+          object: item.object,
+          url: item.url || null,
+        })),
+      };
+    },
+  },
+  connector_slack_post: {
+    name: "connector_slack_post",
+    module: "integrations",
+    description: "Lista canais ou envia mensagem para canal Slack usando Bot Token cifrado do usuário.",
+    tier: "public",
+    requiredScope: "integrations:write",
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_authenticated",
+    inputZodSchema: z.object({
+      action: z.string(),
+      channel: z.string().optional(),
+      text: z.string().optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: { type: "string", description: "list_channels | post_message" },
+        channel: { type: "string", description: "ID do canal Slack" },
+        text: { type: "string", description: "Conteúdo da mensagem" },
+      },
+      required: ["action"],
+    },
+    handler: async (ctx, args) => {
+      if (!ctx.identity?.id) {
+        throw new Error("Autenticação obrigatória para operar o conector Slack.");
+      }
+      const { getDecryptedConnectorCredentialsForUser, extractConnectorToken } = await import(
+        "@/services/ai-connectors-secrets.server"
+      );
+      const record = await getDecryptedConnectorCredentialsForUser(ctx.identity.id, "slack");
+      const token = record ? extractConnectorToken(record.credentials) : "";
+      if (!token) {
+        throw new Error("Conector Slack não conectado ou sem Bot Token.");
+      }
+      if (args.action === "post_message" && args.channel && args.text) {
+        const res = await fetch("https://slack.com/api/chat.postMessage", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ channel: String(args.channel), text: String(args.text) }),
+        });
+        const json = (await res.json()) as { ok?: boolean; error?: string; ts?: string };
+        if (!res.ok || !json?.ok) throw new Error(json?.error || `Slack HTTP ${res.status}`);
+        return { posted: true, channel: args.channel, ts: json.ts };
+      }
+      const listRes = await fetch("https://slack.com/api/conversations.list?limit=15&types=public_channel", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const listJson = (await listRes.json()) as {
+        ok?: boolean;
+        error?: string;
+        channels?: Array<{ id: string; name: string }>;
+      };
+      if (!listRes.ok || !listJson?.ok) throw new Error(listJson?.error || `Slack HTTP ${listRes.status}`);
+      return {
+        channels: (listJson.channels || []).map((c) => ({ id: c.id, name: c.name })),
+      };
+    },
+  },
+
+  // ─── WORKSPACE VFS & COMPUTE SANDBOX ──────────────────────────────────────
+  workspace_vfs_write: {
+    name: "workspace_vfs_write",
+    module: "workspace",
+    description: "Cria, atualiza ou aplica patch cirúrgico em arquivo do Workspace Virtual (VFS) da tarefa atual com diff rastreável.",
+    tier: "public",
+    requiredScope: "workspace:write",
+    idempotent: false,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      path: z.string().min(1).max(180),
+      mode: z.enum(["write", "patch"]).default("write"),
+      content: z.string().max(200_000).optional(),
+      search: z.string().max(50_000).optional(),
+      replace: z.string().max(200_000).optional(),
+      language: z.string().max(32).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Caminho relativo no VFS, ex: relatorio.md, dados.csv, script.py, index.html" },
+        mode: { type: "string", enum: ["write", "patch"] },
+        content: { type: "string", description: "Conteúdo completo quando mode=write" },
+        search: { type: "string", description: "Trecho exato a substituir quando mode=patch" },
+        replace: { type: "string", description: "Novo trecho quando mode=patch" },
+        language: { type: "string" },
+      },
+      required: ["path"],
+    },
+    handler: async (ctx, args) => {
+      const vfs: WorkspaceVfsMap = ctx.vfsFiles || {};
+      const mutation =
+        args.mode === "patch"
+          ? vfsPatchFile(vfs, args.path, String(args.search || ""), String(args.replace ?? ""))
+          : vfsWriteFile(vfs, args.path, String(args.content ?? ""), args.language);
+      await ctx.onVfsMutation?.(mutation.file, mutation.originalContent);
+      return {
+        path: mutation.file.path,
+        version: mutation.file.version,
+        sizeBytes: mutation.file.sizeBytes,
+        language: mutation.file.language,
+        diffPreview: mutation.diffPreview,
+        _summary: `Arquivo "${mutation.file.path}" salvo (v${mutation.file.version}, ${mutation.file.sizeBytes} bytes).`,
+      };
+    },
+  },
+
+  workspace_vfs_read: {
+    name: "workspace_vfs_read",
+    module: "workspace",
+    description: "Lista ou lê conteúdo de arquivos criados no Workspace Virtual (VFS) da execução atual.",
+    tier: "public",
+    requiredScope: "workspace:read",
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      path: z.string().max(180).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Se omitido, lista todos os arquivos do workspace da tarefa." },
+      },
+    },
+    handler: async (ctx, args) => {
+      const vfs: WorkspaceVfsMap = ctx.vfsFiles || {};
+      if (!args.path) {
+        const files = vfsListFiles(vfs);
+        return {
+          files,
+          count: files.length,
+          _summary: `${files.length} arquivo(s) no Workspace VFS.`,
+        };
+      }
+      const entry = vfsReadFile(vfs, args.path);
+      if (!entry) {
+        return {
+          found: false,
+          path: args.path,
+          _summary: `Arquivo "${args.path}" não encontrado no VFS.`,
+        };
+      }
+      return {
+        found: true,
+        ...entry,
+        content: entry.content.slice(0, 12_000),
+        _summary: `Arquivo "${entry.path}" (${entry.sizeBytes} bytes, v${entry.version}).`,
+      };
+    },
+  },
+
+  sandbox_compute: {
+    name: "sandbox_compute",
+    module: "workspace",
+    description: "Executa cálculos matemáticos exatos (AST seguro), estatísticas, agrupamentos, filtros em CSV/JSON do VFS ou script em Sandbox VM remota configurada.",
+    tier: "public",
+    requiredScope: "workspace:compute",
+    idempotent: true,
+    rateLimitBucket: "webmcp_tool_call_public",
+    inputZodSchema: z.object({
+      operation: z.enum(["evaluate_expression", "dataset_stats", "group_aggregate", "filter_sort", "remote_exec"]),
+      expression: z.string().max(600).optional(),
+      variables: z.record(z.number()).optional(),
+      vfsPath: z.string().max(180).optional(),
+      records: z.array(z.record(z.any())).max(1000).optional(),
+      csvText: z.string().max(100_000).optional(),
+      numericField: z.string().max(80).optional(),
+      groupByField: z.string().max(80).optional(),
+      filterField: z.string().max(80).optional(),
+      filterEquals: z.string().max(120).optional(),
+      sortByField: z.string().max(80).optional(),
+      sortOrder: z.enum(["asc", "desc"]).optional(),
+      limit: z.number().int().min(1).max(200).optional(),
+      language: z.enum(["python", "javascript", "bash"]).optional(),
+      code: z.string().max(50_000).optional(),
+    }),
+    inputSchema: {
+      type: "object",
+      properties: {
+        operation: { type: "string", enum: ["evaluate_expression", "dataset_stats", "group_aggregate", "filter_sort", "remote_exec"] },
+        expression: { type: "string", description: "Ex: (1250 * 0.15) + 89.9" },
+        vfsPath: { type: "string", description: "Arquivo CSV ou JSON no VFS para analisar" },
+        numericField: { type: "string" },
+        groupByField: { type: "string" },
+        code: { type: "string" },
+      },
+      required: ["operation"],
+    },
+    handler: async (ctx, args) => {
+      if (args.operation === "remote_exec" && !ctx.identity?.id) {
+        throw new Error("Execução em VM Sandbox remota exige sessão autenticada.");
+      }
+      const res = await executeSafeComputeSandbox(args, ctx.vfsFiles, ctx.signal);
+      return {
+        ...res,
+        _summary: res.success
+          ? `[${res.runtime}] ${res.stdout.slice(0, 240)}`
+          : `[${res.runtime} ERR] ${res.stderr || "Falha na computação"}`,
       };
     },
   },

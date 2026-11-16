@@ -228,14 +228,14 @@ function KitchenPrepTimePage() {
         {/* ── Abas Soberanas: Planilha vs Telemetria ── */}
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 mt-4">
           <Tabs value={activeTab} onValueChange={(val: any) => setActiveTab(val)} className="w-full space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-3">
-              <TabsList className="bg-muted/40 p-1 rounded-lg border border-border/70 h-11">
-                <TabsTrigger value="spreadsheet" className="gap-2 text-xs font-bold px-4 h-9">
-                  <SlidersHorizontal className="size-3.5" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-3 min-w-0">
+              <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/40 p-1 rounded-lg border border-border/70 h-11 min-h-11 w-full sm:w-auto max-w-full min-w-0">
+                <TabsTrigger value="spreadsheet" className="gap-2 text-xs font-bold px-4 h-9 shrink-0 whitespace-nowrap">
+                  <SlidersHorizontal className="size-3.5 shrink-0" />
                   <span>Planilha de Tempos (Inline)</span>
                 </TabsTrigger>
-                <TabsTrigger value="telemetry" className="gap-2 text-xs font-bold px-4 h-9">
-                  <TrendingUp className="size-3.5" />
+                <TabsTrigger value="telemetry" className="gap-2 text-xs font-bold px-4 h-9 shrink-0 whitespace-nowrap">
+                  <TrendingUp className="size-3.5 shrink-0" />
                   <span>Monitor de Gargalos & SLA</span>
                 </TabsTrigger>
               </TabsList>

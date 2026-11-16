@@ -1,16 +1,31 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { Link } from "@tanstack/react-router";
 import {
   Copy,
   Check,
   ChalkboardTeacher,
   Code as CodeIcon,
-  Sparkle,
-  BookmarkSimple,
   Info,
   Warning,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { normalizeInternalReturnPath } from "@/lib/return-path";
+import {
+  INTERNAL_ROUTE_MARKDOWN_REGEX,
+  validateInternalRoute,
+} from "@/lib/ai/route-validator";
+
+export function isValidWaesyInternalRoute(rawPath: string | null | undefined): string | null {
+  if (!rawPath) return null;
+  const trimmed = rawPath.trim();
+  if (!trimmed || trimmed.includes("..") || /[\s<>"'`\\]/.test(trimmed)) {
+    return null;
+  }
+  const safePath = normalizeInternalReturnPath(trimmed, "");
+  if (!safePath) return null;
+  return validateInternalRoute(safePath);
+}
 
 interface CopilotMessageRendererProps {
   content: string;
@@ -35,6 +50,21 @@ function preprocessMarkdown(text: string): string {
   // Normaliza sublinhado: ~palavra~ ou ++palavra++ -> <u class="copilot-underline">$1</u>
   processed = processed.replace(/(?<!\w)\+\+([^\+\n]+)\+\+(?!\w)/g, '<u class="copilot-underline">$1</u>');
   processed = processed.replace(/(?<!\w)~([^~\n]+)~(?!~)(?!\w)/g, '<u class="copilot-underline">$1</u>');
+
+  // Linkifica rotas internas Waesy fora de blocos de código ou links markdown existentes
+  const segments = processed.split(/(```[\s\S]*?```|`[^`\n]+`|\[[^\]]+\]\([^)]+\))/g);
+  processed = segments
+    .map((segment, idx) => {
+      if (idx % 2 === 1) return segment;
+      return segment.replace(
+        INTERNAL_ROUTE_MARKDOWN_REGEX,
+        (full, lead, routePath) => {
+          const valid = isValidWaesyInternalRoute(routePath);
+          return valid ? `${lead}[${valid}](${valid})` : full;
+        },
+      );
+    })
+    .join("");
 
   return processed;
 }
@@ -244,17 +274,31 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
             </td>
           ),
 
-          // Links externos seguros com estilo semântico
-          a: ({ href, children }) => (
-            <a
-              href={href}
-              target={href?.startsWith("http") ? "_blank" : undefined}
-              rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
-              className="text-primary font-medium underline underline-offset-2 hover:text-primary/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded inline-flex items-center min-h-11 sm:min-h-0"
-            >
-              {children}
-            </a>
-          ),
+          // Links internos (SPA via Link) e externos seguros
+          a: ({ href, children }) => {
+            const internalRoute = isValidWaesyInternalRoute(href);
+            if (internalRoute) {
+              return (
+                <Link
+                  to={internalRoute as any}
+                  className="text-primary font-medium underline underline-offset-2 hover:text-primary/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded inline-flex items-center min-h-11 sm:min-h-0"
+                >
+                  {children}
+                </Link>
+              );
+            }
+            const isHttp = href?.startsWith("https://") || href?.startsWith("http://");
+            return (
+              <a
+                href={isHttp ? href : "#"}
+                target={isHttp ? "_blank" : undefined}
+                rel={isHttp ? "noopener noreferrer" : undefined}
+                className="text-primary font-medium underline underline-offset-2 hover:text-primary/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded inline-flex items-center min-h-11 sm:min-h-0"
+              >
+                {children}
+              </a>
+            );
+          },
 
           // Blocos de código / Lousa interativa
           code: ({ className: codeClassName, children }) => {
@@ -270,6 +314,18 @@ export function CopilotMessageRenderer({ content, isUser = false, className }: C
             // Se for bloco multiline
             if (codeClassName && match) {
               return <CodeBlock code={rawText} language={language} />;
+            }
+
+            const inlineRoute = isValidWaesyInternalRoute(rawText.trim());
+            if (inlineRoute) {
+              return (
+                <Link
+                  to={inlineRoute as any}
+                  className="px-2 py-1 rounded-md bg-primary/10 font-mono text-2xs sm:text-xs text-primary font-semibold hover:bg-primary/15 transition-colors underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center min-h-11 sm:min-h-0"
+                >
+                  {rawText.trim()}
+                </Link>
+              );
             }
 
             // Inline code

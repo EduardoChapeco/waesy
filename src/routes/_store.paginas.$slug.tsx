@@ -9,6 +9,7 @@ import { Surface } from "@/components/ui/surface";
 import { AlertCircle, Loader2, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateOmniPageSeo } from "@/lib/builder/omni-page-seo";
+import { getDocumentThemeContainerProps } from "@/lib/builder/block-data-resolver";
 
 export const Route = createFileRoute("/_store/paginas/$slug")({
   loader: async ({ params }) => {
@@ -193,6 +194,24 @@ function PublicPage() {
   }
 
   // Public route strictly serves published or canonical pages (unpublished drafts are excluded)
+  const copilotPublishedHtml =
+    typeof document?.settings?.copilot_published_html === "string"
+      ? document.settings.copilot_published_html.trim()
+      : "";
+
+  if (copilotPublishedHtml) {
+    return (
+      <main className="w-full min-h-dvh bg-background">
+        <iframe
+          title={document?.title || "Página Publicada"}
+          srcDoc={copilotPublishedHtml}
+          sandbox="allow-scripts allow-forms allow-popups"
+          className="w-full min-h-dvh border-0 bg-background block"
+        />
+      </main>
+    );
+  }
+
   const omniDoc =
     document?.settings?.omni_page_published || document?.settings?.omni_page || null;
 
@@ -215,8 +234,16 @@ function PublicPage() {
     Array.isArray(omniDoc.blocks) &&
     omniDoc.blocks.length > 0
   ) {
+    const { style: omniContainerStyle, isolationScheme } = getDocumentThemeContainerProps(
+      omniDoc.theme,
+      { settings: omniDoc.settings },
+    );
     return (
-      <main className="w-full flex flex-col gap-0 min-h-dvh bg-background">
+      <main
+        data-builder-canvas-isolated={isolationScheme}
+        style={omniContainerStyle}
+        className="w-full flex flex-col gap-0 min-h-dvh bg-background text-foreground"
+      >
         <OmniPageRenderer
           document={omniDoc}
           products={products}
@@ -242,8 +269,19 @@ function PublicPage() {
     );
   }
 
+  const legacyTheme = (document as any)?.theme_config || (document as any)?.settings?.theme || null;
+  const legacyContainer = getDocumentThemeContainerProps(legacyTheme, {
+    forceIsolate: Boolean(
+      legacyTheme?.backgroundColor || legacyTheme?.primaryColor || legacyTheme?.textColor,
+    ),
+  });
+
   return (
-    <main className="w-full flex flex-col gap-0 min-h-dvh bg-background">
+    <main
+      data-builder-canvas-isolated={legacyContainer.isolationScheme}
+      style={legacyContainer.style}
+      className="w-full flex flex-col gap-0 min-h-dvh bg-background text-foreground"
+    >
       <ExperienceRenderer nodes={tree} />
     </main>
   );

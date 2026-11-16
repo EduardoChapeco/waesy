@@ -67,17 +67,21 @@ export const Route = createFileRoute("/sitemap.xml")({
           // 4. Fetch active tourism experiences, destinations & hotels
           const [tourismRes, destRes, hotelsRes] = await Promise.all([
             db.from("tourism_experiences").select("id").eq("status", "published").limit(1000),
-            db.from("travel_destinations").select("slug").limit(500),
-            db.from("travel_hotels").select("slug").limit(500),
+            db.from("destinations").select("slug").eq("is_active", true).limit(500),
+            db.from("global_hotels").select("canonical_slug").not("canonical_slug", "is", null).limit(500),
           ]);
           if (tourismRes.data) {
             tourismRes.data.forEach((t) => dynamicPaths.push(`/turismo/${t.id}`));
           }
           if (destRes.data) {
-            destRes.data.forEach((d: any) => dynamicPaths.push(`/turismo/destinos/${d.slug}`));
+            destRes.data.forEach((d: any) => {
+              if (d.slug) dynamicPaths.push(`/turismo/destinos/${d.slug}`);
+            });
           }
           if (hotelsRes.data) {
-            hotelsRes.data.forEach((h: any) => dynamicPaths.push(`/turismo/hoteis/${h.slug}`));
+            hotelsRes.data.forEach((h: any) => {
+              if (h.canonical_slug) dynamicPaths.push(`/turismo/hoteis/${h.canonical_slug}`);
+            });
           }
 
           // 5. Fetch active jobs
@@ -120,12 +124,12 @@ export const Route = createFileRoute("/sitemap.xml")({
           const [dirRes, eventsRes, recipesRes, omniRes, formsRes, bioRes, commRes, rafflesRes] = await Promise.all([
             db.from("directory_listings").select("id").limit(2000),
             db.from("events").select("id").eq("status", "published").limit(1000),
-            db.from("mined_recipes").select("id").limit(1000),
+            db.from("mined_raw_extractions").select("id").eq("content_type", "receitas").limit(1000),
             db.from("experience_documents").select("slug").eq("is_active", true).limit(1000),
             db.from("lead_forms").select("slug").eq("status", "active").limit(1000),
-            db.from("links_in_bio").select("slug").limit(1000),
+            db.from("link_in_bio").select("store_id, stores(slug)").limit(1000),
             db.from("communities").select("slug").limit(1000),
-            db.from("store_raffles").select("id").limit(500),
+            db.from("raffles").select("id").eq("status", "active").limit(500),
           ]);
           if (dirRes.data) {
             dirRes.data.forEach((d: any) => {
@@ -151,7 +155,8 @@ export const Route = createFileRoute("/sitemap.xml")({
           }
           if (bioRes.data) {
             bioRes.data.forEach((b: any) => {
-              if (b.slug) dynamicPaths.push(`/bio/${b.slug}`);
+              const storeSlug = Array.isArray(b.stores) ? b.stores[0]?.slug : b.stores?.slug;
+              if (storeSlug) dynamicPaths.push(`/bio/${storeSlug}`);
             });
           }
           if (commRes.data) {

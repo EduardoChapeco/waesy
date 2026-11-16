@@ -13,7 +13,7 @@ import { submitOmniPageLeadFn } from "@/services/builder.functions";
 import { PrometheePortalProvider } from "@/components/news/promethee-portal-store";
 import {
   getBlockDeviceVisibilityClass,
-  getDocumentThemeCanvasStyle,
+  getDocumentThemeContainerProps,
   isBlockVisibleForCity,
   isBlockWithinSchedule,
   resolveBlockBoundData,
@@ -70,7 +70,7 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
     return null;
   }
 
-  const pageThemeStyle = getDocumentThemeCanvasStyle(document.theme, {
+  const { style: pageThemeStyle, isolationScheme } = getDocumentThemeContainerProps(document.theme, {
     settings: document.settings,
   });
 
@@ -95,6 +95,7 @@ export const OmniPageRenderer: React.FC<OmniPageRendererProps> = ({
 
   const renderedContent = (
     <div
+      data-builder-canvas-isolated={isolationScheme}
       style={pageThemeStyle}
       className={`min-h-dvh w-full flex flex-col overflow-x-hidden bg-background text-foreground ${className}`}
     >

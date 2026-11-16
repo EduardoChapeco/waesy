@@ -9,7 +9,6 @@
 import * as React from "react";
 import { useState } from "react";
 import {
-  X,
   Plus,
   Check,
   ShoppingBag,
@@ -84,9 +83,9 @@ export function OmniAppMarketModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-overlay">
+      <DialogContent size="full" className="sm:max-w-4xl h-full max-h-modal p-0 flex flex-col gap-0 overflow-hidden bg-background border border-border/80 shadow-overlay">
         {/* Header Superior */}
-        <DialogHeader className="h-14 px-6 border-b border-border/80 flex flex-row items-center justify-between flex-none bg-card select-none">
+        <DialogHeader className="h-auto min-h-14 py-3 px-6 pr-14 border-b border-border/80 flex flex-row flex-wrap items-center justify-between gap-3 flex-none bg-card select-none">
           <div className="flex items-center gap-3">
             <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
               <Layers className="size-4" />
@@ -103,16 +102,6 @@ export function OmniAppMarketModal({
               </p>
             </div>
           </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="size-11 min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            <X className="size-4" />
-          </Button>
         </DialogHeader>
 
         {/* Corpo do Mercado: Lista à Esquerda + Detalhes do Blueprint à Direita */}
@@ -224,14 +213,6 @@ export function OmniAppMarketModal({
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Requisitos de Dados e Centralização */}
-            <div className="p-4 rounded-xl border border-border/60 bg-muted/30 flex items-center gap-3 mt-auto">
-              <ShieldCheck className="size-5 text-emerald-500 shrink-0" />
-              <div className="text-2xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Governança Centralizada no Workspace:</strong> Todos os pedidos, agendamentos e transações gerados por este App confluem diretamente para a sua esteira operacional, com suporte a múltiplos canais e integridade RLS.
               </div>
             </div>
           </main>

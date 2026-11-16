@@ -63,6 +63,10 @@ export interface AiBrowseResponse {
   result: string;
   provider: string;
   status: "completed" | "failed";
+  driver?: "vps_playwright_cdp" | "steel_cdp_session" | "steel_cloud" | "firecrawl_fallback";
+  finalUrl?: string;
+  screenshotUrl?: string | null;
+  title?: string;
 }
 
 function isRetryableProviderError(error: unknown): boolean {
@@ -191,9 +195,35 @@ export const executeAiBrowse = createServerFn({ method: "POST" })
   .validator(AiBrowseRequestSchema)
   .handler(async ({ data }): Promise<AiBrowseResponse> => {
     const identity = await getServerIdentity().catch(() => null);
-    const apiKey = await getActiveSecretForProvider("steel", identity?.storeId || data.storeId || undefined);
-    if (!apiKey) return { task: data.task, result: "", provider: "steel", status: "failed" };
-    return { task: data.task, result: `Sessão de navegação headless iniciada para a tarefa '${data.task}'.`, provider: "steel", status: "completed" };
+    const resolvedStoreId = identity?.storeId || data.storeId || undefined;
+    if (!data.url) {
+      return {
+        task: data.task,
+        result: "Informe uma URL pública HTTPS/HTTP válida para navegação autônoma.",
+        provider: data.provider || "steel",
+        status: "failed",
+      };
+    }
+
+    const { executeBrowserAutomationTask } = await import("./browser-automation-runner");
+    const runResult = await executeBrowserAutomationTask({
+      url: data.url,
+      goal: data.task,
+      storeId: resolvedStoreId,
+      userId: identity?.id || undefined,
+      captureScreenshot: true,
+    });
+
+    return {
+      task: data.task,
+      result: runResult.status === "completed" ? runResult.textExcerpt : runResult.error || "",
+      provider: runResult.driver,
+      driver: runResult.driver,
+      finalUrl: runResult.finalUrl,
+      screenshotUrl: runResult.screenshotUrl,
+      title: runResult.title,
+      status: runResult.status === "completed" ? "completed" : "failed",
+    };
   });
 
 export const aiPool = {

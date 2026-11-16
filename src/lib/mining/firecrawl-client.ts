@@ -7,6 +7,7 @@ export interface FirecrawlScrapeOptions {
   formats?: FirecrawlFormat[];
   onlyMainContent?: boolean;
   waitFor?: number;
+  timeout?: number;
   location?: { country?: string; languages?: string[] };
 }
 
@@ -22,6 +23,7 @@ export interface FirecrawlResult<T = unknown> {
   isBlocked?: boolean;
   rateLimited?: boolean;
   screenshotUrl?: string;
+  metadata?: Record<string, any>;
   provider: 'firecrawl' | 'steel' | 'native-fetch';
 }
 
@@ -83,7 +85,7 @@ export async function scrapeUrl(
           onlyMainContent: options.onlyMainContent ?? false,
           waitFor: options.waitFor ?? 1000,
         }),
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(options.timeout ?? 20000),
       });
 
       if (response.ok) {
@@ -97,6 +99,7 @@ export async function scrapeUrl(
           html: data.html,
           links: data.links || [],
           summary: data.metadata?.description,
+          metadata: data.metadata,
           httpStatus: 200,
           provider: 'firecrawl',
         };

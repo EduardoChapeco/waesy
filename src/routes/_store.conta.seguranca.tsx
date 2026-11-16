@@ -237,16 +237,11 @@ function SecurityAndDevicesPage() {
       {/* ── 1. Clean Minimalist Header (Desktop >=768px) ── */}
       <div className="hidden md:flex items-center justify-between gap-4 border-b border-border pb-4 pt-1">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Segurança da Conta
-            </h1>
-            <Badge variant="outline" className="text-xs font-mono font-semibold bg-muted text-primary border-border">
-              Zero-Trust Compliance
-            </Badge>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Segurança da Conta
+          </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Rastreamento de telemetria em tempo real, validação de hardware e controle de sessões ativas.
+            Controle de dispositivos conectados e sessões ativas.
           </p>
         </div>
 

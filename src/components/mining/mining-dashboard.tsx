@@ -729,43 +729,43 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
-        <TabsList className="bg-muted/40 p-1 rounded-lg border border-border/40 overflow-x-auto justify-start h-auto">
-          <TabsTrigger value="overview" className="rounded-lg text-xs font-normal py-2 px-3">
+        <TabsList className="waesy-tab-strip items-center justify-start gap-1 w-full max-w-full min-w-0 bg-muted/40 p-1 rounded-lg border border-border/40 h-11 min-h-11 sm:h-auto">
+          <TabsTrigger value="overview" className="rounded-lg text-xs font-normal py-2 px-3 shrink-0 whitespace-nowrap">
             Visão Geral
           </TabsTrigger>
-          <TabsTrigger value="products" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
-            <Package className="w-3.5 h-3.5" />
+          <TabsTrigger value="products" className="rounded-lg text-xs font-normal py-2 px-3 gap-2 shrink-0 whitespace-nowrap">
+            <Package className="w-3.5 h-3.5 shrink-0" />
             Produtos & Radar ({minedProductsTotal})
           </TabsTrigger>
-          <TabsTrigger value="cooldowns" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
-            <ShieldAlert className="w-3.5 h-3.5" />
+          <TabsTrigger value="cooldowns" className="rounded-lg text-xs font-normal py-2 px-3 gap-2 shrink-0 whitespace-nowrap">
+            <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
             Segurança & Conexão ({domainCooldowns.length})
           </TabsTrigger>
-          <TabsTrigger value="queue" className="rounded-lg text-xs font-normal py-2 px-3">
+          <TabsTrigger value="queue" className="rounded-lg text-xs font-normal py-2 px-3 shrink-0 whitespace-nowrap">
             Importações Agendadas ({stats?.crawlQueue.pending ?? 0})
           </TabsTrigger>
-          <TabsTrigger value="businesses" className="rounded-lg text-xs font-normal py-2 px-3">
+          <TabsTrigger value="businesses" className="rounded-lg text-xs font-normal py-2 px-3 shrink-0 whitespace-nowrap">
             Empresas ({stats?.indexedBusinesses.total ?? 0})
           </TabsTrigger>
-          <TabsTrigger value="market" className="rounded-lg text-xs font-normal py-2 px-3">
+          <TabsTrigger value="market" className="rounded-lg text-xs font-normal py-2 px-3 shrink-0 whitespace-nowrap">
             Indicadores BCB
           </TabsTrigger>
-          <TabsTrigger value="feeds" className="rounded-lg text-xs font-normal py-2 px-3">
+          <TabsTrigger value="feeds" className="rounded-lg text-xs font-normal py-2 px-3 shrink-0 whitespace-nowrap">
             Feeds de Notícias ({stats?.rssFeeds.total ?? 0})
           </TabsTrigger>
-          <TabsTrigger value="audit" className="rounded-lg text-xs font-normal py-2 px-3">
+          <TabsTrigger value="audit" className="rounded-lg text-xs font-normal py-2 px-3 shrink-0 whitespace-nowrap">
             Histórico de Importações
           </TabsTrigger>
-          <TabsTrigger value="datajud" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
-            <Scale className="w-3.5 h-3.5" />
+          <TabsTrigger value="datajud" className="rounded-lg text-xs font-normal py-2 px-3 gap-2 shrink-0 whitespace-nowrap">
+            <Scale className="w-3.5 h-3.5 shrink-0" />
             Processos Judiciais (CNJ)
           </TabsTrigger>
-          <TabsTrigger value="places" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
-            <MapPin className="w-3.5 h-3.5" />
+          <TabsTrigger value="places" className="rounded-lg text-xs font-normal py-2 px-3 gap-2 shrink-0 whitespace-nowrap">
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
             Buscar Empresas Locais
           </TabsTrigger>
-          <TabsTrigger value="specialized" className="rounded-lg text-xs font-normal py-2 px-3 gap-2">
-            <Utensils className="w-3.5 h-3.5" />
+          <TabsTrigger value="specialized" className="rounded-lg text-xs font-normal py-2 px-3 gap-2 shrink-0 whitespace-nowrap">
+            <Utensils className="w-3.5 h-3.5 shrink-0" />
             Importar por Link
           </TabsTrigger>
 

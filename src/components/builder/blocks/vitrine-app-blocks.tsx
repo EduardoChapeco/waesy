@@ -96,7 +96,9 @@ function VitrineBlockShell({
       data-block-id={id}
       style={sectionStyle.style}
       className={cn(
-        "w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto",
+        "w-full",
+        isMobile ? "px-3" : "px-6 lg:px-8",
+        !styling?.maxWidth && "max-w-7xl mx-auto",
         sectionStyle.className,
         className,
       )}

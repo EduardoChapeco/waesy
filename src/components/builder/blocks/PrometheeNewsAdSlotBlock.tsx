@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { ArrowUpRight, Megaphone } from "lucide-react";
 import type { BaseSiteBlockProps, PrometheeNewsAdSlotBlockData } from "@/types/omni-builder";
 import { usePrometheePortalController } from "@/components/news/promethee-portal-store";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export interface PrometheeNewsAdSlotBlockProps extends BaseSiteBlockProps {
   data: PrometheeNewsAdSlotBlockData;
@@ -17,6 +18,7 @@ export function PrometheeNewsAdSlotBlock({
   isEditing = false,
   sponsors = [],
 }: PrometheeNewsAdSlotBlockProps) {
+  const { isMobile } = useEffectiveViewport();
   const portal = usePrometheePortalController();
 
   const resolvedAd = useMemo(() => {
@@ -69,8 +71,14 @@ export function PrometheeNewsAdSlotBlock({
       className={`bg-background text-foreground py-3 ${className}`}
     >
       <div className="mx-auto max-w-6xl px-4">
-        <div className="rounded-3xl border border-border bg-muted/20 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
+        <div
+          className={
+            isMobile
+              ? "rounded-3xl border border-border bg-muted/20 p-4 flex flex-col items-start justify-between gap-4"
+              : "rounded-3xl border border-border bg-muted/20 p-5 flex flex-row items-center justify-between gap-4"
+          }
+        >
+          <div className={isMobile ? "flex items-start gap-3 min-w-0 w-full" : "flex items-center gap-4 min-w-0 flex-1"}>
             {resolvedAd.imageUrl ? (
               <div className="size-16 rounded-2xl overflow-hidden border border-border bg-card shrink-0">
                 <img
@@ -111,7 +119,7 @@ export function PrometheeNewsAdSlotBlock({
             onClick={(e) => {
               if (isEditing) e.preventDefault();
             }}
-            className="h-11 min-h-11 w-full sm:w-auto px-5 rounded-full bg-foreground text-background hover:bg-foreground/90 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 shrink-0 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={`${isMobile ? "w-full" : "w-auto"} h-11 min-h-11 px-5 rounded-full bg-foreground text-background hover:bg-foreground/90 text-xs sm:text-sm font-bold inline-flex items-center justify-center gap-2 shrink-0 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
           >
             <span>{resolvedAd.ctaLabel}</span>
             <ArrowUpRight className="size-4" />

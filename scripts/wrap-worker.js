@@ -106,7 +106,68 @@ if (typeof globalThis.process === "undefined") {
 }
 globalThis.__env__ = Object.assign({}, __fallbackEnv__, globalThis.__env__ || {});
 `;
-  const bundledCode = fs.readFileSync(bundledFile, "utf-8");
+  const rawBundledCode = fs.readFileSync(bundledFile, "utf-8");
+
+  // 1.5b Prune unused Phosphor icon weight maps ("duotone", "light", "thin") from SSR bundle
+  function stripUnusedPhosphorWeights(src) {
+    const marker = 'new Map([["bold",';
+    let out = "";
+    let pos = 0;
+    while (true) {
+      const idx = src.indexOf(marker, pos);
+      if (idx === -1) {
+        out += src.slice(pos);
+        break;
+      }
+      out += src.slice(pos, idx);
+      let i = idx + "new Map([".length;
+      const entries = [];
+      while (i < src.length && src[i] !== "]") {
+        if (src[i] === ",") i++;
+        if (src[i] !== "[") break;
+        const entryStart = i;
+        let depth = 0;
+        let inStr = false;
+        let quote = "";
+        for (; i < src.length; i++) {
+          const ch = src[i];
+          if (inStr) {
+            if (ch === "\\") i++;
+            else if (ch === quote) inStr = false;
+          } else {
+            if (ch === '"' || ch === "'" || ch === "`") {
+              inStr = true;
+              quote = ch;
+            } else if (ch === "[" || ch === "(" || ch === "{") {
+              depth++;
+            } else if (ch === "]" || ch === ")" || ch === "}") {
+              depth--;
+              if (depth === 0) {
+                i++;
+                break;
+              }
+            }
+          }
+        }
+        entries.push(src.slice(entryStart, i));
+      }
+      if (src.slice(i, i + 2) === "])") {
+        const kept = entries.filter(
+          (e) => e.startsWith('["bold",') || e.startsWith('["fill",') || e.startsWith('["regular",')
+        );
+        if (kept.length === 3 && entries.length === 6) {
+          out += `new Map([${kept.join(",")}])`;
+          pos = i + 2;
+          continue;
+        }
+      }
+      out += marker;
+      pos = idx + marker.length;
+    }
+    return out;
+  }
+
+  const bundledCode = stripUnusedPhosphorWeights(rawBundledCode);
   fs.writeFileSync(bundledFile, envHeader + bundledCode);
 
   const workerDir = path.join(process.cwd(), "dist/_worker.js");

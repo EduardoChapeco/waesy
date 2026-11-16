@@ -14,7 +14,7 @@ export interface HeroMinimalSplitProps {
 }
 
 export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, styling, className = "" }) => {
-  const { isMobile } = useEffectiveViewport();
+  const { isMobile, isMedium } = useEffectiveViewport();
   const sectionStyle = getSectionStyle(styling, isMobile);
   const primaryHref = data?.primaryCta?.href ? getSafeBuilderHref(data.primaryCta.href) ?? "#" : "#";
   const secondaryHref = data?.secondaryCta?.href ? getSafeBuilderHref(data.secondaryCta.href) ?? "#" : undefined;
@@ -29,12 +29,14 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
           className={
             isMobile
               ? "grid grid-cols-1 gap-8 items-center"
-              : "grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center"
+              : isMedium
+                ? "grid grid-cols-1 gap-10 items-center"
+                : "grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
           }
         >
 
           {/* Lado Esquerdo: 60% da Largura Útil (7 de 12 colunas) */}
-          <div className={isMobile ? "col-span-1 flex flex-col items-start text-left" : "lg:col-span-7 flex flex-col items-start text-left"}>
+          <div className={isMobile || isMedium ? "col-span-1 flex flex-col items-start text-left" : "col-span-1 lg:col-span-7 flex flex-col items-start text-left"}>
             {/* Pílula de Contexto Superior */}
             {data.badgeText && (
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-6">
@@ -118,7 +120,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, st
           </div>
 
           {/* Lado Direito: 40% da Largura Útil (5 de 12 colunas) */}
-          <div className={isMobile ? "col-span-1 relative" : "lg:col-span-5 relative"}>
+          <div className={isMobile || isMedium ? "col-span-1 relative" : "col-span-1 lg:col-span-5 relative"}>
             <div className="relative mx-auto max-w-md lg:max-w-none rounded-lg overflow-hidden border border-border/60 bg-muted/20 shadow-xs aspect-4/5 sm:aspect-square lg:aspect-4/5">
               {data.imageUrl ? (
                 <img

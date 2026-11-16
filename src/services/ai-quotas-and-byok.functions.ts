@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import { getActiveSecretForProvider } from "./secret-vault.functions";
 import {
   PLAN_AI_LIMITS,
@@ -167,7 +168,9 @@ export const upgradeStoreToWaesyMax = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ success: boolean; planTier: PlanTier }> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "master"], data.storeId);
+    if (!isPlatformAdminIdentity(identity)) {
+      throw new Error("Apenas o Admin Master Global pode alternar manualmente o plano da empresa.");
+    }
 
     const { error } = await supabase
       .from("stores")

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { recordTimeClock, listEmployeeTimeEntries, listEmployeePayslips, acknowledgePayslip, createEmployeeRequest, getMyEmployeeRecord } from "@/services/hr.functions";
 import { formatDateTime, formatTimeOnly } from "@/lib/datetime";
 import { EmployeeDocumentsPanel } from "@/components/employee/employee-documents-panel";
+import { SavedSignatureSettingsCard } from "@/components/contracts/saved-signature-settings";
 
 export const Route = createFileRoute("/_store/conta/colaborador")({
   head: () => ({ meta: [{ title: "Espaço do Colaborador | Waesy Hub" }] }),
@@ -377,11 +378,17 @@ function ColaboradorPortalPage() {
         )}
 
         {activeTab === "documentos" && (
-          <div className="bg-card rounded-lg border border-border p-4">
-            <EmployeeDocumentsPanel
-              employeeId={employeeId}
-              storeId={employee?.store_id}
+          <div className="space-y-6">
+            <SavedSignatureSettingsCard
+              title="Minha Assinatura para Contratos e Recibos"
+              description="Cadastre sua assinatura e rubrica uma única vez para assinar contratos, recibos e políticas internas em 1 toque."
             />
+            <div className="bg-card rounded-lg border border-border p-4">
+              <EmployeeDocumentsPanel
+                employeeId={employeeId}
+                storeId={employee?.store_id}
+              />
+            </div>
           </div>
         )}
  </div>

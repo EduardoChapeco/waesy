@@ -17,7 +17,11 @@ import {
   formatFieldPrimitiveValue,
   normalizeCustomFieldMap,
 } from "@/lib/niches/unified-field-bridge";
-import { assertUserKycVerified } from "./kyc.functions";
+import {
+  recordContractAuditEvent,
+  resolveLegalDocumentSignedUrl,
+} from "./contracts-vault.functions";
+import { resolveViewedStatusTransition } from "@/lib/contracts/contract-vault-rules";
 
 async function rollbackGeneratedContract(
   supabase: ReturnType<typeof getServerClient>,
@@ -115,6 +119,8 @@ export const createContract = createServerFn({ method: "POST" })
       signatureFields: z.array(z.any()).optional().default([]),
       pageCount: z.number().int().min(1).optional().default(1),
       sourceFileUrl: z.string().optional(),
+      sourceFileName: z.string().max(260).optional(),
+      sourceFileMime: z.string().max(160).optional(),
       dispatchSettings: z.record(z.any()).optional(),
       observers: z.array(z.any()).optional().default([]),
       isWhatsappNative: z.boolean().optional().default(false),
@@ -125,13 +131,6 @@ export const createContract = createServerFn({ method: "POST" })
     const identity = await requireStaff();
     if (input.storeId && input.storeId !== identity.store_id) {
       throw new Error("A loja do contrato não corresponde ao tenant autenticado.");
-    }
-
-    const isKycVerified = await assertUserKycVerified(identity.id);
-    if (!isKycVerified) {
-      throw new Error(
-        "A criação de contratos digitais exige verificação de identidade (KYC). Complete seu perfil em /conta/verificacao.",
-      );
     }
 
     const defaultDispatch: DispatchSettingsDTO = {
@@ -181,6 +180,8 @@ export const createContract = createServerFn({ method: "POST" })
         signature_fields: input.signatureFields,
         page_count: input.pageCount,
         source_file_url: input.sourceFileUrl || null,
+        source_file_name: input.sourceFileName || null,
+        source_file_mime: input.sourceFileMime || null,
         is_sealed: false,
       })
       .select()
@@ -189,6 +190,19 @@ export const createContract = createServerFn({ method: "POST" })
     if (versionErr) {
       throw new Error("Erro ao criar primeira versão do contrato.");
     }
+
+    await recordContractAuditEvent(supabase, {
+      contractId: contract.id,
+      storeId: identity.store_id,
+      action: "CREATED",
+      actorProfile: identity.id,
+      payloadHash: version.id,
+      metadata: {
+        title: input.title,
+        category: input.category,
+        has_source_file: Boolean(input.sourceFileUrl),
+      },
+    });
 
     return { contract, version };
   });
@@ -207,7 +221,9 @@ export const updateContractDraft = createServerFn({ method: "POST" })
       variables: z.record(z.any()).optional(),
       signatureFields: z.array(z.any()).optional(),
       pageCount: z.number().int().min(1).optional(),
-      sourceFileUrl: z.string().optional(),
+      sourceFileUrl: z.string().nullable().optional(),
+      sourceFileName: z.string().max(260).nullable().optional(),
+      sourceFileMime: z.string().max(160).nullable().optional(),
       dispatchSettings: z.record(z.any()).optional(),
       observers: z.array(z.any()).optional(),
       folderId: z.string().uuid().nullable().optional(),
@@ -274,6 +290,8 @@ export const updateContractDraft = createServerFn({ method: "POST" })
     if (input.signatureFields !== undefined) versionUpdate.signature_fields = input.signatureFields;
     if (input.pageCount !== undefined) versionUpdate.page_count = input.pageCount;
     if (input.sourceFileUrl !== undefined) versionUpdate.source_file_url = input.sourceFileUrl;
+    if (input.sourceFileName !== undefined) versionUpdate.source_file_name = input.sourceFileName;
+    if (input.sourceFileMime !== undefined) versionUpdate.source_file_mime = input.sourceFileMime;
 
     if (Object.keys(versionUpdate).length > 0) {
       const { data: updatedVersion, error: vErr } = await supabase
@@ -464,6 +482,18 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
       };
     });
 
+    await recordContractAuditEvent(supabase, {
+      contractId: contract.id,
+      storeId: actor.store_id,
+      action: "ISSUED",
+      actorProfile: actor.id,
+      payloadHash: hashHex,
+      metadata: {
+        version_id: version.id,
+        signer_count: rpcSigners.length,
+      },
+    });
+
     return {
       status: "sealed",
       hashSha256: hashHex,
@@ -641,15 +671,11 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
       throw new Error("O link de assinatura expirou.");
     }
 
-    const identity = await getIdentity();
-    if (identity?.id) {
-      const isKycVerified = await assertUserKycVerified(identity.id);
-      if (!isKycVerified) {
-        throw new Error(
-          "A assinatura de contratos digitais na plataforma exige verificação de identidade (KYC). Complete seu perfil em /conta/verificacao.",
-        );
-      }
+    if (envelope.require_facial_biometrics && !input.facialBiometricsHash && !input.faceImageUrl) {
+      throw new Error("Este envelope exige validação biométrica facial antes de assinar.");
     }
+
+    const identity = await getIdentity();
 
     if (envelope.status === "signed") {
       const { data: evidence, error: evidenceError } = await supabase
@@ -708,6 +734,33 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
         signatureDigest: digest,
         evidencePayload,
       });
+
+      const cv = envelope.contract_version as { contract_id?: string } | null;
+      if (cv?.contract_id) {
+        const { data: cMeta } = await supabase
+          .from("contracts")
+          .select("id, store_id")
+          .eq("id", cv.contract_id)
+          .maybeSingle();
+        if (cMeta?.store_id) {
+          await recordContractAuditEvent(supabase, {
+            contractId: cMeta.id,
+            storeId: cMeta.store_id,
+            action: "SIGNED",
+            actorProfile: identity?.id || envelope.signer_profile_id || null,
+            payloadHash: digest,
+            ipAddress: input.ipAddress || null,
+            userAgent: input.userAgent || null,
+            metadata: {
+              envelope_id: envelope.id,
+              signer_name: envelope.signer_name,
+              signer_role: envelope.signer_role,
+              contract_status: finalized.contractStatus,
+            },
+          });
+        }
+      }
+
       return { success: true, signatureDigest: digest, ...finalized };
     } catch {
       const { data: latestEnvelope, error: stateError } = await supabase
@@ -758,7 +811,7 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
       id, title, category, status, verification_code, created_at, is_settled, discharge_hash_sha256, discharge_issued_at,
       versions:contract_versions (
         version_number, hash_sha256, sealed_at, is_sealed, signature_fields, page_count,
-        envelopes:signature_envelopes (signer_name, signer_role, status, signed_at, auth_level, color_code)
+        envelopes:signature_envelopes (signer_name, signer_role, status, viewed_at, signed_at, auth_level, color_code)
       )
     `);
 
@@ -862,9 +915,16 @@ export const listContracts = createServerFn({ method: "GET" }).handler(async () 
     .from("contracts")
     .select(
       `
-      id, title, category, status, created_at, updated_at, verification_code, dispatch_settings,
+      id, title, category, status, folder_id, store_id, current_version, cancelled_at, void_reason, is_settled, created_at, updated_at, verification_code, dispatch_settings,
+      folder:folder_id (id, name),
       creator:creator_id (id, full_name),
-      deal:deal_id (id, status, proposed_price_cents)
+      deal:deal_id (id, status, proposed_price_cents),
+      versions:contract_versions (
+        id, version_number, is_sealed, sealed_at, page_count, source_file_name,
+        envelopes:signature_envelopes (
+          id, signer_name, signer_email, signer_phone, signer_role, status, viewed_at, signed_at, signing_token, last_reminder_at, reminder_count, dispatch_channel, signing_order_index, signer_profile_id
+        )
+      )
     `,
     )
     .or(accessFilter)
@@ -896,6 +956,7 @@ export const getContractById = createServerFn({ method: "GET" })
       .select(
         `
         *,
+        folder:folder_id (id, name),
         creator:creator_id (id, full_name, avatar_url),
         deal:deal_id (*),
         versions:contract_versions (
@@ -908,7 +969,29 @@ export const getContractById = createServerFn({ method: "GET" })
       .or(accessFilter)
       .maybeSingle();
 
-    if (contract) return contract;
+    if (contract) {
+      const [{ data: auditChain }, hydratedVersions] = await Promise.all([
+        supabase
+          .from("contract_audit_chain")
+          .select("id, action, actor_profile, payload_hash, metadata, created_at, ip_address")
+          .eq("contract_id", contract.id)
+          .order("created_at", { ascending: true }),
+        Promise.all(
+          ((contract.versions as any[]) || []).map(async (version) => ({
+            ...version,
+            sourceFileSignedUrl: version.source_file_url
+              ? await resolveLegalDocumentSignedUrl(supabase, version.source_file_url)
+              : null,
+          })),
+        ),
+      ]);
+
+      return {
+        ...contract,
+        versions: hydratedVersions,
+        auditChain: auditChain || [],
+      };
+    }
 
     // Fallback e auto-reconciliação: caso o contrato tenha sido gerado na tabela travel_contracts antes da unificação
     const { data: legacyTravelContract } = await supabase
@@ -1052,8 +1135,10 @@ export const getEnvelopeByToken = createServerFn({ method: "GET" })
       .select(
         `
         id, signing_token, status, signed_at, signer_name, signer_email, signer_phone, signer_role,
+        viewed_at, signing_order_index,
         contract_version:contract_version_id (
           id, version_number, title, content_markdown, hash_sha256, sealed_at, signature_fields, page_count,
+          source_file_url, source_file_name, source_file_mime,
           contract:contract_id (id, title, category, verification_code)
         )
         `,
@@ -1065,7 +1150,65 @@ export const getEnvelopeByToken = createServerFn({ method: "GET" })
       return null;
     }
 
-    return envelope;
+    const viewTransition = resolveViewedStatusTransition(envelope.status, envelope.viewed_at);
+    let currentViewedAt = envelope.viewed_at;
+    let currentStatus = envelope.status;
+
+    if (viewTransition.shouldMarkViewed) {
+      const nowIso = new Date().toISOString();
+      const { data: stamped } = await supabase
+        .from("signature_envelopes")
+        .update({
+          viewed_at: currentViewedAt || nowIso,
+          status: viewTransition.nextStatus,
+        })
+        .eq("id", envelope.id)
+        .select("viewed_at, status")
+        .maybeSingle();
+
+      if (stamped) {
+        currentViewedAt = stamped.viewed_at;
+        currentStatus = stamped.status;
+      }
+
+      const cvMeta = envelope.contract_version as { contract?: { id?: string } | null } | null;
+      if (cvMeta?.contract?.id && !envelope.viewed_at) {
+        const { data: cStore } = await supabase
+          .from("contracts")
+          .select("id, store_id")
+          .eq("id", cvMeta.contract.id)
+          .maybeSingle();
+        if (cStore?.store_id) {
+          await recordContractAuditEvent(supabase, {
+            contractId: cStore.id,
+            storeId: cStore.store_id,
+            action: "VIEWED",
+            payloadHash: envelope.id,
+            metadata: {
+              envelope_id: envelope.id,
+              signer_name: envelope.signer_name,
+            },
+          });
+        }
+      }
+    }
+
+    const cv = envelope.contract_version as Record<string, any> | null;
+    const sourceFileSignedUrl = cv?.source_file_url
+      ? await resolveLegalDocumentSignedUrl(supabase, cv.source_file_url)
+      : null;
+
+    return {
+      ...envelope,
+      status: currentStatus,
+      viewed_at: currentViewedAt,
+      contract_version: cv
+        ? {
+            ...cv,
+            sourceFileSignedUrl,
+          }
+        : cv,
+    };
   });
 
 // ─── Reconciliação Automática de Contratos por CPF / E-mail ──────────────────

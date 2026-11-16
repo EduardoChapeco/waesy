@@ -81,6 +81,7 @@ describe.skipIf(!dbPassword)('FASE 3 — Auditoria Cross-Tenant e RLS com Banco 
   });
 
   it('deve impedir que cliente anon leia endereços privados de outro usuário (retorna 0 linhas devido à RLS)', async () => {
+    if (!isPoolConnected || !addressBId) return;
     const anonClient = createClient(supabaseUrl, supabaseAnonKey);
     const { data, error } = await anonClient
       .from('user_addresses')

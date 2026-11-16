@@ -681,6 +681,7 @@ export const CLEAN_MOBILE_ROUTE_TITLES: Record<string, string> = {
   "/beleza": "Beleza",
   "/receitas": "Receitas",
   "/explorar": "Explorar",
+  "/explorer": "Explorar",
   "/mural": "Comunidade",
   "/criar-negocio": "Criar Negócio",
   "/contato": "Atendimento",
@@ -722,6 +723,7 @@ export function resolveCleanMobileTitle(pathname: string, fallbackTitle?: string
 
 const EXACT_CUSTOM_MOBILE_HEADER_ROUTES = new Set([
   "/",
+  "/explorer",
   "/gastronomia",
   "/mercado",
   "/farmacia",
@@ -807,4 +809,39 @@ export function isFullBleedStoreRoute(pathname: string): boolean {
     pathname.startsWith("/copilot") ||
     pathname.startsWith("/conta/conversas")
   );
+}
+
+const EDITORIAL_MARKETING_EXACT_ROUTES = new Set([
+  "/portal-completo",
+  "/sobre",
+  "/about",
+  "/contato",
+  "/contact",
+  "/faq",
+  "/developers",
+  "/docs",
+  "/privacidade",
+  "/privacy",
+  "/termos",
+  "/trocas-e-devolucoes",
+]);
+
+/**
+ * Identifica paginas publicas de venda/landing e institucionais que NAO devem
+ * exibir o AppShell comercial (TopBar de busca/carrinho, ContextSidebar ou MobileNav).
+ */
+export function isEditorialMarketingRoute(
+  pathname: string,
+  rootExperienceMode?: string | null,
+  searchStr?: string | null,
+): boolean {
+  const clean = pathname.replace(/\/+$/, "") || "/";
+  const qs = String(searchStr || "").toLowerCase();
+  if (clean === "/") {
+    if (qs.includes("vitrine=1") || qs.includes("vitrine=true")) return false;
+    return rootExperienceMode !== "marketplace_local";
+  }
+  if (clean === "/sistemas" || clean.startsWith("/sistemas/")) return true;
+  if (EDITORIAL_MARKETING_EXACT_ROUTES.has(clean)) return true;
+  return clean.startsWith("/politicas/");
 }

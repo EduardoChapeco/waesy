@@ -18,6 +18,8 @@ import {
   Calendar,
   BarChart3,
   Building2,
+  Code2,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -139,6 +141,51 @@ const ARTIFACT_TYPE_CONFIG: Record<
     label: "Criativo para Redes",
     icon: Image,
     defaultExport: "png",
+  },
+  code: {
+    label: "Código & Script",
+    icon: Code2,
+    defaultExport: "json",
+  },
+  video: {
+    label: "Vídeo Gerado",
+    icon: Video,
+    defaultExport: "json",
+  },
+  omnibuilder: {
+    label: "Projeto OmniBuilder",
+    icon: Layout,
+    defaultExport: "json",
+  },
+  carousel: {
+    label: "Carrossel Social",
+    icon: Layers,
+    defaultExport: "json",
+  },
+  motion_video: {
+    label: "Vídeo em Movimento",
+    icon: Video,
+    defaultExport: "json",
+  },
+  simlab_report: {
+    label: "Relatório SimLab",
+    icon: BarChart3,
+    defaultExport: "json",
+  },
+  business_plan: {
+    label: "Plano de Negócios",
+    icon: FileText,
+    defaultExport: "pdf",
+  },
+  web_app: {
+    label: "Aplicação Web",
+    icon: Layout,
+    defaultExport: "json",
+  },
+  schedule_plan: {
+    label: "Agenda & Tarefas",
+    icon: Calendar,
+    defaultExport: "json",
   },
 };
 

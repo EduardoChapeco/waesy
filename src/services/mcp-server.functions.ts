@@ -11,6 +11,8 @@ import {
   type McpExecutionContext,
 } from "@/registries/mcp-tool-registry";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
+import type { WorkspaceVfsFileEntry } from "@/types/chat";
+import type { WorkspaceVfsMap } from "@/lib/ai/workspace-vfs";
 
 export type { McpToolAccessTier };
 
@@ -50,6 +52,11 @@ export interface McpToolCallRequest {
   storeId?: string;
   authToken?: string;
   signal?: AbortSignal;
+  /** Uso estritamente interno em fluxos server-side (cron / worker sem cookie). Nunca expor em McpToolCallRequestSchema. */
+  serverUserId?: string;
+  /** Workspace VFS da execucao Copilot atual (apenas in-memory/server-side). */
+  vfsFiles?: WorkspaceVfsMap;
+  onVfsMutation?: (file: WorkspaceVfsFileEntry, originalContent: string) => Promise<void> | void;
 }
 
 export interface McpToolCallResult {
@@ -192,12 +199,35 @@ export async function readMcpResource(uri: string, storeId?: string): Promise<{ 
     };
   }
 
-  if (uri.startsWith("store://") && storeId) {
-    if (uri.includes("/catalog")) {
+  if (uri.startsWith("store://")) {
+    const uriMatch = uri.match(/^store:\/\/([^/]+)(\/.*)$/);
+    const rawUriStoreId = uriMatch?.[1]?.trim();
+    const uriStoreId =
+      rawUriStoreId && rawUriStoreId !== "{storeId}" && rawUriStoreId !== ":storeId"
+        ? rawUriStoreId
+        : undefined;
+
+    if (uriStoreId && storeId && uriStoreId !== storeId) {
+      throw new Error(`Acesso negado (403 Forbidden): storeId divergente no URI MCP "${uri}".`);
+    }
+
+    const resolvedStoreId = uriStoreId || storeId;
+    if (!resolvedStoreId) {
+      throw new Error(`Recurso MCP "${uri}" não encontrado ou requer contexto de storeId.`);
+    }
+
+    const identity = await getServerIdentity();
+    if (!identity?.id) {
+      throw new Error(`Acesso negado (401 Unauthorized): Recurso privado "${uri}" exige autenticação verificada.`);
+    }
+    assertStoreAccess(identity, STAFF_ROLES, resolvedStoreId);
+
+    const resourcePath = uriMatch?.[2] || uri;
+    if (resourcePath.includes("/catalog")) {
       const { data } = await supabase
         .from("products")
         .select("id, title, slug, price_cents, product_variants(stock_on_hand, allow_backorder)")
-        .eq("store_id", storeId)
+        .eq("store_id", resolvedStoreId)
         .in("status", ["published", "active"])
         .limit(100);
 
@@ -219,15 +249,15 @@ export async function readMcpResource(uri: string, storeId?: string): Promise<{ 
       return {
         uri,
         mimeType: "application/json",
-        content: { storeId, products: normalized },
+        content: { storeId: resolvedStoreId, products: normalized },
       };
     }
 
-    if (uri.includes("/financial-summary")) {
+    if (resourcePath.includes("/financial-summary")) {
       const { data: openRegister } = await supabase
         .from("cash_registers")
         .select("status, initial_balance_cents, expected_closing_balance_cents, opened_at")
-        .eq("store_id", storeId)
+        .eq("store_id", resolvedStoreId)
         .eq("status", "open")
         .maybeSingle();
 
@@ -235,7 +265,7 @@ export async function readMcpResource(uri: string, storeId?: string): Promise<{ 
         uri,
         mimeType: "application/json",
         content: {
-          storeId,
+          storeId: resolvedStoreId,
           cashRegister: openRegister
             ? {
                 ...openRegister,
@@ -489,11 +519,21 @@ export async function executeMcpToolCall(data: McpToolCallRequest): Promise<McpT
   // 🚀 EXECUÇÃO VIA REGISTRY HANDLER COM CONTEXTO ESCOPO
   try {
     const supabase = getServerClient();
+    const resolvedIdentity =
+      process.env.NODE_ENV === "test" && !data.serverUserId
+        ? { id: "test_user", role: "admin" }
+        : (await getServerIdentity().catch(() => null)) ||
+          (data.serverUserId
+            ? { id: data.serverUserId, role: "member" }
+            : { id: "", role: "guest" });
     const context: McpExecutionContext = {
       supabase,
       storeId: targetStoreId,
-      identity: process.env.NODE_ENV === "test" ? { id: "test_user", role: "admin" } : await getServerIdentity(),
+      identity: resolvedIdentity,
       authToken: data.authToken,
+      signal: data.signal,
+      vfsFiles: data.vfsFiles,
+      onVfsMutation: data.onVfsMutation,
     };
 
     const resultData = await toolEntry.handler(context, validatedArgs);

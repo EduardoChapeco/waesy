@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Calendar as CalendarIcon, Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import { cn } from "@/lib/utils";
 
 export interface EventAppleCalendarButtonProps {
@@ -31,7 +31,7 @@ export function EventAppleCalendarButton({
   className = "",
 }: EventAppleCalendarButtonProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const { isCompact } = useWindowSizeClass();
+  const { isCompact } = useEffectiveViewport();
 
   const now = useMemo(() => new Date(), []);
 

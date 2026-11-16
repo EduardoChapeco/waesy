@@ -200,25 +200,25 @@ function WorkspaceGroupTourDetailPage() {
 
  {/* ── 2. ABAS DE GESTÃO DA VIAGEM ── */}
  <Tabs defaultValue="onibus" className="space-y-4">
- <TabsList className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar p-1 rounded-lg min-h-12 h-auto sm:h-11">
- <TabsTrigger value="onibus" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
- <Bus className="size-3.5" />
+ <TabsList className="waesy-tab-strip items-center justify-start gap-2 w-full max-w-full min-w-0 p-1 rounded-lg min-h-11 h-11 sm:h-10">
+ <TabsTrigger value="onibus" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-2 shrink-0 whitespace-nowrap cursor-pointer flex items-center justify-center">
+ <Bus className="size-3.5 shrink-0" />
  <span>Mapa do Ônibus</span>
  </TabsTrigger>
- <TabsTrigger value="hoteis" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
- <Building className="size-3.5" />
+ <TabsTrigger value="hoteis" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-2 shrink-0 whitespace-nowrap cursor-pointer flex items-center justify-center">
+ <Building className="size-3.5 shrink-0" />
  <span>Rooming List</span>
  </TabsTrigger>
- <TabsTrigger value="orcamento" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
- <DollarSign className="size-3.5" />
+ <TabsTrigger value="orcamento" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-2 shrink-0 whitespace-nowrap cursor-pointer flex items-center justify-center">
+ <DollarSign className="size-3.5 shrink-0" />
  <span>Orçamento</span>
  </TabsTrigger>
- <TabsTrigger value="caixa" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
- <Wallet className="size-3.5" />
+ <TabsTrigger value="caixa" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-2 shrink-0 whitespace-nowrap cursor-pointer flex items-center justify-center">
+ <Wallet className="size-3.5 shrink-0" />
  <span>Caixa da Viagem</span>
  </TabsTrigger>
- <TabsTrigger value="transporte" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-3 sm:py-2 cursor-pointer flex items-center justify-center">
- <ShieldCheck className="size-3.5" />
+ <TabsTrigger value="transporte" className="min-h-11 sm:min-h-9 text-xs rounded-lg font-bold gap-2 py-2 shrink-0 whitespace-nowrap cursor-pointer flex items-center justify-center">
+ <ShieldCheck className="size-3.5 shrink-0" />
  <span>Veículo / ANTT</span>
  </TabsTrigger>
  </TabsList>

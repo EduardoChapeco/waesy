@@ -181,7 +181,7 @@ export function StudioTemplateFactory({ onApply }: StudioTemplateFactoryProps) {
           <FilePlus2 className="size-3.5" /> Gerar Modelo Customizado
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-screen max-w-4xl overflow-y-auto">
+      <DialogContent size="xl" className="max-h-screen sm:max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criador de Modelos</DialogTitle>
           <DialogDescription>

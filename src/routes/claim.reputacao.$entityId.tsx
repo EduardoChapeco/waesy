@@ -154,10 +154,10 @@ function ClaimReputacaoPage() {
 
  {/* Conteúdo em Abas */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="bg-muted/40 p-1 rounded-lg border border-border">
- <TabsTrigger value="overview" className="rounded-lg text-xs font-bold py-2 min-h-11">Visão Geral e Métricas</TabsTrigger>
- <TabsTrigger value="competitors" className="rounded-lg text-xs font-bold py-2 min-h-11">Benchmarking de Concorrência</TabsTrigger>
- <TabsTrigger value="claims" className="rounded-lg text-xs font-bold py-2 min-h-11">Atendimento e Resoluções</TabsTrigger>
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/40 p-1 rounded-lg border border-border w-full sm:w-auto max-w-full min-w-0 h-11 min-h-11">
+ <TabsTrigger value="overview" className="rounded-lg text-xs font-bold py-2 min-h-9 shrink-0 whitespace-nowrap">Visão Geral e Métricas</TabsTrigger>
+ <TabsTrigger value="competitors" className="rounded-lg text-xs font-bold py-2 min-h-9 shrink-0 whitespace-nowrap">Benchmarking de Concorrência</TabsTrigger>
+ <TabsTrigger value="claims" className="rounded-lg text-xs font-bold py-2 min-h-9 shrink-0 whitespace-nowrap">Atendimento e Resoluções</TabsTrigger>
  </TabsList>
 
  <TabsContent value="overview" className="space-y-4">

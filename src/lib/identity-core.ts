@@ -78,6 +78,24 @@ export const MANAGER_ROLES = [
 ] as const;
 
 /**
+ * Unica fonte de verdade para verificar privilegio de Admin Master Global.
+ * Papel "admin" de loja em workspace_members NAO confere privilegio de plataforma.
+ */
+export function isPlatformAdminIdentity(
+  identity: Partial<ServerIdentity> | null | undefined,
+): boolean {
+  if (!identity || !identity.id) return false;
+  if (identity.isPlatformAdmin === true) return true;
+  const role = String(identity.role || "").trim().toLowerCase();
+  return (
+    role === "platform_admin" ||
+    role === "master" ||
+    role === "admin_master" ||
+    role === "superadmin"
+  );
+}
+
+/**
  * Asserts que o usuário tem acesso de staff à loja ou é platform_admin global.
  * Lança Error se não autorizado.
  */
@@ -99,32 +117,27 @@ export function assertStoreAccess(
     return; // Global admins have access
   }
 
-  // If targetStoreId is provided, enforce cross-tenant isolation
-  const effectiveStoreId = targetStoreId || identity.store_id;
+  // If targetStoreId is provided, enforce cross-tenant isolation BEFORE mutating identity
+  const effectiveStoreId = targetStoreId || identity.store_id || identity.memberships?.[0]?.store_id;
 
   if (!effectiveStoreId) {
-    if (identity.memberships?.[0]?.store_id) {
-      (identity as any).store_id = identity.memberships[0].store_id;
-    } else {
-      throw new Error("Unauthorized: No active store context found.");
-    }
-  } else {
-    (identity as any).store_id = effectiveStoreId;
+    throw new Error("Unauthorized: No active store context found.");
   }
 
   // Enforce that user actually has an authorized membership in the effective store
   const targetMembership = (identity.memberships || []).find(
-    (m) => m.store_id === (identity as any).store_id,
+    (m) => m.store_id === effectiveStoreId,
   );
 
   const effectiveRole = targetMembership?.role || identity.role;
 
   if (!targetMembership || !(allowedRoles as readonly string[]).includes(effectiveRole)) {
     throw new Error(
-      `Unauthorized: Insufficient permissions for store ${(identity as any).store_id}. Required one of: ${allowedRoles.join(", ")}`,
+      `Unauthorized: Insufficient permissions for store ${effectiveStoreId}. Required one of: ${allowedRoles.join(", ")}`,
     );
   }
 
+  (identity as any).store_id = effectiveStoreId;
   (identity as any).role = effectiveRole;
 }
 

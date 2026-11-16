@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import type { ProposalCanvasFormat } from "@/services/travel-proposal.functions";
+import { getDocumentThemeContainerProps } from "@/lib/builder/block-data-resolver";
+import { TOKEN_HEX } from "@/lib/design-tokens";
 
 export const CANVAS_DIMENSIONS: Record<
  ProposalCanvasFormat,
@@ -81,7 +83,14 @@ export function StudioFrame({
     transition: "width 0.2s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
   };
 
+  const effectiveBgColor = canvasBgColor || TOKEN_HEX.white;
+  const isolatedCanvasTheme = getDocumentThemeContainerProps(
+    { backgroundColor: effectiveBgColor },
+    { forceIsolate: true },
+  );
+
   const artboardStyle: React.CSSProperties = {
+    ...isolatedCanvasTheme.style,
     width: dims.width,
     minHeight: dims.minHeight,
     transform: `scale(${effectiveScale})`,
@@ -89,7 +98,7 @@ export function StudioFrame({
     position: "absolute",
     top: 0,
     left: 0,
-    backgroundColor: canvasBgColor || "var(--p-bg)",
+    backgroundColor: effectiveBgColor,
   };
 
   return (
@@ -115,6 +124,7 @@ export function StudioFrame({
           id={canvasId}
           ref={canvasRef}
           data-proposal-canvas="true"
+          data-builder-canvas-isolated={isolatedCanvasTheme.isolationScheme}
           data-canvas-bg={canvasBgColor || ""}
           style={artboardStyle}
           className="p-canvas-root rounded-lg overflow-hidden border border-border/80 ring-1 ring-border/40 transition-transform duration-200"

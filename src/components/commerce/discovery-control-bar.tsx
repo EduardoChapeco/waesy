@@ -155,9 +155,9 @@ export function DiscoveryControlBar({
   };
 
   return (
-    <section aria-label="Controles e Filtros" className={cn("space-y-2 my-1 w-full", stickyClasses, className)}>
+    <section aria-label="Controles e Filtros" className={cn("space-y-2 my-1 w-full min-w-0", stickyClasses, className)}>
       {/* ── 1. LINHA SUPERIOR: MOTOR DE BUSCA DIRETO & FILTRO TÁTIL (PADRÃO ERGONÔMICO NATIVO) ── */}
-      <div className={cn("flex items-center justify-between gap-2 w-full", hideMobileSearch && "hidden md:flex")}>
+      <div className={cn("flex items-center justify-between gap-2 w-full min-w-0", hideMobileSearch && "hidden md:flex")}>
         {/* Campo de Busca Direto (Sem clique duplo no mobile) */}
         <div className="relative flex-1 min-w-0 block">
           <MagnifyingGlass
@@ -514,7 +514,7 @@ export function DiscoveryControlBar({
       {/* ── 3. FILTROS RÁPIDOS ADICIONAIS (Frete Grátis, Ofertas Relâmpago, etc.) ── */}
       {fastFilters.length > 0 && (
         <div className="relative -mx-2 px-2 sm:mx-0 sm:px-0">
-          <div className="tab-list flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 pt-1 pr-6">
+          <div className="waesy-tab-strip tab-list items-center snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 pt-1 pr-6 min-w-0">
             {fastFilters.map((filter) => {
               const Icon = filter.icon;
               const cleanFilterLabel = filter.label.replace(/\s+&\s+/g, " e ");

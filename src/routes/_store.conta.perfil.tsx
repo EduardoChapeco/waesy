@@ -17,10 +17,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Info, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock, Plus, Info, CheckCircle2, AlertCircle, PenTool } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
+import { SavedSignatureSettingsCard } from "@/components/contracts/saved-signature-settings";
 
 function normalizeGenderValue(g?: string): "feminino" | "masculino" | "outro" | "prefiro_nao_dizer" {
   if (!g || g === "not_informed") return "prefiro_nao_dizer";
@@ -71,6 +72,8 @@ function ProfileCivilPage() {
       ? "profissional"
       : search?.tab === "privacidade"
       ? "privacidade"
+      : search?.tab === "assinatura"
+      ? "assinatura"
       : search?.tab === "links" || search?.tab === "comercial"
       ? "links"
       : "dados";
@@ -522,35 +525,42 @@ function ProfileCivilPage() {
       {/* ── 3. Formulário de Perfil Civil com 4 Abas ── */}
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="flex items-center overflow-x-auto scroll-area-carousel no-scrollbar pb-1">
-            <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
+          <div className="waesy-tab-strip items-center pb-1 min-w-0 max-w-full">
+            <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap justify-start min-w-0">
               <TabsTrigger
                 value="dados"
-                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <User className="size-3.5" strokeWidth={1.75} />
+                <User className="size-3.5 shrink-0" strokeWidth={1.75} />
                 <span>Identidade</span>
               </TabsTrigger>
               <TabsTrigger
                 value="profissional"
-                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <Briefcase className="size-3.5" strokeWidth={1.75} />
+                <Briefcase className="size-3.5 shrink-0" strokeWidth={1.75} />
                 <span>Currículo</span>
               </TabsTrigger>
               <TabsTrigger
                 value="links"
-                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <LinkIcon className="size-3.5" strokeWidth={1.75} />
+                <LinkIcon className="size-3.5 shrink-0" strokeWidth={1.75} />
                 <span>Links</span>
               </TabsTrigger>
               <TabsTrigger
                 value="privacidade"
-                className="h-9 px-4 rounded-full text-xs font-semibold gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <Lock className="size-3.5" strokeWidth={1.75} />
+                <Lock className="size-3.5 shrink-0" strokeWidth={1.75} />
                 <span>Privacidade</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="assinatura"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-4 rounded-full text-xs font-semibold gap-2 shrink-0 whitespace-nowrap data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <PenTool className="size-3.5 shrink-0" strokeWidth={1.75} />
+                <span>Assinatura</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1434,51 +1444,65 @@ function ProfileCivilPage() {
               </div>
             </div>
           </TabsContent>
+
+          {/* ══════════════════════════════════════════════════════════════
+              ABA 5: ASSINATURA DIGITAL PESSOAL (1 TOQUE)
+          ══════════════════════════════════════════════════════════════ */}
+          <TabsContent value="assinatura" className="space-y-5">
+            <SavedSignatureSettingsCard
+              title="Assinatura e Rubrica para Contratos"
+              description="Cadastre sua assinatura e rubrica pessoais uma única vez. Você poderá assinar documentos, holerites e contratos com 1 toque."
+            />
+          </TabsContent>
         </Tabs>
 
         {/* ── Botão Salvar Principal (Desktop: Alinhado à Direita | Mobile: Espaçado) ── */}
-        <div className="flex items-center justify-end gap-3 pt-2 w-full">
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto rounded-lg px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                <span>Salvando...</span>
-              </>
-            ) : (
-              <>
-                <Check className="size-4 stroke-bold" />
-                <span>Salvar Perfil</span>
-              </>
-            )}
-          </Button>
-        </div>
+        {activeTab !== "assinatura" && (
+          <>
+            <div className="flex items-center justify-end gap-3 pt-2 w-full">
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full sm:w-auto rounded-lg px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="size-4 stroke-bold" />
+                    <span>Salvar Perfil</span>
+                  </>
+                )}
+              </Button>
+            </div>
 
-        {/* ── Barra de Ação Flutuante Mobile (<640px) para Salvar sem Rolar a Página Toda ── */}
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 pb-safe bg-background border-t border-border/40 z-30">
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full rounded-lg h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-95"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
-                <span>Salvando...</span>
-              </>
-            ) : (
-              <>
-                <Check className="size-4 stroke-bold" />
-                <span>Salvar Perfil</span>
-              </>
-            )}
-          </Button>
-        </div>
+            {/* ── Barra de Ação Flutuante Mobile (<640px) para Salvar sem Rolar a Página Toda ── */}
+            <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 pb-safe bg-background border-t border-border/40 z-30">
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full rounded-lg h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-95"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" />
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="size-4 stroke-bold" />
+                    <span>Salvar Perfil</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Modal de Recorte de Imagem (1:1 Avatar, 21:9 Capa) */}

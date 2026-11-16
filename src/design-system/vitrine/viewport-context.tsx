@@ -2,7 +2,7 @@ import * as React from "react";
 import { useWindowSizeClass, type WindowSizeClass } from "@/hooks/use-mobile";
 import { getSafeBuilderHref } from "@/lib/builder/safe-href";
 
-export type BuilderForcedViewport = "desktop" | "mobile" | null;
+export type BuilderForcedViewport = "desktop" | "tablet" | "mobile" | null;
 export type DeviceVisibilityMode = "all" | "mobile_only" | "desktop_only";
 
 export interface EffectiveViewportValue {
@@ -72,6 +72,20 @@ export function useEffectiveViewport(): EffectiveViewportValue {
       isDesktop: false,
       isForcedViewport: true,
       forcedViewport: "mobile",
+      isEditorCanvas: builderCtx.isEditorCanvas,
+    };
+  }
+
+  if (builderCtx.forcedViewport === "tablet") {
+    return {
+      sizeClass: "medium",
+      isCompact: false,
+      isMedium: true,
+      isExpanded: false,
+      isMobile: false,
+      isDesktop: false,
+      isForcedViewport: true,
+      forcedViewport: "tablet",
       isEditorCanvas: builderCtx.isEditorCanvas,
     };
   }

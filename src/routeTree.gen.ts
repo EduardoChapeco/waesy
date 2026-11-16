@@ -57,6 +57,7 @@ import { Route as StoreEmpregosRouteImport } from './routes/_store.empregos'
 import { Route as StoreEntrarRouteImport } from './routes/_store.entrar'
 import { Route as StoreEventosRouteImport } from './routes/_store.eventos'
 import { Route as StoreExplorarRouteImport } from './routes/_store.explorar'
+import { Route as StoreExplorerRouteImport } from './routes/_store.explorer'
 import { Route as StoreFaqRouteImport } from './routes/_store.faq'
 import { Route as StoreFarmaciaRouteImport } from './routes/_store.farmacia'
 import { Route as StoreFeedRouteImport } from './routes/_store.feed'
@@ -106,6 +107,7 @@ import { Route as AdminMasterHubsRouteImport } from './routes/admin-master.hubs'
 import { Route as AdminMasterImprensaRouteImport } from './routes/admin-master.imprensa'
 import { Route as AdminMasterIntegracoesRouteImport } from './routes/admin-master.integracoes'
 import { Route as AdminMasterKycRouteImport } from './routes/admin-master.kyc'
+import { Route as AdminMasterLandingsRouteImport } from './routes/admin-master.landings'
 import { Route as AdminMasterLogisticaRouteImport } from './routes/admin-master.logistica'
 import { Route as AdminMasterLogsRouteImport } from './routes/admin-master.logs'
 import { Route as AdminMasterLojasRouteImport } from './routes/admin-master.lojas'
@@ -116,6 +118,7 @@ import { Route as AdminMasterOnboardingRouteImport } from './routes/admin-master
 import { Route as AdminMasterPortalCompletoRouteImport } from './routes/admin-master.portal-completo'
 import { Route as AdminMasterPreCadastroRouteImport } from './routes/admin-master.pre-cadastro'
 import { Route as AdminMasterSimlabsRouteImport } from './routes/admin-master.simlabs'
+import { Route as AdminMasterSubsistemasRouteImport } from './routes/admin-master.subsistemas'
 import { Route as AdminMasterTermosRouteImport } from './routes/admin-master.termos'
 import { Route as AdminMasterTokensRouteImport } from './routes/admin-master.tokens'
 import { Route as AdminMasterUsuariosRouteImport } from './routes/admin-master.usuarios'
@@ -233,6 +236,8 @@ import { Route as StorePropostaTokenRouteImport } from './routes/_store.proposta
 import { Route as StorePublicacaoIdRouteImport } from './routes/_store.publicacao.$id'
 import { Route as StoreReceitasIndexRouteImport } from './routes/_store.receitas.index'
 import { Route as StoreReceitasIdRouteImport } from './routes/_store.receitas.$id'
+import { Route as StoreSistemasIndexRouteImport } from './routes/_store.sistemas.index'
+import { Route as StoreSistemasSlugRouteImport } from './routes/_store.sistemas.$slug'
 import { Route as StoreTurismoIndexRouteImport } from './routes/_store.turismo.index'
 import { Route as StoreTurismoIdRouteImport } from './routes/_store.turismo.$id'
 import { Route as StoreUUsernameRouteImport } from './routes/_store.u.$username'
@@ -243,8 +248,12 @@ import { Route as AdminMasterSegurancaIndexRouteImport } from './routes/admin-ma
 import { Route as AdminMasterSegurancaCertificadosRouteImport } from './routes/admin-master.seguranca.certificados'
 import { Route as AdminMasterSegurancaTelemetriaRouteImport } from './routes/admin-master.seguranca.telemetria'
 import { Route as ApiAiStreamRouteImport } from './routes/api.ai.stream'
+import { Route as ApiAiTranscribeRouteImport } from './routes/api.ai.transcribe'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api.auth.callback'
 import { Route as ApiAuthConfirmRouteImport } from './routes/api.auth.confirm'
+import { Route as ApiCronAiJobsRouteImport } from './routes/api.cron.ai-jobs'
+import { Route as ApiCronAiScheduledTasksRouteImport } from './routes/api.cron.ai-scheduled-tasks'
+import { Route as ApiCronAiTasksRouteImport } from './routes/api.cron.ai-tasks'
 import { Route as ApiCronMiningWorkerRouteImport } from './routes/api.cron.mining-worker'
 import { Route as ApiFeedMetaDotcsvRouteImport } from './routes/api.feed.meta[.]csv'
 import { Route as ApiFeedXmlRouteImport } from './routes/api.feed.xml'
@@ -422,6 +431,7 @@ import { Route as StoreTurismoAluguelCarrosIdRouteImport } from './routes/_store
 import { Route as StoreTurismoDestinosSlugRouteImport } from './routes/_store.turismo.destinos.$slug'
 import { Route as StoreTurismoHoteisSlugRouteImport } from './routes/_store.turismo.hoteis.$slug'
 import { Route as AdminMasterSegurancaCertificadosIdRouteImport } from './routes/admin-master.seguranca.certificados.$id'
+import { Route as ApiAiJobsProcessRouteImport } from './routes/api.ai.jobs.process'
 import { Route as ApiAuthAdsCallbackRouteImport } from './routes/api.auth.ads.callback'
 import { Route as ApiAuthGovbrCallbackRouteImport } from './routes/api.auth.govbr.callback'
 import { Route as ApiAuthLinkedinCallbackRouteImport } from './routes/api.auth.linkedin.callback'
@@ -713,6 +723,11 @@ const StoreExplorarRoute = StoreExplorarRouteImport.update({
   path: '/explorar',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreExplorerRoute = StoreExplorerRouteImport.update({
+  id: '/explorer',
+  path: '/explorer',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreFaqRoute = StoreFaqRouteImport.update({
   id: '/faq',
   path: '/faq',
@@ -960,6 +975,11 @@ const AdminMasterKycRoute = AdminMasterKycRouteImport.update({
   path: '/kyc',
   getParentRoute: () => AdminMasterRoute,
 } as any)
+const AdminMasterLandingsRoute = AdminMasterLandingsRouteImport.update({
+  id: '/landings',
+  path: '/landings',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
 const AdminMasterLogisticaRoute = AdminMasterLogisticaRouteImport.update({
   id: '/logistica',
   path: '/logistica',
@@ -1009,6 +1029,11 @@ const AdminMasterPreCadastroRoute = AdminMasterPreCadastroRouteImport.update({
 const AdminMasterSimlabsRoute = AdminMasterSimlabsRouteImport.update({
   id: '/simlabs',
   path: '/simlabs',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
+const AdminMasterSubsistemasRoute = AdminMasterSubsistemasRouteImport.update({
+  id: '/subsistemas',
+  path: '/subsistemas',
   getParentRoute: () => AdminMasterRoute,
 } as any)
 const AdminMasterTermosRoute = AdminMasterTermosRouteImport.update({
@@ -1600,6 +1625,16 @@ const StoreReceitasIdRoute = StoreReceitasIdRouteImport.update({
   path: '/receitas/$id',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreSistemasIndexRoute = StoreSistemasIndexRouteImport.update({
+  id: '/sistemas/',
+  path: '/sistemas/',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreSistemasSlugRoute = StoreSistemasSlugRouteImport.update({
+  id: '/sistemas/$slug',
+  path: '/sistemas/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreTurismoIndexRoute = StoreTurismoIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -1654,6 +1689,11 @@ const ApiAiStreamRoute = ApiAiStreamRouteImport.update({
   path: '/api/ai/stream',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiTranscribeRoute = ApiAiTranscribeRouteImport.update({
+  id: '/api/ai/transcribe',
+  path: '/api/ai/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
   id: '/api/auth/callback',
   path: '/api/auth/callback',
@@ -1662,6 +1702,21 @@ const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
 const ApiAuthConfirmRoute = ApiAuthConfirmRouteImport.update({
   id: '/api/auth/confirm',
   path: '/api/auth/confirm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronAiJobsRoute = ApiCronAiJobsRouteImport.update({
+  id: '/api/cron/ai-jobs',
+  path: '/api/cron/ai-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronAiScheduledTasksRoute = ApiCronAiScheduledTasksRouteImport.update({
+  id: '/api/cron/ai-scheduled-tasks',
+  path: '/api/cron/ai-scheduled-tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronAiTasksRoute = ApiCronAiTasksRouteImport.update({
+  id: '/api/cron/ai-tasks',
+  path: '/api/cron/ai-tasks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronMiningWorkerRoute = ApiCronMiningWorkerRouteImport.update({
@@ -2645,6 +2700,11 @@ const AdminMasterSegurancaCertificadosIdRoute =
     path: '/$id',
     getParentRoute: () => AdminMasterSegurancaCertificadosRoute,
   } as any)
+const ApiAiJobsProcessRoute = ApiAiJobsProcessRouteImport.update({
+  id: '/api/ai/jobs/process',
+  path: '/api/ai/jobs/process',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthAdsCallbackRoute = ApiAuthAdsCallbackRouteImport.update({
   id: '/api/auth/ads/callback',
   path: '/api/auth/ads/callback',
@@ -2986,6 +3046,7 @@ export interface FileRoutesByFullPath {
   '/entrar': typeof StoreEntrarRoute
   '/eventos': typeof StoreEventosRoute
   '/explorar': typeof StoreExplorarRoute
+  '/explorer': typeof StoreExplorerRoute
   '/faq': typeof StoreFaqRoute
   '/farmacia': typeof StoreFarmaciaRoute
   '/feed': typeof StoreFeedRoute
@@ -3034,6 +3095,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
   '/admin-master/kyc': typeof AdminMasterKycRoute
+  '/admin-master/landings': typeof AdminMasterLandingsRoute
   '/admin-master/logistica': typeof AdminMasterLogisticaRoute
   '/admin-master/logs': typeof AdminMasterLogsRoute
   '/admin-master/lojas': typeof AdminMasterLojasRoute
@@ -3044,6 +3106,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
   '/admin-master/pre-cadastro': typeof AdminMasterPreCadastroRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
+  '/admin-master/subsistemas': typeof AdminMasterSubsistemasRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
   '/admin-master/tokens': typeof AdminMasterTokensRoute
   '/admin-master/usuarios': typeof AdminMasterUsuariosRoute
@@ -3151,6 +3214,7 @@ export interface FileRoutesByFullPath {
   '/proposta/$token': typeof StorePropostaTokenRoute
   '/publicacao/$id': typeof StorePublicacaoIdRoute
   '/receitas/$id': typeof StoreReceitasIdRoute
+  '/sistemas/$slug': typeof StoreSistemasSlugRoute
   '/turismo/$id': typeof StoreTurismoIdRoute
   '/u/$username': typeof StoreUUsernameRoute
   '/vendedora/$slug': typeof StoreVendedoraSlugRoute
@@ -3159,8 +3223,12 @@ export interface FileRoutesByFullPath {
   '/admin-master/seguranca/certificados': typeof AdminMasterSegurancaCertificadosRouteWithChildren
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
   '/api/ai/stream': typeof ApiAiStreamRoute
+  '/api/ai/transcribe': typeof ApiAiTranscribeRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
+  '/api/cron/ai-jobs': typeof ApiCronAiJobsRoute
+  '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
+  '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
@@ -3307,6 +3375,7 @@ export interface FileRoutesByFullPath {
   '/noticias/': typeof StoreNoticiasIndexRoute
   '/places/': typeof StorePlacesIndexRoute
   '/receitas/': typeof StoreReceitasIndexRoute
+  '/sistemas/': typeof StoreSistemasIndexRoute
   '/turismo/': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca/': typeof AdminMasterSegurancaIndexRoute
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
@@ -3348,6 +3417,7 @@ export interface FileRoutesByFullPath {
   '/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
   '/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
+  '/api/ai/jobs/process': typeof ApiAiJobsProcessRoute
   '/api/auth/ads/callback': typeof ApiAuthAdsCallbackRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
@@ -3443,6 +3513,7 @@ export interface FileRoutesByTo {
   '/entrar': typeof StoreEntrarRoute
   '/eventos': typeof StoreEventosRoute
   '/explorar': typeof StoreExplorarRoute
+  '/explorer': typeof StoreExplorerRoute
   '/faq': typeof StoreFaqRoute
   '/farmacia': typeof StoreFarmaciaRoute
   '/feed': typeof StoreFeedRoute
@@ -3490,6 +3561,7 @@ export interface FileRoutesByTo {
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
   '/admin-master/kyc': typeof AdminMasterKycRoute
+  '/admin-master/landings': typeof AdminMasterLandingsRoute
   '/admin-master/logistica': typeof AdminMasterLogisticaRoute
   '/admin-master/logs': typeof AdminMasterLogsRoute
   '/admin-master/lojas': typeof AdminMasterLojasRoute
@@ -3500,6 +3572,7 @@ export interface FileRoutesByTo {
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
   '/admin-master/pre-cadastro': typeof AdminMasterPreCadastroRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
+  '/admin-master/subsistemas': typeof AdminMasterSubsistemasRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
   '/admin-master/tokens': typeof AdminMasterTokensRoute
   '/admin-master/usuarios': typeof AdminMasterUsuariosRoute
@@ -3607,6 +3680,7 @@ export interface FileRoutesByTo {
   '/proposta/$token': typeof StorePropostaTokenRoute
   '/publicacao/$id': typeof StorePublicacaoIdRoute
   '/receitas/$id': typeof StoreReceitasIdRoute
+  '/sistemas/$slug': typeof StoreSistemasSlugRoute
   '/turismo/$id': typeof StoreTurismoIdRoute
   '/u/$username': typeof StoreUUsernameRoute
   '/vendedora/$slug': typeof StoreVendedoraSlugRoute
@@ -3615,8 +3689,12 @@ export interface FileRoutesByTo {
   '/admin-master/seguranca/certificados': typeof AdminMasterSegurancaCertificadosRouteWithChildren
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
   '/api/ai/stream': typeof ApiAiStreamRoute
+  '/api/ai/transcribe': typeof ApiAiTranscribeRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
+  '/api/cron/ai-jobs': typeof ApiCronAiJobsRoute
+  '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
+  '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
@@ -3762,6 +3840,7 @@ export interface FileRoutesByTo {
   '/noticias': typeof StoreNoticiasIndexRoute
   '/places': typeof StorePlacesIndexRoute
   '/receitas': typeof StoreReceitasIndexRoute
+  '/sistemas': typeof StoreSistemasIndexRoute
   '/turismo': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca': typeof AdminMasterSegurancaIndexRoute
   '/workspace/advocacia': typeof WorkspaceAdvocaciaIndexRoute
@@ -3803,6 +3882,7 @@ export interface FileRoutesByTo {
   '/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
   '/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
+  '/api/ai/jobs/process': typeof ApiAiJobsProcessRoute
   '/api/auth/ads/callback': typeof ApiAuthAdsCallbackRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
@@ -3906,6 +3986,7 @@ export interface FileRoutesById {
   '/_store/entrar': typeof StoreEntrarRoute
   '/_store/eventos': typeof StoreEventosRoute
   '/_store/explorar': typeof StoreExplorarRoute
+  '/_store/explorer': typeof StoreExplorerRoute
   '/_store/faq': typeof StoreFaqRoute
   '/_store/farmacia': typeof StoreFarmaciaRoute
   '/_store/feed': typeof StoreFeedRoute
@@ -3954,6 +4035,7 @@ export interface FileRoutesById {
   '/admin-master/imprensa': typeof AdminMasterImprensaRoute
   '/admin-master/integracoes': typeof AdminMasterIntegracoesRoute
   '/admin-master/kyc': typeof AdminMasterKycRoute
+  '/admin-master/landings': typeof AdminMasterLandingsRoute
   '/admin-master/logistica': typeof AdminMasterLogisticaRoute
   '/admin-master/logs': typeof AdminMasterLogsRoute
   '/admin-master/lojas': typeof AdminMasterLojasRoute
@@ -3964,6 +4046,7 @@ export interface FileRoutesById {
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
   '/admin-master/pre-cadastro': typeof AdminMasterPreCadastroRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
+  '/admin-master/subsistemas': typeof AdminMasterSubsistemasRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
   '/admin-master/tokens': typeof AdminMasterTokensRoute
   '/admin-master/usuarios': typeof AdminMasterUsuariosRoute
@@ -4072,6 +4155,7 @@ export interface FileRoutesById {
   '/_store/proposta/$token': typeof StorePropostaTokenRoute
   '/_store/publicacao/$id': typeof StorePublicacaoIdRoute
   '/_store/receitas/$id': typeof StoreReceitasIdRoute
+  '/_store/sistemas/$slug': typeof StoreSistemasSlugRoute
   '/_store/turismo/$id': typeof StoreTurismoIdRoute
   '/_store/u/$username': typeof StoreUUsernameRoute
   '/_store/vendedora/$slug': typeof StoreVendedoraSlugRoute
@@ -4080,8 +4164,12 @@ export interface FileRoutesById {
   '/admin-master/seguranca/certificados': typeof AdminMasterSegurancaCertificadosRouteWithChildren
   '/admin-master/seguranca/telemetria': typeof AdminMasterSegurancaTelemetriaRoute
   '/api/ai/stream': typeof ApiAiStreamRoute
+  '/api/ai/transcribe': typeof ApiAiTranscribeRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/confirm': typeof ApiAuthConfirmRoute
+  '/api/cron/ai-jobs': typeof ApiCronAiJobsRoute
+  '/api/cron/ai-scheduled-tasks': typeof ApiCronAiScheduledTasksRoute
+  '/api/cron/ai-tasks': typeof ApiCronAiTasksRoute
   '/api/cron/mining-worker': typeof ApiCronMiningWorkerRoute
   '/api/feed/meta.csv': typeof ApiFeedMetaDotcsvRoute
   '/api/feed/xml': typeof ApiFeedXmlRoute
@@ -4228,6 +4316,7 @@ export interface FileRoutesById {
   '/_store/noticias/': typeof StoreNoticiasIndexRoute
   '/_store/places/': typeof StorePlacesIndexRoute
   '/_store/receitas/': typeof StoreReceitasIndexRoute
+  '/_store/sistemas/': typeof StoreSistemasIndexRoute
   '/_store/turismo/': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca/': typeof AdminMasterSegurancaIndexRoute
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
@@ -4269,6 +4358,7 @@ export interface FileRoutesById {
   '/_store/turismo/destinos/$slug': typeof StoreTurismoDestinosSlugRoute
   '/_store/turismo/hoteis/$slug': typeof StoreTurismoHoteisSlugRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
+  '/api/ai/jobs/process': typeof ApiAiJobsProcessRoute
   '/api/auth/ads/callback': typeof ApiAuthAdsCallbackRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
@@ -4373,6 +4463,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/eventos'
     | '/explorar'
+    | '/explorer'
     | '/faq'
     | '/farmacia'
     | '/feed'
@@ -4421,6 +4512,7 @@ export interface FileRouteTypes {
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
     | '/admin-master/kyc'
+    | '/admin-master/landings'
     | '/admin-master/logistica'
     | '/admin-master/logs'
     | '/admin-master/lojas'
@@ -4431,6 +4523,7 @@ export interface FileRouteTypes {
     | '/admin-master/portal-completo'
     | '/admin-master/pre-cadastro'
     | '/admin-master/simlabs'
+    | '/admin-master/subsistemas'
     | '/admin-master/termos'
     | '/admin-master/tokens'
     | '/admin-master/usuarios'
@@ -4538,6 +4631,7 @@ export interface FileRouteTypes {
     | '/proposta/$token'
     | '/publicacao/$id'
     | '/receitas/$id'
+    | '/sistemas/$slug'
     | '/turismo/$id'
     | '/u/$username'
     | '/vendedora/$slug'
@@ -4546,8 +4640,12 @@ export interface FileRouteTypes {
     | '/admin-master/seguranca/certificados'
     | '/admin-master/seguranca/telemetria'
     | '/api/ai/stream'
+    | '/api/ai/transcribe'
     | '/api/auth/callback'
     | '/api/auth/confirm'
+    | '/api/cron/ai-jobs'
+    | '/api/cron/ai-scheduled-tasks'
+    | '/api/cron/ai-tasks'
     | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
@@ -4694,6 +4792,7 @@ export interface FileRouteTypes {
     | '/noticias/'
     | '/places/'
     | '/receitas/'
+    | '/sistemas/'
     | '/turismo/'
     | '/admin-master/seguranca/'
     | '/workspace/advocacia/'
@@ -4735,6 +4834,7 @@ export interface FileRouteTypes {
     | '/turismo/destinos/$slug'
     | '/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
+    | '/api/ai/jobs/process'
     | '/api/auth/ads/callback'
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
@@ -4830,6 +4930,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/eventos'
     | '/explorar'
+    | '/explorer'
     | '/faq'
     | '/farmacia'
     | '/feed'
@@ -4877,6 +4978,7 @@ export interface FileRouteTypes {
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
     | '/admin-master/kyc'
+    | '/admin-master/landings'
     | '/admin-master/logistica'
     | '/admin-master/logs'
     | '/admin-master/lojas'
@@ -4887,6 +4989,7 @@ export interface FileRouteTypes {
     | '/admin-master/portal-completo'
     | '/admin-master/pre-cadastro'
     | '/admin-master/simlabs'
+    | '/admin-master/subsistemas'
     | '/admin-master/termos'
     | '/admin-master/tokens'
     | '/admin-master/usuarios'
@@ -4994,6 +5097,7 @@ export interface FileRouteTypes {
     | '/proposta/$token'
     | '/publicacao/$id'
     | '/receitas/$id'
+    | '/sistemas/$slug'
     | '/turismo/$id'
     | '/u/$username'
     | '/vendedora/$slug'
@@ -5002,8 +5106,12 @@ export interface FileRouteTypes {
     | '/admin-master/seguranca/certificados'
     | '/admin-master/seguranca/telemetria'
     | '/api/ai/stream'
+    | '/api/ai/transcribe'
     | '/api/auth/callback'
     | '/api/auth/confirm'
+    | '/api/cron/ai-jobs'
+    | '/api/cron/ai-scheduled-tasks'
+    | '/api/cron/ai-tasks'
     | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
@@ -5149,6 +5257,7 @@ export interface FileRouteTypes {
     | '/noticias'
     | '/places'
     | '/receitas'
+    | '/sistemas'
     | '/turismo'
     | '/admin-master/seguranca'
     | '/workspace/advocacia'
@@ -5190,6 +5299,7 @@ export interface FileRouteTypes {
     | '/turismo/destinos/$slug'
     | '/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
+    | '/api/ai/jobs/process'
     | '/api/auth/ads/callback'
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
@@ -5292,6 +5402,7 @@ export interface FileRouteTypes {
     | '/_store/entrar'
     | '/_store/eventos'
     | '/_store/explorar'
+    | '/_store/explorer'
     | '/_store/faq'
     | '/_store/farmacia'
     | '/_store/feed'
@@ -5340,6 +5451,7 @@ export interface FileRouteTypes {
     | '/admin-master/imprensa'
     | '/admin-master/integracoes'
     | '/admin-master/kyc'
+    | '/admin-master/landings'
     | '/admin-master/logistica'
     | '/admin-master/logs'
     | '/admin-master/lojas'
@@ -5350,6 +5462,7 @@ export interface FileRouteTypes {
     | '/admin-master/portal-completo'
     | '/admin-master/pre-cadastro'
     | '/admin-master/simlabs'
+    | '/admin-master/subsistemas'
     | '/admin-master/termos'
     | '/admin-master/tokens'
     | '/admin-master/usuarios'
@@ -5458,6 +5571,7 @@ export interface FileRouteTypes {
     | '/_store/proposta/$token'
     | '/_store/publicacao/$id'
     | '/_store/receitas/$id'
+    | '/_store/sistemas/$slug'
     | '/_store/turismo/$id'
     | '/_store/u/$username'
     | '/_store/vendedora/$slug'
@@ -5466,8 +5580,12 @@ export interface FileRouteTypes {
     | '/admin-master/seguranca/certificados'
     | '/admin-master/seguranca/telemetria'
     | '/api/ai/stream'
+    | '/api/ai/transcribe'
     | '/api/auth/callback'
     | '/api/auth/confirm'
+    | '/api/cron/ai-jobs'
+    | '/api/cron/ai-scheduled-tasks'
+    | '/api/cron/ai-tasks'
     | '/api/cron/mining-worker'
     | '/api/feed/meta.csv'
     | '/api/feed/xml'
@@ -5614,6 +5732,7 @@ export interface FileRouteTypes {
     | '/_store/noticias/'
     | '/_store/places/'
     | '/_store/receitas/'
+    | '/_store/sistemas/'
     | '/_store/turismo/'
     | '/admin-master/seguranca/'
     | '/workspace/advocacia/'
@@ -5655,6 +5774,7 @@ export interface FileRouteTypes {
     | '/_store/turismo/destinos/$slug'
     | '/_store/turismo/hoteis/$slug'
     | '/admin-master/seguranca/certificados/$id'
+    | '/api/ai/jobs/process'
     | '/api/auth/ads/callback'
     | '/api/auth/govbr/callback'
     | '/api/auth/linkedin/callback'
@@ -5737,8 +5857,12 @@ export interface RootRouteChildren {
   ViajanteTokenRoute: typeof ViajanteTokenRoute
   ViajanteCarteiraRoute: typeof ViajanteCarteiraRoute
   ApiAiStreamRoute: typeof ApiAiStreamRoute
+  ApiAiTranscribeRoute: typeof ApiAiTranscribeRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthConfirmRoute: typeof ApiAuthConfirmRoute
+  ApiCronAiJobsRoute: typeof ApiCronAiJobsRoute
+  ApiCronAiScheduledTasksRoute: typeof ApiCronAiScheduledTasksRoute
+  ApiCronAiTasksRoute: typeof ApiCronAiTasksRoute
   ApiCronMiningWorkerRoute: typeof ApiCronMiningWorkerRoute
   ApiFeedMetaDotcsvRoute: typeof ApiFeedMetaDotcsvRoute
   ApiFeedXmlRoute: typeof ApiFeedXmlRoute
@@ -5759,6 +5883,7 @@ export interface RootRouteChildren {
   PortalSubpainelTokenRoute: typeof PortalSubpainelTokenRoute
   VerifyDocumentCodeRoute: typeof VerifyDocumentCodeRoute
   ViajanteViagemIdRoute: typeof ViajanteViagemIdRoute
+  ApiAiJobsProcessRoute: typeof ApiAiJobsProcessRoute
   ApiAuthAdsCallbackRoute: typeof ApiAuthAdsCallbackRoute
   ApiAuthGovbrCallbackRoute: typeof ApiAuthGovbrCallbackRoute
   ApiAuthLinkedinCallbackRoute: typeof ApiAuthLinkedinCallbackRoute
@@ -6111,6 +6236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreExplorarRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/explorer': {
+      id: '/_store/explorer'
+      path: '/explorer'
+      fullPath: '/explorer'
+      preLoaderRoute: typeof StoreExplorerRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/faq': {
       id: '/_store/faq'
       path: '/faq'
@@ -6454,6 +6586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMasterKycRouteImport
       parentRoute: typeof AdminMasterRoute
     }
+    '/admin-master/landings': {
+      id: '/admin-master/landings'
+      path: '/landings'
+      fullPath: '/admin-master/landings'
+      preLoaderRoute: typeof AdminMasterLandingsRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
     '/admin-master/logistica': {
       id: '/admin-master/logistica'
       path: '/logistica'
@@ -6522,6 +6661,13 @@ declare module '@tanstack/react-router' {
       path: '/simlabs'
       fullPath: '/admin-master/simlabs'
       preLoaderRoute: typeof AdminMasterSimlabsRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
+    '/admin-master/subsistemas': {
+      id: '/admin-master/subsistemas'
+      path: '/subsistemas'
+      fullPath: '/admin-master/subsistemas'
+      preLoaderRoute: typeof AdminMasterSubsistemasRouteImport
       parentRoute: typeof AdminMasterRoute
     }
     '/admin-master/termos': {
@@ -7343,6 +7489,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreReceitasIdRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/sistemas/': {
+      id: '/_store/sistemas/'
+      path: '/sistemas'
+      fullPath: '/sistemas/'
+      preLoaderRoute: typeof StoreSistemasIndexRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/sistemas/$slug': {
+      id: '/_store/sistemas/$slug'
+      path: '/sistemas/$slug'
+      fullPath: '/sistemas/$slug'
+      preLoaderRoute: typeof StoreSistemasSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/turismo/': {
       id: '/_store/turismo/'
       path: '/'
@@ -7413,6 +7573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/transcribe': {
+      id: '/api/ai/transcribe'
+      path: '/api/ai/transcribe'
+      fullPath: '/api/ai/transcribe'
+      preLoaderRoute: typeof ApiAiTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/callback': {
       id: '/api/auth/callback'
       path: '/api/auth/callback'
@@ -7425,6 +7592,27 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/confirm'
       fullPath: '/api/auth/confirm'
       preLoaderRoute: typeof ApiAuthConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/ai-jobs': {
+      id: '/api/cron/ai-jobs'
+      path: '/api/cron/ai-jobs'
+      fullPath: '/api/cron/ai-jobs'
+      preLoaderRoute: typeof ApiCronAiJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/ai-scheduled-tasks': {
+      id: '/api/cron/ai-scheduled-tasks'
+      path: '/api/cron/ai-scheduled-tasks'
+      fullPath: '/api/cron/ai-scheduled-tasks'
+      preLoaderRoute: typeof ApiCronAiScheduledTasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/ai-tasks': {
+      id: '/api/cron/ai-tasks'
+      path: '/api/cron/ai-tasks'
+      fullPath: '/api/cron/ai-tasks'
+      preLoaderRoute: typeof ApiCronAiTasksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/mining-worker': {
@@ -8666,6 +8854,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMasterSegurancaCertificadosIdRouteImport
       parentRoute: typeof AdminMasterSegurancaCertificadosRoute
     }
+    '/api/ai/jobs/process': {
+      id: '/api/ai/jobs/process'
+      path: '/api/ai/jobs/process'
+      fullPath: '/api/ai/jobs/process'
+      preLoaderRoute: typeof ApiAiJobsProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/ads/callback': {
       id: '/api/auth/ads/callback'
       path: '/api/auth/ads/callback'
@@ -9247,6 +9442,7 @@ interface StoreRouteChildren {
   StoreEntrarRoute: typeof StoreEntrarRoute
   StoreEventosRoute: typeof StoreEventosRoute
   StoreExplorarRoute: typeof StoreExplorarRoute
+  StoreExplorerRoute: typeof StoreExplorerRoute
   StoreFaqRoute: typeof StoreFaqRoute
   StoreFarmaciaRoute: typeof StoreFarmaciaRoute
   StoreFeedRoute: typeof StoreFeedRoute
@@ -9310,6 +9506,7 @@ interface StoreRouteChildren {
   StorePropostaTokenRoute: typeof StorePropostaTokenRoute
   StorePublicacaoIdRoute: typeof StorePublicacaoIdRoute
   StoreReceitasIdRoute: typeof StoreReceitasIdRoute
+  StoreSistemasSlugRoute: typeof StoreSistemasSlugRoute
   StoreUUsernameRoute: typeof StoreUUsernameRoute
   StoreVendedoraSlugRoute: typeof StoreVendedoraSlugRoute
   StoreVoucherTokenRoute: typeof StoreVoucherTokenRoute
@@ -9320,6 +9517,7 @@ interface StoreRouteChildren {
   StoreNoticiasIndexRoute: typeof StoreNoticiasIndexRoute
   StorePlacesIndexRoute: typeof StorePlacesIndexRoute
   StoreReceitasIndexRoute: typeof StoreReceitasIndexRoute
+  StoreSistemasIndexRoute: typeof StoreSistemasIndexRoute
   StorePedidoPublicTokenConfirmacaoRoute: typeof StorePedidoPublicTokenConfirmacaoRoute
 }
 
@@ -9357,6 +9555,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreEntrarRoute: StoreEntrarRoute,
   StoreEventosRoute: StoreEventosRoute,
   StoreExplorarRoute: StoreExplorarRoute,
+  StoreExplorerRoute: StoreExplorerRoute,
   StoreFaqRoute: StoreFaqRoute,
   StoreFarmaciaRoute: StoreFarmaciaRoute,
   StoreFeedRoute: StoreFeedRoute,
@@ -9420,6 +9619,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StorePropostaTokenRoute: StorePropostaTokenRoute,
   StorePublicacaoIdRoute: StorePublicacaoIdRoute,
   StoreReceitasIdRoute: StoreReceitasIdRoute,
+  StoreSistemasSlugRoute: StoreSistemasSlugRoute,
   StoreUUsernameRoute: StoreUUsernameRoute,
   StoreVendedoraSlugRoute: StoreVendedoraSlugRoute,
   StoreVoucherTokenRoute: StoreVoucherTokenRoute,
@@ -9430,6 +9630,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreNoticiasIndexRoute: StoreNoticiasIndexRoute,
   StorePlacesIndexRoute: StorePlacesIndexRoute,
   StoreReceitasIndexRoute: StoreReceitasIndexRoute,
+  StoreSistemasIndexRoute: StoreSistemasIndexRoute,
   StorePedidoPublicTokenConfirmacaoRoute:
     StorePedidoPublicTokenConfirmacaoRoute,
 }
@@ -9469,6 +9670,7 @@ interface AdminMasterRouteChildren {
   AdminMasterImprensaRoute: typeof AdminMasterImprensaRoute
   AdminMasterIntegracoesRoute: typeof AdminMasterIntegracoesRoute
   AdminMasterKycRoute: typeof AdminMasterKycRoute
+  AdminMasterLandingsRoute: typeof AdminMasterLandingsRoute
   AdminMasterLogisticaRoute: typeof AdminMasterLogisticaRoute
   AdminMasterLogsRoute: typeof AdminMasterLogsRoute
   AdminMasterLojasRoute: typeof AdminMasterLojasRoute
@@ -9479,6 +9681,7 @@ interface AdminMasterRouteChildren {
   AdminMasterPortalCompletoRoute: typeof AdminMasterPortalCompletoRoute
   AdminMasterPreCadastroRoute: typeof AdminMasterPreCadastroRoute
   AdminMasterSimlabsRoute: typeof AdminMasterSimlabsRoute
+  AdminMasterSubsistemasRoute: typeof AdminMasterSubsistemasRoute
   AdminMasterTermosRoute: typeof AdminMasterTermosRoute
   AdminMasterTokensRoute: typeof AdminMasterTokensRoute
   AdminMasterUsuariosRoute: typeof AdminMasterUsuariosRoute
@@ -9508,6 +9711,7 @@ const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterImprensaRoute: AdminMasterImprensaRoute,
   AdminMasterIntegracoesRoute: AdminMasterIntegracoesRoute,
   AdminMasterKycRoute: AdminMasterKycRoute,
+  AdminMasterLandingsRoute: AdminMasterLandingsRoute,
   AdminMasterLogisticaRoute: AdminMasterLogisticaRoute,
   AdminMasterLogsRoute: AdminMasterLogsRoute,
   AdminMasterLojasRoute: AdminMasterLojasRoute,
@@ -9518,6 +9722,7 @@ const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterPortalCompletoRoute: AdminMasterPortalCompletoRoute,
   AdminMasterPreCadastroRoute: AdminMasterPreCadastroRoute,
   AdminMasterSimlabsRoute: AdminMasterSimlabsRoute,
+  AdminMasterSubsistemasRoute: AdminMasterSubsistemasRoute,
   AdminMasterTermosRoute: AdminMasterTermosRoute,
   AdminMasterTokensRoute: AdminMasterTokensRoute,
   AdminMasterUsuariosRoute: AdminMasterUsuariosRoute,
@@ -10059,8 +10264,12 @@ const rootRouteChildren: RootRouteChildren = {
   ViajanteTokenRoute: ViajanteTokenRoute,
   ViajanteCarteiraRoute: ViajanteCarteiraRoute,
   ApiAiStreamRoute: ApiAiStreamRoute,
+  ApiAiTranscribeRoute: ApiAiTranscribeRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthConfirmRoute: ApiAuthConfirmRoute,
+  ApiCronAiJobsRoute: ApiCronAiJobsRoute,
+  ApiCronAiScheduledTasksRoute: ApiCronAiScheduledTasksRoute,
+  ApiCronAiTasksRoute: ApiCronAiTasksRoute,
   ApiCronMiningWorkerRoute: ApiCronMiningWorkerRoute,
   ApiFeedMetaDotcsvRoute: ApiFeedMetaDotcsvRoute,
   ApiFeedXmlRoute: ApiFeedXmlRoute,
@@ -10081,6 +10290,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalSubpainelTokenRoute: PortalSubpainelTokenRoute,
   VerifyDocumentCodeRoute: VerifyDocumentCodeRoute,
   ViajanteViagemIdRoute: ViajanteViagemIdRoute,
+  ApiAiJobsProcessRoute: ApiAiJobsProcessRoute,
   ApiAuthAdsCallbackRoute: ApiAuthAdsCallbackRoute,
   ApiAuthGovbrCallbackRoute: ApiAuthGovbrCallbackRoute,
   ApiAuthLinkedinCallbackRoute: ApiAuthLinkedinCallbackRoute,

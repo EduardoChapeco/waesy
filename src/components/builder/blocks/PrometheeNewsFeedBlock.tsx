@@ -14,6 +14,7 @@ import { usePrometheePortalController } from "@/components/news/promethee-portal
 import { PrometheeNewsStudioModal } from "@/components/news/promethee-news-studio-modal";
 import { PrometheeTrendingMarkerStrip } from "@/components/news/promethee-trending-marker-strip";
 import { EditorialAdSlot } from "@/components/news/editorial-ad-slot";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export interface PrometheeNewsFeedBlockProps extends BaseSiteBlockProps {
   data: PrometheeNewsFeedBlockData;
@@ -33,6 +34,7 @@ export function PrometheeNewsFeedBlock({
   newsArticles = [],
   sponsors = [],
 }: PrometheeNewsFeedBlockProps) {
+  const { isMobile } = useEffectiveViewport();
   const portal = usePrometheePortalController();
   const [shareFeedbackId, setShareFeedbackId] = useState<string | null>(null);
 
@@ -144,7 +146,9 @@ export function PrometheeNewsFeedBlock({
   const layoutMode = data?.layoutMode || "feed_stream";
   const gridClass =
     layoutMode === "bento_2col"
-      ? "grid grid-cols-1 md:grid-cols-2 gap-4"
+      ? isMobile
+        ? "grid grid-cols-1 gap-4"
+        : "grid grid-cols-2 gap-4"
       : layoutMode === "vitrine_shelf"
         ? "waesy-tab-strip flex flex-nowrap items-stretch gap-4 pb-2 snap-x snap-mandatory"
         : "space-y-4 max-w-3xl mx-auto";
@@ -202,7 +206,7 @@ export function PrometheeNewsFeedBlock({
             {filteredArticles.map((art, index) => {
               const isLiked = Boolean(portal.likedIds[art.id]);
               const isSaved = Boolean(portal.savedIds[art.id]);
-              const cardWidthClass = layoutMode === "vitrine_shelf" ? "w-80 sm:w-96 shrink-0" : "w-full";
+              const cardWidthClass = layoutMode === "vitrine_shelf" ? (isMobile ? "w-72 shrink-0" : "w-96 shrink-0") : "w-full";
 
               return (
                 <React.Fragment key={art.id}>

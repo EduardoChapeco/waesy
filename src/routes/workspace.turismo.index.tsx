@@ -1643,7 +1643,7 @@ export default function WorkspaceTurismoCockpitPage() {
       {activeViewTab === "kanban" && (
         <div className="flex-1 flex flex-col min-h-0 gap-3">
           {/* Seletor de Fase Mobile Nativo (< 600px) */}
-          <div className="tab-list flex sm:hidden items-center gap-2 overflow-x-auto no-scrollbar p-1 rounded-xl bg-muted/60 border border-border/50">
+          <div className="waesy-tab-strip tab-list flex sm:hidden items-center gap-2 p-1 rounded-xl bg-muted/60 border border-border/50">
             {visibleStages.map((stage: any) => {
               const count = (leadsByStage[stage.id] || []).length;
               const isSelected = mobileActiveStage === stage.id;

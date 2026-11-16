@@ -1629,3 +1629,25 @@ export function getNicheSemantics(storeData: any): NicheSemantics {
  return enrichNicheSemantics(base, unifiedNicheId);
 }
 
+const PARTNER_LAW_ELIGIBLE_NICHE_IDS = new Set([
+  "beauty",
+  "beauty_salon",
+  "barbershop",
+  "aesthetics",
+  "aesthetics_clinic",
+  "wellness",
+]);
+
+/**
+ * Determina via SSOT de nichos se o estabelecimento e elegivel ao regime
+ * Lei do Salao Parceiro (Lei 13.352/2016): saloes, barbearias e estetica.
+ */
+export function isPartnerLawEligibleStore(storeData: unknown): boolean {
+  if (!storeData) return false;
+  const semantics = getNicheSemantics(storeData);
+  return (
+    PARTNER_LAW_ELIGIBLE_NICHE_IDS.has(semantics.unifiedNicheId || "") ||
+    PARTNER_LAW_ELIGIBLE_NICHE_IDS.has(semantics.nicheId || "")
+  );
+}
+

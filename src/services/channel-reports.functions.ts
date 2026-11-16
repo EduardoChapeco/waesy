@@ -16,8 +16,11 @@ export type ChannelOrigin =
   | "shopee"
   | "ifood"
   | "rappi"
+  | "tridelivery"
+  | "amoofertas"
   | "amodelivery"
   | "99food"
+  | "aiqfome"
   | "direct_link"
   | "correios"
   | "outros";
@@ -57,8 +60,11 @@ const CHANNEL_LABELS: Record<string, string> = {
   shopee: "Shopee",
   ifood: "iFood",
   rappi: "Rappi",
+  tridelivery: "TriDelivery",
+  amoofertas: "Amo Ofertas",
   amodelivery: "Amo Delivery",
   "99food": "99Food",
+  aiqfome: "aiqfome",
   direct_link: "Link Direto / Bio",
   correios: "Correios",
   outros: "Outros",

@@ -8134,6 +8134,8 @@ export type Database = {
           page_count: number
           sealed_at: string | null
           signature_fields: Json
+          source_file_mime: string | null
+          source_file_name: string | null
           source_file_url: string | null
           title: string
           variables: Json
@@ -8151,6 +8153,8 @@ export type Database = {
           page_count?: number
           sealed_at?: string | null
           signature_fields?: Json
+          source_file_mime?: string | null
+          source_file_name?: string | null
           source_file_url?: string | null
           title: string
           variables?: Json
@@ -8168,6 +8172,8 @@ export type Database = {
           page_count?: number
           sealed_at?: string | null
           signature_fields?: Json
+          source_file_mime?: string | null
+          source_file_name?: string | null
           source_file_url?: string | null
           title?: string
           variables?: Json
@@ -8185,6 +8191,7 @@ export type Database = {
       }
       contracts: {
         Row: {
+          cancelled_at: string | null
           category: string
           created_at: string
           creator_id: string
@@ -8211,8 +8218,10 @@ export type Database = {
           title: string
           updated_at: string
           verification_code: string
+          void_reason: string | null
         }
         Insert: {
+          cancelled_at?: string | null
           category?: string
           created_at?: string
           creator_id: string
@@ -8239,8 +8248,10 @@ export type Database = {
           title: string
           updated_at?: string
           verification_code?: string
+          void_reason?: string | null
         }
         Update: {
+          cancelled_at?: string | null
           category?: string
           created_at?: string
           creator_id?: string
@@ -8267,6 +8278,7 @@ export type Database = {
           title?: string
           updated_at?: string
           verification_code?: string
+          void_reason?: string | null
         }
         Relationships: [
           {
@@ -26699,6 +26711,7 @@ export type Database = {
           profile_type: string | null
           resume_data: Json | null
           role: string | null
+          saved_initials_url: string | null
           saved_signature_url: string | null
           social_links: Json | null
           state: string | null
@@ -26746,6 +26759,7 @@ export type Database = {
           profile_type?: string | null
           resume_data?: Json | null
           role?: string | null
+          saved_initials_url?: string | null
           saved_signature_url?: string | null
           social_links?: Json | null
           state?: string | null
@@ -26793,6 +26807,7 @@ export type Database = {
           profile_type?: string | null
           resume_data?: Json | null
           role?: string | null
+          saved_initials_url?: string | null
           saved_signature_url?: string | null
           social_links?: Json | null
           state?: string | null
@@ -30347,6 +30362,8 @@ export type Database = {
           gov_br_level: string | null
           gov_br_verified: boolean
           id: string
+          last_reminder_at: string | null
+          reminder_count: number
           require_cpf_confirmation: boolean
           require_facial_biometrics: boolean
           signed_at: string | null
@@ -30374,6 +30391,8 @@ export type Database = {
           gov_br_level?: string | null
           gov_br_verified?: boolean
           id?: string
+          last_reminder_at?: string | null
+          reminder_count?: number
           require_cpf_confirmation?: boolean
           require_facial_biometrics?: boolean
           signed_at?: string | null
@@ -30401,6 +30420,8 @@ export type Database = {
           gov_br_level?: string | null
           gov_br_verified?: boolean
           id?: string
+          last_reminder_at?: string | null
+          reminder_count?: number
           require_cpf_confirmation?: boolean
           require_facial_biometrics?: boolean
           signed_at?: string | null

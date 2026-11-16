@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import {
   FileCode,
+  FileText,
   Save,
   ExternalLink,
   Eye,
@@ -12,7 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { exportElementAsPdf } from "@/lib/pdf-export";
 import { updateBuilderDocumentFn } from "@/services/builder-copilot-bridge";
+import { toast } from "sonner";
 
 export interface ArtifactBuilderEditorProps {
   documentId?: string;
@@ -48,7 +51,23 @@ export function ArtifactBuilderEditor({
   const [mode, setMode] = useState<"preview" | "edit">("preview");
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const uid = useId();
+  const previewStageId = `builder-preview-stage-${uid.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+
+  const handleExportPdf = async () => {
+    try {
+      setIsExportingPdf(true);
+      const slug = (title || "documento-waesy").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 32);
+      await exportElementAsPdf(previewStageId, `${slug}.pdf`, "p");
+      toast.success("Documento exportado em PDF!");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao exportar PDF do documento.");
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -156,7 +175,10 @@ export function ArtifactBuilderEditor({
           />
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-surface-subtle p-4 max-h-80 overflow-y-auto text-xs space-y-3">
+        <div
+          id={previewStageId}
+          className="rounded-xl border border-border bg-card p-4 max-h-80 overflow-y-auto text-xs divide-y divide-border/50"
+        >
           {initialContent.sections && Array.isArray(initialContent.sections) ? (
             initialContent.sections.map((sec: any, idx: number) => {
               const sectionHeading =
@@ -170,7 +192,7 @@ export function ArtifactBuilderEditor({
               return (
                 <div
                   key={sec.id || idx}
-                  className="rounded-xl border border-border bg-card p-3 space-y-2"
+                  className="py-3 first:pt-0 last:pb-0 space-y-2"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <h5 className="font-semibold text-foreground text-xs">{sectionHeading}</h5>
@@ -266,6 +288,20 @@ export function ArtifactBuilderEditor({
             </>
           )}
         </Button>
+
+        {mode === "preview" && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isExportingPdf}
+            onClick={() => void handleExportPdf()}
+            className="w-full sm:w-auto h-11 min-h-11 px-4 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <FileText className="size-4" />
+            <span>{isExportingPdf ? "Gerando PDF..." : "Exportar PDF"}</span>
+          </Button>
+        )}
 
         <Button
           type="button"

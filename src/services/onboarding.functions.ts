@@ -534,6 +534,9 @@ function generateSlug(text: string) {
 const ProvisionBusinessSchema = z.object({
  name: z.string().min(2, "Nome muito curto"),
  type: z.string().optional(),
+ verticalSku: z.string().optional(),
+ brandOrigin: z.string().optional(),
+ waesyMarketplaceEnabled: z.boolean().optional(),
  document: z.string().optional(),
  city: z.string().optional(),
  state: z.string().optional(),
@@ -626,7 +629,12 @@ export const provisionBusiness = createServerFn({ method: "POST" })
 
  // 2. Montar objeto settings estruturado e persistido com SSOT de nicho e sistema vertical
  const nicheSpec = getUnifiedNicheSpec(data.type || "gastronomy");
- const requestedSku = (data as Record<string, unknown>).verticalSku as string | undefined;
+ const requestedSku = data.verticalSku;
+ const resolvedBrandOrigin = String(data.brandOrigin || "waesy").trim().toLowerCase() || "waesy";
+ const resolvedMarketplaceOptIn =
+   typeof data.waesyMarketplaceEnabled === "boolean"
+     ? data.waesyMarketplaceEnabled
+     : resolvedBrandOrigin === "waesy" || resolvedBrandOrigin === "waesy_studio";
  const resolvedSku =
    requestedSku && requestedSku in VERTICAL_PLAN_CATALOG
      ? (requestedSku as keyof typeof VERTICAL_PLAN_CATALOG)
@@ -682,6 +690,9 @@ export const provisionBusiness = createServerFn({ method: "POST" })
     banner_url: data.bannerUrl || null,
     primary_niche_id: nicheSpec.id,
     enabled_niches: [nicheSpec.id],
+    brand_origin: resolvedBrandOrigin,
+    waesy_marketplace_enabled: resolvedMarketplaceOptIn,
+    publish_to_marketplace: resolvedMarketplaceOptIn,
     vertical_sku: verticalPlan.sku,
     plan_tier: verticalPlan.baseTier,
     subscription_tier: verticalPlan.baseTier,

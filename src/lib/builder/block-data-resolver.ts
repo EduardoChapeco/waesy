@@ -121,7 +121,12 @@ export function getBlockDeviceVisibilityClass(
  * preservando integralmente os tokens CSS nativos do Light/Dark Mode.
  */
 export function shouldApplyCustomDocumentTheme(
-  theme?: (OmniPageDocument["theme"] & { customThemeEnabled?: boolean }) | null,
+  theme?: (Partial<OmniPageDocument["theme"]> & {
+    customThemeEnabled?: boolean;
+    headingFont?: string;
+    bodyFont?: string;
+    surfaceStyle?: string;
+  }) | null,
 ): boolean {
   if (!theme) return false;
   if (typeof theme.customThemeEnabled === "boolean") {
@@ -140,12 +145,64 @@ export function shouldApplyCustomDocumentTheme(
 }
 
 /**
+ * Determina se uma cor hexadecimal possui luminância relativa escura (W3C WCAG 2.2).
+ */
+export function isHexColorDark(color?: string | null): boolean {
+  if (!color || !color.trim().startsWith("#")) return true;
+  let hex = color.trim().slice(1);
+  if (hex.length === 3) {
+    hex = hex
+      .split("")
+      .map((c) => `${c}${c}`)
+      .join("");
+  }
+  if (hex.length !== 6) return true;
+  const r = Number.parseInt(hex.slice(0, 2), 16) / 255;
+  const g = Number.parseInt(hex.slice(2, 4), 16) / 255;
+  const b = Number.parseInt(hex.slice(4, 6), 16) / 255;
+  if ([r, g, b].some((n) => Number.isNaN(n))) return true;
+  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const lum = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  return lum <= 0.42;
+}
+
+/**
+ * Calcula se uma cor hexadecimal requer texto claro ou escuro (luminância relativa W3C).
+ * Permite personalização irrestrita de cores de marca sem perda de legibilidade WCAG AA.
+ */
+export function pickContrastForeground(color?: string | null): string {
+  // design-lint-ignore DL-01 reason:"Fallback padrão de alto contraste WCAG" expiry:"2027-12-31"
+  const fallbackDark = "#09090b";
+  // design-lint-ignore DL-01 reason:"Fallback padrão de alto contraste WCAG" expiry:"2027-12-31"
+  const fallbackLight = "#ffffff";
+  return !isHexColorDark(color) ? fallbackDark : fallbackLight;
+}
+
+export type CanvasIsolationScheme = "light" | "dark";
+
+export function getDocumentThemeIsolationScheme(
+  theme?: (Partial<OmniPageDocument["theme"]> & {
+    customThemeEnabled?: boolean;
+    headingFont?: string;
+    bodyFont?: string;
+    surfaceStyle?: string;
+  }) | null,
+  options?: { forceIsolate?: boolean },
+): CanvasIsolationScheme | undefined {
+  const applyCustom = Boolean(options?.forceIsolate) || shouldApplyCustomDocumentTheme(theme);
+  if (!applyCustom) return undefined;
+  // design-lint-ignore DL-01 reason:"Detecção de luminância do fundo isolado" expiry:"2027-12-31"
+  const bg = theme?.backgroundColor && theme.backgroundColor !== "var(--background)" ? theme.backgroundColor : "#ffffff";
+  return isHexColorDark(bg) ? "dark" : "light";
+}
+
+/**
  * Gera os estilos inline e as variáveis CSS escopadas (`--background`, `--color-background`,
  * `--foreground`, `--color-foreground`, `--primary`, `--color-primary`, `--card`, `--muted-foreground`, etc.)
  * para isolar completamente o canvas do editor e o site publicado do tema do sistema operacional/Waesy.
  */
 export function getDocumentThemeCanvasStyle(
-  theme?: (OmniPageDocument["theme"] & {
+  theme?: (Partial<OmniPageDocument["theme"]> & {
     customThemeEnabled?: boolean;
     headingFont?: string;
     bodyFont?: string;
@@ -166,6 +223,15 @@ export function getDocumentThemeCanvasStyle(
         : buttonStyler?.shape === "rounded" || theme?.borderRadius === "2xl"
           ? "16px"
           : "12px";
+  const radiusTokenMap: Record<string, string> = {
+    none: "0px",
+    sm: "0.375rem",
+    md: "0.5rem",
+    lg: "0.75rem",
+    xl: "1rem",
+    "2xl": "1.5rem",
+    full: "9999px",
+  };
   const stylerVars: Record<string, string> = {};
   if (buttonStyler) {
     stylerVars["--builder-btn-radius"] = btnRadiusToken;
@@ -174,11 +240,14 @@ export function getDocumentThemeCanvasStyle(
   if (theme?.headingFont) {
     stylerVars["--builder-heading-font"] = theme.headingFont;
   }
+  if (theme?.borderRadius && radiusTokenMap[theme.borderRadius]) {
+    stylerVars["--radius"] = radiusTokenMap[theme.borderRadius];
+  }
 
   if (!applyCustom) {
     if ((fontFamily && fontFamily !== "Inter, sans-serif") || Object.keys(stylerVars).length > 0) {
       return {
-        ...(fontFamily ? { fontFamily } : {}),
+        ...(fontFamily ? { fontFamily, "--font-sans": fontFamily } : {}),
         ...stylerVars,
       } as React.CSSProperties;
     }
@@ -191,38 +260,138 @@ export function getDocumentThemeCanvasStyle(
   const fg = theme?.textColor && theme.textColor !== "var(--foreground)" ? theme.textColor : "#09090b";
   // design-lint-ignore DL-01 reason:"Isolamento de canvas do site editado contra o tema do sistema" expiry:"2027-12-31"
   const primary = theme?.primaryColor && theme.primaryColor !== "var(--primary)" ? theme.primaryColor : "#09090b";
+  const primaryFg = pickContrastForeground(primary);
+  const isBgDark = isHexColorDark(bg);
+  const headingFont = theme?.headingFont;
 
   const cardSurface = `color-mix(in srgb, ${bg} 94%, ${fg} 6%)`;
+  const popoverSurface = `color-mix(in srgb, ${bg} 96%, ${fg} 4%)`;
   const mutedSurface = `color-mix(in srgb, ${bg} 88%, ${fg} 12%)`;
+  const hoverSurface = `color-mix(in srgb, ${bg} 84%, ${fg} 16%)`;
+  const activeSurface = `color-mix(in srgb, ${bg} 78%, ${fg} 22%)`;
+  const secondarySurface = `color-mix(in srgb, ${bg} 90%, ${primary} 10%)`;
+  const accentSurface = `color-mix(in srgb, ${primary} 14%, ${bg} 86%)`;
   const mutedFg = `color-mix(in srgb, ${fg} 68%, ${bg} 32%)`;
+  const tertiaryFg = `color-mix(in srgb, ${fg} 52%, ${bg} 48%)`;
   const borderToken = `color-mix(in srgb, ${fg} 16%, ${bg} 84%)`;
+  const borderStrongToken = `color-mix(in srgb, ${fg} 32%, ${bg} 68%)`;
 
   return {
     backgroundColor: bg,
     color: fg,
-    ...(fontFamily ? { fontFamily } : {}),
+    colorScheme: isBgDark ? "dark" : "light",
+    ...(fontFamily ? { fontFamily, "--font-sans": fontFamily, "--font-master": fontFamily, "--p-body-font": fontFamily } : {}),
+    ...(headingFont ? { "--font-display": headingFont, "--font-editorial": headingFont, "--p-heading-font": headingFont } : {}),
     ...stylerVars,
     "--background": bg,
     "--color-background": bg,
     "--canvas": bg,
     "--color-canvas": bg,
+    "--surface-canvas": bg,
     "--foreground": fg,
     "--color-foreground": fg,
     "--text-primary": fg,
     "--color-text-primary": fg,
+    "--text-secondary": mutedFg,
+    "--color-text-secondary": mutedFg,
+    "--text-tertiary": tertiaryFg,
+    "--color-text-tertiary": tertiaryFg,
+    "--text-muted": mutedFg,
+    "--color-text-muted": mutedFg,
+    "--text-inverse": primaryFg,
+    "--color-text-inverse": primaryFg,
     "--card": cardSurface,
     "--color-card": cardSurface,
+    "--card-bg": cardSurface,
+    "--surface": cardSurface,
+    "--color-surface": cardSurface,
+    "--surface-card": cardSurface,
+    "--color-surface-card": cardSurface,
+    "--surface-raised": bg,
+    "--color-surface-raised": bg,
+    "--surface-subtle": mutedSurface,
+    "--color-surface-subtle": mutedSurface,
+    "--surface-muted": mutedSurface,
+    "--color-surface-muted": mutedSurface,
+    "--surface-hover": hoverSurface,
+    "--color-surface-hover": hoverSurface,
+    "--surface-active": activeSurface,
+    "--color-surface-active": activeSurface,
     "--card-foreground": fg,
     "--color-card-foreground": fg,
+    "--popover": popoverSurface,
+    "--color-popover": popoverSurface,
+    "--popover-foreground": fg,
+    "--color-popover-foreground": fg,
     "--primary": primary,
     "--color-primary": primary,
+    "--primary-foreground": primaryFg,
+    "--color-primary-foreground": primaryFg,
+    "--secondary": secondarySurface,
+    "--color-secondary": secondarySurface,
+    "--secondary-foreground": fg,
+    "--color-secondary-foreground": fg,
+    "--accent": accentSurface,
+    "--color-accent": accentSurface,
+    "--accent-foreground": fg,
+    "--color-accent-foreground": fg,
+    "--accent-soft": accentSurface,
+    "--color-accent-soft": accentSurface,
     "--muted": mutedSurface,
     "--color-muted": mutedSurface,
     "--muted-foreground": mutedFg,
     "--color-muted-foreground": mutedFg,
     "--border": borderToken,
     "--color-border": borderToken,
+    "--border-subtle": borderToken,
+    "--color-border-subtle": borderToken,
+    "--border-default": borderToken,
+    "--color-border-default": borderToken,
+    "--border-control": borderToken,
+    "--color-border-control": borderToken,
+    "--border-strong": borderStrongToken,
+    "--color-border-strong": borderStrongToken,
+    "--border-focus": primary,
+    "--color-border-focus": primary,
+    "--input": borderToken,
+    "--color-input": borderToken,
+    "--input-bg": bg,
+    "--input-border": borderToken,
+    "--ring": primary,
+    "--color-ring": primary,
+    "--button-primary-bg": primary,
+    "--button-primary-text": primaryFg,
+    "--button-secondary-bg": cardSurface,
+    "--button-secondary-border": borderToken,
+    "--button-secondary-text": fg,
+    "--p-bg": bg,
+    "--p-surface": cardSurface,
+    "--p-subtle": mutedSurface,
+    "--p-ink": fg,
+    "--p-muted": mutedFg,
+    "--p-border": borderToken,
+    "--p-brand": primary,
+    "--p-brand-fg": primaryFg,
+    "--p-brand-soft": accentSurface,
   } as React.CSSProperties;
+}
+
+export function getDocumentThemeContainerProps(
+  theme?: (Partial<OmniPageDocument["theme"]> & {
+    customThemeEnabled?: boolean;
+    headingFont?: string;
+    bodyFont?: string;
+    surfaceStyle?: string;
+  }) | null,
+  options?: { forceIsolate?: boolean; settings?: Record<string, any> | null },
+): {
+  style: React.CSSProperties;
+  isolationScheme?: CanvasIsolationScheme;
+} {
+  return {
+    style: getDocumentThemeCanvasStyle(theme, options),
+    isolationScheme: getDocumentThemeIsolationScheme(theme, options),
+  };
 }
 
 function extractNumericPrice(item: Record<string, any>): number {

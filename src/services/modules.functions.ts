@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
-import { getIdentity } from "./identity.functions";
+import { getServerIdentity, requirePlatformAdmin } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import { z } from "zod";
 
 export interface PlatformModuleDTO {
@@ -11,42 +12,96 @@ export interface PlatformModuleDTO {
   is_public: boolean;
   badge: string | null;
   order_index: number;
-  category?: 'public_discovery' | 'store_operation' | 'ai_intelligence' | string;
+  category?: "public_discovery" | "store_operation" | "ai_intelligence" | string;
   updated_at: string;
 }
 
 /**
- * Consulta cruzada de módulos ativos para uma loja específica.
- * Um módulo está ativo se estiver habilitado globalmente pela plataforma
- * E (opcionalmente) não desativado expressamente nas flags da loja.
+ * Consulta cruzada de módulos ativos para uma loja específica e opcionalmente usuário.
+ * Um módulo está ativo somente se:
+ * 1) A loja estiver ativa e aprovada (ou for root)
+ * 2) O módulo estiver habilitado globalmente em platform_modules_config
+ * 3) Não estiver bloqueado na lista da loja ou nas restrições do usuário
  */
 export const getStoreActiveModules = createServerFn({ method: "GET" })
   .validator(z.object({ storeId: z.string().uuid() }))
   .handler(async ({ data: { storeId } }) => {
     const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
     try {
-      const [platformRes, storeRes] = await Promise.all([
-        supabase.from("platform_modules_config").select("*").eq("enabled", true),
-        supabase.from("stores").select("enabled_modules, plan_tier").eq("id", storeId).single(),
+      const [platformRes, storeRes, profileRes] = await Promise.all([
+        supabase.from("platform_modules_config").select("*"),
+        supabase
+          .from("stores")
+          .select("enabled_modules, plan_tier, is_active, is_platform_root, approval_status, settings")
+          .eq("id", storeId)
+          .single(),
+        identity?.id
+          ? supabase
+              .from("profiles")
+              .select("approval_status, user_plan_tier, enabled_modules, disabled_modules")
+              .eq("id", identity.id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
 
-      const globalModules = (platformRes.data || []) as PlatformModuleDTO[];
-      const storeModules = (storeRes.data?.enabled_modules || {}) as Record<string, boolean>;
+      const allPlatformModules = (platformRes.data || []) as PlatformModuleDTO[];
+      const globalModules = allPlatformModules.filter((m) => m.enabled);
+      const storeRow = storeRes.data as Record<string, any> | null;
+      const storeDisabled =
+        storeRow &&
+        !storeRow.is_platform_root &&
+        (storeRow.is_active === false ||
+          (storeRow.approval_status && storeRow.approval_status !== "approved"));
+      const profileRow = (profileRes as any)?.data as Record<string, any> | null;
+      const userSuspended =
+        profileRow?.approval_status && profileRow.approval_status !== "approved";
+
+      const rawStoreModules = storeRow?.enabled_modules;
+      const storeDisabledArr: string[] = Array.isArray(storeRow?.settings?.disabled_modules)
+        ? storeRow!.settings!.disabled_modules
+        : [];
+      const userDisabledArr: string[] = Array.isArray(profileRow?.disabled_modules)
+        ? profileRow!.disabled_modules
+        : [];
 
       const activeMap: Record<string, boolean> = {};
-      for (const m of globalModules) {
-        // Se a loja tiver a chave definida como false, desativa; se não definida ou true, permanece ativa
-        activeMap[m.module_key] = storeModules[m.module_key] !== false;
+      for (const m of allPlatformModules) {
+        if (!m.enabled || storeDisabled || userSuspended) {
+          activeMap[m.module_key] = false;
+          continue;
+        }
+        if (storeDisabledArr.includes(m.module_key) || userDisabledArr.includes(m.module_key)) {
+          activeMap[m.module_key] = false;
+          continue;
+        }
+        if (rawStoreModules && !Array.isArray(rawStoreModules) && typeof rawStoreModules === "object") {
+          activeMap[m.module_key] = (rawStoreModules as Record<string, boolean>)[m.module_key] !== false;
+        } else {
+          activeMap[m.module_key] = true;
+        }
       }
 
       return {
         activeMap,
         globalModules,
-        planTier: storeRes.data?.plan_tier || "free",
+        allPlatformModules,
+        planTier: storeRow?.plan_tier || "free",
+        approvalStatus: storeRow?.approval_status || "approved",
+        userApprovalStatus: profileRow?.approval_status || "approved",
+        isStoreActive: storeRow?.is_active !== false,
       };
     } catch (err) {
       console.error("[modules] Erro ao obter módulos da loja:", err);
-      return { activeMap: {}, globalModules: [], planTier: "free" };
+      return {
+        activeMap: {},
+        globalModules: [],
+        allPlatformModules: [],
+        planTier: "free",
+        approvalStatus: "approved",
+        userApprovalStatus: "approved",
+        isStoreActive: true,
+      };
     }
   });
 
@@ -81,12 +136,8 @@ export const getPublicPlatformModules = createServerFn({ method: "GET" }).handle
  */
 export const adminListPlatformModules = createServerFn({ method: "GET" }).handler(
   async (): Promise<PlatformModuleDTO[]> => {
+    await requirePlatformAdmin();
     const supabase = getServerClient();
-    const identity = await getIdentity();
-
-    if (!identity || !["admin", "master", "platform_admin"].includes(identity.role || "")) {
-      throw new Error("Acesso restrito ao Painel Master.");
-    }
 
     const { data, error } = await supabase
       .from("platform_modules_config")
@@ -113,12 +164,11 @@ export const adminTogglePlatformModule = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data: { moduleKey, enabled } }) => {
-    const supabase = getServerClient();
-    const identity = await getIdentity();
-
-    if (!identity || !["admin", "master", "platform_admin"].includes(identity.role || "")) {
+    const identity = await requirePlatformAdmin();
+    if (!isPlatformAdminIdentity({ ...identity, isPlatformAdmin: true })) {
       throw new Error("Não autorizado.");
     }
+    const supabase = getServerClient();
 
     const { data, error } = await supabase
       .from("platform_modules_config")
@@ -153,12 +203,8 @@ export const adminUpdatePlatformModule = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data: { moduleKey, name, description, badge, orderIndex } }) => {
+    const identity = await requirePlatformAdmin();
     const supabase = getServerClient();
-    const identity = await getIdentity();
-
-    if (!identity || !["admin", "master", "platform_admin"].includes(identity.role || "")) {
-      throw new Error("Não autorizado.");
-    }
 
     const updatePayload: Record<string, any> = {
       name: name.trim(),

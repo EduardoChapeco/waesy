@@ -235,13 +235,13 @@ function AdminMasterAuditoriaForensePage() {
       </div>
 
       {/* ── Toolbar: Abas e Busca Unificada ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-2 sm:gap-2 overflow-x-auto scroll-area-carousel no-scrollbar py-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 min-w-0">
+        <div className="waesy-tab-strip items-center gap-2 flex-1 min-w-0 max-w-full py-1">
           <button
             type="button"
             onClick={() => setActiveTab("ledger")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+              "h-11 min-h-11 sm:h-10 sm:min-h-10 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "ledger"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -253,7 +253,7 @@ function AdminMasterAuditoriaForensePage() {
             type="button"
             onClick={() => setActiveTab("events")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+              "h-11 min-h-11 sm:h-10 sm:min-h-10 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "events"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -265,7 +265,7 @@ function AdminMasterAuditoriaForensePage() {
             type="button"
             onClick={() => setActiveTab("defense")}
             className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-              "h-10 sm:h-11 px-4 sm:px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
+              "h-11 min-h-11 sm:h-10 sm:min-h-10 px-4 rounded-lg border text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "defense"
                 ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -275,13 +275,13 @@ function AdminMasterAuditoriaForensePage() {
           </button>
         </div>
 
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+        <div className="relative w-full sm:w-72 shrink-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Filtrar por hash, IP ou ação..."
-            className="pl-9 h-9 rounded-lg text-xs bg-background"
+            className="pl-9 h-11 min-h-11 sm:h-9 rounded-lg text-xs bg-background"
           />
         </div>
       </div>

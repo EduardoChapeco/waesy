@@ -994,7 +994,7 @@ Público-alvo: "${input.targetAudience || 'Clientes exigentes'}"`,
         slug: expDoc.slug,
         qualityScore: rubric.totalScore,
         rubric,
-        previewUrl: `/builder?doc=${expDoc.id}`,
+        previewUrl: `/workspace/builder?doc=${expDoc.id}`,
         canPublish,
       };
     } catch (e: unknown) {

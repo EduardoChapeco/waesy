@@ -18,6 +18,18 @@ export interface ContextPayload {
 
 const COOKIE_YEAR = 60 * 60 * 24 * 365;
 
+function resolveClientContextDomainAttr(): string {
+  if (typeof window === "undefined") return "";
+  const host = (window.location.hostname || "").toLowerCase();
+  if (host === "waesy.com.br" || host.endsWith(".waesy.com.br")) {
+    return "; domain=.waesy.com.br";
+  }
+  if (host === "usewaesy.com" || host.endsWith(".usewaesy.com")) {
+    return "; domain=.usewaesy.com";
+  }
+  return "";
+}
+
 /**
  * Define os cookies no cliente de forma idempotente e atômica.
  */
@@ -25,24 +37,26 @@ export function setClientContextCookies(payload: ContextPayload): void {
   if (typeof window === "undefined") return;
 
   const { context, storeId, creatorHandle } = payload;
+  const domainAttr = resolveClientContextDomainAttr();
+  const secAttr = window.location.protocol === "https:" ? "; Secure" : "";
 
   // 1. Contexto principal
-  window.document.cookie = `waesy_active_context=${context}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax`;
+  window.document.cookie = `waesy_active_context=${context}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax${domainAttr}${secAttr}`;
 
   if (context === "store" && storeId) {
-    window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax`;
-    window.document.cookie = `waesy_store_id=${storeId}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax`;
-    window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+    window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax${domainAttr}${secAttr}`;
+    window.document.cookie = `waesy_store_id=${storeId}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax${domainAttr}${secAttr}`;
+    window.document.cookie = `waesy_active_creator=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
   } else if (context === "creator" && creatorHandle) {
     const cleanHandle = encodeURIComponent(creatorHandle);
-    window.document.cookie = `waesy_active_creator=${cleanHandle}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax`;
-    window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-    window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
+    window.document.cookie = `waesy_active_creator=${cleanHandle}; path=/; max-age=${COOKIE_YEAR}; SameSite=Lax${domainAttr}${secAttr}`;
+    window.document.cookie = `waesy_active_tenant=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
+    window.document.cookie = `waesy_store_id=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
   } else {
     // Modo Civil ou Courier: limpa contexto corporativo e criador
-    window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
-    window.document.cookie = "waesy_store_id=; path=/; max-age=0; SameSite=Lax";
-    window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+    window.document.cookie = `waesy_active_tenant=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
+    window.document.cookie = `waesy_store_id=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
+    window.document.cookie = `waesy_active_creator=; path=/; max-age=0; SameSite=Lax${domainAttr}`;
   }
 }
 

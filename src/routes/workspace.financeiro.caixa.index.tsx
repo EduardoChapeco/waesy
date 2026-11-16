@@ -537,16 +537,16 @@ function CashRegisterManagerPage() {
 
  {/* ── Abas de Governança: Extrato do Turno & Histórico ── */}
  <Tabs defaultValue="current" className="space-y-4">
- <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg px-4 py-3">
- <TabsList className="flex overflow-x-auto no-scrollbar h-11 min-h-11 sm:h-11 min-h-11 sm:h-9">
- <TabsTrigger value="current" className="text-xs shrink-0">
+ <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-border rounded-lg px-4 py-3 min-w-0">
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 h-11 min-h-11 sm:h-10 sm:min-h-10 w-full sm:w-auto max-w-full min-w-0">
+ <TabsTrigger value="current" className="text-xs shrink-0 whitespace-nowrap">
  Lançamentos do Turno Atual ({register?.recentEntries?.length || 0})
  </TabsTrigger>
- <TabsTrigger value="history" className="text-xs shrink-0">
+ <TabsTrigger value="history" className="text-xs shrink-0 whitespace-nowrap">
  Turnos ({history.length})
  </TabsTrigger>
- <TabsTrigger value="ledger" className="text-xs font-semibold gap-2 rounded-lg">
- <ShieldCheck className="size-3.5" />
+ <TabsTrigger value="ledger" className="text-xs font-semibold gap-2 rounded-lg shrink-0 whitespace-nowrap">
+ <ShieldCheck className="size-3.5 shrink-0" />
  Ledger ACID ({(loaderData.ledger || []).length})
  </TabsTrigger>
  </TabsList>

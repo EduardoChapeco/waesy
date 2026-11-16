@@ -1175,7 +1175,13 @@ export const getStoreMarketingTierStatus = createServerFn({ method: "GET" }).han
 export const upgradeStoreToWaesyMax = createServerFn({ method: "POST" }).handler(async () => {
   const supabase = getServerClient();
   const identity = await getServerIdentity();
-  assertStoreAccess(identity, ["owner", "admin"]);
+  const { isPlatformAdminIdentity } = await import("@/lib/identity-core");
+  if (!isPlatformAdminIdentity(identity)) {
+    throw new Error("Apenas o Admin Master Global pode alterar o plano da empresa manualmente.");
+  }
+  if (!identity.store_id) {
+    throw new Error("Empresa alvo não identificada para atualizar o plano.");
+  }
 
   const now = new Date().toISOString();
   const { data: store } = await supabase

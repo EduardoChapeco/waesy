@@ -98,7 +98,7 @@ export function VitrineVerticalCarousel({
   liveFlyers,
   className,
 }: VitrineVerticalCarouselProps) {
-  const { isMobile, isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isMedium, isEditorCanvas } = useEffectiveViewport();
   const [viewerIndex, setViewerIndex] = React.useState<number | null>(null);
 
   const resolvedItems = React.useMemo(() => {
@@ -217,9 +217,12 @@ export function VitrineVerticalCarousel({
                   if (!isEditorCanvas) setViewerIndex(idx);
                 }}
                 aria-label={`Abrir story ${item.title}`}
-                className="group snap-start shrink-0 w-20 sm:w-24 min-h-11 flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg p-1"
+                className={cn(
+                  "group snap-start shrink-0 min-h-11 flex flex-col items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg p-1",
+                  isMobile ? "w-20" : "w-24",
+                )}
               >
-                <div className="size-16 sm:size-20 rounded-full p-1 border-2 border-primary bg-background">
+                <div className={cn("rounded-full p-1 border-2 border-primary bg-background", isMobile ? "size-16" : "size-20")}>
                   <div className="size-full rounded-full overflow-hidden bg-muted flex items-center justify-center">
                     {mediaSrc ? (
                       <img
@@ -244,7 +247,12 @@ export function VitrineVerticalCarousel({
 
       {/* MODO 2: CURATED 2X2 (Blocos Curados em Grade 2x2 estilo Vitrine Waesy) */}
       {activeFormat === "curated_2x2" && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div
+          className={cn(
+            "grid",
+            isMobile ? "grid-cols-2 gap-3" : isMedium ? "grid-cols-2 gap-4" : "grid-cols-2 md:grid-cols-4 gap-4",
+          )}
+        >
           {resolvedItems.map((item, idx) => {
             const safeHref = isEditorCanvas ? undefined : resolveSafeLinkHref(item.href);
             const cardInner = (
@@ -258,7 +266,7 @@ export function VitrineVerticalCarousel({
                   )}
                 </div>
                 <div className="p-3 space-y-1">
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug break-words">
+                  <h3 className={cn("font-bold text-foreground line-clamp-2 leading-snug break-words", isMobile ? "text-xs" : "text-sm")}>
                     {item.title}
                   </h3>
                   {typeof item.priceCents === "number" && item.priceCents > 0 && (
@@ -300,7 +308,7 @@ export function VitrineVerticalCarousel({
 
       {/* MODO 3: TRILHO VERTICAL (9:16 Reels/Moments, 4:5 Retrato ou 3:4 Encartes) */}
       {activeFormat !== "stories_ring" && activeFormat !== "curated_2x2" && (
-        <div className="carousel flex flex-nowrap gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory">
+        <div className={cn("carousel flex flex-nowrap overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory", isMobile ? "gap-3" : "gap-4")}>
           {resolvedItems.map((item, idx) => {
             const safeHref = isEditorCanvas ? undefined : resolveSafeLinkHref(item.href);
             const aspectCls = getAspectClass(activeFormat);
@@ -309,7 +317,12 @@ export function VitrineVerticalCarousel({
             );
 
             const verticalCard = (
-              <div className="group snap-start shrink-0 w-48 sm:w-56 rounded-lg border border-border bg-card overflow-hidden flex flex-col justify-between hover:border-primary transition-colors duration-150 motion-reduce:transition-none">
+              <div
+                className={cn(
+                  "group snap-start shrink-0 rounded-lg border border-border bg-card overflow-hidden flex flex-col justify-between hover:border-primary transition-colors duration-150 motion-reduce:transition-none",
+                  isMobile ? "w-48" : "w-56",
+                )}
+              >
                 <div className={cn("relative w-full overflow-hidden bg-muted", aspectCls)}>
                   {renderMediaContent(item, true)}
 
@@ -329,7 +342,7 @@ export function VitrineVerticalCarousel({
                   </div>
 
                   <div className="absolute inset-x-2 bottom-2 rounded-lg bg-card border border-border p-3 space-y-1">
-                    <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-tight break-words">
+                    <h3 className={cn("font-bold text-foreground line-clamp-2 leading-tight break-words", isMobile ? "text-xs" : "text-sm")}>
                       {item.title}
                     </h3>
                     {item.subtitle && (

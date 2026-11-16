@@ -187,7 +187,7 @@ export function VitrineProductShelf({
   onAddToCart,
   className,
 }: VitrineProductShelfProps) {
-  const { isMobile, isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isMedium, isEditorCanvas } = useEffectiveViewport();
 
   const resolvedProducts = React.useMemo(() => {
     let sourceList: VitrineProductItem[] = [];
@@ -517,11 +517,11 @@ export function VitrineProductShelf({
           {resolvedProducts.map((p, idx) => renderProductCard(p, idx, true))}
         </div>
       ) : desktopLayout === "bento_3" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className={cn("grid gap-4", isMedium ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
           {resolvedProducts.map((p, idx) => renderProductCard(p, idx, false))}
         </div>
       ) : desktopLayout === "grid_4col" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className={cn("grid gap-4", isMedium ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-4")}>
           {resolvedProducts.map((p, idx) => renderProductCard(p, idx, false))}
         </div>
       ) : (
@@ -694,7 +694,7 @@ export function VitrineClassifiedsRail({
   liveClassifieds,
   className,
 }: VitrineClassifiedsRailProps) {
-  const { isMobile, isEditorCanvas } = useEffectiveViewport();
+  const { isMobile, isMedium, isEditorCanvas } = useEffectiveViewport();
 
   const resolvedAds = React.useMemo(() => {
     let list: VitrineClassifiedItem[] = [];
@@ -863,11 +863,11 @@ export function VitrineClassifiedsRail({
           </div>
         )
       ) : desktopLayout === "grid_3col" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className={cn("grid gap-4", isMedium ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
           {resolvedAds.map((ad, idx) => renderAdCard(ad, idx))}
         </div>
       ) : desktopLayout === "grid_4col" ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className={cn("grid gap-4", isMedium ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-4")}>
           {resolvedAds.map((ad, idx) => renderAdCard(ad, idx))}
         </div>
       ) : (

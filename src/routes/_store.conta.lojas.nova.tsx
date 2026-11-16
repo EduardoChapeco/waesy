@@ -10,7 +10,6 @@ import {
   Phone,
   Mail,
   FileText,
-  ShieldCheck,
   ChevronRight,
   CheckCircle2,
 } from "lucide-react";
@@ -333,14 +332,6 @@ export default function NovaLojaPage() {
                 />
               </div>
             </div>
-          </div>
-
-          {/* Garantia de Segurança Zero-Trust */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border/60 text-xs text-muted-foreground">
-            <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
-            <span className="leading-tight">
-              Seu perfil será registrado atomicamente como proprietário único desta loja com controle de acesso multi-tenant.
-            </span>
           </div>
 
           {/* Botão de Ação Primária */}

@@ -134,7 +134,12 @@ export const webAgentStepFn = createServerFn({ method: "POST" })
       return { step: { index, action, url, outcome: "finished" }, done: true, answer: action.answer, data: action.data, currentUrl: url };
     }
 
-    const target = action.type === "open" ? action.url : observation.links[action.linkIndex];
+    const target =
+      action.type === "open"
+        ? action.url
+        : action.type === "follow"
+          ? observation.links[action.linkIndex]
+          : url;
     if (!target || !isHostAllowed(target, data.startUrl, allowedHosts)) {
       return { step: { index, action, url: target, outcome: "blocked", detail: "Domínio fora da política." }, done: false, currentUrl: url };
     }

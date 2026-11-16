@@ -351,18 +351,18 @@ export default function WorkspaceMarketingEncartesPage() {
 
       {/* ─── Navegação por Abas (Ativos, Agendados, Expirados, Todos) ──── */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-4">
-        <TabsList className="bg-muted/60 p-1 rounded-lg h-10 border border-border/40">
-          <TabsTrigger value="ativos" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
-            <span className="size-2 rounded-full bg-emerald-500" />
+        <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/60 p-1 rounded-lg h-11 min-h-11 sm:h-10 sm:min-h-10 border border-border/40 w-full sm:w-auto max-w-full min-w-0">
+          <TabsTrigger value="ativos" className="rounded-lg text-xs font-bold gap-2 cursor-pointer shrink-0 whitespace-nowrap">
+            <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
             <span>Ativos ({activeCount})</span>
           </TabsTrigger>
-          <TabsTrigger value="agendados" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
+          <TabsTrigger value="agendados" className="rounded-lg text-xs font-bold gap-2 cursor-pointer shrink-0 whitespace-nowrap">
             <span>Agendados ({scheduledCount})</span>
           </TabsTrigger>
-          <TabsTrigger value="expirados" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
+          <TabsTrigger value="expirados" className="rounded-lg text-xs font-bold gap-2 cursor-pointer shrink-0 whitespace-nowrap">
             <span>Expirados ({expiredCount})</span>
           </TabsTrigger>
-          <TabsTrigger value="todos" className="rounded-lg text-xs font-bold gap-2 cursor-pointer">
+          <TabsTrigger value="todos" className="rounded-lg text-xs font-bold gap-2 cursor-pointer shrink-0 whitespace-nowrap">
             <span>Todos ({flyers.length})</span>
           </TabsTrigger>
         </TabsList>

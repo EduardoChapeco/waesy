@@ -6,12 +6,13 @@
  * Valor Total, Placa do Carro ou Destino da Viagem com 1 toque confortável.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Users, DollarSign, Compass, Car, Home, Scale, ShoppingBag, Briefcase, Search, Star, Plus, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CONTRACT_SEMANTIC_GROUPS, type ContractSemanticVariable } from "@/lib/contracts/contract-semantic-dictionary";
+import { resolveContractNicheProfile } from "@/lib/contracts/document-file-parser";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ interface ContractVariablePickerProps {
   onInsertVariable: (token: string) => void;
   className?: string;
   defaultNiche?: string;
+  storeNiche?: string | null;
 }
 
 const NICHE_ICONS: Record<string, React.ReactNode> = {
@@ -47,28 +49,48 @@ export function ContractVariablePicker({
   onInsertVariable,
   className,
   defaultNiche = "geral",
+  storeNiche,
 }: ContractVariablePickerProps) {
+  const nicheProfile = useMemo(
+    () => (storeNiche ? resolveContractNicheProfile(storeNiche) : null),
+    [storeNiche],
+  );
+  const [showAllNiches, setShowAllNiches] = useState(false);
+
+  const visibleGroups = useMemo(() => {
+    if (!nicheProfile || showAllNiches) return CONTRACT_SEMANTIC_GROUPS;
+    const allowed = new Set(nicheProfile.allowedSemanticGroups);
+    const filtered = CONTRACT_SEMANTIC_GROUPS.filter((g) => allowed.has(g.id));
+    return filtered.length > 0 ? filtered : CONTRACT_SEMANTIC_GROUPS;
+  }, [nicheProfile, showAllNiches]);
+
   const [activeNiche, setActiveNiche] = useState<string>(defaultNiche);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [lastInserted, setLastInserted] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!visibleGroups.some((g) => g.id === activeNiche)) {
+      setActiveNiche(visibleGroups[0]?.id || "geral");
+    }
+  }, [visibleGroups, activeNiche]);
+
   // Filtragem
   const currentGroup = useMemo(() => {
-    return CONTRACT_SEMANTIC_GROUPS.find((g) => g.id === activeNiche) || CONTRACT_SEMANTIC_GROUPS[0];
-  }, [activeNiche]);
+    return visibleGroups.find((g) => g.id === activeNiche) || visibleGroups[0];
+  }, [visibleGroups, activeNiche]);
 
   const filteredVariables = useMemo(() => {
     if (!searchTerm.trim()) return currentGroup.variables;
 
     const term = searchTerm.toLowerCase();
-    const all = CONTRACT_SEMANTIC_GROUPS.flatMap((g) => g.variables);
+    const all = visibleGroups.flatMap((g) => g.variables);
     return all.filter(
       (v) =>
         v.label.toLowerCase().includes(term) ||
         v.key.toLowerCase().includes(term) ||
         v.description.toLowerCase().includes(term)
     );
-  }, [currentGroup, searchTerm]);
+  }, [currentGroup, visibleGroups, searchTerm]);
 
   const handleSelect = (v: ContractSemanticVariable) => {
     onInsertVariable(v.token);
@@ -113,10 +135,10 @@ export function ContractVariablePicker({
         </div>
       </div>
 
-      {/* Abas dos Nichos (Scroll Horizontal Ergonômico) */}
+      {/* Abas dos Nichos */}
       {!searchTerm.trim() && (
-        <div className="flex items-center gap-2 overflow-x-auto scroll-area-carousel pb-2 no-scrollbar">
-          {CONTRACT_SEMANTIC_GROUPS.map((group) => {
+        <div className="flex flex-wrap items-center gap-2 pb-1">
+          {visibleGroups.map((group) => {
             const isActive = group.id === activeNiche;
             const colors = NICHE_COLORS[group.id] || NICHE_COLORS.geral;
 
@@ -126,7 +148,7 @@ export function ContractVariablePicker({
                 type="button"
                 onClick={() => setActiveNiche(group.id)}
                 className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap cursor-pointer border",
+                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap cursor-pointer border min-h-11 sm:min-h-9",
                   isActive
                     ? cn("shadow-xs ring-1 ring-primary/20", colors.bg, colors.text, colors.border)
                     : "bg-muted/40 text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/70"
@@ -138,6 +160,15 @@ export function ContractVariablePicker({
               </button>
             );
           })}
+          {nicheProfile && (
+            <button
+              type="button"
+              onClick={() => setShowAllNiches((prev) => !prev)}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-background border border-border/70 text-muted-foreground hover:text-foreground cursor-pointer min-h-11 sm:min-h-9"
+            >
+              {showAllNiches ? "Apenas do meu setor" : "Ver outros setores"}
+            </button>
+          )}
         </div>
       )}
 
@@ -160,7 +191,7 @@ export function ContractVariablePicker({
                       type="button"
                       onClick={() => handleSelect(variable)}
                       className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors duration-200 cursor-pointer min-h-9 min-h-11 sm:min-h-0",
+                        "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-colors duration-200 cursor-pointer min-h-11",
                         colors.bg,
                         colors.text,
                         colors.border,

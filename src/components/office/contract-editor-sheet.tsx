@@ -35,6 +35,7 @@ import { ContractVariablePicker } from "@/components/contracts/contract-variable
 import { StudioFrame } from "@/components/tourism/studio/studio-frame";
 import { DocumentExportMenu } from "@/components/documents/DocumentExportMenu";
 import { ADVANCED_CONTRACT_TEMPLATES } from "@/lib/data/advanced-contract-templates";
+import { resolveContractNicheProfile } from "@/lib/contracts/document-file-parser";
 import { resolveTenantDocumentIdentity } from "@/lib/documents/document-studio-catalog";
 import { useAgency } from "@/lib/agency-context";
 import { getStoreSettings } from "@/services/store.functions";
@@ -112,6 +113,33 @@ export function ContractEditorSheet({
   const [showVariablePicker, setShowVariablePicker] = useState(false);
   const [zoomScale, setZoomScale] = useState<number | null>(null);
   const [signatures, setSignatures] = useState<SignatureData[]>([]);
+
+  const activeStoreNiche =
+    (storeSettings?.niche as string | undefined) ||
+    (storeSettings?.segment as string | undefined) ||
+    (storeSettings?.category as string | undefined) ||
+    null;
+
+  const nicheProfile = useMemo(
+    () => (activeStoreNiche ? resolveContractNicheProfile(activeStoreNiche) : null),
+    [activeStoreNiche],
+  );
+
+  const prioritizedTemplates = useMemo(() => {
+    if (!nicheProfile) return ADVANCED_CONTRACT_TEMPLATES;
+    const filtered = ADVANCED_CONTRACT_TEMPLATES.filter((t) => {
+      if (!nicheProfile.isTourism && t.category === "tourism_package") return false;
+      return true;
+    });
+    const orderMap = new Map(
+      nicheProfile.preferredTemplateCategories.map((cat, idx) => [cat, idx]),
+    );
+    return [...filtered].sort((a, b) => {
+      const rankA = orderMap.has(a.category) ? (orderMap.get(a.category) as number) : 99;
+      const rankB = orderMap.has(b.category) ? (orderMap.get(b.category) as number) : 99;
+      return rankA - rankB;
+    });
+  }, [nicheProfile]);
 
   const selectedAdvancedTemplate = useMemo(
     () => ADVANCED_CONTRACT_TEMPLATES.find((t) => t.id === selectedTemplateId) || null,
@@ -217,7 +245,7 @@ export function ContractEditorSheet({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="default">Minuta Base de Prestação de Serviços</SelectItem>
-                  {ADVANCED_CONTRACT_TEMPLATES.map((tpl) => (
+                  {prioritizedTemplates.map((tpl) => (
                     <SelectItem key={tpl.id} value={tpl.id}>
                       {tpl.title}
                     </SelectItem>
@@ -496,7 +524,10 @@ export function ContractEditorSheet({
 
                 {showVariablePicker && (
                   <section className="pt-2 border-t border-border">
-                    <ContractVariablePicker onInsertVariable={handleInsertVariableToken} />
+                    <ContractVariablePicker
+                      onInsertVariable={handleInsertVariableToken}
+                      storeNiche={activeStoreNiche}
+                    />
                   </section>
                 )}
 

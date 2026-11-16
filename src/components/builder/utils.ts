@@ -1,5 +1,6 @@
 import React from "react";
 import { OmniBlockStyling } from "./types";
+import { pickContrastForeground } from "@/lib/builder/block-data-resolver";
 
 /**
  * getSectionStyle — Mapeia o OmniBlockStyling para classes utilitárias e estilos CSS inline isolados.
@@ -66,6 +67,27 @@ export function getSectionStyle(styling?: OmniBlockStyling, isMobile = false): {
     full: "w-full",
   };
 
+  const alignMap: Record<string, string> = {
+    left: "text-left",
+    center: "text-center",
+    right: "text-right",
+  };
+
+  const shadowMap: Record<string, string> = {
+    none: "",
+    sm: "shadow-xs",
+    md: "shadow-xs ring-1 ring-border/50",
+    lg: "shadow-xs ring-1 ring-border",
+  };
+
+  const gradientMap: Record<string, string> = {
+    soft: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, var(--background)) 0%, var(--background) 100%)",
+    vivid:
+      "linear-gradient(135deg, color-mix(in srgb, var(--primary) 26%, var(--background)) 0%, color-mix(in srgb, var(--primary) 8%, var(--background)) 100%)",
+    dark_scrim:
+      "linear-gradient(180deg, color-mix(in srgb, var(--foreground) 88%, var(--background)) 0%, color-mix(in srgb, var(--foreground) 72%, var(--primary)) 100%)",
+  };
+
   const activePaddingKey =
     isMobile && styling.mobilePaddingY ? styling.mobilePaddingY : styling.paddingY || "md";
   const hasGranularPadding = Boolean(styling.paddingTop || styling.paddingBottom);
@@ -81,34 +103,87 @@ export function getSectionStyle(styling?: OmniBlockStyling, isMobile = false): {
   const surfaceClass = styling.surfacePreset ? surfaceMap[styling.surfacePreset] || "" : "";
   const widthClass = styling.maxWidth ? maxWidthMap[styling.maxWidth] || "" : "";
   const borderClass = styling.border ? "border border-border/70" : "";
+  const alignClass = styling.textAlign ? alignMap[styling.textAlign] || "" : "";
+  const shadowClass = styling.shadow ? shadowMap[styling.shadow] || "" : "";
   const legacyTwBgClass =
     styling.backgroundColor && styling.backgroundColor.startsWith("bg-")
       ? styling.backgroundColor
       : "";
 
   const style: React.CSSProperties = {};
-  if (styling.backgroundColor && !styling.backgroundColor.startsWith("bg-")) {
-    style.backgroundColor = styling.backgroundColor;
-    if (styling.backgroundColor !== "var(--background)") {
-      (style as Record<string, string>)["--background"] = styling.backgroundColor;
-      (style as Record<string, string>)["--color-background"] = styling.backgroundColor;
+  const cssVars = style as Record<string, string>;
+  const customBg =
+    styling.backgroundColor && !styling.backgroundColor.startsWith("bg-")
+      ? styling.backgroundColor
+      : null;
+  const explicitFg =
+    styling.textColor && !styling.textColor.startsWith("text-")
+      ? styling.textColor
+      : null;
+  const resolvedFg =
+    explicitFg ||
+    (customBg && customBg !== "var(--background)" ? pickContrastForeground(customBg) : null);
+
+  if (customBg) {
+    style.backgroundColor = customBg;
+    if (customBg !== "var(--background)") {
+      cssVars["--background"] = customBg;
+      cssVars["--color-background"] = customBg;
+      const fgMix = resolvedFg || "var(--foreground)";
+      const derivedCard = `color-mix(in srgb, ${customBg} 94%, ${fgMix} 6%)`;
+      const derivedMuted = `color-mix(in srgb, ${customBg} 88%, ${fgMix} 12%)`;
+      const derivedBorder = `color-mix(in srgb, ${fgMix} 16%, ${customBg} 84%)`;
+      cssVars["--card"] = derivedCard;
+      cssVars["--color-card"] = derivedCard;
+      cssVars["--muted"] = derivedMuted;
+      cssVars["--color-muted"] = derivedMuted;
+      cssVars["--border"] = derivedBorder;
+      cssVars["--color-border"] = derivedBorder;
     }
   }
-  if (styling.textColor && !styling.textColor.startsWith("text-")) {
-    style.color = styling.textColor;
-    if (styling.textColor !== "var(--foreground)") {
-      (style as Record<string, string>)["--foreground"] = styling.textColor;
-      (style as Record<string, string>)["--color-foreground"] = styling.textColor;
-      (style as Record<string, string>)["--muted-foreground"] = `color-mix(in srgb, ${styling.textColor} 72%, transparent)`;
-      (style as Record<string, string>)["--color-muted-foreground"] = `color-mix(in srgb, ${styling.textColor} 72%, transparent)`;
+  if (resolvedFg) {
+    style.color = resolvedFg;
+    if (resolvedFg !== "var(--foreground)") {
+      cssVars["--foreground"] = resolvedFg;
+      cssVars["--color-foreground"] = resolvedFg;
+      cssVars["--card-foreground"] = resolvedFg;
+      cssVars["--color-card-foreground"] = resolvedFg;
+      const derivedMutedFg = `color-mix(in srgb, ${resolvedFg} 70%, transparent)`;
+      cssVars["--muted-foreground"] = derivedMutedFg;
+      cssVars["--color-muted-foreground"] = derivedMutedFg;
     }
+  }
+  if (styling.accentColor && styling.accentColor !== "var(--primary)") {
+    const primaryFg = pickContrastForeground(styling.accentColor);
+    cssVars["--primary"] = styling.accentColor;
+    cssVars["--color-primary"] = styling.accentColor;
+    cssVars["--primary-foreground"] = primaryFg;
+    cssVars["--color-primary-foreground"] = primaryFg;
+    cssVars["--ring"] = styling.accentColor;
+    cssVars["--color-ring"] = styling.accentColor;
+  }
+  if (styling.fontFamily && styling.fontFamily !== "inherit") {
+    style.fontFamily = styling.fontFamily;
+    cssVars["--font-sans"] = styling.fontFamily;
+  }
+  if (styling.backgroundGradient && gradientMap[styling.backgroundGradient]) {
+    style.backgroundImage = gradientMap[styling.backgroundGradient];
   }
   if (typeof styling.animationDelayMs === "number" && styling.animationDelayMs > 0) {
     style.animationDelay = `${styling.animationDelayMs}ms`;
   }
 
   return {
-    className: [pyClass, roundedClass, surfaceClass, legacyTwBgClass, widthClass, borderClass]
+    className: [
+      pyClass,
+      roundedClass,
+      surfaceClass,
+      legacyTwBgClass,
+      widthClass,
+      borderClass,
+      alignClass,
+      shadowClass,
+    ]
       .filter(Boolean)
       .join(" ")
       .trim(),

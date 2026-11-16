@@ -29,6 +29,8 @@ export const MARKETPLACE_PLATFORMS = [
   "google_business",
   "99food",
   "amoofertas",
+  "tridelivery",
+  "aiqfome",
   "kangu",
   "frenet",
   "loggi",
@@ -146,6 +148,28 @@ export interface MarketplaceSyncLogDTO {
 }
 
 /**
+ * Sanitiza `settings` antes de devolver conectores para o client,
+ * substituindo segredos cifrados por máscara visual neutra ("••••••••").
+ */
+export function sanitizeConnectorSettingsForClient(
+  settings: Record<string, any> | null | undefined,
+): Record<string, any> {
+  if (!settings || typeof settings !== "object") return {};
+  const nextSettings: Record<string, any> = { ...settings };
+  if (typeof nextSettings.webhook_secret === "string" && nextSettings.webhook_secret.trim()) {
+    nextSettings.webhook_secret = "••••••••";
+  }
+  if (nextSettings.credentials && typeof nextSettings.credentials === "object") {
+    const maskedCreds: Record<string, string | null> = {};
+    for (const [k, v] of Object.entries(nextSettings.credentials as Record<string, unknown>)) {
+      maskedCreds[k] = typeof v === "string" && v.trim().length > 0 ? "••••••••" : null;
+    }
+    nextSettings.credentials = maskedCreds;
+  }
+  return nextSettings;
+}
+
+/**
  * Lista todos os conectores de marketplace para a loja.
  */
 export const listMarketplaceConnectors = createServerFn({ method: "GET" })
@@ -153,7 +177,7 @@ export const listMarketplaceConnectors = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<MarketplaceConnectorDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data?.storeId);
 
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -174,7 +198,10 @@ export const listMarketplaceConnectors = createServerFn({ method: "GET" })
       return [];
     }
 
-    return (rows || []) as MarketplaceConnectorDTO[];
+    return (rows || []).map((row: any) => ({
+      ...row,
+      settings: sanitizeConnectorSettingsForClient(row.settings),
+    })) as MarketplaceConnectorDTO[];
   });
 
 /**
@@ -201,7 +228,7 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
+    assertStoreAccess(identity, ["owner", "admin"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -327,7 +354,7 @@ export const disconnectMarketplaceConnector = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
+    assertStoreAccess(identity, ["owner", "admin"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -468,13 +495,15 @@ async function upsertPulledMarketplaceOrderToMaster(params: {
       .update({ status: normalizedStatus as any, updated_at: new Date().toISOString() })
       .eq("id", masterOrderId);
   } else {
+    const foodPlatforms = new Set(["ifood", "99food", "rappi", "tridelivery", "amodelivery", "amoofertas", "aiqfome"]);
     const { data: createdOrder } = await supabase
       .from("orders")
       .insert({
         store_id: params.storeId,
         status: normalizedStatus as any,
-        origin_type: "marketplace",
+        origin_type: "ecommerce",
         origin_channel: params.platform,
+        shipping_method: foodPlatforms.has(params.platform.toLowerCase()) ? "delivery" : "provider",
         subtotal_cents: params.subtotalCents,
         shipping_cents: params.shippingCostCents,
         discount_cents: 0,
@@ -499,18 +528,23 @@ async function upsertPulledMarketplaceOrderToMaster(params: {
 
     if (createdOrder?.id) {
       masterOrderId = createdOrder.id;
-      if (params.items.length > 0) {
-        await supabase.from("order_items").insert(
-          params.items.map((it) => ({
-            order_id: createdOrder.id,
-            product_title: it.title,
-            variant_sku: it.sku || null,
-            qty: it.quantity || 1,
-            unit_price_cents: it.unit_price_cents || 0,
-            total_cents: (it.quantity || 1) * (it.unit_price_cents || 0),
-          }))
-        );
+      for (const item of params.items || []) {
+        await supabase.from("order_items").insert({
+          order_id: masterOrderId,
+          product_title: item.title,
+          variant_sku: item.sku || `EXT-${params.externalOrderId}`,
+          variant_attributes: {},
+          qty: Math.max(1, item.quantity || 1),
+          unit_price_cents: item.unit_price_cents || 0,
+          total_cents: Math.max(1, item.quantity || 1) * (item.unit_price_cents || 0),
+        });
       }
+      await supabase
+        .from("marketplace_external_orders")
+        .update({ order_id: masterOrderId, synced_to_master_at: new Date().toISOString() })
+        .eq("store_id", params.storeId)
+        .eq("platform", params.platform)
+        .eq("external_order_id", params.externalOrderId);
     }
   }
 
@@ -1365,7 +1399,7 @@ export const triggerSyncConnector = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -1463,7 +1497,7 @@ export const listMarketplaceExternalOrders = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ExternalOrderDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data?.storeId);
 
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -1501,7 +1535,7 @@ export const getMarketplaceFinancialSummary = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<MarketplaceChannelFinancialSummaryDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data?.storeId);
 
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) return [];
@@ -1693,7 +1727,7 @@ export const syncProductStockToMarketplaces = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -1719,7 +1753,7 @@ export const mapProductToMarketplace = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -1808,7 +1842,7 @@ export const deleteProductChannelListing = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -1857,7 +1891,7 @@ export const listProductMarketplaceMappings = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ProductMarketplaceMappingDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data?.storeId);
 
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) return [];
@@ -1928,7 +1962,7 @@ export const listMarketplaceSyncLogs = createServerFn({ method: "GET" })
   .handler(async ({ data: { storeId, platform, limit } }): Promise<MarketplaceSyncLogDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], storeId);
 
     const targetStoreId = storeId || identity.store_id;
     if (!targetStoreId) return [];
@@ -1968,7 +2002,7 @@ export const syncGoogleBusinessProfile = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
+    assertStoreAccess(identity, ["owner", "admin"], data?.storeId);
 
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -2081,7 +2115,7 @@ export const listInventoryLocations = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<InventoryLocationDTO[]> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data?.storeId);
 
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) return [];
@@ -2128,7 +2162,7 @@ export const saveInventoryLocation = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
+    assertStoreAccess(identity, ["owner", "admin"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -2189,7 +2223,7 @@ export const deleteInventoryLocation = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
+    assertStoreAccess(identity, ["owner", "admin"], data.storeId);
 
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -2231,7 +2265,7 @@ export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], input.storeId);
 
     const targetStoreId = input.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -2527,7 +2561,7 @@ export const importMercadoLivreSellerListings = createServerFn({ method: "POST" 
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], input.storeId);
 
     const targetStoreId = input.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -2758,7 +2792,7 @@ export const publishProductToMarketplace = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], input.storeId);
 
     const targetStoreId = input.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -3027,7 +3061,7 @@ export const syncMarketplaceOrderStatus = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"], input.storeId);
 
     const targetStoreId = input.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -3130,8 +3164,9 @@ export const syncMarketplaceOrderStatus = createServerFn({ method: "POST" })
         .update({
           external_status: mapped.externalStatus,
           ...(input.trackingCode ? { tracking_number: input.trackingCode.trim().toUpperCase() } : {}),
+          ...(input.carrierName ? { shipping_carrier: input.carrierName.trim() } : {}),
+          ...(input.action === "dispatch" ? { dispatched_at: new Date().toISOString() } : {}),
           ...(input.cancellationReason ? { cancellation_reason: input.cancellationReason.trim() } : {}),
-          updated_at: new Date().toISOString(),
         })
         .eq("id", extOrder.id)
         .eq("store_id", targetStoreId);
@@ -3161,7 +3196,7 @@ export const listMarketplaceQuestions = createServerFn({ method: "GET" })
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"], input?.storeId);
 
     const targetStoreId = input?.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -3202,7 +3237,7 @@ export const syncMercadoLivreQuestions = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"], input?.storeId);
 
     const targetStoreId = input?.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -3318,7 +3353,7 @@ export const calculateAndApplyChannelPricing = createServerFn({ method: "POST" }
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], input.storeId);
 
     const targetStoreId = input.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -3338,6 +3373,12 @@ export const calculateAndApplyChannelPricing = createServerFn({ method: "POST" }
     const channelCommissions: Record<string, number> = {
       mercadolivre: 0.16, // 16% (Clássico/Premium Médio)
       ifood: 0.12,        // 12% (Básico de Entrega)
+      "99food": 0.14,     // 14%
+      rappi: 0.18,        // 18%
+      tridelivery: 0.1,   // 10%
+      amoofertas: 0.08,   // 8%
+      amodelivery: 0.08,  // 8%
+      aiqfome: 0.12,      // 12%
       shopee: 0.14,       // 14% padrão
       amazon: 0.15,       // 15% categoria geral
       magalu: 0.16,       // 16%
@@ -3527,7 +3568,7 @@ export const syncProductStockAndPriceToChannels = createServerFn({ method: "POST
   .handler(async ({ data: input }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], input.storeId);
 
     const targetStoreId = input.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
@@ -3660,7 +3701,7 @@ export const answerMarketplaceQuestionFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"], data.storeId);
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
     return answerMercadoLivreQuestion({
@@ -3679,7 +3720,7 @@ export const pushOrderToBlingErpFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], data.storeId);
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
     return pushOrderToBlingErp(targetStoreId, data.orderId);
@@ -3699,7 +3740,7 @@ export const getMarketplaceOAuthUrl = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], identity.store_id);
     const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja não identificada.");
 
@@ -3940,7 +3981,7 @@ export const testMarketplaceConnectorCredentialsFn = createServerFn({ method: "P
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertStoreAccess(identity, ["owner", "admin", "manager"], identity.store_id);
     const storeId = identity.store_id;
     if (!storeId) throw new Error("Loja não identificada.");
 
@@ -3964,6 +4005,57 @@ export const testMarketplaceConnectorCredentialsFn = createServerFn({ method: "P
       platform: data.platform,
       resolved,
     });
+  });
+
+/**
+ * Remove com segurança um pedido externo de teste ou pedido sem vínculo definitivo no espelho `marketplace_external_orders`.
+ */
+export const deleteExternalMarketplaceOrder = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      externalOrderRecordId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "staff"], data.storeId);
+
+    const targetStoreId = data.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    const { data: extRow, error: fetchErr } = await supabase
+      .from("marketplace_external_orders")
+      .select("id, store_id, external_order_id, order_id")
+      .eq("id", data.externalOrderRecordId)
+      .eq("store_id", targetStoreId)
+      .maybeSingle();
+
+    if (fetchErr || !extRow) {
+      throw new Error("Registro externo não encontrado para esta loja.");
+    }
+
+    const isTestRecord = String(extRow.external_order_id || "").toUpperCase().startsWith("TEST");
+    if (extRow.order_id && !isTestRecord) {
+      throw new Error("Este pedido já está vinculado à tabela mestra e não pode ser removido diretamente.");
+    }
+
+    const { error: deleteErr } = await supabase
+      .from("marketplace_external_orders")
+      .delete()
+      .eq("id", extRow.id)
+      .eq("store_id", targetStoreId);
+
+    if (deleteErr) {
+      throw new Error(`Erro ao remover registro externo: ${deleteErr.message}`);
+    }
+
+    return {
+      success: true,
+      deletedId: extRow.id,
+      externalOrderId: extRow.external_order_id,
+    };
   });
 
 

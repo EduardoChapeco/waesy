@@ -15,8 +15,10 @@ interface CashRegisterRow {
  closed_at: string | null;
  status: CashRegisterStatus;
  initial_balance_cents: number;
- expected_balance_cents: number | null;
- final_balance_cents: number | null;
+ expected_closing_balance_cents?: number | null;
+ actual_closing_balance_cents?: number | null;
+ expected_balance_cents?: number | null;
+ final_balance_cents?: number | null;
  notes: string | null;
  created_at: string;
  updated_at: string;
@@ -98,6 +100,10 @@ async function buildActiveRegisterDetails(registerRow: CashRegisterRow): Promise
 
   return {
     ...registerRow,
+    expected_balance_cents:
+      registerRow.expected_closing_balance_cents ?? registerRow.expected_balance_cents ?? null,
+    final_balance_cents:
+      registerRow.actual_closing_balance_cents ?? registerRow.final_balance_cents ?? null,
     ...summary,
     opened_by_profile: profileFor(profiles, registerRow.opened_by),
     recentEntries: entries,
@@ -449,11 +455,17 @@ export async function _listRegisterHistory(): Promise<CashRegisterHistoryItem[]>
  return registerRows.map((register) => {
  const entries = entriesByRegister.get(register.id) || [];
  const summary = summarizeCashEntries(register.initial_balance_cents, entries);
+ const expectedBalanceCents =
+   register.expected_closing_balance_cents ?? register.expected_balance_cents ?? null;
+ const finalBalanceCents =
+   register.actual_closing_balance_cents ?? register.final_balance_cents ?? null;
 
  return {
  ...register,
+ expected_balance_cents: expectedBalanceCents,
+ final_balance_cents: finalBalanceCents,
  ...summary,
- currentBalanceCents: register.final_balance_cents ?? summary.currentBalanceCents,
+ currentBalanceCents: finalBalanceCents ?? summary.currentBalanceCents,
  recentEntries: entries,
  opened_by_profile: profileFor(profiles, register.opened_by),
  closed_by_profile: profileFor(profiles, register.closed_by),

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/datetime";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
+import { downloadSignedContractPackagePdf } from "@/lib/contracts/contract-pdf-download";
+import { formatContractStatusLabel } from "@/lib/contracts/contract-vault-rules";
 
 export const Route = createFileRoute("/verify/document/$code")({
   head: ({ loaderData }: { loaderData?: { result: any; error: string | null } }) => ({
@@ -97,10 +99,28 @@ function DocumentVerificationPage() {
   const signers = (sealed?.envelopes || []).map((env: any) => ({
     name: env.signer_name || "Signatário",
     role: env.signer_role || "party",
-    status: env.status === "signed" ? "signed" : "pending",
+    status: (env.status === "signed"
+      ? "signed"
+      : env.status === "viewed" || env.viewed_at
+        ? "viewed"
+        : "pending") as "signed" | "viewed" | "pending",
+    viewedAt: env.viewed_at || null,
     signedAt: env.signed_at || null,
     authLevel: env.auth_level,
   }));
+
+  const handleDownloadPackage = () => {
+    void downloadSignedContractPackagePdf({
+      title: result.title || "Documento Oficial",
+      categoryLabel: CATEGORY_LABELS[result.category] || result.category || "Contrato",
+      statusLabel: formatContractStatusLabel(result.status),
+      contentMarkdown: "",
+      verificationCode: result.verificationCode || null,
+      hashSha256: isAuthentic ? sealed?.hash_sha256 || null : null,
+      sealedAt: isAuthentic ? sealed?.sealed_at || null : null,
+      signers,
+    });
+  };
   const isFullySigned = result.isFullySigned === true;
   const isAuthentic = result.isAuthentic === true;
   const VerificationIcon = isFullySigned ? ShieldCheck : Clock;
@@ -190,24 +210,37 @@ function DocumentVerificationPage() {
         />
 
         {/* Ações Inferiores */}
-        <div className="flex items-center justify-between pt-2">
-          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs h-11 min-h-11 sm:h-9 sm:min-h-0 px-4">
             <Link to="/">
               <ArrowLeft className="size-4 mr-2" />
               Voltar ao Início
             </Link>
           </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="rounded-lg text-xs h-10 px-4 min-h-11 sm:min-h-0"
-          >
-            <Download className="size-4 mr-2" />
-            Imprimir Certificado
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadPackage}
+              className="rounded-lg text-xs h-11 min-h-11 sm:h-9 sm:min-h-0 px-4"
+            >
+              <Download className="size-4 mr-2" />
+              Baixar PDF &amp; Manifesto
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="rounded-lg text-xs h-11 min-h-11 sm:h-9 sm:min-h-0 px-4"
+            >
+              <Download className="size-4 mr-2" />
+              Imprimir Certificado
+            </Button>
+          </div>
         </div>
       </div>
     </div>

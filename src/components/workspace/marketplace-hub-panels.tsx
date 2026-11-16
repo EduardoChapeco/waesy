@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import {
   answerMarketplaceQuestionFn,
   calculateAndApplyChannelPricing,
+  deleteExternalMarketplaceOrder,
   deleteInventoryLocation,
   importMercadoLivreSellerListings,
   importProductFromMercadoLivre,
@@ -120,10 +121,26 @@ export function MarketplaceOrdersPanel({
     onError: (err: any) => toast.error(err?.message || "Erro ao enviar pedido para o Bling."),
   });
 
+  const deleteExternalMutation = useMutation({
+    mutationFn: (externalOrderRecordId: string) =>
+      deleteExternalMarketplaceOrder({ data: { externalOrderRecordId } }),
+    onSuccess: (res) => {
+      toast.success(`Registro de teste #${res.externalOrderId} removido.`);
+      queryClient.invalidateQueries({ queryKey: ["marketplace-external-orders"] });
+    },
+    onError: (err: any) => toast.error(err?.message || "Erro ao remover registro externo."),
+  });
+
   const platformOptions = [
     { key: "all", label: "Todos" },
-    { key: "mercadolivre", label: "Mercado Livre" },
     { key: "ifood", label: "iFood" },
+    { key: "99food", label: "99Food" },
+    { key: "tridelivery", label: "TriDelivery" },
+    { key: "amoofertas", label: "Amo Ofertas" },
+    { key: "amodelivery", label: "Amo Delivery" },
+    { key: "rappi", label: "Rappi" },
+    { key: "aiqfome", label: "aiqfome" },
+    { key: "mercadolivre", label: "Mercado Livre" },
     { key: "shopee", label: "Shopee" },
     { key: "magalu", label: "Magalu" },
     { key: "amazon", label: "Amazon" },
@@ -237,7 +254,7 @@ export function MarketplaceOrdersPanel({
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex flex-wrap justify-end gap-2">
-                          {ord.platform === "ifood" && !isCancelled && (
+                          {["ifood", "99food", "rappi", "tridelivery", "amodelivery", "amoofertas", "aiqfome"].includes(ord.platform) && !isCancelled && (
                             <>
                               <Button
                                 type="button"
@@ -272,6 +289,18 @@ export function MarketplaceOrdersPanel({
                                 <PackageCheck className="size-3.5" /> Preparar
                               </Button>
                             </>
+                          )}
+                          {(!ord.order_id || String(ord.external_order_id || "").toUpperCase().startsWith("TEST")) && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              disabled={deleteExternalMutation.isPending}
+                              onClick={() => deleteExternalMutation.mutate(ord.id)}
+                              className="h-11 min-h-11 rounded-lg text-xs text-destructive hover:bg-destructive/10 gap-1 cursor-pointer focus-visible:ring-2"
+                            >
+                              <Trash2 className="size-3.5" /> Remover Teste
+                            </Button>
                           )}
                           {!isCancelled && (
                             <Button

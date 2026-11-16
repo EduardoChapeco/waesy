@@ -146,6 +146,8 @@ import {
   isSyntheticMetaLid,
   type ClassifiedChatFile,
 } from "@/lib/chat-media-attachment";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import {
   Tag,
   Hash,
@@ -163,6 +165,8 @@ import {
   Paperclip,
   UploadCloud,
   X,
+  BarChart3,
+  Home,
 } from "lucide-react";
 
 type ChatAttachmentDraft = {
@@ -1916,7 +1920,124 @@ export function AtendimentoChatWorkspace({
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full flex-1 overflow-hidden bg-background">
+    <div className="flex h-full flex-1 overflow-hidden bg-background">
+      {/* ── RAIL LATERAL MATTE CANÔNICO (56px — Ícones Sólidos quando Ativos + Tooltip) ── */}
+      <TooltipProvider delayDuration={120}>
+        <nav
+          aria-label="Módulos de Atendimento e WhatsApp"
+          className="hidden md:flex w-14 bg-rail border-r border-sidebar-border flex-col items-center justify-between py-3 px-1 shrink-0 h-full overflow-y-auto no-scrollbar select-none"
+        >
+          <div className="flex flex-col items-center gap-1 w-full">
+            {[
+              {
+                id: "live",
+                label: "Conversas ao Vivo",
+                icon: MessageSquare,
+                active: activeHubTab === "live",
+                onPress: () => setActiveHubTab("live"),
+              },
+              {
+                id: "intranet",
+                label: "Intranet",
+                icon: Hash,
+                active: activeHubTab === "intranet",
+                onPress: () => setActiveHubTab("intranet"),
+              },
+              {
+                id: "sdr",
+                label: "Oportunidades SDR",
+                icon: Bot,
+                active: activeHubTab === "sdr",
+                onPress: () => setActiveHubTab("sdr"),
+              },
+            ].map((item) => (
+              <Tooltip key={item.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={item.onPress}
+                    aria-label={item.label}
+                    aria-current={item.active ? "page" : undefined}
+                    className={cn(
+                      "size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      item.active
+                        ? "bg-rail-active text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
+                    )}
+                  >
+                    <StatefulNavIcon icon={item.icon} active={item.active} size={20} className="size-5 shrink-0" />
+                    <span className="sr-only">{item.label}</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            ))}
+
+            <div className="w-6 h-px bg-sidebar-border my-1 shrink-0" />
+
+            {[
+              { to: "/workspace/atendimento/whatsapp", label: "Canais WhatsApp", icon: Smartphone },
+              { to: "/workspace/atendimento/filas", label: "Filas & Setores", icon: Sliders },
+              { to: "/workspace/atendimento/atendentes", label: "Atendentes", icon: Users },
+              { to: "/workspace/configuracoes/integracoes", label: "E-mail & Hub", icon: Layers },
+            ].map((navLink) => (
+              <Tooltip key={navLink.to}>
+                <TooltipTrigger asChild>
+                  <RouterLink
+                    to={navLink.to as any}
+                    aria-label={navLink.label}
+                    className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <StatefulNavIcon icon={navLink.icon} active={false} size={20} className="size-5 shrink-0" />
+                    <span className="sr-only">{navLink.label}</span>
+                  </RouterLink>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  {navLink.label}
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+
+          <div className="w-full pt-2 border-t border-sidebar-border flex flex-col items-center gap-1 shrink-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <RouterLink
+                  to="/workspace/atendimento"
+                  aria-label="Visão Geral de Atendimento"
+                  className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <StatefulNavIcon icon={BarChart3} active={false} size={20} className="size-5 shrink-0" />
+                  <span className="sr-only">Visão Geral de Atendimento</span>
+                </RouterLink>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>
+                Visão Geral de Atendimento
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <RouterLink
+                  to="/workspace"
+                  aria-label="Painel Workspace"
+                  className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <StatefulNavIcon icon={Home} active={false} size={20} className="size-5 shrink-0" />
+                  <span className="sr-only">Painel Workspace</span>
+                </RouterLink>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>
+                Painel Workspace
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </nav>
+      </TooltipProvider>
+
+      <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
       {/* CABEÇALHO ENXUTO DO CHAT AO VIVO (FULL-PAGE — SQUIRCLES COMPACTOS) */}
       <header
         className={cn(
@@ -2007,22 +2128,22 @@ export function AtendimentoChatWorkspace({
           </div>
         </div>
 
-        {/* RÉGUA ENXUTA DE SUBMODOS E ATALHOS DO ATENDIMENTO (SQUIRCLES FINOS) */}
-        <div className="flex items-center gap-1 overflow-x-auto tab-list no-scrollbar pb-1 md:pb-0">
+        {/* RÉGUA MOBILE DE SUBMODOS (< 768px — desktop usa o rail lateral canônico) */}
+        <div className="flex md:hidden items-center gap-1 waesy-tab-strip tab-list pb-1">
           <button
             type="button"
             onClick={() => setActiveHubTab("live")}
             className={cn(
-              "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+              "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "live"
-                ? "bg-primary text-primary-foreground shadow-2xs"
-                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/60",
+                ? "bg-rail-active text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
             )}
           >
-            <MessageSquare className="size-3.5" />
+            <StatefulNavIcon icon={MessageSquare} active={activeHubTab === "live"} size={16} className="size-4 shrink-0" />
             <span>Conversas</span>
             {(metrics?.open || 0) > 0 && (
-              <span className="px-1 rounded text-2xs font-mono bg-background/20">
+              <span className="px-1 rounded text-2xs font-mono bg-muted">
                 {metrics?.open}
               </span>
             )}
@@ -2032,13 +2153,13 @@ export function AtendimentoChatWorkspace({
             type="button"
             onClick={() => setActiveHubTab("intranet")}
             className={cn(
-              "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+              "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "intranet"
-                ? "bg-primary text-primary-foreground shadow-2xs"
-                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/60",
+                ? "bg-rail-active text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
             )}
           >
-            <Hash className="size-3.5" />
+            <StatefulNavIcon icon={Hash} active={activeHubTab === "intranet"} size={16} className="size-4 shrink-0" />
             <span>Intranet</span>
             <span className="px-1 rounded text-2xs font-mono opacity-80">
               {intranetChannels.length}
@@ -2049,13 +2170,13 @@ export function AtendimentoChatWorkspace({
             type="button"
             onClick={() => setActiveHubTab("sdr")}
             className={cn(
-              "px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+              "h-11 min-h-11 px-3 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
               activeHubTab === "sdr"
-                ? "bg-primary text-primary-foreground shadow-2xs"
-                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/60",
+                ? "bg-rail-active text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
             )}
           >
-            <Bot className="size-3.5" />
+            <StatefulNavIcon icon={Bot} active={activeHubTab === "sdr"} size={16} className="size-4 shrink-0" />
             <span>Oportunidades</span>
             {sdrMetrics?.total > 0 && (
               <span className="px-1 rounded text-2xs font-mono opacity-80">
@@ -2066,25 +2187,25 @@ export function AtendimentoChatWorkspace({
 
           <RouterLink
             to="/workspace/atendimento/whatsapp"
-            className="px-3 py-1 rounded-lg text-xs font-medium bg-muted/40 text-muted-foreground hover:text-foreground border border-border/60 inline-flex items-center gap-1 shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-rail-hover inline-flex items-center gap-2 shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <Smartphone className="size-3.5 text-emerald-600" />
+            <StatefulNavIcon icon={Smartphone} active={false} size={16} className="size-4 shrink-0" />
             <span>WhatsApp</span>
           </RouterLink>
 
           <RouterLink
             to="/workspace/atendimento/filas"
-            className="px-3 py-1 rounded-lg text-xs font-medium bg-muted/40 text-muted-foreground hover:text-foreground border border-border/60 inline-flex items-center gap-1 shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-rail-hover inline-flex items-center gap-2 shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <Sliders className="size-3.5" />
+            <StatefulNavIcon icon={Sliders} active={false} size={16} className="size-4 shrink-0" />
             <span>Setores</span>
           </RouterLink>
 
           <RouterLink
             to="/workspace/configuracoes/integracoes"
-            className="px-3 py-1 rounded-lg text-xs font-medium bg-muted/40 text-muted-foreground hover:text-foreground border border-border/60 inline-flex items-center gap-1 shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="h-11 min-h-11 px-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-rail-hover inline-flex items-center gap-2 shrink-0 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <Layers className="size-3.5 text-primary" />
+            <StatefulNavIcon icon={Layers} active={false} size={16} className="size-4 shrink-0" />
             <span>E-mail & Hub</span>
           </RouterLink>
         </div>
@@ -5312,6 +5433,7 @@ export function AtendimentoChatWorkspace({
           )}
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

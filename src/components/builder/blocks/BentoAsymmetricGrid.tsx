@@ -28,7 +28,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({
   isEditing = false,
   className = "",
 }) => {
-  const { isMobile } = useEffectiveViewport();
+  const { isMobile, isMedium } = useEffectiveViewport();
   const sectionStyle = getSectionStyle(styling, isMobile);
   const cells = Array.isArray(data?.cells) ? data.cells : [];
 
@@ -71,21 +71,26 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({
           </div>
         )}
 
-        <div className={isMobile ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 md:grid-cols-3 gap-5 grid-flow-dense"}>
+        <div className={isMobile ? "grid grid-cols-1 gap-4" : isMedium ? "grid grid-cols-2 gap-4 grid-flow-dense" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 grid-flow-dense"}>
           {cells.map((cell, idx) => {
+            const colSpan = cell.colSpan ?? 1;
             const span = isMobile
               ? "col-span-1"
-              : cell.colSpan === 3
-                ? "md:col-span-3"
-                : cell.colSpan === 2
-                  ? "md:col-span-2"
-                  : "md:col-span-1";
+              : isMedium
+                ? colSpan >= 2
+                  ? "col-span-2"
+                  : "col-span-1"
+                : colSpan === 3
+                  ? "col-span-1 md:col-span-2 lg:col-span-3"
+                  : colSpan === 2
+                    ? "col-span-1 md:col-span-2"
+                    : "col-span-1";
             const CellIcon = (cell.iconName && BENTO_ICONS[cell.iconName]) || Layers;
 
             return (
               <div
                 key={cell.id || `bento-cell-${idx}`}
-                className={`${span} bg-card border border-border/80 rounded-lg p-6 sm:p-8 flex flex-col justify-between gap-6 hover:border-primary/40 transition-colors`}
+                className={`${span} bg-card border border-border/80 rounded-lg ${isMobile ? "p-5" : "p-6 sm:p-8"} flex flex-col justify-between gap-6 hover:border-primary/40 transition-colors`}
               >
                 <div className="space-y-3">
                   {cell.tag ? (

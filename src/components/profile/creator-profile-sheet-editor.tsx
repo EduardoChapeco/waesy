@@ -303,26 +303,26 @@ export function CreatorProfileSheetEditor({
       >
         <div className="p-4 sm:p-6 space-y-6">
           <Tabs defaultValue="dados" className="space-y-6">
-            <TabsList className="bg-muted/30 p-1 rounded-lg h-11 flex gap-1 w-full sm:w-auto">
+            <TabsList className="waesy-tab-strip items-center justify-start bg-muted/30 p-1 rounded-lg h-11 min-h-11 gap-1 w-full sm:w-auto max-w-full min-w-0">
               <TabsTrigger
                 value="dados"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+                className="h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer shrink-0 whitespace-nowrap"
               >
-                {isAffiliate ? <UserCheck className="size-3.5" /> : <User className="size-3.5" />}
+                {isAffiliate ? <UserCheck className="size-3.5 shrink-0" /> : <User className="size-3.5 shrink-0" />}
                 <span>{isAffiliate ? "Identidade do Parceiro" : "Identidade"}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="redes"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+                className="h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer shrink-0 whitespace-nowrap"
               >
-                <Share2 className="size-3.5" />
+                <Share2 className="size-3.5 shrink-0" />
                 <span>Canais</span>
               </TabsTrigger>
               <TabsTrigger
                 value="avancado"
-                className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer"
+                className="h-9 rounded-lg text-xs font-bold gap-2 cursor-pointer shrink-0 whitespace-nowrap"
               >
-                <SlidersHorizontal className="size-3.5" />
+                <SlidersHorizontal className="size-3.5 shrink-0" />
                 <span>Avançado</span>
               </TabsTrigger>
             </TabsList>

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { cleanDocument, validateCnpjMod11, validateCpfMod11 } from "@/lib/document-validator";
+import { isPartnerLawEligibleStore } from "@/lib/niches/niche-semantics";
 import {
   STAFF_MEMBER_ROLES,
   assertStoreStaffSeatAvailable,
@@ -218,6 +219,54 @@ async function syncMemberAttendanceGovernanceAndDepartments(
 // Team Management (Equipe)
 // ---------------------------------------------------------------------------
 
+async function findAuthUserByEmail(
+  db: any,
+  normalizedEmail: string,
+): Promise<{ id: string; email?: string | null } | null> {
+  if (typeof db?.schema === "function") {
+    try {
+      const { data: authRow, error } = await db
+        .schema("auth")
+        .from("users")
+        .select("id, email")
+        .ilike("email", normalizedEmail)
+        .maybeSingle();
+      if (!error && authRow?.id) {
+        return { id: authRow.id, email: authRow.email ?? null };
+      }
+    } catch {
+      // Fallback para Auth Admin API quando o schema auth nao esta exposto ao PostgREST.
+    }
+  }
+
+  if (typeof db?.auth?.admin?.listUsers !== "function") {
+    return null;
+  }
+
+  const perPage = 200;
+  let firstSeenPageSignature: string | null = null;
+  for (let page = 1; page <= 25; page += 1) {
+    const { data: listData, error } = await db.auth.admin.listUsers({ page, perPage });
+    if (error) break;
+    const users: any[] = listData?.users || [];
+    if (users.length === 0) break;
+
+    const match = users.find((u: any) => String(u?.email || "").toLowerCase().trim() === normalizedEmail);
+    if (match?.id) {
+      return { id: match.id, email: match.email ?? null };
+    }
+
+    const pageSignature = `${users.length}:${users[0]?.id || ""}:${users[users.length - 1]?.id || ""}`;
+    if (firstSeenPageSignature && page > 1 && pageSignature === firstSeenPageSignature) {
+      break;
+    }
+    if (page === 1) firstSeenPageSignature = pageSignature;
+    if (users.length < perPage) break;
+  }
+
+  return null;
+}
+
 export async function _listTeamMembers(deps?: { db?: any; identity?: any }) {
   const db = deps?.db ?? getServerClient();
   const identity = deps?.identity ?? (await getServerIdentity());
@@ -230,26 +279,35 @@ export async function _listTeamMembers(deps?: { db?: any; identity?: any }) {
     effectiveRole,
   );
 
-  const [{ data: members, error }, { data: departments }, { data: instances }] = await Promise.all([
-    db
-      .from("workspace_members")
-      .select(
-        "profile_id, role, created_at, department_id, default_department_slug, whatsapp_instance_id, is_attendance_agent, attendance_presence, max_concurrent_chats, can_transfer_chats, can_close_chats, can_manage_whatsapp_qr, only_assigned_or_sector, contract_type, commission_percent, fee_bearer, can_view_unmasked_contacts, auto_deduct_supplies, profiles(id, full_name, avatar_url, phone)",
-      )
-      .eq("store_id", identity.store_id)
-      .in("role", [...STAFF_MEMBER_ROLES])
-      .order("created_at", { ascending: true }),
-    db
-      .from("chat_departments")
-      .select("id, name, slug, color")
-      .eq("store_id", identity.store_id),
-    db
-      .from("whatsapp_channel_instances")
-      .select("id, display_name, display_phone_number, status")
-      .eq("store_id", identity.store_id),
-  ]);
+  const [{ data: members, error }, { data: departments }, { data: instances }, { data: storeRow }] =
+    await Promise.all([
+      db
+        .from("workspace_members")
+        .select(
+          "profile_id, role, created_at, department_id, default_department_slug, whatsapp_instance_id, is_attendance_agent, attendance_presence, max_concurrent_chats, can_transfer_chats, can_close_chats, can_manage_whatsapp_qr, only_assigned_or_sector, contract_type, commission_percent, fee_bearer, can_view_unmasked_contacts, auto_deduct_supplies, profiles(id, full_name, avatar_url, phone)",
+        )
+        .eq("store_id", identity.store_id)
+        .in("role", [...STAFF_MEMBER_ROLES])
+        .order("created_at", { ascending: true }),
+      db
+        .from("chat_departments")
+        .select("id, name, slug, color")
+        .eq("store_id", identity.store_id),
+      db
+        .from("whatsapp_channel_instances")
+        .select("id, display_name, display_phone_number, status")
+        .eq("store_id", identity.store_id),
+      db
+        .from("stores")
+        .select("id, name, primary_niche_id, vertical_sku, settings")
+        .eq("id", identity.store_id)
+        .maybeSingle(),
+    ]);
 
   if (error) throw error;
+
+  const partnerLawEligible = storeRow ? isPartnerLawEligibleStore(storeRow) : false;
+  const defaultContractType = partnerLawEligible ? "partner_law" : "clt";
 
   const deptById = new Map<string, any>((departments || []).map((d: any) => [d.id, d]));
   const deptBySlug = new Map<string, any>((departments || []).map((d: any) => [d.slug, d]));
@@ -262,6 +320,11 @@ export async function _listTeamMembers(deps?: { db?: any; identity?: any }) {
         (m.default_department_slug ? deptBySlug.get(m.default_department_slug) : null) ||
         null;
       const waInst = m.whatsapp_instance_id ? instanceById.get(m.whatsapp_instance_id) || null : null;
+      const resolvedContractType = canReadFinancialContract
+        ? !partnerLawEligible && storeRow && (!m.contract_type || m.contract_type === "partner_law")
+          ? "clt"
+          : m.contract_type || defaultContractType
+        : null;
       return {
         id: m.profile_id,
         role: m.role,
@@ -290,7 +353,7 @@ export async function _listTeamMembers(deps?: { db?: any; identity?: any }) {
         can_close_chats: m.can_close_chats ?? true,
         can_manage_whatsapp_qr: m.can_manage_whatsapp_qr ?? false,
         only_assigned_or_sector: m.only_assigned_or_sector ?? false,
-        contract_type: canReadFinancialContract ? m.contract_type || "partner_law" : null,
+        contract_type: resolvedContractType,
         commission_percent: canReadFinancialContract ? (m.commission_percent ?? 60) : null,
         fee_bearer: canReadFinancialContract ? m.fee_bearer || "proportional" : null,
         can_view_unmasked_contacts: m.can_view_unmasked_contacts ?? false,
@@ -300,26 +363,44 @@ export async function _listTeamMembers(deps?: { db?: any; identity?: any }) {
 
   if (profiles.length === 0) return [];
 
-  try {
-    const userIds = profiles.map((p: any) => p.id);
-    const { data: authUsers, error: authError } = await db
-      .schema("auth")
-      .from("users")
-      .select("id, email")
-      .in("id", userIds);
+  const userIds = profiles.map((p: any) => p.id);
+  const emailMap = new Map<string, string | null>();
 
-    if (!authError && authUsers) {
-      const emailMap = new Map<string, string>(authUsers.map((u: any) => [u.id, u.email]));
-      return profiles.map((p: any) => ({
-        ...p,
-        email: emailMap.get(p.id) || null,
-      }));
+  if (typeof db?.schema === "function") {
+    try {
+      const { data: authUsers, error: authError } = await db
+        .schema("auth")
+        .from("users")
+        .select("id, email")
+        .in("id", userIds);
+
+      if (!authError && authUsers) {
+        authUsers.forEach((u: any) => emailMap.set(u.id, u.email || null));
+      }
+    } catch {
+      // Fallback para Auth Admin API por ID abaixo.
     }
-  } catch (e) {
-    console.error("[admin-team] Error fetching auth emails:", e);
   }
 
-  return profiles.map((p: any) => ({ ...p, email: null }));
+  if (emailMap.size === 0 && typeof db?.auth?.admin?.getUserById === "function") {
+    try {
+      await Promise.all(
+        userIds.slice(0, 50).map(async (uid: string) => {
+          const { data } = await db.auth.admin.getUserById(uid);
+          if (data?.user?.email) {
+            emailMap.set(uid, data.user.email);
+          }
+        }),
+      );
+    } catch (e) {
+      console.error("[admin-team] Error fetching auth emails via admin API:", e);
+    }
+  }
+
+  return profiles.map((p: any) => ({
+    ...p,
+    email: emailMap.get(p.id) || null,
+  }));
 }
 
 export const listTeamMembers = createServerFn({ method: "GET" }).handler(async () => {
@@ -422,7 +503,7 @@ export async function _inviteTeamMember(
   const [{ data: storeRow }, { data: currentMembers }] = await Promise.all([
     db
       .from("stores")
-      .select("id, name, slug, is_platform_root, plan_tier, settings")
+      .select("id, name, slug, primary_niche_id, vertical_sku, is_platform_root, plan_tier, settings")
       .eq("id", identity.store_id)
       .single(),
     db
@@ -436,8 +517,7 @@ export async function _inviteTeamMember(
   if (storeRow) {
     const seatStatus = checkStoreStaffSeatLimit(storeRow, activeMemberIds.size);
     if (!seatStatus.allowed) {
-      const { data: listData } = await db.auth.admin.listUsers();
-      const existingUser = listData?.users?.find((u: any) => u.email?.toLowerCase() === normalizedEmail);
+      const existingUser = await findAuthUserByEmail(db, normalizedEmail);
       if (existingUser?.id && activeMemberIds.has(existingUser.id)) {
         targetUserId = existingUser.id;
       } else {
@@ -463,11 +543,8 @@ export async function _inviteTeamMember(
         authError.message?.toLowerCase().includes("registered") ||
         authError.message?.toLowerCase().includes("exists")
       ) {
-        // Localiza usuário já existente pelo e-mail
-        const { data: listData } = await db.auth.admin.listUsers();
-        const existingUser = listData?.users?.find(
-          (u: any) => u.email?.toLowerCase() === normalizedEmail,
-        );
+        // Localiza usuário já existente pelo e-mail com varredura paginada
+        const existingUser = await findAuthUserByEmail(db, normalizedEmail);
         if (existingUser?.id) {
           targetUserId = existingUser.id;
         } else {
@@ -491,15 +568,40 @@ export async function _inviteTeamMember(
     });
   }
 
-  // 2. Garante perfil preenchido (nome + telefone operacional)
-  const profileUpsert: Record<string, any> = {
-    id: targetUserId,
-    full_name: input.fullName,
-  };
-  if (input.phone !== undefined) {
-    profileUpsert.phone = input.phone?.trim() || null;
+  // 2. Cria ou preenche apenas lacunas no perfil sem sobrescrever identidade global de outra loja
+  const { data: existingProfile } = await db
+    .from("profiles")
+    .select("id, full_name, phone")
+    .eq("id", targetUserId)
+    .maybeSingle();
+
+  if (!existingProfile) {
+    const profileUpsert: Record<string, any> = {
+      id: targetUserId,
+      full_name: input.fullName,
+    };
+    if (input.phone !== undefined) {
+      profileUpsert.phone = input.phone?.trim() || null;
+    }
+    await db.from("profiles").upsert(profileUpsert);
+  } else {
+    const profileFill: Record<string, any> = {};
+    if (!String(existingProfile.full_name || "").trim() && input.fullName?.trim()) {
+      profileFill.full_name = input.fullName.trim();
+    }
+    if (!existingProfile.phone && input.phone?.trim()) {
+      profileFill.phone = input.phone.trim();
+    }
+    if (Object.keys(profileFill).length > 0) {
+      await db.from("profiles").update(profileFill).eq("id", targetUserId);
+    }
   }
-  await db.from("profiles").upsert(profileUpsert);
+
+  const partnerLawEligible = storeRow ? isPartnerLawEligibleStore(storeRow) : false;
+  const resolvedContractType =
+    input.contractType === "partner_law" && storeRow && !partnerLawEligible
+      ? "clt"
+      : input.contractType ?? (partnerLawEligible ? "partner_law" : "clt");
 
   // 3. Insere ou atualiza vínculo completo no store_id da loja ativa
   const memberPayload: Record<string, any> = {
@@ -516,7 +618,7 @@ export async function _inviteTeamMember(
     can_close_chats: input.canCloseChats ?? true,
     can_manage_whatsapp_qr: input.canManageWhatsappQr ?? false,
     only_assigned_or_sector: input.onlyAssignedOrSector ?? false,
-    contract_type: input.contractType ?? "partner_law",
+    contract_type: resolvedContractType,
     commission_percent: input.commissionPercent ?? 60,
     fee_bearer: input.feeBearer ?? "proportional",
     can_view_unmasked_contacts: input.canViewUnmaskedContacts ?? false,
@@ -590,13 +692,32 @@ export async function _updateTeamMemberProfile(
     }
   }
 
-  const resolvedLinks = await resolveAndValidateOperationalLinks(db, identity.store_id, {
-    departmentId: input.departmentId,
-    defaultDepartmentSlug: input.defaultDepartmentSlug,
-    whatsappInstanceId: input.whatsappInstanceId,
-  });
+  const [resolvedLinks, { data: storeRow }, { data: otherMemberships }] = await Promise.all([
+    resolveAndValidateOperationalLinks(db, identity.store_id, {
+      departmentId: input.departmentId,
+      defaultDepartmentSlug: input.defaultDepartmentSlug,
+      whatsappInstanceId: input.whatsappInstanceId,
+    }),
+    db
+      .from("stores")
+      .select("id, name, primary_niche_id, vertical_sku, settings")
+      .eq("id", identity.store_id)
+      .maybeSingle(),
+    input.profileId === identity.id
+      ? Promise.resolve({ data: [] as any[] })
+      : db
+          .from("workspace_members")
+          .select("store_id")
+          .eq("profile_id", input.profileId)
+          .neq("store_id", identity.store_id),
+  ]);
 
-  if (input.fullName !== undefined || input.phone !== undefined) {
+  const canMutateGlobalProfile =
+    input.profileId === identity.id ||
+    !Array.isArray(otherMemberships) ||
+    otherMemberships.length === 0;
+
+  if (canMutateGlobalProfile && (input.fullName !== undefined || input.phone !== undefined)) {
     const profilePatch: Record<string, any> = {};
     if (input.fullName !== undefined) profilePatch.full_name = input.fullName.trim();
     if (input.phone !== undefined) profilePatch.phone = input.phone?.trim() || null;
@@ -608,6 +729,12 @@ export async function _updateTeamMemberProfile(
       throw new Error(`Erro ao atualizar dados pessoais: ${profileErr.message}`);
     }
   }
+
+  const partnerLawEligible = storeRow ? isPartnerLawEligibleStore(storeRow) : true;
+  const resolvedEditContractType =
+    input.contractType === "partner_law" && storeRow && !partnerLawEligible
+      ? "clt"
+      : input.contractType;
 
   const memberPatch: Record<string, any> = {};
   if (input.role !== undefined) memberPatch.role = input.role;
@@ -621,7 +748,7 @@ export async function _updateTeamMemberProfile(
   if (input.canCloseChats !== undefined) memberPatch.can_close_chats = input.canCloseChats;
   if (input.canManageWhatsappQr !== undefined) memberPatch.can_manage_whatsapp_qr = input.canManageWhatsappQr;
   if (input.onlyAssignedOrSector !== undefined) memberPatch.only_assigned_or_sector = input.onlyAssignedOrSector;
-  if (input.contractType !== undefined) memberPatch.contract_type = input.contractType;
+  if (resolvedEditContractType !== undefined) memberPatch.contract_type = resolvedEditContractType;
   if (input.commissionPercent !== undefined) memberPatch.commission_percent = input.commissionPercent;
   if (input.feeBearer !== undefined) memberPatch.fee_bearer = input.feeBearer;
   if (input.canViewUnmaskedContacts !== undefined) memberPatch.can_view_unmasked_contacts = input.canViewUnmaskedContacts;

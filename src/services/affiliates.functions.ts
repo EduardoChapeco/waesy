@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 // ---------------------------------------------------------------------------
@@ -856,7 +857,7 @@ export const approveStoreInvoiceDiscount = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    if (!identity?.id || !["admin", "master", "platform_admin"].includes(identity.role || "")) {
+    if (!isPlatformAdminIdentity(identity)) {
       throw new Error("Acesso restrito ao Painel Master.");
     }
 
@@ -882,7 +883,7 @@ export const listPendingInvoiceTokenDiscounts = createServerFn({ method: "GET" }
   const supabase = getServerClient();
   const identity = await getServerIdentity();
 
-  if (!identity?.id || !["admin", "master", "platform_admin"].includes(identity.role || "")) {
+  if (!isPlatformAdminIdentity(identity)) {
     throw new Error("Acesso restrito ao Painel Master.");
   }
 

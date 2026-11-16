@@ -698,7 +698,7 @@ function NovoOrcamentoTravelosPage({
 
  {/* Abas do Construtor Travelos */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full space-y-6">
- <TabsList className="flex items-center gap-2 w-full overflow-x-auto no-scrollbar p-1 bg-muted/60 rounded-lg h-12">
+ <TabsList className="waesy-tab-strip items-center justify-start gap-2 w-full max-w-full min-w-0 p-1 bg-muted/60 rounded-lg h-12">
  <TabsTrigger value="geral" className="rounded-lg font-bold text-xs gap-2 whitespace-nowrap shrink-0 px-4 h-10">
  <User className="size-3.5" />
  <span>1. Cliente e Destino</span>

@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
-import { executeAiCoreGateway } from "./ai-core-gateway.functions";
+import { generateRealEmbedding, generateBatchEmbeddings } from "./ai-embedding-client";
 
 export interface CopilotFolderDTO {
   id: string;
@@ -195,6 +195,31 @@ function sanitizeExtractedText(raw: string): string {
     .slice(0, MAX_EXTRACTED_TEXT_CHARS);
 }
 
+async function assertCanAccessHierarchyRecord<
+  T extends { id: string; user_id?: string | null; store_id?: string | null },
+>(
+  record: T | null,
+  errorMsg: string,
+  notFoundMsg: string,
+  identity: Awaited<ReturnType<typeof getServerIdentity>>,
+): Promise<T> {
+  if (!record) {
+    throw new Error(notFoundMsg);
+  }
+
+  const isMaster = ["platform_admin", "master"].includes(identity.role);
+  const isOwner = record.user_id === identity.id;
+  if (!isOwner && !isMaster) {
+    if (record.store_id) {
+      assertStoreAccess(identity, STAFF_ROLES, record.store_id);
+    } else {
+      throw new Error(errorMsg);
+    }
+  }
+
+  return record;
+}
+
 async function assertCanAccessProject(
   db: ReturnType<typeof getServerClient>,
   projectId: string,
@@ -206,21 +231,39 @@ async function assertCanAccessProject(
     .eq("id", projectId)
     .maybeSingle();
 
-  if (error || !project) {
+  if (error) {
     throw new Error("Projeto Copilot não encontrado.");
   }
 
-  const isMaster = ["platform_admin", "master"].includes(identity.role);
-  const isOwner = project.user_id === identity.id;
-  if (!isOwner && !isMaster) {
-    if (project.store_id) {
-      assertStoreAccess(identity, STAFF_ROLES, project.store_id);
-    } else {
-      throw new Error("Sem permissão para acessar este projeto.");
-    }
+  return assertCanAccessHierarchyRecord(
+    project,
+    "Sem permissão para acessar este projeto.",
+    "Projeto Copilot não encontrado.",
+    identity,
+  );
+}
+
+async function assertCanAccessFolder(
+  db: ReturnType<typeof getServerClient>,
+  folderId: string,
+  identity: Awaited<ReturnType<typeof getServerIdentity>>,
+) {
+  const { data: folder, error } = await db
+    .from("copilot_folders")
+    .select("*")
+    .eq("id", folderId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Pasta não encontrada.");
   }
 
-  return project;
+  return assertCanAccessHierarchyRecord(
+    folder,
+    "Sem permissão para acessar esta pasta.",
+    "Pasta não encontrada.",
+    identity,
+  );
 }
 
 /**
@@ -294,11 +337,59 @@ export async function retrieveRelevantProjectKnowledgeContext(
     });
   }
 
-  const ranked = scoreProjectChunks(params.query, allChunks, maxSnippets).map((item) => ({
+  const rankedLexical = scoreProjectChunks(params.query, allChunks, maxSnippets).map((item) => ({
     filename: item.filename,
     content: item.content_chunk,
     score: item.score,
   }));
+
+  // Busca vetorial real em copilot_project_embeddings via Gemini Embedding + PGVector RPC
+  const mergedByKey = new Map<string, { filename: string; content: string; score: number }>();
+  try {
+    const queryEmbedRes = await generateRealEmbedding(params.query.slice(0, 3500), {
+      userId: params.userId,
+      storeId: project.store_id || undefined,
+      taskType: "RETRIEVAL_QUERY",
+    });
+    const qVec = queryEmbedRes?.embedding || null;
+    if (Array.isArray(qVec) && qVec.length === 1536) {
+      const { data: rpcMatches } = await db.rpc("match_copilot_project_embeddings", {
+        p_project_id: params.projectId,
+        query_embedding: JSON.stringify(qVec) as any,
+        match_threshold: 0.25,
+        match_count: maxSnippets,
+      });
+      if (Array.isArray(rpcMatches)) {
+        const fileNameById = new Map<string, string>(
+          (files || []).map((f: any) => [String(f.id), String(f.filename || "documento.txt")]),
+        );
+        for (const m of rpcMatches as any[]) {
+          const content = String(m.content_chunk || "").trim();
+          if (!content) continue;
+          const filename = fileNameById.get(String(m.file_id)) || "conhecimento.txt";
+          mergedByKey.set(content.slice(0, 120), {
+            filename,
+            content,
+            score: Number(m.similarity || 0.7),
+          });
+        }
+      }
+    }
+  } catch {
+    /* preserva ranking lexical se offline/sem chave de embedding */
+  }
+
+  for (const lex of rankedLexical) {
+    const key = lex.content.slice(0, 120);
+    const existing = mergedByKey.get(key);
+    if (!existing || lex.score > existing.score) {
+      mergedByKey.set(key, lex);
+    }
+  }
+
+  const ranked = Array.from(mergedByKey.values())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxSnippets);
 
   const formattedContext = formatProjectKnowledgePromptBlock({
     projectTitle: project.title,
@@ -416,25 +507,61 @@ export const createCopilotFolder = createServerFn({ method: "POST" })
     return created as CopilotFolderDTO;
   });
 
+export const updateCopilotFolder = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      folderId: z.string().uuid(),
+      name: z.string().trim().min(2).max(80).optional(),
+      icon: z.string().trim().max(30).optional(),
+      color: z.string().trim().max(30).nullish(),
+    }),
+  )
+  .handler(async ({ data }): Promise<CopilotFolderDTO> => {
+    const identity = await getServerIdentity();
+    const db = getServerClient();
+    await assertCanAccessFolder(db, data.folderId, identity);
+
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (data.name !== undefined) patch.name = data.name;
+    if (data.icon !== undefined) patch.icon = data.icon;
+    if (data.color !== undefined) patch.color = data.color;
+
+    const { data: updated, error } = await db
+      .from("copilot_folders")
+      .update(patch)
+      .eq("id", data.folderId)
+      .select()
+      .single();
+
+    if (error || !updated) {
+      throw new Error(`Falha ao atualizar pasta: ${error?.message || "erro inesperado"}`);
+    }
+    return updated as CopilotFolderDTO;
+  });
+
 export const deleteCopilotFolder = createServerFn({ method: "POST" })
   .validator(z.object({ folderId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
     const db = getServerClient();
+    await assertCanAccessFolder(db, data.folderId, identity);
 
-    const { data: folder } = await db
-      .from("copilot_folders")
-      .select("id, user_id, store_id")
-      .eq("id", data.folderId)
-      .maybeSingle();
-
-    if (!folder) throw new Error("Pasta não encontrada.");
-    if (folder.user_id !== identity.id && !["platform_admin", "master"].includes(identity.role)) {
-      if (folder.store_id) {
-        assertStoreAccess(identity, STAFF_ROLES, folder.store_id);
-      } else {
-        throw new Error("Sem permissão para remover esta pasta.");
-      }
+    // Desvincula projetos e conversas explicitamente antes de remover a pasta
+    await db
+      .from("copilot_projects")
+      .update({ folder_id: null, updated_at: new Date().toISOString() })
+      .eq("folder_id", data.folderId);
+    await db
+      .from("ai_threads")
+      .update({ folder_id: null, updated_at: new Date().toISOString() })
+      .eq("folder_id", data.folderId);
+    try {
+      await db
+        .from("chat_threads")
+        .update({ folder_id: null, updated_at: new Date().toISOString() })
+        .eq("folder_id", data.folderId);
+    } catch {
+      /* tabela legada pode não possuir coluna folder_id */
     }
 
     const { error } = await db.from("copilot_folders").delete().eq("id", data.folderId);
@@ -520,6 +647,22 @@ export const deleteCopilotProject = createServerFn({ method: "POST" })
     const db = getServerClient();
     await assertCanAccessProject(db, data.projectId, identity);
 
+    // Desvincula conversas e remove artefatos RAG vinculados antes da exclusão do projeto
+    await db
+      .from("ai_threads")
+      .update({ project_id: null, updated_at: new Date().toISOString() })
+      .eq("project_id", data.projectId);
+    try {
+      await db
+        .from("chat_threads")
+        .update({ project_id: null, updated_at: new Date().toISOString() })
+        .eq("project_id", data.projectId);
+    } catch {
+      /* tabela legada pode não possuir coluna project_id */
+    }
+    await db.from("copilot_project_embeddings").delete().eq("project_id", data.projectId);
+    await db.from("copilot_project_files").delete().eq("project_id", data.projectId);
+
     const { error } = await db.from("copilot_projects").delete().eq("id", data.projectId);
     if (error) throw new Error(`Falha ao excluir projeto: ${error.message}`);
     return { deleted: true, projectId: data.projectId };
@@ -537,29 +680,108 @@ export const assignThreadHierarchy = createServerFn({ method: "POST" })
     const identity = await getServerIdentity();
     const db = getServerClient();
 
+    let resolvedFolderId = data.folderId ?? null;
     if (data.projectId) {
-      await assertCanAccessProject(db, data.projectId, identity);
+      const targetProj = await assertCanAccessProject(db, data.projectId, identity);
+      if (resolvedFolderId === null && targetProj.folder_id) {
+        resolvedFolderId = targetProj.folder_id;
+      }
+    }
+    if (resolvedFolderId) {
+      await assertCanAccessFolder(db, resolvedFolderId, identity);
     }
 
-    const patch = {
-      folder_id: data.folderId ?? null,
-      project_id: data.projectId ?? null,
-      updated_at: new Date().toISOString(),
-    };
+    const isMaster = ["platform_admin", "master"].includes(identity.role);
+    const nowIso = new Date().toISOString();
 
-    const { data: aiUpdated } = await db
+    const { data: aiThread } = await db
       .from("ai_threads")
-      .update(patch)
+      .select("id, user_id, workspace_id, metadata")
       .eq("id", data.threadId)
-      .eq("user_id", identity.id)
-      .select("id, folder_id, project_id")
       .maybeSingle();
 
-    if (aiUpdated) return aiUpdated;
+    if (aiThread) {
+      if (aiThread.user_id !== identity.id && !isMaster) {
+        if (aiThread.workspace_id) {
+          assertStoreAccess(identity, STAFF_ROLES, aiThread.workspace_id);
+        } else {
+          throw new Error("Sem permissão para mover esta conversa.");
+        }
+      }
+
+      const mergedMetadata = {
+        ...((aiThread.metadata as Record<string, unknown>) || {}),
+        folder_id: resolvedFolderId,
+        project_id: data.projectId ?? null,
+      };
+
+      const { data: aiUpdated, error: aiErr } = await db
+        .from("ai_threads")
+        .update({
+          folder_id: resolvedFolderId,
+          project_id: data.projectId ?? null,
+          metadata: mergedMetadata,
+          updated_at: nowIso,
+        })
+        .eq("id", data.threadId)
+        .select("id, folder_id, project_id")
+        .maybeSingle();
+
+      if (!aiErr && aiUpdated) return aiUpdated;
+
+      if (aiErr && /folder_id|project_id|42703/i.test(aiErr.message || "")) {
+        const { error: metaErr } = await db
+          .from("ai_threads")
+          .update({ metadata: mergedMetadata, updated_at: nowIso })
+          .eq("id", data.threadId);
+        if (!metaErr) {
+          return {
+            id: data.threadId,
+            folder_id: resolvedFolderId,
+            project_id: data.projectId ?? null,
+          };
+        }
+      }
+
+      throw new Error(aiErr?.message || "Falha ao mover conversa.");
+    }
+
+    const { data: legacyThread } = await db
+      .from("chat_threads")
+      .select("id, customer_id, recipient_profile_id, store_id, assigned_to_profile_id, metadata")
+      .eq("id", data.threadId)
+      .maybeSingle();
+
+    if (!legacyThread) {
+      throw new Error("Conversa não encontrada para mover.");
+    }
+
+    const isLegacyOwner =
+      legacyThread.customer_id === identity.id ||
+      legacyThread.recipient_profile_id === identity.id ||
+      legacyThread.assigned_to_profile_id === identity.id;
+    if (!isLegacyOwner && !isMaster) {
+      if (legacyThread.store_id) {
+        assertStoreAccess(identity, STAFF_ROLES, legacyThread.store_id);
+      } else {
+        throw new Error("Sem permissão para mover esta conversa.");
+      }
+    }
+
+    const legacyMetadata = {
+      ...((legacyThread.metadata as Record<string, unknown>) || {}),
+      folder_id: resolvedFolderId,
+      project_id: data.projectId ?? null,
+    };
 
     const { data: legacyUpdated, error } = await db
       .from("chat_threads")
-      .update(patch)
+      .update({
+        folder_id: resolvedFolderId,
+        project_id: data.projectId ?? null,
+        metadata: legacyMetadata,
+        updated_at: nowIso,
+      })
       .eq("id", data.threadId)
       .select("id, folder_id, project_id")
       .maybeSingle();
@@ -641,42 +863,30 @@ export const uploadCopilotProjectContextFile = createServerFn({ method: "POST" }
     }
 
     const chunks = chunkProjectDocumentText(sanitizedText);
-    const embeddingRows: Array<{
-      file_id: string;
-      project_id: string;
-      chunk_index: number;
-      content_chunk: string;
-      embedding: number[] | null;
-    }> = [];
-
-    for (let idx = 0; idx < chunks.length; idx++) {
-      let vector: number[] | null = null;
-      // Vetorização opcional apenas para os primeiros 3 blocos para manter o Worker abaixo do limite de subrequests
-      if (idx < 3) {
-        try {
-          const gwRes = await executeAiCoreGateway({
-            task: "embedding",
-            prompt: chunks[idx].slice(0, 3500),
-            module: "copilot_project_rag",
-            authContext: { userId: identity.id, storeId: project.store_id || undefined },
-          });
-          const candidateVec = (gwRes as any)?.result?.parsedJson?.embedding;
-          if (Array.isArray(candidateVec) && candidateVec.length === 1536) {
-            vector = candidateVec;
-          }
-        } catch {
-          vector = null;
-        }
+    let batchVectors: Array<number[] | null> = new Array(chunks.length).fill(null);
+    if (chunks.length > 0) {
+      try {
+        const batchRes = await generateBatchEmbeddings({
+          texts: chunks,
+          taskType: "RETRIEVAL_DOCUMENT",
+          authContext: { userId: identity.id, storeId: project.store_id || undefined },
+        });
+        batchVectors = batchRes.embeddings;
+      } catch {
+        batchVectors = new Array(chunks.length).fill(null);
       }
-
-      embeddingRows.push({
-        file_id: insertedFile.id,
-        project_id: data.projectId,
-        chunk_index: idx,
-        content_chunk: chunks[idx],
-        embedding: vector,
-      });
     }
+
+    const embeddingRows = chunks.map((chunkText, idx) => ({
+      file_id: insertedFile.id,
+      project_id: data.projectId,
+      chunk_index: idx,
+      content_chunk: chunkText,
+      embedding:
+        Array.isArray(batchVectors[idx]) && batchVectors[idx]!.length === 1536
+          ? batchVectors[idx]
+          : null,
+    }));
 
     if (embeddingRows.length > 0) {
       const { error: chunkErr } = await db

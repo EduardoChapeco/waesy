@@ -24,7 +24,7 @@ import { listPublishedProducts } from "@/services/catalog.functions";
 import { getPublicClassifieds } from "@/services/classifieds.functions";
 import type { ProductCardDTO } from "@/types/catalog";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import {
   CommercialShowcaseTemplate,
   mapSurfaceFeedToCommercialShowcase,
@@ -201,7 +201,7 @@ function ConstrucaoVerticalPage() {
  });
  }, [marketplaceFeed]);
 
- const { isCompact } = useWindowSizeClass();
+ const { isCompact } = useEffectiveViewport();
  const [activeFilters, setActiveFilters] = useState<string[]>([]);
  const showcaseData = useMemo(
    () => mapSurfaceFeedToCommercialShowcase(marketplaceFeed, "construcao", "Depósito & Ferragens"),

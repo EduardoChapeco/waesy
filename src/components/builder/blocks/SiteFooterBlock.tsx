@@ -40,7 +40,7 @@ export const SiteFooterBlock: React.FC<SiteFooterBlockProps> = ({
   navigationMenus = [],
   isEditing = false,
 }) => {
-  const { isMobile } = useEffectiveViewport();
+  const { isMobile, isMedium } = useEffectiveViewport();
 
   const menuHandle = data?.menuHandle || "footer_menu";
   const matchedMenu = (navigationMenus || []).find(
@@ -105,11 +105,11 @@ export const SiteFooterBlock: React.FC<SiteFooterBlockProps> = ({
         <div
           className={cn(
             "grid gap-8",
-            isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-4",
+            isMobile ? "grid-cols-1" : isMedium ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
           )}
         >
           {/* Coluna 1: Identidade da Marca */}
-          <div className={cn("space-y-3", !isMobile && "md:col-span-2")}>
+          <div className={cn("space-y-3", !isMobile && !isMedium && "col-span-1 lg:col-span-2")}>
             <div className="flex items-center gap-3">
               {resolvedLogoUrl ? (
                 <img
@@ -187,7 +187,12 @@ export const SiteFooterBlock: React.FC<SiteFooterBlockProps> = ({
           )}
         </div>
 
-        <div className="pt-6 border-t border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div
+          className={cn(
+            "pt-6 border-t border-border/60 flex justify-between gap-2 text-xs text-muted-foreground",
+            isMobile ? "flex-col items-start" : "flex-row items-center",
+          )}
+        >
           <p>
             {data?.copyrightText ||
               `© ${new Date().getFullYear()} ${resolvedBrandName}. Todos os direitos reservados.`}

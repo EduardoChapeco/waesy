@@ -178,13 +178,13 @@ function CmsStoriesPage() {
  />
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="bg-muted/50 p-1 rounded-lg">
- <TabsTrigger value="stories" className="rounded-lg font-semibold text-xs gap-2">
- <Video className="size-4" />
+ <TabsList className="waesy-tab-strip items-center justify-start gap-1 bg-muted/50 p-1 rounded-lg w-full sm:w-auto max-w-full min-w-0 h-11 min-h-11 sm:h-10 sm:min-h-10">
+ <TabsTrigger value="stories" className="rounded-lg font-semibold text-xs gap-2 shrink-0 whitespace-nowrap">
+ <Video className="size-4 shrink-0" />
  <span>Stories Ativos ({stories.length})</span>
  </TabsTrigger>
- <TabsTrigger value="collabs" className="rounded-lg font-semibold text-xs gap-2">
- <Share2 className="size-4 text-primary" />
+ <TabsTrigger value="collabs" className="rounded-lg font-semibold text-xs gap-2 shrink-0 whitespace-nowrap">
+ <Share2 className="size-4 text-primary shrink-0" />
  <span>Co-Publicações & Influencers ({collabs.length})</span>
  </TabsTrigger>
  </TabsList>

@@ -308,13 +308,13 @@ function CuradoriaAdminPage() {
 
  {/* Tabs */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
- <TabsTrigger value="lojas" className="text-xs">Lojas ({stores.length})</TabsTrigger>
- <TabsTrigger value="missoes" className="text-xs">Missões ({audits.length})</TabsTrigger>
- <TabsTrigger value="apoio" className="text-xs">Apoio</TabsTrigger>
-          <TabsTrigger value="squads" className="text-xs">Squads & IA ({(aiSquads.curation_squads?.length || 0) + (aiSquads.squad_templates?.length || 0)})</TabsTrigger>
-          <TabsTrigger value="aeroportos" className="text-xs">Aeroportos CMS ({airports.length})</TabsTrigger>
-          <TabsTrigger value="embaixadores" className="text-xs">Embaixadores ({creators.length})</TabsTrigger>
+ <TabsList className="waesy-tab-strip items-center justify-start gap-2 w-full sm:w-auto max-w-full min-w-0 p-1 rounded-lg h-11 min-h-11 sm:h-10 sm:min-h-10">
+ <TabsTrigger value="lojas" className="text-xs shrink-0 whitespace-nowrap">Lojas ({stores.length})</TabsTrigger>
+ <TabsTrigger value="missoes" className="text-xs shrink-0 whitespace-nowrap">Missões ({audits.length})</TabsTrigger>
+ <TabsTrigger value="apoio" className="text-xs shrink-0 whitespace-nowrap">Apoio</TabsTrigger>
+          <TabsTrigger value="squads" className="text-xs shrink-0 whitespace-nowrap">Squads & IA ({(aiSquads.curation_squads?.length || 0) + (aiSquads.squad_templates?.length || 0)})</TabsTrigger>
+          <TabsTrigger value="aeroportos" className="text-xs shrink-0 whitespace-nowrap">Aeroportos CMS ({airports.length})</TabsTrigger>
+          <TabsTrigger value="embaixadores" className="text-xs shrink-0 whitespace-nowrap">Embaixadores ({creators.length})</TabsTrigger>
  </TabsList>
 
  {/* Tab 1: Lojas */}

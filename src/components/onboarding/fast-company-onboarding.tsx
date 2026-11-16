@@ -152,10 +152,44 @@ export const QUICK_CATEGORIES = [
 
 export interface FastCompanyOnboardingProps {
   userId?: string;
+  initialVertical?: string;
+  initialSegment?: string;
+  initialSku?: string;
   onSuccess?: (storeId: string) => void;
 }
 
-export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardingProps = {}) {
+function resolveInitialQuickCategory(vertical?: string, segment?: string): string {
+  const byVertical: Record<string, string> = {
+    turis: "turismo",
+    tableway: "gastronomia",
+    wowbook: "salao",
+    passhub: "events",
+    lexcloud: "advocacia",
+    autocenter: "oficina",
+    varejo: "comercio",
+    talentlink: "servicos",
+    signflow: "servicos",
+    omnipage: "servicos",
+    talk: "servicos",
+    imobiliaria: "servicos",
+  };
+  if (vertical && byVertical[vertical.toLowerCase()]) {
+    return byVertical[vertical.toLowerCase()];
+  }
+  if (segment) {
+    const match = QUICK_CATEGORIES.find((c) => c.niche === segment || c.id === segment);
+    if (match) return match.id;
+  }
+  return "events";
+}
+
+export function FastCompanyOnboarding({
+  userId,
+  initialVertical,
+  initialSegment,
+  initialSku,
+  onSuccess,
+}: FastCompanyOnboardingProps = {}) {
   const navigate = useNavigate();
 
   const { location: masterLoc } = useMasterLocation();
@@ -168,7 +202,9 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
   const [isSearchingCnpj, setIsSearchingCnpj] = useState(false);
 
   // 2. Segmento & Nicho
-  const [category, setCategory] = useState("events");
+  const [category, setCategory] = useState(() =>
+    resolveInitialQuickCategory(initialVertical, initialSegment),
+  );
 
   // 3. Localização Estruturada Completa (100% Conectada)
   const [cep, setCep] = useState("");
@@ -458,9 +494,10 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         data: {
           name: name.trim(),
           category,
-          niche: selectedCatObj.niche,
-          primary_niche_id: nicheSpec.id,
-          vertical_sku: nicheSpec.defaultVerticalSku,
+          niche: initialSegment || selectedCatObj.niche,
+          primary_niche_id: initialSegment || nicheSpec.id,
+          vertical_sku: initialSku || nicheSpec.defaultVerticalSku,
+          brand_origin: initialVertical || undefined,
           phone: phone.trim(),
           city: city.trim(),
           state: state.trim() || "SC",

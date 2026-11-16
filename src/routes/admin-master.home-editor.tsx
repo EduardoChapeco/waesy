@@ -896,9 +896,9 @@ function AdminMasterHomeEditorPage() {
       )}
 
       {/* ── Barra de Ferramentas Integrada ── */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/60 shadow-xs">
-        <div className="flex flex-1 items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-56 max-w-sm">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/60 shadow-xs min-w-0">
+        <div className="flex flex-1 items-center gap-3 flex-wrap min-w-0">
+          <div className="relative flex-1 min-w-44 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
               placeholder="Buscar seção por título ou chave..."
@@ -908,12 +908,12 @@ function AdminMasterHomeEditorPage() {
             />
           </div>
 
-          <div className="inline-flex p-1 rounded-xl bg-muted/40 border border-border/50 gap-1">
+          <div className="waesy-tab-strip items-center p-1 rounded-xl bg-muted/40 border border-border/50 gap-1 max-w-full min-w-0">
             <button
               type="button"
               onClick={() => setStatusFilter("all")}
               className={cn(
-                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg shrink-0 whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 statusFilter === "all" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -923,7 +923,7 @@ function AdminMasterHomeEditorPage() {
               type="button"
               onClick={() => setStatusFilter("active")}
               className={cn(
-                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg shrink-0 whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 statusFilter === "active" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -933,7 +933,7 @@ function AdminMasterHomeEditorPage() {
               type="button"
               onClick={() => setStatusFilter("inactive")}
               className={cn(
-                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg shrink-0 whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 statusFilter === "inactive" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -942,13 +942,13 @@ function AdminMasterHomeEditorPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 justify-between lg:justify-end">
-          <div className="inline-flex p-1 rounded-xl bg-muted/40 border border-border/50 gap-1">
+        <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full justify-between lg:justify-end">
+          <div className="waesy-tab-strip items-center p-1 rounded-xl bg-muted/40 border border-border/50 gap-1 shrink-0 max-w-full">
             <button
               type="button"
               onClick={() => setSectionViewMode("cards")}
               className={cn(
-                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg shrink-0 whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 sectionViewMode === "cards" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -958,7 +958,7 @@ function AdminMasterHomeEditorPage() {
               type="button"
               onClick={() => setSectionViewMode("sheet")}
               className={cn(
-                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 sm:h-8 px-3 text-xs font-semibold rounded-lg shrink-0 whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 sectionViewMode === "sheet" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
               )}
             >

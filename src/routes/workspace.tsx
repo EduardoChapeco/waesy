@@ -14,6 +14,7 @@ import { WorkspaceAccessDenied } from "@/components/workspace/workspace-access-d
 import { Button } from "@/components/ui/button";
 import { Store, AlertTriangle, ArrowLeft, RefreshCw, LogIn } from "lucide-react";
 import { getSystemOnboardingSteps } from "@/services/system-onboarding.functions";
+import { getPublicEcosystemSubsystemsFn } from "@/services/vertical-subsystems.functions";
 import { WelcomeOnboardingModal } from "@/components/workspace/welcome-onboarding-modal";
 import { setClientContextCookies, getClientActiveTenant } from "@/lib/context-auth";
 
@@ -230,16 +231,19 @@ export const Route = createFileRoute("/workspace")({
         throw redirect({ to: "/criar-negocio" });
       }
 
-      const onboardingData = await getSystemOnboardingSteps().catch(() => ({
-        show: false,
-        steps: [],
-      }));
+      const [onboardingData, ecosystemConfig] = await Promise.all([
+        getSystemOnboardingSteps().catch(() => ({
+          show: false,
+          steps: [],
+        })),
+        getPublicEcosystemSubsystemsFn().catch(() => null),
+      ]);
 
-      return { session, onboardingData };
+      return { session, onboardingData, ecosystemConfig };
     } catch (err) {
       if (isRedirect(err)) throw err;
       console.error("[loader:workspace] Unhandled loader error:", err);
-      return { session: null, onboardingData: { show: false, steps: [] } };
+      return { session: null, onboardingData: { show: false, steps: [] }, ecosystemConfig: null };
     }
   },
   component: WorkspaceLayout,
@@ -403,7 +407,6 @@ function WorkspaceLayout() {
   const isProposalStudio =
     pathname.startsWith("/workspace/turismo/propostas/") &&
     pathname !== "/workspace/turismo/propostas";
-  const isContractEditor = pathname.includes("/contratos/") && pathname.endsWith("/editor");
   const rawSearchStr =
     routerState.location.searchStr ||
     (typeof window !== "undefined" ? window.location.search : "");
@@ -423,7 +426,7 @@ function WorkspaceLayout() {
     (isStandaloneRequested &&
       (pathname.startsWith("/workspace/pdv") ||
         pathname.startsWith("/workspace/pedidos/gestor")));
-  const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isContractEditor || isStandaloneVerticalApp;
+  const isImmersiveEditor = isBuilder || isStudio || isProposalStudio || isStandaloneVerticalApp;
 
   const isPlatformAdmin = isPlatformAdminUser(session);
 
@@ -516,9 +519,49 @@ function WorkspaceLayout() {
     return null;
   }
 
+  const profileApproval = String(session?.profile?.approval_status || "approved");
+  const membershipApproval = String(activeMembership?.approval_status || "approved");
+  const isBlockedByMasterGovernance =
+    !isPlatformAdmin &&
+    (profileApproval !== "approved" ||
+      (Boolean(activeMembership) &&
+        !activeMembership?.is_platform_root &&
+        (activeMembership?.is_active === false || membershipApproval !== "approved")));
+
+  if (isBlockedByMasterGovernance) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full rounded-xl border border-border bg-card p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="size-6 text-warning shrink-0" />
+            <h1 className="text-base font-bold text-foreground">
+              Acesso em Análise Master
+            </h1>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {profileApproval !== "approved"
+              ? `Sua conta está com status "${profileApproval}" e aguarda liberação do Admin Master Global.`
+              : `A empresa "${activeMembership?.name || "selecionada"}" está com aprovação "${membershipApproval}" ou inativa pelo Admin Master.`}
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button asChild variant="outline" className="h-11 min-h-11">
+              <Link to="/conta">Minha Conta</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-11 min-h-11">
+              <Link to="/">Voltar ao Início</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <WorkspaceShell session={session}>
+      <WorkspaceShell
+        session={session}
+        disabledModuleKeys={loaderData?.ecosystemConfig?.disabledModuleKeys || []}
+      >
         <Outlet />
       </WorkspaceShell>
 

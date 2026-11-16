@@ -28,10 +28,11 @@ import { NotificationBell } from "./notification-bell";
 import { WorkspaceAllToolsDialog } from "./workspace-all-tools-dialog";
 import { WorkspaceSidebarFlyout } from "./workspace-sidebar-flyout";
 import { WorkspaceAccessDenied } from "./workspace-access-denied";
+import { WaesyHubLauncher } from "@/components/shell/waesy-hub-launcher";
 import {
   getBrandVerticalById,
   resolveBrandContextFromHost,
-  canAccessModule,
+  canAccessWorkspaceGroup,
   type SubscriptionTierId,
 } from "@/lib/multi-brand-engine";
 
@@ -138,7 +139,15 @@ function getStoreHeaderOperationalAction(storeData: any) {
   }
 }
 
-export function WorkspaceShell({ children, session }: { children: ReactNode; session?: any }) {
+export function WorkspaceShell({
+  children,
+  session,
+  disabledModuleKeys = [],
+}: {
+  children: ReactNode;
+  session?: any;
+  disabledModuleKeys?: string[];
+}) {
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
@@ -194,6 +203,13 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     : Array.isArray(rawStoreEntity?.settings?.enabled_modules)
       ? rawStoreEntity.settings.enabled_modules
       : [];
+  const userDisabledModules: string[] = Array.isArray(session?.profile?.disabled_modules)
+    ? session.profile.disabled_modules.map((k: unknown) => String(k).toLowerCase())
+    : [];
+  const globalDisabledSet = new Set([
+    ...disabledModuleKeys.map((k) => String(k).toLowerCase()),
+    ...userDisabledModules,
+  ]);
 
   const rawSidebarModules = getSidebarConfig(activeStore, {
     isMasterMode: false,
@@ -204,10 +220,18 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       ...group,
       items: group.items.filter((item) => {
         if (isPlatformAdmin) return true;
-        if (activeStoreTier === "starter" && activeEnabledModules.length > 0) {
-          return canAccessModule(rawStoreEntity, group.id);
+        const normalizedGroupId = String(group.id || "").toLowerCase();
+        if (globalDisabledSet.has(normalizedGroupId)) return false;
+        if (
+          rawStoreEntity?.is_active === false ||
+          (rawStoreEntity?.approval_status && rawStoreEntity.approval_status !== "approved")
+        ) {
+          return false;
         }
-        return true;
+        if (activeStoreTier === "starter" && activeEnabledModules.length > 0) {
+          return canAccessWorkspaceGroup(rawStoreEntity, group.id);
+        }
+        return canAccessWorkspaceGroup(rawStoreEntity, group.id);
       }),
     }))
     .filter((group) => group.items.length > 0);
@@ -445,9 +469,14 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
   useEffect(() => {
     setSelectedPillarId(matchedRoutePillarId);
+    const isContractStudio =
+      currentPath.startsWith("/workspace/contratos/") &&
+      currentPath !== "/workspace/contratos" &&
+      currentPath !== "/workspace/contratos/";
     if (
       currentPath.startsWith("/workspace/estudio") ||
-      currentPath.startsWith("/workspace/builder")
+      currentPath.startsWith("/workspace/builder") ||
+      isContractStudio
     ) {
       setIsSubSidebarOpen(false);
     }
@@ -743,8 +772,8 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
         {/* 1B. COLUNA 2 — SIDEBAR SECUNDÁRIA CONTEXTUAL (EXPANDE SOB DEMANDA - 224px) */}
         {isSubSidebarOpen && (
           <div className="w-56 bg-sidebar border-r border-sidebar-border flex flex-col justify-between h-dvh shrink-0 overflow-hidden">
-            {/* Topo da Sidebar Secundária (h-14): Alternar Loja + Notificações + Busca */}
-            <div className="h-14 px-2 flex items-center gap-1 shrink-0">
+            {/* Topo da Sidebar Secundária (h-14): Largura integral para WorkspaceAccountSwitcher (sem esmagar nome/cidade) */}
+            <div className="h-14 px-2 flex items-center shrink-0 min-w-0">
               <div className="flex-1 min-w-0">
                 <WorkspaceAccountSwitcher
                   memberships={memberships}
@@ -758,16 +787,6 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
                   onSwitchToPersonal={confirmSwitchToPersonal}
                 />
               </div>
-              <NotificationBell />
-              <button
-                type="button"
-                onClick={() => setIsAllToolsOpen(true)}
-                aria-label="Buscar ferramentas (Ctrl+K)"
-                title="Buscar ferramentas (Ctrl+K)"
-                className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Search className="size-4 shrink-0" />
-              </button>
             </div>
 
             {/* Submódulos do Setor Ativo */}
@@ -991,7 +1010,22 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           </div>
 
           {/* Ações do Header do Workspace */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">
+            {/* Busca Rápida de Ferramentas e Sino de Notificações (antes estrangulavam o WorkspaceAccountSwitcher) */}
+            <button
+              type="button"
+              onClick={() => setIsAllToolsOpen(true)}
+              aria-label="Buscar ferramentas (Ctrl+K)"
+              title="Buscar ferramentas (Ctrl+K)"
+              className="size-11 min-w-11 min-h-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-rail-hover transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <Search className="size-4 shrink-0" />
+            </button>
+            <WaesyHubLauncher compact={true} />
+            <div className="shrink-0">
+              <NotificationBell />
+            </div>
+
             {/* Botão Contextual da Loja Pública */}
             {(() => {
               const storeData = activeStore?.store || activeStore;
@@ -1150,7 +1184,15 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
           <div
             className={cn(
               "w-full mx-auto flex-1 flex flex-col min-h-0",
-              currentPath.startsWith("/workspace/estudio") || currentPath === "/workspace/atendimento/chat" || currentPath.startsWith("/workspace/atendimento/chat/") || currentPath.startsWith("/workspace/copilot") || currentPath.startsWith("/workspace/whatsapp") || currentPath.startsWith("/workspace/suporte")
+              currentPath.startsWith("/workspace/estudio") ||
+                currentPath === "/workspace/atendimento/chat" ||
+                currentPath.startsWith("/workspace/atendimento/chat/") ||
+                currentPath.startsWith("/workspace/copilot") ||
+                currentPath.startsWith("/workspace/whatsapp") ||
+                currentPath.startsWith("/workspace/suporte") ||
+                (currentPath.startsWith("/workspace/contratos/") &&
+                  currentPath !== "/workspace/contratos" &&
+                  currentPath !== "/workspace/contratos/")
                 ? "max-w-none p-0 h-full overflow-hidden"
                 : "max-w-none waesy-workspace-main-pad"
             )}

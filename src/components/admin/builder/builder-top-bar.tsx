@@ -58,9 +58,9 @@ export function BuilderTopBar({
  const publicLink = previewUrl || (isStorefront ? "/perfil-da-loja" : `/paginas/${document?.slug || ""}`);
 
  return (
- <header className="flex-none h-14 bg-card border-b border-border/80 flex items-center justify-between px-4 gap-4 select-none z-30 relative shadow-2xs">
+ <header className="flex-none h-14 bg-card border-b border-border/80 flex items-center justify-between px-3 sm:px-4 gap-2 sm:gap-4 min-w-0 select-none z-30 relative shadow-2xs">
  {/* ── Esquerda: Voltar + Título & Status do Documento ── */}
- <div className="flex items-center gap-3 min-w-0">
+ <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
  <Button
  type="button"
  variant="ghost"
@@ -98,19 +98,19 @@ export function BuilderTopBar({
  </div>
 
  {/* ── Centro: Seletor de Viewport / Responsividade (Apple HIG) ── */}
- <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
+ <div className="waesy-tab-strip items-center bg-muted/60 p-1 rounded-lg border border-border/60 min-w-0 max-w-full">
  <button
  type="button"
  onClick={() => setViewport("tablet")}
  title="Modo Tablet (768px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer",
  viewport === "tablet"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- <Tablet className="size-3.5" />
+ <Tablet className="size-3.5 shrink-0" />
  <span className="hidden md:inline">Tablet</span>
  </button>
 
@@ -119,13 +119,13 @@ export function BuilderTopBar({
  onClick={() => setViewport("desktop")}
  title="Modo Desktop (1440px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer",
  viewport === "desktop"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- <Laptop className="size-3.5" />
+ <Laptop className="size-3.5 shrink-0" />
  <span className="hidden md:inline">Desktop</span>
  </button>
 
@@ -134,13 +134,13 @@ export function BuilderTopBar({
  onClick={() => setViewport("mobile")}
  title="Modo Mobile (390px)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer",
  viewport === "mobile"
  ? "bg-background text-foreground shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- <Smartphone className="size-3.5" />
+ <Smartphone className="size-3.5 shrink-0" />
  <span className="hidden md:inline">Mobile</span>
  </button>
 
@@ -149,19 +149,19 @@ export function BuilderTopBar({
  onClick={() => setViewport("native_app")}
  title="Modo App Nativo (PWA / iOS / Android)"
  className={cn("focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", 
-  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold transition-colors duration-200 cursor-pointer",
+  "h-11 min-h-11 px-3 rounded-lg flex items-center gap-2 text-xs font-semibold shrink-0 whitespace-nowrap transition-colors duration-200 cursor-pointer",
  viewport === "native_app"
  ? "bg-background text-primary shadow-2xs font-bold"
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- <Smartphone className="size-3.5 text-primary" />
+ <Smartphone className="size-3.5 text-primary shrink-0" />
  <span className="hidden md:inline">App Nativo</span>
  </button>
  </div>
 
  {/* ── Direita: Histórico, Pré-visualização e Ações de Salvamento ── */}
- <div className="flex items-center gap-2">
+ <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full shrink-0">
  {/* Undo / Redo */}
  <div className="flex items-center bg-muted/40 p-1 rounded-lg border border-border/40 hidden sm:flex">
  <button

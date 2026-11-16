@@ -351,6 +351,10 @@ export const listSurfaceSections = createServerFn({ method: "GET" })
  }
 
  // 2. Busca as seções ordenadas
+ const isSurfaceUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(surface.id || ""));
+ if (!isSurfaceUuid) {
+ return { surface: surface as MarketplaceSurfaceDTO, sections: [] };
+ }
  const { data: sections, error: secErr } = await supabase
  .from("marketplace_sections")
  .select("*")
@@ -406,10 +410,27 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  surface = fallbackSurf;
  }
 
+	if (!surface && surfaceSlug === "viagens") {
+		let tourismQuery = supabase
+			.from("marketplace_surfaces")
+			.select("id, slug, title")
+			.eq("slug", "turismo");
+		if (storeId) {
+			tourismQuery = tourismQuery.eq("store_id", storeId);
+		}
+		const { data: tourismSurf } = await tourismQuery.maybeSingle();
+		if (tourismSurf) {
+			surface = tourismSurf;
+		}
+	}
+
+	const isSurfaceUuid = Boolean(
+		surface?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(surface.id)),
+	);
 	if (!surface && (surfaceSlug === "turismo" || surfaceSlug === "viagens")) {
 		surface = { id: "canonical-surface-turismo", slug: "turismo", title: "Turismo & Viagens" } as any;
 	}
- if (!surface) {
+ if (!surface || !isSurfaceUuid) {
  return { sections: [], allProducts: [] };
  }
 
@@ -1950,12 +1971,31 @@ export const reorderSurfaceSections = createServerFn({ method: "POST" })
  .handler(async ({ data: { surfaceId, sectionIds } }) => {
   const supabase = getServerClient();
   const { authorizeBuilderStoreContext, requirePlatformAdmin } = await import("@/lib/server-access");
+  let targetSurfaceId = surfaceId;
 
   if (surfaceId === "store_private") {
-   await authorizeBuilderStoreContext();
+   const authCtx = await authorizeBuilderStoreContext();
+   const { data: storeSurf } = await supabase
+    .from("marketplace_surfaces")
+    .select("id")
+    .eq("store_id", authCtx.storeId)
+    .eq("slug", `vitrine-${authCtx.storeId}`)
+    .maybeSingle();
+   if (!storeSurf?.id) return { success: true };
+   targetSurfaceId = storeSurf.id;
   } else if (surfaceId.startsWith("canonical-surface-")) {
    await requirePlatformAdmin();
+   const targetSlug = surfaceId.replace(/^canonical-surface-/, "");
+   const { data: canonicalSurf } = await supabase
+    .from("marketplace_surfaces")
+    .select("id")
+    .eq("slug", targetSlug)
+    .maybeSingle();
+   if (!canonicalSurf?.id) return { success: true };
+   targetSurfaceId = canonicalSurf.id;
   } else {
+   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(surfaceId);
+   if (!isUuid) throw new Error("Superfície não encontrada.");
    const { data: surfRow } = await supabase
     .from("marketplace_surfaces")
     .select("id, store_id, is_global")
@@ -1974,7 +2014,7 @@ export const reorderSurfaceSections = createServerFn({ method: "POST" })
     .from("marketplace_sections")
     .update({ sort_order: index + 1, updated_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("surface_id", surfaceId),
+    .eq("surface_id", targetSurfaceId),
   );
 
   await Promise.all(updates);

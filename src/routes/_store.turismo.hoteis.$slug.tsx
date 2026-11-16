@@ -241,22 +241,22 @@ function PublicHotelDetailPage() {
 
         {/* Abas Editoriais de Navegação */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="h-11 min-h-11 w-full justify-start overflow-x-auto no-scrollbar rounded-lg bg-muted/60 p-1">
-            <TabsTrigger value="visao_geral" className="h-9 px-4 text-xs font-bold rounded-md">
+          <TabsList className="waesy-tab-strip items-center justify-start gap-1 h-11 min-h-11 w-full max-w-full min-w-0 rounded-lg bg-muted/60 p-1">
+            <TabsTrigger value="visao_geral" className="h-9 px-4 text-xs font-bold rounded-md shrink-0 whitespace-nowrap">
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger value="quartos" className="h-9 px-4 text-xs font-bold rounded-md">
+            <TabsTrigger value="quartos" className="h-9 px-4 text-xs font-bold rounded-md shrink-0 whitespace-nowrap">
               Acomodações ({hotel.room_categories?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="lazer" className="h-9 px-4 text-xs font-bold rounded-md">
+            <TabsTrigger value="lazer" className="h-9 px-4 text-xs font-bold rounded-md shrink-0 whitespace-nowrap">
               Estrutura & Lazer
             </TabsTrigger>
-            <TabsTrigger value="politicas" className="h-9 px-4 text-xs font-bold rounded-md">
+            <TabsTrigger value="politicas" className="h-9 px-4 text-xs font-bold rounded-md shrink-0 whitespace-nowrap">
               Políticas & Regras
             </TabsTrigger>
             {videoMedias.length > 0 && (
-              <TabsTrigger value="videos" className="h-9 px-4 text-xs font-bold rounded-md flex items-center gap-2">
-                <VideoIcon className="size-3.5" />
+              <TabsTrigger value="videos" className="h-9 px-4 text-xs font-bold rounded-md flex items-center gap-2 shrink-0 whitespace-nowrap">
+                <VideoIcon className="size-3.5 shrink-0" />
                 Vídeos ({videoMedias.length})
               </TabsTrigger>
             )}

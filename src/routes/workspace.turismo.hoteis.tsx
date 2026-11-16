@@ -1390,35 +1390,35 @@ function WorkspaceHotelsPage() {
 
  <Tabs value={sheetTab} onValueChange={setSheetTab} className="flex-1 flex flex-col">
  {/* design-lint-ignore DL-30 reason:"Trilho horizontal de abas do sheet de configuracao de hotel" expiry:"2027-12-31" */}
- <div className="px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 overflow-x-auto scroll-area-carousel no-scrollbar">
- <TabsList className="bg-transparent border-b-0 h-9 p-0 gap-4">
+ <div className="px-4 sm:px-5 pt-3 border-b border-border/60 bg-muted/10 shrink-0 min-w-0">
+ <TabsList className="waesy-tab-strip items-center justify-start bg-transparent border-b-0 h-11 min-h-11 sm:h-10 p-0 gap-4 max-w-full">
  <TabsTrigger
  value="dados"
- className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
+ className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
  >
  1. Dados e Localização
  </TabsTrigger>
  <TabsTrigger
  value="galeria"
- className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
+ className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
  >
  2. Galeria & Capa ({formData.photos.length})
  </TabsTrigger>
  <TabsTrigger
  value="quartos"
- className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
+ className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
  >
  3. Acomodações ({formData.room_categories.length})
  </TabsTrigger>
  <TabsTrigger
  value="estrutura"
- className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
+ className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
  >
  4. Lazer e Gastronomia
  </TabsTrigger>
  <TabsTrigger
  value="politicas"
- className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
+ className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold shrink-0 whitespace-nowrap"
  >
  5. Políticas e Regras
  </TabsTrigger>

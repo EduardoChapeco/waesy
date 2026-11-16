@@ -25,6 +25,7 @@ vi.mock("@/lib/drawer-store", () => ({
 
 import { IFoodHeader } from "@/components/commerce/ifood/IFoodHeader";
 import { checkHasCustomPageMobileHeader } from "@/components/shell/app-shell";
+import { HomeDesktopWebApp } from "../HomeDesktopWebApp";
 
 describe("Auditoria Estrutural Bidirecional & Cabeçalho Canônico Mobile", () => {
   it("checkHasCustomPageMobileHeader identifica a Home ('/') e rotas comerciais, prevenindo duplicação de cabeçalhos no AppShell", () => {
@@ -69,8 +70,8 @@ describe("Auditoria Estrutural Bidirecional & Cabeçalho Canônico Mobile", () =
     expect(html).toContain("Escolher localização");
   });
 
-  it("renderiza HomeDesktopWebApp com descompressão de grade (2 colunas) e sem casca redundante de card (Single Surface Rule)", async () => {
-    const { HomeDesktopWebApp } = (await import("../HomeDesktopWebApp")) as { HomeDesktopWebApp: React.ComponentType<any> };
+  it("renderiza HomeDesktopWebApp com descompressão de grade (2 colunas) e sem casca redundante de card (Single Surface Rule)", () => {
+    const HomeDesktopWebAppComponent = HomeDesktopWebApp as React.ComponentType<any>;
     const mockStores = [
       {
         id: "st-1",
@@ -83,7 +84,7 @@ describe("Auditoria Estrutural Bidirecional & Cabeçalho Canônico Mobile", () =
     ];
 
     const html = renderToStaticMarkup(
-      <HomeDesktopWebApp
+      <HomeDesktopWebAppComponent
         homeSections={[
           {
             id: "sec-stores",

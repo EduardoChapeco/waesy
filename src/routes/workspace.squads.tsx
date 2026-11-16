@@ -2,7 +2,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
-  Users, Bot, ArrowRight, Play, CheckCircle2, ShieldCheck, 
+  Users, Bot, ArrowRight, Play, CheckCircle2, 
   Coins, Clock, Layers, ChevronRight, AlertCircle, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
@@ -76,20 +76,12 @@ function SquadsPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                  Squads de Agentes Autônomos
+                  Squads de Agentes
                 </h1>
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
-                  Grafo & Handoff v1.0
-                </Badge>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Redes colaborativas de agentes especialistas com supervisão contínua.
+                Redes colaborativas de agentes para vendas e operação.
               </p>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/40">
-              <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
-              <span>Orçamento e arbitragem fiscalizados por Supervisor Central.</span>
             </div>
           </div>
 

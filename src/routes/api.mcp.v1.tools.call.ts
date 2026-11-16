@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   executeMcpToolCall,
+  readMcpResource,
+  getMcpPrompt,
   McpToolCallRequestSchema,
   MCP_TOOLS_MANIFEST,
   MCP_RESOURCES_MANIFEST,
@@ -12,6 +14,16 @@ import {
 } from "@/lib/agentic/agentic-readiness-engine";
 
 import type {} from "@tanstack/react-start";
+
+function extractInboundMcpAuthToken(request: Request): string | undefined {
+  const authHeader = request.headers.get("authorization") || "";
+  if (authHeader.toLowerCase().startsWith("bearer ")) {
+    const token = authHeader.slice(7).trim();
+    if (token) return token;
+  }
+  const apiKey = request.headers.get("x-api-key") || request.headers.get("x-mcp-token") || "";
+  return apiKey.trim() || undefined;
+}
 export const Route = createFileRoute("/api/mcp/v1/tools/call")({
   server: {
     handlers: {
@@ -76,6 +88,7 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
       POST: async ({ request }: { request: Request }) => {
         try {
           const body = await request.json();
+          const inboundAuthToken = extractInboundMcpAuthToken(request);
 
           // 1. Suporte Nativo a JSON-RPC 2.0 (MCP Streamable HTTP Handshake: initialize, tools/list, tools/call, etc.)
           if (body && typeof body === "object" && (body.jsonrpc === "2.0" || typeof body.method === "string")) {
@@ -178,6 +191,84 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
               );
             }
 
+            if (method === "resources/read") {
+              const uri = typeof body.params?.uri === "string" ? body.params.uri.trim() : "";
+              const storeId = typeof body.params?.storeId === "string" ? body.params.storeId.trim() : undefined;
+              if (!uri) {
+                return new Response(
+                  JSON.stringify(
+                    {
+                      jsonrpc: "2.0",
+                      id: rpcId,
+                      error: {
+                        code: -32602,
+                        message: "Missing required param 'uri' for resources/read",
+                      },
+                    },
+                    null,
+                    2,
+                  ),
+                  {
+                    status: 400,
+                    headers: buildAgentApiHeaders(),
+                  },
+                );
+              }
+              try {
+                const resource = await readMcpResource(uri, storeId);
+                return new Response(
+                  JSON.stringify(
+                    {
+                      jsonrpc: "2.0",
+                      id: rpcId,
+                      result: {
+                        contents: [
+                          {
+                            uri: resource.uri,
+                            mimeType: resource.mimeType,
+                            text:
+                              typeof resource.content === "string"
+                                ? resource.content
+                                : JSON.stringify(resource.content),
+                          },
+                        ],
+                      },
+                    },
+                    null,
+                    2,
+                  ),
+                  {
+                    status: 200,
+                    headers: buildAgentApiHeaders(),
+                  },
+                );
+              } catch (resErr: any) {
+                const msg = resErr?.message || "Falha ao ler recurso MCP.";
+                const isUnauthorized = msg.includes("401 Unauthorized") || msg.includes("not authenticated");
+                const isForbidden =
+                  msg.includes("403 Forbidden") ||
+                  msg.includes("Insufficient permissions") ||
+                  msg.includes("No active store context");
+                const status = isUnauthorized ? 401 : isForbidden ? 403 : 400;
+                const code = isUnauthorized ? -32001 : isForbidden ? -32003 : -32602;
+                return new Response(
+                  JSON.stringify(
+                    {
+                      jsonrpc: "2.0",
+                      id: rpcId,
+                      error: { code, message: msg },
+                    },
+                    null,
+                    2,
+                  ),
+                  {
+                    status,
+                    headers: buildAgentApiHeaders(),
+                  },
+                );
+              }
+            }
+
             if (method === "prompts/list") {
               return new Response(
                 JSON.stringify(
@@ -198,6 +289,82 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
               );
             }
 
+            if (method === "prompts/get") {
+              const promptName = typeof body.params?.name === "string" ? body.params.name.trim() : "";
+              const promptArgs =
+                body.params?.arguments && typeof body.params.arguments === "object"
+                  ? body.params.arguments
+                  : {};
+              if (!promptName) {
+                return new Response(
+                  JSON.stringify(
+                    {
+                      jsonrpc: "2.0",
+                      id: rpcId,
+                      error: {
+                        code: -32602,
+                        message: "Missing required param 'name' for prompts/get",
+                      },
+                    },
+                    null,
+                    2,
+                  ),
+                  {
+                    status: 400,
+                    headers: buildAgentApiHeaders(),
+                  },
+                );
+              }
+              try {
+                const promptData = await getMcpPrompt(promptName, promptArgs);
+                return new Response(
+                  JSON.stringify(
+                    {
+                      jsonrpc: "2.0",
+                      id: rpcId,
+                      result: {
+                        description: promptData.description,
+                        messages: [
+                          {
+                            role: "user",
+                            content: {
+                              type: "text",
+                              text: promptData.prompt,
+                            },
+                          },
+                        ],
+                      },
+                    },
+                    null,
+                    2,
+                  ),
+                  {
+                    status: 200,
+                    headers: buildAgentApiHeaders(),
+                  },
+                );
+              } catch (promptErr: any) {
+                return new Response(
+                  JSON.stringify(
+                    {
+                      jsonrpc: "2.0",
+                      id: rpcId,
+                      error: {
+                        code: -32602,
+                        message: promptErr?.message || "Prompt MCP não encontrado.",
+                      },
+                    },
+                    null,
+                    2,
+                  ),
+                  {
+                    status: 400,
+                    headers: buildAgentApiHeaders(),
+                  },
+                );
+              }
+            }
+
             if (method === "tools/call") {
               const toolName = body.params?.name || body.params?.tool;
               const toolArgs = body.params?.arguments || {};
@@ -206,6 +373,7 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
                 tool: toolName,
                 arguments: toolArgs,
                 ...(storeId ? { storeId } : {}),
+                ...(inboundAuthToken ? { authToken: inboundAuthToken } : {}),
               });
 
               if (!parsedRpc.success) {
@@ -259,7 +427,7 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
                   id: rpcId,
                   error: {
                     code: -32601,
-                    message: `Method '${method}' not found. Supported methods: initialize, ping, tools/list, tools/call, resources/list, prompts/list.`,
+                    message: `Method '${method}' not found. Supported methods: initialize, ping, tools/list, tools/call, resources/list, resources/read, prompts/list, prompts/get.`,
                   },
                 },
                 null,
@@ -273,7 +441,10 @@ export const Route = createFileRoute("/api/mcp/v1/tools/call")({
           }
 
           // 2. Suporte Direto REST ({ tool, arguments, storeId })
-          const parsed = McpToolCallRequestSchema.safeParse(body);
+          const parsed = McpToolCallRequestSchema.safeParse({
+            ...(body && typeof body === "object" ? body : {}),
+            ...(inboundAuthToken && !body?.authToken ? { authToken: inboundAuthToken } : {}),
+          });
 
           if (!parsed.success) {
             return new Response(

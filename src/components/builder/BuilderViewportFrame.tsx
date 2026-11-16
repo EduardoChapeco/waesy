@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Monitor, Smartphone, Tablet, Maximize2 } from "lucide-react";
+import { Monitor, Smartphone, Tablet, Maximize2, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type BuilderViewportMode = "desktop" | "tablet" | "mobile" | "native_app";
@@ -23,9 +23,11 @@ export interface BuilderViewportFrameProps {
   viewport: BuilderViewportMode;
   onChangeViewport?: (vp: BuilderViewportMode) => void;
   themeStyle?: React.CSSProperties;
+  isolationScheme?: "light" | "dark";
   zoomMode?: BuilderZoomMode;
   onChangeZoomMode?: (zoom: BuilderZoomMode) => void;
   showControlsBar?: boolean;
+  sectionToolbarSlot?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
@@ -43,9 +45,11 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
   viewport,
   onChangeViewport,
   themeStyle,
+  isolationScheme,
   zoomMode: controlledZoomMode,
   onChangeZoomMode,
   showControlsBar = true,
+  sectionToolbarSlot,
   children,
   className,
 }) => {
@@ -102,8 +106,8 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
       )}
     >
       {showControlsBar && (
-        <div className="h-12 px-3 sm:px-4 border-b border-border/70 bg-card/90 flex items-center justify-between gap-2 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="waesy-tab-strip min-h-14 py-1 px-3 sm:px-4 border-b border-border/70 bg-card/90 flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
             <span className="text-2xs font-mono font-semibold px-2 py-1 rounded-md bg-muted text-foreground shrink-0">
               {VIEWPORT_LABELS[viewport]} · {logicalWidth}px
             </span>
@@ -114,6 +118,7 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
                     { id: "desktop", label: "PC", Icon: Monitor },
                     { id: "tablet", label: "Tablet", Icon: Tablet },
                     { id: "mobile", label: "Mobile", Icon: Smartphone },
+                    { id: "native_app", label: "App Nativo", Icon: Layers },
                   ] as const
                 ).map((item) => (
                   <button
@@ -122,14 +127,14 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
                     onClick={() => onChangeViewport(item.id)}
                     aria-label={`Visualizar em ${item.label}`}
                     className={cn(
-                      "h-11 min-h-11 px-3 rounded-lg text-2xs font-bold flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "h-11 min-h-11 px-3 rounded-lg text-2xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       viewport === item.id
                         ? "bg-primary/15 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
                     )}
                   >
                     <item.Icon className="size-3.5" />
-                    <span className="hidden lg:inline">{item.label}</span>
+                    <span className="hidden md:inline">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -137,7 +142,7 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-2xs text-muted-foreground hidden sm:inline mr-1">
+            <span className="text-2xs text-muted-foreground hidden lg:inline mr-1">
               Zoom {zoomPercent}%
             </span>
             {(
@@ -152,7 +157,7 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
                 type="button"
                 onClick={() => setZoomMode(opt.id)}
                 className={cn(
-                  "h-11 min-h-11 px-3 rounded-lg text-2xs font-bold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1",
+                  "h-11 min-h-11 px-3 rounded-lg text-2xs font-bold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex items-center gap-1 shrink-0",
                   zoomMode === opt.id
                     ? "bg-foreground text-background"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
@@ -163,6 +168,15 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {sectionToolbarSlot && (
+        <div
+          data-testid="builder-section-toolbar-slot"
+          className="waesy-tab-strip px-3 sm:px-4 py-2 border-b border-border/70 bg-background flex items-center justify-between gap-2 shrink-0"
+        >
+          {sectionToolbarSlot}
         </div>
       )}
 
@@ -178,6 +192,7 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
           style={{
             width: `${visualWidth}px`,
             height: `${visualHeight}px`,
+            ...(themeStyle?.backgroundColor ? { backgroundColor: themeStyle.backgroundColor } : {}),
           }}
           className={cn(
             "relative overflow-hidden shrink-0 transition-colors duration-200 bg-background text-foreground",
@@ -192,6 +207,12 @@ export const BuilderViewportFrame: React.FC<BuilderViewportFrameProps> = ({
         >
           <div
             data-testid="builder-viewport-scrollport"
+            data-builder-canvas-isolated={
+              isolationScheme ??
+              (themeStyle?.colorScheme === "dark" || themeStyle?.colorScheme === "light"
+                ? themeStyle.colorScheme
+                : undefined)
+            }
             style={{
               ...themeStyle,
               width: `${logicalWidth}px`,

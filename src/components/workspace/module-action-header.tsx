@@ -98,10 +98,10 @@ export function ModuleActionHeader({
         </div>
 
         {/* Lado Direito: Barra de Ferramentas (Busca, Visão, Configurações Rápidas e Ação) */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 min-w-0 w-full lg:w-auto">
           {/* Busca Rápida Contextual */}
           {onSearchChange !== undefined ? (
-            <div className="relative flex-1 sm:w-64 sm:flex-initial">
+            <div className="relative flex-1 min-w-44 sm:w-64 sm:flex-initial">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
               <Input
                 type="search"
@@ -113,9 +113,9 @@ export function ModuleActionHeader({
             </div>
           ) : null}
 
-          {/* Alternador de Visão (Segmented Controls Apple HIG) */}
+          {/* Alternador de Visão (Segmented Controls Apple HIG com rolagem interna) */}
           {viewModes && viewModes.length > 1 && onViewModeChange ? (
-            <div className="flex items-center p-1 bg-muted/60 border border-border/60 rounded-lg">
+            <div className="waesy-tab-strip items-center p-1 bg-muted/60 border border-border/60 rounded-lg max-w-full">
               {viewModes.map((v) => {
                 const IconComponent = v.icon || getDefaultIcon(v.id);
                 const isActive = currentViewMode === v.id;
@@ -126,14 +126,14 @@ export function ModuleActionHeader({
                     onClick={() => onViewModeChange(v.id)}
                     className={cn(
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      "flex items-center gap-2 px-3 py-2 min-h-11 rounded-lg text-xs font-medium transition-colors duration-200",
+                      "flex items-center gap-2 px-3 py-2 min-h-11 rounded-lg text-xs font-medium shrink-0 whitespace-nowrap transition-colors duration-200",
                       isActive
                         ? "bg-background text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                     aria-label={v.label}
                   >
-                    <IconComponent className="size-3.5" />
+                    <IconComponent className="size-3.5 shrink-0" />
                     <span className="hidden sm:inline">{v.label}</span>
                   </button>
                 );

@@ -7,6 +7,7 @@
 
 import { scrapeUrl } from "@/lib/mining/firecrawl-client";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { executeBrowserAutomationTask } from "@/services/browser-automation-runner";
 import {
   AGENT_SYSTEM_PROMPT,
   buildDecisionPrompt,
@@ -61,7 +62,32 @@ export async function decideNextAction(input: {
   return action;
 }
 
-export const defaultAgentDeps: Pick<AgentDeps, "observe" | "decide"> = {
+export async function actOnPage(
+  action: AgentAction,
+  observation: PageObservation,
+): Promise<PageObservation | null> {
+  if (!isPublicHttpUrl(observation.url)) return null;
+  const res = await executeBrowserAutomationTask({
+    url: observation.url,
+    goal: `Executar ação ${action.type}`,
+    actions: [action],
+    useInteractiveCdp: true,
+    captureScreenshot: true,
+  }).catch(() => null);
+  if (!res || res.status !== "completed") return null;
+  return {
+    url: res.finalUrl || observation.url,
+    text: truncateText(res.textExcerpt || observation.text),
+    links: pickLinks(res.links?.length ? res.links : observation.links),
+    provider: res.driver,
+    interactiveElements: res.interactiveElements,
+    screenshotUrl: res.screenshotUrl,
+    liveViewerUrl: res.liveViewerUrl,
+  };
+}
+
+export const defaultAgentDeps: AgentDeps = {
   observe: observePage,
+  act: actOnPage,
   decide: decideNextAction,
 };

@@ -4,6 +4,7 @@ import { consumeLastCapturedError, recordCorrelatedError } from "./lib/error-cap
 import { errorRegistry } from "./lib/telemetry/error-correlator";
 import { renderErrorPage } from "./lib/error-page";
 import { resolveBrandContextFromHost } from "./lib/multi-brand-engine";
+import { resolveSubsystemFromHost } from "./lib/vertical-subsystems";
 import {
   buildAgentApiHeaders,
   buildStructuredApiErrorResponse,
@@ -69,7 +70,7 @@ export default {
         (globalThis as any).__env__ = env;
       }
 
-      // Resolução de subdomínio corporativo (ex: painel.waesy.com.br ou painel.localhost)
+      // Resolução de subdomínio corporativo e subsistemas verticais (*.waesy.com.br)
       let effectiveRequest = request;
       try {
         const url = new URL(request.url);
@@ -77,27 +78,53 @@ export default {
         const isPainelSubdomain =
           host.startsWith("painel.") ||
           host.startsWith("painel-") ||
+          host.startsWith("pro.") ||
           host.startsWith("studio.") ||
           host.startsWith("erp.");
         const brandContext = resolveBrandContextFromHost(host);
+        const subsystem = resolveSubsystemFromHost(host);
         const enrichedHeaders = new Headers(request.headers);
         enrichedHeaders.set("x-waesy-brand-id", brandContext.id);
         enrichedHeaders.set("x-waesy-brand-name", brandContext.brandName);
         enrichedHeaders.set("x-waesy-primary-niche", brandContext.primaryNiche);
+        if (subsystem) {
+          enrichedHeaders.set("x-waesy-subsystem-id", subsystem.id);
+          enrichedHeaders.set("x-waesy-target-path", subsystem.targetPath);
+        }
 
-        if ((isPainelSubdomain || brandContext.isStandaloneSaas) && (url.pathname === "/" || url.pathname === "")) {
+        const isRootPath = url.pathname === "/" || url.pathname === "";
+        const isFunctionalAppSub =
+          subsystem &&
+          subsystem.id !== "waesy" &&
+          (subsystem.category === "public_app" || subsystem.category === "admin") &&
+          subsystem.targetPath !== "/";
+        const targetSubsystemRewrite = isFunctionalAppSub ? subsystem.targetPath : null;
+
+        if (isRootPath && isPainelSubdomain && !host.startsWith("pro.") && !host.startsWith("studio.")) {
           const rewrittenUrl = new URL(request.url);
-          if (brandContext.id === "waesy_copilot") {
-            rewrittenUrl.pathname = "/workspace/copilot";
-          } else {
-            rewrittenUrl.pathname = "/painel";
-          }
+          rewrittenUrl.pathname = "/painel";
           effectiveRequest = new Request(rewrittenUrl.toString(), {
             method: request.method,
             headers: enrichedHeaders,
             body: request.body,
           });
-        } else if (brandContext.id !== "waesy") {
+        } else if (isRootPath && targetSubsystemRewrite) {
+          const rewrittenUrl = new URL(request.url);
+          rewrittenUrl.pathname = targetSubsystemRewrite;
+          effectiveRequest = new Request(rewrittenUrl.toString(), {
+            method: request.method,
+            headers: enrichedHeaders,
+            body: request.body,
+          });
+        } else if (isRootPath && !subsystem && brandContext.isStandaloneSaas) {
+          const rewrittenUrl = new URL(request.url);
+          rewrittenUrl.pathname = brandContext.id === "waesy_copilot" ? "/copilot" : `/sistemas/${brandContext.id}`;
+          effectiveRequest = new Request(rewrittenUrl.toString(), {
+            method: request.method,
+            headers: enrichedHeaders,
+            body: request.body,
+          });
+        } else if (brandContext.id !== "waesy" || Boolean(subsystem)) {
           effectiveRequest = new Request(request.url, {
             method: request.method,
             headers: enrichedHeaders,

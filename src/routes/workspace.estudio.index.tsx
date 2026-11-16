@@ -119,6 +119,49 @@ function StudioWorkspacePage() {
  queryFn: () => listStudioProjects({ data: { project_type: studioMode } }),
  });
 
+ const hydratedProjectRef = useRef<string | null>(null);
+ useEffect(() => {
+   const targetProjectId = searchParams.projectId;
+   if (!targetProjectId || hydratedProjectRef.current === targetProjectId) {
+     return;
+   }
+   hydratedProjectRef.current = targetProjectId;
+
+   let cancelled = false;
+   void getStudioProjectById({ data: { id: targetProjectId } })
+     .then((proj) => {
+       if (cancelled || !proj) return;
+       setProjectId(proj.id);
+       setProjectTitle(proj.title || "Projeto Studio");
+       if (proj.project_type === "video" || proj.project_type === "graphic") {
+         setStudioMode(proj.project_type);
+       }
+       if (proj.aspect_ratio) {
+         setAspectRatio(proj.aspect_ratio as StudioAspectRatio);
+       }
+       const cData = (proj.canvas_data || {}) as Record<string, any>;
+       if (proj.project_type === "video") {
+         if (Array.isArray(cData.tracks)) setVideoTracks(cData.tracks);
+         if (typeof cData.duration === "number") setVideoDuration(cData.duration);
+       } else {
+         if (cData.background) setBackground(cData.background as SlideBackground);
+         if (Array.isArray(cData.elements)) {
+           setElements(cData.elements as StudioElement[]);
+           setSelectedElementId(cData.elements[0]?.id ?? null);
+         }
+       }
+     })
+     .catch(() => {
+       if (!cancelled) {
+         toast.error("Não foi possível carregar o projeto solicitado no Estúdio.");
+       }
+     });
+
+   return () => {
+     cancelled = true;
+   };
+ }, [searchParams.projectId]);
+
  // Mutação para salvar projeto
  const saveMutation = useMutation({
  mutationFn: () =>
@@ -345,7 +388,7 @@ function StudioWorkspacePage() {
  size="sm"
  disabled={isExporting}
  onClick={handleExport}
- className="h-8 rounded-lg font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 min-h-11 sm:min-h-0"
+ className="h-8 rounded-lg font-bold text-xs gap-2 min-h-11 sm:min-h-0"
  >
  {isExporting ? <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Download className="size-3.5" />}
  <span>{isExporting ? "Exportando..." : "Exportar"}</span>

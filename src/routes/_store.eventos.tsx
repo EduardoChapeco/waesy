@@ -12,7 +12,7 @@ import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { EventsShowcaseMobileView } from "@/components/events/EventsShowcaseMobileView";
 import { EventsShowcaseDesktopView } from "@/components/events/EventsShowcaseDesktopView";
 import { EventSubvitrineView } from "@/components/events/EventSubvitrineView";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import type { EventFeatureMiniBannerItem } from "@/components/events/EventFeatureMiniBannersRail";
 import { buildUniversalHead } from "@/lib/seo/universal-seo-head";
 
@@ -454,7 +454,7 @@ function EventosPage() {
     return [];
   }, [loaderData?.miniBannersPool, surfaceSections]);
 
-  const { isCompact } = useWindowSizeClass();
+  const { isCompact } = useEffectiveViewport();
 
   return (
     <div className="w-full min-h-screen bg-background">

@@ -305,23 +305,23 @@ function ChannelDREPage() {
       )}
 
       {/* ── BARRA DE CONTROLE & BUSCA ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70 min-w-0">
+        <div className="relative flex-1 min-w-44 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por nome do canal..."
-            className="pl-10 h-10 rounded-lg text-xs bg-background"
+            className="pl-9 h-11 min-h-11 sm:h-9 rounded-lg text-xs bg-background"
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-            <ArrowUpDown className="size-3.5" /> Ordenar por:
+        <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">
+          <span className="text-xs font-bold text-muted-foreground flex items-center gap-1 shrink-0 whitespace-nowrap">
+            <ArrowUpDown className="size-3.5 shrink-0" /> Ordenar por:
           </span>
           <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-            <SelectTrigger className="h-9 rounded-lg text-xs font-bold w-44 bg-background">
+            <SelectTrigger className="h-11 min-h-11 sm:h-9 rounded-lg text-xs font-bold w-44 shrink-0 bg-background">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="rounded-lg">

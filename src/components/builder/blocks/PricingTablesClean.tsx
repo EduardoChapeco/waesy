@@ -4,6 +4,7 @@ import { getSectionStyle } from "../utils";
 import { Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getSafeBuilderHref } from "@/lib/builder/safe-href";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 
 export interface PricingTablesCleanProps {
   id?: string;
@@ -14,6 +15,7 @@ export interface PricingTablesCleanProps {
 }
 
 export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data, styling, className = "", onSelectTier }) => {
+  const { isMobile, isMedium } = useEffectiveViewport();
   const [isAnnual, setIsAnnual] = useState(false);
   const sectionStyle = getSectionStyle(styling);
   const rawTiers = Array.isArray(data?.tiers)
@@ -100,7 +102,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
             Nenhum plano configurado neste bloco.
           </div>
         ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className={isMobile ? "grid grid-cols-1 gap-6 items-stretch" : isMedium ? "grid grid-cols-2 gap-6 items-stretch" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch"}>
           {tiers.map((tier: any) => {
             const rawPrice = isAnnual && typeof tier.priceAnnualCents === "number" ? tier.priceAnnualCents : tier.priceMonthlyCents;
             const priceFormatted = formatPrice(rawPrice);
@@ -110,7 +112,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data
             return (
               <div
                 key={tier.id}
-                className={`relative rounded-lg p-8 sm:p-10 flex flex-col justify-between transition-colors ${
+                className={`relative rounded-lg ${isMobile ? "p-6" : "p-8 sm:p-10"} flex flex-col justify-between transition-colors ${
                   tier.isPopular
                     ? "bg-foreground text-background ring-1 ring-foreground"
                     : "bg-card text-foreground border border-border/80 hover:border-border"

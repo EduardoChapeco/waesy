@@ -109,29 +109,37 @@ export interface SupermarketProductCardDTO {
  * Consulta as janelas de entrega e retirada da loja ativa
  */
 export const getSupermarketDeliveryWindows = createServerFn({ method: "GET" })
-  .validator((d: { storeId?: string }) => d)
+  .validator((d?: { storeId?: string }) => d ?? {})
   .handler(async ({ data }) => {
     try {
-      const supabase = await getAnonServerClient();
-      
-      // Consultar janelas persistidas se a tabela existir
-      const { data: dbWindows, error } = await supabase
-        .from("store_delivery_windows" as any)
-        .select("*")
-        .eq("is_active", true)
-        .order("start_time", { ascending: true })
-        .limit(20);
+      const storeId = data?.storeId;
+      const isUuid =
+        typeof storeId === "string" &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storeId);
 
-      if (!error && Array.isArray(dbWindows) && dbWindows.length > 0) {
-        return dbWindows.map((w: any) => ({
-          id: w.id,
-          dateLabel: w.day_of_week || "Hoje",
-          timeWindow: `${w.start_time} às ${w.end_time}`,
-          feeCents: w.fee_cents || 0,
-          isFree: (w.fee_cents || 0) === 0,
-          isAvailable: (w.current_orders_count || 0) < (w.max_orders_capacity || 50),
-          mode: (w.mode as "delivery" | "pickup") || "delivery",
-        })) as DeliveryWindowDTO[];
+      // Consultar janelas persistidas nas configurações da loja (settings.delivery_windows) quando houver storeId válido
+      if (isUuid) {
+        const supabase = await getAnonServerClient();
+        const { data: storeRow } = await supabase
+          .from("stores")
+          .select("settings")
+          .eq("id", storeId)
+          .maybeSingle();
+
+        const configured = (storeRow?.settings as Record<string, any> | null)?.delivery_windows;
+        if (Array.isArray(configured) && configured.length > 0) {
+          return configured.map((w: any, idx: number) => ({
+            id: w.id || `w-store-${idx}`,
+            dateLabel: w.dateLabel || w.day_of_week || "Hoje",
+            timeWindow:
+              w.timeWindow ||
+              (w.start_time && w.end_time ? `${w.start_time} às ${w.end_time}` : "09:00 às 18:00"),
+            feeCents: Number(w.feeCents ?? w.fee_cents ?? 0),
+            isFree: Number(w.feeCents ?? w.fee_cents ?? 0) === 0,
+            isAvailable: w.isAvailable ?? (w.current_orders_count || 0) < (w.max_orders_capacity || 50),
+            mode: (w.mode as "delivery" | "pickup") || "delivery",
+          })) as DeliveryWindowDTO[];
+        }
       }
 
       // Janelas canônicas dinâmicas caso ainda não haja configuração específica

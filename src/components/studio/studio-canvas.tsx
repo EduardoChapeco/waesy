@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { isHexColorDark } from '@/lib/builder/block-data-resolver';
 import { generateQrCodeDataUri } from '@/lib/qr-code';
 
 export interface CanvasLayer {
@@ -633,6 +634,7 @@ export function StudioCanvas({
       >
         <div
           id="studio-canvas-stage"
+          data-builder-canvas-isolated={isHexColorDark(bgColor) ? 'dark' : 'light'}
           /* design-lint-ignore DL-05 reason:"Dynamic background color on canvas artboard" expiry:"2030-01-01" */
           style={{
             backgroundColor: bgColor,

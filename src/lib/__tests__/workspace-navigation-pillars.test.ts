@@ -33,7 +33,9 @@ const REQUIRED_MASTER_PILLAR_IDS = [
   "atendimento",
   "crm",
   "comercial",
+  "contratos",
   "catalogo",
+  "marketing",
   "logistica",
   "suporte",
   "financeiro",
@@ -43,7 +45,7 @@ const REQUIRED_MASTER_PILLAR_IDS = [
 ];
 
 describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
-  it("provides all 11 Master Pillars across every business niche without duplicates", () => {
+  it("provides all 13 Master Pillars across every business niche without duplicates", () => {
     for (const niche of ALL_NICHES) {
       const groups = resolveWorkspaceNavigation({ niche, category: niche });
       expect(groups.length).toBeGreaterThan(0);
@@ -216,6 +218,58 @@ describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
     }
   });
 
+  it("isolates vertical logistics modules and removes technical WMS/PUDO/CT-e jargon", () => {
+    const ecommerceOnlyPaths = [
+      "/workspace/pedidos/expedicao",
+      "/workspace/logistica/trocas",
+      "/workspace/logistica/pudo",
+      "/workspace/logistica/cte",
+      "/workspace/logistica/cotacoes",
+    ];
+
+    for (const nonEcommerceNiche of [
+      "gastronomy",
+      "services",
+      "legal",
+      "real_estate",
+      "education",
+      "news",
+    ]) {
+      const paths = getSidebarConfig(nonEcommerceNiche).flatMap((g) =>
+        g.items.map((i) => i.path),
+      );
+      for (const forbidden of ecommerceOnlyPaths) {
+        expect(
+          paths,
+          `Niche "${nonEcommerceNiche}" should not expose e-commerce logistics route "${forbidden}"`,
+        ).not.toContain(forbidden);
+      }
+    }
+
+    const gastroGroups = resolveWorkspaceNavigation({ niche: "gastronomy" });
+    const gastroItems = gastroGroups.flatMap((g) => g.items);
+    expect(gastroItems.some((i) => i.path === "/workspace/pedidos/frota")).toBe(
+      true,
+    );
+    expect(gastroItems.some((i) => i.path === "/workspace/logistica/tabelas")).toBe(
+      true,
+    );
+    expect(
+      gastroItems.some((i) => i.path === "/workspace/integracoes/marketplaces"),
+    ).toBe(true);
+
+    for (const niche of ALL_NICHES) {
+      const groups = resolveWorkspaceNavigation({ niche });
+      const labelsAndTitles = groups.flatMap((g) => [
+        g.label || "",
+        ...g.items.map((i) => `${i.label || ""} ${i.badge || ""}`),
+      ]);
+      for (const text of labelsAndTitles) {
+        expect(text).not.toMatch(/\b(WMS|PUDO|CT-e|picking)\b/i);
+      }
+    }
+  });
+
   it("handles empty or unknown niche inputs gracefully", () => {
     const emptyPillars = getMasterSidebarPillars([]);
     expect(emptyPillars).toEqual([]);
@@ -225,6 +279,93 @@ describe("Workspace Master Sidebar Pillars & Multi-Niche Completeness", () => {
     expect(fallbackPillars.map((p) => p.id).sort()).toEqual(
       [...REQUIRED_MASTER_PILLAR_IDS].sort(),
     );
+  });
+
+  it("isolates Contratos, Marketing, RH, IA, Turismo and Licitações into their exact sectors across all niches", () => {
+    for (const niche of ALL_NICHES) {
+      const groups = resolveWorkspaceNavigation({ niche, category: niche });
+      const pillars = getMasterSidebarPillars(groups, niche);
+
+      const contractsPillar = pillars.find((p) => p.id === "contratos");
+      expect(contractsPillar, `Niche "${niche}" missing dedicated Contratos pillar`).toBeDefined();
+      const contractPaths = contractsPillar?.items.map((i) => i.path) ?? [];
+      expect(contractPaths).toContain("/workspace/contratos");
+      expect(contractPaths).toContain("/workspace/contratos/novo");
+      expect(contractPaths).toContain("/workspace/captacao/ndas");
+
+      const fiscalGroup = groups.find((g) => g.id === "fiscal-accounting");
+      const fiscalPaths = fiscalGroup?.items.map((i) => i.path) ?? [];
+      expect(fiscalPaths).not.toContain("/workspace/contratos");
+      expect(fiscalPaths).not.toContain("/workspace/licitacoes");
+
+      const financeGroup = groups.find((g) => g.id === "finance");
+      const financePaths = financeGroup?.items.map((i) => i.path) ?? [];
+      expect(financePaths).not.toContain("/workspace/tokens");
+      expect(financePaths).not.toContain("/workspace/rh/folha");
+      expect(financePaths).not.toContain("/workspace/financeiro/funcionarios");
+
+      const teamGroup = groups.find((g) => g.id === "team-rh");
+      const teamPaths = teamGroup?.items.map((i) => i.path) ?? [];
+      expect(teamPaths).toContain("/workspace/configuracoes/equipe");
+      expect(teamPaths).toContain("/workspace/rh/folha");
+      expect(teamPaths).toContain("/workspace/financeiro/funcionarios");
+
+      const intelGroup = groups.find((g) => g.id === "intelligence-squads");
+      const intelPaths = intelGroup?.items.map((i) => i.path) ?? [];
+      expect(intelPaths).toContain("/workspace/tokens");
+      expect(intelPaths).not.toContain("/workspace/conteudo/receitas");
+      expect(intelPaths).not.toContain("/workspace/marketing/brand-kit");
+      expect(intelPaths).not.toContain("/workspace/marketing/canvas-bmc");
+      expect(intelPaths).not.toContain("/workspace/marketing/canvas-pecados");
+      expect(intelPaths).not.toContain("/workspace/marketing/swot");
+
+      const attendancePillar = pillars.find((p) => p.id === "atendimento");
+      expect(attendancePillar?.items.map((i) => i.path)).toContain("/workspace/whatsapp/automacoes");
+
+      const marketingPillar = pillars.find((p) => p.id === "marketing");
+      expect(marketingPillar, `Niche "${niche}" missing dedicated Marketing pillar`).toBeDefined();
+      expect(marketingPillar?.items.map((i) => i.path)).toContain("/workspace/marketing/vitrine");
+      expect(marketingPillar?.items.map((i) => i.path)).toContain("/workspace/marketing/brand-kit");
+    }
+
+    const gastroCatalog = resolveWorkspaceNavigation({ niche: "gastronomy" }).find(
+      (g) => g.id === "gastro-catalog",
+    );
+    expect(gastroCatalog?.items.map((i) => i.path)).toContain("/workspace/conteudo/receitas");
+    const gastroComercial = getMasterSidebarPillars(
+      resolveWorkspaceNavigation({ niche: "gastronomy" }),
+      "gastronomy",
+    ).find((p) => p.id === "comercial");
+    expect(gastroComercial?.items.map((i) => i.path)).not.toContain("/workspace/licitacoes");
+
+    const tourismPillars = getMasterSidebarPillars(
+      resolveWorkspaceNavigation({ niche: "tourism" }),
+      "tourism",
+    );
+    expect(
+      tourismPillars.find((p) => p.id === "contratos")?.items.map((i) => i.path),
+    ).toContain("/workspace/turismo/contratos");
+    expect(
+      tourismPillars.find((p) => p.id === "financeiro")?.items.map((i) => i.path),
+    ).toContain("/workspace/turismo/comissoes");
+    expect(
+      tourismPillars.find((p) => p.id === "catalogo")?.items.map((i) => i.path),
+    ).not.toContain("/workspace/turismo/contratos");
+    expect(
+      tourismPillars.find((p) => p.id === "catalogo")?.items.map((i) => i.path),
+    ).not.toContain("/workspace/turismo/comissoes");
+
+    const rentalGroup = resolveWorkspaceNavigation({ niche: "rental" }).find(
+      (g) => g.id === "rental-events",
+    );
+    const rentalQuotesItem = rentalGroup?.items.find((i) => i.path === "/workspace/orcamentos");
+    expect(rentalQuotesItem?.label).toBe("Orçamentos");
+
+    const legalComercial = getMasterSidebarPillars(
+      resolveWorkspaceNavigation({ niche: "legal" }),
+      "legal",
+    ).find((p) => p.id === "comercial");
+    expect(legalComercial?.items.map((i) => i.path)).toContain("/workspace/licitacoes");
   });
 });
 

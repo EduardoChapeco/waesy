@@ -1,20 +1,16 @@
-import React, { useId, useState } from "react";
+import React, { useState } from "react";
 import { MetricWidget, type MetricWidgetProps } from "@/components/widgets/MetricWidget";
 import { TaskCard, type TaskCardProps } from "@/components/widgets/TaskCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import { exportElementAsImage } from "@/lib/pdf-export";
 import {
-  CREATIVE_THEMES,
-  CreativeArtboardRenderer,
-  type CreativeArchetype,
-  type CreativeAspectRatio,
-  type CreativeThemeId,
-} from "@/components/studio/creative-artboard-renderer";
+  renderCopilotWidget,
+  type StructuredWidgetPayload,
+} from "@/design-system/copilot/widget-registry";
+import { ArtifactCreativePost } from "@/components/chat/artifacts/ArtifactCreativePost";
 import {
   Package,
   CheckCircle2,
@@ -51,9 +47,6 @@ import {
   Lock,
   EyeOff,
   Shield,
-  Download,
-  Palette,
-  Sparkles,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -93,7 +86,9 @@ export type AIChatBlockType =
   | "travel_itinerary"
   | "legal_triage"
   | "food_modifier_selector"
-  | "creative_ad_preview";
+  | "creative_ad_preview"
+  | "in_chat_simlab_verdict"
+  | "widget";
 
 export interface AIChatBlock {
   type: AIChatBlockType;
@@ -127,6 +122,12 @@ export interface AIChatAction {
 export interface StructuredMessagePayload {
   text?: string;
   blocks?: AIChatBlock[];
+  widgets?: Array<{
+    widgetType?: string;
+    widget?: string;
+    payload?: Record<string, any>;
+    data?: Record<string, any>;
+  }>;
   actions?: AIChatAction[];
   telemetry?: {
     latency_ms: number;
@@ -1686,28 +1687,6 @@ function CreativeAdPreviewBlock({
   data: Record<string, any>;
   onAction?: (action: AIChatAction) => void;
 }) {
-  const uid = useId();
-  const stageId = `chat-creative-stage-${uid.replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const initialRatioRaw = String(data.aspect_ratio || data.aspectRatio || "").trim();
-  const formatRaw = String(data.format || "feed").toLowerCase();
-  const initialAspectRatio: CreativeAspectRatio =
-    initialRatioRaw === "9:16" || formatRaw === "story"
-      ? "9:16"
-      : initialRatioRaw === "4:5" || formatRaw === "portrait"
-        ? "4:5"
-        : initialRatioRaw === "16:9" || formatRaw === "landscape"
-          ? "16:9"
-          : "1:1";
-
-  const rawTheme = String(data.theme_id || data.themeId || data.theme || "emerald") as CreativeThemeId;
-  const initialThemeId: CreativeThemeId =
-    rawTheme in CREATIVE_THEMES ? rawTheme : "emerald";
-  const initialArchetype = (String(data.archetype || "promo_offer") as CreativeArchetype);
-
-  const [aspectRatio, setAspectRatio] = useState<CreativeAspectRatio>(initialAspectRatio);
-  const [themeId, setThemeId] = useState<CreativeThemeId>(initialThemeId);
-  const [isExporting, setIsExporting] = useState(false);
-
   const headline = data.headline || data.title || "Oferta Especial";
   const subheadline =
     data.subheadline ||
@@ -1715,193 +1694,140 @@ function CreativeAdPreviewBlock({
     data.copy ||
     "Confira os detalhes completos e garanta condições exclusivas.";
   const ctaLabel = data.cta_label || data.ctaText || "Aproveitar Agora";
-  const badge = data.badge || "Em Destaque";
-  const offerBadge = data.offer_badge || data.offerBadge;
-  const offerPrice = data.offer_price || data.offerPrice;
-  const installments = data.installments;
-  const storeName = data.store_name || data.storeName || "Waesy Studio";
-  const locationLabel = data.location_label || data.locationLabel;
-  const bullets = Array.isArray(data.bullets) ? data.bullets : undefined;
-  const activeFormat =
-    aspectRatio === "9:16"
-      ? "story"
-      : aspectRatio === "4:5"
-        ? "portrait"
-        : aspectRatio === "16:9"
-          ? "landscape"
-          : "feed";
-
-  const handleDownloadPng = async () => {
-    try {
-      setIsExporting(true);
-      await exportElementAsImage(stageId, {
-        filename: `arte-waesy-${aspectRatio.replace(":", "x")}.png`,
-        scale: 2,
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   return (
-    <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 max-w-md w-full space-y-3">
-      <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2">
-        <span className="text-2xs uppercase tracking-wider font-semibold text-primary flex items-center gap-2 min-w-0">
-          <Sparkles className="size-3.5 shrink-0" />
-          <span className="truncate">Estúdio Canva • Tempo Real</span>
-        </span>
-        <Badge variant="outline" className="text-2xs font-mono shrink-0">
-          {aspectRatio === "9:16"
-            ? "Story (9:16)"
-            : aspectRatio === "4:5"
-              ? "Retrato (4:5)"
-              : aspectRatio === "16:9"
-                ? "Slide (16:9)"
-                : "Feed (1:1)"}
-        </Badge>
+    <ArtifactCreativePost
+      compact
+      title={headline}
+      format={data.format}
+      aspectRatio={data.aspectRatio || data.aspect_ratio}
+      archetype={data.archetype || "promo_offer"}
+      themeId={data.themeId || data.theme_id || data.theme || "emerald"}
+      badge={data.badge || "Em Destaque"}
+      headline={headline}
+      subheadline={subheadline}
+      bullets={Array.isArray(data.bullets) ? data.bullets : undefined}
+      offerBadge={data.offerBadge || data.offer_badge}
+      offerPrice={data.offerPrice || data.offer_price}
+      installments={data.installments}
+      ctaText={ctaLabel}
+      storeName={data.storeName || data.store_name || "Waesy Studio"}
+      brandHandle={data.brandHandle || data.brand_handle}
+      locationLabel={data.locationLabel || data.location_label}
+      imageUrl={data.imageUrl || data.image_url}
+      logoUrl={data.logoUrl || data.logo_url}
+      caption={data.caption}
+      hashtags={Array.isArray(data.hashtags) ? data.hashtags : undefined}
+      slides={Array.isArray(data.slides) ? data.slides : undefined}
+      onOpenInStudio={(snapshot) =>
+        onAction?.({
+          id: `open-studio-${Date.now()}`,
+          label: "Abrir no Estúdio",
+          action_type: "open_artifact",
+          payload: {
+            artifact_id: data.artifact_id,
+            type: "creative_post",
+            title: snapshot.headline || headline,
+            data: { ...data, ...snapshot },
+          },
+        })
+      }
+      onPublish={(snapshot) =>
+        onAction?.({
+          id: `publish-ad-${Date.now()}`,
+          label: "Publicar no Mural",
+          action_type: "publish_ad",
+          payload: {
+            headline: snapshot.headline || headline,
+            body_text: snapshot.body_text || subheadline,
+            cta_label: snapshot.cta_label || ctaLabel,
+            format: snapshot.format,
+          },
+        })
+      }
+    />
+  );
+}
+
+function SimlabVerdictBlock({
+  data,
+  onAction,
+}: {
+  data: Record<string, any>;
+  onAction?: (action: AIChatAction) => void;
+}) {
+  const verdict = String(data.verdict || data.summary || "Simulação de audiência concluída.");
+  const score =
+    typeof data.score === "number"
+      ? data.score
+      : typeof data.winRate === "number"
+        ? data.winRate
+        : null;
+  const risks = Array.isArray(data.risks) ? data.risks : Array.isArray(data.criticisms) ? data.criticisms : [];
+  const recommendations = Array.isArray(data.recommendations)
+    ? data.recommendations
+    : Array.isArray(data.suggestions)
+      ? data.suggestions
+      : [];
+
+  return (
+    <div className="rounded-2xl border border-border/80 bg-card p-4 max-w-md w-full space-y-3">
+      <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2">
+        <div className="flex items-center gap-2">
+          <Zap className="size-4 text-primary shrink-0" />
+          <span className="text-xs font-bold text-foreground">
+            {data.title || "Veredito do SimLabs"}
+          </span>
+        </div>
+        {score !== null && (
+          <Badge variant="outline" className="text-2xs font-mono">
+            {score}% adesão
+          </Badge>
+        )}
       </div>
 
-      {/* Controles Rápidos de Formato e Tema em Tempo Real */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="inline-flex rounded-xl bg-muted p-1 gap-1">
-          {(["1:1", "4:5", "9:16", "16:9"] as const).map((ratio) => (
-            <button
-              key={ratio}
-              type="button"
-              onClick={() => setAspectRatio(ratio)}
-              className={cn(
-                "min-h-11 sm:min-h-8 px-3 rounded-lg text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                aspectRatio === ratio
-                  ? "bg-background text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {ratio}
-            </button>
-          ))}
-        </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">{verdict}</p>
 
-        <div className="inline-flex items-center gap-1 rounded-xl bg-muted p-1">
-          <Palette className="size-3.5 text-muted-foreground ml-1 shrink-0" />
-          {(["emerald", "gold", "cobalt", "obsidian"] as const).map((tId) => (
-            <button
-              key={tId}
-              type="button"
-              onClick={() => setThemeId(tId)}
-              className={cn(
-                "min-h-11 sm:min-h-8 px-2 rounded-lg text-2xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                themeId === tId
-                  ? "bg-background text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {CREATIVE_THEMES[tId].label.split(" ")[0]}
-            </button>
-          ))}
+      {risks.length > 0 && (
+        <div className="space-y-1">
+          <span className="text-2xs font-semibold text-foreground block">Pontos de atenção</span>
+          <ul className="space-y-1 text-2xs text-muted-foreground list-disc pl-4">
+            {risks.slice(0, 4).map((r: any, idx: number) => (
+              <li key={idx}>{String(typeof r === "string" ? r : r?.label || r?.reason || "")}</li>
+            ))}
+          </ul>
         </div>
-      </div>
+      )}
 
-      {/* Canvas HTML/CSS Real Renderizado (Pronto para Captura html2canvas PNG) */}
-      <ScrollArea className="w-full rounded-xl bg-muted/30 border border-border/50">
-        <div className="flex justify-center p-3">
-          <CreativeArtboardRenderer
-            id={stageId}
-            archetype={initialArchetype}
-            themeId={themeId}
-            aspectRatio={aspectRatio}
-            badge={badge}
-            headline={headline}
-            subheadline={subheadline}
-            bullets={bullets}
-            offerBadge={offerBadge}
-            offerPrice={offerPrice}
-            installments={installments}
-            ctaText={ctaLabel}
-            brandName={storeName}
-            locationLabel={locationLabel}
-            imageUrl={data.image_url || data.imageUrl}
-            logoUrl={data.logo_url || data.logoUrl}
-            className="max-w-full"
-          />
+      {recommendations.length > 0 && (
+        <div className="space-y-1">
+          <span className="text-2xs font-semibold text-foreground block">Ajustes recomendados</span>
+          <ul className="space-y-1 text-2xs text-muted-foreground list-disc pl-4">
+            {recommendations.slice(0, 3).map((rec: any, idx: number) => (
+              <li key={idx}>{String(rec)}</li>
+            ))}
+          </ul>
         </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      )}
 
-      {/* Ações Táteis: Baixar PNG, Abrir no Estúdio e Publicar */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      {onAction && data.fixPrompt && (
         <Button
           type="button"
           variant="outline"
           size="sm"
-          disabled={isExporting}
-          onClick={handleDownloadPng}
-          className="h-11 min-h-11 rounded-xl text-xs font-medium gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-        >
-          <Download className="size-3.5 shrink-0" />
-          <span>{isExporting ? "Gerando..." : "PNG"}</span>
-        </Button>
-
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
           onClick={() =>
-            onAction?.({
-              id: `open-studio-${Date.now()}`,
-              label: "Abrir no Estúdio",
-              action_type: "open_artifact",
-              payload: {
-                artifact_id: data.artifact_id,
-                type: "creative_post",
-                title: headline,
-                data: {
-                  ...data,
-                  format: activeFormat,
-                  aspectRatio,
-                  themeId,
-                  archetype: initialArchetype,
-                  headline,
-                  subheadline,
-                  badge,
-                  offerBadge,
-                  offerPrice,
-                  installments,
-                  bullets,
-                  ctaText: ctaLabel,
-                  storeName,
-                  locationLabel,
-                },
-              },
+            onAction({
+              id: `simlab-apply-${Date.now()}`,
+              label: "Aplicar melhorias sugeridas",
+              action_type: "execute_vertical_ai",
+              payload: { prompt: String(data.fixPrompt) },
             })
           }
-          className="flex-1 h-11 min-h-11 rounded-xl text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          className="h-11 min-h-11 w-full rounded-xl text-xs font-semibold"
         >
-          <Layers className="size-3.5 shrink-0" />
-          <span>Abrir no Estúdio</span>
+          Aplicar melhorias sugeridas
         </Button>
-
-        <Button
-          type="button"
-          size="sm"
-          className="flex-1 h-11 min-h-11 rounded-xl text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-          onClick={() =>
-            onAction?.({
-              id: `publish-ad-${Date.now()}`,
-              label: "Publicar no Mural",
-              action_type: "publish_ad",
-              payload: {
-                headline,
-                body_text: subheadline,
-                cta_label: ctaLabel,
-                format: activeFormat,
-              },
-            })
-          }
-        >
-          <span>Publicar</span>
-          <ArrowRight className="size-3.5 ml-2 shrink-0" />
-        </Button>
-      </div>
+      )}
     </div>
   );
 }
@@ -1963,10 +1889,11 @@ export function StructuredMessageView({
   }
 
   const blocks = payload.blocks || [];
+  const widgets = payload.widgets || [];
   const actions = payload.actions || [];
 
   // Estado 3: Vazio (Empty)
-  if ((Boolean(payload.text) === false) && blocks.length === 0 && actions.length === 0) {
+  if ((Boolean(payload.text) === false) && blocks.length === 0 && widgets.length === 0 && actions.length === 0) {
     return (
       <div className="py-2 text-xs text-muted-foreground italic select-none">
         Mensagem sem conteúdo.
@@ -2184,10 +2111,45 @@ export function StructuredMessageView({
               <CreativeAdPreviewBlock key={index} data={block.data} onAction={handleAction} />
             );
 
+          case "in_chat_simlab_verdict":
+            return (
+              <SimlabVerdictBlock key={index} data={block.data} onAction={handleAction} />
+            );
+
+          case "widget": {
+            const widgetName = String(block.data?.widget || block.data?.widgetType || "");
+            const widgetData = (block.data?.data || block.data?.payload || block.data) as unknown;
+            return (
+              <div key={index} className="w-full">
+                {renderCopilotWidget({
+                  type: "widget",
+                  widget: widgetName,
+                  data: widgetData,
+                } as StructuredWidgetPayload)}
+              </div>
+            );
+          }
+
           default:
             return null;
         }
       })}
+
+      {/* Widgets declarativos emitidos via WidgetRegistry / SSE */}
+      {widgets.length > 0 &&
+        widgets.map((w, wIdx) => {
+          const widgetName = String(w.widgetType || w.widget || "");
+          if (!widgetName) return null;
+          return (
+            <div key={`widget-${wIdx}`} className="w-full">
+              {renderCopilotWidget({
+                type: "widget",
+                widget: widgetName,
+                data: w.payload || w.data || {},
+              })}
+            </div>
+          );
+        })}
 
       {/* Ações Tipadas Interativas na Base da Mensagem */}
       {actions.length > 0 && (

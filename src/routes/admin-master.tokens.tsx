@@ -205,22 +205,22 @@ function AdminTokensPage() {
 
  {/* Tabs */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-  <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
-    <TabsTrigger value="carteiras" className="text-xs">Carteiras ({dataStats.stores.length})</TabsTrigger>
-    <TabsTrigger value="abatimentos" className="text-xs">Abatimentos ({pendingDiscounts.length})</TabsTrigger>
-    <TabsTrigger value="conciliacao" className="text-xs">Solvência</TabsTrigger>
-    <TabsTrigger value="seguranca" className="text-xs">Auditoria</TabsTrigger>
+  <TabsList className="waesy-tab-strip items-center justify-start gap-2 w-full sm:w-auto max-w-full min-w-0 p-1 rounded-lg h-11 min-h-11 sm:h-10 sm:min-h-10">
+    <TabsTrigger value="carteiras" className="text-xs shrink-0 whitespace-nowrap">Carteiras ({dataStats.stores.length})</TabsTrigger>
+    <TabsTrigger value="abatimentos" className="text-xs shrink-0 whitespace-nowrap">Abatimentos ({pendingDiscounts.length})</TabsTrigger>
+    <TabsTrigger value="conciliacao" className="text-xs shrink-0 whitespace-nowrap">Solvência</TabsTrigger>
+    <TabsTrigger value="seguranca" className="text-xs shrink-0 whitespace-nowrap">Auditoria</TabsTrigger>
   </TabsList>
 
  {/* Tab 1: Carteiras */}
  <TabsContent value="carteiras" className="space-y-3">
  <div className="relative max-w-xs">
- <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+ <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
  <Input
  placeholder="Buscar loja ou slug..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="pl-8 text-xs h-8"
+ className="pl-8 text-xs h-11 min-h-11 sm:h-9 sm:min-h-9"
  />
  </div>
 

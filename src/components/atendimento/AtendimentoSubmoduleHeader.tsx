@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StatefulNavIcon } from "@/components/ui/stateful-nav-icon";
 import { cn } from "@/lib/utils";
 
 export type AtendimentoSubmoduleKey =
@@ -114,7 +115,7 @@ export function AtendimentoSubmoduleHeader({
 
       <nav
         aria-label="Submódulos de Atendimento"
-        className="flex flex-wrap items-center gap-1 border-b border-border/60 pb-2"
+        className="waesy-tab-strip items-center gap-1 border-b border-border/60 pb-2"
       >
         {SUBMODULE_TABS.map((tab) => {
           const Icon = tab.icon;
@@ -123,14 +124,15 @@ export function AtendimentoSubmoduleHeader({
             <Link
               key={tab.key}
               to={tab.to as any}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "min-h-11 px-3 py-2 rounded-lg text-xs font-medium inline-flex items-center gap-2 shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "h-11 min-h-11 px-3 py-2 rounded-xl text-xs font-medium inline-flex items-center gap-2 shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
-                  ? "bg-muted text-foreground font-semibold border border-border/60"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
+                  ? "bg-rail-active text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-rail-hover",
               )}
             >
-              <Icon className="size-4 shrink-0" />
+              <StatefulNavIcon icon={Icon} active={isActive} size={16} className="size-4 shrink-0" />
               <span>{tab.label}</span>
             </Link>
           );

@@ -3,15 +3,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { NativeMobileHeader } from "@/components/navigation";
 import { resetPasswordForEmail } from "@/services/auth.functions";
+import { getPublicBrandSettings } from "@/services/master.functions";
+import { AuthSplitExperienceShell } from "@/components/auth/auth-split-shell";
 
 export const Route = createFileRoute("/_store/recuperar-senha")({
- head: () => ({ meta: [{ title: "Recuperar senha" }] }),
+ head: () => ({ meta: [{ title: "Recuperar senha — Waesy" }] }),
+ loader: async () => {
+ try {
+ const brand = await getPublicBrandSettings().catch(() => null);
+ return { brand };
+ } catch {
+ return { brand: null };
+ }
+ },
  component: Page,
 });
 
 function Page() {
+ const { brand } = ((Route.useLoaderData?.() as any) || {});
  const [email, setEmail] = useState("");
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [success, setSuccess] = useState(false);
@@ -40,36 +50,38 @@ function Page() {
  };
 
  return (
-    <div className="w-full">
-      <NativeMobileHeader
-        title="Recuperar Senha"
-        fallbackHref="/"
-      />
-      <div className="mx-auto max-w-md px-4 py-8 md:py-16">
- <div className="text-center mb-8">
- <h1 className="text-3xl font-semibold">Recuperar senha</h1>
- <p className="text-muted-foreground mt-2">
- Informe seu e-mail cadastrado.
+ <AuthSplitExperienceShell
+ brand={brand}
+ backHref="/entrar"
+ subtitle="Recuperação Segura"
+ desktopHeadline="Recupere o acesso à sua conta em segurança."
+ desktopDescription="Enviaremos um link criptografado de validação única diretamente para o seu e-mail cadastrado."
+ >
+ <div className="space-y-6">
+ <div className="space-y-1 text-left">
+ <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+ Recuperar senha
+ </h1>
+ <p className="text-xs sm:text-sm text-muted-foreground">
+ Informe seu e-mail cadastrado para receber o link de redefinição.
  </p>
  </div>
 
  {success ? (
- <div className="bg-primary/10 text-primary p-6 text-center">
- <p className="font-medium mb-4">E-mail enviado!</p>
- <p className="text-sm">
- Verifique sua caixa de entrada (e a pasta de spam) para redefinir sua senha.
+ <div className="rounded-2xl border border-primary/20 bg-primary/10 text-foreground p-6 space-y-4">
+ <p className="font-semibold text-sm text-primary">E-mail enviado</p>
+ <p className="text-xs text-muted-foreground leading-relaxed">
+ Verifique sua caixa de entrada e spam para redefinir sua senha com segurança.
  </p>
- <div className="mt-6">
- <Button asChild variant="outline" className="w-full">
- <Link to="/">Voltar ao Início</Link>
+ <Button asChild variant="outline" className="w-full h-11 min-h-11 rounded-xl">
+ <Link to="/entrar">Voltar ao Login</Link>
  </Button>
- </div>
  </div>
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4">
- <div>
- <label htmlFor="email" className="block text-sm font-medium mb-1">
- E-mail
+ <div className="space-y-2">
+ <label htmlFor="email" className="block text-xs font-semibold text-foreground">
+ E-mail cadastrado
  </label>
  <Input
  id="email"
@@ -78,21 +90,22 @@ function Page() {
  value={email}
  onChange={(e) => setEmail(e.target.value)}
  placeholder="seu@email.com"
+ className="h-11 rounded-xl text-base md:text-sm bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
 
- <Button type="submit" className="w-full" disabled={isSubmitting}>
+ <Button type="submit" className="w-full h-11 min-h-11 rounded-xl font-semibold text-xs" disabled={isSubmitting}>
  {isSubmitting ? "Enviando..." : "Enviar link de recuperação"}
  </Button>
 
- <div className="text-center pt-4">
- <Button asChild variant="link" className="text-muted-foreground">
- <Link to="/">Voltar ao Início</Link>
+ <div className="text-center pt-2">
+ <Button asChild variant="link" className="min-h-11 text-muted-foreground">
+ <Link to="/entrar">Voltar para o Login</Link>
  </Button>
  </div>
  </form>
  )}
  </div>
- </div>
+ </AuthSplitExperienceShell>
  );
 }

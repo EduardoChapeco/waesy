@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeMobileHeader } from "@/components/navigation";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import { listCustomerOrders } from "@/services/order.functions";
 import { subscribeToTableChanges } from "@/services/realtime-channel";
 import { formatDate } from "@/lib/datetime";
@@ -369,7 +369,7 @@ function DesktopOrderCard({ order }: { order: any }) {
 function CustomerOrdersPage() {
   const initialOrders = (Route.useLoaderData() as any[]) || [];
   const router = useRouter();
-  const { isCompact } = useWindowSizeClass();
+  const { isCompact } = useEffectiveViewport();
   const [orders, setOrders] = useState<any[]>(initialOrders);
   const {
     cart,

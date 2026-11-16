@@ -548,7 +548,7 @@ function WorkspaceFaturasPage() {
                 <div className="p-4 border-b border-border/60 flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Extrato Detalhado de Lançamentos</h3>
-                    <p className="text-xs text-muted-foreground">Cada pedido e microtaxa registrados atomicamente com rastreabilidade auditável.</p>
+                    <p className="text-xs text-muted-foreground">Histórico completo de pedidos e taxas de serviço.</p>
                   </div>
                   <Button
                     variant="outline"

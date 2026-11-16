@@ -6,6 +6,7 @@ import { getServerClient } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { getIdentity } from "./identity.functions";
 import { requireAdmin } from "@/lib/server-access";
+import { isPlatformAdminIdentity } from "@/lib/identity-core";
 import { z } from "zod";
 import { withDataPayload } from "@/services/cart-helpers";
 import { classifiedSchema } from "@/types/community";
@@ -760,12 +761,7 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
       }
 
       const isOwner = !!(identity?.id && classifiedData.author_profile_id === identity.id);
-      const isAdmin = !!(
-        identity?.role === "admin" ||
-        identity?.role === "master" ||
-        identity?.role === "platform_admin" ||
-        identity?.role === "owner"
-      );
+      const isAdmin = isPlatformAdminIdentity(identity);
       const canManage = isOwner || isAdmin;
 
       const viewerContext: "owner" | "admin" | "visitor" | "anonymous" = isOwner
@@ -928,7 +924,7 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
       throw new Error("Anúncio não encontrado.");
     }
 
-    const isAdmin = identity.role === "admin" || identity.role === "master";
+    const isAdmin = isPlatformAdminIdentity(identity);
     let hasAuthority = existing.author_profile_id === identity.id || isAdmin;
 
     if (!hasAuthority && existing.store_id) {
@@ -1762,7 +1758,7 @@ export const deleteClassified = createServerFn({ method: "POST" })
       throw new Error("Anúncio não encontrado.");
     }
 
-    const isAdmin = identity.role === "admin" || identity.role === "master";
+    const isAdmin = isPlatformAdminIdentity(identity);
     let hasAuthority = existing.author_profile_id === identity.id || isAdmin;
 
     if (!hasAuthority && existing.store_id) {
@@ -2339,7 +2335,7 @@ export const getBoostPaymentStatus = createServerFn({ method: "GET" }).handler(a
   const activeProvider = hasAsaas ? "asaas" : hasStripe ? "stripe" : null;
 
   const identity = await getIdentity().catch(() => null);
-  const isAdmin = identity?.role === "admin" || identity?.role === "master";
+  const isAdmin = isPlatformAdminIdentity(identity);
 
   return {
     available: !!activeProvider,
@@ -2381,7 +2377,7 @@ export const initiateBoostPayment = createServerFn({ method: "POST" })
 
     if (classifiedErr || !classified) throw new Error("Anúncio não encontrado.");
 
-    const isAdmin = identity.role === "admin" || identity.role === "master";
+    const isAdmin = isPlatformAdminIdentity(identity);
     if (classified.author_profile_id !== identity.id && !isAdmin) {
       throw new Error("Você não tem autorização para impulsionar este anúncio.");
     }
@@ -3396,7 +3392,7 @@ export const refineClassifiedWithAI = createServerFn({ method: "POST" })
       if (!identity?.id) {
         throw new Error("Autenticação obrigatória para editar anúncio existente com o Copilot.");
       }
-      const isMaster = identity.role === "admin" || identity.role === "master";
+      const isMaster = isPlatformAdminIdentity(identity);
       if (!isMaster) {
         const supabase = await getServerClient();
         if (entityId) {

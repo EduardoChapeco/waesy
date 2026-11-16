@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getSafeBuilderHref } from "@/lib/builder/safe-href";
 import { getSectionStyle } from "../utils";
+import { useEffectiveViewport } from "@/design-system/vitrine/viewport-context";
 import type { SoftwareFeatureShowcaseBlockData, OmniBlockStyling } from "@/types/omni-builder";
 
 export interface SoftwareFeatureShowcaseProps {
@@ -50,6 +51,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
   styling,
   className = "",
 }) => {
+  const { isMobile, isMedium } = useEffectiveViewport();
   const [activeTabId, setActiveTabId] = useState<string>(() => data.tabs[0]?.id || "");
   const sectionStyle = getSectionStyle(styling);
 
@@ -132,10 +134,10 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
           role="tabpanel"
           id={`panel-${activeTab.id}`}
           aria-labelledby={`tab-${activeTab.id}`}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center"
+          className={isMobile || isMedium ? "grid grid-cols-1 gap-8 items-center" : "grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"}
         >
           {/* Lado Esquerdo: Descrição, Benefícios e Ação */}
-          <div className="lg:col-span-6 flex flex-col items-start text-left">
+          <div className={isMobile || isMedium ? "col-span-1 flex flex-col items-start text-left" : "col-span-1 lg:col-span-6 flex flex-col items-start text-left"}>
             <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary mb-3">
               <ActiveIcon className="size-4" />
               <span>{activeTab.tabLabel}</span>
@@ -181,7 +183,7 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
           </div>
 
           {/* Lado Direito: Mockup Visual de Alta Fidelidade do Software */}
-          <div className="lg:col-span-6">
+          <div className={isMobile || isMedium ? "col-span-1" : "col-span-1 lg:col-span-6"}>
             <div className="relative rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs">
               {/* Barra de Janela Estilo App Nativo Desktop */}
               <div className="flex items-center justify-between px-4 py-3 bg-muted/40 border-b border-border/60">
@@ -216,8 +218,8 @@ export const SoftwareFeatureShowcase: React.FC<SoftwareFeatureShowcaseProps> = (
                           <div className="text-xs text-muted-foreground">Módulo Ativo e Sincronizado</div>
                         </div>
                       </div>
-                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-2xs font-bold border border-emerald-500/20">
-                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card text-foreground text-2xs font-bold border border-border/70">
+                        <span className="size-1.5 rounded-full bg-success" />
                         Operando 100%
                       </span>
                     </div>

@@ -7,6 +7,7 @@ import { MagnifyingGlass, List, Plus } from "@phosphor-icons/react";
 import { drawerStore } from "@/lib/drawer-store";
 import { openQuickCreateModal } from "@/components/shell/GlobalQuickCreateModal";
 import { openWhatsAppUnifiedSearch } from "@/components/shell/WhatsAppUnifiedSearchModal";
+import { WaesyHubLauncher } from "@/components/shell/waesy-hub-launcher";
 
 export interface TopBarProps {
   session?: any;
@@ -115,6 +116,9 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           >
             <MagnifyingGlass size={20} weight="bold" />
           </button>
+
+          {/* Hub Waesy de Aplicativos Verticais */}
+          <WaesyHubLauncher compact={true} />
 
           <UtilityCluster session={session} embedded={true} />
         </div>

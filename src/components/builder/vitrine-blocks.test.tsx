@@ -141,7 +141,8 @@ describe("Design System Vitrine & Omni Builder App-Parity Suite", () => {
       </BuilderViewportProvider>,
     );
 
-    expect(mobileHtml).toContain("grid-cols-2 sm:grid-cols-4");
+    expect(mobileHtml).toContain("grid-cols-4");
+    expect(mobileHtml).not.toContain("sm:grid-cols-4");
     expect(mobileHtml).toContain("Promoções");
     expect(mobileHtml).toContain("Bebidas");
 

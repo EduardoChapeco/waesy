@@ -44,8 +44,8 @@ export interface ArtifactInteractiveMapProps {
 
 export function ArtifactInteractiveMap({
   title,
-  city = "Chapecó",
-  state = "SC",
+  city = "",
+  state = "",
   places = [],
   userLat,
   userLng,
@@ -144,14 +144,16 @@ export function ArtifactInteractiveMap({
             <h2 className="text-base font-bold text-foreground">{title}</h2>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {filteredPlaces.length} locais mapeados em {city} - {state}
+            {filteredPlaces.length} locais mapeados{city ? ` em ${city}${state ? ` - ${state}` : ""}` : ""}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-2xs font-mono">
-            {city} / {state}
-          </Badge>
+          {city && (
+            <Badge variant="outline" className="text-2xs font-mono">
+              {city}{state ? ` / ${state}` : ""}
+            </Badge>
+          )}
           <Badge variant="secondary" className="text-2xs">
             OpenStreetMap
           </Badge>

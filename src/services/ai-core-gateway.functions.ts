@@ -6,6 +6,13 @@ import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server
 import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
 import { logOperationalEvent } from "@/lib/telemetry/operational-logger";
 import * as apiOrchestrator from "./api-orchestrator.functions";
+import {
+  embedSingleWithProvider,
+  generateBatchEmbeddings,
+  l2NormalizeEmbedding,
+} from "./ai-embedding-client";
+
+export { l2NormalizeEmbedding };
 
 export const MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS = 8;
 const MAX_GATEWAY_ERROR_REPORT_SUBREQUESTS = 4;
@@ -91,6 +98,7 @@ export interface AIGatewayRequest {
   mode?: AIExecutionMode;
   prompt: string;
   systemPrompt?: string;
+  messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
   context?: Record<string, any>;
   images?: Array<{ mimeType: string; base64: string }>;
   constraints?: {
@@ -286,10 +294,12 @@ export const CANONICAL_TASK_ROUTES: Record<AITaskType, RouteCandidate[]> = {
     { provider: "openai", model: "gpt-4o" },
   ],
   embedding: [
-    { provider: "gemini", model: "text-embedding-004" },
+    { provider: "gemini", model: "gemini-embedding-001" },
     { provider: "openai", model: "text-embedding-3-small" },
   ],
   imagem: [
+    { provider: "gemini", model: "gemini-2.0-flash-preview-image-generation" },
+    { provider: "openrouter", model: "google/gemini-2.5-flash-image-preview:free" },
     { provider: "openai", model: "dall-e-3" },
   ],
   video: [
@@ -318,6 +328,7 @@ function generateFingerprint(req: AIGatewayRequest): string {
     task: req.task,
     prompt: req.prompt.trim(),
     systemPrompt: req.systemPrompt?.trim() || "",
+    messages: req.messages || [],
     promptVersion: req.promptVersion || "v1.0",
     module: req.module || "",
     constraints: {
@@ -347,6 +358,217 @@ function generateFingerprint(req: AIGatewayRequest): string {
 // Execução do Provedor de Baixo Nível (Isolada da Porta)
 // ============================================================
 
+export function resolveCandidatesWithModelPreference(
+  task: AITaskType,
+  modelPreference?: string | null,
+): RouteCandidate[] {
+  const base = CANONICAL_TASK_ROUTES[task] || CANONICAL_TASK_ROUTES.chat;
+  const rawPref = typeof modelPreference === "string" ? modelPreference.trim() : "";
+  if (!rawPref || task === "embedding" || task === "imagem" || task === "video") {
+    return base;
+  }
+
+  let provider = "";
+  let model = rawPref;
+  if (rawPref.includes(":") && !rawPref.endsWith(":free") && rawPref.indexOf(":") < rawPref.indexOf("/")) {
+    const [p, ...rest] = rawPref.split(":");
+    provider = p.trim().toLowerCase();
+    model = rest.join(":").trim();
+  } else {
+    const lower = rawPref.toLowerCase();
+    if (lower.startsWith("claude")) provider = "anthropic";
+    else if (/^(gpt-|o1|o3|o4)/.test(lower) && !lower.includes("/")) provider = "openai";
+    else if (lower.startsWith("gemini") && !lower.includes("/")) provider = "gemini";
+    else if (lower.startsWith("deepseek") && !lower.includes("/")) provider = "deepseek";
+    else if (lower.endsWith(":free") || (lower.includes("/") && !lower.startsWith("qwen/") && !lower.startsWith("openai/"))) {
+      provider = "openrouter";
+    } else if (/^(qwen|llama|mixtral|gemma)/.test(lower)) {
+      provider = "groq";
+    } else if (lower.includes("/")) {
+      provider = "openrouter";
+    }
+  }
+
+  if (!provider || !model) return base;
+  const preferred: RouteCandidate = { provider, model };
+  return [preferred, ...base.filter((c) => !(c.provider === preferred.provider && c.model === preferred.model))];
+}
+
+function buildConversationTurns(
+  prompt: string,
+  systemPrompt?: string,
+  history?: Array<{ role: "user" | "assistant" | "system"; content: string }>,
+): Array<{ role: "user" | "assistant" | "system"; content: string }> {
+  const turns: Array<{ role: "user" | "assistant" | "system"; content: string }> = [];
+  if (systemPrompt) {
+    turns.push({ role: "system", content: systemPrompt });
+  }
+  if (Array.isArray(history) && history.length > 0) {
+    for (const msg of history) {
+      if (!msg?.content) continue;
+      if (msg.role === "system") continue;
+      turns.push({ role: msg.role, content: msg.content });
+    }
+  }
+  if (
+    prompt &&
+    (turns.length === 0 ||
+      turns[turns.length - 1].role !== "user" ||
+      turns[turns.length - 1].content.trim() !== prompt.trim())
+  ) {
+    turns.push({ role: "user", content: prompt });
+  }
+  return turns;
+}
+
+export function buildProviderStreamRequest(params: {
+  provider: string;
+  model: string;
+  rawKey: string;
+  turns: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+  hardenedSystemPrompt?: string;
+  images?: Array<{ mimeType: string; base64: string }>;
+  maxTokens?: number;
+  temperature?: number;
+}): { endpoint: string; headers: Record<string, string>; body: Record<string, any> } {
+  const { provider, model, rawKey, turns, hardenedSystemPrompt, images, maxTokens, temperature } = params;
+  const nonSystemTurns = turns.filter((m) => m.role !== "system");
+  const lastUserIdx = (() => {
+    for (let i = nonSystemTurns.length - 1; i >= 0; i--) {
+      if (nonSystemTurns[i].role === "user") return i;
+    }
+    return -1;
+  })();
+
+  if (provider === "anthropic") {
+    const messages = nonSystemTurns.map((m, idx) => {
+      if (idx === lastUserIdx && m.role === "user" && images && images.length > 0) {
+        return {
+          role: "user" as const,
+          content: [
+            ...images.map((img) => ({
+              type: "image" as const,
+              source: {
+                type: "base64" as const,
+                media_type: img.mimeType || "image/png",
+                data: img.base64.replace(/^data:[^;]+;base64,/, ""),
+              },
+            })),
+            { type: "text" as const, text: m.content },
+          ],
+        };
+      }
+      return { role: m.role as "user" | "assistant", content: m.content };
+    });
+    return {
+      endpoint: "https://api.anthropic.com/v1/messages",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": rawKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: {
+        model,
+        system: hardenedSystemPrompt,
+        messages,
+        max_tokens: maxTokens || 1024,
+        temperature: temperature ?? 0.7,
+        stream: true,
+      },
+    };
+  }
+
+  if (provider === "gemini") {
+    const contents = nonSystemTurns.map((m, idx) => {
+      const parts: any[] = [];
+      if (idx === lastUserIdx && m.role === "user" && images && images.length > 0) {
+        for (const img of images) {
+          parts.push({
+            inline_data: {
+              mime_type: img.mimeType || "image/png",
+              data: img.base64.replace(/^data:[^;]+;base64,/, ""),
+            },
+          });
+        }
+      }
+      parts.push({ text: m.content });
+      return {
+        role: m.role === "assistant" ? "model" : "user",
+        parts,
+      };
+    });
+    return {
+      endpoint: `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${rawKey}`,
+      headers: { "Content-Type": "application/json" },
+      body: {
+        contents,
+        systemInstruction: { parts: [{ text: hardenedSystemPrompt || "" }] },
+        generationConfig: {
+          temperature: temperature ?? 0.7,
+          maxOutputTokens: maxTokens || 1024,
+        },
+      },
+    };
+  }
+
+  const endpoint =
+    provider === "groq"
+      ? "https://api.groq.com/openai/v1/chat/completions"
+      : provider === "openrouter"
+        ? "https://openrouter.ai/api/v1/chat/completions"
+        : provider === "deepseek"
+          ? "https://api.deepseek.com/v1/chat/completions"
+          : "https://api.openai.com/v1/chat/completions";
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${rawKey}`,
+  };
+  if (provider === "openrouter") {
+    headers["HTTP-Referer"] = "https://waesy.com";
+    headers["X-Title"] = "Waesy AI Core";
+  }
+
+  const supportsVision = provider === "openai" || provider === "openrouter";
+  const lastGlobalUserIdx = (() => {
+    for (let i = turns.length - 1; i >= 0; i--) {
+      if (turns[i].role === "user") return i;
+    }
+    return -1;
+  })();
+
+  const formattedMessages = turns.map((m, idx) => {
+    if (supportsVision && idx === lastGlobalUserIdx && m.role === "user" && images && images.length > 0) {
+      return {
+        role: "user",
+        content: [
+          { type: "text", text: m.content },
+          ...images.map((img) => ({
+            type: "image_url",
+            image_url: {
+              url: img.base64.startsWith("data:")
+                ? img.base64
+                : `data:${img.mimeType || "image/png"};base64,${img.base64}`,
+            },
+          })),
+        ],
+      };
+    }
+    return m;
+  });
+
+  return {
+    endpoint,
+    headers,
+    body: {
+      model,
+      messages: formattedMessages,
+      temperature: temperature ?? 0.7,
+      max_tokens: maxTokens || 1024,
+      stream: true,
+    },
+  };
+}
+
 async function callProviderLowLevel(
   provider: string,
   model: string,
@@ -354,6 +576,9 @@ async function callProviderLowLevel(
   prompt: string,
   systemPrompt?: string,
   options?: {
+    task?: AITaskType;
+    messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+    embeddingTaskType?: string;
     temperature?: number;
     maxTokens?: number;
     responseFormat?: "json_object" | "text";
@@ -363,7 +588,7 @@ async function callProviderLowLevel(
     consumeRetrySubrequest?: () => boolean;
   }
 ): Promise<{ text: string; inputTokens: number; outputTokens: number; rawJson?: any }> {
-  const timeout = options?.timeoutMs || 15000;
+  const timeout = options?.timeoutMs || (options?.task === "imagem" ? 30000 : 15000);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   const abortParent = () => controller.abort();
@@ -371,6 +596,123 @@ async function callProviderLowLevel(
   if (options?.signal?.aborted) controller.abort();
 
   try {
+    if (options?.task === "embedding") {
+      if (provider !== "gemini" && provider !== "openai") {
+        throw new Error(`Provedor ${provider} nao suporta embeddings vetoriais.`);
+      }
+      const emb = await embedSingleWithProvider({
+        provider,
+        model,
+        key,
+        prompt,
+        taskType: options.embeddingTaskType || "SEMANTIC_SIMILARITY",
+        timeoutMs: timeout,
+        signal: controller.signal,
+      });
+      return {
+        text: "",
+        inputTokens: emb.inputTokens,
+        outputTokens: 0,
+        rawJson: { embedding: emb.embedding },
+      };
+    }
+
+    if (options?.task === "imagem") {
+      if (provider === "gemini") {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: {
+                responseModalities: ["TEXT", "IMAGE"],
+              },
+            }),
+            signal: controller.signal,
+          },
+        );
+        if (!res.ok) {
+          throw new Error(`Gemini Image error ${res.status}: ${(await res.text().catch(() => "")).slice(0, 400)}`);
+        }
+        const json = await res.json();
+        const parts: any[] = json?.candidates?.[0]?.content?.parts || [];
+        const imgPart = parts.find((p) => p?.inlineData?.data || p?.inline_data?.data);
+        const b64 = imgPart?.inlineData?.data || imgPart?.inline_data?.data;
+        const mimeType = imgPart?.inlineData?.mimeType || imgPart?.inline_data?.mime_type || "image/png";
+        const caption = parts.map((p) => p?.text || "").join(" ").trim();
+        if (!b64) {
+          throw new Error("Gemini Image retornou resposta sem payload visual.");
+        }
+        return {
+          text: caption,
+          inputTokens: json?.usageMetadata?.promptTokenCount || Math.ceil(prompt.length / 4),
+          outputTokens: json?.usageMetadata?.candidatesTokenCount || 258,
+          rawJson: {
+            __media: {
+              kind: "image",
+              base64: b64,
+              mimeType,
+              provenance: "provider",
+              provider,
+            },
+          },
+        };
+      }
+
+      if (provider === "openrouter") {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${key}`,
+            "HTTP-Referer": "https://waesy.com",
+            "X-Title": "Waesy AI Core",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "user", content: prompt }],
+            modalities: ["image", "text"],
+          }),
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          throw new Error(`OpenRouter Image error ${res.status}: ${(await res.text().catch(() => "")).slice(0, 400)}`);
+        }
+        const json = await res.json();
+        const message = json?.choices?.[0]?.message;
+        const firstImageUrl: string | undefined =
+          message?.images?.[0]?.image_url?.url ||
+          message?.images?.[0]?.url ||
+          (typeof message?.content === "string" && message.content.startsWith("data:image/")
+            ? message.content.trim()
+            : undefined);
+        if (!firstImageUrl) {
+          throw new Error("OpenRouter Image retornou resposta sem imagem.");
+        }
+        const isDataUrl = firstImageUrl.startsWith("data:image/");
+        const mimeMatch = isDataUrl ? firstImageUrl.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,/) : null;
+        return {
+          text: typeof message?.content === "string" && !isDataUrl ? message.content.trim() : "",
+          inputTokens: json?.usage?.prompt_tokens || Math.ceil(prompt.length / 4),
+          outputTokens: json?.usage?.completion_tokens || 256,
+          rawJson: {
+            __media: {
+              kind: "image",
+              url: isDataUrl ? undefined : firstImageUrl,
+              base64: isDataUrl ? firstImageUrl.replace(/^data:[^;]+;base64,/, "") : undefined,
+              mimeType: mimeMatch?.[1] || "image/png",
+              provenance: "provider",
+              provider,
+            },
+          },
+        };
+      }
+    }
+
+    const openAiCompatibleMessages = buildConversationTurns(prompt, systemPrompt, options?.messages);
+
     if (provider === "groq") {
       const tryFetchGroq = async (targetModel: string) => {
         return fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -381,10 +723,7 @@ async function callProviderLowLevel(
           },
           body: JSON.stringify({
             model: targetModel,
-            messages: [
-              ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-              { role: "user", content: prompt },
-            ],
+            messages: openAiCompatibleMessages,
             temperature: options?.temperature ?? 0.5,
             max_tokens: options?.maxTokens || 1024,
             ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
@@ -445,10 +784,18 @@ async function callProviderLowLevel(
 
     if (provider === "gemini") {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-      const contentsParts: any[] = [];
+      const historyContents = Array.isArray(options?.messages) && options.messages.length > 0
+        ? options.messages
+            .filter((m) => m.role !== "system" && m.content)
+            .map((m) => ({
+              role: m.role === "assistant" ? "model" : "user",
+              parts: [{ text: m.content }],
+            }))
+        : [];
+      const currentParts: any[] = [];
       if (options?.images && options.images.length > 0) {
         for (const img of options.images) {
-          contentsParts.push({
+          currentParts.push({
             inline_data: {
               mime_type: img.mimeType,
               data: img.base64.replace(/^data:[^;]+;base64,/, ""),
@@ -456,10 +803,19 @@ async function callProviderLowLevel(
           });
         }
       }
-      contentsParts.push({ text: prompt });
+      currentParts.push({ text: prompt });
+
+      const contents =
+        historyContents.length > 0
+          ? historyContents.map((entry, idx) =>
+              idx === historyContents.length - 1 && entry.role === "user" && currentParts.length > 1
+                ? { role: "user", parts: [...currentParts.slice(0, -1), ...entry.parts] }
+                : entry,
+            )
+          : [{ role: "user", parts: currentParts }];
 
       const bodyPayload: any = {
-        contents: [{ role: "user", parts: contentsParts }],
+        contents,
         generationConfig: {
           temperature: options?.temperature ?? 0.7,
           maxOutputTokens: options?.maxTokens || 2048,
@@ -497,10 +853,9 @@ async function callProviderLowLevel(
     }
 
     if (provider === "anthropic") {
-      const messages = [
-        ...(systemPrompt ? [] : []),
-        { role: "user", content: prompt },
-      ];
+      const messages = openAiCompatibleMessages
+        .filter((m) => m.role !== "system")
+        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -524,7 +879,7 @@ async function callProviderLowLevel(
     }
 
     if (provider === "deepseek" || provider === "openrouter" || provider === "openai") {
-      if (provider === "openai" && model.startsWith("dall-e")) {
+      if (provider === "openai" && (model.startsWith("dall-e") || model.startsWith("gpt-image"))) {
         const res = await fetch("https://api.openai.com/v1/images/generations", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
@@ -580,10 +935,7 @@ async function callProviderLowLevel(
           headers,
           body: JSON.stringify({
             model: targetModel,
-            messages: [
-              ...(systemPrompt ? [{ role: "system", content: systemPrompt }] : []),
-              { role: "user", content: prompt },
-            ],
+            messages: openAiCompatibleMessages,
             temperature: options?.temperature ?? 0.7,
             max_tokens: options?.maxTokens || 1024,
             ...(options?.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
@@ -644,6 +996,35 @@ async function callProviderLowLevel(
 // ============================================================
 // A PORTA ÚNICA: executeAiCoreGateway
 // ============================================================
+
+async function persistGeneratedMediaToStorage(
+  supabase: ReturnType<typeof getServerClient>,
+  base64Data: string,
+  mimeType: string,
+  authContext?: AIGatewayRequest["authContext"],
+): Promise<string | undefined> {
+  try {
+    const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, "");
+    const buffer = Buffer.from(cleanBase64, "base64");
+    if (!buffer || buffer.length === 0) return undefined;
+    const ext = mimeType.includes("webp") ? "webp" : mimeType.includes("jpeg") ? "jpg" : "png";
+    const ownerFolder = authContext?.storeId || authContext?.userId || "platform";
+    const filePath = `copilot/${ownerFolder}/${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
+
+    for (const bucket of ["copilot-uploads", "store-assets"] as const) {
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, buffer, { contentType: mimeType || "image/png", upsert: false });
+      if (!error) {
+        const { data: pub } = supabase.storage.from(bucket).getPublicUrl(filePath);
+        if (pub?.publicUrl) return pub.publicUrl;
+      }
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<AIGatewayResponse> {
   const startTime = Date.now();
@@ -808,7 +1189,10 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
   }
 
   // 5. Roteamento por Tarefa e Seleção da Cascata
-  const candidates: RouteCandidate[] = CANONICAL_TASK_ROUTES[request.task] || CANONICAL_TASK_ROUTES.chat;
+  const candidates: RouteCandidate[] = resolveCandidatesWithModelPreference(
+    request.task,
+    request.context?.modelPreference,
+  );
 
   const executionPromise = (async (): Promise<AIGatewayResponse> => {
     let lastError: any = null;
@@ -903,6 +1287,9 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
             sandboxedUserPrompt,
             hardenedSystemPrompt,
             {
+              task: request.task,
+              messages: request.messages,
+              embeddingTaskType: request.context?.embeddingTaskType,
               temperature: request.constraints?.temperature,
               maxTokens: request.constraints?.maxTokens,
               responseFormat: request.constraints?.responseFormat,
@@ -920,7 +1307,18 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
           const costUsd = calculateCost(candidate.provider, candidate.model, response.inputTokens, response.outputTokens);
           const latencyMs = Date.now() - startTime;
 
-          const providerMedia = response.rawJson?.__media;
+          const providerMedia = response.rawJson?.__media ? { ...response.rawJson.__media } : undefined;
+          if (providerMedia?.kind === "image" && providerMedia.base64 && !providerMedia.url) {
+            const uploadedUrl = await persistGeneratedMediaToStorage(
+              supabase,
+              providerMedia.base64,
+              providerMedia.mimeType || "image/png",
+              request.authContext,
+            );
+            if (uploadedUrl) {
+              providerMedia.url = uploadedUrl;
+            }
+          }
           const gatewayResult: AIGatewayResponse = {
             success: true,
             result: {
@@ -1034,38 +1432,6 @@ export async function executeAiCoreGateway(request: AIGatewayRequest): Promise<A
     }
 
     const latencyMs = Date.now() - startTime;
-    if (request.task === "imagem" && request.context?.allowDeterministicFallback === true) {
-      const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="lightgray"/><text x="512" y="490" text-anchor="middle" font-family="sans-serif" font-size="40" fill="dimgray">Prévia Ilustrativa</text><text x="512" y="545" text-anchor="middle" font-family="sans-serif" font-size="24" fill="dimgray">Gerando imagem oficial</text></svg>`;
-      return {
-        success: true,
-        result: {
-          text: "",
-          media: {
-            kind: "image",
-            base64: Buffer.from(fallbackSvg).toString("base64"),
-            mimeType: "image/svg+xml",
-            provenance: "deterministic_fallback",
-            provider: "deterministic_fixture",
-            jobId: `det_${fingerprint.slice(0, 16)}`,
-          },
-        },
-        metadata: {
-          callId,
-          provider: "deterministic_fixture",
-          model: "deterministic-svg-v1",
-          fallbackUsed: true,
-          fallbackFrom,
-          attemptsCount: attempts,
-          latencyMs,
-          cacheHit: false,
-          usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
-          costUsd: 0,
-          promptVersion: request.promptVersion || "v1.0",
-          fingerprint,
-        },
-      };
-    }
-
     const failedResult: AIGatewayResponse = {
       success: false,
       result: { text: "" },
@@ -1248,15 +1614,66 @@ export const getAiTelemetryMetrics = createServerFn({ method: "GET" }).handler(
   }
 );
 
-/** Streaming nativo para SSE; usa o pool e a cascata do gateway canônico. */
-export async function executeAiCoreGatewayStream(request: AIGatewayRequest, onDelta: (text: string) => void): Promise<Pick<AIGatewayResponse, "success" | "metadata" | "error">> {
+export async function generateBatchEmbeddingsWithGateway(params: {
+  texts: string[];
+  taskType?: "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY" | "SEMANTIC_SIMILARITY";
+  authContext?: AIGatewayRequest["authContext"];
+}): Promise<{ embeddings: Array<number[] | null>; provider: string; model: string }> {
+  const res = await generateBatchEmbeddings({
+    texts: params.texts,
+    taskType: params.taskType,
+    authContext: params.authContext
+      ? { userId: params.authContext.userId, storeId: params.authContext.storeId }
+      : undefined,
+  });
+  if (res.provider === "gemini" && res.embeddings.some((e) => Array.isArray(e))) {
+    recordCircuitSuccess("gemini");
+  }
+  return res;
+}
+
+/** Streaming nativo para SSE; usa o pool e a cascata do gateway canonico. */
+export async function executeAiCoreGatewayStream(
+  request: AIGatewayRequest,
+  onDelta: (text: string) => void,
+): Promise<Pick<AIGatewayResponse, "success" | "metadata" | "error"> & { text: string }> {
   const callId = `stream_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   const start = Date.now();
   const security = inspectPromptSecurity(request.prompt);
-  const baseMeta = (provider: string, model: string, attemptsCount: number) => ({ callId, provider, model, fallbackUsed: attemptsCount > 1, attemptsCount, latencyMs: Date.now() - start, cacheHit: false, usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, costUsd: 0, promptVersion: request.promptVersion || "v1.0", fingerprint: generateFingerprint(request) });
-  if (!security.isSafe) return { success: false, metadata: baseMeta("shield", "shield-v1", 0), error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Mensagem bloqueada por regras de segurança e proteção de dados." } };
+  const estInputTokens = Math.ceil(
+    ((request.systemPrompt?.length || 0) +
+      request.prompt.length +
+      (request.messages || []).reduce((acc, m) => acc + (m.content?.length || 0), 0)) / 4,
+  );
+  const baseMeta = (provider: string, model: string, attemptsCount: number, outputText = "") => {
+    const outTokens = Math.ceil(outputText.length / 4);
+    return {
+      callId,
+      provider,
+      model,
+      fallbackUsed: attemptsCount > 1,
+      attemptsCount,
+      latencyMs: Date.now() - start,
+      cacheHit: false,
+      usage: { inputTokens: estInputTokens, outputTokens: outTokens, totalTokens: estInputTokens + outTokens },
+      costUsd: calculateCost(provider, model, estInputTokens, outTokens),
+      promptVersion: request.promptVersion || "v1.0",
+      fingerprint: generateFingerprint(request),
+    };
+  };
+  if (!security.isSafe) {
+    return {
+      success: false,
+      text: "",
+      metadata: baseMeta("shield", "shield-v1", 0),
+      error: { code: "PROMPT_SHIELD_VIOLATION", message: security.violationReason || "Mensagem bloqueada por regras de segurança e proteção de dados." },
+    };
+  }
   const { hardenedSystemPrompt, sandboxedUserPrompt } = buildSandboxedPromptPayload(security.sanitizedPrompt || request.prompt, request.systemPrompt);
-  const candidates: RouteCandidate[] = CANONICAL_TASK_ROUTES[request.task] || CANONICAL_TASK_ROUTES.chat;
+  const candidates: RouteCandidate[] = resolveCandidatesWithModelPreference(
+    request.task,
+    request.context?.modelPreference,
+  );
   const targetOwnerId = request.authContext?.userId || request.authContext?.storeId;
   const candidateProviders = Array.from(new Set(candidates.map((c) => c.provider)));
   const preloadedKeysMap = await safeLoadBatchKeys(
@@ -1264,63 +1681,97 @@ export async function executeAiCoreGatewayStream(request: AIGatewayRequest, onDe
     targetOwnerId,
     request.authContext?.storeId,
   );
+  const turns = buildConversationTurns(sandboxedUserPrompt, hardenedSystemPrompt, request.messages);
 
   let attempts = 0;
   let lastError = "Instabilidade temporária nos serviços de transmissão";
   for (const candidate of candidates) {
+    if (request.signal?.aborted) break;
     if (attempts >= MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS) break;
-    attempts++;
-    try {
-      const batchKeys = preloadedKeysMap?.[candidate.provider];
-      const activeKey =
-        Array.isArray(batchKeys) && batchKeys.length > 0
-          ? batchKeys[0]
-          : preloadedKeysMap
-            ? null
-            : (await safeLoadProviderKeys(candidate.provider, targetOwnerId, request.authContext?.storeId))[0] ?? null;
+    if (getCircuit(candidate.provider).state === "open") continue;
+
+    const batchKeys = preloadedKeysMap?.[candidate.provider];
+    const providerKeys =
+      Array.isArray(batchKeys) && batchKeys.length > 0
+        ? batchKeys
+        : preloadedKeysMap
+          ? []
+          : await safeLoadProviderKeys(candidate.provider, targetOwnerId, request.authContext?.storeId);
+    if (providerKeys.length === 0) continue;
+
+    for (const activeKey of providerKeys) {
+      if (request.signal?.aborted) break;
+      if (attempts >= MAX_GATEWAY_EXTERNAL_HTTP_SUBREQUESTS) break;
       if (!activeKey?.rawKey) continue;
-      let endpoint: string;
-      let headers: Record<string, string>;
-      let body: Record<string, any>;
-      if (candidate.provider === "anthropic") {
-        endpoint = "https://api.anthropic.com/v1/messages";
-        headers = { "Content-Type": "application/json", "x-api-key": activeKey.rawKey, "anthropic-version": "2023-06-01" };
-        body = { model: candidate.model, system: hardenedSystemPrompt, messages: [{ role: "user", content: sandboxedUserPrompt }], max_tokens: request.constraints?.maxTokens || 1024, temperature: request.constraints?.temperature ?? 0.7, stream: true };
-      } else if (candidate.provider === "gemini") {
-        endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${candidate.model}:streamGenerateContent?alt=sse&key=${activeKey.rawKey}`;
-        headers = { "Content-Type": "application/json" };
-        body = { contents: [{ role: "user", parts: [{ text: sandboxedUserPrompt }] }], systemInstruction: { parts: [{ text: hardenedSystemPrompt }] }, generationConfig: { temperature: request.constraints?.temperature ?? 0.7, maxOutputTokens: request.constraints?.maxTokens || 1024 } };
-      } else {
-        endpoint = candidate.provider === "groq" ? "https://api.groq.com/openai/v1/chat/completions" : candidate.provider === "openrouter" ? "https://openrouter.ai/api/v1/chat/completions" : candidate.provider === "deepseek" ? "https://api.deepseek.com/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
-        headers = { "Content-Type": "application/json", Authorization: `Bearer ${activeKey.rawKey}` };
-        body = { model: candidate.model, messages: [{ role: "system", content: hardenedSystemPrompt }, { role: "user", content: sandboxedUserPrompt }], temperature: request.constraints?.temperature ?? 0.7, max_tokens: request.constraints?.maxTokens || 1024, stream: true };
-      }
-      const response = await fetch(endpoint, { method: "POST", headers, body: JSON.stringify(body) });
-      if (!response.ok || !response.body) throw new Error(`${candidate.provider} HTTP ${response.status}`);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const chunk = await reader.read();
-        if (chunk.done) break;
-        buffer += decoder.decode(chunk.value, { stream: true });
-        const frames = buffer.split(/\n\n|\r\n\r\n/);
-        buffer = frames.pop() || "";
-        for (const frame of frames) {
-          const data = frame.split(/\r?\n/).find((line) => line.startsWith("data:"))?.slice(5).trim();
-          if (!data || data === "[DONE]") continue;
-          try {
-            const json = JSON.parse(data);
-            const delta = candidate.provider === "anthropic" ? (json.type === "content_block_delta" ? json.delta?.text : "") : candidate.provider === "gemini" ? (json.candidates?.[0]?.content?.parts?.map((part: any) => part.text || "").join("") || "") : (json.choices?.[0]?.delta?.content || "");
-            if (delta) onDelta(sanitizeAiOutput(delta));
-          } catch { /* heartbeat ou frame parcial */ }
+      attempts++;
+
+      try {
+        const streamReq = buildProviderStreamRequest({
+          provider: candidate.provider,
+          model: candidate.model,
+          rawKey: activeKey.rawKey,
+          turns,
+          hardenedSystemPrompt,
+          images: request.images,
+          maxTokens: request.constraints?.maxTokens,
+          temperature: request.constraints?.temperature,
+        });
+        const response = await fetch(streamReq.endpoint, {
+          method: "POST",
+          headers: streamReq.headers,
+          body: JSON.stringify(streamReq.body),
+          signal: request.signal,
+        });
+        if (!response.ok || !response.body) {
+          const errStatus = response.status;
+          const errText = await response.text().catch(() => "");
+          if (errStatus === 401 || errStatus === 402 || errStatus === 403 || errStatus === 429) {
+            safeMarkKeyError(activeKey.id, `${candidate.provider} HTTP ${errStatus}`, errStatus);
+          }
+          throw new Error(`${candidate.provider} HTTP ${errStatus}${errText ? `: ${errText.slice(0, 120)}` : ""}`);
         }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let accumulatedText = "";
+        while (true) {
+          if (request.signal?.aborted) break;
+          const chunk = await reader.read();
+          if (chunk.done) break;
+          buffer += decoder.decode(chunk.value, { stream: true });
+          const frames = buffer.split(/\n\n|\r\n\r\n/);
+          buffer = frames.pop() || "";
+          for (const frame of frames) {
+            const data = frame.split(/\r?\n/).find((line) => line.startsWith("data:"))?.slice(5).trim();
+            if (!data || data === "[DONE]") continue;
+            try {
+              const json = JSON.parse(data);
+              const delta = candidate.provider === "anthropic" ? (json.type === "content_block_delta" ? json.delta?.text : "") : candidate.provider === "gemini" ? (json.candidates?.[0]?.content?.parts?.map((part: any) => part.text || "").join("") || "") : (json.choices?.[0]?.delta?.content || "");
+              if (delta) {
+                const safeDelta = sanitizeAiOutput(delta);
+                accumulatedText += safeDelta;
+                onDelta(safeDelta);
+              }
+            } catch { /* heartbeat ou frame parcial */ }
+          }
+        }
+        recordCircuitSuccess(candidate.provider);
+        safeRecordKeyUsage(activeKey.id);
+        return { success: true, text: accumulatedText, metadata: baseMeta(candidate.provider, candidate.model, attempts, accumulatedText) };
+      } catch (error) {
+        if (request.signal?.aborted) {
+          return {
+            success: false,
+            text: "",
+            metadata: baseMeta(candidate.provider, candidate.model, attempts),
+            error: { code: "ABORTED", message: "Execucao cancelada pelo usuario." },
+          };
+        }
+        lastError = error instanceof Error ? error.message : String(error);
+        recordCircuitFailure(candidate.provider);
       }
-      return { success: true, metadata: baseMeta(candidate.provider, candidate.model, attempts) };
-    } catch (error) {
-      lastError = error instanceof Error ? error.message : String(error);
-      recordCircuitFailure(candidate.provider);
     }
   }
-  return { success: false, metadata: baseMeta("none", "none", attempts), error: { code: "AI_STREAM_FAILED", message: lastError } };
+  return { success: false, text: "", metadata: baseMeta("none", "none", attempts), error: { code: "AI_STREAM_FAILED", message: lastError } };
 }

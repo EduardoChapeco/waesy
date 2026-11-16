@@ -347,16 +347,16 @@ export const VitrineBlockInspector: React.FC<VitrineBlockInspectorProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
-            <div>
+            <div className="min-w-0">
               <label className="block text-xs font-semibold text-foreground mb-1">Cantos</label>
               <select
                 value={config.rounded || "lg"}
                 onChange={(e) => onUpdateConfig("rounded", e.target.value)}
                 className={SELECT_CLASS}
               >
-                <option value="lg">Arredondado (Padrão)</option>
+                <option value="lg">Arredondado</option>
                 <option value="md">Suave</option>
-                <option value="none">Sangria Total (0px)</option>
+                <option value="none">Reto (0px)</option>
               </select>
             </div>
             <div>

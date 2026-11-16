@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { CampaignDraftCard } from "@/components/adtech/campaign-draft-card";
 import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
-import { Search, Briefcase, X, Package, Tags, Boxes, ClipboardList, ShoppingBag, Store, Truck, Users, Sliders, Calendar, MessageSquare, Flame, Newspaper, DollarSign, Wallet, Ticket, BarChart3, Building2, ExternalLink, ShieldCheck, Zap, ArrowRight, Settings, HelpCircle, FileSpreadsheet, Globe, Coins, Scale, Receipt, Eye, Megaphone, Share2, Star, Bell, Plane, Bus, FileText, ChefHat, Armchair, UtensilsCrossed, CreditCard, Percent, Layers, Award, Target, CheckCircle2, Mic, MicOff, Send, Loader2, Heart, Trophy, Clock, Gift, RefreshCcw, AlertTriangle, ShoppingCart, Link2, Wrench, Smartphone } from "lucide-react";
+import { Search, Briefcase, X, Package, Tags, Boxes, ClipboardList, ShoppingBag, Store, Truck, Users, Sliders, Calendar, MessageSquare, Flame, Newspaper, DollarSign, Wallet, Ticket, BarChart3, Building2, ExternalLink, ShieldCheck, Zap, ArrowRight, Settings, HelpCircle, FileSpreadsheet, Globe, Coins, Scale, Receipt, Eye, Megaphone, Share2, Star, Bell, Plane, Bus, FileText, FileSignature, Lock, ChefHat, Armchair, UtensilsCrossed, CreditCard, Percent, Layers, Award, Target, CheckCircle2, Mic, MicOff, Send, Loader2, Heart, Trophy, Clock, Gift, RefreshCcw, AlertTriangle, ShoppingCart, Link2, Wrench, Smartphone } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -214,21 +214,22 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Pacotes", path: "/workspace/pacotes", icon: Boxes },
       { title: "Pedidos", path: "/workspace/pedidos/gestor", icon: ClipboardList },
       { title: "Vendas", path: "/workspace/pedidos", icon: ShoppingBag },
-      { title: "Expedição", path: "/workspace/pedidos/expedicao", icon: Truck },
+      { title: "Separação e Envio", path: "/workspace/pedidos/expedicao", icon: Truck },
       { title: "Entregadores", path: "/workspace/pedidos/entregadores", icon: Truck },
       { title: "PDV", path: "/workspace/pdv", icon: Store },
       { title: "Comandas", path: "/workspace/pdv/comandas", icon: UtensilsCrossed },
       { title: "Cozinha", path: "/workspace/pdv/cozinha", icon: ChefHat },
+      { title: "Tempo de Preparo", path: "/workspace/pedidos/tempo-preparo", icon: Clock },
       { title: "Reservas", path: "/workspace/reservas", icon: Armchair },
       { title: "Estoque", path: "/workspace/estoque", icon: Boxes },
       { title: "Movimentos", path: "/workspace/estoque/movimentos", icon: Boxes },
       { title: "Reposição", path: "/workspace/estoque/alertas", icon: Flame },
       { title: "Devoluções", path: "/workspace/pedidos/trocas", icon: Receipt },
       { title: "Manutenções", path: "/workspace/imoveis/manutencoes", icon: Wrench },
-      { title: "Fretes", path: "/workspace/logistica/tabelas", icon: Truck },
-      { title: "Faturas", path: "/workspace/logistica/faturas", icon: Receipt },
-      { title: "Pontos Coleta", path: "/workspace/logistica/pudo", icon: Building2 },
-      { title: "Frota", path: "/workspace/pedidos/frota", icon: Truck },
+      { title: "Tabelas de Frete", path: "/workspace/logistica/tabelas", icon: Truck },
+      { title: "Faturas de Frete", path: "/workspace/logistica/faturas", icon: Receipt },
+      { title: "Pontos de Coleta", path: "/workspace/logistica/pudo", icon: Building2 },
+      { title: "Despacho Local", path: "/workspace/pedidos/frota", icon: Truck },
       { title: "Atacado", path: "/workspace/b2b", icon: Briefcase },
       { title: "Canais", path: "/workspace/integracoes/marketplaces", icon: Globe },
       { title: "Receitas", path: "/workspace/conteudo/receitas", icon: ChefHat },
@@ -236,8 +237,8 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
   },
   {
     id: "engagement",
-    title: "Atendimento",
-    description: "Conversas, contatos, CRM, agenda e contratos",
+    title: "Atendimento & CRM",
+    description: "Conversas, WhatsApp, clientes, agenda e orçamentos",
     tools: [
       { title: "Painel", path: "/workspace/atendimento", icon: BarChart3 },
       { title: "Chat", path: "/workspace/atendimento/chat", icon: MessageSquare },
@@ -251,20 +252,29 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Clientes", path: "/workspace/clientes", icon: Users },
       { title: "Contatos", path: "/workspace/crm", icon: Target },
       { title: "Funil", path: "/workspace/comercial", icon: Target },
-      { title: "Captação", path: "/workspace/captacao", icon: Briefcase },
-      { title: "Sigilo", path: "/workspace/captacao/ndas", icon: FileText },
       { title: "Avaliações", path: "/workspace/avaliacoes", icon: Star },
       { title: "Depoimentos", path: "/workspace/cms/avaliacoes", icon: Star },
       { title: "Agenda", path: "/workspace/agenda", icon: Calendar },
+      { title: "Serviços Agenda", path: "/workspace/agenda/servicos", icon: Wrench },
       { title: "Salas", path: "/workspace/agenda/recursos", icon: Calendar },
       { title: "Orçamentos", path: "/workspace/orcamentos", icon: FileSpreadsheet },
       { title: "Ordens", path: "/workspace/ordens-servico", icon: Wrench },
-      { title: "Contratos", path: "/workspace/contratos", icon: Scale },
-      { title: "Processos", path: "/workspace/advocacia", icon: Scale },
-      { title: "Licitações", path: "/workspace/licitacoes", icon: Scale },
-      { title: "Qualidade", path: "/workspace/qualidade", icon: ShieldCheck },
       { title: "Doações", path: "/workspace/doacoes", icon: Heart },
       { title: "Associação", path: "/workspace/associacao", icon: Users },
+    ],
+  },
+  {
+    id: "contracts",
+    title: "Contratos & Jurídico",
+    description: "Contratos digitais, minutas, NDAs, licitações e processos",
+    tools: [
+      { title: "Contratos Digitais", path: "/workspace/contratos", icon: FileSignature },
+      { title: "Novo Contrato", path: "/workspace/contratos/novo", icon: FileText },
+      { title: "NDAs e Sigilo", path: "/workspace/captacao/ndas", icon: Lock },
+      { title: "Contratos de Viagem", path: "/workspace/turismo/contratos", icon: FileSignature },
+      { title: "Captação", path: "/workspace/captacao", icon: Briefcase },
+      { title: "Processos", path: "/workspace/advocacia", icon: Scale },
+      { title: "Licitações", path: "/workspace/licitacoes", icon: Scale },
     ],
   },
   {
@@ -307,6 +317,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Novo Post", path: "/workspace/mural/novo", icon: Megaphone },
       { title: "Notícias", path: "/workspace/noticias", icon: Newspaper },
       { title: "Novo Artigo", path: "/workspace/noticias/novo", icon: Newspaper },
+      { title: "Eventos", path: "/workspace/eventos", icon: Ticket },
     ],
   },
   {
@@ -324,7 +335,6 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Hospedagem", path: "/workspace/turismo/hoteis", icon: Building2 },
       { title: "Destinos", path: "/workspace/turismo/destinos", icon: Globe },
       { title: "Tarifas", path: "/workspace/turismo/radar", icon: Target },
-      { title: "Contratos", path: "/workspace/turismo/contratos", icon: FileText },
       { title: "Reacomodação", path: "/workspace/turismo/reacomodacao", icon: RefreshCcw },
       { title: "Incidentes", path: "/workspace/turismo/incidentes", icon: AlertTriangle },
       { title: "Fornecedores", path: "/workspace/turismo/fornecedores", icon: Users },
@@ -333,7 +343,6 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Aéreos", path: "/workspace/turismo/aereos", icon: Plane },
       { title: "Corporativo", path: "/workspace/turismo/corporativo", icon: Briefcase },
       { title: "Empresas", path: "/workspace/empresa/viagens", icon: Briefcase },
-      { title: "Comissões", path: "/workspace/turismo/comissoes", icon: Percent },
       { title: "Passaportes", path: "/workspace/turismo/documentos-ocr", icon: ShieldCheck },
       { title: "Vouchers", path: "/workspace/turismo/vouchers", icon: Ticket },
       { title: "Ingressos", path: "/workspace/eventos", icon: Calendar },
@@ -354,15 +363,31 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Despesas", path: "/workspace/financeiro/contas-pagar", icon: Receipt },
       { title: "Notas Fiscais", path: "/workspace/fiscal/nfe", icon: FileText },
       { title: "Contabilidade", path: "/workspace/contador", icon: FileSpreadsheet },
-      { title: "Comissões", path: "/workspace/financeiro/comissoes", icon: Percent },
-      { title: "Repasses", path: "/workspace/financeiro/afiliados", icon: Coins },
+      { title: "Repasses Afiliados", path: "/workspace/financeiro/afiliados", icon: Coins },
       { title: "Canais", path: "/workspace/financeiro/relatorios-canal", icon: BarChart3 },
       { title: "Cobranças", path: "/workspace/financeiro/faturas", icon: Receipt },
-      { title: "Salários", path: "/workspace/financeiro/funcionarios", icon: Users },
+      { title: "Comissões Turismo", path: "/workspace/turismo/comissoes", icon: Percent },
       { title: "Metas", path: "/workspace/relatorios/metas", icon: Target, badge: "Metas" },
       { title: "Indicadores", path: "/workspace/relatorios", icon: Package },
       { title: "Gastronomia", path: "/workspace/relatorios/gastronomia", icon: UtensilsCrossed },
       { title: "Liquidações", path: "/workspace/financeiro/pagamentos", icon: Coins },
+    ],
+  },
+  {
+    id: "team",
+    title: "Equipe & RH",
+    description: "Colaboradores, salários, folha, ponto, comissões e vagas",
+    tools: [
+      { title: "Colaboradores", path: "/workspace/configuracoes/equipe", icon: Users },
+      { title: "Salários", path: "/workspace/financeiro/funcionarios", icon: Users },
+      { title: "Folha", path: "/workspace/rh/folha", icon: Wallet },
+      { title: "Ponto", path: "/workspace/rh/ponto", icon: Clock },
+      { title: "Comissões", path: "/workspace/financeiro/comissoes", icon: Percent },
+      { title: "Trabalhista", path: "/workspace/rh/compliance", icon: ShieldCheck },
+      { title: "Sessões", path: "/workspace/configuracoes/sessoes", icon: ShieldCheck },
+      { title: "Vagas", path: "/workspace/empregos", icon: Briefcase },
+      { title: "Candidatos", path: "/workspace/empregos/candidatos", icon: Briefcase, badge: "RH" },
+      { title: "Currículos", path: "/workspace/curriculo/editor", icon: Briefcase },
     ],
   },
   {
@@ -386,7 +411,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
   {
     id: "management",
     title: "Configurações",
-    description: "Dados da loja, horários, equipe, vagas e integrações",
+    description: "Dados da loja, planos, chaves IA e integrações",
     tools: [
       { title: "Preferências", path: "/workspace/configuracoes", icon: Settings },
       { title: "Empresa", path: "/workspace/configuracoes/loja", icon: Building2 },
@@ -397,17 +422,10 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Modelos", path: "/workspace/configuracoes/inteligencia-artificial", icon: Sliders },
       { title: "Integrações", path: "/workspace/configuracoes/integracoes", icon: Globe },
       { title: "Parceiros", path: "/workspace/configuracoes/parceiros", icon: Users },
-      { title: "Sessões", path: "/workspace/configuracoes/sessoes", icon: ShieldCheck },
       { title: "Aplicativo", path: "/workspace/configuracoes/pwa", icon: Globe },
       { title: "Privacidade", path: "/workspace/configuracoes/privacidade-loja", icon: ShieldCheck },
-      { title: "Equipe", path: "/workspace/configuracoes/equipe", icon: Users },
-      { title: "Ponto", path: "/workspace/rh/ponto", icon: Clock },
-      { title: "Folha", path: "/workspace/rh/folha", icon: Wallet },
-      { title: "Trabalhista", path: "/workspace/rh/compliance", icon: ShieldCheck },
-      { title: "Candidatos", path: "/workspace/empregos/candidatos", icon: Briefcase, badge: "RH" },
-      { title: "Vagas", path: "/workspace/empregos", icon: Briefcase },
-      { title: "Currículos", path: "/workspace/curriculo/editor", icon: Briefcase },
       { title: "Conformidade", path: "/workspace/configuracoes/conformidade", icon: ShieldCheck },
+      { title: "Qualidade", path: "/workspace/qualidade", icon: ShieldCheck },
       { title: "Fretes", path: "/workspace/configuracoes/fretes/cotacoes", icon: Truck },
       { title: "Unidades", path: "/workspace/lojas", icon: Building2 },
       { title: "Suporte", path: "/workspace/suporte", icon: HelpCircle },
@@ -506,6 +524,24 @@ export function WorkspaceAllToolsDialog({
  // Filtro dinâmico por palavra-chave e priorização por nicho
  const filteredSectors = useMemo(() => {
  let baseSectors = [...SECTOR_TOOL_GROUPS];
+ if (semantics.nicheId === "gastronomy") {
+ const gastroHiddenPaths = new Set([
+ "/workspace/pedidos/expedicao",
+ "/workspace/logistica/pudo",
+ "/workspace/logistica/faturas",
+ "/workspace/pedidos/trocas",
+ "/workspace/b2b",
+ "/workspace/imoveis/manutencoes",
+ "/workspace/advocacia",
+ "/workspace/licitacoes",
+ "/workspace/ordens-servico",
+ ]);
+ baseSectors = baseSectors.map((s) => ({
+ ...s,
+ description: s.id === "commerce" ? "Cardápio, pedidos, mesas, cozinha e despacho local" : s.description,
+ tools: s.tools.filter((t) => !gastroHiddenPaths.has(t.path)),
+ }));
+ }
  if (semantics.nicheId !== "gastronomy") {
  const gastroExclusivePaths = new Set([
  "/workspace/pedidos/gestor",
@@ -529,7 +565,13 @@ export function WorkspaceAllToolsDialog({
  }));
  }
  if (semantics.nicheId !== "tourism") {
- baseSectors = baseSectors.filter((s) => s.id !== "tourism");
+ baseSectors = baseSectors
+ .filter((s) => s.id !== "tourism")
+ .map((s) => ({
+ ...s,
+ tools: s.tools.filter((t) => !t.path.startsWith("/workspace/turismo")),
+ }))
+ .filter((s) => s.tools.length > 0);
  }
 
  if (semantics.nicheId === "tourism") {

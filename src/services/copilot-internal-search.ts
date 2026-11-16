@@ -152,7 +152,7 @@ function eventCard(row: Record<string, any>): InternalSearchCard | null {
       id: `open-event:${row.id}`,
       label: "Ver evento",
       action_type: "navigate",
-      payload: { href: row.slug ? `/eventos/${encodeURIComponent(row.slug)}` : `/eventos/${row.id}`, event_id: row.id },
+      payload: { href: row.slug ? `/evento/${encodeURIComponent(row.slug)}` : `/evento/${row.id}`, event_id: row.id },
     },
   };
 }
@@ -200,7 +200,7 @@ function travelCard(row: Record<string, any>): InternalSearchCard | null {
       id: `open-travel:${row.id}`,
       label: "Ver viagem",
       action_type: "navigate",
-      payload: { href: row.slug ? `/viagens/${encodeURIComponent(row.slug)}` : `/viagens/${row.id}`, travel_id: row.id },
+      payload: { href: row.slug ? `/turismo/${encodeURIComponent(row.slug)}` : `/turismo/${row.id}`, travel_id: row.id },
     },
   };
 }

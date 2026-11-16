@@ -23,7 +23,7 @@ import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { listPublishedProducts } from "@/services/catalog.functions";
 import type { ProductCardDTO } from "@/types/catalog";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
-import { useWindowSizeClass } from "@/hooks/use-mobile";
+import { useEffectiveViewport } from "@/design-system/vitrine";
 import {
   CommercialShowcaseTemplate,
   mapSurfaceFeedToCommercialShowcase,
@@ -176,7 +176,7 @@ function CasaVerticalPage() {
  });
  }, [marketplaceFeed]);
 
- const { isCompact } = useWindowSizeClass();
+ const { isCompact } = useEffectiveViewport();
  const [activeFilters, setActiveFilters] = useState<string[]>([]);
  const showcaseData = useMemo(
    () => mapSurfaceFeedToCommercialShowcase(marketplaceFeed, "casa", "Loja de Casa & Decoração"),

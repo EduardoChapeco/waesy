@@ -15,6 +15,7 @@ import {
   Plus,
   Loader2,
   Wrench,
+  Cloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ import {
   listUserConnectors,
   saveConnectorCredentials,
   disconnectConnector,
+  testAiConnectorConnection,
 } from "@/services/ai-connectors-vault.functions";
 import {
   type PublicExternalMcpServerDTO,
@@ -102,11 +104,26 @@ const SUPPORTED_CONNECTORS: ConnectorCardMeta[] = [
     provider: "github",
     name: "GitHub",
     category: "Desenvolvimento",
-    description: "Inspeção de repositórios, leitura de issues e auditoria de código-fonte.",
+    description: "Inspeção de repositórios, envio de código e criação de projetos via token PAT.",
     icon: Github,
-    defaultScopes: ["repo.readonly", "issues.read"],
+    defaultScopes: ["repo", "read:user"],
+  },
+  {
+    provider: "vercel",
+    name: "Vercel",
+    category: "Deploy",
+    description: "Publicação direta de landing pages e web apps gerados pelo Copilot.",
+    icon: Cloud,
+    defaultScopes: ["deployments.write", "projects.read"],
   },
 ];
+
+const API_TOKEN_REQUIRED_PROVIDERS = new Set<ConnectorProvider>([
+  "github",
+  "vercel",
+  "notion",
+  "slack",
+]);
 
 export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterProps) {
   const [connectorsState, setConnectorsState] = useState<
@@ -117,6 +134,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
     notion: { status: "disconnected" },
     slack: { status: "disconnected" },
     github: { status: "disconnected" },
+    vercel: { status: "disconnected" },
     microsoft: { status: "disconnected" },
   });
   const [isLoadingConnectors, setIsLoadingConnectors] = useState(true);
@@ -137,6 +155,8 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
   const [selectedConnector, setSelectedConnector] = useState<ConnectorCardMeta | null>(null);
   const [connectModalOpen, setConnectModalOpen] = useState(false);
   const [emailIdentifier, setEmailIdentifier] = useState("");
+  const [apiTokenInput, setApiTokenInput] = useState("");
+  const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [requireSendConfirm, setRequireSendConfirm] = useState(true);
 
   const refreshAllIntegrations = useCallback(async () => {
@@ -156,6 +176,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
         notion: { status: "disconnected" },
         slack: { status: "disconnected" },
         github: { status: "disconnected" },
+        vercel: { status: "disconnected" },
         microsoft: { status: "disconnected" },
       };
       for (const row of userConnectors) {
@@ -179,6 +200,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
   const handleOpenConnect = (connector: ConnectorCardMeta) => {
     setSelectedConnector(connector);
     setEmailIdentifier("");
+    setApiTokenInput("");
     setConnectModalOpen(true);
   };
 
@@ -187,8 +209,13 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
     if (!selectedConnector) return;
 
     const account = emailIdentifier.trim();
+    const token = apiTokenInput.trim();
     if (!account) {
-      toast.error("Informe a conta ou chave de identificação do conector.");
+      toast.error("Informe a conta ou identificador do conector.");
+      return;
+    }
+    if (API_TOKEN_REQUIRED_PROVIDERS.has(selectedConnector.provider) && !token) {
+      toast.error(`Informe o token de acesso real do conector ${selectedConnector.name}.`);
       return;
     }
 
@@ -200,6 +227,7 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
           scopes: selectedConnector.defaultScopes,
           credentials: {
             account,
+            ...(token ? { apiToken: token } : {}),
             requireSendConfirm: selectedConnector.provider === "email" ? requireSendConfirm : undefined,
             connected_at: new Date().toISOString(),
           },
@@ -214,11 +242,35 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
         },
       }));
 
-      toast.success(`Conector ${selectedConnector.name} vinculado com sucesso.`);
+      toast.success(`Conector ${selectedConnector.name} vinculado e criptografado com sucesso.`);
       setConnectModalOpen(false);
       setEmailIdentifier("");
+      setApiTokenInput("");
     } catch (err: any) {
       toast.error(err?.message || `Falha ao vincular conector ${selectedConnector.name}.`);
+    }
+  };
+
+  const handleTestConnector = async (provider: ConnectorProvider, name: string) => {
+    setTestingProvider(provider);
+    try {
+      const res = await testAiConnectorConnection({ data: { provider } });
+      setConnectorsState((prev) => ({
+        ...prev,
+        [provider]: {
+          ...prev[provider],
+          status: res.status === "connected" ? "connected" : "error",
+        },
+      }));
+      if (res.ok) {
+        toast.success(res.message || `${name} validado com sucesso.`);
+      } else {
+        toast.error(res.message || `Falha ao validar ${name}.`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || `Erro ao testar ${name}.`);
+    } finally {
+      setTestingProvider(null);
     }
   };
 
@@ -323,22 +375,12 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
       {/* ── Cabeçalho do Hub de Conectores ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Central de Conectores
-            </h2>
-            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
-              Zero-Trust Vault
-            </Badge>
-          </div>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Central de Conectores
+          </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Conecte ferramentas externas com isolamento de contexto e cofre de credenciais server-side.
+            Gerencie as integrações ativas deste espaço de trabalho.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-2xs text-muted-foreground bg-muted/40 px-3 py-2 rounded-xl border border-border/40">
-          <Lock className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>Tokens protegidos com criptografia simétrica AES-256</span>
         </div>
       </div>
 
@@ -407,15 +449,32 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
                 </span>
 
                 {isConnected ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDisconnect(conn.provider, conn.name)}
-                    className="h-11 min-h-11 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 cursor-pointer"
-                  >
-                    Desconectar
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={testingProvider === conn.provider}
+                      onClick={() => handleTestConnector(conn.provider, conn.name)}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer gap-2"
+                    >
+                      {testingProvider === conn.provider ? (
+                        <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" />
+                      ) : (
+                        <RefreshCw className="size-3.5" />
+                      )}
+                      <span>Testar</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDisconnect(conn.provider, conn.name)}
+                      className="h-11 min-h-11 px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 cursor-pointer"
+                    >
+                      Desconectar
+                    </Button>
+                  </div>
                 ) : (
                   <Button
                     type="button"
@@ -757,9 +816,31 @@ export function CopilotConnectorsCenter({ className }: CopilotConnectorsCenterPr
                 <Input
                   value={emailIdentifier}
                   onChange={(e) => setEmailIdentifier(e.target.value)}
-                  placeholder="Ex: usuario@empresa.com"
+                  placeholder="Ex: usuario@empresa.com ou meu-workspace"
                   className="h-11 min-h-11 rounded-xl text-xs bg-muted/40"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-foreground mb-1 block">
+                  {API_TOKEN_REQUIRED_PROVIDERS.has(selectedConnector.provider)
+                    ? "Token de Acesso Real (PAT / API Token)"
+                    : "Chave de API / Senha de Aplicativo (Opcional)"}
+                </label>
+                <Input
+                  type="password"
+                  value={apiTokenInput}
+                  onChange={(e) => setApiTokenInput(e.target.value)}
+                  placeholder={
+                    selectedConnector.provider === "github"
+                      ? "ghp_..."
+                      : selectedConnector.provider === "vercel"
+                      ? "Token da conta Vercel"
+                      : "Cole seu token secreto (cifrado via AES-256-GCM)"
+                  }
+                  className="h-11 min-h-11 rounded-xl text-xs bg-muted/40 font-mono"
+                  required={API_TOKEN_REQUIRED_PROVIDERS.has(selectedConnector.provider)}
                 />
               </div>
 

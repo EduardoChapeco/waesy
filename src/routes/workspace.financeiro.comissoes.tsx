@@ -283,35 +283,35 @@ function CommissionsPage() {
 
       {/* ── ABAS CANÔNICAS ── */}
       <Tabs defaultValue="extrato" className="w-full space-y-4">
-        <TabsList className="bg-muted/60 p-1 rounded-lg border border-border/60">
-          <TabsTrigger value="extrato" className="rounded-lg text-xs font-bold gap-2">
-            <DollarSign className="size-4" />
+        <TabsList className="waesy-tab-strip items-center justify-start gap-1 w-full sm:w-auto max-w-full min-w-0 bg-muted/60 p-1 rounded-lg border border-border/60 h-11 min-h-11 sm:h-10 sm:min-h-10">
+          <TabsTrigger value="extrato" className="rounded-lg text-xs font-bold gap-2 shrink-0 whitespace-nowrap">
+            <DollarSign className="size-4 shrink-0" />
             <span>Extrato de Comissões ({commissions.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="equipe" className="rounded-lg text-xs font-bold gap-2">
-            <Users className="size-4" />
+          <TabsTrigger value="equipe" className="rounded-lg text-xs font-bold gap-2 shrink-0 whitespace-nowrap">
+            <Users className="size-4 shrink-0" />
             <span>Equipe, Regras & Quitação em Lote ({sellers.length})</span>
           </TabsTrigger>
         </TabsList>
 
         {/* ── ABA 1: EXTRATO ── */}
         <TabsContent value="extrato" className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70 min-w-0">
+            <div className="relative flex-1 min-w-44 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por vendedor ou pedido..."
-                className="pl-10 h-10 rounded-lg text-xs bg-background"
+                className="pl-9 h-11 min-h-11 sm:h-9 rounded-lg text-xs bg-background"
               />
             </div>
 
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 self-start sm:self-auto">
+            <div className="waesy-tab-strip items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/60 min-w-0 max-w-full">
               <button
                 type="button"
                 onClick={() => setStatusFilter("all")}
-                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-2 h-11 min-h-11 sm:h-8 rounded-lg text-xs font-bold shrink-0 whitespace-nowrap transition-colors cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -322,7 +322,7 @@ function CommissionsPage() {
               <button
                 type="button"
                 onClick={() => setStatusFilter("pending")}
-                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-2 h-11 min-h-11 sm:h-8 rounded-lg text-xs font-bold shrink-0 whitespace-nowrap transition-colors cursor-pointer ${
                   statusFilter === "pending"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -333,7 +333,7 @@ function CommissionsPage() {
               <button
                 type="button"
                 onClick={() => setStatusFilter("paid")}
-                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-2 h-11 min-h-11 sm:h-8 rounded-lg text-xs font-bold shrink-0 whitespace-nowrap transition-colors cursor-pointer ${
                   statusFilter === "paid"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"

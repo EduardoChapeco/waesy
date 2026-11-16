@@ -238,8 +238,8 @@ export function UnifiedNewProductPage() {
         {(() => {
           const tabsContent = (
             <Tabs value={editor.activeTab} onValueChange={editor.setActiveTab} className="w-full space-y-4">
-              <div className="flex items-center justify-between gap-2 overflow-x-auto scroll-area-carousel pb-1">
-                <TabsList className="justify-start overflow-x-auto bg-muted p-1 rounded-lg h-auto flex flex-nowrap gap-1">
+              <div className="waesy-tab-strip items-center justify-between gap-2 pb-1 min-w-0 max-w-full">
+                <TabsList className="waesy-tab-strip items-center justify-start bg-muted p-1 rounded-lg h-11 min-h-11 sm:h-auto gap-1 max-w-full">
                   {editor.isTravelPackageMode ? (
                     <>
                       <TabsTrigger value="roteiro" className="rounded-md text-xs font-bold whitespace-nowrap shrink-0 px-3 h-9">

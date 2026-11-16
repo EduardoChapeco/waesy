@@ -6,22 +6,27 @@ const source = readFileSync(resolve(process.cwd(), "src/services/ai-conversation
 
 describe("chat — idempotência concorrente", () => {
   it("relê a mensagem vencedora após conflito de client_message_id", () => {
-    const sendBlock = source.slice(
+    const prepareBlock = source.slice(
+      source.indexOf("export async function prepareCopilotExchangeContext"),
+      source.indexOf("export const sendAiConversationMessage"),
+    );
+    const sendPublicBlock = source.slice(
       source.indexOf("export const sendAiConversationMessage"),
       source.indexOf("export const saveAiChatArtifact"),
     );
-    expect(sendBlock).toContain('userMsgErr?.code === "23505"');
-    expect(sendBlock).toContain("const { data: winner } = await db");
-    expect(sendBlock).toContain("const { data: winnerAi } = await db");
-    expect(sendBlock).toContain("mapPersistedAiMessage(winnerAi, data.threadId)");
+    expect(sendPublicBlock).toContain("prepareCopilotExchangeContext(data, identity)");
+    expect(prepareBlock).toContain('userMsgErr?.code === "23505"');
+    expect(prepareBlock).toContain("const { data: winner } = await db");
+    expect(prepareBlock).toContain("const { data: winnerAi } = await db");
+    expect(prepareBlock).toContain("mapPersistedAiMessage(winnerAi, data.threadId)");
   });
 
   it("não executa pipeline novamente enquanto o vencedor estiver sending", () => {
-    const sendBlock = source.slice(
-      source.indexOf("export const sendAiConversationMessage"),
+    const prepareBlock = source.slice(
+      source.indexOf("export async function prepareCopilotExchangeContext"),
       source.indexOf("export const saveAiChatArtifact"),
     );
-    const conflictBlock = sendBlock.slice(sendBlock.indexOf('userMsgErr?.code === "23505"'));
+    const conflictBlock = prepareBlock.slice(prepareBlock.indexOf('userMsgErr?.code === "23505"'));
     expect(conflictBlock).toContain('winner.status === "sending"');
     expect(conflictBlock).toContain("Mensagem já está em processamento");
   });

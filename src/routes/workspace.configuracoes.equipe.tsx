@@ -40,10 +40,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { getStoreSettings } from "@/services/store.functions";
+import { getNicheSemantics, isPartnerLawEligibleStore } from "@/lib/niches/niche-semantics";
 import { RolePermissionsMatrix } from "@/components/workspace/RolePermissionsMatrix";
 import { PartnerAgreementEditor } from "@/components/workspace/PartnerAgreementEditor";
 import { SeoGeoOptimizationPanel, type SeoGeoMetadata } from "@/components/seo";
 import { Switch } from "@/components/ui/switch";
+import { SavedSignatureSettingsCard } from "@/components/contracts/saved-signature-settings";
+import { listTeamSignatureStatuses } from "@/services/contracts-vault.functions";
+import { ErrorState } from "@/components/state/states";
 
 export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  head: () => ({
@@ -53,15 +57,21 @@ export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  ],
  }),
   loader: async () => {
+    let loadError: string | null = null;
     try {
       const storeRes = await getStoreSettings().catch(() => null);
-      const storeId = (storeRes as any)?.store?.id || (storeRes as any)?.id || "";
-      const [members, jobs, contractors, departments, whatsappInstances] = await Promise.all([
-        listTeamMembers().catch(() => []),
+      const store = (storeRes as any)?.store || storeRes || null;
+      const storeId = store?.id || "";
+      const [members, jobs, contractors, departments, whatsappInstances, teamSignatureStatuses] = await Promise.all([
+        listTeamMembers().catch((err: any) => {
+          loadError = err?.message || "Não foi possível carregar os membros da equipe.";
+          return [];
+        }),
         listMyStoreJobs().catch(() => []),
         listContractors().catch(() => []),
         listChatDepartments({ data: storeId ? { storeId } : undefined }).catch(() => []),
         listWorkspaceWhatsAppInstances({ data: storeId ? { store_id: storeId } : undefined }).catch(() => []),
+        listTeamSignatureStatuses().catch(() => []),
       ]);
       return {
         members: members || [],
@@ -69,16 +79,22 @@ export const Route = createFileRoute("/workspace/configuracoes/equipe")({
         contractors: contractors || [],
         departments: departments || [],
         whatsappInstances: whatsappInstances || [],
+        teamSignatureStatuses: teamSignatureStatuses || [],
         storeId,
+        store,
+        loadError,
       };
-    } catch {
+    } catch (err: any) {
       return {
         members: [],
         jobs: [],
         contractors: [],
         departments: [],
         whatsappInstances: [],
+        teamSignatureStatuses: [],
         storeId: "",
+        store: null,
+        loadError: err?.message || "Não foi possível carregar os dados da equipe.",
       };
     }
   },
@@ -143,9 +159,21 @@ export default function WorkspaceTeamPage() {
     contractors,
     departments = [],
     whatsappInstances = [],
+    teamSignatureStatuses = [],
     storeId,
+    store = null,
+    loadError = null,
   } = ((Route.useLoaderData?.() as any) || {});
+  const teamSigByProfileId = new Map<string, { hasSavedSignature: boolean; hasSavedInitials: boolean }>(
+    (Array.isArray(teamSignatureStatuses) ? teamSignatureStatuses : []).map((s: any) => [
+      String(s.profileId || ""),
+      { hasSavedSignature: Boolean(s.hasSavedSignature), hasSavedInitials: Boolean(s.hasSavedInitials) },
+    ]),
+  );
   const router = useRouter();
+  const semantics = getNicheSemantics(store);
+  const showPartnerLaw = isPartnerLawEligibleStore(store);
+  const defaultContractType: "clt" | "pj" | "partner_law" = showPartnerLaw ? "partner_law" : "clt";
 
   const [activeTab, setActiveTab] = useState<"members" | "contractors" | "jobs" | "permissions" | "partner_agreement">("members");
 
@@ -183,7 +211,7 @@ export default function WorkspaceTeamPage() {
   const [inviteCanCloseChats, setInviteCanCloseChats] = useState<boolean>(true);
   const [inviteCanManageWhatsappQr, setInviteCanManageWhatsappQr] = useState<boolean>(false);
   const [inviteOnlyAssignedOrSector, setInviteOnlyAssignedOrSector] = useState<boolean>(false);
-  const [inviteContractType, setInviteContractType] = useState<"clt" | "pj" | "partner_law">("partner_law");
+  const [inviteContractType, setInviteContractType] = useState<"clt" | "pj" | "partner_law">(defaultContractType);
   const [inviteCommissionPercent, setInviteCommissionPercent] = useState<number>(60);
   const [inviteFeeBearer, setInviteFeeBearer] = useState<"store_100" | "pro_100" | "split_50" | "proportional">("proportional");
   const [inviteCanViewContacts, setInviteCanViewContacts] = useState<boolean>(false);
@@ -207,7 +235,7 @@ export default function WorkspaceTeamPage() {
     canCloseChats: true,
     canManageWhatsappQr: false,
     onlyAssignedOrSector: false,
-    contractType: "partner_law" as "clt" | "pj" | "partner_law",
+    contractType: defaultContractType as "clt" | "pj" | "partner_law",
     commissionPercent: 60,
     feeBearer: "proportional" as "store_100" | "pro_100" | "split_50" | "proportional",
     canViewUnmaskedContacts: false,
@@ -243,6 +271,8 @@ export default function WorkspaceTeamPage() {
  const [isRemoving, setIsRemoving] = useState(false);
 
  const handleOpenEditMember = (member: any) => {
+  const memberContract = member.contract_type || defaultContractType;
+  const safeMemberContract = !showPartnerLaw && memberContract === "partner_law" ? "clt" : memberContract;
   setEditingMember(member);
   setEditMemberForm({
    fullName: member.full_name || "",
@@ -258,7 +288,7 @@ export default function WorkspaceTeamPage() {
    canCloseChats: member.can_close_chats ?? true,
    canManageWhatsappQr: Boolean(member.can_manage_whatsapp_qr),
    onlyAssignedOrSector: Boolean(member.only_assigned_or_sector),
-   contractType: (member.contract_type || "partner_law") as any,
+   contractType: safeMemberContract as any,
    commissionPercent: Number(member.commission_percent ?? 60),
    feeBearer: (member.fee_bearer || "proportional") as any,
    canViewUnmaskedContacts: Boolean(member.can_view_unmasked_contacts),
@@ -354,7 +384,7 @@ export default function WorkspaceTeamPage() {
  setInviteCanCloseChats(true);
  setInviteCanManageWhatsappQr(false);
  setInviteOnlyAssignedOrSector(false);
- setInviteContractType("partner_law");
+ setInviteContractType(defaultContractType);
  setInviteCommissionPercent(60);
  setInviteFeeBearer("proportional");
  setInviteCanViewContacts(false);
@@ -452,6 +482,12 @@ export default function WorkspaceTeamPage() {
 
  return (
  <div className="space-y-6 w-full pb-20">
+ {loadError && (
+   <ErrorState
+     title="Não foi possível carregar os membros da equipe"
+     description={loadError}
+   />
+ )}
  {/* ── PageHeader Canônico Clean ── */}
  <PageHeader /* design-lint-ignore DL-15 reason:"onClick pertence a controle interno do slot; o elemento em si nao e interativo" expiry:"2027-12-31" */
  eyebrow="RH & Gestão"
@@ -528,49 +564,47 @@ export default function WorkspaceTeamPage() {
  />
 
  {/* ── Tabs de Navegação ── */}
- <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
- <TabsList className="grid grid-cols-2 sm:grid-cols-5 max-w-3xl h-auto p-1 bg-muted/60 rounded-lg gap-1">
- <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-2 py-2">
+ <Tabs
+   value={!showPartnerLaw && activeTab === "partner_agreement" ? "members" : activeTab}
+   onValueChange={(v: any) => setActiveTab(v)}
+   className="w-full"
+ >
+ <TabsList
+   className={`grid grid-cols-2 ${showPartnerLaw ? "sm:grid-cols-5 max-w-3xl" : "sm:grid-cols-4 max-w-2xl"} h-auto p-1 bg-muted/60 rounded-lg gap-1`}
+ >
+ <TabsTrigger value="members" className="rounded-lg font-bold text-xs gap-2 py-2 min-h-11 sm:min-h-0">
  <Users className="size-3.5" />
  <span>Colaboradores ({members.length})</span>
  </TabsTrigger>
- <TabsTrigger value="contractors" className="rounded-lg font-bold text-xs gap-2 py-2">
+ <TabsTrigger value="contractors" className="rounded-lg font-bold text-xs gap-2 py-2 min-h-11 sm:min-h-0">
  <Briefcase className="size-3.5" />
  <span>Terceirizados ({contractorsList.length})</span>
  </TabsTrigger>
- <TabsTrigger value="partner_agreement" className="rounded-lg font-bold text-xs gap-2 py-2">
- <Building2 className="size-3.5 text-primary" />
- <span>Salão Parceiro</span>
- </TabsTrigger>
- <TabsTrigger value="permissions" className="rounded-lg font-bold text-xs gap-2 py-2">
+ {showPartnerLaw && (
+   <TabsTrigger value="partner_agreement" className="rounded-lg font-bold text-xs gap-2 py-2 min-h-11 sm:min-h-0">
+     <Building2 className="size-3.5 text-primary" />
+     <span>Salão Parceiro</span>
+   </TabsTrigger>
+ )}
+ <TabsTrigger value="permissions" className="rounded-lg font-bold text-xs gap-2 py-2 min-h-11 sm:min-h-0">
  <ShieldCheck className="size-3.5" />
  <span>Permissões</span>
  </TabsTrigger>
- <TabsTrigger value="jobs" className="rounded-lg font-bold text-xs gap-2 py-2">
+ <TabsTrigger value="jobs" className="rounded-lg font-bold text-xs gap-2 py-2 min-h-11 sm:min-h-0">
  <Layers className="size-3.5" />
  <span>Vagas ({jobs.length})</span>
  </TabsTrigger>
  </TabsList>
 
  <TabsContent value="members" className="space-y-6 pt-4">
- {/* ── Banner de Isolamento Multi-Tenant & Zero-Trust ── */}
- <div className="p-4 sm:p-5 rounded-lg bg-muted/40 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center gap-4">
- <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
- <ShieldCheck className="size-5" />
- </div>
- <div className="space-y-1 flex-1 min-w-0">
- <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
- <span>Privacidade e Isolamento Estrito de Workspace</span>
- <Badge variant="outline" className="text-xs px-2 py-0 border-primary/30 text-primary font-bold">
- Zero-Trust RLS
- </Badge>
- </h3>
- <p className="text-xs text-muted-foreground leading-relaxed">
- Cada colaborador vinculado abaixo terá permissões aplicadas <strong>exclusivamente para esta loja</strong>.
- Nenhum dado, pedido, faturamento ou catálogo de outros comerciantes é acessível.
- </p>
- </div>
- </div>
+
+ {/* ── Assinatura Digital da Conta para Uso Rápido em Contratos ── */}
+ <SavedSignatureSettingsCard
+  compact
+  title="Minha Assinatura para Contratos"
+  description="Cadastre sua assinatura e rubrica para assinar documentos deste workspace em 1 toque."
+  onUpdated={() => router.invalidate()}
+ />
 
  {/* ── Tabela de Colaboradores ── */}
  <div className="bg-card border border-border/60 rounded-lg overflow-hidden shadow-xs">
@@ -652,7 +686,7 @@ export default function WorkspaceTeamPage() {
  >
  {roleInfo.label}
  </Badge>
- {m.is_attendance_agent !== false && (
+ {m.is_attendance_agent === true && (
   <Badge variant="secondary" className="text-xs px-2 py-1 font-medium rounded-lg">
    {presenceText} · Limite {m.max_concurrent_chats ?? 10}
   </Badge>
@@ -671,11 +705,31 @@ export default function WorkspaceTeamPage() {
    </span>
   </Badge>
  )}
+ {(() => {
+  const sigStatus = teamSigByProfileId.get(String(m.id || ""));
+  if (!sigStatus) return null;
+  return sigStatus.hasSavedSignature ? (
+   <Badge
+    variant="outline"
+    className="text-xs px-2 py-1 font-medium rounded-lg gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+   >
+    <CheckCircle2 className="size-3" />
+    <span>Assinatura Digital Salva</span>
+   </Badge>
+  ) : (
+   <Badge variant="secondary" className="text-xs px-2 py-1 font-medium rounded-lg">
+    Sem Assinatura Digital
+   </Badge>
+  );
+ })()}
  </div>
+ {(m.email || m.phone) && (
  <p className="text-xs text-muted-foreground truncate font-mono">
- {m.email || "E-mail não público"}
- {m.phone ? ` · ${m.phone}` : ""}
+ {m.email || ""}
+ {m.email && m.phone ? " · " : ""}
+ {m.phone || ""}
  </p>
+ )}
  </div>
  </div>
 
@@ -981,9 +1035,11 @@ export default function WorkspaceTeamPage() {
  </div>
  </TabsContent>
 
- <TabsContent value="partner_agreement" className="space-y-6 pt-4">
- <PartnerAgreementEditor members={members} storeId={storeId} />
- </TabsContent>
+ {showPartnerLaw && (
+   <TabsContent value="partner_agreement" className="space-y-6 pt-4">
+   <PartnerAgreementEditor members={members} storeId={storeId} />
+   </TabsContent>
+ )}
 
  <TabsContent value="permissions" className="space-y-6 pt-4">
  <RolePermissionsMatrix storeId={storeId} />
@@ -1310,7 +1366,11 @@ export default function WorkspaceTeamPage() {
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-lg">
- <SelectItem value="partner_law">Salão Parceiro (Lei 13.352/2016) — Segregação Fiscal de Cota-Parte</SelectItem>
+ {showPartnerLaw && (
+   <SelectItem value="partner_law">
+     Salão Parceiro (Lei 13.352/2016) — Segregação Fiscal de Cota-Parte
+   </SelectItem>
+ )}
  <SelectItem value="clt">CLT — Regime Tradicional Celetista</SelectItem>
  <SelectItem value="pj">Prestador PJ / Autônomo — Emissão de NFS-e</SelectItem>
  </SelectContent>
@@ -1319,7 +1379,9 @@ export default function WorkspaceTeamPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
  <div className="space-y-1">
- <Label className="text-xs font-bold text-foreground">Comissão / Cota-Parte (%)</Label>
+ <Label className="text-xs font-bold text-foreground">
+   {showPartnerLaw ? "Comissão / Cota-Parte (%)" : "Comissão (%)"}
+ </Label>
  <Input
  type="number"
  min={0}
@@ -1777,7 +1839,11 @@ export default function WorkspaceTeamPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">
-                    <SelectItem value="partner_law">Salão Parceiro (Lei 13.352/2016)</SelectItem>
+                    {showPartnerLaw && (
+                      <SelectItem value="partner_law">
+                        Salão Parceiro (Lei 13.352/2016)
+                      </SelectItem>
+                    )}
                     <SelectItem value="clt">CLT</SelectItem>
                     <SelectItem value="pj">PJ / Autônomo</SelectItem>
                   </SelectContent>

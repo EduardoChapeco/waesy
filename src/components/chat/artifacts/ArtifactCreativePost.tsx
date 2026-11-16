@@ -12,7 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { exportElementAsImage, exportElementAsPdf } from "@/lib/pdf-export";
+import {
+  exportElementAsImage,
+  exportElementAsPdf,
+  exportMultipleElementsAsPdf,
+} from "@/lib/pdf-export";
 import {
   CREATIVE_THEMES,
   CreativeArtboardRenderer,
@@ -37,6 +41,15 @@ export type PostLayoutTemplate =
   | "promo_offer"
   | "travel";
 
+export interface CreativeSlideSpec {
+  badge?: string;
+  headline: string;
+  subheadline?: string;
+  bullets?: string[];
+  ctaText?: string;
+  imageUrl?: string;
+}
+
 export interface ArtifactCreativePostProps {
   title: string;
   format?: "story" | "portrait" | "landscape" | "feed";
@@ -59,6 +72,10 @@ export interface ArtifactCreativePostProps {
   offerBadge?: string;
   installments?: string;
   locationLabel?: string;
+  slides?: CreativeSlideSpec[];
+  compact?: boolean;
+  onOpenInStudio?: (snapshot: Record<string, any>) => void;
+  onPublish?: (snapshot: Record<string, any>) => void;
   className?: string;
 }
 
@@ -134,6 +151,10 @@ export function ArtifactCreativePost({
   offerBadge = "Oferta Limitada",
   installments,
   locationLabel,
+  slides,
+  compact = false,
+  onOpenInStudio,
+  onPublish,
   className,
 }: ArtifactCreativePostProps) {
   const [aspectRatio, setAspectRatio] = useState<PostAspectRatio>(() =>
@@ -148,6 +169,7 @@ export function ArtifactCreativePost({
   const [isEditing, setIsEditing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [copiedCaption, setCopiedCaption] = useState(false);
+  const [activeSlideIdx, setActiveSlideIdx] = useState(0);
 
   const [editHeadline, setEditHeadline] = useState(headline);
   const [editSubheadline, setEditSubheadline] = useState(subheadline);
@@ -185,9 +207,34 @@ export function ArtifactCreativePost({
   const uid = useId();
   const stageId = `copilot-post-stage-${uid.replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
+  const normalizedSlides = Array.isArray(slides) ? slides.filter((s) => Boolean(s?.headline)) : [];
+  const hasCarousel = normalizedSlides.length > 1;
+  const activeSlide = hasCarousel
+    ? normalizedSlides[Math.min(activeSlideIdx, normalizedSlides.length - 1)]
+    : undefined;
+
+  useEffect(() => {
+    setActiveSlideIdx(0);
+  }, [normalizedSlides.length]);
+
+  const effectiveBadge = activeSlide?.badge ?? editBadge;
+  const effectiveHeadline = activeSlide?.headline ?? editHeadline;
+  const effectiveSubheadline =
+    template === "quote_testimonial"
+      ? quoteAuthor
+      : activeSlide?.subheadline ?? editSubheadline;
+  const effectiveBullets = Array.isArray(activeSlide?.bullets)
+    ? activeSlide.bullets
+    : Array.isArray(bullets)
+      ? bullets
+      : [];
+  const effectiveHashtags = Array.isArray(hashtags) ? hashtags : [];
+  const effectiveCtaText = activeSlide?.ctaText ?? editCtaText;
+  const effectiveImageUrl = activeSlide?.imageUrl ?? editImageUrl;
+
   const fullCaption =
     caption ||
-    `${editHeadline}\n\n${editSubheadline}\n\n${bullets.map((b) => `• ${b}`).join("\n")}\n\n${editCtaText}: Link na bio!\n\n${hashtags.join(" ")}`;
+    `${effectiveHeadline}\n\n${effectiveSubheadline || ""}\n\n${effectiveBullets.map((b) => `• ${b}`).join("\n")}\n\n${effectiveCtaText}: Link na bio!\n\n${effectiveHashtags.join(" ")}`;
 
   const handleCopyCaption = () => {
     navigator.clipboard.writeText(fullCaption);
@@ -216,6 +263,16 @@ export function ArtifactCreativePost({
     try {
       setIsExporting(true);
       const slug = (title || "post-waesy").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 32);
+      if (hasCarousel) {
+        const slideElements = normalizedSlides
+          .map((_, idx) => document.getElementById(`${stageId}-slide-${idx}`))
+          .filter((el): el is HTMLElement => el instanceof HTMLElement);
+        if (slideElements.length > 0) {
+          await exportMultipleElementsAsPdf(slideElements, `${slug}-carrossel.pdf`);
+          toast.success(`Carrossel (${slideElements.length} slides) exportado em PDF!`);
+          return;
+        }
+      }
       await exportElementAsPdf(
         stageId,
         `${slug}.pdf`,
@@ -253,19 +310,59 @@ export function ArtifactCreativePost({
       ? "travel"
       : template;
 
+  const currentSnapshot = {
+    format: aspectRatio === "story" ? "story" : aspectRatio === "portrait" ? "portrait" : aspectRatio === "landscape" ? "landscape" : "feed",
+    aspectRatio: RATIO_MAP[aspectRatio],
+    themeId,
+    archetype: mappedArchetype,
+    headline: effectiveHeadline,
+    subheadline: effectiveSubheadline,
+    badge: effectiveBadge,
+    offerBadge,
+    offerPrice: editOfferPrice || undefined,
+    installments,
+    bullets: effectiveBullets,
+    ctaText: effectiveCtaText,
+    cta_label: effectiveCtaText,
+    body_text: effectiveSubheadline,
+    storeName: editStoreName,
+    brandHandle,
+    locationLabel,
+    imageUrl: effectiveImageUrl || undefined,
+    logoUrl: editLogoUrl || undefined,
+    slides: normalizedSlides.length > 0 ? normalizedSlides : undefined,
+  };
+
   return (
-    <div className={cn("space-y-4", className)}>
+    <div
+      className={cn(
+        "@container space-y-4",
+        compact && "rounded-2xl border border-border/80 bg-card p-3 sm:p-4 max-w-md w-full space-y-3",
+        className,
+      )}
+    >
       {/* Cabeçalho e Botões de Exportação */}
       <div className="flex flex-col gap-3 border-b border-border/40 pb-3">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <FileText className="size-4 text-primary shrink-0" />
               <h2 className="text-base font-bold text-foreground">{title}</h2>
+              <span className="rounded-md border border-border/70 bg-muted/40 px-2 py-1 text-2xs font-mono font-medium text-muted-foreground shrink-0">
+                {aspectRatio === "story"
+                  ? "Story (9:16)"
+                  : aspectRatio === "portrait"
+                    ? "Retrato (4:5)"
+                    : aspectRatio === "landscape"
+                      ? "Slide (16:9)"
+                      : "Feed (1:1)"}
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Estúdio Criativo Multiformato com Exportação PNG, PDF e HTML
-            </p>
+            {!compact && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Estúdio Criativo Multiformato com Exportação PNG, PDF e HTML
+              </p>
+            )}
           </div>
 
           <Button
@@ -507,32 +604,89 @@ export function ArtifactCreativePost({
         </div>
       </div>
 
+      {/* Seletor de Slides para Carrossel */}
+      {hasCarousel && (
+        <div className="flex items-center gap-2 scroll-area-carousel pb-1">
+          {normalizedSlides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setActiveSlideIdx(idx)}
+              className={cn(
+                "h-11 min-h-11 sm:h-9 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                activeSlideIdx === idx
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "bg-muted text-muted-foreground hover:text-foreground",
+              )}
+            >
+              Slide {idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Canvas da Peça Visual Renderizada (Alvo PNG/PDF Seguro Tailwind v4) */}
-      <div className="flex justify-center p-4 bg-muted/20 rounded-xl border border-border/40 overflow-hidden">
+      <div className="flex justify-center p-4 bg-muted/20 rounded-xl overflow-hidden">
         <CreativeArtboardRenderer
           id={stageId}
           archetype={mappedArchetype}
           themeId={themeId || PALETTE_TO_THEME.brand}
           aspectRatio={RATIO_MAP[aspectRatio]}
-          badge={editBadge}
-          headline={editHeadline}
-          subheadline={template === "quote_testimonial" ? quoteAuthor : editSubheadline}
-          bullets={bullets}
+          badge={effectiveBadge}
+          headline={effectiveHeadline}
+          subheadline={effectiveSubheadline}
+          bullets={effectiveBullets}
           offerBadge={offerBadge}
           offerPrice={editOfferPrice || undefined}
           installments={installments}
-          ctaText={editCtaText}
+          ctaText={effectiveCtaText}
           brandName={editStoreName}
           brandHandle={brandHandle}
           locationLabel={locationLabel}
           logoUrl={editLogoUrl || undefined}
-          imageUrl={editImageUrl || undefined}
+          imageUrl={effectiveImageUrl || undefined}
           imageOverlayPercent={overlayPercent}
         />
       </div>
 
+      {/* Pilha oculta fora da viewport para exportação multi-página de carrossel */}
+      {hasCarousel && (
+        <div
+          aria-hidden="true"
+          className="fixed left-full top-0 w-96 pointer-events-none"
+        >
+          {normalizedSlides.map((slide, idx) => (
+            <CreativeArtboardRenderer
+              key={`print-slide-${idx}`}
+              id={`${stageId}-slide-${idx}`}
+              archetype={mappedArchetype}
+              themeId={themeId || PALETTE_TO_THEME.brand}
+              aspectRatio={RATIO_MAP[aspectRatio]}
+              badge={slide.badge ?? editBadge}
+              headline={slide.headline}
+              subheadline={
+                template === "quote_testimonial"
+                  ? quoteAuthor
+                  : slide.subheadline ?? editSubheadline
+              }
+              bullets={Array.isArray(slide.bullets) ? slide.bullets : effectiveBullets}
+              offerBadge={offerBadge}
+              offerPrice={editOfferPrice || undefined}
+              installments={installments}
+              ctaText={slide.ctaText ?? editCtaText}
+              brandName={editStoreName}
+              brandHandle={brandHandle}
+              locationLabel={locationLabel}
+              logoUrl={editLogoUrl || undefined}
+              imageUrl={slide.imageUrl ?? editImageUrl ?? undefined}
+              imageOverlayPercent={overlayPercent}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Caixa de Texto da Legenda Completa Pronta para Publicar */}
-      <div className="rounded-xl border border-border/60 bg-card p-4 space-y-2">
+      <div className="rounded-xl bg-muted/30 p-4 space-y-2">
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-foreground">Legenda do Post</span>
           <button
@@ -547,6 +701,33 @@ export function ArtifactCreativePost({
           {fullCaption}
         </p>
       </div>
+
+      {(onOpenInStudio || onPublish) && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          {onOpenInStudio && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onOpenInStudio(currentSnapshot)}
+              className="flex-1 h-11 min-h-11 rounded-xl text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            >
+              <span>Abrir no Estúdio</span>
+            </Button>
+          )}
+          {onPublish && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onPublish(currentSnapshot)}
+              className="flex-1 h-11 min-h-11 rounded-xl text-xs font-semibold gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            >
+              <span>Publicar</span>
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

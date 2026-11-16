@@ -138,9 +138,44 @@ export function WorkspaceCanonicalToolbar({
   title,
   children,
 }: WorkspaceCanonicalToolbarProps) {
-  const effectiveTabs = tabs || viewModes || [];
-  const currentActive = activeTab || activeViewMode;
-  const handleTabSelect = onTabChange || onViewModeChange;
+  const hasExplicitTabs = Boolean(tabs && tabs.length > 0);
+  const hasExplicitViewModes = Boolean(viewModes && viewModes.length > 0);
+  const effectiveTabs = hasExplicitTabs ? tabs! : viewModes || [];
+  const currentActive = hasExplicitTabs ? activeTab || activeViewMode : activeViewMode || activeTab;
+  const handleTabSelect = hasExplicitTabs ? onTabChange || onViewModeChange : onViewModeChange || onTabChange;
+  const promotedViewSwitcher =
+    !viewSwitcher && hasExplicitTabs && hasExplicitViewModes && onViewModeChange
+      ? (
+          <div
+            role="group"
+            aria-label="Modo de visualização"
+            className="waesy-tab-strip items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border/60 shrink-0"
+          >
+            {viewModes!.map((vm) => {
+              const VmIcon = vm.icon;
+              const isVmActive = activeViewMode === vm.id;
+              return (
+                <button
+                  key={vm.id}
+                  type="button"
+                  onClick={() => onViewModeChange(vm.id)}
+                  aria-pressed={isVmActive}
+                  className={cn(
+                    "flex items-center gap-2 px-3 rounded-md text-xs font-medium whitespace-nowrap shrink-0 h-11 min-h-11 sm:h-8 sm:min-h-8 transition-colors motion-reduce:transition-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    isVmActive
+                      ? "bg-background text-foreground font-semibold border border-border/60"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  )}
+                >
+                  {VmIcon && <VmIcon className="size-3.5 shrink-0" />}
+                  <span>{vm.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )
+      : null;
+  const effectiveViewSwitcher = viewSwitcher || promotedViewSwitcher;
   const searchPlaceholder = placeholder || customPlaceholder || "Buscar...";
   const effectiveSearch = searchValue ?? searchQuery ?? searchTerm;
   const effectiveDashboardLabel = dashboardLabel || dashboardButtonLabel || "Métricas";
@@ -154,7 +189,8 @@ export function WorkspaceCanonicalToolbar({
   const handleColumns = onConfigureColumns || onColumnsClick;
 
   const hasTabs = effectiveTabs.length > 0;
-  const hasTier1 = hasTabs || Boolean(viewSwitcher);
+  const normalizedTitle = typeof title === "string" ? title.trim() : "";
+  const hasTier1 = hasTabs || Boolean(effectiveViewSwitcher) || Boolean(normalizedTitle);
   const hasControls = Boolean(
     onSearchChange ||
       (filters && filters.length > 0) ||
@@ -167,13 +203,13 @@ export function WorkspaceCanonicalToolbar({
   );
 
   return (
-    <div className={cn("flex flex-col gap-3 py-1 select-none w-full", className)}>
-      {/* ── TIER 1: Abas de Visualização (Linear / Apple HIG minimalista, sem card pesado) + Utilitários de Visão ── */}
+    <div className={cn("waesy-toolbar-container flex flex-col gap-3 py-1 select-none w-full min-w-0", className)}>
+      {/* ── TIER 1: Abas de Visualização (Linear / Apple HIG minimalista, com scroll interno proporcional) + Utilitários de Visão ── */}
       {hasTier1 && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full border-b border-border/50 pb-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full min-w-0 border-b border-border/50 pb-2">
           {/* LADO ESQUERDO: Abas Segmentadas Limpas */}
           {hasTabs ? (
-            <div role="tablist" className="waesy-tab-strip flex items-center shrink-0 gap-1 no-scrollbar max-w-full overflow-x-auto snap-x snap-mandatory">
+            <div role="tablist" className="waesy-tab-strip items-center flex-1 min-w-0 gap-1 snap-x snap-mandatory">
               {effectiveTabs.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentActive === item.id;
@@ -183,6 +219,8 @@ export function WorkspaceCanonicalToolbar({
                   <button
                     key={item.id}
                     type="button"
+                    role="tab"
+                    aria-selected={isActive}
                     onClick={() => handleTabSelect?.(item.id)}
                     className={cn(
                       "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none cursor-pointer whitespace-nowrap shrink-0 snap-start h-11 min-h-11 sm:h-9 sm:min-h-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -204,7 +242,7 @@ export function WorkspaceCanonicalToolbar({
                       <Badge
                         variant="secondary"
                         className={cn(
-                          "ml-1 text-xs px-2 py-0 h-5 rounded-md font-mono leading-none border-0",
+                          "ml-1 text-xs px-2 py-0 h-5 rounded-md font-mono leading-none border-0 shrink-0",
                           isActive ? "bg-background text-foreground" : "bg-muted/60 text-muted-foreground"
                         )}
                       >
@@ -215,29 +253,33 @@ export function WorkspaceCanonicalToolbar({
                 );
               })}
             </div>
+          ) : normalizedTitle ? (
+            <span className="text-sm font-semibold text-foreground truncate min-w-0">
+              {normalizedTitle}
+            </span>
           ) : (
             <div />
           )}
 
           {/* LADO DIREITO DO TIER 1: View Switcher, Métricas & Customização de Colunas */}
-          {(viewSwitcher || handleDashboard || handleColumns) && (
+          {(effectiveViewSwitcher || handleDashboard || handleColumns) && (
             <div
               className={cn(
-                "items-center gap-2 shrink-0 justify-end",
-                viewSwitcher ? "flex" : "hidden waesy-expanded-flex"
+                "waesy-tab-strip items-center gap-2 shrink-0 max-w-full",
+                effectiveViewSwitcher ? "flex" : "hidden waesy-expanded-flex"
               )}
             >
-              {viewSwitcher && <div className="shrink-0">{viewSwitcher}</div>}
+              {effectiveViewSwitcher && <div className="shrink-0">{effectiveViewSwitcher}</div>}
               {handleColumns && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleColumns}
-                  className="hidden waesy-expanded-flex h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg border border-transparent hover:border-border/70 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 cursor-pointer"
+                  className="hidden waesy-expanded-flex h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg border border-transparent hover:border-border/70 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 shrink-0 whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   title="Personalizar Colunas do Kanban"
                 >
-                  <Settings2 className="size-3.5 text-muted-foreground" />
+                  <Settings2 className="size-3.5 text-muted-foreground shrink-0" />
                   <span>Colunas</span>
                 </Button>
               )}
@@ -248,16 +290,16 @@ export function WorkspaceCanonicalToolbar({
                   variant="outline"
                   size="sm"
                   onClick={handleDashboard}
-                  className="hidden waesy-expanded-flex h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none"
+                  className="hidden waesy-expanded-flex h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <BarChart3 className="size-3.5 text-primary" />
+                  <BarChart3 className="size-3.5 text-primary shrink-0" />
                   <span>{effectiveDashboardLabel}</span>
                   {metricsBadge ? (
-                    <span className="text-xs font-mono font-semibold bg-muted/70 px-2 py-0 h-5 inline-flex items-center rounded-md text-foreground">
+                    <span className="text-xs font-mono font-semibold bg-muted/70 px-2 py-0 h-5 inline-flex items-center rounded-md text-foreground shrink-0">
                       {metricsBadge}
                     </span>
                   ) : hasActiveMetrics ? (
-                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none shrink-0" />
+                    <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none shrink-0" />
                   ) : null}
                 </Button>
               )}
@@ -268,68 +310,79 @@ export function WorkspaceCanonicalToolbar({
 
       {/* ── TIER 2: Busca Rápida, Filtros e Ação Primária da Tela ── */}
       {hasControls && (
-        <div className="flex flex-row items-center justify-between gap-2 w-full">
-          {/* LADO ESQUERDO: Campo de Busca com Lupa e Filtros */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {/* Campo de Busca */}
-            {onSearchChange && (
-              <div className="relative flex-1 min-w-44 sm:min-w-60">
-                <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                <Input
-                  value={effectiveSearch || ""}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  placeholder={searchPlaceholder}
-                  className="h-11 min-h-11 sm:h-9 sm:min-h-9 pl-9 pr-8 text-base sm:text-xs rounded-lg bg-card border-border/70 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/40 w-full shadow-none"
-                />
-                {effectiveSearch && (
-                  <button
-                    type="button"
-                    onClick={() => onSearchChange("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    title="Limpar busca"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                )}
-              </div>
-            )}
+        <div className="waesy-toolbar-tier2">
+          {/* ZONA 1: Campo de Busca Proporcional + Botão de Filtros Mobile */}
+          {(onSearchChange || (filters && filters.length > 0)) && (
+            <div className="flex items-center gap-2 waesy-toolbar-search">
+              {onSearchChange && (
+                <div className="relative flex-1 min-w-0">
+                  <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                  <Input
+                    value={effectiveSearch || ""}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    placeholder={searchPlaceholder}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-9 pl-9 pr-8 text-base sm:text-xs rounded-lg bg-card border-border/70 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/40 w-full shadow-none"
+                  />
+                  {effectiveSearch && (
+                    <button
+                      type="button"
+                      onClick={() => onSearchChange("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      title="Limpar busca"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
 
-            {/* BOTÃO DE FILTROS NO MOBILE (Abre Bottom Sheet - Erradica empilhamento de selects) */}
-            {filters && filters.length > 0 && (
-              <div className="waesy-compact-medium-only flex">
-                <FilterTriggerButton
-                  onClick={() => setIsFilterSheetOpen(true)}
-                  activeCount={activeFiltersCount}
-                />
-              </div>
-            )}
+              {/* BOTÃO DE FILTROS NO MOBILE (Abre Bottom Sheet - Erradica empilhamento de selects) */}
+              {filters && filters.length > 0 && (
+                <div className="waesy-compact-medium-only flex shrink-0">
+                  <FilterTriggerButton
+                    onClick={() => setIsFilterSheetOpen(true)}
+                    activeCount={activeFiltersCount}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
-            {/* FILTROS DROPDOWN NO DESKTOP */}
-            {filters && filters.length > 0 && (
-              <div className="hidden waesy-expanded-flex items-center gap-2 shrink-0">
-                {filters.map((f) => (
-                  <Select key={f.id} value={f.value} onValueChange={f.onChange}>
-                    <SelectTrigger className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 text-xs rounded-lg bg-card border-border/70 font-medium min-w-44 max-w-60 shadow-none">
-                      <SelectValue placeholder={f.label} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg">
-                      {f.options.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value} className="text-xs rounded-lg">
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ))}
-              </div>
-            )}
+          {/* ZONA 2: Trilho Rolável de Filtros Desktop + Slot Contextual (Anti-sobreposição) */}
+          {((filters && filters.length > 0) || filterSlot) && (
+            <div
+              className={cn(
+                "waesy-toolbar-filters waesy-tab-strip items-center gap-2 py-1",
+                !filterSlot && "hidden waesy-expanded-flex"
+              )}
+            >
+              {filters && filters.length > 0 && (
+                <div className="hidden waesy-expanded-flex items-center gap-2 shrink-0">
+                  {filters.map((f) => (
+                    <Select key={f.id} value={f.value} onValueChange={f.onChange}>
+                      <SelectTrigger className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 text-xs rounded-lg bg-card border-border/70 font-medium min-w-40 max-w-56 whitespace-nowrap shrink-0 shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <SelectValue placeholder={f.label} />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg">
+                        {f.options.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value} className="text-xs rounded-lg">
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ))}
+                </div>
+              )}
 
-            {/* Slot Contextual no Desktop */}
-            {filterSlot && <div className="hidden waesy-expanded-flex items-center gap-2 shrink-0">{filterSlot}</div>}
-          </div>
+              {filterSlot && (
+                <div className="flex items-center gap-2 shrink-0">{filterSlot}</div>
+              )}
+            </div>
+          )}
 
-          {/* LADO DIREITO: Ações Secundárias, Métricas (somente sem abas) e CTA Primário */}
-          <div className="flex items-center gap-2 shrink-0 justify-end">
+          {/* ZONA 3: Trilho de Ações Secundárias, Métricas (sem abas) e CTA Primário */}
+          <div className="waesy-toolbar-actions waesy-tab-strip items-center gap-2 py-1">
             {/* Quando NÃO houver abas no Tier 1, exibimos Métricas e Colunas aqui no Desktop */}
             {hasTabs === false && handleColumns && (
               <Button
@@ -337,10 +390,10 @@ export function WorkspaceCanonicalToolbar({
                 variant="outline"
                 size="sm"
                 onClick={handleColumns}
-                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none hidden waesy-expanded-flex"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-none hidden waesy-expanded-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 title="Personalizar Colunas do Kanban"
               >
-                <Settings2 className="size-3.5 text-muted-foreground" />
+                <Settings2 className="size-3.5 text-muted-foreground shrink-0" />
                 <span>Colunas</span>
               </Button>
             )}
@@ -351,16 +404,16 @@ export function WorkspaceCanonicalToolbar({
                 variant="outline"
                 size="sm"
                 onClick={handleDashboard}
-                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative hidden waesy-expanded-flex"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-none relative hidden waesy-expanded-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <BarChart3 className="size-3.5 text-primary" />
+                <BarChart3 className="size-3.5 text-primary shrink-0" />
                 <span>{effectiveDashboardLabel}</span>
                 {metricsBadge ? (
-                  <span className="text-xs font-mono font-semibold bg-muted/70 px-2 py-0 h-5 inline-flex items-center rounded-md text-foreground">
+                  <span className="text-xs font-mono font-semibold bg-muted/70 px-2 py-0 h-5 inline-flex items-center rounded-md text-foreground shrink-0">
                     {metricsBadge}
                   </span>
                 ) : hasActiveMetrics ? (
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none shrink-0" />
+                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none shrink-0" />
                 ) : null}
               </Button>
             )}
@@ -373,14 +426,14 @@ export function WorkspaceCanonicalToolbar({
                 size="sm"
                 disabled={secondaryAction.disabled}
                 onClick={secondaryAction.onClick}
-                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none hidden waesy-expanded-flex"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-none hidden waesy-expanded-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                {secondaryAction.icon && <secondaryAction.icon className="size-3.5" />}
+                {secondaryAction.icon && <secondaryAction.icon className="size-3.5 shrink-0" />}
                 <span>{secondaryAction.label}</span>
               </Button>
             )}
 
-            {/* Múltiplas Ações Secundárias no Desktop: 1 direta se única, ou menu "Ferramentas" compacto para evitar poluição visual */}
+            {/* Múltiplas Ações Secundárias no Desktop: 1 direta se única, ou menu "Ferramentas" compacto */}
             {secondaryActions && secondaryActions.length === 1 && (
               <Button
                 key={secondaryActions[0].label}
@@ -389,25 +442,25 @@ export function WorkspaceCanonicalToolbar({
                 size="sm"
                 disabled={secondaryActions[0].disabled}
                 onClick={secondaryActions[0].onClick}
-                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none hidden waesy-expanded-flex"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-none hidden waesy-expanded-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {secondaryActions[0].icon &&
-                  React.createElement(secondaryActions[0].icon, { className: "size-3.5" })}
+                  React.createElement(secondaryActions[0].icon, { className: "size-3.5 shrink-0" })}
                 <span>{secondaryActions[0].label}</span>
               </Button>
             )}
 
             {secondaryActions && secondaryActions.length > 1 && (
-              <div className="hidden waesy-expanded-flex">
+              <div className="hidden waesy-expanded-flex shrink-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none"
+                      className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-medium border-border/70 text-foreground hover:bg-muted/60 gap-2 shrink-0 whitespace-nowrap cursor-pointer shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
-                      <MoreHorizontal className="size-3.5" />
+                      <MoreHorizontal className="size-3.5 shrink-0" />
                       <span>Ações</span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -430,7 +483,7 @@ export function WorkspaceCanonicalToolbar({
 
             {/* Menu Kebab no Mobile para Ações Secundárias */}
             {(secondaryAction || secondaryActions?.length || handleColumns || handleDashboard) && (
-              <div className="waesy-compact-medium-only">
+              <div className="waesy-compact-medium-only shrink-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -487,19 +540,19 @@ export function WorkspaceCanonicalToolbar({
               </div>
             )}
 
-            {/* Ação Primária da Tela (Botão Principal Único) */}
+            {/* Ação Primária da Tela (Botão Principal Único ou cluster customizado rolável) */}
             {React.isValidElement(primaryAction) ? (
-              primaryAction
+              <div className="flex items-center gap-2 shrink-0">{primaryAction}</div>
             ) : primaryAction && typeof primaryAction === "object" && "label" in primaryAction ? (
               <Button
                 type="button"
                 size="sm"
                 disabled={(primaryAction as WorkspaceCanonicalAction).disabled}
                 onClick={(primaryAction as WorkspaceCanonicalAction).onClick}
-                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-none shrink-0"
+                className="h-11 min-h-11 sm:h-9 sm:min-h-9 px-3 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 cursor-pointer shadow-none shrink-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {(primaryAction as WorkspaceCanonicalAction).icon &&
-                  React.createElement((primaryAction as WorkspaceCanonicalAction).icon!, { className: "size-3.5" })}
+                  React.createElement((primaryAction as WorkspaceCanonicalAction).icon!, { className: "size-3.5 shrink-0" })}
                 <span className="hidden xs:inline sm:inline">{(primaryAction as WorkspaceCanonicalAction).label}</span>
               </Button>
             ) : null}

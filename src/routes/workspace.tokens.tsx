@@ -217,10 +217,10 @@ export default function WorkspaceTokensPage() {
 
  {/* Tabs de Governança de Tokens */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
- <TabsList className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-lg h-10">
- <TabsTrigger value="visao_geral" className="text-xs">Visão Geral e Pacotes</TabsTrigger>
- <TabsTrigger value="calculadora" className="text-xs">Comparativo de Economia</TabsTrigger>
- <TabsTrigger value="faturamento" className="text-xs">Faturamento e Limites</TabsTrigger>
+ <TabsList className="waesy-tab-strip items-center justify-start gap-2 w-full sm:w-auto max-w-full min-w-0 p-1 rounded-lg h-11 min-h-11 sm:h-10 sm:min-h-10">
+ <TabsTrigger value="visao_geral" className="text-xs shrink-0 whitespace-nowrap">Visão Geral e Pacotes</TabsTrigger>
+ <TabsTrigger value="calculadora" className="text-xs shrink-0 whitespace-nowrap">Comparativo de Economia</TabsTrigger>
+ <TabsTrigger value="faturamento" className="text-xs shrink-0 whitespace-nowrap">Faturamento e Limites</TabsTrigger>
  </TabsList>
 
  {/* Tab 1: Visão Geral */}

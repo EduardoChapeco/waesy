@@ -131,6 +131,7 @@ const NAV_SECTIONS = [
     title: "Comando",
     items: [
       { to: "/admin-master", label: "Visão Geral", icon: LayoutDashboard, exact: true },
+      { to: "/admin-master/subsistemas", label: "Subsistemas & DNS", icon: Globe },
       { to: "/admin-master/crescimento", label: "Metas", icon: Target },
       { to: "/admin-master/modulos", label: "Módulos", icon: Layers },
       { to: "/admin-master/algoritmo", label: "Algoritmo", icon: Sliders },
@@ -143,6 +144,7 @@ const NAV_SECTIONS = [
     title: "Vitrines",
     items: [
       { to: "/admin-master/home-editor", label: "Páginas", icon: Layout },
+      { to: "/admin-master/landings", label: "Landings CMS", icon: Layers },
       { to: "/admin-master/vitrines", label: "Vitrines", icon: Store },
       { to: "/admin-master/banners", label: "Banners", icon: ImageIcon },
       { to: "/admin-master/botoes", label: "Atalhos", icon: Layers },
@@ -501,7 +503,7 @@ function AdminMasterLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top Header */}
-        <header className="h-14 border-b border-border/40 bg-background px-4 sm:px-6 flex items-center justify-between shrink-0 z-20">
+        <header className="h-14 border-b border-border/40 bg-background px-4 sm:px-6 flex items-center justify-between gap-2 shrink-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
@@ -523,15 +525,15 @@ function AdminMasterLayout() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="waesy-tab-strip items-center gap-2 min-w-0 max-w-full">
             <Button
               asChild
               size="sm"
               variant="outline"
-              className="h-11 min-h-11 rounded-lg text-xs font-medium gap-2 bg-card hover:bg-muted border-border/60 cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-medium gap-2 bg-card hover:bg-muted border-border/60 shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Link to="/workspace">
-                <Store className="size-4 text-primary" />
+                <Store className="size-4 text-primary shrink-0" />
                 <span className="hidden sm:inline">Workspace</span>
               </Link>
             </Button>
@@ -539,19 +541,19 @@ function AdminMasterLayout() {
               asChild
               size="sm"
               variant="ghost"
-              className="h-11 min-h-11 rounded-lg text-xs font-medium gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-11 min-h-11 rounded-lg text-xs font-medium gap-1 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Link to="/" target="_blank" rel="noopener noreferrer">
                 <span>Vitrine</span>
-                <ExternalLink className="size-3.5 ml-1" />
+                <ExternalLink className="size-3.5 ml-1 shrink-0" />
               </Link>
             </Button>
           </div>
         </header>
 
         {/* Content Container with Independent Internal Scroll */}
-        <main className="flex-1 overflow-y-auto scrollbar-waesy min-h-0 p-4 sm:p-6 bg-background">
-          <div className="w-full max-w-7xl 2xl:max-w-screen-2xl mx-auto space-y-6">
+        <main className="main-container-query flex-1 overflow-y-auto scrollbar-waesy min-h-0 min-w-0 p-4 sm:p-6 bg-background">
+          <div className="w-full min-w-0 max-w-7xl 2xl:max-w-screen-2xl mx-auto space-y-6">
             <Outlet />
           </div>
         </main>

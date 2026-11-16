@@ -62,10 +62,27 @@ import {
 import { formatMoney } from "@/lib/money";
 import { maskCpfProgressive, formatPhone } from "@/lib/document-validator";
 import { cn } from "@/lib/utils";
+import { ContractWorkspaceStudio } from "@/components/contracts/contract-workspace-studio";
+
+function NovoContratoStudioRoute() {
+  const search = Route.useSearch();
+  return (
+    <ContractWorkspaceStudio
+      mode="create"
+      initialFolderId={search?.folderId || null}
+    />
+  );
+}
 
 export const Route = createFileRoute("/workspace/contratos/novo")({
-  head: () => ({ meta: [{ title: "Criar Novo Contrato | Workspace Waesy" }] }),
-  component: NovoContratoPage,
+  validateSearch: (search: Record<string, unknown>): { folderId?: string } => ({
+    folderId:
+      typeof search.folderId === "string" && search.folderId.trim()
+        ? search.folderId.trim()
+        : undefined,
+  }),
+  head: () => ({ meta: [{ title: "Novo Contrato | Workspace Waesy" }] }),
+  component: NovoContratoStudioRoute,
 });
 
 interface SignerDraft {

@@ -853,23 +853,31 @@ export const getOrderShippingLabelData = createServerFn({ method: "GET" })
         order = retryRes.data;
         orderErr = retryRes.error;
       } else if (extOrder) {
-        const cust = ((extOrder as any).customer_data || {}) as Record<string, any>;
-        const addr = cust.address || cust.shipping_address || {};
+        const ext = extOrder as Record<string, any>;
+        const raw = (ext.raw_data || ext.raw_payload || {}) as Record<string, any>;
+        const cust = (ext.customer_data || raw.customer || raw.buyer || {}) as Record<string, any>;
+        const addr =
+          (ext.shipping_address && typeof ext.shipping_address === "object"
+            ? ext.shipping_address
+            : null) ||
+          cust.address ||
+          cust.shipping_address ||
+          {};
         order = {
-          id: extOrder.id,
-          order_number: extOrder.external_order_id,
-          created_at: extOrder.created_at,
-          customer_name: cust.name || "Cliente Marketplace",
-          customer_cpf: cust.document || null,
-          customer_phone: cust.phone || null,
+          id: ext.id,
+          order_number: ext.external_order_id,
+          created_at: ext.imported_at || ext.created_at || new Date().toISOString(),
+          customer_name: ext.buyer_name || cust.name || "Cliente Marketplace",
+          customer_cpf: ext.buyer_document || cust.document || null,
+          customer_phone: ext.buyer_phone || cust.phone || null,
           shipping_address: addr,
-          carrier: (extOrder as any).shipping_method || String(extOrder.platform || "MKTP").toUpperCase(),
-          tracking_code: (extOrder as any).tracking_code || null,
-          order_items: (Array.isArray(extOrder.items) ? extOrder.items : []).map((it: any, idx: number) => ({
-            id: `${extOrder.id}-${idx}`,
-            qty: Number(it.quantity || it.qty || 1),
-            product_title: it.title || it.name || "Item de Marketplace",
-            variant_sku: it.sku || it.external_sku || null,
+          carrier: ext.shipping_carrier || ext.shipping_method || String(ext.platform || "MKTP").toUpperCase(),
+          tracking_code: ext.tracking_number || ext.tracking_code || null,
+          order_items: (Array.isArray(ext.items) ? ext.items : []).map((it: any, idx: number) => ({
+            id: `${ext.id}-${idx}`,
+            qty: Number(it.qty || it.quantity || 1),
+            product_title: it.title || it.product_title || it.name || "Item de Marketplace",
+            variant_sku: it.sku || it.variant_sku || it.external_sku || null,
             products: null,
             product_variants: null,
           })),
@@ -953,7 +961,7 @@ export const getOrderShippingLabelData = createServerFn({ method: "GET" })
       const hCm = Number(vari.height_cm ?? prod.height_cm ?? 0);
       const lCm = Number(vari.length_cm ?? prod.length_cm ?? 0);
 
-      totalWeight += Number(wKg) * (item.quantity || 1);
+      totalWeight += Number(wKg) * Number(item.qty || item.quantity || 1);
       if (wCm > maxW) maxW = wCm;
       if (hCm > maxH) maxH = hCm;
       if (lCm > maxL) maxL = lCm;
@@ -1110,7 +1118,7 @@ export const updateOrderShippingDispatch = createServerFn({ method: "POST" })
     if (orderErr || !order) {
       const { data: extOrd } = await supabase
         .from("marketplace_external_orders")
-        .select("order_id")
+        .select("id, order_id, external_order_id")
         .eq("id", data.orderId)
         .eq("store_id", identity.store_id)
         .maybeSingle();
@@ -1125,6 +1133,26 @@ export const updateOrderShippingDispatch = createServerFn({ method: "POST" })
           .single();
         order = retryOrd.data;
         orderErr = retryOrd.error;
+      } else if (extOrd) {
+        const { error: extUpdErr } = await supabase
+          .from("marketplace_external_orders")
+          .update({
+            tracking_number: cleanTracking,
+            shipping_carrier: data.carrier,
+            external_status: "shipped",
+            dispatched_at: new Date().toISOString(),
+          } as any)
+          .eq("id", extOrd.id)
+          .eq("store_id", identity.store_id);
+
+        if (extUpdErr) {
+          throw new Error(`Falha ao atualizar despacho externo: ${extUpdErr.message}`);
+        }
+
+        return {
+          success: true,
+          trackingCode: cleanTracking,
+        };
       }
     }
 

@@ -158,21 +158,21 @@ export function WorkspaceConformidadePage() {
             <div className="p-5 rounded-lg border border-border/60 bg-card space-y-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <Building2 className="size-4 text-primary" />
-                Segregação de Segurança
+                Modalidades de Cadastro
               </h2>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                O Waesy divide a experiência comercial em dois mundos transparentes:
+                Opções de atuação disponíveis na plataforma:
               </p>
               <ul className="text-xs space-y-2 text-muted-foreground list-disc pl-4">
                 <li>
-                  <strong className="text-foreground">Classificados Locais:</strong> Ofertas livres de pessoas físicas ou microempreendedores sem emissão fiscal obrigatória.
+                  <strong className="text-foreground">Classificados Locais:</strong> Ofertas de pessoas físicas ou microempreendedores sem emissão fiscal obrigatória.
                 </li>
                 <li>
-                  <strong className="text-foreground">Marketplace Verificado:</strong> Empresas registradas com CNPJ ativo, SAC comprovado e garantia contratual de entrega.
+                  <strong className="text-foreground">Marketplace Verificado:</strong> Empresas com CNPJ ativo, atendimento comprovado e garantia de entrega.
                 </li>
               </ul>
               <div className="pt-2 border-t border-border/60 text-xs text-muted-foreground">
-                A validação do CNPJ é executada via algoritmo normativo oficial (Módulo 11 da Receita Federal).
+                A validade do CNPJ é conferida diretamente no cadastro da loja.
               </div>
             </div>
           </div>
