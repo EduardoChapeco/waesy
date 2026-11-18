@@ -1955,7 +1955,7 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
         isLead: z.boolean().optional(),
       })).min(1).max(40),
       paymentPreference: z.enum(["pix", "cartao_operadora", "financiamento_bancario", "faturado_agencia"]),
-      paymentInstallments: z.number().int().min(1).max(12).nullable().optional(),
+      paymentInstallments: z.number().int().min(1).max(36).nullable().optional(),
     }),
   )
   .handler(async ({ data }): Promise<{
@@ -2039,6 +2039,19 @@ export const approveTravelProposal = createServerFn({ method: "POST" })
       throw new Error("A agência não recebeu confirmação persistida do aceite. Tente novamente.");
     }
     const replayed = Boolean(acceptanceResult.replayed);
+
+    if (!replayed && proposal.store_id) {
+      const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
+      await notifyStoreStaff({
+        db: supabase,
+        storeId: proposal.store_id,
+        type: "new_lead",
+        title: "Proposta Aceita pelo Cliente",
+        message: `${leadPassenger?.name || "Cliente"} aceitou "${proposal.title || proposal.destination_city || "Proposta"}" (${data.paymentPreference}${data.paymentInstallments ? ` em ${data.paymentInstallments}x` : ""}).`,
+        linkUrl: "/workspace/turismo/propostas",
+        authorName: leadPassenger?.name || proposal.client_name || null,
+      });
+    }
 
     // Enfileira notificação automática de contrato e portal no WhatsApp do passageiro líder
     if (leadPassenger?.phone && !replayed) {

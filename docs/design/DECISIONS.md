@@ -9875,3 +9875,17 @@ outeTree.gen.ts), WorkspaceCanonicalToolbar, cards squircles sem truncamento com
   5. **Saneamento de Produção em Rotas Workspace (`workspace.pedidos.gestor.tsx`, `workspace.pedidos.index.tsx`, `workspace.configuracoes.equipe.tsx`, `contract-variable-picker.tsx`):** `KDSPage` desacoplado de `Route.useLoaderData()` (eliminando `Invariant failed` em `/workspace/pedidos`); aba `Salão Parceiro` restrita a nichos de beleza/estética; removido banner verboso e badges ruidosos em Equipe; abas de variáveis contratuais em flex-wrap sem corte de texto.
 - **Fundamentação Teórica:** AGENTS.md Regras B.4, B.7, B.8, B.9, B.20, B.26, B.31, DESIGN.md e Design Lint DL-01..DL-32.
 - **Consequências:** Coesão visual dos Workspace rails, edição responsiva fiel no Builder em todas as janelas sem vazamentos nem aprisionamento de controles, e recuperação imediata de `/workspace/pedidos`.
+
+---
+
+### DEC-501: Sincronização E2E de Pagamento por Fornecedor (até 36x), Aviso de Base Dupla e Notificações Visuais (2026-11-17)
+- **Data (ISO):** 2026-11-17
+- **ID da Decisão:** DEC-501
+- **Contexto:** O fluxo de Turismo apresentava deriva de parcelamento (teto hardcoded em 12x no aceite público, constraint SQL, `SmartTravelBookingModal` e `studio-sidebar-editor`), ausência de política comercial persistida em `travel_suppliers`, falta de aviso explícito quando pacotes de base dupla (2 adultos) têm alteração de hóspedes/crianças, e ausência de notificações visuais no Workspace para aceites de proposta, reservas e pedidos.
+- **Decisão Adotada:**
+  1. **Política de Pagamento no Fornecedor (`20270117000001_supplier_payment_policy_and_installments_36.sql` + `payment-policy.ts`):** Persistência de `max_card_installments`, `max_boleto_installments`, `card_interest_free`, `boleto_requires_downpayment`, `boleto_downpayment_pct`, `pix_discount_pct`, `allowed_payment_methods` e `payment_terms_template` em `travel_suppliers`, com desbloqueio para até `36x` em `travel_proposal_acceptances`.
+  2. **Propagação E2E:** Sincronização contínua entre `NewSupplierWizard` -> `UnifiedProposalWorkspace` -> `StudioSidebarEditor` -> `ProposalCanvasRenderer` -> `proposalToEditorialClassified` -> `TravelProposalCheckoutModal` -> `approveTravelProposal` -> `SmartTravelBookingModal`.
+  3. **Aviso de Base Dupla (2 Adultos):** Banner e micro-copy com tokens `warning`/`warning-strong` em `SmartTravelBookingModal` e `TravelPromoFlyerModal` quando há alteração de adultos ou inclusão de crianças.
+  4. **Notificações & Visibilidade no Kanban (`store-staff-notify.ts`):** Inserção em `notifications` para `owner_id` e `store_members` em `approveTravelProposal`, `bookGroupTourReservation` e `processCheckout`, além de faixa de alerta de propostas aceitas em `/workspace/turismo`.
+- **Fundamentação:** `SPEC-20261117-TOURISM-SUPPLIER-PAYMENT-SYNC-AND-NOTIFICATIONS.md`, `AGENTS.md` B.4, B.7, B.9, B.25.
+- **Consequências:** Zero perda de condições comerciais entre fornecedor, PDF, página pública e aceite; notificações imediatas no `NotificationBell` e destaque no Kanban.

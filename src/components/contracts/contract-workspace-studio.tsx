@@ -54,10 +54,13 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CONTRACT_SIGNER_ROLE_GROUPS } from "@/lib/contracts/signer-roles";
 import { Textarea } from "@/components/ui/textarea";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
@@ -160,7 +163,7 @@ export interface StudioSignerDraft {
   email: string;
   phone: string;
   cpf: string;
-  role: "party" | "witness" | "guarantor";
+  role: string;
   dispatchChannel: "whatsapp" | "email" | "sms" | "direct_link";
   authLevel: "basic" | "advanced";
   requireFacialBiometrics: boolean;
@@ -1910,13 +1913,22 @@ export function ContractWorkspaceStudio({
                                 )
                               }
                             >
-                              <SelectTrigger className="h-9 text-xs bg-background">
+                              <SelectTrigger className="h-11 min-h-11 sm:h-9 sm:min-h-0 text-xs bg-background">
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="party">Parte</SelectItem>
-                                <SelectItem value="witness">Testemunha</SelectItem>
-                                <SelectItem value="guarantor">Fiador</SelectItem>
+                              <SelectContent className="max-h-72">
+                                {CONTRACT_SIGNER_ROLE_GROUPS.map((grp) => (
+                                  <SelectGroup key={grp.group}>
+                                    <SelectLabel className="text-2xs font-semibold text-muted-foreground">
+                                      {grp.group}
+                                    </SelectLabel>
+                                    {grp.options.map((opt) => (
+                                      <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>

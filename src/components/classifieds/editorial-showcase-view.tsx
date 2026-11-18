@@ -215,34 +215,47 @@ export function EditorialShowcaseView({
       ? customDisclaimer
       : DISCLAIMER_LABELS[priceDisclaimerKey] || null;
 
-  // ── Regras de Pagamento ───────────────────────────────────────────────────
+  // ── Regras de Pagamento (Mescla payment_rules + attrs para evitar deriva) ──
+  const paymentRules = (attrs.payment_rules && typeof attrs.payment_rules === "object")
+    ? (attrs.payment_rules as Record<string, any>)
+    : {};
   const priceCents = classified?.price_cents || 0;
-  const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
-  const cardInterestFree = attrs.card_interest_free !== undefined ? !!attrs.card_interest_free : true;
+  const maxInstallments = Math.max(
+    1,
+    Number(paymentRules.max_installments) || 0,
+    Number(attrs.max_installments) || 0,
+    1,
+  );
+  const cardInterestFree =
+    paymentRules.card_interest_free !== undefined
+      ? !!paymentRules.card_interest_free
+      : attrs.card_interest_free !== undefined
+        ? !!attrs.card_interest_free
+        : true;
   const installmentCents =
     priceCents > 0 && maxInstallments > 1
       ? Math.round(priceCents / maxInstallments)
       : priceCents;
 
-  const acceptsPix = attrs.accepts_pix !== undefined ? !!attrs.accepts_pix : true;
-  const pixDiscountPercent = Number(attrs.pix_discount_percent) || 0;
-  const acceptsCard = attrs.accepts_card !== undefined ? !!attrs.accepts_card : true;
-  const acceptsBoleto = !!attrs.accepts_boleto;
-  const boletoDueDays = Number(attrs.boleto_due_days) || 3;
-  const acceptsBoletoInstallments = !!attrs.accepts_boleto_installments;
-  const maxBoletoInstallments = Math.max(1, Number(attrs.max_boleto_installments) || 1);
-  const boletoMinDownPaymentCents = attrs.boleto_min_down_payment_cents;
-  const boletoNotes = attrs.boleto_notes || "";
-  const acceptsCarne = !!attrs.accepts_carne;
-  const maxCarneInstallments = Math.max(1, Number(attrs.max_carne_installments) || 1);
-  const carneGraceDays = Number(attrs.carne_grace_days) || 30;
-  const carneMinDownPaymentCents = attrs.carne_min_down_payment_cents;
-  const carneNotes = attrs.carne_notes || "";
-  const acceptsCash = attrs.accepts_cash !== undefined ? !!attrs.accepts_cash : true;
-  const acceptsTrade = attrs.accepts_trade !== undefined ? !!attrs.accepts_trade : !!classified?.accepts_trade;
-  const tradeNotes = attrs.trade_notes || "";
-  const acceptsFinancing = !!attrs.accepts_financing;
-  const financingNotes = attrs.financing_notes || "";
+  const acceptsPix = paymentRules.accepts_pix !== undefined ? !!paymentRules.accepts_pix : (attrs.accepts_pix !== undefined ? !!attrs.accepts_pix : true);
+  const pixDiscountPercent = Number(paymentRules.pix_discount_percent ?? attrs.pix_discount_percent) || 0;
+  const acceptsCard = paymentRules.accepts_card !== undefined ? !!paymentRules.accepts_card : (attrs.accepts_card !== undefined ? !!attrs.accepts_card : true);
+  const acceptsBoleto = Boolean(paymentRules.accepts_boleto ?? attrs.accepts_boleto);
+  const boletoDueDays = Number(paymentRules.boleto_due_days ?? attrs.boleto_due_days) || 3;
+  const acceptsBoletoInstallments = Boolean(paymentRules.accepts_boleto_installments ?? attrs.accepts_boleto_installments);
+  const maxBoletoInstallments = Math.max(1, Number(paymentRules.max_boleto_installments ?? attrs.max_boleto_installments) || 1);
+  const boletoMinDownPaymentCents = paymentRules.boleto_min_down_payment_cents ?? attrs.boleto_min_down_payment_cents;
+  const boletoNotes = paymentRules.boleto_notes || attrs.boleto_notes || "";
+  const acceptsCarne = Boolean(paymentRules.accepts_carne ?? attrs.accepts_carne);
+  const maxCarneInstallments = Math.max(1, Number(paymentRules.max_carne_installments ?? attrs.max_carne_installments) || 1);
+  const carneGraceDays = Number(paymentRules.carne_grace_days ?? attrs.carne_grace_days) || 30;
+  const carneMinDownPaymentCents = paymentRules.carne_min_down_payment_cents ?? attrs.carne_min_down_payment_cents;
+  const carneNotes = paymentRules.carne_notes || attrs.carne_notes || "";
+  const acceptsCash = paymentRules.accepts_cash !== undefined ? !!paymentRules.accepts_cash : (attrs.accepts_cash !== undefined ? !!attrs.accepts_cash : true);
+  const acceptsTrade = Boolean(paymentRules.accepts_trade ?? attrs.accepts_trade ?? classified?.accepts_trade);
+  const tradeNotes = paymentRules.trade_notes || attrs.trade_notes || "";
+  const acceptsFinancing = Boolean(paymentRules.accepts_financing ?? attrs.accepts_financing);
+  const financingNotes = paymentRules.financing_notes || attrs.financing_notes || "";
   const cancellationPolicy = String(attrs.cancellation_policy || "").trim();
 
   // ── Anunciante / Loja Parceira / Verificação (Isolamento Estrito Empresa vs Anunciante) ──

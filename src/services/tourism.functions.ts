@@ -1174,6 +1174,19 @@ export const createAgencyTravelQuote = createServerFn({ method: "POST" })
    await supabase.from("travel_quotes").update({ lead_id: leadId }).eq("id", inserted.id);
  }
 
+ if (storeId) {
+ const { notifyStoreStaff } = await import("@/lib/notifications/store-staff-notify");
+ await notifyStoreStaff({
+ db: supabase,
+ storeId,
+ type: "new_lead",
+ title: "Nova Cotação / Reserva Recebida",
+ message: `${data.contact_name} solicitou "${data.destination_city}" (${data.adults_count} adulto(s)${data.children_count > 0 ? ` + ${data.children_count} criança(s)` : ""}) — ${protocolNumber}.`,
+ linkUrl: "/workspace/turismo",
+ authorName: data.contact_name,
+ });
+ }
+
  return { id: inserted.id, leadId, quoteSessionId, protocol: protocolNumber };
  });
 

@@ -30,6 +30,14 @@ export const CreateTravelSupplierSchema = z.object({
   kind: supplierKindEnum.default('operator'),
   document: z.string().nullable().optional(),
   commission_rate: z.number().min(0).max(100).default(0),
+  max_card_installments: z.number().int().min(1).max(36).default(12),
+  max_boleto_installments: z.number().int().min(1).max(36).default(12),
+  card_interest_free: z.boolean().default(true),
+  boleto_requires_downpayment: z.boolean().default(false),
+  boleto_downpayment_pct: z.number().min(0).max(100).default(0),
+  pix_discount_pct: z.number().min(0).max(100).default(0),
+  allowed_payment_methods: z.array(z.string().min(1)).min(1).default(['pix', 'credit_card', 'boleto']),
+  payment_terms_template: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   email: z.string().email().nullable().optional().or(z.literal('')),
   phone: z.string().nullable().optional(),
@@ -46,6 +54,14 @@ export const UpdateTravelSupplierSchema = z.object({
     kind: supplierKindEnum.optional(),
     document: z.string().nullable().optional(),
     commission_rate: z.number().min(0).max(100).optional(),
+    max_card_installments: z.number().int().min(1).max(36).optional(),
+    max_boleto_installments: z.number().int().min(1).max(36).optional(),
+    card_interest_free: z.boolean().optional(),
+    boleto_requires_downpayment: z.boolean().optional(),
+    boleto_downpayment_pct: z.number().min(0).max(100).optional(),
+    pix_discount_pct: z.number().min(0).max(100).optional(),
+    allowed_payment_methods: z.array(z.string().min(1)).min(1).optional(),
+    payment_terms_template: z.string().nullable().optional(),
     notes: z.string().nullable().optional(),
     email: z.string().nullable().optional().or(z.literal('')),
     phone: z.string().nullable().optional(),
@@ -97,6 +113,14 @@ export const createTravelSupplier = createServerFn({ method: 'POST' })
         kind: data.kind || 'operator',
         document: data.document || null,
         commission_rate: data.commission_rate || 0,
+        max_card_installments: data.max_card_installments ?? 12,
+        max_boleto_installments: data.max_boleto_installments ?? 12,
+        card_interest_free: data.card_interest_free ?? true,
+        boleto_requires_downpayment: data.boleto_requires_downpayment ?? false,
+        boleto_downpayment_pct: data.boleto_downpayment_pct ?? 0,
+        pix_discount_pct: data.pix_discount_pct ?? 0,
+        allowed_payment_methods: data.allowed_payment_methods ?? ['pix', 'credit_card', 'boleto'],
+        payment_terms_template: data.payment_terms_template || null,
         notes: data.notes || null,
         email: data.email || null,
         phone: data.phone || null,
@@ -161,6 +185,7 @@ export const searchTravelSuppliers = createServerFn({ method: 'GET' })
       const identity = await getServerIdentity();
       const storeId = identity.store_id;
       if (!storeId) return [];
+      assertStoreAccess(identity);
       const db = getServerClient();
 
       let q = db

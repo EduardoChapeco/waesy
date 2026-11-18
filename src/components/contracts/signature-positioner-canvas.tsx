@@ -1,5 +1,30 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { FileText, Trash2, Copy, Layers, Calendar, User, Hash, CheckSquare, PenTool, Upload, ArrowRight, RefreshCw, Info, ExternalLink, GripHorizontal } from "lucide-react";
+import {
+  FileText,
+  Trash2,
+  Copy,
+  Layers,
+  Calendar,
+  Clock,
+  User,
+  Hash,
+  CheckSquare,
+  PenTool,
+  Upload,
+  ArrowRight,
+  RefreshCw,
+  Info,
+  ExternalLink,
+  GripHorizontal,
+  Building2,
+  Briefcase,
+  Mail,
+  Phone,
+  MapPin,
+  Type,
+  ShieldCheck,
+  CreditCard,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getDocumentThemeCanvasStyle } from "@/lib/builder/block-data-resolver";
 import { TOKEN_HEX } from "@/lib/design-tokens";
@@ -44,10 +69,22 @@ interface SignaturePositionerCanvasProps {
 export const FIELD_TAGS = [
   { type: "signature" as const, label: "Assinatura", icon: PenTool, defaultW: 24, defaultH: 8 },
   { type: "initials" as const, label: "Rubrica", icon: Layers, defaultW: 16, defaultH: 6 },
-  { type: "name" as const, label: "Nome", icon: User, defaultW: 28, defaultH: 5 },
+  { type: "name" as const, label: "Nome Completo", icon: User, defaultW: 28, defaultH: 5 },
   { type: "cpf" as const, label: "CPF", icon: Hash, defaultW: 22, defaultH: 5 },
-  { type: "date" as const, label: "Data", icon: Calendar, defaultW: 18, defaultH: 5 },
-  { type: "checkbox" as const, label: "Botão de opção", icon: CheckSquare, defaultW: 12, defaultH: 5 },
+  { type: "rg" as const, label: "RG / Passaporte", icon: CreditCard, defaultW: 22, defaultH: 5 },
+  { type: "cnpj" as const, label: "CNPJ", icon: Building2, defaultW: 24, defaultH: 5 },
+  { type: "company_name" as const, label: "Razão Social", icon: Building2, defaultW: 30, defaultH: 5 },
+  { type: "role_title" as const, label: "Cargo / Função", icon: Briefcase, defaultW: 24, defaultH: 5 },
+  { type: "email" as const, label: "E-mail", icon: Mail, defaultW: 28, defaultH: 5 },
+  { type: "phone" as const, label: "Telefone / WhatsApp", icon: Phone, defaultW: 24, defaultH: 5 },
+  { type: "address" as const, label: "Endereço Completo", icon: MapPin, defaultW: 36, defaultH: 6 },
+  { type: "city_state" as const, label: "Cidade / UF", icon: MapPin, defaultW: 24, defaultH: 5 },
+  { type: "date" as const, label: "Data da Assinatura", icon: Calendar, defaultW: 18, defaultH: 5 },
+  { type: "datetime" as const, label: "Data e Hora", icon: Clock, defaultW: 24, defaultH: 5 },
+  { type: "text" as const, label: "Texto Livre", icon: Type, defaultW: 28, defaultH: 6 },
+  { type: "number" as const, label: "Valor / Número", icon: Hash, defaultW: 20, defaultH: 5 },
+  { type: "checkbox" as const, label: "Caixa de Seleção", icon: CheckSquare, defaultW: 14, defaultH: 5 },
+  { type: "stamp" as const, label: "Selo / Carimbo", icon: ShieldCheck, defaultW: 22, defaultH: 8 },
 ];
 
 export function SignaturePositionerCanvas({
@@ -94,10 +131,11 @@ export function SignaturePositionerCanvas({
     origH: number;
   } | null>(null);
 
-  // Modal de repetição de campo
+  // Modal de repetição de campo & modo leitura/rolagem do PDF
   const [repeatModalOpen, setRepeatModalOpen] = useState(false);
   const [pendingFieldToRepeat, setPendingFieldToRepeat] = useState<SignatureFieldDTO | null>(null);
-  const [repeatOption, setRepeatOption] = useState<"page" | "all" | "all_except_last">("page");
+  const [repeatOption, setRepeatOption] = useState<"page" | "all" | "all_except_last" | "last_only">("page");
+  const [pdfScrollMode, setPdfScrollMode] = useState(false);
 
   const paginatedPages = useMemo(
     () => paginateContractMarkdown(contentMarkdown || ""),
@@ -179,9 +217,9 @@ export function SignaturePositionerCanvas({
       label: tagConfig?.label,
     };
 
-    if (tagType === "initials" && pageCount > 1) {
+    if ((tagType === "initials" || tagType === "signature" || tagType === "stamp") && effectivePageCount > 1) {
       setPendingFieldToRepeat(newField);
-      setRepeatOption("all_except_last");
+      setRepeatOption(tagType === "initials" ? "all_except_last" : "last_only");
       setRepeatModalOpen(true);
     } else {
       onFieldsChange([...fields, newField]);
@@ -191,35 +229,44 @@ export function SignaturePositionerCanvas({
 
   const applyRepeatModal = () => {
     if (!pendingFieldToRepeat) return;
-    const updated = { ...pendingFieldToRepeat, repeatMode: repeatOption };
+    const baseFields = fields.filter((f) => f.id !== pendingFieldToRepeat.id);
+    const updated = { ...pendingFieldToRepeat, repeatMode: repeatOption === "last_only" ? "page" : repeatOption };
 
     if (repeatOption === "all") {
-      // Cria réplicas em todas as páginas
       const replicas: SignatureFieldDTO[] = [];
-      for (let p = 1; p <= pageCount; p++) {
+      for (let p = 1; p <= effectivePageCount; p++) {
         replicas.push({
           ...updated,
           id: `field_${Date.now()}_p${p}_${Math.random().toString(36).substr(2, 4)}`,
           page: p,
         });
       }
-      onFieldsChange([...fields, ...replicas]);
+      onFieldsChange([...baseFields, ...replicas]);
     } else if (repeatOption === "all_except_last") {
-      // Cria réplicas em todas exceto a última
       const replicas: SignatureFieldDTO[] = [];
-      for (let p = 1; p < pageCount; p++) {
+      for (let p = 1; p < effectivePageCount; p++) {
         replicas.push({
           ...updated,
           id: `field_${Date.now()}_p${p}_${Math.random().toString(36).substr(2, 4)}`,
           page: p,
         });
       }
-      if (pageCount === 1) {
+      if (effectivePageCount === 1) {
         replicas.push({ ...updated, page: 1 });
       }
-      onFieldsChange([...fields, ...replicas]);
+      onFieldsChange([...baseFields, ...replicas]);
+    } else if (repeatOption === "last_only") {
+      onFieldsChange([
+        ...baseFields,
+        {
+          ...updated,
+          id: `field_${Date.now()}_last_${Math.random().toString(36).substr(2, 4)}`,
+          page: effectivePageCount,
+        },
+      ]);
+      onPageChange(effectivePageCount);
     } else {
-      onFieldsChange([...fields, updated]);
+      onFieldsChange([...baseFields, updated]);
     }
 
     setPendingFieldToRepeat(null);
@@ -374,21 +421,34 @@ export function SignaturePositionerCanvas({
             className="relative w-full max-w-175 aspect-a4-portrait bg-background text-foreground rounded-lg border border-border/80 flex flex-col justify-between overflow-hidden shrink-0"
           >
             {/* Header da Folha A4 */}
-            <div className="px-8 pt-6 pb-3 border-b border-border/40 flex items-center justify-between text-xs text-muted-foreground relative z-10 bg-background/95">
+            <div className="px-4 sm:px-8 pt-4 pb-3 border-b border-border/40 flex items-center justify-between gap-2 text-xs text-muted-foreground relative z-10 bg-background/95">
               <span className="font-semibold uppercase tracking-wider truncate">
                 {sourceFileName || documentTitle || "INSTRUMENTO CONTRATUAL"}
               </span>
-              <span className="shrink-0">Página {currentPage}</span>
+              <div className="flex items-center gap-2 shrink-0">
+                {isPdfSource && sourceFileSignedUrl && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={pdfScrollMode ? "default" : "outline"}
+                    onClick={() => setPdfScrollMode((prev) => !prev)}
+                    className="h-11 min-h-11 sm:h-9 sm:min-h-0 px-3 text-xs rounded-md"
+                  >
+                    {pdfScrollMode ? "Modo Posicionar" : "Rolar / Ler PDF"}
+                  </Button>
+                )}
+                <span className="shrink-0">Página {currentPage}</span>
+              </div>
             </div>
 
             {/* Conteúdo Real da Folha: PDF Nativo, Imagem Digitalizada ou Minuta Renderizada */}
-            <div className="relative flex-1 overflow-hidden">
+            <div className="relative flex-1 overflow-y-auto">
               {isPdfSource && sourceFileSignedUrl ? (
                 <iframe
-                  key={`${sourceFileSignedUrl}#page=${currentPage}`}
-                  src={`${sourceFileSignedUrl}#page=${currentPage}&toolbar=0&navpanes=0&view=FitH`}
+                  key={sourceFileSignedUrl}
+                  src={`${sourceFileSignedUrl}#page=${currentPage}&view=FitH`}
                   title={sourceFileName || documentTitle || "Documento PDF"}
-                  className="w-full h-full border-0 pointer-events-none"
+                  className={`w-full h-full min-h-140 border-0 ${pdfScrollMode ? "pointer-events-auto" : "pointer-events-none"}`}
                 />
               ) : isImageSource && sourceFileSignedUrl ? (
                 <div className="w-full h-full p-6 flex items-center justify-center">
@@ -399,7 +459,7 @@ export function SignaturePositionerCanvas({
                   />
                 </div>
               ) : (paginatedPages[currentPage - 1] || "").trim().length > 0 ? (
-                <div className="h-full px-8 py-6 overflow-hidden pointer-events-none">
+                <div className={`h-full px-8 py-6 overflow-y-auto ${pdfScrollMode ? "pointer-events-auto" : "pointer-events-none"}`}>
                   <ContractMarkdownRenderer content={paginatedPages[currentPage - 1]} />
                 </div>
               ) : (
@@ -489,6 +549,23 @@ export function SignaturePositionerCanvas({
 
                   {!readOnly && (
                     <div className="flex items-center gap-1 shrink-0">
+                      {effectivePageCount > 1 && (
+                        <button
+                          type="button"
+                          aria-label={`Replicar campo ${field.label || field.type} nas páginas`}
+                          title="Replicar nas páginas"
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingFieldToRepeat(field);
+                            setRepeatOption("all");
+                            setRepeatModalOpen(true);
+                          }}
+                          className="text-muted-foreground hover:text-primary p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Copy className="size-3.5" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         aria-label={`Remover campo ${field.label || field.type}`}
@@ -602,14 +679,21 @@ export function SignaturePositionerCanvas({
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/70 hover:bg-muted/40 cursor-pointer">
               <RadioGroupItem value="all" id="r2" />
               <Label htmlFor="r2" className="text-xs font-medium cursor-pointer text-foreground">
-                Repetir em todas as páginas
+                Repetir em todas as páginas (1 a {effectivePageCount})
               </Label>
             </div>
 
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/70 hover:bg-muted/40 cursor-pointer">
               <RadioGroupItem value="all_except_last" id="r3" />
               <Label htmlFor="r3" className="text-xs font-medium cursor-pointer text-foreground">
-                Repetir em todas as páginas exceto a última
+                Todas as páginas exceto a última (1 a {Math.max(1, effectivePageCount - 1)})
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border/70 hover:bg-muted/40 cursor-pointer">
+              <RadioGroupItem value="last_only" id="r4" />
+              <Label htmlFor="r4" className="text-xs font-medium cursor-pointer text-foreground">
+                Somente na última página ({effectivePageCount})
               </Label>
             </div>
           </RadioGroup>

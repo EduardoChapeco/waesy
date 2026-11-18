@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, Info, Loader2, ShieldCheck, Users, Wallet } from "lucide-react";
 import { approveTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
+import { resolveMaxInstallmentsFromOptions } from "@/lib/tourism/payment-policy";
 
 type PaymentPreference = "pix" | "cartao_operadora" | "financiamento_bancario" | "faturado_agencia";
 type PassengerForm = { name: string; document: string; birthDate: string; roomPreference: string };
@@ -332,12 +333,33 @@ export function TravelProposalCheckoutModal({
               </button>
             </div>
 
-            {["cartao_operadora", "financiamento_bancario"].includes(paymentPreference || "") && (
-              <div className="max-w-xs space-y-2">
-                <Label htmlFor="payment-installments">Parcelas desejadas</Label>
-                <Input id="payment-installments" type="number" min={1} max={12} step={1} value={paymentInstallments} onChange={(event) => setPaymentInstallments(Math.min(12, Math.max(1, Number(event.target.value) || 1)))} className="h-11" />
-              </div>
-            )}
+            {["cartao_operadora", "financiamento_bancario"].includes(paymentPreference || "") && (() => {
+              const { maxInstallments: effectiveMaxInstallments } = resolveMaxInstallmentsFromOptions(
+                proposal.pricing?.installments_options,
+                36,
+              );
+              return (
+                <div className="max-w-xs space-y-2">
+                  <Label htmlFor="payment-installments">
+                    Parcelas desejadas (até {effectiveMaxInstallments}x)
+                  </Label>
+                  <Input
+                    id="payment-installments"
+                    type="number"
+                    min={1}
+                    max={effectiveMaxInstallments}
+                    step={1}
+                    value={paymentInstallments}
+                    onChange={(event) =>
+                      setPaymentInstallments(
+                        Math.min(effectiveMaxInstallments, Math.max(1, Number(event.target.value) || 1)),
+                      )
+                    }
+                    className="h-11"
+                  />
+                </div>
+              );
+            })()}
 
             <div className="rounded-lg border border-border/60 p-4 space-y-2" role="note">
               <p className="text-sm font-medium flex items-center gap-2"><Info className="size-4 text-primary" /> Antes de enviar</p>

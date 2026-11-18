@@ -585,30 +585,17 @@ function TravelSalesFinancialCompositionPage() {
   return (
     <div className="p-4 sm:p-6 w-full space-y-6">
       {/* ── Cabeçalho Executivo do Módulo Interno ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Badge className="bg-primary/10 text-primary border border-primary/25 text-xs font-bold">
-              Backoffice Exclusivo da Agência
-            </Badge>
-            <Badge variant="outline" className="text-xs font-semibold">
-              8 Blocos Auditáveis
-            </Badge>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            Financeiro da Venda & Composição de Reservas
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Controle exato de Venda Bruta, Taxas Não Comissionáveis, Venda Líquida, Comissão, Over Líquido, Receita da Agência, Custos Internos, Resultado e Notas Fiscais.
-          </p>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+          Comissões e Vendas
+        </h1>
 
         <Button
           onClick={handleOpenNewSheet}
           className="h-11 min-h-11 px-5 rounded-lg font-bold text-xs sm:text-sm gap-2 cursor-pointer"
         >
           <Plus className="size-4" />
-          <span>Nova Composição Financeira</span>
+          <span>Nova Composição</span>
         </Button>
       </div>
 

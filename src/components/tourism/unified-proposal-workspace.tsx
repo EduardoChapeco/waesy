@@ -764,6 +764,16 @@ export function UnifiedProposalWorkspace({
           id: sup.id || `sup-${sup.name}`,
           name: sup.name,
           commission_rate: Number(sup.commission_rate) || 0,
+          maxBoletoInstallments:
+            sup.max_boleto_installments != null ? Number(sup.max_boleto_installments) : undefined,
+          boletoRequiresDownpayment:
+            sup.boleto_requires_downpayment != null ? Boolean(sup.boleto_requires_downpayment) : undefined,
+          boletoDownpaymentPct:
+            sup.boleto_downpayment_pct != null ? Number(sup.boleto_downpayment_pct) : undefined,
+          maxCardInstallments:
+            sup.max_card_installments != null ? Number(sup.max_card_installments) : undefined,
+          pixDiscountPct:
+            sup.pix_discount_pct != null ? Number(sup.pix_discount_pct) : undefined,
         });
       }
     }
@@ -774,11 +784,11 @@ export function UnifiedProposalWorkspace({
           id: existing?.id || `erp-op-${op.operatorName}`,
           name: op.operatorName,
           commission_rate: Number(op.baseAgencyCommissionPct) || existing?.commission_rate || 0,
-          maxBoletoInstallments: op.maxBoletoInstallments,
-          boletoRequiresDownpayment: op.boletoRequiresDownpayment,
-          boletoDownpaymentPct: op.boletoDownpaymentPct,
-          maxCardInstallments: op.maxCardInstallments,
-          pixDiscountPct: op.pixDiscountPct,
+          maxBoletoInstallments: existing?.maxBoletoInstallments ?? op.maxBoletoInstallments,
+          boletoRequiresDownpayment: existing?.boletoRequiresDownpayment ?? op.boletoRequiresDownpayment,
+          boletoDownpaymentPct: existing?.boletoDownpaymentPct ?? op.boletoDownpaymentPct,
+          maxCardInstallments: existing?.maxCardInstallments ?? op.maxCardInstallments,
+          pixDiscountPct: existing?.pixDiscountPct ?? op.pixDiscountPct,
         });
       }
     }

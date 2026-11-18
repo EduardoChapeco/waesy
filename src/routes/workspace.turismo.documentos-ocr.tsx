@@ -111,17 +111,13 @@ export default function TravelDocumentReviewPage() {
   const isQuote = selected?.source_kind === "operator_quote";
 
   return (
-    <main className="flex w-full flex-col gap-5 px-4 py-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-primary">Turismo · Governança documental</p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight">Revisão de ingestões OCR</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Nenhum documento da operadora vira reserva automaticamente. Revise a evidência, escolha o destino e aplique com trilha de auditoria.
-          </p>
-        </div>
-        <Button variant="outline" className="focus-visible:ring-2 focus-visible:ring-ring" onClick={() => documentsQuery.refetch()} disabled={documentsQuery.isFetching}>
-          <RefreshCw className={documentsQuery.isFetching ? "mr-2 size-4 animate-spin motion-reduce:animate-none" : "mr-2 size-4"} /> Atualizar fila
+    <main className="flex w-full flex-col gap-5 px-0 sm:px-4 py-4">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+          Documentos OCR
+        </h1>
+        <Button variant="outline" className="h-11 min-h-11 focus-visible:ring-2 focus-visible:ring-ring" onClick={() => documentsQuery.refetch()} disabled={documentsQuery.isFetching}>
+          <RefreshCw className={documentsQuery.isFetching ? "mr-2 size-4 animate-spin motion-reduce:animate-none" : "mr-2 size-4"} /> Atualizar
         </Button>
       </header>
 
@@ -133,7 +129,7 @@ export default function TravelDocumentReviewPage() {
               <p className="text-xs text-muted-foreground">{documents.length} registro(s)</p>
             </div>
             <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-11 min-h-11 w-36 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="needs_review">Em revisão</SelectItem>
                 <SelectItem value="applied">Aplicados</SelectItem>

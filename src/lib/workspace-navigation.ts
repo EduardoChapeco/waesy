@@ -348,8 +348,7 @@ const GROUP_TURISMO_COMMERCIAL: NavGroup = {
     { path: "/workspace/turismo/propostas", label: "Propostas", icon: FileText },
     { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
     { path: "/workspace/turismo/aereos", label: "Malha Aérea", icon: Plane },
-    { path: "/workspace/turismo/corporativo", label: "Empresas", icon: Building2 },
-    { path: "/workspace/empresa/viagens", label: "Viagens Corporativas", icon: Plane },
+    { path: "/workspace/turismo/corporativo", label: "Viagens Corporativas", icon: Building2 },
   ],
 };
 

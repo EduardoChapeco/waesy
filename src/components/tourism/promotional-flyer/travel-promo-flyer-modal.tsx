@@ -1475,6 +1475,11 @@ export function TravelPromoFlyerModal({
                         <option value="per_room">Por quarto / apartamento</option>
                         <option value="total_package">Total do pacote fechado</option>
                       </select>
+                      {(priceBasis === "per_couple" || adultsCount === 2) && (
+                        <p className="text-2xs text-warning-strong font-medium pt-1">
+                          Valor base para 2 adultos (ocupação dupla). Caso o cliente adicione crianças ou passageiros extras, o valor será recotado e atualizado para aceite.
+                        </p>
+                      )}
                     </div>
                   </div>
 

@@ -30,6 +30,14 @@ import type {
   TravelProposalOptionDTO,
 } from "@/services/travel-proposal.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
+import { listTravelSuppliers } from "@/services/travel-suppliers.functions";
+import {
+  buildInstallmentOptionsFromPolicy,
+  buildPaymentTermsSummaryFromPolicy,
+  clampInstallments,
+  normalizeSupplierPaymentPolicy,
+  resolveMaxInstallmentsFromOptions,
+} from "@/lib/tourism/payment-policy";
 import { CustomerSearchCombobox } from "@/components/crm/CustomerSearchCombobox";
 import { listGroupTours } from "@/services/group-tours.functions";
 import { CANONICAL_DESTINATIONS } from "@/lib/destinations-catalog";
@@ -204,9 +212,34 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
    proposal.id,
    proposal.pricing?.base_price_cents,
    proposal.pricing?.boarding_tax_cents,
-   proposal.pricing?.discount_cents,
-   proposal.pricing?.total_price_cents,
- ]);
+    proposal.pricing?.discount_cents,
+    proposal.pricing?.total_price_cents,
+  ]);
+
+  const { data: studioSuppliers = [] } = useQuery({
+    queryKey: ["travel-suppliers-active-studio"],
+    queryFn: () => listTravelSuppliers({ data: {} }),
+  });
+
+  const resolvedInstallments = resolveMaxInstallmentsFromOptions(
+    proposal.pricing?.installments_options,
+    12,
+  );
+
+  const applyPaymentPolicyToProposal = (
+    policyInput: ReturnType<typeof normalizeSupplierPaymentPolicy>,
+  ) => {
+    const total = proposal.pricing?.total_price_cents || 0;
+    const options = buildInstallmentOptionsFromPolicy(total, policyInput);
+    const terms = buildPaymentTermsSummaryFromPolicy(total, policyInput, formatMoney);
+    onChange({
+      pricing: {
+        ...proposal.pricing,
+        installments_options: options,
+        payment_terms: terms,
+      },
+    });
+  };
 
   const studioCustomFields = sanitizeProposalCustomFields(
     {
@@ -3290,50 +3323,100 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
 
  <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">
- <span className="text-xs font-bold text-foreground block">Atalhos de Parcelamento Comercial</span>
- <div className="grid grid-cols-2 gap-2">
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => {
- const total = proposal.pricing?.total_price_cents || 0;
- onChange({
- pricing: {
- ...proposal.pricing,
- installments_options: [
- { installments_count: 1, installment_value_cents: total, method: "pix", has_interest: false },
- { installments_count: 10, installment_value_cents: Math.round(total / 10), method: "credit_card", has_interest: false },
- { installments_count: 12, installment_value_cents: Math.round(total / 12), method: "credit_card", has_interest: false },
- ],
- },
- });
- }}
- className="h-8 text-2xs rounded-lg font-semibold min-h-11 sm:min-h-0"
- >
- 10x e 12x Sem Juros
- </Button>
+ <span className="text-xs font-bold text-foreground block">Fornecedor &amp; Parcelamento Sincronizado</span>
 
+ {studioSuppliers.length > 0 && (
+   <div className="space-y-1">
+     <Label className="text-2xs text-muted-foreground font-semibold">
+       Sincronizar Política do Fornecedor
+     </Label>
+     <select
+       value=""
+       onChange={(e) => {
+         const sup = studioSuppliers.find((s) => s.id === e.target.value);
+         if (!sup) return;
+         applyPaymentPolicyToProposal(normalizeSupplierPaymentPolicy(sup));
+         toast.success(`Condições de ${sup.name} aplicadas à proposta.`);
+       }}
+       className="w-full h-11 min-h-11 px-3 rounded-lg border border-input bg-background text-xs font-medium"
+     >
+       <option value="">Selecionar fornecedor para sincronizar...</option>
+       {studioSuppliers.map((sup) => (
+         <option key={sup.id} value={sup.id}>
+           {sup.name} ({sup.max_card_installments ?? 12}x Cartão / {sup.max_boleto_installments ?? 12}x Boleto)
+         </option>
+       ))}
+     </select>
+   </div>
+ )}
+
+ <div className="grid grid-cols-2 gap-2">
+   <div className="space-y-1">
+     <Label className="text-2xs text-muted-foreground font-semibold">Cartão (1 a 36x)</Label>
+     <Input
+       type="number"
+       min={1}
+       max={36}
+       value={resolvedInstallments.maxCardInstallments}
+       onChange={(e) => {
+         const nextCard = clampInstallments(e.target.value, 12);
+         applyPaymentPolicyToProposal(
+           normalizeSupplierPaymentPolicy({
+             maxCardInstallments: nextCard,
+             maxBoletoInstallments: resolvedInstallments.maxBoletoInstallments,
+             cardInterestFree: resolvedInstallments.cardInterestFree,
+             allowedPaymentMethods: ["pix", "credit_card", "boleto"],
+           }),
+         );
+       }}
+       className="h-11 text-xs font-mono rounded-lg"
+     />
+   </div>
+   <div className="space-y-1">
+     <Label className="text-2xs text-muted-foreground font-semibold">Boleto (1 a 36x)</Label>
+     <Input
+       type="number"
+       min={1}
+       max={36}
+       value={resolvedInstallments.maxBoletoInstallments}
+       onChange={(e) => {
+         const nextBoleto = clampInstallments(e.target.value, 12);
+         applyPaymentPolicyToProposal(
+           normalizeSupplierPaymentPolicy({
+             maxCardInstallments: resolvedInstallments.maxCardInstallments,
+             maxBoletoInstallments: nextBoleto,
+             cardInterestFree: resolvedInstallments.cardInterestFree,
+             allowedPaymentMethods: ["pix", "credit_card", "boleto"],
+           }),
+         );
+       }}
+       className="h-11 text-xs font-mono rounded-lg"
+     />
+   </div>
+ </div>
+
+ <div className="grid grid-cols-2 gap-2">
+ {[12, 16, 18, 24].map((preset) => (
  <Button
+ key={preset}
  type="button"
  size="sm"
- variant="outline"
- onClick={() => {
- const total = proposal.pricing?.total_price_cents || 0;
- onChange({
- pricing: {
- ...proposal.pricing,
- installments_options: [
- { installments_count: 1, installment_value_cents: total, method: "pix", has_interest: false },
- { installments_count: 12, installment_value_cents: Math.round(total / 12), method: "boleto", has_interest: false },
- ],
- },
- });
- }}
- className="h-8 text-2xs rounded-lg font-semibold min-h-11 sm:min-h-0"
+ variant={resolvedInstallments.maxCardInstallments === preset ? "default" : "outline"}
+ onClick={() =>
+   applyPaymentPolicyToProposal(
+     normalizeSupplierPaymentPolicy({
+       maxCardInstallments: preset,
+       maxBoletoInstallments: preset,
+       cardInterestFree: true,
+       allowedPaymentMethods: ["pix", "credit_card", "boleto"],
+     }),
+   )
+ }
+ className="h-11 text-2xs rounded-lg font-semibold"
  >
- Boleto 12x Sem Entrada
+ Até {preset}x Sem Juros
  </Button>
+ ))}
  </div>
 
  {/* Visualização das parcelas configuradas */}
@@ -3342,7 +3425,12 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {proposal.pricing.installments_options.map((opt, i) => (
  <div key={i} className="flex justify-between items-center text-muted-foreground">
  <span>
- {opt.installments_count}x {opt.method === "pix" ? "à vista no Pix" : "no Cartão"}
+ {opt.installments_count}x{" "}
+ {opt.method === "pix"
+   ? "à vista no Pix"
+   : opt.method === "boleto"
+     ? "no Boleto"
+     : "no Cartão"}
  </span>
  <span className="font-mono font-bold text-foreground">
  {formatMoney(opt.installment_value_cents)}

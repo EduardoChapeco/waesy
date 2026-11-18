@@ -39,7 +39,7 @@ async function rollbackGeneratedContract(
   await supabase.from("contracts").delete().eq("id", contractId);
 }
 
-export const ContractCategoryEnum = z.enum([
+export const ContractCategoryBaseEnum = z.enum([
   "real_estate_rental",
   "real_estate_sale",
   "vehicle_sale",
@@ -55,13 +55,36 @@ export const ContractCategoryEnum = z.enum([
   "equipment_loan",
 ]);
 
+export const ContractCategoryEnum = z.preprocess(
+  (val) => (val === "tourism" ? "tourism_package" : val),
+  ContractCategoryBaseEnum,
+);
+
 // ─── Tipagens Canônicas de Posicionamento Visual & Despacho Multi-Canal ───────
 
 export interface SignatureFieldDTO {
   id: string;
   signerIndex: number;
   signerEmail?: string;
-  type: "signature" | "initials" | "name" | "cpf" | "date" | "checkbox";
+  type:
+    | "signature"
+    | "initials"
+    | "name"
+    | "cpf"
+    | "rg"
+    | "cnpj"
+    | "company_name"
+    | "role_title"
+    | "email"
+    | "phone"
+    | "address"
+    | "city_state"
+    | "date"
+    | "datetime"
+    | "text"
+    | "number"
+    | "checkbox"
+    | "stamp";
   page: number; // 1-indexed
   x: number; // Porcentagem 0-100 do container
   y: number; // Porcentagem 0-100 do container
@@ -328,7 +351,7 @@ export const sealAndIssueContract = createServerFn({ method: "POST" })
               email: z.string().trim().email().max(320),
               phone: z.string().trim().max(40).optional(),
               cpf: z.string().trim().max(40).optional(),
-              role: z.enum(["party", "witness", "guarantor"]).default("party"),
+              role: z.string().trim().min(2).max(48).regex(/^[a-z0-9_]+$/).default("party"),
               authLevel: z.enum(["basic", "advanced", "qualified"]).default("basic"),
               dispatchChannel: z.enum(["email", "whatsapp", "sms", "direct_link"]).default("email"),
               signingOrderIndex: z.number().int().min(1).max(50).default(1),
