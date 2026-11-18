@@ -34,10 +34,10 @@ import { listTravelSuppliers } from "@/services/travel-suppliers.functions";
 import {
   buildInstallmentOptionsFromPolicy,
   buildPaymentTermsSummaryFromPolicy,
-  clampInstallments,
   normalizeSupplierPaymentPolicy,
   resolveMaxInstallmentsFromOptions,
 } from "@/lib/tourism/payment-policy";
+import { StudioSupplierInstallmentsCard } from "@/components/tourism/studio/StudioSupplierInstallmentsCard";
 import { CustomerSearchCombobox } from "@/components/crm/CustomerSearchCombobox";
 import { listGroupTours } from "@/services/group-tours.functions";
 import { CANONICAL_DESTINATIONS } from "@/lib/destinations-catalog";
@@ -3322,124 +3322,12 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  </div>
  </div>
 
- <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">
- <span className="text-xs font-bold text-foreground block">Fornecedor &amp; Parcelamento Sincronizado</span>
-
- {studioSuppliers.length > 0 && (
-   <div className="space-y-1">
-     <Label className="text-2xs text-muted-foreground font-semibold">
-       Sincronizar Política do Fornecedor
-     </Label>
-     <select
-       value=""
-       onChange={(e) => {
-         const sup = studioSuppliers.find((s) => s.id === e.target.value);
-         if (!sup) return;
-         applyPaymentPolicyToProposal(normalizeSupplierPaymentPolicy(sup));
-         toast.success(`Condições de ${sup.name} aplicadas à proposta.`);
-       }}
-       className="w-full h-11 min-h-11 px-3 rounded-lg border border-input bg-background text-xs font-medium"
-     >
-       <option value="">Selecionar fornecedor para sincronizar...</option>
-       {studioSuppliers.map((sup) => (
-         <option key={sup.id} value={sup.id}>
-           {sup.name} ({sup.max_card_installments ?? 12}x Cartão / {sup.max_boleto_installments ?? 12}x Boleto)
-         </option>
-       ))}
-     </select>
-   </div>
- )}
-
- <div className="grid grid-cols-2 gap-2">
-   <div className="space-y-1">
-     <Label className="text-2xs text-muted-foreground font-semibold">Cartão (1 a 36x)</Label>
-     <Input
-       type="number"
-       min={1}
-       max={36}
-       value={resolvedInstallments.maxCardInstallments}
-       onChange={(e) => {
-         const nextCard = clampInstallments(e.target.value, 12);
-         applyPaymentPolicyToProposal(
-           normalizeSupplierPaymentPolicy({
-             maxCardInstallments: nextCard,
-             maxBoletoInstallments: resolvedInstallments.maxBoletoInstallments,
-             cardInterestFree: resolvedInstallments.cardInterestFree,
-             allowedPaymentMethods: ["pix", "credit_card", "boleto"],
-           }),
-         );
-       }}
-       className="h-11 text-xs font-mono rounded-lg"
-     />
-   </div>
-   <div className="space-y-1">
-     <Label className="text-2xs text-muted-foreground font-semibold">Boleto (1 a 36x)</Label>
-     <Input
-       type="number"
-       min={1}
-       max={36}
-       value={resolvedInstallments.maxBoletoInstallments}
-       onChange={(e) => {
-         const nextBoleto = clampInstallments(e.target.value, 12);
-         applyPaymentPolicyToProposal(
-           normalizeSupplierPaymentPolicy({
-             maxCardInstallments: resolvedInstallments.maxCardInstallments,
-             maxBoletoInstallments: nextBoleto,
-             cardInterestFree: resolvedInstallments.cardInterestFree,
-             allowedPaymentMethods: ["pix", "credit_card", "boleto"],
-           }),
-         );
-       }}
-       className="h-11 text-xs font-mono rounded-lg"
-     />
-   </div>
- </div>
-
- <div className="grid grid-cols-2 gap-2">
- {[12, 16, 18, 24].map((preset) => (
- <Button
- key={preset}
- type="button"
- size="sm"
- variant={resolvedInstallments.maxCardInstallments === preset ? "default" : "outline"}
- onClick={() =>
-   applyPaymentPolicyToProposal(
-     normalizeSupplierPaymentPolicy({
-       maxCardInstallments: preset,
-       maxBoletoInstallments: preset,
-       cardInterestFree: true,
-       allowedPaymentMethods: ["pix", "credit_card", "boleto"],
-     }),
-   )
- }
- className="h-11 text-2xs rounded-lg font-semibold"
- >
- Até {preset}x Sem Juros
- </Button>
- ))}
- </div>
-
- {/* Visualização das parcelas configuradas */}
- {proposal.pricing?.installments_options && proposal.pricing.installments_options.length > 0 && (
- <div className="space-y-1 pt-1 border-t border-border/40 text-2xs">
- {proposal.pricing.installments_options.map((opt, i) => (
- <div key={i} className="flex justify-between items-center text-muted-foreground">
- <span>
- {opt.installments_count}x{" "}
- {opt.method === "pix"
-   ? "à vista no Pix"
-   : opt.method === "boleto"
-     ? "no Boleto"
-     : "no Cartão"}
- </span>
- <span className="font-mono font-bold text-foreground">
- {formatMoney(opt.installment_value_cents)}
- </span>
- </div>
- ))}
- </div>
- )}
- </div>
+ <StudioSupplierInstallmentsCard
+   suppliers={studioSuppliers}
+   resolvedInstallments={resolvedInstallments}
+   installmentsOptions={proposal.pricing?.installments_options}
+   onApplyPolicy={applyPaymentPolicyToProposal}
+ />
 
  {/* ── OPÇÕES DE EXIBIÇÃO DO PREÇO NA LÂMINA ── */}
  <div className="p-3 rounded-lg bg-muted/30 border border-border/40 space-y-3">

@@ -87,3 +87,17 @@ export function getSignerRoleLabel(role?: string | null): string {
   if (!role) return "Parte / Signatário";
   return CONTRACT_SIGNER_ROLE_LABELS[role] || role;
 }
+
+export interface StudioSignerDraft {
+  name: string;
+  email: string;
+  phone: string;
+  cpf: string;
+  role: string;
+  dispatchChannel: "whatsapp" | "email" | "sms" | "direct_link";
+  authLevel: "basic" | "advanced";
+  requireFacialBiometrics: boolean;
+  signingOrderIndex: number;
+  profileId?: string;
+  colorCode: string;
+}

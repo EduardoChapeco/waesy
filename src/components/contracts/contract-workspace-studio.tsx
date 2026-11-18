@@ -54,13 +54,13 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CONTRACT_SIGNER_ROLE_GROUPS } from "@/lib/contracts/signer-roles";
+import { ContractSignersListCard } from "@/components/contracts/ContractSignersListCard";
+import type { StudioSignerDraft } from "@/lib/contracts/signer-roles";
+export type { StudioSignerDraft };
 import { Textarea } from "@/components/ui/textarea";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
@@ -157,20 +157,6 @@ Os serviços e entregas serão executados em conformidade com os prazos estabele
 
 ### Cláusula 3ª — Validade Jurídica Eletrônica
 As partes reconhecem expressamente a validade e eficácia jurídica da assinatura eletrônica por meio da infraestrutura Waesy, nos termos da MP 2.200-2/2001 e da Lei 14.063/2020.`;
-
-export interface StudioSignerDraft {
-  name: string;
-  email: string;
-  phone: string;
-  cpf: string;
-  role: string;
-  dispatchChannel: "whatsapp" | "email" | "sms" | "direct_link";
-  authLevel: "basic" | "advanced";
-  requireFacialBiometrics: boolean;
-  signingOrderIndex: number;
-  profileId?: string;
-  colorCode: string;
-}
 
 interface ContractWorkspaceStudioProps {
   mode: "create" | "edit";
@@ -1761,182 +1747,23 @@ export function ContractWorkspaceStudio({
                 )}
 
                 {/* Lista de Signatários */}
-                <div className="space-y-3">
-                  {signers.map((signer, idx) => {
-                    const isSelected = idx === selectedSignerIdx;
-                    return (
-                      <div
-                        key={idx}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSelectedSignerIdx(idx)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setSelectedSignerIdx(idx);
-                          }
-                        }}
-                        className={cn(
-                          "rounded-lg p-3 space-y-3 transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          isSelected
-                            ? "border-primary/60 bg-primary/5"
-                            : "border-border/70 bg-muted/20",
-                        )}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span
-                              className="size-3 rounded-full shrink-0 waesy-dyn-bg"
-                              style={{ "--dyn-bg": signer.colorCode } as React.CSSProperties}
-                            />
-                            <span className="text-xs font-semibold text-foreground truncate">
-                              {signer.name || `Signatário ${idx + 1}`}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            {!isLocked && (
-                              <label className="inline-flex items-center gap-1 px-2 h-11 min-h-11 sm:h-8 sm:min-h-0 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer">
-                                {isProcessingOcr === idx ? (
-                                  <Loader2 className="size-3 animate-spin motion-reduce:animate-none" />
-                                ) : (
-                                  <ScanLine className="size-3.5" />
-                                )}
-                                <span>RG/CNH</span>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="sr-only"
-                                  onChange={(e) => {
-                                    handleSignerOcr(idx, e.target.files?.[0]);
-                                    e.currentTarget.value = "";
-                                  }}
-                                />
-                              </label>
-                            )}
-                            {!isLocked && signers.length > 1 && (
-                              <button
-                                type="button"
-                                aria-label="Remover signatário"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSigners((prev) => prev.filter((_, i) => i !== idx));
-                                  setSelectedSignerIdx(0);
-                                }}
-                                className="p-2 text-muted-foreground hover:text-destructive rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-2">
-                          <Input
-                            disabled={isLocked}
-                            placeholder="Nome completo"
-                            value={signer.name}
-                            onChange={(e) =>
-                              setSigners((prev) =>
-                                prev.map((item, i) => (i === idx ? { ...item, name: e.target.value } : item)),
-                              )
-                            }
-                            className="h-9 text-xs bg-background"
-                          />
-                          <div className="grid grid-cols-2 gap-2">
-                            <Input
-                              disabled={isLocked}
-                              placeholder="WhatsApp (DDD)"
-                              value={signer.phone}
-                              onChange={(e) =>
-                                setSigners((prev) =>
-                                  prev.map((item, i) =>
-                                    i === idx ? { ...item, phone: formatPhone(e.target.value) } : item,
-                                  ),
-                                )
-                              }
-                              className="h-9 text-xs bg-background"
-                            />
-                            <Input
-                              disabled={isLocked}
-                              placeholder="E-mail"
-                              value={signer.email}
-                              onChange={(e) =>
-                                setSigners((prev) =>
-                                  prev.map((item, i) => (i === idx ? { ...item, email: e.target.value } : item)),
-                                )
-                              }
-                              className="h-9 text-xs bg-background"
-                            />
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <Input
-                              disabled={isLocked}
-                              placeholder="CPF (opc.)"
-                              value={signer.cpf}
-                              onChange={(e) =>
-                                setSigners((prev) =>
-                                  prev.map((item, i) =>
-                                    i === idx
-                                      ? { ...item, cpf: maskCpfProgressive(e.target.value) }
-                                      : item,
-                                  ),
-                                )
-                              }
-                              className="h-9 text-xs bg-background"
-                            />
-                            <Select
-                              disabled={isLocked}
-                              value={signer.dispatchChannel}
-                              onValueChange={(v: any) =>
-                                setSigners((prev) =>
-                                  prev.map((item, i) =>
-                                    i === idx ? { ...item, dispatchChannel: v } : item,
-                                  ),
-                                )
-                              }
-                            >
-                              <SelectTrigger className="h-9 text-xs bg-background">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                                <SelectItem value="email">E-mail</SelectItem>
-                                <SelectItem value="direct_link">Link Direto</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Select
-                              disabled={isLocked}
-                              value={signer.role}
-                              onValueChange={(v: any) =>
-                                setSigners((prev) =>
-                                  prev.map((item, i) => (i === idx ? { ...item, role: v } : item)),
-                                )
-                              }
-                            >
-                              <SelectTrigger className="h-11 min-h-11 sm:h-9 sm:min-h-0 text-xs bg-background">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-72">
-                                {CONTRACT_SIGNER_ROLE_GROUPS.map((grp) => (
-                                  <SelectGroup key={grp.group}>
-                                    <SelectLabel className="text-2xs font-semibold text-muted-foreground">
-                                      {grp.group}
-                                    </SelectLabel>
-                                    {grp.options.map((opt) => (
-                                      <SelectItem key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectGroup>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <ContractSignersListCard
+                  signers={signers}
+                  selectedSignerIdx={selectedSignerIdx}
+                  isLocked={isLocked}
+                  isProcessingOcr={isProcessingOcr}
+                  onSelectSigner={setSelectedSignerIdx}
+                  onUpdateSigner={(idx, patch) =>
+                    setSigners((prev) =>
+                      prev.map((item, i) => (i === idx ? { ...item, ...patch } : item)),
+                    )
+                  }
+                  onRemoveSigner={(idx) => {
+                    setSigners((prev) => prev.filter((_, i) => i !== idx));
+                    setSelectedSignerIdx(0);
+                  }}
+                  onSignerOcr={handleSignerOcr}
+                />
 
                 {/* Paleta de Campos para Arrastar na Folha A4 */}
                 {!isLocked && (
